@@ -34,6 +34,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Generic builder for specifications
+ *
+ * @param <T>
+ * @param <R>
+ */
 public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchParameters<T>> {
 
     protected List<Specification<T>> specifications = new ArrayList<>();

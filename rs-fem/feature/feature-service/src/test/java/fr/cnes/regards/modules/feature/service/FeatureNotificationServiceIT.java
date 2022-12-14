@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureNotificationRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
@@ -55,6 +56,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -181,8 +183,9 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         OffsetDateTime start = OffsetDateTime.now();
         // Create features
         prepareCreationTestData(false, nbValid, true, true, false);
+
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                                                     FeatureRequestsSelectionDTO.build(),
+                                                                                     new SearchFeatureNotificationRequestParameters(),
                                                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
@@ -196,34 +199,37 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestsSelectionDTO.build(),
+                                                     new SearchFeatureNotificationRequestParameters(),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR),
+                                                     new SearchFeatureNotificationRequestParameters().withStatesIncluded(
+                                                         Arrays.asList(RequestState.ERROR)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestsSelectionDTO.build()
-                                                                                .withState(RequestState.GRANTED)
-                                                                                .withStart(OffsetDateTime.now()
-                                                                                                         .plusSeconds(5)),
+                                                     new SearchFeatureNotificationRequestParameters().withStatesIncluded(
+                                                                                                         Arrays.asList(RequestState.GRANTED))
+                                                                                                     .withLastUpdateAfter(
+                                                                                                         OffsetDateTime.now()
+                                                                                                                       .plusSeconds(
+                                                                                                                           5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestsSelectionDTO.build()
-                                                                                .withStart(start)
-                                                                                .withEnd(OffsetDateTime.now()
-                                                                                                       .plusSeconds(5)),
+                                                     new SearchFeatureNotificationRequestParameters().withLastUpdateBefore(
+                                                                                                         OffsetDateTime.now().plusSeconds(5))
+                                                                                                     .withLastUpdateAfter(
+                                                                                                         start),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());

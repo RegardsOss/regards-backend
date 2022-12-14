@@ -27,12 +27,14 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.feature.dao.FeatureSaveMetadataRequestSpecification;
+import fr.cnes.regards.modules.feature.dao.FeatureSaveMetadataRequestSpecificationBuilder;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureSaveMetadataRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -54,6 +56,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -215,16 +218,22 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
-                                                                                                          .getState()
-                                                                                                 != RequestState.ERROR))) {
+    public Page<FeatureSaveMetadataRequest> findRequests(SearchFeatureSaveMetadataRequestParameters filters,
+                                                         Pageable page) {
+        return featureSaveMetadataRepository.findAll(new FeatureSaveMetadataRequestSpecificationBuilder().withParameters(
+            filters).build(), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(SearchFeatureSaveMetadataRequestParameters filters) {
+        if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
+                                                                                              .getValues()
+                                                                                              .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(featureSaveMetadataRepository.count(FeatureSaveMetadataRequestSpecification.searchAllByFilters(
-                selection,
-                PageRequest.of(0, 1))));
+            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            return RequestsInfo.build(featureSaveMetadataRepository.count(new FeatureSaveMetadataRequestSpecificationBuilder().withParameters(
+                filters).build()));
         }
     }
 

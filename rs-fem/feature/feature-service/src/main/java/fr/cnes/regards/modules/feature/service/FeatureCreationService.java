@@ -32,17 +32,11 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.feature.dao.FeatureCreationRequestSpecification;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
+import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
@@ -689,16 +683,21 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
-                                                                                                          .getState()
-                                                                                                 != RequestState.ERROR))) {
+    public Page<FeatureCreationRequest> findRequests(SearchFeatureCreationRequestParameters filters, Pageable page) {
+        return featureCreationRequestRepo.findAll(new FeatureCreationRequestSpecificationsBuilder().withParameters(
+            filters).build(), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(SearchFeatureCreationRequestParameters filters) {
+        if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
+                                                                                              .getValues()
+                                                                                              .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(featureCreationRequestRepo.count(FeatureCreationRequestSpecification.searchAllByFilters(
-                selection,
-                PageRequest.of(0, 1))));
+            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            return RequestsInfo.build(featureCreationRequestRepo.count(new FeatureCreationRequestSpecificationsBuilder().withParameters(
+                filters).build()));
         }
     }
 

@@ -20,10 +20,12 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureNotificationRequestParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -54,4 +56,21 @@ public interface IFeatureNotificationService extends IAbstractFeatureService<Fea
      * @return {@link FeatureNotificationRequest}s
      */
     Page<FeatureNotificationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+
+    /**
+     * Find all {@link FeatureNotificationRequest}s
+     *
+     * @param filters
+     * @param page
+     * @return {@link FeatureNotificationRequest}s
+     */
+    Page<FeatureNotificationRequest> findRequests(SearchFeatureNotificationRequestParameters filters, Pageable page);
+
+    /**
+     * Find requests information
+     *
+     * @param filters {@link SearchFeatureNotificationRequestParameters}
+     * @return {@link RequestsInfo}
+     */
+    RequestsInfo getInfo(SearchFeatureNotificationRequestParameters filters);
 }

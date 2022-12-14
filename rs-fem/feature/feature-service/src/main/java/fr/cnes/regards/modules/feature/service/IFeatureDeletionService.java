@@ -19,10 +19,12 @@
 package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureDeletionRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
 import org.springframework.data.domain.Page;
@@ -69,4 +71,21 @@ public interface IFeatureDeletionService extends IAbstractFeatureService<Feature
      * @return {@link FeatureDeletionRequest}s
      */
     Page<FeatureDeletionRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+
+    /**
+     * Find all {@link FeatureDeletionRequest}s
+     *
+     * @param filters
+     * @param page
+     * @return {@link FeatureDeletionRequest}s
+     */
+    Page<FeatureDeletionRequest> findRequests(SearchFeatureDeletionRequestParameters filters, Pageable page);
+
+    /**
+     * Find requests information
+     *
+     * @param filters {@link SearchFeatureDeletionRequestParameters}
+     * @return {@link RequestsInfo}
+     */
+    RequestsInfo getInfo(SearchFeatureDeletionRequestParameters filters);
 }

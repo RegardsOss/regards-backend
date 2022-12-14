@@ -25,8 +25,8 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
@@ -35,10 +35,14 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
@@ -75,17 +79,22 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
     @Autowired
     private IResourceService resourceService;
 
-    @Operation(summary = "Get feature requests", description = "Get feature requests")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Get feature requests") })
-    @RequestMapping(method = RequestMethod.GET, path = REQUEST_SEARCH_TYPE_PATH,
-        produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Get features according last update date", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<RequestsPagedModel<EntityModel<FeatureRequestDTO>>> getRequests(
-        @Parameter(description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
-        FeatureRequestSearchParameters parameters,
-        Pageable page) {
-        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withFilters(parameters);
-        return new ResponseEntity<>(toResources(featureRequestService.findAll(type, selection, page), type),
+    @PostMapping(path = REQUEST_SEARCH_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get feature requests", description = "Return a page of feature requests according criterias")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All feature requests were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all feature requests according criterias",
+        role = DefaultRole.EXPLOIT)
+    public ResponseEntity<RequestsPagedModel<EntityModel<FeatureRequestDTO>>> searchFeatureRequests(
+        @Parameter(description = "Type of feature requests to search for") @PathVariable("type")
+        FeatureRequestTypeEnum type,
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+            content = @Content(schema = @Schema(implementation = SearchFeatureRequestParameters.class)))
+        @Parameter(description = "Filter criterias for feature requests") @RequestBody
+        SearchFeatureRequestParameters filters,
+        @Parameter(description = "Sorting and page configuration")
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page) {
+
+        return new ResponseEntity<>(toResources(featureRequestService.findAll(type, filters, page), type),
                                     HttpStatus.OK);
     }
 

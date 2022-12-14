@@ -38,9 +38,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -59,9 +56,8 @@ import java.util.UUID;
 @TestPropertySource(
     properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit", "regards.amqp.enabled=true" },
     locations = { "classpath:regards_local.properties", "classpath:batch.properties", "classpath:metrics.properties" })
-@ActiveProfiles(value = { "testAmqp" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler" })
 //Clean all context (schedulers)
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @Ignore("warning this test might not pass according to your setup for better perf test see FeatureGeodeIT")
 @ContextConfiguration(classes = { FeaturePerformanceITConfig.class })
 public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {

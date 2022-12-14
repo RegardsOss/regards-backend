@@ -99,47 +99,59 @@ public class FeatureRequestService implements IFeatureRequestService {
 
     @Override
     public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
-                                                   FeatureRequestsSelectionDTO selection,
+                                                   SearchFeatureRequestParameters filters,
                                                    Pageable page) {
         Page<FeatureRequestDTO> results = new PageImpl<>(Lists.newArrayList(), page, 0L);
         RequestsInfo info = RequestsInfo.build(0L);
         switch (type) {
             case COPY:
-                results = featureCopyService.findRequests(selection, page)
+                SearchFeatureCopyRequestParameters searchFeatureCopyRequestParameters = new SearchFeatureCopyRequestParameters(
+                    filters);
+                results = featureCopyService.findRequests(searchFeatureCopyRequestParameters, page)
                                             .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureCopyService.getInfo(selection);
+                info = featureCopyService.getInfo(searchFeatureCopyRequestParameters);
                 break;
             case CREATION:
-                results = featureCreationService.findRequests(selection, page)
+                SearchFeatureCreationRequestParameters searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters(
+                    filters);
+                results = featureCreationService.findRequests(searchFeatureCreationRequestParameters, page)
                                                 .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureCreationService.getInfo(selection);
+                info = featureCreationService.getInfo(searchFeatureCreationRequestParameters);
                 break;
             case DELETION:
-                results = featureDeletionService.findRequests(selection, page)
+                SearchFeatureDeletionRequestParameters searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters(
+                    filters);
+                results = featureDeletionService.findRequests(searchFeatureDeletionRequestParameters, page)
                                                 .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureDeletionService.getInfo(selection);
+                info = featureDeletionService.getInfo(searchFeatureDeletionRequestParameters);
                 break;
             case NOTIFICATION:
-                results = featureNotificationService.findRequests(selection, page)
+                SearchFeatureNotificationRequestParameters searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters(
+                    filters);
+                results = featureNotificationService.findRequests(searchFeatureNotificationRequestParameters, page)
                                                     .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureNotificationService.getInfo(selection);
+                info = featureNotificationService.getInfo(searchFeatureNotificationRequestParameters);
                 break;
             case SAVE_METADATA:
-                results = featureMetadataService.findRequests(selection, page)
+                SearchFeatureSaveMetadataRequestParameters searchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters(
+                    filters);
+                results = featureMetadataService.findRequests(searchFeatureSaveMetadataRequestParameters, page)
                                                 .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureMetadataService.getInfo(selection);
+                info = featureMetadataService.getInfo(searchFeatureSaveMetadataRequestParameters);
                 break;
             case UPDATE:
-                results = featureUpdateService.findRequests(selection, page)
+                SearchFeatureUpdateRequestParameters searchFeatureUpdateRequestParameters = new SearchFeatureUpdateRequestParameters(
+                    filters);
+                results = featureUpdateService.findRequests(searchFeatureUpdateRequestParameters, page)
                                               .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureUpdateService.getInfo(selection);
+                info = featureUpdateService.getInfo(searchFeatureUpdateRequestParameters);
                 break;
             default:
                 LOGGER.error("Not available type {} for Feature Requests", type.toString());
                 break;
         }
-
         addProviderIdsToRequests(results);
+
         return new RequestsPage<>(results.getContent(), info, results.getPageable(), results.getTotalElements());
     }
 

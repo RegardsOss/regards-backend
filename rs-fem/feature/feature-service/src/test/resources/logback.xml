@@ -22,17 +22,17 @@
     <include resource="fr/cnes/regards/framework/logbackappender/syslog_appender.xml"/>
     <logger name="fr.cnes.regards.framework.test.util" level="INFO"/>
     <logger name="fr.cnes.regards.modules.model.dto.properties.logger" level="INFO"/>
-     <logger name="fr.cnes.regards.modules.feature" level="INFO"/>
+    <logger name="fr.cnes.regards.modules.feature" level="INFO"/>
     <!--<logger name="fr.cnes.regards.modules.feature.service.request.FeatureNotfierListener" level="DEBUG"/>-->
-<!--    <logger name="org.hibernate.SQL" level="DEBUG"/>-->
-<!--    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>-->
-<!--    <logger name="org.hibernate.event.internal" level="TRACE"/>-->
-<!--    <logger name="org.hibernate.persister.entity" level="TRACE"/>-->
+    <!--    <logger name="org.hibernate.SQL" level="DEBUG"/>-->
+    <!--    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>-->
+    <!--    <logger name="org.hibernate.event.internal" level="TRACE"/>-->
+    <!--    <logger name="org.hibernate.persister.entity" level="TRACE"/>-->
     <!-- <logger name="fr.cnes.regards.modules.feature.service.FeatureCreationService" level="TRACE"/> -->
-    <logger name="org.springframework.amqp.rabbit" level="ERROR" />
+    <logger name="org.springframework.amqp.rabbit" level="ERROR"/>
     <logger name="fr.cnes.regards.modules.feature.service.logger.FeatureLogger" level="ERROR"/>
     <logger name="fr.cnes.regards.modules.model.service.validation" level="INFO"/>
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
         <!-- <appender-ref ref="FILE" /> -->
     </root>

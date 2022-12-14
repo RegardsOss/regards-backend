@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureSaveMetadataRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
@@ -91,7 +92,16 @@ public interface IFeatureMetadataService {
      * @param page
      * @return {@link FeatureSaveMetadataRequest}s
      */
-    public Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+    Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+
+    /**
+     * Find all {@link FeatureSaveMetadataRequest}s
+     *
+     * @param filters {@link SearchFeatureSaveMetadataRequestParameters}
+     * @param page
+     * @return {@link FeatureSaveMetadataRequest}s
+     */
+    Page<FeatureSaveMetadataRequest> findRequests(SearchFeatureSaveMetadataRequestParameters filters, Pageable page);
 
     /**
      * Delete requests associated to given search parameters
@@ -104,10 +114,10 @@ public interface IFeatureMetadataService {
     /**
      * Find requests information
      *
-     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @param filters {@link SearchFeatureSaveMetadataRequestParameters}
      * @return {@link RequestsInfo}
      */
-    RequestsInfo getInfo(FeatureRequestsSelectionDTO selection);
+    RequestsInfo getInfo(SearchFeatureSaveMetadataRequestParameters filters);
 
     /**
      * Retry requests associated to given search parameters

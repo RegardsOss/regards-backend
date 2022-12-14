@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCreationRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -57,10 +58,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -279,62 +277,83 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void testRetrieveRequests() {
+        // Given
         int nbValid = 20;
         // Register valid requests
         OffsetDateTime start = OffsetDateTime.now();
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true, false);
         this.featureCreationService.registerRequests(events);
-
+        // When
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                                                     FeatureRequestsSelectionDTO.build()
-                                                                                                                .withState(
-                                                                                                                    RequestState.GRANTED),
+                                                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
+                                                                                         Arrays.asList(RequestState.GRANTED)),
                                                                                      PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
+        // When
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR),
+                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
+                                                         Arrays.asList(RequestState.ERROR)),
                                                      PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
+        // When
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     FeatureRequestsSelectionDTO.build()
-                                                                                .withState(RequestState.GRANTED)
-                                                                                .withProviderId(events.get(0)
-                                                                                                      .getFeature()
-                                                                                                      .getId()),
+                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
+                                                                                                     Arrays.asList(RequestState.GRANTED))
+                                                                                                 .withProviderIdsIncluded(
+                                                                                                     Arrays.asList(
+                                                                                                         events.get(0)
+                                                                                                               .getFeature()
+                                                                                                               .getId())),
                                                      PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
+        // When
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     FeatureRequestsSelectionDTO.build()
-                                                                                .withState(RequestState.GRANTED)
-                                                                                .withProviderId(events.get(0)
-                                                                                                      .getFeature()
-                                                                                                      .getId())
-                                                                                .withStart(OffsetDateTime.now()
-                                                                                                         .plusSeconds(5)),
+                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
+                                                                                                     Arrays.asList(RequestState.GRANTED))
+                                                                                                 .withProviderIdsIncluded(
+                                                                                                     Arrays.asList(
+                                                                                                         events.get(0)
+                                                                                                               .getFeature()
+                                                                                                               .getId()))
+                                                                                                 .withLastUpdateAfter(
+                                                                                                     OffsetDateTime.now()
+                                                                                                                   .plusSeconds(
+                                                                                                                       5)),
                                                      PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
+        // When
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     FeatureRequestsSelectionDTO.build()
-                                                                                .withState(RequestState.GRANTED)
-                                                                                .withProviderId(events.get(0)
-                                                                                                      .getFeature()
-                                                                                                      .getId())
-                                                                                .withStart(start)
-                                                                                .withEnd(OffsetDateTime.now()
-                                                                                                       .plusSeconds(5)),
+                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
+                                                                                                     Arrays.asList(RequestState.GRANTED))
+                                                                                                 .withProviderIdsIncluded(
+                                                                                                     Arrays.asList(
+                                                                                                         events.get(0)
+                                                                                                               .getFeature()
+                                                                                                               .getId()))
+                                                                                                 .withLastUpdateBefore(
+                                                                                                     OffsetDateTime.now()
+                                                                                                                   .plusSeconds(
+                                                                                                                       5))
+                                                                                                 .withLastUpdateAfter(
+                                                                                                     start),
                                                      PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());

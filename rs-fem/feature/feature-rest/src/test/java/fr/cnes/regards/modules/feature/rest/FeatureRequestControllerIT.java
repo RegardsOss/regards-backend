@@ -46,6 +46,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -134,10 +135,13 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                                         .expectValue("$.info.nbErrors", 50);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.CREATION);
+
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters(),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in creation",
+                           FeatureRequestTypeEnum.CREATION);
+
         // Retrieve with unknown providerId filter
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
@@ -145,11 +149,12 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 0);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "10");
-        requestBuilderCustomizer.addParameter("providerId", "toto");
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.CREATION);
+
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList("toto")),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in creation",
+                           FeatureRequestTypeEnum.CREATION);
 
         // Retrieve with valid providerId filter
         requestBuilderCustomizer = customizer().expectStatusOk()
@@ -158,11 +163,12 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 0);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "10");
-        requestBuilderCustomizer.addParameter("providerId", "feature1_10");
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.CREATION);
+
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList("feature1_10")),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in creation",
+                           FeatureRequestTypeEnum.CREATION);
 
         // Retrieve by state
         requestBuilderCustomizer = customizer().expectStatusOk()
@@ -171,11 +177,12 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 50);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        requestBuilderCustomizer.addParameter("state", RequestState.ERROR.toString());
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.CREATION);
+
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters().withStatesIncluded(Arrays.asList(RequestState.ERROR)),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in creation",
+                           FeatureRequestTypeEnum.CREATION);
 
         // Retrieve by date
         requestBuilderCustomizer = customizer().expectStatusOk()
@@ -184,11 +191,12 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 20);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        requestBuilderCustomizer.addParameter("from", date.toString());
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.CREATION);
+
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters().withLastUpdateAfter(date),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in creation",
+                           FeatureRequestTypeEnum.CREATION);
 
         // Retrieve by source and session
         requestBuilderCustomizer = customizer().expectStatusOk()
@@ -197,12 +205,12 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 0);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        requestBuilderCustomizer.addParameter("source", "source1");
-        requestBuilderCustomizer.addParameter("session", "session1");
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.CREATION);
+
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters().withSource("source1").withSession("session1"),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in creation",
+                           FeatureRequestTypeEnum.CREATION);
 
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
@@ -210,19 +218,22 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 30);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        requestBuilderCustomizer.addParameter("source", "source1");
-        requestBuilderCustomizer.addParameter("session", "session2");
+
         List<ParameterDescriptor> params = RequestsControllerDocumentationHelper.featureRequestSearchParametersDoc();
         params.addAll(RequestsControllerDocumentationHelper.paginationDoc());
+
         requestBuilderCustomizer.documentPathParameters(RequestsControllerDocumentationHelper.featureRequestTypeEnumDoc(
                                     "type"))
                                 .documentRequestParameters(params)
                                 .documentResponseBody(RequestsControllerDocumentationHelper.featureRequestDTOResponseDoc());
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.CREATION);
 
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters().withSource("source1").withSession("session2"),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in creation",
+                           FeatureRequestTypeEnum.CREATION);
+        //
+        //
         // Retrieve deletion without filters
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
@@ -231,10 +242,12 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.DELETION);
+
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters(),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in deletion",
+                           FeatureRequestTypeEnum.DELETION);
 
         // Retrieve deletion with source/session filter should never return results
         requestBuilderCustomizer = customizer().expectStatusOk()
@@ -244,13 +257,14 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        requestBuilderCustomizer.addParameter("source", "source1");
-        requestBuilderCustomizer.addParameter("session", "session2");
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.DELETION);
 
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters().withSource("source1").withSession("session2"),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in deletion",
+                           FeatureRequestTypeEnum.DELETION);
+        //
+        //
         // Retrieve update without filters
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
@@ -259,11 +273,14 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.UPDATE);
 
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters(),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in update",
+                           FeatureRequestTypeEnum.UPDATE);
+        //
+        //
         // Retrieve notification without filters
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
@@ -272,10 +289,12 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Error retrieving creation requests",
-                          FeatureRequestTypeEnum.NOTIFICATION);
+
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           new SearchFeatureRequestParameters(),
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in notification",
+                           FeatureRequestTypeEnum.NOTIFICATION);
     }
 
     @Test
@@ -360,11 +379,14 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        requestBuilderCustomizer.addParameter("source", "retry_source");
-        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                          requestBuilderCustomizer,
-                          "Invlid number of requests from source retry_source",
-                          FeatureRequestTypeEnum.CREATION);
+
+        SearchFeatureRequestParameters body = new SearchFeatureRequestParameters().withSource("retry_source");
+
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                           body,
+                           requestBuilderCustomizer,
+                           "Error retrying feature requests in creation",
+                           FeatureRequestTypeEnum.CREATION);
 
     }
 

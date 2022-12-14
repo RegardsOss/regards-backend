@@ -82,12 +82,15 @@ public final class FeatureRequestSpecificationsHelper {
             }
             // Some filters are not provided on request itself, we have to join with assocciated feature by urn if present
             if (searchFiltersFromAssociatedFeature) {
+
                 if ((selection.getFilters().getProviderId() != null)) {
                     Root<FeatureEntity> fr = query.from(FeatureEntity.class);
                     predicates.add(cb.equal(fr.get("urn"), root.get("urn")));
+
                     predicates.add(cb.like(cb.lower(fr.get("providerId")),
                                            selection.getFilters().getProviderId().toLowerCase() + "%"));
                 }
+
                 if ((selection.getFilters().getSource() != null)) {
                     Root<FeatureEntity> fr = query.from(FeatureEntity.class);
                     predicates.add(cb.equal(fr.get("urn"), root.get("urn")));

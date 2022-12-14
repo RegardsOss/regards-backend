@@ -32,10 +32,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -485,17 +482,20 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
-                                                                                                          .getState()
-                                                                                                 != RequestState.ERROR))) {
+    public Page<FeatureUpdateRequest> findRequests(SearchFeatureUpdateRequestParameters filters, Pageable page) {
+        return updateRepo.findAll(new FeatureUpdateRequestSpecificationBuilder().withParameters(filters).build(), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(SearchFeatureUpdateRequestParameters filters) {
+        if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
+                                                                                              .getValues()
+                                                                                              .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(updateRepo.count(FeatureUpdateRequestSpecification.searchAllByFilters(selection,
-                                                                                                            PageRequest.of(
-                                                                                                                0,
-                                                                                                                1))));
+            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            return RequestsInfo.build(updateRepo.count(new FeatureUpdateRequestSpecificationBuilder().withParameters(
+                filters).build()));
         }
     }
 

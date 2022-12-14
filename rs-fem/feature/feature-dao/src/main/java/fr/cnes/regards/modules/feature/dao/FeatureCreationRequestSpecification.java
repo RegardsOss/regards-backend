@@ -27,7 +27,7 @@ import javax.persistence.criteria.Predicate;
 import java.util.Set;
 
 /**
- * JPA Specification to search for {@link FeatureCreationRequest} from {@link IFeatureCreationRequestRepositoryatu}
+ * JPA Specification to search for {@link FeatureCreationRequest} from {@link IFeatureCreationRequestRepository}
  *
  * @author Sébastien Binda
  */

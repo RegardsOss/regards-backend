@@ -2,11 +2,13 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCreationRequestParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.springframework.data.domain.Page;
@@ -64,5 +66,22 @@ public interface IFeatureCreationService extends IAbstractFeatureService<Feature
      * @return {@link FeatureCreationRequest}s
      */
     Page<FeatureCreationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+
+    /**
+     * Find all {@link FeatureCreationRequest}s
+     *
+     * @param filters {@link SearchFeatureCreationRequestParameters}
+     * @param page
+     * @return {@link FeatureCreationRequest}s
+     */
+    Page<FeatureCreationRequest> findRequests(SearchFeatureCreationRequestParameters filters, Pageable page);
+
+    /**
+     * Find requests information
+     *
+     * @param filters {@link SearchFeatureCreationRequestParameters}
+     * @return {@link RequestsInfo}
+     */
+    RequestsInfo getInfo(SearchFeatureCreationRequestParameters filters);
 
 }

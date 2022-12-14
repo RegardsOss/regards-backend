@@ -26,13 +26,11 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.modules.feature.dao.FeatureCopyRequestSpecification;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureCopyRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
+import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCopyRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
@@ -104,7 +102,7 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
                      grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
-        // Save a list of validated FeatureCreationRequest from a list of FeatureCreationRequestEvent
+        // Save a list of validated FeatureDeletionRequest from a list of FeatureDeletionRequestEvent
         featureCopyRequestRepo.saveAll(grantedRequests);
         LOGGER.trace("------------->>> {} creation requests registered in {} ms",
                      grantedRequests.size(),
@@ -281,16 +279,21 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
-                                                                                                          .getState()
-                                                                                                 != RequestState.ERROR))) {
+    public Page<FeatureCopyRequest> findRequests(SearchFeatureCopyRequestParameters filters, Pageable page) {
+        return featureCopyRequestRepo.findAll(new FeatureCopyRequestSpecificationsBuilder().withParameters(filters)
+                                                                                           .build(), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(SearchFeatureCopyRequestParameters filters) {
+        if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
+                                                                                              .getValues()
+                                                                                              .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(featureCopyRequestRepo.count(FeatureCopyRequestSpecification.searchAllByFilters(
-                selection,
-                PageRequest.of(0, 1))));
+            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            return RequestsInfo.build(featureCopyRequestRepo.count(new FeatureCopyRequestSpecificationsBuilder().withParameters(
+                filters).build()));
         }
     }
 

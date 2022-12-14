@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureDeletionRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -509,16 +510,21 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
-                                                                                                          .getState()
-                                                                                                 != RequestState.ERROR))) {
+    public Page<FeatureDeletionRequest> findRequests(SearchFeatureDeletionRequestParameters filters, Pageable page) {
+        return deletionRepo.findAll(new FeatureDeletionRequestSpecificationBuilder().withParameters(filters).build(),
+                                    page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(SearchFeatureDeletionRequestParameters filters) {
+        if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
+                                                                                              .getValues()
+                                                                                              .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(deletionRepo.count(FeatureDeletionRequestSpecification.searchAllByFilters(
-                selection,
-                PageRequest.of(0, 1))));
+            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            return RequestsInfo.build(deletionRepo.count(new FeatureDeletionRequestSpecificationBuilder().withParameters(
+                filters).build()));
         }
     }
 

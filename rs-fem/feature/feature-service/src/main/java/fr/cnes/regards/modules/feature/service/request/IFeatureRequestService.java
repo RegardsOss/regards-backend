@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.service.request;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -41,13 +42,13 @@ public interface IFeatureRequestService {
     /**
      * Retrieve {@link FeatureRequestDTO}s for given {@link FeatureRequestTypeEnum}
      *
-     * @param type      {@link FeatureRequestTypeEnum}
-     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @param type    {@link FeatureRequestTypeEnum}
+     * @param filters {@link SearchFeatureRequestParameters}
      * @param page
      * @return {@link FeatureRequestDTO}s
      */
     public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
-                                                   FeatureRequestsSelectionDTO selection,
+                                                   SearchFeatureRequestParameters filters,
                                                    Pageable page);
 
     /**

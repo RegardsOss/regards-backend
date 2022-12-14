@@ -6,7 +6,6 @@ import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
-import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 import java.util.Collection;
@@ -25,14 +24,6 @@ public interface IAbstractFeatureService<R extends AbstractFeatureRequest>
      * @return number of scheduled requests (0 if no request was scheduled)
      */
     int scheduleRequests();
-
-    /**
-     * Find requests information with search parameters context
-     *
-     * @param selection {@link FeatureRequestsSelectionDTO}
-     * @return {@link RequestsInfo}
-     */
-    RequestsInfo getInfo(FeatureRequestsSelectionDTO selection);
 
     /**
      * Delete requests associated to given search parameters.

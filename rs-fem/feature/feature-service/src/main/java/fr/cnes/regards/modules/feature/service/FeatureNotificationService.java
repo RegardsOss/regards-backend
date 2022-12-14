@@ -22,10 +22,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
-import fr.cnes.regards.modules.feature.dao.FeatureNotificationRequestSpecification;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
+import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
@@ -323,16 +320,22 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
-                                                                                                          .getState()
-                                                                                                 != RequestState.ERROR))) {
+    public Page<FeatureNotificationRequest> findRequests(SearchFeatureNotificationRequestParameters filters,
+                                                         Pageable page) {
+        return featureNotificationRequestRepository.findAll(new FeatureNotificationRequestSpecificationBuilder().withParameters(
+            filters).build(), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(SearchFeatureNotificationRequestParameters filters) {
+        if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
+                                                                                              .getValues()
+                                                                                              .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(featureNotificationRequestRepository.count(FeatureNotificationRequestSpecification.searchAllByFilters(
-                selection,
-                PageRequest.of(0, 1))));
+            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            return RequestsInfo.build(featureNotificationRequestRepository.count(new FeatureNotificationRequestSpecificationBuilder().withParameters(
+                filters).build()));
         }
     }
 

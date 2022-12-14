@@ -41,6 +41,7 @@ import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
@@ -62,6 +63,8 @@ import static org.junit.Assert.assertTrue;
     "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
     locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp" })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS,
+    hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired

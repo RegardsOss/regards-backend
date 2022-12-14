@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureDeletionRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
@@ -52,10 +53,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -205,49 +203,57 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         this.featureDeletionService.registerRequests(events);
 
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                                                     FeatureRequestsSelectionDTO.build(),
+                                                                                     new SearchFeatureDeletionRequestParameters(),
                                                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR),
+                                                     new SearchFeatureDeletionRequestParameters().withStatesIncluded(
+                                                         Arrays.asList(RequestState.ERROR)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestsSelectionDTO.build()
-                                                                                .withState(RequestState.GRANTED)
-                                                                                .withStart(OffsetDateTime.now()
-                                                                                                         .plusSeconds(5)),
+                                                     new SearchFeatureDeletionRequestParameters().withStatesIncluded(
+                                                                                                     Arrays.asList(RequestState.GRANTED))
+                                                                                                 .withLastUpdateAfter(
+                                                                                                     OffsetDateTime.now()
+                                                                                                                   .plusSeconds(
+                                                                                                                       5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestsSelectionDTO.build()
-                                                                                .withStart(start)
-                                                                                .withEnd(OffsetDateTime.now()
-                                                                                                       .plusSeconds(5)),
+                                                     new SearchFeatureDeletionRequestParameters().withLastUpdateAfter(
+                                                                                                     start)
+                                                                                                 .withLastUpdateBefore(
+                                                                                                     OffsetDateTime.now()
+                                                                                                                   .plusSeconds(
+                                                                                                                       5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestsSelectionDTO.build().withProviderId("id1"),
+                                                     new SearchFeatureDeletionRequestParameters().withProviderIdsIncluded(
+                                                         Arrays.asList("id1")),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestsSelectionDTO.build().withProviderId("id2"),
+                                                     new SearchFeatureDeletionRequestParameters().withProviderIdsIncluded(
+                                                         Arrays.asList("id2")),
                                                      PageRequest.of(0, 100));
+
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());

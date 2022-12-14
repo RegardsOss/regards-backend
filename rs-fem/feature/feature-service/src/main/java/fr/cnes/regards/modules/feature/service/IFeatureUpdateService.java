@@ -20,10 +20,12 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureUpdateRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
@@ -66,6 +68,23 @@ public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUp
      * @return {@link FeatureUpdateRequest}s
      */
     Page<FeatureUpdateRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+
+    /**
+     * Find all {@link FeatureUpdateRequest}s
+     *
+     * @param filters
+     * @param page
+     * @return {@link FeatureUpdateRequest}s
+     */
+    Page<FeatureUpdateRequest> findRequests(SearchFeatureUpdateRequestParameters filters, Pageable page);
+
+    /**
+     * Find requests information with search parameters context
+     *
+     * @param filters {@link SearchFeatureUpdateRequestParameters}
+     * @return {@link RequestsInfo}
+     */
+    RequestsInfo getInfo(SearchFeatureUpdateRequestParameters filters);
 
     /**
      * Handle storage response errors from storage microservice by looking for {@link FeatureUpdateRequest} associated
