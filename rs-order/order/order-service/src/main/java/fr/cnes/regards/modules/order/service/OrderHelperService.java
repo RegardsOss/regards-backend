@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
 import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
 import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
 import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
+import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,6 +78,8 @@ public class OrderHelperService {
 
     private final IProjectUsersClient projectUsersClient;
 
+    private final IOrderSettingsService orderSettingsService;
+
     @Value("${regards.order.secret}")
     private String secret;
 
@@ -98,12 +101,14 @@ public class OrderHelperService {
                               IJobInfoService jobInfoService,
                               IAuthenticationResolver authenticationResolver,
                               IRuntimeTenantResolver runtimeTenantResolver,
-                              IProjectUsersClient projectUsersClient) {
+                              IProjectUsersClient projectUsersClient,
+                              IOrderSettingsService orderSettingsService) {
         this.jwtService = jwtService;
         this.jobInfoService = jobInfoService;
         this.authenticationResolver = authenticationResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.projectUsersClient = projectUsersClient;
+        this.orderSettingsService = orderSettingsService;
     }
 
     public static boolean isOrderEffectivelyInPause(Order order) {
@@ -197,15 +202,14 @@ public class OrderHelperService {
         jobInfoService.updateExpirationDate(expirationDate, jobInfosId);
     }
 
-    public OffsetDateTime computeOrderExpirationDate(OffsetDateTime currentDate,
-                                                     int subOrderCount,
-                                                     int subOrderDuration) {
-        OffsetDateTime fromDate = OffsetDateTime.now();
-        if (currentDate != null && currentDate.isAfter(fromDate)) {
-            fromDate = currentDate;
-        }
+    public OffsetDateTime computeOrderExpirationDate(int subOrderCount, int subOrderDuration) {
+        // calculate expiration depending on number of suborders
         long hoursCount = subOrderCount == 0 ? subOrderDuration : (long) (subOrderCount + 2) * subOrderDuration;
-        return fromDate.plusHours(hoursCount);
+        if (hoursCount > orderSettingsService.getExpirationMaxDurationInHours()) {
+            // avoid expiration date too far
+            hoursCount = orderSettingsService.getExpirationMaxDurationInHours();
+        }
+        return OffsetDateTime.now().plusHours(hoursCount);
     }
 
     public String buildUrl() {

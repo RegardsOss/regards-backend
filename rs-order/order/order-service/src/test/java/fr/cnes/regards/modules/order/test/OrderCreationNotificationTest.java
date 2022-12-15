@@ -114,7 +114,7 @@ public class OrderCreationNotificationTest {
 
     private OrderHelperService mockOrderHelperService() {
         OrderHelperService orderHelper = mock(OrderHelperService.class);
-        when(orderHelper.computeOrderExpirationDate(any(), anyInt(), anyInt())).thenReturn(OffsetDateTime.now());
+        when(orderHelper.computeOrderExpirationDate(anyInt(), anyInt())).thenReturn(OffsetDateTime.now());
         return orderHelper;
     }
 

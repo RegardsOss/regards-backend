@@ -29,12 +29,12 @@ public class OrderSettingsService extends AbstractSettingService implements IOrd
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private OrderSettingsService self;
+    private IOrderSettingsService self;
 
     public OrderSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
                                 ITenantResolver tenantsResolver,
                                 IRuntimeTenantResolver runtimeTenantResolver,
-                                OrderSettingsService orderSettingsService) {
+                                IOrderSettingsService orderSettingsService) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -88,6 +88,17 @@ public class OrderSettingsService extends AbstractSettingService implements IOrd
     @Override
     public void setAppSubOrderDuration(int appSubOrderDuration) throws EntityException {
         dynamicTenantSettingService.update(OrderSettings.APP_SUB_ORDER_DURATION, appSubOrderDuration);
+    }
+
+    @Override
+    public Integer getExpirationMaxDurationInHours() {
+        return getValue(OrderSettings.EXPIRATION_MAX_DURATION_IN_HOURS);
+    }
+
+    @Override
+    public void setExpirationMaxDurationInHours(int expirationMaxDurationInHours) throws EntityException {
+        dynamicTenantSettingService.update(OrderSettings.EXPIRATION_MAX_DURATION_IN_HOURS,
+                                           expirationMaxDurationInHours);
     }
 
 }

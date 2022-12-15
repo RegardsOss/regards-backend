@@ -120,8 +120,7 @@ public class OrderRetryService implements IOrderRetryService {
                                                                role));
 
             // Update Order expiration date and JobInfo expiration date
-            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(order.getExpirationDate(),
-                                                                                          orderCounts.getSubOrderCount(),
+            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(orderCounts.getSubOrderCount(),
                                                                                           subOrderDuration);
             order.setExpirationDate(expirationDate);
             orderHelperService.updateJobInfosExpirationDate(expirationDate, orderCounts.getJobInfoIdSet());

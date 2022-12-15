@@ -177,8 +177,7 @@ public class OrderCreationService implements IOrderCreationService {
                 }
             }
 
-            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(null,
-                                                                                          orderCounts.getSubOrderCount(),
+            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(orderCounts.getSubOrderCount(),
                                                                                           subOrderDuration);
             order.setExpirationDate(expirationDate);
             orderHelperService.updateJobInfosExpirationDate(expirationDate, orderCounts.getJobInfoIdSet());
@@ -198,7 +197,7 @@ public class OrderCreationService implements IOrderCreationService {
         } catch (ModuleException e) {
             LOGGER.error("Error while completing order creation", e);
             order.setStatus(OrderStatus.FAILED);
-            order.setExpirationDate(orderHelperService.computeOrderExpirationDate(null, 0, subOrderDuration));
+            order.setExpirationDate(orderHelperService.computeOrderExpirationDate(0, subOrderDuration));
         }
         // Be careful to not unset FAILED status
         if (order.getStatus() != OrderStatus.FAILED) {

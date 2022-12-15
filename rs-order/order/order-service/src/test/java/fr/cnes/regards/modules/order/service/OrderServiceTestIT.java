@@ -20,10 +20,12 @@ package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -35,6 +37,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRestartOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.service.settings.OrderSettingsService;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.order.test.StorageClientMock;
@@ -61,6 +64,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -127,6 +131,18 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
 
     @MockBean
     private IProjectUsersClient projectUsersClient;
+
+    @Autowired
+    private OrderSettingsService orderSettingsService;
+
+    @Autowired
+    private OrderHelperService orderHelperService;
+
+    @Autowired
+    private ITenantResolver tenantsResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     public void clean() {
         filesTasksRepository.deleteAll();
@@ -473,6 +489,42 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
+    public void test_expirationDate() throws EntityException {
+        // expiration is calculated from current date, and we cannot mock current date.
+        // that's why we add few seconds of delta to the expiration date
+        // expiration is calculated in hour so few second will not affect tests.
+        int deltaInSeconds = 5;
+
+        // expiration date 1 hour reached
+        orderSettingsService.setExpirationMaxDurationInHours(1);
+        OffsetDateTime dateComputed = orderHelperService.computeOrderExpirationDate(5, 5);
+        Assertions.assertEquals(dateComputed.toEpochSecond(),
+                                OffsetDateTime.now().plusHours(1).toEpochSecond(),
+                                deltaInSeconds);
+
+        // expiration date 100 hour reached
+        orderSettingsService.setExpirationMaxDurationInHours(100);
+        dateComputed = orderHelperService.computeOrderExpirationDate(500, 500);
+        Assertions.assertEquals(dateComputed.toEpochSecond(),
+                                OffsetDateTime.now().plusHours(100).toEpochSecond(),
+                                deltaInSeconds);
+
+        // expiration date 100 hour not reached
+        orderSettingsService.setExpirationMaxDurationInHours(100);
+        dateComputed = orderHelperService.computeOrderExpirationDate(0, 10);
+        Assertions.assertEquals(dateComputed.toEpochSecond(),
+                                OffsetDateTime.now().plusHours(10).toEpochSecond(),
+                                deltaInSeconds);
+    }
+
+    /**
+     * Check if two dates are equals with +- 5 sec inaccuracy
+     */
+    private void assertDateIsApproximatelyEqualsTo(OffsetDateTime date, OffsetDateTime approximatelyEqualsTo) {
+        Assertions.assertEquals(date.toEpochSecond(), approximatelyEqualsTo.toEpochSecond(), 5);
+    }
+
+    @Test
     public void retry() throws ModuleException, InterruptedException {
 
         int creationTasksCount = 2;
@@ -548,7 +600,6 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
         orderService.resume(orderId);
         waitForStatus(orderId, OrderStatus.DONE);
         checkCompletion(orderId, 100);
-
     }
 
     private void waitForStatus(Long orderId, OrderStatus status) throws InterruptedException {
