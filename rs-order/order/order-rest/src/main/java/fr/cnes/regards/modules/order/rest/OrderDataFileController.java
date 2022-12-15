@@ -140,7 +140,9 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         String user = null;
         if (validityToken.isPresent()) {
             try {
-                JwtParser parser = Jwts.parserBuilder().setSigningKey(Encoders.BASE64.encode(secret.getBytes())).build();
+                JwtParser parser = Jwts.parserBuilder()
+                                       .setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
+                                       .build();
                 Claims claims = parser.parseClaimsJws(validityToken.get()).getBody();
                 Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
                 user = claims.get(JWTService.CLAIM_SUBJECT).toString();
@@ -154,11 +156,14 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         // Throws a NoSuchElementException if not found
         dataFile = dataFileService.load(dataFileId);
 
-        // Check if order owner of the file is the authentified user
+        // Check if order owner of the file is the authenticated user
         Order order = orderService.getOrder(dataFile.getOrderId());
-        if (!order.getOwner().equals(asUser.orElse(authResolver.getUser()))) {
-            LOGGER.error("Ordered file does not belongs to current user {}", asUser.orElse(authResolver.getUser()));
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        if (!orderService.hasCurrentUserAccessTo(order)) {
+            if (!order.getOwner().equals(asUser.orElseGet(authResolver::getUser))) {
+                LOGGER.error("Ordered file does not belongs to current user {}",
+                             asUser.orElseGet(authResolver::getUser));
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
         }
         switch (dataFile.getState()) {
             case PENDING:

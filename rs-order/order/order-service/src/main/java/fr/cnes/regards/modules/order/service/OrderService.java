@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.service;
 
 import com.google.common.base.Strings;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
@@ -29,6 +30,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.dao.OrderSpecifications;
@@ -104,6 +106,8 @@ public class OrderService implements IOrderService {
 
     private final OrderHelperService orderHelperService;
 
+    private final IAuthenticationResolver authResolver;
+
     public OrderService(IOrderRepository orderRepository,
                         IBasketService basketService,
                         IOrderCreationService orderCreationService,
@@ -115,7 +119,8 @@ public class OrderService implements IOrderService {
                         IRuntimeTenantResolver runtimeTenantResolver,
                         IOrderSettingsService orderSettingsService,
                         OrderHelperService orderHelperService,
-                        IOrderService orderService) {
+                        IOrderService orderService,
+                        IAuthenticationResolver authResolver) {
         this.basketService = basketService;
         this.orderRepository = orderRepository;
         this.orderCreationService = orderCreationService;
@@ -128,6 +133,7 @@ public class OrderService implements IOrderService {
         this.orderSettingsService = orderSettingsService;
         this.orderHelperService = orderHelperService;
         this.self = orderService;
+        this.authResolver = authResolver;
     }
 
     @EventListener
@@ -444,6 +450,15 @@ public class OrderService implements IOrderService {
     @Override
     public boolean isActionAvailable(long orderId, Action action) {
         return StringUtils.isEmpty(getErrorMessageOnAction(orderRepository.findSimpleById(orderId), action));
+    }
+
+    @Override
+    public boolean hasCurrentUserAccessTo(Order order) {
+        String role = authResolver.getRole();
+        String user = authResolver.getUser();
+        return DefaultRole.INSTANCE_ADMIN.name().equals(role)
+               || DefaultRole.PROJECT_ADMIN.name().equals(role)
+               || order.getOwner().equals(user);
     }
 
     private void checkAction(long orderId, Action action) throws ModuleException {

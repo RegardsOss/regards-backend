@@ -20,8 +20,10 @@ package fr.cnes.regards.modules.order.rest;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
@@ -37,6 +39,7 @@ import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
@@ -45,7 +48,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -70,8 +72,14 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
     @Autowired
     private IOrderDataFileRepository dataFileRepository;
 
+    @Autowired
+    private OrderDataFileController orderDataFileController;
+
     @MockBean
     private IProjectUsersClient projectUsersClient;
+
+    @MockBean
+    private IAuthenticationResolver authResolver;
 
     public static final UniformResourceName DS1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP,
                                                                                   EntityType.DATASET,
@@ -88,13 +96,12 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
     @Before
     public void init() {
         tenantResolver.forceTenant(getDefaultTenant());
-
         orderRepository.deleteAll();
         dataFileRepository.deleteAll();
     }
 
     @Test
-    public void testDownloadFileFailed() {
+    public void test_downloadFileFailed() {
         performDefaultGet(OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
                           customizer().expectStatusNotFound(),
                           "Should return result",
@@ -102,8 +109,86 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
     }
 
     @Test
+    public void test_accessRights() {
+        Order order = new Order();
+        order.setOwner(getDefaultUserEmail());
+        order.setLabel(DateTime.now().toString());
+        order.setCreationDate(OffsetDateTime.now());
+        order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order = orderRepository.save(order);
+
+        // One dataset task
+        DatasetTask ds1Task = new DatasetTask();
+        ds1Task.setDatasetIpid(DS1_IP_ID.toString());
+        ds1Task.setDatasetLabel("DS1");
+
+        order.addDatasetOrderTask(ds1Task);
+
+        File testFile = new File("src/test/resources/files/file1.txt");
+
+        FilesTask files1Task = new FilesTask();
+        files1Task.setOwner(getDefaultUserEmail());
+        files1Task.setOrderId(order.getId());
+        OrderDataFile dataFile1 = new OrderDataFile();
+        dataFile1.setUrl("file:///test/files/file1.txt");
+        dataFile1.setFilename(testFile.getName());
+        dataFile1.setIpId(DO1_IP_ID);
+        dataFile1.setOnline(true);
+        dataFile1.setReference(false);
+        // Use filename as checksum (same as OrderControllerIT)
+        dataFile1.setChecksum(StorageClientMock.TEST_FILE_CHECKSUM);
+        dataFile1.setOrderId(order.getId());
+        dataFile1.setFilesize(testFile.length());
+        dataFile1.setMimeType(StorageClientMock.TEST_MEDIA_TYPE);
+        dataFile1.setDataType(DataType.RAWDATA);
+        dataFile1.setState(FileState.AVAILABLE);
+        dataFile1 = dataFileRepository.save(dataFile1);
+        files1Task.addFile(dataFile1);
+        ds1Task.addReliantTask(files1Task);
+
+        orderRepository.save(order);
+
+        // test wrong owner and not admin -> failed
+        Mockito.when(authResolver.getRole()).thenReturn("NOT_ADMIN");
+        Mockito.when(authResolver.getUser()).thenReturn("WRONG_OWNER");
+
+        performDefaultGet(OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
+                          customizer().expectStatusForbidden(),
+                          "Should return result",
+                          dataFile1.getId());
+
+        // test admin and wrong owner -> success
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PROJECT_ADMIN.toString());
+        Mockito.when(authResolver.getUser()).thenReturn("NOT_OWNER_OF_DATAFILE");
+
+        performDefaultGet(OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
+                          customizer().expectStatusOk(),
+                          "Should return result",
+                          dataFile1.getId());
+
+        // test instance admin and wrong owner -> success
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.INSTANCE_ADMIN.toString());
+        Mockito.when(authResolver.getUser()).thenReturn("NOT_OWNER_OF_DATAFILE");
+
+        performDefaultGet(OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
+                          customizer().expectStatusOk(),
+                          "Should return result",
+                          dataFile1.getId());
+
+        // test not admin user and correct owner -> success
+
+        Mockito.when(authResolver.getRole()).thenReturn("NOT_IMPORTANT");
+        Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
+
+        performDefaultGet(OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
+                          customizer().expectStatusOk(),
+                          "Should return result",
+                          dataFile1.getId());
+    }
+
+    @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_CMD_020"), @Requirement("REGARDS_DSL_STO_CMD_030"), })
-    public void testDownloadFile() throws URISyntaxException, IOException {
+    public void test_downloadFile() throws IOException {
         Order order = new Order();
         order.setOwner(getDefaultUserEmail());
         order.setLabel(DateTime.now().toString());
@@ -142,6 +227,10 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
         order = orderRepository.save(order);
         ds1Task = order.getDatasetTasks().first();
+
+        // user admin have access to all orders
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PROJECT_ADMIN.toString());
+        Mockito.when(authResolver.getUser()).thenReturn("owner not null");
 
         ResultActions resultActions = performDefaultGet(OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
                                                         customizer().expectStatusOk(),

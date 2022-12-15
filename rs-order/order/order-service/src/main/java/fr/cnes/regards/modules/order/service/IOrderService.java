@@ -199,4 +199,15 @@ public interface IOrderService {
 
     boolean isActionAvailable(long orderId, OrderService.Action action);
 
+    /**
+     * Check if current user have access to order in parameter.
+     * User must validate one of the following conditions :
+     * <li>have role ADMIN_PROJECT</li>
+     * <li>have role ADMIN_INSTANCE</li>
+     * <li>is the owner of the order</li>
+     *
+     * @return false if none of these conditions are validated
+     */
+    boolean hasCurrentUserAccessTo(Order order);
+
 }

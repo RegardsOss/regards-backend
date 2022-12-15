@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -200,6 +201,41 @@ public class OrderServiceIT {
         orderRepos.deleteAll();
         dataFileRepos.deleteAll();
         jobInfoRepos.deleteAll();
+    }
+
+    @Purpose("Check that the admin users can access to any order, and others can only access to their own orders.")
+    @Test
+    public void test_hasCurrentUserAccessTo() {
+        String fakeOwner = "FAKE_OWNER";
+        String realOwner = "REAL_OWNER";
+        Mockito.reset(authResolver);
+        Order order = new Order();
+        order.setOwner(realOwner);
+
+        // Nominal : user INSTANCE_ADMIN + not order owner
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.INSTANCE_ADMIN.toString());
+        Mockito.when(authResolver.getUser()).thenReturn(fakeOwner);
+        Assertions.assertTrue(orderService.hasCurrentUserAccessTo(order));
+
+        // Nominal : user PROJECT_ADMIN + not order owner
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PROJECT_ADMIN.toString());
+        Mockito.when(authResolver.getUser()).thenReturn(fakeOwner);
+        Assertions.assertTrue(orderService.hasCurrentUserAccessTo(order));
+
+        // Error : user not admin + not order owner
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.ADMIN.toString());
+        Mockito.when(authResolver.getUser()).thenReturn(fakeOwner);
+        Assertions.assertFalse(orderService.hasCurrentUserAccessTo(order));
+
+        // Error : user public + not order owner
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PUBLIC.toString());
+        Mockito.when(authResolver.getUser()).thenReturn(fakeOwner);
+        Assertions.assertFalse(orderService.hasCurrentUserAccessTo(order));
+
+        // Nominal : user public + real order owner
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PUBLIC.toString());
+        Mockito.when(authResolver.getUser()).thenReturn(realOwner);
+        Assertions.assertTrue(orderService.hasCurrentUserAccessTo(order));
     }
 
     @Test

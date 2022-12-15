@@ -46,6 +46,10 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Encoders;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -194,11 +198,23 @@ public class OrderController implements IResourceController<OrderDto> {
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Retrieve specified order",
+        description = "Return order corresponding to the orderId input, if exists and user has access to it")
+    @ApiResponses(
+        value = { @ApiResponse(responseCode = "200", description = "The order has been successfully retrieved."),
+            @ApiResponse(responseCode = "403", description = "Order is not accessible for the current user.",
+                content = { @Content(mediaType = "application/html") }),
+            @ApiResponse(responseCode = "404", description = "Order not found",
+                content = { @Content(mediaType = "application/json") }) })
     @ResourceAccess(description = "Retrieve specified order", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = GET_ORDER_PATH)
+    @GetMapping(GET_ORDER_PATH)
     public ResponseEntity<EntityModel<OrderDto>> retrieveOrder(@PathVariable("orderId") Long orderId) {
         Order order = orderService.loadSimple(orderId);
         if (order != null) {
+            if (!orderService.hasCurrentUserAccessTo(order)) {
+                LOGGER.error("Ordered file is not accessible to current user ({})", authResolver.getUser());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            }
             return ResponseEntity.ok(toResource(OrderDto.fromOrder(order)));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
