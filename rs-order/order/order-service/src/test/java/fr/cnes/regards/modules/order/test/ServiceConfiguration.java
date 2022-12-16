@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.test;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
@@ -109,5 +110,10 @@ public class ServiceConfiguration {
     @Bean
     public IProcessingEventSender processingEventSender() {
         return mock(IProcessingEventSender.class);
+    }
+
+    @Bean
+    public IProjectUsersClient projectUsersClient() {
+        return mock(IProjectUsersClient.class);
     }
 }

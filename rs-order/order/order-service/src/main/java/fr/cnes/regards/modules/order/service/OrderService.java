@@ -206,10 +206,12 @@ public class OrderService implements IOrderService {
     @Override
     public Order createOrder(Basket basket, String label, String url, int subOrderDuration)
         throws EntityInvalidException {
-        return createOrder(basket, label, url, subOrderDuration, basket.getOwner());
+        return createOrder(basket, label, url, subOrderDuration, basket.getOwner(), null);
     }
 
-    private Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user)
+    @Override
+    public Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user,
+                              String correlationId)
         throws EntityInvalidException {
 
         LOGGER.info("Generate and / or check label is unique for owner before creating back");
@@ -234,6 +236,7 @@ public class OrderService implements IOrderService {
         order.setOwner(user);
         order.setLabel(orderLabel);
         order.setFrontendUrl(url);
+        order.setCorrelationId(correlationId);
         order = self.create(order);
 
         try {
@@ -377,7 +380,8 @@ public class OrderService implements IOrderService {
                            label,
                            successUrl,
                            orderSettingsService.getUserOrderParameters().getSubOrderDuration(),
-                           oldOrderOwner);
+                           oldOrderOwner,
+                           null);
     }
 
     @Override

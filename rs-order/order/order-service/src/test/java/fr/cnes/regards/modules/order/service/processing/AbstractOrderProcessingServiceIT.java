@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.*;
+import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventHandler;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.test.SearchClientMock;
@@ -449,35 +450,6 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         public void clear() {
             events.clear();
         }
-    }
-
-    @Component
-    public static class OrderCreationCompletedEventHandler
-        implements ApplicationListener<OrderCreationService.OrderCreationCompletedEvent> {
-
-        protected final java.util.Queue<OrderCreationService.OrderCreationCompletedEvent> events = new ConcurrentLinkedQueue<>();
-
-        protected Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer = e -> {
-        };
-
-        public void setConsumer(Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer) {
-            this.consumer = consumer;
-        }
-
-        @Override
-        public synchronized void onApplicationEvent(OrderCreationService.OrderCreationCompletedEvent event) {
-            events.add(event);
-            consumer.accept(event);
-        }
-
-        public List<OrderCreationService.OrderCreationCompletedEvent> getEvents() {
-            return List.ofAll(events);
-        }
-
-        public void clear() {
-            events.clear();
-        }
-
     }
 
 }

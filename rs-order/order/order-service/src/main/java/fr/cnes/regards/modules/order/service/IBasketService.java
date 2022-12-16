@@ -83,6 +83,14 @@ public interface IBasketService {
         throws EmptySelectionException, TooManyItemsSelectedInBasketException;
 
     /**
+     * See {@link #addSelection(Long, BasketSelectionRequest)}
+     * @param user requesting user
+     * @param role user role
+     */
+    Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest, String user, String role)
+        throws EmptySelectionException, TooManyItemsSelectedInBasketException;
+
+    /**
      * Remove specified dataset selection from basket
      *
      * @param basket    basket that contains one or multiple dataset selections

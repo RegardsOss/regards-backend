@@ -39,7 +39,9 @@
     <modules>
         <module>order-domain</module>
         <module>order-dao</module>
+        <module>order-dto</module>
         <module>order-rest</module>
+        <module>order-amqp</module>
         <module>order-service</module>
     </modules>
 </project>

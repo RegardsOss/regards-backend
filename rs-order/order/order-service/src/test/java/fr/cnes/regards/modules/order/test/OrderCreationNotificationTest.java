@@ -78,6 +78,7 @@ public class OrderCreationNotificationTest {
         datasetTask.setDatasetLabel("DATASET");
         givenOrder.getDatasetTasks().add(datasetTask);
         givenOrder.setStatus(orderStatus);
+        givenOrder.setFrontendUrl("https://fakeUrl.fr");
         return givenOrder;
     }
 

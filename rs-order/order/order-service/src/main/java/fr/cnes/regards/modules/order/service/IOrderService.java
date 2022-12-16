@@ -129,6 +129,9 @@ public interface IOrderService {
      */
     Order createOrder(Basket basket, String label, String url, int subOrderDuration) throws EntityInvalidException;
 
+    Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user, String correlationId)
+        throws EntityInvalidException;
+
     Order create(Order order);
 
     /**

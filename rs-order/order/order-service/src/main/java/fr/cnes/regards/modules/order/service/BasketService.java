@@ -120,6 +120,12 @@ public class BasketService implements IBasketService {
 
     @Override
     public Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest)
+        throws TooManyItemsSelectedInBasketException, EmptySelectionException {
+        return addSelection(basketId, selectionRequest, authResolver.getUser(), authResolver.getRole());
+    }
+
+    @Override
+    public Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest, String user, String role)
         throws EmptySelectionException, TooManyItemsSelectedInBasketException {
         Basket basket = repos.findOneById(basketId);
         if (basket == null) {
@@ -127,7 +133,7 @@ public class BasketService implements IBasketService {
         }
 
         try {
-            FeignSecurityManager.asUser(authResolver.getUser(), authResolver.getRole());
+            FeignSecurityManager.asUser(user, role);
             // Retrieve summary for all datasets matching the search request from the new selection to add.
             ResponseEntity<DocFilesSummary> docFilesSummaryResponse = complexSearchClient.computeDatasetsSummary(
                 buildSearchRequest(selectionRequest, 0, 1));

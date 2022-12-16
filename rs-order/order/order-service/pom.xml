@@ -36,6 +36,14 @@
             <artifactId>order-dao</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.modules.order</groupId>
+            <artifactId>order-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.order</groupId>
+            <artifactId>order-amqp</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
             <artifactId>jobs-service</artifactId>
         </dependency>
@@ -124,6 +132,12 @@
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-job-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 

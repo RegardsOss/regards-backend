@@ -216,7 +216,9 @@ public class OrderCreationService implements IOrderCreationService {
         LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
 
         if (order.getStatus() != OrderStatus.FAILED) {
-            sendOrderCreationEmail(order);
+            if (order.getFrontendUrl() != null) {
+                sendOrderCreationEmail(order);
+            }
             orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
         }
         applicationEventPublisher.publishEvent(new OrderCreationCompletedEvent(order));

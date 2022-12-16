@@ -108,6 +108,9 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Column(name = "url", columnDefinition = "text")
     private String frontendUrl;
 
+    @Column(name = "correlation_id")
+    private String correlationId;
+
     @Override
     public Long getId() {
         return id;
@@ -225,6 +228,14 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
         this.frontendUrl = frontendUrl;
     }
 
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
+    }
+
     @Override
     public int compareTo(Order o) {
         return this.creationDate.compareTo(o.getCreationDate());
@@ -252,5 +263,45 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
         int result = owner.hashCode();
         result = (31 * result) + creationDate.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Order{"
+               + "datasetTasks="
+               + datasetTasks
+               + ", id="
+               + id
+               + ", owner='"
+               + owner
+               + '\''
+               + ", label='"
+               + label
+               + '\''
+               + ", creationDate="
+               + creationDate
+               + ", expirationDate="
+               + expirationDate
+               + ", percentCompleted="
+               + percentCompleted
+               + ", filesInErrorCount="
+               + filesInErrorCount
+               + ", status="
+               + status
+               + ", statusDate="
+               + statusDate
+               + ", availableFilesCount="
+               + availableFilesCount
+               + ", availableUpdateDate="
+               + availableUpdateDate
+               + ", waitingForUser="
+               + waitingForUser
+               + ", frontendUrl='"
+               + frontendUrl
+               + '\''
+               + ", correlationId='"
+               + correlationId
+               + '\''
+               + '}';
     }
 }
