@@ -52,7 +52,9 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.sql.Timestamp;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -365,7 +367,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     @Override
     public Set<Order> updateCurrentOrdersComputedValues() {
-        OffsetDateTime now = OffsetDateTime.now();
+        Timestamp now = Timestamp.valueOf(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime());
         // find not yet finished orders and their sum of data files sizes
         List<Object[]> totalOrderFiles = orderDataFileRepository.findSumSizesByOrderId(now);
         if (totalOrderFiles.isEmpty()) {

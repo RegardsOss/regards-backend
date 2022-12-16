@@ -27,7 +27,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.Convert;
-import java.time.OffsetDateTime;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -67,7 +67,7 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
      */
     @Query(name = "selectSumSizesByOrderId") // Query is defined on OrderDataFile class
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    List<Object[]> findSumSizesByOrderId(OffsetDateTime limitDate);
+    List<Object[]> findSumSizesByOrderId(Timestamp limitDate);
 
     /**
      * Return a list of { Order, sum of file size (Long) } for notfinished orders whom expiration date is after the one
@@ -77,9 +77,9 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
      */
     @Query(name = "selectSumSizesByOrderIdAndStates") // Query is defined on OrderDataFile class
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    List<Object[]> selectSumSizesByOrderIdAndStates(OffsetDateTime limitDate, Collection<String> states);
+    List<Object[]> selectSumSizesByOrderIdAndStates(Timestamp limitDate, Collection<String> states);
 
-    default List<Object[]> selectSumSizesByOrderIdAndStates(OffsetDateTime limitDate, FileState... states) {
+    default List<Object[]> selectSumSizesByOrderIdAndStates(Timestamp limitDate, FileState... states) {
         return selectSumSizesByOrderIdAndStates(limitDate, Arrays.stream(states).map(FileState::toString).toList());
     }
 
@@ -93,9 +93,9 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     @Convert(converter = FileStateConverter.class)
     @Convert(converter = FileStateCollectionConverter.class)
-    List<Object[]> selectCountFilesByOrderIdAndStates(OffsetDateTime limitDate, Collection<String> states);
+    List<Object[]> selectCountFilesByOrderIdAndStates(Timestamp limitDate, Collection<String> states);
 
-    default List<Object[]> selectCountFilesByOrderIdAndStates(OffsetDateTime limitDate, FileState... states) {
+    default List<Object[]> selectCountFilesByOrderIdAndStates(Timestamp limitDate, FileState... states) {
         return selectCountFilesByOrderIdAndStates(limitDate, Arrays.stream(states).map(FileState::toString).toList());
     }
 
@@ -109,9 +109,9 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     @Convert(converter = FileStateConverter.class)
     @Convert(converter = FileStateCollectionConverter.class)
-    List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(OffsetDateTime limitDate, Collection<String> states);
+    List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(Timestamp limitDate, Collection<String> states);
 
-    default List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(OffsetDateTime limitDate, FileState... states) {
+    default List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(Timestamp limitDate, FileState... states) {
         return selectCountFilesByOrderIdAndStates4AllOrders(limitDate,
                                                             Arrays.stream(states).map(FileState::toString).toList());
     }
