@@ -39,8 +39,7 @@ public final class AcquisitionProcessingChainSpecifications {
     }
 
     /**
-     * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending
-     * ingestDate
+     * Filter on the given attributes (label, locked and mode) and return result ordered by ascending label
      *
      * @param label  {@link String}
      * @param locked {@link Boolean}
@@ -60,7 +59,7 @@ public final class AcquisitionProcessingChainSpecifications {
             if (mode != null) {
                 predicates.add(cb.equal(root.get("mode"), mode));
             }
-            query.orderBy(cb.desc(root.get("lastActivationDate")));
+
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

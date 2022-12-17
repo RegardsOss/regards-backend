@@ -26,8 +26,11 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -37,8 +40,8 @@ import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -58,27 +61,33 @@ public class MonitoringController implements IResourceController<AcquisitionProc
 
     /**
      * Build all {@link AcquisitionProcessingChainMonitor} from {@link AcquisitionProcessingChain}s matching given
-     * criterion.
+     * criterion (mode, running and label).
      *
      * @param mode    {@link AcquisitionProcessingChainMode} search criteria
      * @param running {@link Boolean} search criteria
      * @param label   {@link String} search criteria
      * @return page of {@link AcquisitionProcessingChainMonitor}s
      */
-    @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Search for acquisition processing chain summaries", role = DefaultRole.EXPLOIT)
+    @GetMapping
+    @Operation(summary = "Get acquisition processing chain monitors",
+        description = "Return a page of acquisition processing chain monitors")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "All acquisition processing chain monitors were retrieved.") })
+    @ResourceAccess(
+        description = "Endpoint to retrieve all acquisition processing chain monitors for acquisition processing chain summaries(mode, running and label)",
+        role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AcquisitionProcessingChainMonitor>>> search(
         @RequestParam(name = "mode", required = false) AcquisitionProcessingChainMode mode,
         @RequestParam(name = "running", required = false) Boolean running,
         @RequestParam(name = "label", required = false) String label,
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<AcquisitionProcessingChainMonitor> assembler) {
-        Page<AcquisitionProcessingChainMonitor> results = processingService.buildAcquisitionProcessingChainSummaries(
-            label,
-            running,
-            mode,
-            pageable);
-        return new ResponseEntity<>(toPagedResources(results, assembler), HttpStatus.OK);
+        @PageableDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,
+        @Parameter(hidden = true) PagedResourcesAssembler<AcquisitionProcessingChainMonitor> assembler) {
+
+        return new ResponseEntity<>(toPagedResources(processingService.buildAcquisitionProcessingChainSummaries(label,
+                                                                                                                running,
+                                                                                                                mode,
+                                                                                                                pageable),
+                                                     assembler), HttpStatus.OK);
     }
 
     @Override
