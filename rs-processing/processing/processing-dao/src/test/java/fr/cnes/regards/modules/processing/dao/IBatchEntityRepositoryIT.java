@@ -17,6 +17,7 @@
  */
 package fr.cnes.regards.modules.processing.dao;
 
+import fr.cnes.regards.modules.processing.domain.SearchExecutionEntityParameters;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
@@ -30,6 +31,7 @@ import reactor.core.publisher.Flux;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -168,33 +170,45 @@ public class IBatchEntityRepositoryIT extends AbstractRepoIT {
 
         // WHEN
         Integer countSuccess = domainExecRepo.countAllForMonitoringSearch(batch.getTenant(),
-                                                                          null,
-                                                                          null,
-                                                                          singletonList(SUCCESS),
-                                                                          nowUtc().minusHours(5),
-                                                                          nowUtc().plusHours(5)).block();
+                                                                          new SearchExecutionEntityParameters().withStatusIncluded(
+                                                                                                                   Arrays.asList(SUCCESS))
+                                                                                                               .withCreationDateBefore(
+                                                                                                                   nowUtc().minusHours(
+                                                                                                                       5))
+                                                                                                               .withCreationDateAfter(
+                                                                                                                   nowUtc().plusHours(
+                                                                                                                       5)))
+                                             .block();
 
         // THEN
         assertThat(countSuccess).isEqualTo(1);
 
         // WHEN
         Integer countRunning = domainExecRepo.countAllForMonitoringSearch(batch.getTenant(),
-                                                                          null,
-                                                                          null,
-                                                                          singletonList(RUNNING),
-                                                                          nowUtc().minusHours(5),
-                                                                          nowUtc().plusHours(5)).block();
+                                                                          new SearchExecutionEntityParameters().withStatusIncluded(
+                                                                                                                   Arrays.asList(RUNNING))
+                                                                                                               .withCreationDateBefore(
+                                                                                                                   nowUtc().minusHours(
+                                                                                                                       5))
+                                                                                                               .withCreationDateAfter(
+                                                                                                                   nowUtc().plusHours(
+                                                                                                                       5)))
+                                             .block();
 
         // THEN
         assertThat(countRunning).isEqualTo(2);
 
         // WHEN
         Integer countRunningTimed = domainExecRepo.countAllForMonitoringSearch(batch.getTenant(),
-                                                                               null,
-                                                                               null,
-                                                                               singletonList(RUNNING),
-                                                                               nowUtc().minusHours(1),
-                                                                               nowUtc().plusHours(1)).block();
+                                                                               new SearchExecutionEntityParameters().withStatusIncluded(
+                                                                                                                        Arrays.asList(RUNNING))
+                                                                                                                    .withCreationDateBefore(
+                                                                                                                        nowUtc().minusHours(
+                                                                                                                            1))
+                                                                                                                    .withCreationDateAfter(
+                                                                                                                        nowUtc().plusHours(
+                                                                                                                            1)))
+                                                  .block();
         assertThat(countRunningTimed).isEqualTo(1);
 
     }

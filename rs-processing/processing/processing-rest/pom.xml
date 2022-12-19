@@ -36,7 +36,6 @@
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-service</artifactId>
         </dependency>
-
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>module-regards-starter</artifactId>
@@ -93,6 +92,5 @@
             <version>1.0.0</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>

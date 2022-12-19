@@ -134,11 +134,6 @@ public abstract class AbstractProcessingIT implements InitializingBean {
         }
     }
 
-    @Override
-    public void afterPropertiesSet() {
-        migrationHelper.migrateSchema(dataSource, R2DBCDB_NAME);
-    }
-
     @AfterClass
     public static void stopContainers() {
         if (postgreSQLContainer.isRunning()) {
@@ -146,6 +141,42 @@ public abstract class AbstractProcessingIT implements InitializingBean {
         }
         if (rabbitMQContainer.isRunning()) {
             rabbitMQContainer.stop();
+        }
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        migrationHelper.migrateSchema(dataSource, R2DBCDB_NAME);
+    }
+
+    private static boolean onCi() {
+        return checkSocketHostPortAvailability("rs-postgres", 5432);
+    }
+
+    private static boolean checkSocketHostPortAvailability(String host, int port) {
+        try (Socket socket = new Socket()) {
+            socket.setReuseAddress(true);
+            SocketAddress socketAddress = new InetSocketAddress(host, port);
+            try {
+                socket.connect(socketAddress, 2000);
+                LOGGER.info("{}:{} available", host, port);
+                return true;
+            } finally {
+                socket.close();
+            }
+        } catch (IOException | RuntimeException e) {
+            LOGGER.info("{}:{} not available", host, port, e);
+            return false;
+        }
+    }
+
+    private static boolean checkHttpHostPortAvailability(String host, int port) {
+        try {
+            new URL("http://" + host + ":" + port).openStream();
+            return true;
+        } catch (IOException | RuntimeException e) {
+            LOGGER.info("http://{}:{} not available", host, port, e);
+            return false;
         }
     }
 
@@ -319,39 +350,6 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                   "cloud.config.searchLocations=classpath:/regards",
                                   "cloud.registry.host=localhost",
                                   "cloud.registry.port=9032").applyTo(applicationContext);
-        }
-    }
-
-    private static boolean onCi() {
-        return checkSocketHostPortAvailability("rs-postgres", 5432)
-            //    && checkHttpHostPortAvailability("rs-rabbitmq", 15762)
-            ;
-    }
-
-    private static boolean checkSocketHostPortAvailability(String host, int port) {
-        try (Socket socket = new Socket()) {
-            socket.setReuseAddress(true);
-            SocketAddress socketAddress = new InetSocketAddress(host, port);
-            try {
-                socket.connect(socketAddress, 2000);
-                LOGGER.info("{}:{} available", host, port);
-                return true;
-            } finally {
-                socket.close();
-            }
-        } catch (IOException | RuntimeException e) {
-            LOGGER.info("{}:{} not available", host, port, e);
-            return false;
-        }
-    }
-
-    private static boolean checkHttpHostPortAvailability(String host, int port) {
-        try {
-            new URL("http://" + host + ":" + port).openStream();
-            return true;
-        } catch (IOException | RuntimeException e) {
-            LOGGER.info("http://{}:{} not available", host, port, e);
-            return false;
         }
     }
 

@@ -28,10 +28,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
-import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.*;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.test.IngestServiceIT;
 import org.junit.After;
@@ -103,8 +100,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
         String SESSION_OWNER_0 = "NASA";
 
         String SESSION_0 = OffsetDateTime.now().toString();
-
-        SearchRequestsParameters body = SearchRequestsParameters.build();
+        
         for (int i = 0; i < 1000; i = i + 1) {
             AIPUpdatesCreatorRequest someRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(
                 SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
@@ -121,7 +117,10 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
         // Add response body documentation
         requestBuilderCustomizer.documentResponseBody(documentResultingRequest());
 
-        performDefaultPost(RequestController.TYPE_MAPPING, body, requestBuilderCustomizer, "Should retrieve Request");
+        performDefaultPost(RequestController.TYPE_MAPPING,
+                           new SearchAbstractRequestParameters(),
+                           requestBuilderCustomizer,
+                           "Should retrieve Request");
     }
 
     @Test

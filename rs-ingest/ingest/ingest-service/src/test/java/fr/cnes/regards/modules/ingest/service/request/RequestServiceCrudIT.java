@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
@@ -43,10 +42,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import fr.cnes.regards.modules.ingest.dto.request.*;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -127,9 +123,6 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
     private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
-    private ISubscriber subscriber;
-
-    @Autowired
     private IIngestMetadataMapper mapper;
 
     @Autowired
@@ -201,43 +194,72 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
                                                                                            .withState(
                                                                                                InternalRequestState.ERROR),
                                                                    pr);
+        SearchAbstractRequestParameters searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestStatesIncluded(
+            Arrays.asList(InternalRequestState.ERROR));
+        Page<RequestDto> requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
         LOGGER.info("=========================> END SEARCH ALL IN ERROR <=====================");
         Assert.assertEquals(5, requests.getTotalElements());
+        Assert.assertEquals(5, requestDtos.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH INGEST IN ERROR <=====================");
+
         requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                                                                           .withRequestType(RequestTypeEnum.INGEST)
                                                                           .withState(InternalRequestState.ERROR), pr);
+
+        searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
+            RequestTypeEnum.INGEST)).withRequestStatesIncluded(Arrays.asList(InternalRequestState.ERROR));
+        requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
+
         LOGGER.info("=========================> END SEARCH INGEST IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
+        Assert.assertEquals(1, requestDtos.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH AIP UPDATE CREATOR IN ERROR <=====================");
         requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                                                                           .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR)
                                                                           .withState(InternalRequestState.ERROR), pr);
+        searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
+            RequestTypeEnum.AIP_UPDATES_CREATOR)).withRequestStatesIncluded(Arrays.asList(InternalRequestState.ERROR));
+        requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
         LOGGER.info("=========================> END SEARCH AIP UPDATE CREATOR IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
+        Assert.assertEquals(1, requestDtos.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH OAIS DELETION CREATOR IN ERROR <=====================");
         requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                                                                           .withRequestType(RequestTypeEnum.OAIS_DELETION_CREATOR)
                                                                           .withState(InternalRequestState.ERROR), pr);
+        searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
+                                                                                   RequestTypeEnum.OAIS_DELETION_CREATOR))
+                                                                               .withRequestStatesIncluded(Arrays.asList(
+                                                                                   InternalRequestState.ERROR));
+        requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
         LOGGER.info("=========================> END SEARCH OAIS DELETION CREATOR IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
+        Assert.assertEquals(1, requestDtos.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH STORAGE DELETION IN ERROR <=====================");
         requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                                                                           .withRequestType(RequestTypeEnum.OAIS_DELETION)
                                                                           .withState(InternalRequestState.ERROR), pr);
+        searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
+            RequestTypeEnum.OAIS_DELETION)).withRequestStatesIncluded(Arrays.asList(InternalRequestState.ERROR));
+        requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
         LOGGER.info("=========================> END SEARCH STORAGE DELETION IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
+        Assert.assertEquals(1, requestDtos.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH UPDATE IN ERROR <=====================");
         requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                                                                           .withRequestType(RequestTypeEnum.UPDATE)
                                                                           .withState(InternalRequestState.ERROR), pr);
+        searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
+            RequestTypeEnum.UPDATE)).withRequestStatesIncluded(Arrays.asList(InternalRequestState.ERROR));
+        requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
         LOGGER.info("=========================> END SEARCH UPDATE IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
+        Assert.assertEquals(1, requestDtos.getTotalElements());
     }
 
     public HashSet<AIPEntity> makeRequests() {

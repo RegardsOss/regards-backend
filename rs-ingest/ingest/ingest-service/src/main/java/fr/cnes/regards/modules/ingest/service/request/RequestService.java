@@ -143,7 +143,25 @@ public class RequestService implements IRequestService {
     }
 
     @Override
+    public Page<AbstractRequest> findRequests(SearchAbstractRequestParameters filters, Pageable pageable) {
+        return abstractRequestRepository.findAll(new AbstractRequestSpecificationsBuilder().withParameters(filters)
+                                                                                           .build(), pageable);
+    }
+
+    @Override
     public Page<RequestDto> findRequestDtos(SearchRequestsParameters filters, Pageable pageable) {
+        Page<AbstractRequest> requests = findRequests(filters, pageable);
+
+        // Transform AbstractRequests to DTO
+        List<RequestDto> dtoList = new ArrayList<>();
+        for (AbstractRequest request : requests) {
+            dtoList.add(requestMapper.metadataToDto(request));
+        }
+        return new PageImpl<>(dtoList, pageable, requests.getTotalElements());
+    }
+
+    @Override
+    public Page<RequestDto> findRequestDtos(SearchAbstractRequestParameters filters, Pageable pageable) {
         Page<AbstractRequest> requests = findRequests(filters, pageable);
 
         // Transform AbstractRequests to DTO

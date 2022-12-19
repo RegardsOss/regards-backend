@@ -107,7 +107,7 @@ public class PExecution {
     OffsetDateTime created;
 
     /**
-     * Date correspondint to the date of the last step in {@link #steps}
+     * Date corresponding to the date of the last step in {@link #steps}
      */
     OffsetDateTime lastUpdated;
 

@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -31,13 +30,19 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -47,10 +52,7 @@ import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -62,6 +64,8 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(RequestController.TYPE_MAPPING)
 public class RequestController implements IResourceController<RequestDto> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestController.class);
 
     public static final String TYPE_MAPPING = "/requests";
 
@@ -85,8 +89,6 @@ public class RequestController implements IResourceController<RequestDto> {
      */
     public static final String REQUEST_DELETE_PATH = "/delete";
 
-    protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private IRequestService requestService;
 
@@ -109,16 +111,21 @@ public class RequestController implements IResourceController<RequestDto> {
      * @param pageable
      * @param assembler
      * @return page of aip metadata respecting the constraints
-     * @throws ModuleException
      */
-    @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Return a page of Requests", role = DefaultRole.EXPLOIT)
+    @PostMapping
+    @Operation(summary = "Get requests", description = "Return a page of requests matching criterias")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All requests were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all requests matching criterias", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<RequestDto>>> searchRequest(
-        @RequestBody SearchRequestsParameters filters,
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+            content = @Content(schema = @Schema(implementation = SearchAbstractRequestParameters.class)))
+        @Parameter(description = "Filter criterias for requests") @RequestBody SearchAbstractRequestParameters filters,
+        @Parameter(description = "Sorting and page configuration")
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<RequestDto> assembler) throws ModuleException {
-        Page<RequestDto> requests = requestService.findRequestDtos(filters, pageable);
-        return new ResponseEntity<>(toPagedResources(requests, assembler), HttpStatus.OK);
+        PagedResourcesAssembler<RequestDto> assembler) {
+
+        return new ResponseEntity<>(toPagedResources(requestService.findRequestDtos(filters, pageable), assembler),
+                                    HttpStatus.OK);
     }
 
     @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.processing.dao;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.SearchExecutionEntityParameters;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
@@ -38,11 +39,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.time.ZoneOffset;
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class is a bridge between execution domain entities and database entities.
@@ -131,11 +132,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     @Override
     public Flux<PExecution> findAllForMonitoringSearch(String tenant,
-                                                       String processBid,
-                                                       String userEmail,
-                                                       List<ExecutionStatus> status,
-                                                       OffsetDateTime from,
-                                                       OffsetDateTime to,
+                                                       SearchExecutionEntityParameters filters,
                                                        Pageable page) {
         String orderBy = "";
         if ((page.getSort() != null) && !page.getSort().isEmpty()) {
@@ -158,19 +155,8 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
                                                                        + orderBy
                                                                        + " LIMIT :limit OFFSET :offset");
 
-        execute = execute.bind("ignoreTenant", tenant == null);
-        execute = tenant == null ? execute.bindNull(TENANT_COLUMN, String.class) : execute.bind(TENANT_COLUMN, tenant);
-        execute = execute.bind("ignoreProcessBid", processBid == null);
-        execute = processBid == null ?
-            execute.bindNull(PROCESS_BID_COLUMN, UUID.class) :
-            execute.bind(PROCESS_BID_COLUMN, UUID.fromString(processBid));
-        execute = execute.bind("ignoreUserEmail", userEmail == null);
-        execute = userEmail == null ?
-            execute.bindNull(USER_EMAIL_COLUMN, String.class) :
-            execute.bind(USER_EMAIL_COLUMN, userEmail);
-        execute = execute.bind("status", status.stream().map(Enum::toString).collect(Collectors.toList()));
-        execute = execute.bind("lastUpdatedFrom", from);
-        execute = execute.bind("lastUpdatedTo", to);
+        execute = bindParametersInWhere(execute, tenant, filters);
+
         execute = execute.bind("limit", page.getPageSize());
         execute = execute.bind("offset", page.getOffset());
 
@@ -181,12 +167,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     }
 
     @Override
-    public Mono<Integer> countAllForMonitoringSearch(String tenant,
-                                                     String processBid,
-                                                     String userEmail,
-                                                     List<ExecutionStatus> status,
-                                                     OffsetDateTime from,
-                                                     OffsetDateTime to) {
+    public Mono<Integer> countAllForMonitoringSearch(String tenant, SearchExecutionEntityParameters filters) {
         DatabaseClient.GenericExecuteSpec execute = databaseClient.sql(" SELECT COUNT(*) "
                                                                        + " FROM t_execution AS E "
                                                                        + " WHERE (:ignoreTenant OR E.tenant = :tenant) "
@@ -196,21 +177,41 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
                                                                        + "   AND  E.last_updated >= :lastUpdatedFrom "
                                                                        + "   AND  E.last_updated <= :lastUpdatedTo ");
 
-        execute = execute.bind("ignoreTenant", tenant == null);
-        execute = tenant == null ? execute.bindNull(TENANT_COLUMN, String.class) : execute.bind(TENANT_COLUMN, tenant);
-        execute = execute.bind("ignoreProcessBid", processBid == null);
-        execute = processBid == null ?
-            execute.bindNull(PROCESS_BID_COLUMN, UUID.class) :
-            execute.bind(PROCESS_BID_COLUMN, UUID.fromString(processBid));
-        execute = execute.bind("ignoreUserEmail", userEmail == null);
-        execute = userEmail == null ?
-            execute.bindNull(USER_EMAIL_COLUMN, String.class) :
-            execute.bind(USER_EMAIL_COLUMN, userEmail);
-        execute = execute.bind("status", status.stream().map(Enum::toString).collect(Collectors.toList()));
-        execute = execute.bind("lastUpdatedFrom", from);
-        execute = execute.bind("lastUpdatedTo", to);
+        execute = bindParametersInWhere(execute, tenant, filters);
 
         return execute.map((row, metadata) -> converter.read(Integer.class, row, metadata)).one();
+    }
+
+    private DatabaseClient.GenericExecuteSpec bindParametersInWhere(DatabaseClient.GenericExecuteSpec execute,
+                                                                    String tenant,
+                                                                    SearchExecutionEntityParameters filters) {
+
+        execute = execute.bind("ignoreTenant", tenant == null);
+        execute = tenant == null ? execute.bindNull(TENANT_COLUMN, String.class) : execute.bind(TENANT_COLUMN, tenant);
+
+        execute = execute.bind("ignoreProcessBid", filters.getProcessBusinessId() == null);
+        execute = filters.getProcessBusinessId() == null ?
+            execute.bindNull(PROCESS_BID_COLUMN, UUID.class) :
+            execute.bind(PROCESS_BID_COLUMN, UUID.fromString(filters.getProcessBusinessId()));
+
+        execute = execute.bind("ignoreUserEmail", filters.getUserEmail() == null);
+        execute = filters.getUserEmail() == null ?
+            execute.bindNull(USER_EMAIL_COLUMN, String.class) :
+            execute.bind(USER_EMAIL_COLUMN, filters.getUserEmail());
+
+        execute = (filters.getStatus() == null || filters.getStatus().getValues().isEmpty()) ?
+            execute.bind("status", Stream.of(ExecutionStatus.values()).map(Enum::name).toList()) :
+            execute.bind("status", filters.getStatus().getValues().stream().map(Enum::toString).toList());
+
+        execute = filters.getCreationDate().getBefore() == null ?
+            execute.bind("lastUpdatedFrom", OffsetDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)) :
+            execute.bind("lastUpdatedFrom", filters.getCreationDate().getBefore());
+
+        execute = filters.getCreationDate().getAfter() == null ?
+            execute.bind("lastUpdatedTo", OffsetDateTime.of(2100, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)) :
+            execute.bind("lastUpdatedTo", filters.getCreationDate().getAfter());
+
+        return execute;
     }
 
     public static final class ExecutionNotFoundException extends ProcessingException {

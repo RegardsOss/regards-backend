@@ -20,15 +20,11 @@
 package fr.cnes.regards.modules.processing.domain.service;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.SearchExecutionEntityParameters;
 import fr.cnes.regards.modules.processing.domain.dto.ExecutionMonitoringDTO;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.lang.Nullable;
+import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Mono;
-
-import java.time.OffsetDateTime;
-import java.util.List;
 
 /**
  * This interface defines a service contract for monitoring {@link PExecution} entities.
@@ -38,11 +34,7 @@ import java.util.List;
 public interface IMonitoringService {
 
     Mono<Page<ExecutionMonitoringDTO>> getExecutionsPageForCriteria(String tenant,
-                                                                    List<ExecutionStatus> status,
-                                                                    @Nullable String processBid,
-                                                                    @Nullable String userEmail,
-                                                                    OffsetDateTime from,
-                                                                    OffsetDateTime to,
-                                                                    PageRequest paged);
+                                                                    SearchExecutionEntityParameters filters,
+                                                                    Pageable page);
 
 }

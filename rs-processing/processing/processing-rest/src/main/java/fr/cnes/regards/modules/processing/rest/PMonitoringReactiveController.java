@@ -17,31 +17,27 @@
  */
 package fr.cnes.regards.modules.processing.rest;
 
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.processing.domain.SearchExecutionEntityParameters;
 import fr.cnes.regards.modules.processing.domain.dto.ExecutionMonitoringDTO;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
-import fr.cnes.regards.modules.processing.utils.TimeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.*;
-import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_PAGE;
-import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_SIZE;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.TENANT_PARAM;
 
 /**
  * This class defines REST endpoints to deal with monitoring in reactive application.
@@ -53,8 +49,6 @@ import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_SI
 @RequestMapping(path = MONITORING_EXECUTIONS_PATH)
 public class PMonitoringReactiveController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PMonitoringReactiveController.class);
-
     private final IMonitoringService monitoringService;
 
     @Autowired
@@ -62,41 +56,27 @@ public class PMonitoringReactiveController {
         this.monitoringService = monitoringService;
     }
 
-    @GetMapping
+    @PostMapping
+    @ResourceAccess(
+        description = "List executions filtered by tenant/user/date/status depending on the given parameters",
+        role = DefaultRole.ADMIN)
     public Mono<PagedModel<EntityModel<ExecutionMonitoringDTO>>> executions(
-        @RequestParam(name = TENANT_PARAM) String tenant,
-        @RequestParam(name = STATUS_PARAM) List<ExecutionStatus> status,
-        @RequestParam(name = USER_EMAIL_PARAM, required = false) String userEmail,
-        @RequestParam(name = PROCESS_BID_PARAM, required = false) String processBid,
-        @RequestParam(name = DATE_FROM_PARAM, defaultValue = "2000-01-01T00:00:00.000Z") String fromStr,
-        @RequestParam(name = DATE_TO_PARAM, defaultValue = "2100-01-01T00:00:00.000Z") String toStr,
-        @RequestParam(name = PAGE_PARAM, defaultValue = DEFAULT_PAGE) int page,
-        @RequestParam(name = SIZE_PARAM, defaultValue = DEFAULT_SIZE) int size) {
-        LOGGER.debug("status={}", status);
-        LOGGER.debug("userEmail={}", userEmail);
-        LOGGER.debug("from={}", fromStr);
-        LOGGER.debug("to={}", toStr);
-        LOGGER.debug("processBid={}", processBid);
+        @RequestParam(name = TENANT_PARAM, required = true) String tenant,
+        @RequestBody SearchExecutionEntityParameters filters,
+        @Parameter(description = "Sorting and page configuration")
+        @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        OffsetDateTime from = TimeUtils.parseUtc(fromStr);
-        OffsetDateTime to = TimeUtils.parseUtc(toStr);
+        PageRequest paged = PageRequest.of(pageable.getPageNumber(),
+                                           pageable.getPageSize(),
+                                           Sort.by(Sort.Direction.DESC, "created"));
 
-        PageRequest paged = PageRequest.of(page, size);
-        return monitoringService.getExecutionsPageForCriteria(tenant, status, processBid, userEmail, from, to, paged)
-                                .map(p -> {
-                                    PagedModel<EntityModel<ExecutionMonitoringDTO>> result = PagedModel.of(p.getContent()
-                                                                                                            .stream()
-                                                                                                            .map(
-                                                                                                                EntityModel::of)
-                                                                                                            .collect(
-                                                                                                                Collectors.toList()),
-                                                                                                           new PagedModel.PageMetadata(
-                                                                                                               size,
-                                                                                                               page,
-                                                                                                               p.getTotalElements(),
-                                                                                                               p.getTotalPages()));
-                                    return result;
-                                });
+        return monitoringService.getExecutionsPageForCriteria(tenant, filters, paged).map(p -> {
+            return PagedModel.of(p.getContent().stream().map(EntityModel::of).collect(Collectors.toList()),
+                                 new PagedModel.PageMetadata(pageable.getPageSize(),
+                                                             pageable.getPageNumber(),
+                                                             p.getTotalElements(),
+                                                             p.getTotalPages()));
+        });
     }
 
 }

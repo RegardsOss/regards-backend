@@ -19,14 +19,13 @@ package fr.cnes.regards.modules.processing.domain.repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.SearchExecutionEntityParameters;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import io.vavr.collection.Seq;
 import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -44,20 +43,9 @@ public interface IPExecutionRepository {
 
     Flux<PExecution> getTimedOutExecutions();
 
-    Flux<PExecution> findAllForMonitoringSearch(String tenant,
-                                                String userEmail,
-                                                String processBid,
-                                                List<ExecutionStatus> status,
-                                                OffsetDateTime from,
-                                                OffsetDateTime to,
-                                                Pageable page);
+    Flux<PExecution> findAllForMonitoringSearch(String tenant, SearchExecutionEntityParameters filters, Pageable page);
 
-    Mono<Integer> countAllForMonitoringSearch(String tenant,
-                                              String userEmail,
-                                              String processBid,
-                                              List<ExecutionStatus> status,
-                                              OffsetDateTime from,
-                                              OffsetDateTime to);
+    Mono<Integer> countAllForMonitoringSearch(String tenant, SearchExecutionEntityParameters filters);
 
     Mono<Integer> countByProcessBusinessIdAndStatusIn(UUID processBusinessId, Seq<ExecutionStatus> nonFinalStatusList);
 

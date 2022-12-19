@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
+import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import org.springframework.data.domain.Page;
@@ -68,9 +69,27 @@ public interface IRequestService {
      *
      * @param filters
      * @param pageable
+     * @return a page of entities
+     */
+    Page<AbstractRequest> findRequests(SearchAbstractRequestParameters filters, Pageable pageable);
+
+    /**
+     * Retrieve all requests matching provided criteria
+     *
+     * @param filters
+     * @param pageable
      * @return a page of DTO entities
      */
     Page<RequestDto> findRequestDtos(SearchRequestsParameters filters, Pageable pageable);
+
+    /**
+     * Retrieve all requests matching provided criteria
+     *
+     * @param filters
+     * @param pageable
+     * @return a page of DTO entities
+     */
+    Page<RequestDto> findRequestDtos(SearchAbstractRequestParameters filters, Pageable pageable);
 
     /**
      * Delete all requests linked to provided aips
