@@ -32,6 +32,9 @@ import fr.cnes.regards.modules.dam.rest.datasources.dto.DataSourceDTO;
 import fr.cnes.regards.modules.dam.rest.datasources.exception.AssociatedDatasetExistsException;
 import fr.cnes.regards.modules.dam.service.datasources.IDataSourceService;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -77,8 +80,13 @@ public class DataSourceController implements IResourceController<DataSourceDTO> 
      *
      * @return a list of {@link PluginConfiguration}
      */
-    @ResourceAccess(description = "List all plugin configurations of type IDataSourcePlugin")
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
+    @Operation(summary = "Get IDataSourcePlugin plugin configurations",
+        description = "Return a list of plugin configurations of type IDataSourcePlugin")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+        description = "All plugin configurations of type IDataSourcePlugin were retrieved.") })
+    @ResourceAccess(
+        description = "Endpoint to retrieve all IDataSourcePlugin plugin configurations")
     public ResponseEntity<List<EntityModel<DataSourceDTO>>> getAllDataSources() {
         return ResponseEntity.ok(toResources(dataSourceService.getAllDataSources()));
     }
