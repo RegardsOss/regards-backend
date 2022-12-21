@@ -111,5 +111,9 @@
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-spring-config</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-test</artifactId>
+        </dependency>
     </dependencies>
 </project>
