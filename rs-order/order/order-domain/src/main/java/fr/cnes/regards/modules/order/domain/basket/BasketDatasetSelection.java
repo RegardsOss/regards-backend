@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import org.hibernate.annotations.SortNatural;
 import org.hibernate.annotations.Type;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -65,6 +66,11 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb", name = "file_types_count")
     private StringToLongMap fileTypesCount;
+
+    @Nullable
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "file_selection_description")
+    private FileSelectionDescription fileSelectionDescription;
 
     @ElementCollection
     @CollectionTable(name = "t_basket_ds_item", joinColumns = @JoinColumn(name = "basket_dataset_id"),
@@ -175,6 +181,15 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
 
     public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
         this.processDatasetDescription = processDatasetDescription;
+    }
+
+    @Nullable
+    public FileSelectionDescription getFileSelectionDescription() {
+        return fileSelectionDescription;
+    }
+
+    public void setFileSelectionDescription(@Nullable FileSelectionDescription fileSelectionDescription) {
+        this.fileSelectionDescription = fileSelectionDescription;
     }
 
     @Override

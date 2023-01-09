@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
 import fr.cnes.regards.modules.order.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
@@ -151,6 +152,7 @@ public class OrderCreationService implements IOrderCreationService {
     public void completeOrderCreation(Basket basket, Long orderId, String role, int subOrderDuration, String tenant) {
         boolean hasProcessing = false;
         Order order = orderRepository.findCompleteById(orderId);
+        OrderCounts orderCounts = new OrderCounts();
         try {
             String owner = order.getOwner();
 
@@ -158,8 +160,6 @@ public class OrderCreationService implements IOrderCreationService {
             // To search objects with SearchClient
             FeignSecurityManager.asUser(owner, role);
             int priority = orderJobService.computePriority(owner, role);
-
-            OrderCounts orderCounts = new OrderCounts();
 
             // Dataset selections
             for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
@@ -197,13 +197,33 @@ public class OrderCreationService implements IOrderCreationService {
         } catch (ModuleException e) {
             LOGGER.error("Error while completing order creation", e);
             order.setStatus(OrderStatus.FAILED);
+            order.setMessage(e.getMessage());
             order.setExpirationDate(orderHelperService.computeOrderExpirationDate(0, subOrderDuration));
         }
+        manageOrderState(order, orderCounts);
+        order = orderRepository.save(order);
+        LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
+
+        if (order.getStatus() != OrderStatus.FAILED && order.getStatus() != OrderStatus.DONE_WITH_WARNING) {
+            if (order.getFrontendUrl() != null) {
+                sendOrderCreationEmail(order);
+            }
+            orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
+        }
+        applicationEventPublisher.publishEvent(new OrderCreationCompletedEvent(order));
+    }
+
+    private void manageOrderState(Order order, OrderCounts orderCounts) {
         // Be careful to not unset FAILED status
         if (order.getStatus() != OrderStatus.FAILED) {
-            // if order doesn't contain at least one DatasetTask, set a FAILED status
+            // if order doesn't contain at least one DatasetTask, set a DONE_WITH_WARNING status
             if (order.getDatasetTasks().isEmpty()) {
-                order.setStatus(OrderStatus.FAILED);
+                order.setStatus(OrderStatus.DONE_WITH_WARNING);
+                if (orderCounts.getFeaturesCount() == 0) {
+                    order.setMessage("It seems that the queried features do not exist anymore.");
+                } else {
+                    order.setMessage("No file match filters.");
+                }
             } else if (order.getPercentCompleted() == 100) { // Order contains only external files
                 order.setStatus(OrderStatus.DONE);
             } else {
@@ -211,16 +231,6 @@ public class OrderCreationService implements IOrderCreationService {
                 order.setStatus(OrderStatus.RUNNING);
             }
         }
-        order = orderRepository.save(order);
-        LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
-
-        if (order.getStatus() != OrderStatus.FAILED) {
-            if (order.getFrontendUrl() != null) {
-                sendOrderCreationEmail(order);
-            }
-            orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
-        }
-        applicationEventPublisher.publishEvent(new OrderCreationCompletedEvent(order));
     }
 
     private OrderCounts manageDatasetSelection(Order order,
@@ -244,7 +254,7 @@ public class OrderCreationService implements IOrderCreationService {
             features = basketSelectionPageSearch.searchDataObjects(dsSel, page);
             // For each DataObject
             for (EntityFeature feature : features) {
-                dispatchFeatureFilesInBuckets(order, feature, storageBucketFiles, externalBucketFiles);
+                dispatchFeatureFilesInBuckets(order, feature, storageBucketFiles, externalBucketFiles, dsSel);
 
                 // If sum of files size > storageBucketSize, add a new bucket
                 if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.storageBucketTooBig(
@@ -267,6 +277,7 @@ public class OrderCreationService implements IOrderCreationService {
                     externalBucketFiles.clear();
                 }
             }
+            orderCounts.addFeaturesCount(features.size());
             page++;
         } while (!features.isEmpty());
         // Manage remaining files on each type of buckets
@@ -298,18 +309,29 @@ public class OrderCreationService implements IOrderCreationService {
     private void dispatchFeatureFilesInBuckets(Order order,
                                                EntityFeature feature,
                                                Set<OrderDataFile> storageBucketFiles,
-                                               Set<OrderDataFile> externalBucketFiles) {
-        for (DataFile dataFile : feature.getFiles().values()) {
-            // ONLY orderable data files can be ordered !!! (ie RAWDATA and QUICKLOOKS
-            if (DataTypeSelection.ALL.getFileTypes().contains(dataFile.getDataType())) {
-                // Referenced dataFiles are externaly stored.
-                if (!dataFile.isReference()) {
-                    addInternalFileToStorageBucket(order, storageBucketFiles, dataFile, feature);
-                } else {
-                    addExternalFileToExternalBucket(order, externalBucketFiles, dataFile, feature);
-                }
+                                               Set<OrderDataFile> externalBucketFiles,
+                                               BasketDatasetSelection dsSel) {
+        FileSelectionDescription fileSelectDescr = dsSel.getFileSelectionDescription();
+        List<DataFile> dataFileFiltered = feature.getFiles()
+                                                 .values()
+                                                 .stream()
+                                                 .filter(this::isDataFileOrderable)
+                                                 .filter(dataFile -> FileSelectionDescription.validate(dataFile,
+                                                                                                       fileSelectDescr))
+                                                 .toList();
+        for (DataFile dataFile : dataFileFiltered) {
+            // Referenced dataFiles are externally stored.
+            if (!dataFile.isReference()) {
+                addInternalFileToStorageBucket(order, storageBucketFiles, dataFile, feature);
+            } else {
+                addExternalFileToExternalBucket(order, externalBucketFiles, dataFile, feature);
             }
         }
+    }
+
+    private boolean isDataFileOrderable(DataFile dataFile) {
+        // ONLY orderable data files can be ordered !!! (ie RAWDATA and QUICKLOOKS)
+        return DataTypeSelection.ALL.getFileTypes().contains(dataFile.getDataType());
     }
 
     private void addExternalFileToExternalBucket(Order order,

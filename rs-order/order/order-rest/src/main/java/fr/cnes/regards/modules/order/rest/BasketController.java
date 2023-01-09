@@ -26,13 +26,17 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.dto.BasketDto;
+import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.IBasketService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -55,6 +59,8 @@ import java.time.OffsetDateTime;
 @RequestMapping(BasketController.ORDER_BASKET)
 public class BasketController implements IResourceController<BasketDto> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasketController.class);
+
     public static final String SELECTION = "/selection";
 
     public static final String DATASET_DATASET_SELECTION_ID = "/dataset/{datasetSelectionId}";
@@ -65,6 +71,8 @@ public class BasketController implements IResourceController<BasketDto> {
     public static final String DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE = "/dataset/{datasetSelectionId}/{itemsSelectionDate}";
 
     public static final String ORDER_BASKET = "/order/basket";
+
+    public static final String DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS = "/dataset/{datasetSelectionId}/updateFileFilters";
 
     @Autowired
     private IResourceService resourceService;
@@ -109,6 +117,10 @@ public class BasketController implements IResourceController<BasketDto> {
         @RequestBody(required = false) ProcessDatasetDescription description)
         throws EmptyBasketException, TooManyItemsSelectedInBasketException {
         Basket basket = basketService.find(authResolver.getUser());
+        if (basket.getDatasetSelections().stream().anyMatch(ds -> ds.getFileSelectionDescription() != null)) {
+            LOGGER.error("Cannot set processing if any file filter exists.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
         Basket modified = basketService.attachProcessing(basket, dsSelectionId, description);
         BasketDto dto = BasketDto.makeBasketDto(modified);
         return ResponseEntity.ok(toResource(dto));
@@ -186,6 +198,21 @@ public class BasketController implements IResourceController<BasketDto> {
     public ResponseEntity<Void> empty() {
         basketService.deleteIfExists(authResolver.getUser());
         return ResponseEntity.noContent().build();
+    }
+
+    @ResourceAccess(description = "Update file filters applied on specific dataset", role = DefaultRole.REGISTERED_USER)
+    @PutMapping(DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS)
+    public ResponseEntity<EntityModel<BasketDto>> updateFileFilters(
+        @PathVariable("datasetSelectionId") Long dsSelectionId,
+        @RequestBody(required = false) FileSelectionDescriptionDTO fileSelectionDescriptionDTO)
+        throws EmptyBasketException {
+        Basket basket = basketService.find(authResolver.getUser());
+        if (basket.getDatasetSelections().stream().anyMatch(BasketDatasetSelection::hasProcessing)) {
+            LOGGER.error("Cannot set file filter if any processing is attached.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+        basket = basketService.attachFileFilters(basket, dsSelectionId, fileSelectionDescriptionDTO);
+        return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(basket)));
     }
 
     @Override

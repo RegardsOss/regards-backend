@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.domain;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import org.hibernate.annotations.SortNatural;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
@@ -101,6 +102,10 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     @Column(name = "waiting_for_user", nullable = false)
     private boolean waitingForUser = false;
+
+    @Column(name = "message", nullable = true)
+    @Length(max = 255)
+    private String message;
 
     /**
      * URL provided by frontend when order is created and that permits to directly access order page
@@ -226,6 +231,14 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     public void setFrontendUrl(String frontendUrl) {
         this.frontendUrl = frontendUrl;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public String getCorrelationId() {

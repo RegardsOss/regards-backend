@@ -40,12 +40,30 @@ public final class OrderCounts {
     // Count number of subOrder created to compute expiration date
     private int subOrderCount;
 
+    /**
+     * Count number of features concerned by the order
+     */
+    private int featuresCount;
+
     private Set<UUID> jobInfoIdSet = new HashSet<>();
 
-    public OrderCounts(int internalFilesCount, int externalFilesCount, int subOrderCount) {
+    public OrderCounts(int internalFilesCount, int externalFilesCount, int subOrderCount, int featuresCount) {
         this.internalFilesCount = internalFilesCount;
         this.externalFilesCount = externalFilesCount;
         this.subOrderCount = subOrderCount;
+        this.featuresCount = featuresCount;
+    }
+
+    public OrderCounts(int internalFilesCount,
+                       int externalFilesCount,
+                       int subOrderCount,
+                       int featuresCount,
+                       Set<UUID> jobInfoIdSet) {
+        this.internalFilesCount = internalFilesCount;
+        this.externalFilesCount = externalFilesCount;
+        this.subOrderCount = subOrderCount;
+        this.featuresCount = featuresCount;
+        this.jobInfoIdSet = jobInfoIdSet;
     }
 
     public OrderCounts(int internalFilesCount, int externalFilesCount, int subOrderCount, Set<UUID> jobInfoIdSet) {
@@ -53,10 +71,11 @@ public final class OrderCounts {
         this.externalFilesCount = externalFilesCount;
         this.subOrderCount = subOrderCount;
         this.jobInfoIdSet = jobInfoIdSet;
+        this.featuresCount = 0;
     }
 
     public OrderCounts() {
-        this(0, 0, 0);
+        this(0, 0, 0, 0);
     }
 
     public OrderCounts addToInternalFilesCount(int add) {
@@ -76,6 +95,11 @@ public final class OrderCounts {
 
     public OrderCounts addJobInfoId(UUID jobInfoId) {
         jobInfoIdSet.add(jobInfoId);
+        return this;
+    }
+
+    public OrderCounts addFeaturesCount(int add) {
+        this.featuresCount += add;
         return this;
     }
 
@@ -99,6 +123,10 @@ public final class OrderCounts {
         return jobInfoIdSet;
     }
 
+    public int getFeaturesCount() {
+        return featuresCount;
+    }
+
     public static OrderCounts initial() {
         return new OrderCounts();
     }
@@ -109,6 +137,7 @@ public final class OrderCounts {
         return new OrderCounts(one.internalFilesCount + two.internalFilesCount,
                                one.externalFilesCount + two.externalFilesCount,
                                one.subOrderCount + two.subOrderCount,
+                               one.featuresCount + two.featuresCount,
                                mergedSet);
     }
 

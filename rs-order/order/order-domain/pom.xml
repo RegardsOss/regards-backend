@@ -57,6 +57,10 @@
             <artifactId>regards-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.order</groupId>
+            <artifactId>order-dto</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

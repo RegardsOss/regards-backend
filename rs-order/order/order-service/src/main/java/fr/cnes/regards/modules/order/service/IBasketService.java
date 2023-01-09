@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
@@ -140,4 +141,15 @@ public interface IBasketService {
      */
     Basket transferOwnerShip(String fromOwner, String toOwner);
 
+    /**
+     * Update file filter of the dataset selection
+     *
+     * @param basket                      the user's basket
+     * @param dsSelectionId               the id of the dataset selection to modify
+     * @param fileSelectionDescriptionDTO the new file filter description
+     * @return updated {@link Basket}
+     */
+    Basket attachFileFilters(Basket basket,
+                             Long dsSelectionId,
+                             FileSelectionDescriptionDTO fileSelectionDescriptionDTO);
 }

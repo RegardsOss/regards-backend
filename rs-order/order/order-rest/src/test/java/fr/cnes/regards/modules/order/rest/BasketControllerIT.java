@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.rest.mock.ProcessingClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -42,6 +43,7 @@ import fr.cnes.regards.modules.project.domain.Project;
 import io.vavr.collection.HashMap;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -410,6 +412,60 @@ public class BasketControllerIT extends AbstractRegardsIT {
                              basket.getDatasetSelections().first().getId(),
                              OffsetDateTimeAdapter.format(date),
                              Charset.defaultCharset().toString());
+    }
+
+    @Test
+    public void test_updateFileFilters() {
+        // GIVEN
+        Basket basket = createBasket();
+        Assertions.assertNull(basket.getDatasetSelections().first().getFileSelectionDescription());
+        FileSelectionDescriptionDTO body = new FileSelectionDescriptionDTO(null, "test");
+        // WHEN add file selection description
+        performDefaultPut(BasketController.ORDER_BASKET
+                          + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS,
+                          body,
+                          customizer().expectStatusOk(),
+                          "error",
+                          basket.getDatasetSelections().first().getId());
+
+        // THEN file selection correctly added
+        Basket modifiedBasket = basketRepos.findOneById(basket.getId());
+        Assertions.assertNotNull(modifiedBasket.getDatasetSelections().first().getFileSelectionDescription());
+        Assertions.assertEquals("test",
+                                modifiedBasket.getDatasetSelections()
+                                              .first()
+                                              .getFileSelectionDescription()
+                                              .getFileNamePattern());
+
+        // WHEN remove file selection description
+        performDefaultPut(BasketController.ORDER_BASKET
+                          + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS,
+                          null,
+                          customizer().expectStatusOk(),
+                          "error",
+                          basket.getDatasetSelections().first().getId());
+
+        // THEN file selection correctly removed
+        Assertions.assertNull(basket.getDatasetSelections().first().getFileSelectionDescription());
+    }
+
+    @Test
+    public void test_failUpdateFileFiltersWithProcess() {
+        // GIVEN
+        Basket basket = createBasket();
+        FileSelectionDescriptionDTO body = new FileSelectionDescriptionDTO(null, "test");
+        // set processing info
+        basket.getDatasetSelections().first().setProcessDatasetDescription(new ProcessDatasetDescription(null, null));
+        basketRepos.save(basket);
+
+        // WHEN try to update file filters
+        // THEN forbidden status because a processing is already set.
+        performDefaultPut(BasketController.ORDER_BASKET
+                          + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS,
+                          body,
+                          customizer().expectStatusForbidden(),
+                          "error",
+                          basket.getDatasetSelections().first().getId());
     }
 
     @Test

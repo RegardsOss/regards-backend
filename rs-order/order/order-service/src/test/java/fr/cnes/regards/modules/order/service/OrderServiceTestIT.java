@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -34,9 +35,12 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.dao.*;
 import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRestartOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.service.settings.OrderSettingsService;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
@@ -61,14 +65,18 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static fr.cnes.regards.modules.order.test.SearchClientMock.DS1_IP_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -133,6 +141,9 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
     private IProjectUsersClient projectUsersClient;
 
     @Autowired
+    private BasketService basketService;
+
+    @Autowired
     private OrderSettingsService orderSettingsService;
 
     @Autowired
@@ -155,6 +166,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
 
     @Before
     public void init() {
+        orderDataFileRepository.deleteAll();
         tenantResolver.forceTenant(getDefaultTenant());
         storageClientMock.setWaitMode(false);
         clean();
@@ -229,7 +241,6 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void simpleOrderPause() throws InterruptedException, ModuleException {
-
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
         basketRepository.save(basket);
@@ -600,6 +611,135 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
         orderService.resume(orderId);
         waitForStatus(orderId, OrderStatus.DONE);
         checkCompletion(orderId, 100);
+    }
+
+    @Test
+    public void test_dataFilesFiltersRAWDATA() throws InterruptedException, ModuleException {
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
+        basketRepository.save(basket);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(basket.getOwner());
+
+        // configure basket selection
+        Long id = basket.getDatasetSelections().first().getId();
+        basketService.addSelection(basket.getId(), createBasketSelectionRequest(DS1_IP_ID.toString(), ""));
+        basket = basketService.load(basket.getId());
+        basketService.attachFileFilters(basket,
+                                        id,
+                                        new FileSelectionDescriptionDTO(Set.of(DataTypeLight.RAWDATA), null));
+
+        // Run order.
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.DONE);
+
+        // check dataFiles
+        List<OrderDataFile> fileAvailables = dataFileService.findAllAvailables(order.getId());
+        Assertions.assertTrue(fileAvailables.stream()
+                                            .map(OrderDataFile::getDataType)
+                                            .allMatch(DataType.RAWDATA::equals));
+    }
+
+    @Test
+    public void test_dataFilesNoFilter() throws InterruptedException, ModuleException {
+        // GIVEN
+        tenantResolver.forceTenant(getDefaultTenant());
+
+        // create basket with empty file filters
+        Basket basketEmptyFilter = OrderTestUtils.getBasketSingleSelection("basket_empty_filter");
+        basketRepository.save(basketEmptyFilter);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(basketEmptyFilter.getOwner());
+        basketService.addSelection(basketEmptyFilter.getId(), createBasketSelectionRequest(DS1_IP_ID.toString(), ""));
+        basketEmptyFilter = basketService.load(basketEmptyFilter.getId());
+        Long datasetId = basketEmptyFilter.getDatasetSelections().first().getId();
+        basketService.attachFileFilters(basketEmptyFilter, datasetId, new FileSelectionDescriptionDTO(null, null));
+
+        // create basket without indicate file filters
+        Basket basketDefault = OrderTestUtils.getBasketSingleSelection("basket_without_filter");
+        basketRepository.save(basketDefault);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(basketDefault.getOwner());
+        basketService.addSelection(basketDefault.getId(), createBasketSelectionRequest(DS1_IP_ID.toString(), ""));
+        basketDefault = basketService.load(basketDefault.getId());
+
+        // WHEN
+        // Run order with file selection description empty.
+        Order orderWithEmptyFilters = orderService.createOrder(basketEmptyFilter,
+                                                               basketEmptyFilter.getOwner(),
+                                                               URL,
+                                                               240);
+        Order orderDefault = orderService.createOrder(basketDefault, basketDefault.getOwner(), URL, 240);
+        waitForStatus(orderWithEmptyFilters.getId(), OrderStatus.DONE);
+        waitForStatus(orderDefault.getId(), OrderStatus.DONE);
+
+        // THEN
+        // results are the same
+        List<OrderDataFile> fileAvailablesEmptyFilters = dataFileService.findAllAvailables(orderWithEmptyFilters.getId());
+        List<OrderDataFile> fileAvailablesDefault = dataFileService.findAllAvailables(orderDefault.getId());
+        Assertions.assertEquals(fileAvailablesDefault.size(), fileAvailablesEmptyFilters.size());
+        Assertions.assertTrue(fileAvailablesDefault.containsAll(fileAvailablesEmptyFilters));
+        List<String> strings = fileAvailablesEmptyFilters.stream().map(OrderDataFile::getFilename).toList();
+        Assertions.assertEquals(12, fileAvailablesDefault.size());
+    }
+
+    @Test
+    public void test_dataFilesNameFilter() throws InterruptedException, ModuleException {
+        // GIVEN
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
+        basketRepository.save(basket);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(basket.getOwner());
+        basketService.addSelection(basket.getId(), createBasketSelectionRequest(DS1_IP_ID.toString(), ""));
+        basket = basketService.load(basket.getId());
+        Long datasetId = basket.getDatasetSelections().first().getId();
+        // get only file that ends with .bin
+        basketService.attachFileFilters(basket, datasetId, new FileSelectionDescriptionDTO(null, ".*\\.bin$"));
+
+        // WHEN
+        // Run order.
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.DONE);
+
+        // THEN
+        // check dataFiles
+        List<OrderDataFile> fileAvailables = dataFileService.findAllAvailables(order.getId());
+        Assertions.assertTrue(fileAvailables.stream()
+                                            .map(OrderDataFile::getFilename)
+                                            .allMatch(filename -> filename.endsWith(".bin")));
+    }
+
+    @Test
+    public void test_dataFilesFiltersWithNoResults() throws InterruptedException, ModuleException {
+        // GIVEN
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
+        basketRepository.save(basket);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(basket.getOwner());
+        basketService.addSelection(basket.getId(), createBasketSelectionRequest(DS1_IP_ID.toString(), ""));
+        basket = basketService.load(basket.getId());
+        Long datasetId = basket.getDatasetSelections().first().getId();
+        // get only file that ends with .bin
+        basketService.attachFileFilters(basket, datasetId, new FileSelectionDescriptionDTO(null, "RegexWithNoResult"));
+
+        // WHEN
+        // Run order.
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.DONE_WITH_WARNING);
+
+        // THEN
+        // check dataFiles
+        List<OrderDataFile> fileAvailables = dataFileService.findAllAvailables(order.getId());
+        Assertions.assertEquals(0, fileAvailables.size());
+        order = orderService.getOrder(order.getId());
+        Assertions.assertNotNull(order.getMessage());
+    }
+
+    private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {
+        BasketSelectionRequest request = new BasketSelectionRequest();
+        request.setEngineType("engine");
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+        parameters.add("q", query);
+        request.setSearchParameters(parameters);
+        request.setDatasetUrn(datasetUrn);
+        return request;
     }
 
     private void waitForStatus(Long orderId, OrderStatus status) throws InterruptedException {

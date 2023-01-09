@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.basket.*;
+import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
@@ -342,6 +343,28 @@ public class BasketService implements IBasketService {
     public Basket transferOwnerShip(String fromOwner, String toOwner) {
         Basket basket = repos.findByOwner(fromOwner);
         basket.setOwner(toOwner);
+        return repos.save(basket);
+    }
+
+    @Override
+    public Basket attachFileFilters(Basket basket,
+                                    Long datasetId,
+                                    @Nullable FileSelectionDescriptionDTO fileSelectionDescriptionDTO) {
+        // find dataset selection with selected id
+        BasketDatasetSelection basketSelection = basket.getDatasetSelections()
+                                                       .stream()
+                                                       .filter(ds -> ds.getId().equals(datasetId))
+                                                       .findFirst()
+                                                       .orElseThrow(() -> new EntityNotFoundException(
+                                                           "Basket selection with id " + datasetId + " doesn't exist"));
+
+        if (fileSelectionDescriptionDTO != null) {
+            FileSelectionDescription fileSelectionDescription = new FileSelectionDescription(fileSelectionDescriptionDTO.getFileTypes(),
+                                                                                             fileSelectionDescriptionDTO.getFileNamePattern());
+            basketSelection.setFileSelectionDescription(fileSelectionDescription);
+        } else {
+            basketSelection.setFileSelectionDescription(null);
+        }
         return repos.save(basket);
     }
 

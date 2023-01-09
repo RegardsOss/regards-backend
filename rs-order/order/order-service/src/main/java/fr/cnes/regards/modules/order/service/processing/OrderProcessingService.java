@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.exception.CatalogSearchException;
@@ -338,10 +339,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         BatchSuborderCorrelationIdentifier batchSuborderIdentifier = new BatchSuborderCorrelationIdentifier(order.getId(),
                                                                                                             dsSel.getId(),
                                                                                                             suborderCountId);
-        Long[] outputFiles = createOutputFilesAndReturnIds(batchSuborderIdentifier,
-                                                           UniformResourceName.fromString(dsSel.getDatasetIpid()),
-                                                           features,
-                                                           orderProcessInfo);
+        Long[] outputFiles = createOutputFilesAndReturnIds(batchSuborderIdentifier, dsSel, features, orderProcessInfo);
         JobInfo result = new JobInfo(false,
                                      orderJobService.computePriority(user, userRole),
                                      HashSet.of(new TenantJobParameter(tenant),
@@ -360,9 +358,10 @@ public class OrderProcessingService implements IOrderProcessingService {
     }
 
     protected Long[] createOutputFilesAndReturnIds(BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
-                                                   UniformResourceName dsSelIpId,
+                                                   BasketDatasetSelection dsSel,
                                                    List<EntityFeature> features,
                                                    OrderProcessInfo processInfo) {
+        UniformResourceName dsSelIpId = UniformResourceName.fromString(dsSel.getDatasetIpid());
         Scope scope = processInfo.getScope();
         Cardinality cardinality = processInfo.getCardinality();
         List<DataType> requiredDataTypes = processInfo.getRequiredDatatypes();
@@ -371,7 +370,10 @@ public class OrderProcessingService implements IOrderProcessingService {
 
         if (scope == Scope.SUBORDER && cardinality == Cardinality.ONE_PER_EXECUTION) {
             List<DataFile> applicableDataFilesIn = features.flatMap(f -> List.ofAll(f.getFiles().values()))
-                                                           .filter(f -> requiredDataTypes.contains(f.getDataType()));
+                                                           .filter(f -> requiredDataTypes.contains(f.getDataType()))
+                                                           .filter(dataFile -> FileSelectionDescription.validate(
+                                                               dataFile,
+                                                               dsSel.getFileSelectionDescription()));
 
             long expectedSize = sizeForecast.expectedResultSizeInBytes(applicableDataFilesIn.map(DataFile::getFilesize)
                                                                                             .reduceOption(Long::sum)
