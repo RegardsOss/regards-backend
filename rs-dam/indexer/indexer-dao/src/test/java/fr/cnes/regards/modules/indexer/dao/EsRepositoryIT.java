@@ -409,6 +409,7 @@ public class EsRepositoryIT {
                                     .create();
 
             repository = new EsRepository(gson,
+                                          Collections.emptyList(),
                                           elasticHost,
                                           elasticPort,
                                           elasticProtocol,

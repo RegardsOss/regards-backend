@@ -81,6 +81,7 @@ public class EsQueryTest {
             gson = new GsonBuilder().registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
                                     .create();
             repository = new EsRepository(gson,
+                                          Collections.emptyList(),
                                           "172.26.47.52",
                                           9200,
                                           "http",

@@ -72,6 +72,7 @@ public class EsAggsTest {
         try {
             gson = new GsonBuilder().registerTypeAdapter(Multimap.class, new MultimapAdapter()).create();
             repository = new EsRepository(gson,
+                                          Collections.emptyList(),
                                           propMap.get("regards.elasticsearch.host"),
                                           Integer.parseInt(propMap.get("regards.elasticsearch.http.port")),
                                           propMap.get("regards.elasticsearch.http.protocol"),

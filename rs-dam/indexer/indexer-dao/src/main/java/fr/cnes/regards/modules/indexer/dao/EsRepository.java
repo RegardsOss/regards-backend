@@ -332,6 +332,7 @@ public class EsRepository implements IEsRepository {
     private DefaultScrollClearResponseActionListener scrollClearListener = new DefaultScrollClearResponseActionListener();
 
     public EsRepository(@Autowired Gson gson,
+                        @Value("${regards.elasticsearch.hosts:#{T(java.util.Collections).emptyList()}}") List<String> esHosts,
                         @Value("${regards.elasticsearch.host:}") String esHost,
                         @Value("${regards.elasticsearch.http.port}") int esPort,
                         @Value("${regards.elasticsearch.http.protocol:http}") String esProtocol,
@@ -345,6 +346,11 @@ public class EsRepository implements IEsRepository {
         this.gson = gson;
         this.aggBuilderFacetTypeVisitor = aggBuilderFacetTypeVisitor;
 
+        // Connection properties
+        List<String> httpHosts = esHosts;
+        if (httpHosts.isEmpty()) {
+            httpHosts = List.of(esHost);
+        }
         String connectionInfoMessage = String.format(
             "Elastic search connection properties : protocol \"%s\", host \"%s\", port \"%d\"",
             esProtocol,
@@ -353,7 +359,9 @@ public class EsRepository implements IEsRepository {
         LOGGER.info(connectionInfoMessage);
 
         // Timeouts are set to 20 minutes particularly for bulk save containing geo_shape
-        RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost(esHost, esPort, esProtocol))
+        RestClientBuilder restClientBuilder = RestClient.builder(httpHosts.stream()
+                                                                               .map(host -> new HttpHost(host, esPort, esProtocol))
+                                                                               .toArray(HttpHost[]::new))
                                                         .setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setSocketTimeout(
                                                             1_200_000));
 
