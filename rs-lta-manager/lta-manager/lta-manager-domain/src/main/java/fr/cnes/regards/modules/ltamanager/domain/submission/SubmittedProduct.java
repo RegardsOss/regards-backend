@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ltamanager.domain.submission;
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import org.hibernate.annotations.Type;
+import org.springframework.util.Assert;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -37,7 +38,7 @@ import java.util.Objects;
  * @author Iliana Ghazali
  **/
 @Embeddable
-public class SubmissionProduct {
+public class SubmittedProduct {
 
     @Column(nullable = false, updatable = false)
     @NotBlank(message = "datatype is required")
@@ -57,11 +58,16 @@ public class SubmissionProduct {
     @Valid
     private SubmissionRequestDto product;
 
-    public SubmissionProduct() {
+    public SubmittedProduct() {
         // no-args constructor for jpa
     }
 
-    public SubmissionProduct(String datatype, String model, Path storePath, SubmissionRequestDto product) {
+    public SubmittedProduct(String datatype, String model, Path storePath, SubmissionRequestDto product) {
+        Assert.notNull(datatype, "datatype is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(model, "model is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(storePath, "storePath is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(product, "product is mandatory ! Make sure other constraints are satisfied.");
+
         this.datatype = datatype;
         this.model = model;
         this.storePath = storePath;
@@ -92,7 +98,7 @@ public class SubmissionProduct {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        SubmissionProduct that = (SubmissionProduct) o;
+        SubmittedProduct that = (SubmittedProduct) o;
         return datatype.equals(that.datatype)
                && model.equals(that.model)
                && storePath.equals(that.storePath)
@@ -106,7 +112,7 @@ public class SubmissionProduct {
 
     @Override
     public String toString() {
-        return "SubmissionProduct{"
+        return "SubmittedProduct{"
                + "datatype='"
                + datatype
                + '\''

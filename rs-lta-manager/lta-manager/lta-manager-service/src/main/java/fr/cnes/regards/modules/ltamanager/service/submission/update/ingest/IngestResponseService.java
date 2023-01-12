@@ -79,24 +79,26 @@ public class IngestResponseService {
     public void updateSubmissionRequestState(Collection<RequestInfo> responseEvents,
                                              IngestStatusResponseMapping mappedRequestState) {
         // note: page handling is not necessary because event batch is limited to 1000 entities by default
-        List<String> requestsFound = requestRepository.findIdsByRequestIdIn(responseEvents.stream()
-                                                                                          .map(RequestInfo::getRequestId)
-                                                                                          .toList());
+        List<String> requestsFound = requestRepository.findIdsByCorrelationIdIn(responseEvents.stream()
+                                                                                              .map(RequestInfo::getRequestId)
+                                                                                              .toList());
         LOGGER.trace("{} submission requests found in database.", requestsFound.size());
 
         List<RequestInfo> requestsUpdated = new ArrayList<>();
         if (!requestsFound.isEmpty()) {
             for (RequestInfo event : responseEvents) {
-                String requestId = event.getRequestId();
-                if (requestsFound.contains(requestId)) {
+                String correlationId = event.getRequestId();
+                if (requestsFound.contains(correlationId)) {
                     SubmissionRequestState mappedState = mappedRequestState.getMappedState();
 
-                    requestRepository.updateRequestState(requestId,
+                    requestRepository.updateRequestState(correlationId,
                                                          mappedState,
                                                          getRequestMessage(event.getErrors(), mappedRequestState),
                                                          OffsetDateTime.now());
                     requestsUpdated.add(event);
-                    LOGGER.trace("Submission request with id \"{}\" updated with state \"{}\"", requestId, mappedState);
+                    LOGGER.trace("Submission request with correlationId \"{}\" updated with state \"{}\"",
+                                 correlationId,
+                                 mappedState);
                 }
             }
         }
@@ -109,9 +111,9 @@ public class IngestResponseService {
             // do nothing if not success
             return;
         }
-        List<SubmissionRequest> requests = requestRepository.findAllByRequestIdIn(events.stream()
-                                                                                        .map(RequestInfo::getRequestId)
-                                                                                        .toList());
+        List<SubmissionRequest> requests = requestRepository.findAllByCorrelationIdIn(events.stream()
+                                                                                            .map(RequestInfo::getRequestId)
+                                                                                            .toList());
         String currentTenant = runtimeTenantResolver.getTenant();
         List<NotificationRequestEvent> notifsToSend = requests.stream()
                                                               // do nothing if no origin urn set

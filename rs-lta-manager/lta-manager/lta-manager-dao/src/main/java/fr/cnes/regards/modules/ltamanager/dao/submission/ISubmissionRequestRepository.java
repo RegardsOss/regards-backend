@@ -48,24 +48,28 @@ public interface ISubmissionRequestRepository extends JpaRepository<SubmissionRe
     // ------------
     Page<SubmissionRequest> findAll(Specification<SubmissionRequest> specifications, Pageable page);
 
-    @Query("select req.requestId from SubmissionRequest req where req.requestId in :ids and req.submissionStatus"
-           + ".status in :states")
+    @Query(
+        "select req.correlationId from SubmissionRequest req where req.correlationId in :corrIds and req.submissionStatus"
+        + ".status in :states")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<String> findIdsByRequestIdInAndStatesIn(@Param("ids") List<String> requestIds,
-                                                 @Param("states") List<SubmissionRequestState> allowedStatesToUpdate);
+    List<String> findIdsByCorrelationIdInAndStatesIn(@Param("corrIds") List<String> correlationIds,
+                                                     @Param("states")
+                                                     List<SubmissionRequestState> allowedStatesToUpdate);
 
-    @Query("select req.requestId from SubmissionRequest req where req.requestId in :ids")
+    @Query("select req.correlationId from SubmissionRequest req where req.correlationId in :corrIds")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<String> findIdsByRequestIdIn(@Param("ids") List<String> requestIds);
+    List<String> findIdsByCorrelationIdIn(@Param("corrIds") List<String> correlationIds);
+
+    boolean existsByCorrelationId(String correlationId);
 
     boolean existsBySubmissionStatusCreationDateLessThanEqual(OffsetDateTime expiredDate);
 
-    Optional<SubmissionRequest> findSubmissionRequestByRequestId(@Param("id") String requestId);
+    Optional<SubmissionRequest> findSubmissionRequestByCorrelationId(String correlationId);
 
-    List<SubmissionRequest> findAllByRequestIdIn(@Param("id") List<String> requestId);
+    List<SubmissionRequest> findAllByCorrelationIdIn(List<String> correlationId);
 
     @Query(value = "SELECT DISTINCT status FROM {h-schema}t_submission_requests WHERE session = ?1 AND owner = ?2",
-        nativeQuery = true)
+           nativeQuery = true)
     List<String> findStatesBySessionAndOwner(String session, String owner);
 
     Page<SubmissionRequest> findBySessionAndOwner(String session, String owner, Pageable page);
@@ -75,8 +79,8 @@ public interface ISubmissionRequestRepository extends JpaRepository<SubmissionRe
     // ------------
     @Modifying
     @Query("update SubmissionRequest req set req.submissionStatus.status = :state, req.submissionStatus.statusDate = "
-           + ":date, req.submissionStatus.message = :message where req.requestId = :id")
-    void updateRequestState(@Param("id") String requestId,
+           + ":date, req.submissionStatus.message = :message where req.correlationId = :corrId")
+    void updateRequestState(@Param("corrId") String correlationId,
                             @Param("state") SubmissionRequestState state,
                             @Param("message") String message,
                             @Param("date") OffsetDateTime statusDate);

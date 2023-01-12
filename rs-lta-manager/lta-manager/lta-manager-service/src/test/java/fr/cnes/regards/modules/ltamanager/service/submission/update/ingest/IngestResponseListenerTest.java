@@ -99,7 +99,7 @@ public class IngestResponseListenerTest {
             }
             events.add(event);
             // Mock database behaviour to simulate request ids exist
-            Mockito.when(requestRepository.findIdsByRequestIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+            Mockito.when(requestRepository.findIdsByCorrelationIdIn(List.of(reqId))).thenReturn(List.of(reqId));
         }
 
         // ---- WHEN -----
@@ -158,7 +158,7 @@ public class IngestResponseListenerTest {
         }
         Assert.assertEquals("The event correlation id should match the request id",
                             events.get(0).getRequestId(),
-                            successEvent.get().getProductId());
+                            successEvent.get().getCorrelationId());
 
         //onError
         Optional<SubmissionResponseDtoEvent> errorEvent = capturedPublishedEvents.stream()
@@ -171,7 +171,7 @@ public class IngestResponseListenerTest {
         }
         Assert.assertEquals("The event correlation id should match the request id",
                             events.get(3).getRequestId(),
-                            errorEvent.get().getProductId());
+                            errorEvent.get().getCorrelationId());
 
     }
 
@@ -199,10 +199,10 @@ public class IngestResponseListenerTest {
         String tenantName = "tenantName";
         String reqId = UUID.randomUUID().toString();
         RequestInfo event = RequestInfo.build(reqId, reqId, null, null);
-        Mockito.when(requestRepository.findIdsByRequestIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+        Mockito.when(requestRepository.findIdsByCorrelationIdIn(List.of(reqId))).thenReturn(List.of(reqId));
         SubmissionRequest request = new SubmissionRequest();
         request.setOriginUrn(urnTest);
-        Mockito.when(requestRepository.findAllByRequestIdIn(List.of(event.getRequestId())))
+        Mockito.when(requestRepository.findAllByCorrelationIdIn(List.of(event.getRequestId())))
                .thenReturn(List.of(request));
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(tenantName);
         // WHEN
@@ -227,7 +227,7 @@ public class IngestResponseListenerTest {
         // GIVEN
         String reqId = UUID.randomUUID().toString();
         RequestInfo event = RequestInfo.build(reqId, reqId, null, null);
-        Mockito.when(requestRepository.findIdsByRequestIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+        Mockito.when(requestRepository.findIdsByCorrelationIdIn(List.of(reqId))).thenReturn(List.of(reqId));
         // WHEN
         responseListener.onGranted(List.of(event));
         responseListener.onDenied(List.of(event));

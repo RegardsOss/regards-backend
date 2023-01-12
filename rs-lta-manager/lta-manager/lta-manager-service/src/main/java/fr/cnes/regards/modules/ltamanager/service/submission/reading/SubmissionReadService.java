@@ -48,8 +48,8 @@ public class SubmissionReadService {
         this.submissionRequestMapper = submissionRequestMapper;
     }
 
-    public SubmissionRequestInfoDto retrieveRequestStatusInfo(String requestId) {
-        return requestRepository.findSubmissionRequestByRequestId(requestId)
+    public SubmissionRequestInfoDto retrieveRequestStatusInfo(String correlationId) {
+        return requestRepository.findSubmissionRequestByCorrelationId(correlationId)
                                 .map(submissionRequestMapper::convertToSubmissionRequestInfoDto)
                                 .orElse(null);
     }

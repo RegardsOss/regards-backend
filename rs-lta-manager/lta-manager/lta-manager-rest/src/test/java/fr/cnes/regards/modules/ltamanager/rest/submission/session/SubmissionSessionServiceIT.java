@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionRequestHelper;
+import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionRequestHelper;
 import fr.cnes.regards.modules.model.client.IModelClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -149,8 +149,11 @@ public class SubmissionSessionServiceIT extends AbstractRegardsIT {
     }
 
     private String getResourceAsString(String path) throws IOException {
-        InputStream resourceInputStream = SubmissionSessionServiceIT.class.getClassLoader().getResourceAsStream(path);
-        return new String(resourceInputStream.readAllBytes(), StandardCharsets.UTF_8);
+        try (InputStream resourceInputStream = SubmissionSessionServiceIT.class.getClassLoader()
+                                                                               .getResourceAsStream(path)) {
+            assert resourceInputStream != null;
+            return new String(resourceInputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     private void createAndSaveSubmissionRequest(String session, SubmissionRequestState state) {

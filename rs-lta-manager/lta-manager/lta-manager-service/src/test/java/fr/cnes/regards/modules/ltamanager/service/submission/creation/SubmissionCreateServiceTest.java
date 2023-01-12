@@ -84,9 +84,6 @@ public class SubmissionCreateServiceTest {
     private LtaSettingService settingService;
 
     @Spy
-    private CreateDatatypeService createDatatypeService;
-
-    @Spy
     private IPublisher publisher;
 
     @Spy
@@ -100,6 +97,8 @@ public class SubmissionCreateServiceTest {
     @Before
     public void init() {
         closable = openMocks(this);
+        CreateDatatypeService createDatatypeService = new CreateDatatypeService(requestRepository);
+
         createService = new SubmissionCreateService(requestRepository,
                                                     settingService,
                                                     createDatatypeService,
@@ -240,18 +239,19 @@ public class SubmissionCreateServiceTest {
     }
 
     private SubmissionRequestDto createRequestWithSimpleStorePath() {
-        SubmissionRequestDto requestDtoWithSimpleStorePath = new SubmissionRequestDto(UUID.randomUUID().toString(),
-                                                                                      EntityType.DATA.toString(),
-                                                                                      IGeometry.point(IGeometry.position(
-                                                                                          10.0,
-                                                                                          20.0)),
-                                                                                      getProductFileDtos(),
-                                                                                      null,
-                                                                                      "URN:AIP:DATA:example:12345678-9abc-def0-1234-56789abcdef0:V1",
-                                                                                      null,
-                                                                                      SIMPLE_STORE_PATH,
-                                                                                      "sessionSimpleStore",
-                                                                                      false);
+        SubmissionRequestDto requestDtoWithSimpleStorePath = new SubmissionRequestDto("test simple path",
+                                                                                      UUID.randomUUID().toString(),
+                                                                                        EntityType.DATA.toString(),
+                                                                                        IGeometry.point(IGeometry.position(
+                                                                                            10.0,
+                                                                                            20.0)),
+                                                                                        getProductFileDtos(),
+                                                                                        null,
+                                                                                        "URN:AIP:DATA:example:12345678-9abc-def0-1234-56789abcdef0:V1",
+                                                                                        null,
+                                                                                        SIMPLE_STORE_PATH,
+                                                                                        "sessionSimpleStore",
+                                                                                        false);
         requestDtoWithSimpleStorePath.setOwner(OWNER);
         return requestDtoWithSimpleStorePath;
     }
@@ -266,7 +266,8 @@ public class SubmissionCreateServiceTest {
                                                                                    }
                                                                                  }
                                                                                  """, Map.class);
-        SubmissionRequestDto requestDtoWithProperties = new SubmissionRequestDto(UUID.randomUUID().toString(),
+        SubmissionRequestDto requestDtoWithProperties = new SubmissionRequestDto("test with properties",
+                                                                                 UUID.randomUUID().toString(),
                                                                                  EntityType.DATA.toString(),
                                                                                  IGeometry.point(IGeometry.position(10.0,
                                                                                                                     20.0)),
@@ -282,7 +283,8 @@ public class SubmissionCreateServiceTest {
     }
 
     private SubmissionRequestDto createRequestWithReplace() {
-        SubmissionRequestDto requestDtoWithReplace = new SubmissionRequestDto(UUID.randomUUID().toString(),
+        SubmissionRequestDto requestDtoWithReplace = new SubmissionRequestDto("test with replace",
+                                                                              UUID.randomUUID().toString(),
                                                                               EntityType.DATA.toString(),
                                                                               IGeometry.point(IGeometry.position(10.0,
                                                                                                                  20.0)),
@@ -313,15 +315,15 @@ public class SubmissionCreateServiceTest {
                                              List<SubmissionRequest> requestsCreated,
                                              Path expectedBuiltPath) {
         for (SubmissionRequest requestCreated : requestsCreated) {
-            String productId = requestCreated.getProduct().getId();
-            if (productId.equals(requestDtoWithSimpleStorePath.getId())) {
+            String productId = requestCreated.getProduct().getProductId();
+            if (productId.equals(requestDtoWithSimpleStorePath.getProductId())) {
                 Assertions.assertThat(requestCreated.getStorePath()).isEqualTo(Paths.get(SIMPLE_STORE_PATH));
                 Assertions.assertThat(requestCreated.getSession()).isEqualTo("sessionSimpleStore");
-            } else if (productId.equals(requestDtoWithProperties.getId())) {
+            } else if (productId.equals(requestDtoWithProperties.getProductId())) {
                 Assertions.assertThat(requestCreated.getStorePath()).isEqualTo(expectedBuiltPath);
                 Assertions.assertThat(requestCreated.getSession())
                           .isEqualTo("user-" + OffsetDateTime.now().format(DateTimeFormatter.BASIC_ISO_DATE));
-            } else if (productId.equals(requestDtoWithReplace.getId())) {
+            } else if (productId.equals(requestDtoWithReplace.getProductId())) {
                 Assertions.assertThat(requestCreated.isReplaceMode()).isTrue();
             }
         }
@@ -339,7 +341,7 @@ public class SubmissionCreateServiceTest {
                                                                                     replace);
         expectedReqWithPath.setWorkerHeaders(LTA_CONTENT_TYPE,
                                              tenant,
-                                             reqCreatedWithStorePath.getRequestId(),
+                                             reqCreatedWithStorePath.getCorrelationId(),
                                              reqCreatedWithStorePath.getOwner(),
                                              reqCreatedWithStorePath.getSession());
         return expectedReqWithPath;

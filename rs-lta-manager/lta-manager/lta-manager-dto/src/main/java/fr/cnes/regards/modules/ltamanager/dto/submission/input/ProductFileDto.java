@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ltamanager.dto.submission.input;
 import fr.cnes.regards.framework.urn.DataType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.validator.constraints.URL;
+import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
 import javax.validation.constraints.NotNull;
@@ -55,6 +56,12 @@ public final class ProductFileDto {
     private final MimeType mimeType;
 
     public ProductFileDto(DataType type, String url, String filename, String checksumMd5, MimeType mimeType) {
+        Assert.notNull(type, "type is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(url, "url is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(filename, "filename is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(checksumMd5, "checksumMd5 is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(mimeType, "mimeType is mandatory ! Make sure other constraints are satisfied. ");
+
         this.type = type;
         this.url = url;
         this.filename = filename;

@@ -31,8 +31,8 @@ import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepos
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionInfo;
-import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionRequestHelper;
+import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionInfo;
+import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionRequestHelper;
 import fr.cnes.regards.modules.model.client.IModelClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -107,15 +107,15 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
                                                    + SubmissionReadController.REQUEST_INFO_MAPPING,
                                                    customizer().expectStatusOk(),
                                                    "State should be returned",
-                                                   submissionRequest.getRequestId());
+                                                   submissionRequest.getCorrelationId());
 
         // THEN
         // expect state of the request to be returned
         response.andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content.requestId",
-                                                          equalTo(submissionRequest.getRequestId())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId",
+                                                          equalTo(submissionRequest.getCorrelationId())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.productId",
-                                                          equalTo(submissionRequest.getProduct().getId())))
+                                                          equalTo(submissionRequest.getProduct().getProductId())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.status",
                                                           equalTo(submissionRequest.getStatus().toString())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.statusDate",
@@ -162,8 +162,8 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         response.andExpect(MockMvcResultMatchers.jsonPath("$.metadata").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", equalTo(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.requestId",
-                                                          equalTo(requests.get(3).getRequestId())));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.correlationId",
+                                                          equalTo(requests.get(3).getCorrelationId())));
     }
 
     @Test
@@ -195,10 +195,10 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         response.andExpect(MockMvcResultMatchers.jsonPath("$.metadata").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", equalTo(2)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.requestId",
-                                                          equalTo(requests.get(2).getRequestId())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].content.requestId",
-                                                          equalTo(requests.get(0).getRequestId())));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.correlationId",
+                                                          equalTo(requests.get(2).getCorrelationId())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].content.correlationId",
+                                                          equalTo(requests.get(0).getCorrelationId())));
     }
 
     @Test
@@ -227,8 +227,8 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         response.andExpect(MockMvcResultMatchers.jsonPath("$.metadata").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", equalTo(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.requestId",
-                                                          equalTo(requests.get(3).getRequestId())));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.correlationId",
+                                                          equalTo(requests.get(3).getCorrelationId())));
     }
 
     @Test
@@ -247,7 +247,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
                                                                                                              List.of(
                                                                                                                  requests.get(
                                                                                                                              1)
-                                                                                                                         .getRequestId()),
+                                                                                                                         .getCorrelationId()),
                                                                                                              ValuesRestrictionMode.EXCLUDE));
 
         ResultActions response = performDefaultPost(AbstractSubmissionController.ROOT_PATH
@@ -259,12 +259,12 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         response.andExpect(MockMvcResultMatchers.jsonPath("$.metadata").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", equalTo(3)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.requestId",
-                                                          equalTo(requests.get(3).getRequestId())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].content.requestId",
-                                                          equalTo(requests.get(2).getRequestId())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[2].content.requestId",
-                                                          equalTo(requests.get(0).getRequestId())));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.correlationId",
+                                                          equalTo(requests.get(3).getCorrelationId())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].content.correlationId",
+                                                          equalTo(requests.get(2).getCorrelationId())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[2].content.correlationId",
+                                                          equalTo(requests.get(0).getCorrelationId())));
     }
 
     @Test
@@ -280,7 +280,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
             new DatesRangeRestriction(now.plusSeconds(10), now),
             new DatesRangeRestriction(now.plusSeconds(10), now),
             new ValuesRestriction<>(List.of(SubmissionRequestState.GENERATED), ValuesRestrictionMode.INCLUDE),
-            new ValuesRestriction<>(List.of(requests.get(0).getRequestId()), ValuesRestrictionMode.EXCLUDE));
+            new ValuesRestriction<>(List.of(requests.get(0).getCorrelationId()), ValuesRestrictionMode.EXCLUDE));
 
         ResultActions response = performDefaultPost(AbstractSubmissionController.ROOT_PATH
                                                     + SubmissionReadController.SEARCH_MAPPING,
@@ -291,8 +291,8 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         response.andExpect(MockMvcResultMatchers.jsonPath("$.metadata").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", equalTo(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.requestId",
-                                                          equalTo(requests.get(1).getRequestId())));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.correlationId",
+                                                          equalTo(requests.get(1).getCorrelationId())));
     }
 
     @Test
@@ -320,14 +320,14 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         response.andExpect(MockMvcResultMatchers.jsonPath("$.metadata").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", equalTo(4)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.requestId",
-                                                          equalTo(requests.get(3).getRequestId())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].content.requestId",
-                                                          equalTo(requests.get(1).getRequestId())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[2].content.requestId",
-                                                          equalTo(requests.get(2).getRequestId())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content[3].content.requestId",
-                                                          equalTo(requests.get(0).getRequestId())));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.correlationId",
+                                                          equalTo(requests.get(3).getCorrelationId())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].content.correlationId",
+                                                          equalTo(requests.get(1).getCorrelationId())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[2].content.correlationId",
+                                                          equalTo(requests.get(2).getCorrelationId())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[3].content.correlationId",
+                                                          equalTo(requests.get(0).getCorrelationId())));
     }
 
     private List<SubmissionRequest> initSearchCriterionData(OffsetDateTime now) {

@@ -58,7 +58,7 @@ public class SubmissionReadController extends AbstractSubmissionController
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubmissionReadController.class);
 
-    public static final String REQUEST_INFO_MAPPING = "/{requestId}/info";
+    public static final String REQUEST_INFO_MAPPING = "/{correlationId}/info";
 
     public static final String SEARCH_MAPPING = "/search";
 
@@ -84,12 +84,12 @@ public class SubmissionReadController extends AbstractSubmissionController
     @ResponseBody
     @ResourceAccess(description = "Endpoint to check the progress of a submission request.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<SubmissionRequestInfoDto>> checkSubmissionRequestStatus(
-        @Parameter(description = "Identifier of the submission request to check.") @PathVariable String requestId) {
-        SubmissionRequestInfoDto requestStatusInfo = readService.retrieveRequestStatusInfo(requestId);
+        @Parameter(description = "Identifier of the submission request to check.") @PathVariable String correlationId) {
+        SubmissionRequestInfoDto requestStatusInfo = readService.retrieveRequestStatusInfo(correlationId);
         if (requestStatusInfo != null) {
             return ResponseEntity.ok(EntityModel.of(requestStatusInfo));
         } else {
-            LOGGER.warn("Submission request with id {} was not found in the database", requestId);
+            LOGGER.warn("Submission request with id {} was not found in the database", correlationId);
             return ResponseEntity.notFound().build();
         }
     }
@@ -106,7 +106,7 @@ public class SubmissionReadController extends AbstractSubmissionController
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterion.",
             content = @Content(schema = @Schema(implementation = SearchSubmissionRequestParameters.class))) @RequestBody
         @Valid SearchSubmissionRequestParameters searchCriterion,
-        @PageableDefault(sort = { "submissionStatus_statusDate", "requestId" }, direction = Sort.Direction.DESC)
+        @PageableDefault(sort = { "submissionStatus_statusDate", "correlationId" }, direction = Sort.Direction.DESC)
         Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<SubmittedSearchResponseDto> assembler) {
         return ResponseEntity.ok(toPagedResources(readService.retrieveSubmittedRequestsByCriteria(searchCriterion,

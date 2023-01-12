@@ -27,9 +27,9 @@ import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.settings.DatatypeParameter;
 import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettingsException;
-import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionProduct;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmittedProduct;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
@@ -114,7 +114,7 @@ public class SubmissionCreateService {
         // 1) Prepare requests : create submission requests from requests dtos
         OffsetDateTime currentDateTime = OffsetDateTime.now();
         for (SubmissionRequestDto requestDto : requestDtos) {
-            LOGGER.debug("---> Processing SubmissionRequestDto with id {}", requestDto.getId());
+            LOGGER.debug("---> Processing SubmissionRequestDto with correlationId \"{}\"", requestDto.getCorrelationId());
             // Create a submission request only from a valid submission request dto
             try {
                 DatatypeParameter datatypeConfig = createDatatypeService.createValidConfiguration(requestDto,
@@ -126,7 +126,7 @@ public class SubmissionCreateService {
                                                                              currentDateTime);
                 submissionRequestsToSave.add(submissionRequest);
             } catch (LtaSettingsException e) {
-                responses.add(buildErrorResponse(requestDto.getId(), e));
+                responses.add(buildErrorResponse(requestDto.getCorrelationId(), requestDto.getProductId(), e));
             }
         }
         // 2) Handle submission requests in success
@@ -150,18 +150,19 @@ public class SubmissionCreateService {
                                     currentDateTime.format(DateTimeFormatter.BASIC_ISO_DATE));
         }
 
-        return new SubmissionRequest(owner,
+        return new SubmissionRequest(requestDto.getCorrelationId(),
+                                     owner,
                                      session,
                                      requestDto.isReplaceMode(),
-                                     requestDto.getOriginUrn(),
                                      new SubmissionStatus(currentDateTime,
                                                           currentDateTime,
                                                           SubmissionRequestState.VALIDATED,
                                                           null),
-                                     new SubmissionProduct(requestDto.getDatatype(),
-                                                           datatypeConfig.getModel(),
-                                                           Paths.get(datatypeConfig.getStorePath()),
-                                                           requestDto));
+                                     new SubmittedProduct(requestDto.getDatatype(),
+                                                          datatypeConfig.getModel(),
+                                                          Paths.get(datatypeConfig.getStorePath()),
+                                                          requestDto),
+                                     requestDto.getOriginUrn());
     }
 
     // -------------------------------
@@ -184,12 +185,12 @@ public class SubmissionCreateService {
 
     private SubmissionResponseDtoEvent buildSuccessResponse(SubmissionRequest requestSaved,
                                                             Set<DynamicTenantSetting> settings) {
-        LOGGER.debug("SubmissionRequest was successfully created from SubmissionRequestDto {}",
-                     requestSaved.getProduct().getId());
+        LOGGER.debug("SubmissionRequest was successfully created from SubmissionRequestDto with correlationId \"{}\"",
+                     requestSaved.getCorrelationId());
 
-        return new SubmissionResponseDtoEvent(requestSaved.getProduct().getId(),
+        return new SubmissionResponseDtoEvent(requestSaved.getCorrelationId(),
                                               SubmissionResponseStatus.GRANTED,
-                                              requestSaved.getRequestId(),
+                                              requestSaved.getProduct().getProductId(),
                                               requestSaved.getCreationDate()
                                                           .plusSeconds(settingService.getRequestExpiresInHoursConfig(
                                                               settings)),
@@ -220,16 +221,21 @@ public class SubmissionCreateService {
                                                                               requestSaved.isReplaceMode());
         workerRequest.setWorkerHeaders(LTA_CONTENT_TYPE,
                                        this.tenantResolver.getTenant(),
-                                       requestSaved.getRequestId(),
+                                       requestSaved.getCorrelationId(),
                                        requestSaved.getOwner(),
                                        requestSaved.getSession());
 
         return workerRequest;
     }
 
-    private SubmissionResponseDtoEvent buildErrorResponse(String id, LtaSettingsException exception) {
-        LOGGER.error("SubmissionRequestDto with id {} was rejected.", id, exception);
-        return new SubmissionResponseDtoEvent(id, SubmissionResponseStatus.DENIED, exception.getMessage());
+    private SubmissionResponseDtoEvent buildErrorResponse(String correlationId,
+                                                          String productId,
+                                                          LtaSettingsException exception) {
+        LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and productId \"{}\" was rejected.",
+                     correlationId,
+                     productId,
+                     exception);
+        return new SubmissionResponseDtoEvent(correlationId, SubmissionResponseStatus.DENIED, productId, exception.getMessage());
     }
 
 }

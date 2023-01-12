@@ -85,10 +85,7 @@ public class SubmissionCreateEventHandlerTest {
 
     @Mock
     private ISubmissionRequestRepository requestRepository;
-
-    @Spy
-    private CreateDatatypeService createDatatypeService;
-
+    
     @Spy
     private IPublisher publisher;
 
@@ -114,6 +111,8 @@ public class SubmissionCreateEventHandlerTest {
     @Before
     public void init() {
         closable = openMocks(this);
+        CreateDatatypeService createDatatypeService = new CreateDatatypeService(requestRepository);
+        
         SubmissionCreateService createService = new SubmissionCreateService(requestRepository,
                                                                             settingService,
                                                                             createDatatypeService,
@@ -130,6 +129,7 @@ public class SubmissionCreateEventHandlerTest {
                .thenReturn(Map.of(EntityType.DATA.toString(), new DatatypeParameter(MODEL, STORE_PATH_CONFIG)));
         Mockito.when(settingService.getRequestExpiresInHoursConfig(any())).thenReturn(REQ_EXPIRES_IN_HOURS);
         Mockito.when(settingService.getStorageConfig(any())).thenReturn(STORAGE);
+        Mockito.when(requestRepository.existsByCorrelationId(any())).thenReturn(false);
     }
 
     private void initData() {
@@ -139,7 +139,8 @@ public class SubmissionCreateEventHandlerTest {
                                                                 "f016852239a8a919f05f6d2225c5aaca",
                                                                 MediaType.APPLICATION_OCTET_STREAM));
         for (int i = 0; i < NB_REQUEST_DTOS; i++) {
-            SubmissionRequestDtoEvent requestDto = new SubmissionRequestDtoEvent(UUID.randomUUID().toString(),
+            SubmissionRequestDtoEvent requestDto = new SubmissionRequestDtoEvent("Test RequestDto n°" + i,
+                                                                                 UUID.randomUUID().toString(),
                                                                                  EntityType.DATA.toString(),
                                                                                  IGeometry.point(IGeometry.position(10.0,
                                                                                                                     20.0)),
@@ -171,10 +172,11 @@ public class SubmissionCreateEventHandlerTest {
         List<LtaWorkerRequestDtoEvent> expectedWorkerRequests = new ArrayList<>();
         for (SubmissionRequest requestCreated : refRequestsCreated.get()) {
             // submission response dto
-            SubmissionResponseDtoEvent expectedResponse = new SubmissionResponseDtoEvent(requestCreated.getProduct()
-                                                                                                       .getId(),
+
+            SubmissionResponseDtoEvent expectedResponse = new SubmissionResponseDtoEvent(requestCreated.getCorrelationId(),
                                                                                          SubmissionResponseStatus.GRANTED,
-                                                                                         requestCreated.getRequestId(),
+                                                                                         requestCreated.getProduct()
+                                                                                                       .getProductId(),
                                                                                          requestCreated.getCreationDate()
                                                                                                        .plusSeconds(
                                                                                                            REQ_EXPIRES_IN_HOURS),
@@ -193,7 +195,7 @@ public class SubmissionCreateEventHandlerTest {
                                                                                       false);
             expectedWorkerReq.setWorkerHeaders(LTA_CONTENT_TYPE,
                                                tenantResolver.getTenant(),
-                                               requestCreated.getRequestId(),
+                                               requestCreated.getCorrelationId(),
                                                requestCreated.getOwner(),
                                                requestCreated.getSession());
             expectedWorkerRequests.add(expectedWorkerReq);

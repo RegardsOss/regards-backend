@@ -89,6 +89,7 @@ public class WorkerManagerResponseListener
                                                                                .map(response -> new SubmissionResponseDtoEvent(
                                                                                    response.getRequestId(),
                                                                                    SubmissionResponseStatus.DENIED,
+                                                                                   null,
                                                                                    buildErrorMessage(response.getMessage())))
                                                                                .toList();
         if (!requestsCompleteError.isEmpty()) {

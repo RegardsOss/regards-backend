@@ -41,8 +41,12 @@ public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements I
     @GsonIgnore
     private MessageProperties messageProperties;
 
-    public SubmissionRequestDtoEvent(String id, String datatype, IGeometry geometry, List<ProductFileDto> files) {
-        super(id, datatype, geometry, files);
+    public SubmissionRequestDtoEvent(String correlationId,
+                                     String productId,
+                                     String datatype,
+                                     IGeometry geometry,
+                                     List<ProductFileDto> files) {
+        super(correlationId, productId, datatype, geometry, files);
         this.messageProperties = new MessageProperties();
     }
 

@@ -35,9 +35,9 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettings;
-import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionProduct;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmittedProduct;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
@@ -165,10 +165,11 @@ public class SubmissionDeleteSchedulerIT extends AbstractMultitenantServiceWithJ
                                                            creationDate,
                                                            SubmissionRequestState.DONE,
                                                            null);
-            SubmissionProduct product = new SubmissionProduct(EntityType.DATA.toString(),
-                                                              "model",
-                                                              Paths.get("/path/example"),
-                                                              new SubmissionRequestDto(UUID.randomUUID().toString(),
+            SubmittedProduct product = new SubmittedProduct(EntityType.DATA.toString(),
+                                                            "model",
+                                                            Paths.get("/path/example"),
+                                                            new SubmissionRequestDto("test req n°" + i,
+                                                                                       UUID.randomUUID().toString(),
                                                                                        EntityType.DATA.toString(),
                                                                                        IGeometry.point(IGeometry.position(
                                                                                            10.0,
@@ -179,7 +180,13 @@ public class SubmissionDeleteSchedulerIT extends AbstractMultitenantServiceWithJ
                                                                                            "example.raw",
                                                                                            "f016852239a8a919f05f6d2225c5aaca",
                                                                                            MediaType.APPLICATION_OCTET_STREAM))));
-            SubmissionRequest submissionRequest = new SubmissionRequest("owner", "session", false, status, product);
+            SubmissionRequest submissionRequest = new SubmissionRequest(product.getProduct().getCorrelationId(),
+                                                                        "owner",
+                                                                        "session",
+                                                                        false,
+                                                                        status,
+                                                                        product,
+                                                                        null);
             submissionRequests.add(submissionRequest);
             creationDate = creationDate.plusHours(i);
         }

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ltamanager.dto.submission.input;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
@@ -35,10 +36,16 @@ import java.util.Objects;
  **/
 public class SubmissionRequestDto {
 
-    @NotBlank(message = "id is required.")
+    @NotBlank(message = "correlationId is required to track this request.")
+    @Size(max = 255, message = "correlationId length is limited to 255 characters.")
+    @Schema(description = "Identifier to track this request during the entire workflow. It must be unique.",
+            maxLength = 255)
+    private final String correlationId;
+
+    @NotBlank(message = "productId is required.")
     @Size(max = 255, message = "id length is limited to 255 characters.")
     @Schema(description = "Provider id of the OAIS product to generate.", maxLength = 255)
-    private final String id;
+    private final String productId;
 
     @NotBlank(message = "datatype is required.")
     @Size(max = 255, message = "datatype length is limited to 255 characters.")
@@ -71,7 +78,7 @@ public class SubmissionRequestDto {
     @Nullable
     @Size(max = 255, message = "storePath length is limited to 255 characters.")
     @Pattern(regexp = "^[\\w/]*$",
-        message = "storePath must only contain alphanumeric characters and slash separators.")
+             message = "storePath must only contain alphanumeric characters and slash separators.")
     @Schema(description = "Path to store the product. If null, the storePath will be built from the lta-manager "
                           + "configuration.", nullable = true)
     private String storePath;
@@ -88,14 +95,26 @@ public class SubmissionRequestDto {
     // owner is set after the construction of the request
     private String owner;
 
-    public SubmissionRequestDto(String id, String datatype, IGeometry geometry, List<ProductFileDto> files) {
-        this.id = id;
+    public SubmissionRequestDto(String correlationId,
+                                String productId,
+                                String datatype,
+                                IGeometry geometry,
+                                List<ProductFileDto> files) {
+        Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(productId, "productId is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(datatype, "datatype is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(geometry, "geometry is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notEmpty(files, "at least one file is mandatory ! Make sure other constraints are satisfied. ");
+
+        this.correlationId = correlationId;
+        this.productId = productId;
         this.datatype = datatype;
         this.geometry = geometry;
         this.files = files;
     }
 
-    public SubmissionRequestDto(String id,
+    public SubmissionRequestDto(String correlationId,
+                                String productId,
                                 String datatype,
                                 IGeometry geometry,
                                 List<ProductFileDto> files,
@@ -105,7 +124,7 @@ public class SubmissionRequestDto {
                                 @Nullable String storePath,
                                 @Nullable String session,
                                 boolean replaceMode) {
-        this(id, datatype, geometry, files);
+        this(correlationId, productId, datatype, geometry, files);
         this.tags = tags;
         this.originUrn = originUrn;
         this.properties = properties;
@@ -114,8 +133,12 @@ public class SubmissionRequestDto {
         this.replaceMode = replaceMode;
     }
 
-    public String getId() {
-        return id;
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public String getProductId() {
+        return productId;
     }
 
     public String getDatatype() {
@@ -200,39 +223,22 @@ public class SubmissionRequestDto {
             return false;
         }
         SubmissionRequestDto that = (SubmissionRequestDto) o;
-        return replaceMode == that.replaceMode
-               && Objects.equals(id, that.id)
-               && Objects.equals(datatype, that.datatype)
-               && Objects.equals(geometry, that.geometry)
-               && Objects.equals(files, that.files)
-               && Objects.equals(tags, that.tags)
-               && Objects.equals(properties, that.properties)
-               && Objects.equals(storePath, that.storePath)
-               && Objects.equals(session, that.session)
-               && Objects.equals(originUrn, that.originUrn)
-               && Objects.equals(owner, that.owner);
+        return correlationId.equals(that.correlationId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id,
-                            datatype,
-                            geometry,
-                            files,
-                            tags,
-                            properties,
-                            storePath,
-                            session,
-                            replaceMode,
-                            originUrn,
-                            owner);
+        return Objects.hash(correlationId);
     }
 
     @Override
     public String toString() {
         return "SubmissionRequestDto{"
-               + "id='"
-               + id
+               + "correlationId='"
+               + correlationId
+               + '\''
+               + ", productId='"
+               + productId
                + '\''
                + ", datatype='"
                + datatype
@@ -243,6 +249,9 @@ public class SubmissionRequestDto {
                + files
                + ", tags="
                + tags
+               + ", originUrn='"
+               + originUrn
+               + '\''
                + ", properties="
                + properties
                + ", storePath='"
@@ -253,9 +262,6 @@ public class SubmissionRequestDto {
                + '\''
                + ", replaceMode="
                + replaceMode
-               + ", originUrn='"
-               + originUrn
-               + '\''
                + ", owner='"
                + owner
                + '\''

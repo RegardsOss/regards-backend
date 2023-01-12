@@ -62,12 +62,12 @@ public class WorkerManagerResponseService {
         // note: page handling is not necessary because event batch is limited to 1000 entities by default
         List<SubmissionRequestState> allowedStatesToUpdate = List.of(SubmissionRequestState.VALIDATED,
                                                                      SubmissionRequestState.GENERATION_PENDING);
-        List<String> requestsFound = requestRepository.findIdsByRequestIdInAndStatesIn(responseEvents.stream()
-                                                                                                     .map(
+        List<String> requestsFound = requestRepository.findIdsByCorrelationIdInAndStatesIn(responseEvents.stream()
+                                                                                                         .map(
                                                                                                          WorkerManagerResponseService::getRequestIdHeader)
-                                                                                                     .filter(Objects::nonNull)
-                                                                                                     .toList(),
-                                                                                       allowedStatesToUpdate);
+                                                                                                         .filter(Objects::nonNull)
+                                                                                                         .toList(),
+                                                                                           allowedStatesToUpdate);
         LOGGER.trace("{} submission requests found in database among states {}.",
                      requestsFound.size(),
                      allowedStatesToUpdate);
@@ -75,15 +75,17 @@ public class WorkerManagerResponseService {
         if (!requestsFound.isEmpty()) {
             for (ResponseEvent event : responseEvents) {
                 WorkerStatusResponseMapping mappedRequestState = WorkerStatusResponseMapping.findMappedStatus(event.getState());
-                String requestId = getRequestIdHeader(event);
-                if (requestsFound.contains(requestId) && mappedRequestState != null) {
+                String correlationId = getRequestIdHeader(event);
+                if (requestsFound.contains(correlationId) && mappedRequestState != null) {
                     SubmissionRequestState mappedState = mappedRequestState.getMappedState();
 
-                    requestRepository.updateRequestState(requestId,
+                    requestRepository.updateRequestState(correlationId,
                                                          mappedState,
                                                          getRequestMessage(event.getMessage()),
                                                          OffsetDateTime.now());
-                    LOGGER.trace("Submission request with id \"{}\" updated with state \"{}\"", requestId, mappedState);
+                    LOGGER.trace("Submission request with correlationId \"{}\" updated with state \"{}\"",
+                                 correlationId,
+                                 mappedState);
                 }
             }
         }

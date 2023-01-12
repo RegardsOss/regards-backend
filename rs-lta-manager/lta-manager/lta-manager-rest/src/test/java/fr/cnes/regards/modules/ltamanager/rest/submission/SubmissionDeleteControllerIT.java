@@ -27,8 +27,8 @@ import fr.cnes.regards.modules.ltamanager.dao.submission.SubmissionRequestSpecif
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionInfo;
-import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionRequestHelper;
+import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionInfo;
+import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionRequestHelper;
 import fr.cnes.regards.modules.model.client.IModelClient;
 import org.junit.Assert;
 import org.junit.Before;

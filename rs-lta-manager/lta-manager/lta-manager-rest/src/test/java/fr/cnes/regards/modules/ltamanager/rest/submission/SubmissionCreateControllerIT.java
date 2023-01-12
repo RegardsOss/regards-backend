@@ -165,8 +165,8 @@ public class SubmissionCreateControllerIT extends AbstractRegardsIT {
         SubmissionRequest requestSaved = requestsSaved.get(0);
         response.andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.is(5)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content.requestId",
-                                                          Matchers.equalTo(requestSaved.getRequestId())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId",
+                                                          Matchers.equalTo(requestSaved.getCorrelationId())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.expires",
                                                           Matchers.equalTo(OffsetDateTimeAdapter.format(requestSaved.getCreationDate()
                                                                                                                     .plusSeconds(
@@ -193,7 +193,7 @@ public class SubmissionCreateControllerIT extends AbstractRegardsIT {
                                                                                     false);
         expectedReqWithPath.setWorkerHeaders(LTA_CONTENT_TYPE,
                                              tenantResolver.getTenant(),
-                                             requestSaved.getRequestId(),
+                                             requestSaved.getCorrelationId(),
                                              requestSaved.getOwner(),
                                              requestSaved.getSession());
         Assertions.assertThat(capturedPublishedEvents).hasSameElementsAs(List.of(expectedReqWithPath));
@@ -210,7 +210,8 @@ public class SubmissionCreateControllerIT extends AbstractRegardsIT {
                                                                 "example.raw",
                                                                 "f016852239a8a919f05f6d2225c5aac",
                                                                 MediaType.APPLICATION_OCTET_STREAM));
-        SubmissionRequestDto submissionRequestDtoMalformed = new SubmissionRequestDto(UUID.randomUUID().toString(),
+        SubmissionRequestDto submissionRequestDtoMalformed = new SubmissionRequestDto("Test RequestDto",
+                                                                                      UUID.randomUUID().toString(),
                                                                                       EntityType.DATA.toString(),
                                                                                       IGeometry.point(IGeometry.position(
                                                                                           10.0,
@@ -231,4 +232,23 @@ public class SubmissionCreateControllerIT extends AbstractRegardsIT {
         // THEN
         // request should be in error (see expect in requestBuilderCustomizer)
     }
+
+    @Test
+    @Purpose("Check a submission request is denied if it contains a correlationId that already exists.")
+    public void create_submission_requests_in_error_already_exists() throws Exception {
+        // GIVEN
+        // send post request with dto content to create submission request
+        performDefaultPost(AbstractSubmissionController.ROOT_PATH,
+                           initInputSubmissionRequest(),
+                           customizer().expectStatus(HttpStatus.CREATED),
+                           "Error creating request dto");
+
+        // WHEN
+        // send back the same request. It should be rejected because the correlationId is the same.
+        performDefaultPost(AbstractSubmissionController.ROOT_PATH,
+                           initInputSubmissionRequest(),
+                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY),
+                           "Error request was not denied!");
+    }
+
 }

@@ -92,7 +92,7 @@ public class WorkerManagerResponseListenerTest {
         // ---- GIVEN ----
         // Response events init
         // Mock database behaviour to simulate request ids exist
-        Mockito.when(requestRepository.findIdsByRequestIdInAndStatesIn(anyList(), anyList()))
+        Mockito.when(requestRepository.findIdsByCorrelationIdInAndStatesIn(anyList(), anyList()))
                .thenReturn(responseEvents.stream()
                                          .map(res -> (String) res.getMessageProperties()
                                                                  .getHeader(EventHeadersHelper.REQUEST_ID_HEADER))
@@ -143,7 +143,7 @@ public class WorkerManagerResponseListenerTest {
                                                                         == SubmissionResponseStatus.DENIED),
                               "All responses should have denied status");
         Assertions.assertTrue(capturedPublishedEvents.stream()
-                                                     .anyMatch(event -> responsesInErrorIds.contains(event.getProductId())),
+                                                     .anyMatch(event -> responsesInErrorIds.contains(event.getCorrelationId())),
                               "All responses should have the id of a responseEvent in error");
 
     }

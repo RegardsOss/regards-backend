@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ltamanager.service.utils;
+package fr.cnes.regards.modules.ltamanager.rest.submission.utils;
 
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 

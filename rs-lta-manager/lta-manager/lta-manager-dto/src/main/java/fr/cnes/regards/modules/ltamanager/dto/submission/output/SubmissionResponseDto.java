@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ltamanager.dto.submission.output;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Objects;
@@ -32,18 +33,17 @@ import java.util.Objects;
  **/
 public class SubmissionResponseDto  {
 
-    @Nullable
-    @Schema(description = "Submission request created to process the product. Can be null if the request "
-                          + "could not be saved in database.", nullable = true)
-    private String requestId;
-
-    @NotNull(message = "productId is required")
-    @Schema(description = "Id of the product submitted.")
-    private final String productId;
+    @NotBlank(message = "correlationId is required")
+    @Schema(description = "Identifier to track the request through the workflow.")
+    private String correlationId;
 
     @NotNull(message = "responseStatus is required")
-    @Schema(description = "Acceptance status of the product sent.")
+    @Schema(description = "Acceptance status of the submitted product.")
     private SubmissionResponseStatus responseStatus;
+
+    @Nullable
+    @Schema(description = "Identifier of the submitted product.")
+    private final String productId;
 
     @Nullable
     @Schema(description = "Expiration date of the created request.", nullable = true)
@@ -57,24 +57,33 @@ public class SubmissionResponseDto  {
     @Schema(description = "Possible error message.", nullable = true)
     private String message;
 
-    public SubmissionResponseDto(String productId, SubmissionResponseStatus responseStatus, @Nullable String message) {
+    public SubmissionResponseDto(String correlationId,
+                                 SubmissionResponseStatus responseStatus,
+                                 @Nullable String productId,
+                                 @Nullable String message) {
+        this.correlationId = correlationId;
         this.productId = productId;
         this.responseStatus = responseStatus;
         this.message = message;
     }
 
-    public SubmissionResponseDto(String productId,
+    public SubmissionResponseDto(String correlationId,
                                  SubmissionResponseStatus responseStatus,
-                                 @Nullable String requestId,
+                                 @Nullable String productId,
                                  @Nullable OffsetDateTime expires,
                                  @Nullable String session,
                                  @Nullable String message) {
-        this(productId, responseStatus, message);
-        this.requestId = requestId;
+        this(correlationId, responseStatus, productId, message);
+        this.correlationId = correlationId;
         this.expires = expires;
         this.session = session;
     }
 
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    @Nullable
     public String getProductId() {
         return productId;
     }
@@ -85,15 +94,6 @@ public class SubmissionResponseDto  {
 
     public void setResponseStatus(SubmissionResponseStatus responseStatus) {
         this.responseStatus = responseStatus;
-    }
-
-    @Nullable
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(@Nullable String requestId) {
-        this.requestId = requestId;
     }
 
     @Nullable
@@ -132,10 +132,9 @@ public class SubmissionResponseDto  {
             return false;
         }
         SubmissionResponseDto that = (SubmissionResponseDto) o;
-        return productId.equals(that.productId)
+        return correlationId.equals(that.correlationId)
+               && Objects.equals(productId, that.productId)
                && responseStatus == that.responseStatus
-               && Objects.equals(requestId,
-                                 that.requestId)
                && Objects.equals(expires, that.expires)
                && Objects.equals(session, that.session)
                && Objects.equals(message, that.message);
@@ -143,20 +142,20 @@ public class SubmissionResponseDto  {
 
     @Override
     public int hashCode() {
-        return Objects.hash(productId, responseStatus, requestId, expires, session, message);
+        return Objects.hash(correlationId, productId, responseStatus, expires, session, message);
     }
 
     @Override
     public String toString() {
         return "SubmissionResponseDto{"
-               + "productId='"
+               + "correlationId='"
+               + correlationId
+               + '\''
+               + ", productId='"
                + productId
                + '\''
                + ", responseStatus="
                + responseStatus
-               + ", requestId='"
-               + requestId
-               + '\''
                + ", expires="
                + expires
                + ", session='"

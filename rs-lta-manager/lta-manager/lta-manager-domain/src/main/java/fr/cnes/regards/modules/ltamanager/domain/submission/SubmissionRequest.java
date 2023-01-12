@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequest
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.TypeDef;
+import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.persistence.*;
@@ -46,8 +47,12 @@ public class SubmissionRequest {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "request_id", length = 36, nullable = false, updatable = false)
-    private String requestId;
+    @Column(length = 36, nullable = false, updatable = false)
+    private String id;
+
+    @Column(name = "correlation_id", nullable = false, updatable = false, unique = true)
+    @NotBlank(message = "correlationId is required to track this request.")
+    private String correlationId;
 
     @Column(length = 128, nullable = false, updatable = false)
     @NotBlank(message = "owner is required")
@@ -70,36 +75,36 @@ public class SubmissionRequest {
 
     @Embedded
     @Valid
-    private SubmissionProduct submissionProduct;
+    private SubmittedProduct submittedProduct;
 
     public SubmissionRequest() {
         // no-args constructor for jpa
     }
 
-    public SubmissionRequest(String owner,
+    public SubmissionRequest(String correlationId,
+                             String owner,
                              String session,
                              boolean replaceMode,
-                             String originUrn,
                              SubmissionStatus submissionStatus,
-                             SubmissionProduct submissionProduct) {
+                             SubmittedProduct submittedProduct,
+                             @Nullable String originUrn) {
+        Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(owner, "owner is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(session, "session is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(submissionStatus, "submissionStatus is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(submittedProduct, "submittedProduct is mandatory ! Make sure other constraints are satisfied.");
+
+        this.correlationId = correlationId;
         this.owner = owner;
         this.session = session;
         this.replaceMode = replaceMode;
         this.submissionStatus = submissionStatus;
-        this.submissionProduct = submissionProduct;
+        this.submittedProduct = submittedProduct;
         this.originUrn = originUrn;
     }
 
-    public SubmissionRequest(String owner,
-                             String session,
-                             boolean replaceMode,
-                             SubmissionStatus submissionStatus,
-                             SubmissionProduct submissionProduct) {
-        this(owner, session, replaceMode, null, submissionStatus, submissionProduct);
-    }
-
-    public String getRequestId() {
-        return requestId;
+    public String getCorrelationId() {
+        return correlationId;
     }
 
     public String getOwner() {
@@ -118,24 +123,24 @@ public class SubmissionRequest {
         return submissionStatus;
     }
 
-    public SubmissionProduct getSubmissionProduct() {
-        return submissionProduct;
+    public SubmittedProduct getSubmittedProduct() {
+        return submittedProduct;
     }
 
     public String getDatatype() {
-        return getSubmissionProduct().getDatatype();
+        return getSubmittedProduct().getDatatype();
     }
 
     public String getModel() {
-        return getSubmissionProduct().getModel();
+        return getSubmittedProduct().getModel();
     }
 
     public Path getStorePath() {
-        return getSubmissionProduct().getStorePath();
+        return getSubmittedProduct().getStorePath();
     }
 
     public SubmissionRequestDto getProduct() {
-        return getSubmissionProduct().getProduct();
+        return getSubmittedProduct().getProduct();
     }
 
     public OffsetDateTime getCreationDate() {
@@ -160,7 +165,7 @@ public class SubmissionRequest {
         return originUrn;
     }
 
-    public void setOriginUrn(String originUrn) {
+    public void setOriginUrn(@Nullable String originUrn) {
         this.originUrn = originUrn;
     }
 
@@ -173,19 +178,22 @@ public class SubmissionRequest {
             return false;
         }
         SubmissionRequest that = (SubmissionRequest) o;
-        return requestId.equals(that.requestId);
+        return correlationId.equals(that.correlationId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId);
+        return Objects.hash(correlationId);
     }
 
     @Override
     public String toString() {
         return "SubmissionRequest{"
-               + "requestId='"
-               + requestId
+               + "id='"
+               + id
+               + '\''
+               + ", correlationId='"
+               + correlationId
                + '\''
                + ", owner='"
                + owner
@@ -200,8 +208,8 @@ public class SubmissionRequest {
                + '\''
                + ", submissionStatus="
                + submissionStatus
-               + ", submissionProduct="
-               + submissionProduct
+               + ", submittedProduct="
+               + submittedProduct
                + '}';
     }
 }

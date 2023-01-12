@@ -36,19 +36,20 @@ import java.time.OffsetDateTime;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class SubmissionResponseDtoEvent extends SubmissionResponseDto implements ISubscribable {
 
-    public SubmissionResponseDtoEvent(String productId,
+    public SubmissionResponseDtoEvent(String correlationId,
                                       SubmissionResponseStatus responseStatus,
+                                      @Nullable String productId,
                                       @Nullable String message) {
-        super(productId, responseStatus, message);
+        super(correlationId, responseStatus, productId, message);
     }
 
-    public SubmissionResponseDtoEvent(String productId,
+    public SubmissionResponseDtoEvent(String correlationId,
                                       SubmissionResponseStatus responseStatus,
-                                      @Nullable String requestId,
+                                      @Nullable String productId,
                                       @Nullable OffsetDateTime expires,
                                       @Nullable String session,
                                       @Nullable String message) {
-        super(productId, responseStatus, requestId, expires, session, message);
+        super(correlationId, responseStatus, productId, expires, session, message);
     }
 
 }

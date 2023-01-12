@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.submission.creation;
 
+import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.settings.DatatypeParameter;
 import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettingsException;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
@@ -40,6 +41,12 @@ import java.util.regex.Pattern;
 @Service
 public class CreateDatatypeService {
 
+    private final ISubmissionRequestRepository requestRepository;
+
+    public CreateDatatypeService(ISubmissionRequestRepository requestRepository) {
+        this.requestRepository = requestRepository;
+    }
+
     /**
      * Create a valid datatype configuration for the {@link SubmissionRequestDto}
      *
@@ -52,11 +59,19 @@ public class CreateDatatypeService {
     DatatypeParameter createValidConfiguration(SubmissionRequestDto requestDto,
                                                Map<String, DatatypeParameter> datatypes,
                                                OffsetDateTime currentDateTime) throws LtaSettingsException {
+        checkUniqueCorrelationId(requestDto.getCorrelationId());
         checkOwner(requestDto.getOwner());
         DatatypeParameter config = getDatatypeInConfig(requestDto.getDatatype(), datatypes);
         String storePath = checkAndGetStorePath(requestDto, config, currentDateTime).toString();
         return new DatatypeParameter(config.getModel(), storePath);
 
+    }
+
+    private void checkUniqueCorrelationId(String correlationId) throws LtaSettingsException {
+        if (requestRepository.existsByCorrelationId(correlationId)) {
+            throw new LtaSettingsException(String.format("Request with id \"%s\" is already registered in "
+                                                         + "the database. Please provide a unique one.", correlationId));
+        }
     }
 
     /**

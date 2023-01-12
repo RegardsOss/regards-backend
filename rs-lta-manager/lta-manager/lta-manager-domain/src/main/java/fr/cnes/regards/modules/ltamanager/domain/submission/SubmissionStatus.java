@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ltamanager.domain.submission;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import org.hibernate.annotations.Type;
+import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.persistence.*;
@@ -64,9 +65,13 @@ public class SubmissionStatus {
                             OffsetDateTime statusDate,
                             SubmissionRequestState status,
                             @Nullable String message) {
-        this.status = status;
-        this.statusDate = statusDate;
+        Assert.notNull(creationDate, "creationDate is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(statusDate, "statusDate is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(status, "status is mandatory ! Make sure other constraints are satisfied.");
+
         this.creationDate = creationDate;
+        this.statusDate = statusDate;
+        this.status = status;
         this.message = message;
     }
 

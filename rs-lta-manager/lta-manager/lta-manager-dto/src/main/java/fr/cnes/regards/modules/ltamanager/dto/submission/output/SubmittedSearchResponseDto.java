@@ -37,9 +37,9 @@ import java.util.Objects;
  **/
 public final class SubmittedSearchResponseDto {
 
-    @NotBlank(message = "requestId is required")
-    @Schema(description = "Id of the submission request.")
-    private final String requestId;
+    @NotBlank(message = "correlationId is required")
+    @Schema(description = "Identifier of the submission request.")
+    private final String correlationId;
 
     @NotBlank(message = "owner is required")
     @Schema(description = "Request sender.")
@@ -76,7 +76,7 @@ public final class SubmittedSearchResponseDto {
     @Nullable
     private final String message;
 
-    public SubmittedSearchResponseDto(String requestId,
+    public SubmittedSearchResponseDto(String correlationId,
                                       String owner,
                                       String session,
                                       SubmissionRequestState status,
@@ -86,7 +86,7 @@ public final class SubmittedSearchResponseDto {
                                       Path storePath,
                                       SubmissionRequestDto product,
                                       @Nullable String message) {
-        this.requestId = requestId;
+        this.correlationId = correlationId;
         this.owner = owner;
         this.session = session;
         this.status = status;
@@ -98,8 +98,8 @@ public final class SubmittedSearchResponseDto {
         this.message = message;
     }
 
-    public String getRequestId() {
-        return requestId;
+    public String getCorrelationId() {
+        return correlationId;
     }
 
     public String getOwner() {
@@ -148,19 +148,19 @@ public final class SubmittedSearchResponseDto {
             return false;
         }
         SubmittedSearchResponseDto that = (SubmittedSearchResponseDto) o;
-        return requestId.equals(that.requestId);
+        return correlationId.equals(that.correlationId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId);
+        return Objects.hash(correlationId);
     }
 
     @Override
     public String toString() {
         return "SubmittedSearchResponseDto{"
-               + "requestId='"
-               + requestId
+               + "correlationId='"
+               + correlationId
                + '\''
                + ", owner='"
                + owner

@@ -34,9 +34,9 @@ import java.util.Objects;
  **/
 public final class SubmissionRequestInfoDto {
 
-    @NotBlank(message = "requestId is required")
+    @NotBlank(message = "correlationId is required")
     @Schema(description = "Submission request id.")
-    private final String requestId;
+    private final String correlationId;
 
     @NotBlank(message = "productId is required")
     @Schema(description = "Id of the product sent.")
@@ -58,13 +58,13 @@ public final class SubmissionRequestInfoDto {
     @Schema(description = "Possible error message.", nullable = true)
     private final String message;
 
-    public SubmissionRequestInfoDto(String requestId,
+    public SubmissionRequestInfoDto(String correlationId,
                                     String productId,
                                     SubmissionRequestState status,
                                     OffsetDateTime statusDate,
                                     String session,
                                     @Nullable String message) {
-        this.requestId = requestId;
+        this.correlationId = correlationId;
         this.productId = productId;
         this.status = status;
         this.statusDate = statusDate;
@@ -81,7 +81,7 @@ public final class SubmissionRequestInfoDto {
             return false;
         }
         SubmissionRequestInfoDto that = (SubmissionRequestInfoDto) o;
-        return requestId.equals(that.requestId)
+        return correlationId.equals(that.correlationId)
                && productId.equals(that.productId)
                && status == that.status
                && statusDate.equals(that.statusDate)
@@ -91,14 +91,14 @@ public final class SubmissionRequestInfoDto {
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, productId, status, statusDate, session, message);
+        return Objects.hash(correlationId, productId, status, statusDate, session, message);
     }
 
     @Override
     public String toString() {
         return "SubmissionRequestInfoDto{"
-               + "requestId='"
-               + requestId
+               + "correlationId='"
+               + correlationId
                + '\''
                + ", productId='"
                + productId

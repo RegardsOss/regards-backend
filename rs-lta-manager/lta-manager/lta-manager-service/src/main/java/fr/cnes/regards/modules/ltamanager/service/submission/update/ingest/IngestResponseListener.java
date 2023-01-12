@@ -64,6 +64,7 @@ public class IngestResponseListener implements IIngestClientListener {
         List<SubmissionResponseDtoEvent> requestsCompleteError = infos.stream()
                                                                       .map(info -> new SubmissionResponseDtoEvent(info.getRequestId(),
                                                                                                                   SubmissionResponseStatus.DENIED,
+                                                                                                                  null,
                                                                                                                   buildErrorMessage(
                                                                                                                       info.getErrors())))
                                                                       .toList();
@@ -89,6 +90,7 @@ public class IngestResponseListener implements IIngestClientListener {
         List<SubmissionResponseDtoEvent> requestsCompleteSuccess = infos.stream()
                                                                         .map(info -> new SubmissionResponseDtoEvent(info.getRequestId(),
                                                                                                                     SubmissionResponseStatus.GRANTED,
+                                                                                                                    null,
                                                                                                                     null))
                                                                         .toList();
         publisher.publish(requestsCompleteSuccess);
