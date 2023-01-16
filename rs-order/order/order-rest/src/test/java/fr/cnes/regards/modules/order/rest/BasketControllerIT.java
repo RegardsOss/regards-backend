@@ -420,11 +420,14 @@ public class BasketControllerIT extends AbstractRegardsIT {
         Basket basket = createBasket();
         Assertions.assertNull(basket.getDatasetSelections().first().getFileSelectionDescription());
         FileSelectionDescriptionDTO body = new FileSelectionDescriptionDTO(null, "test");
-        // WHEN add file selection description
+
         performDefaultPut(BasketController.ORDER_BASKET
                           + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS,
                           body,
-                          customizer().expectStatusOk(),
+                          customizer().expectStatusOk()
+                                      .expectValue(
+                                          "$.content.datasetSelections[0].fileSelectionDescription.fileNamePattern",
+                                          "test"),
                           "error",
                           basket.getDatasetSelections().first().getId());
 

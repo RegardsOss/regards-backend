@@ -24,11 +24,13 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 import javax.validation.Valid;
 import java.util.Comparator;
@@ -80,6 +82,11 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     @Type(type = "jsonb")
     private ProcessDatasetDescription processDatasetDescription;
 
+    @Nullable
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "file_selection_description")
+    private FileSelectionDescription fileSelectionDescription;
+
     public DatasetTask() {
     }
 
@@ -106,12 +113,21 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
         dsTask.setFilesSize(orderdDataTypes.stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
         dsTask.setObjectsCount(dsSel.getObjectsCount());
         dsTask.setProcessDatasetDescription(dsSel.getProcessDatasetDescription());
-
+        dsTask.setFileSelectionDescription(dsSel.getFileSelectionDescription());
         dsSel.getItemsSelections().forEach(item -> {
             dsTask.addSelectionRequest(item.getSelectionRequest());
         });
 
         return dsTask;
+    }
+
+    private void setFileSelectionDescription(@Nullable FileSelectionDescription fileSelectionDescription) {
+        this.fileSelectionDescription = fileSelectionDescription;
+    }
+
+    @Nullable
+    public FileSelectionDescription getFileSelectionDescription() {
+        return fileSelectionDescription;
     }
 
     public String getDatasetIpid() {

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.domain.dto;
 
+import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 
 import java.util.Collections;
@@ -80,5 +81,13 @@ public class FileSelectionDescriptionDTO {
                + fileNamePattern
                + '\''
                + '}';
+    }
+
+    public static FileSelectionDescriptionDTO makeFileSelectionDescriptionDTO(FileSelectionDescription fileSelectionDescription) {
+        if (fileSelectionDescription == null) {
+            return null;
+        }
+        return new FileSelectionDescriptionDTO(fileSelectionDescription.getFileTypes(),
+                                               fileSelectionDescription.getFileNamePattern());
     }
 }

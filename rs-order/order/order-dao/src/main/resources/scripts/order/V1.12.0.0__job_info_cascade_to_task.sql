@@ -11,3 +11,6 @@ ALTER TABLE t_basket_dataset
 ALTER TABLE t_order
     ADD COLUMN message varchar(255),
     ADD COLUMN correlation_id varchar(100);
+
+ALTER TABLE t_dataset_task
+    ADD COLUMN file_selection_description jsonb;

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.domain.dto;
 
 import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import org.springframework.beans.BeanUtils;
 
@@ -40,6 +41,8 @@ public class DatasetTaskDto {
     private long filesSize = 0;
 
     private ProcessDatasetDescription processDatasetDescription;
+
+    private FileSelectionDescription fileSelectionDescription;
 
     // To be defined : a ProcessingTask should certainly be better
     // Or directly specifying JobInfo managing processing task
@@ -99,6 +102,14 @@ public class DatasetTaskDto {
 
     public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
         this.processDatasetDescription = processDatasetDescription;
+    }
+
+    public FileSelectionDescription getFileSelectionDescription() {
+        return fileSelectionDescription;
+    }
+
+    public void setFileSelectionDescription(FileSelectionDescription fileSelectionDescription) {
+        this.fileSelectionDescription = fileSelectionDescription;
     }
 
     /**

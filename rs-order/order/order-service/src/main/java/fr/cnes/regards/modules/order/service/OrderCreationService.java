@@ -236,11 +236,12 @@ public class OrderCreationService implements IOrderCreationService {
     private OrderCounts manageDatasetSelection(Order order,
                                                String role,
                                                int priority,
-                                               OrderCounts orderCounts,
+                                               OrderCounts orderCountsGlobal,
                                                BasketDatasetSelection dsSel,
                                                int subOrderDuration) throws CatalogSearchException {
 
         DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, DataTypeSelection.ALL.getFileTypes());
+        OrderCounts orderCounts = new OrderCounts();
 
         // Bucket of internal files (managed by Storage)
         Set<OrderDataFile> storageBucketFiles = new HashSet<>();
@@ -260,6 +261,7 @@ public class OrderCreationService implements IOrderCreationService {
                 if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.storageBucketTooBig(
                     storageBucketFiles)) {
                     orderCounts.addToInternalFilesCount(storageBucketFiles.size());
+                    orderCounts.addFileSize(storageBucketFiles.stream().mapToLong(OrderDataFile::getFilesize).sum());
                     orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask,
                                                                         storageBucketFiles,
                                                                         order,
@@ -273,6 +275,7 @@ public class OrderCreationService implements IOrderCreationService {
                 if ((externalBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.externalBucketTooBig(
                     externalBucketFiles)) {
                     orderCounts.addToExternalFilesCount(externalBucketFiles.size());
+                    orderCounts.addFileSize(externalBucketFiles.stream().mapToLong(OrderDataFile::getFilesize).sum());
                     self.createExternalSubOrder(dsTask, externalBucketFiles, order);
                     externalBucketFiles.clear();
                 }
@@ -283,6 +286,7 @@ public class OrderCreationService implements IOrderCreationService {
         // Manage remaining files on each type of buckets
         if (!storageBucketFiles.isEmpty()) {
             orderCounts.addToInternalFilesCount(storageBucketFiles.size());
+            orderCounts.addFileSize(storageBucketFiles.stream().mapToLong(OrderDataFile::getFilesize).sum());
             orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask,
                                                                 storageBucketFiles,
                                                                 order,
@@ -293,6 +297,7 @@ public class OrderCreationService implements IOrderCreationService {
         }
         if (!externalBucketFiles.isEmpty()) {
             orderCounts.addToExternalFilesCount(externalBucketFiles.size());
+            orderCounts.addFileSize(externalBucketFiles.stream().mapToLong(OrderDataFile::getFilesize).sum());
             self.createExternalSubOrder(dsTask, externalBucketFiles, order);
         }
 
@@ -300,7 +305,11 @@ public class OrderCreationService implements IOrderCreationService {
         if (!dsTask.getReliantTasks().isEmpty()) {
             order.addDatasetOrderTask(dsTask);
         }
-        return orderCounts;
+        // recalculate files counters if filters have been applied
+        dsTask.setFilesCount(orderCounts.getExternalFilesCount() + orderCounts.getInternalFilesCount());
+        dsTask.setFilesSize(orderCounts.getTotalFilesSize());
+
+        return OrderCounts.add(orderCountsGlobal, orderCounts);
     }
 
     /**

@@ -47,6 +47,16 @@ public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelect
 
     private ProcessDatasetDescription processDatasetDescription;
 
+    private FileSelectionDescriptionDTO fileSelectionDescription;
+
+    public FileSelectionDescriptionDTO getFileSelectionDescription() {
+        return fileSelectionDescription;
+    }
+
+    public void setFileSelectionDescription(FileSelectionDescriptionDTO fileSelectionDescription) {
+        this.fileSelectionDescription = fileSelectionDescription;
+    }
+
     public Long getId() {
         return id;
     }
@@ -139,6 +149,8 @@ public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelect
                                                      .collect(TreeSet::new, Set::add, TreeSet::addAll));
         dto.setQuota(basketDatasetSelection.getFileTypeCount(DataType.RAWDATA.name() + "_!ref"));
         dto.setProcessDatasetDescription(basketDatasetSelection.getProcessDatasetDescription());
+        dto.setFileSelectionDescription(FileSelectionDescriptionDTO.makeFileSelectionDescriptionDTO(
+            basketDatasetSelection.getFileSelectionDescription()));
         return dto;
     }
 
