@@ -64,13 +64,13 @@ public class EmailSendingStrategy implements ISendingStrategy {
         final SimpleMailMessage email = new SimpleMailMessage();
         email.setSentDate(new Date());
         email.setSubject("[" + notification.getSender() + "]" + notification.getTitle());
-        email.setText(notification.getMessage());
         email.setTo(recipients);
 
         String message = notification.getMessage();
         if (message.length() > MAX_MAIL_LENGTH) {
             message = message.substring(0, MAX_MAIL_LENGTH) + " ... [Too long message was truncated]";
         }
+        email.setText(message);
 
         // Send the email
         emailService.sendEmail(email);
