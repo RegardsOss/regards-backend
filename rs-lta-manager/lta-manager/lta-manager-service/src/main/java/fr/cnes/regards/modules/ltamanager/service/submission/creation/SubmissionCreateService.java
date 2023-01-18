@@ -126,7 +126,7 @@ public class SubmissionCreateService {
                                                                              currentDateTime);
                 submissionRequestsToSave.add(submissionRequest);
             } catch (LtaSettingsException e) {
-                responses.add(buildErrorResponse(requestDto.getCorrelationId(), requestDto.getProductId(), e));
+                responses.add(buildErrorResponse(requestDto.getCorrelationId(), requestDto.getId(), e));
             }
         }
         // 2) Handle submission requests in success
@@ -190,7 +190,7 @@ public class SubmissionCreateService {
 
         return new SubmissionResponseDtoEvent(requestSaved.getCorrelationId(),
                                               SubmissionResponseStatus.GRANTED,
-                                              requestSaved.getProduct().getProductId(),
+                                              requestSaved.getProduct().getId(),
                                               requestSaved.getCreationDate()
                                                           .plusSeconds(settingService.getRequestExpiresInHoursConfig(
                                                               settings)),
@@ -229,13 +229,13 @@ public class SubmissionCreateService {
     }
 
     private SubmissionResponseDtoEvent buildErrorResponse(String correlationId,
-                                                          String productId,
+                                                          String id,
                                                           LtaSettingsException exception) {
-        LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and productId \"{}\" was rejected.",
+        LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and id \"{}\" was rejected.",
                      correlationId,
-                     productId,
+                     id,
                      exception);
-        return new SubmissionResponseDtoEvent(correlationId, SubmissionResponseStatus.DENIED, productId, exception.getMessage());
+        return new SubmissionResponseDtoEvent(correlationId, SubmissionResponseStatus.DENIED, id, exception.getMessage());
     }
 
 }

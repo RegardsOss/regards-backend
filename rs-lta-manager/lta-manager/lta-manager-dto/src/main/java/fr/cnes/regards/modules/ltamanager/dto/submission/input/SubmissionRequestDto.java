@@ -43,10 +43,10 @@ public class SubmissionRequestDto {
         maxLength = 255)
     private final String correlationId;
 
-    @NotBlank(message = "productId is required.")
+    @NotBlank(message = "id is required.")
     @Size(max = 255, message = "id length is limited to 255 characters.")
     @Schema(description = "Provider id of the OAIS product to generate.", maxLength = 255)
-    private final String productId;
+    private final String id;
 
     @NotBlank(message = "datatype is required.")
     @Size(max = 255, message = "datatype length is limited to 255 characters.")
@@ -98,25 +98,25 @@ public class SubmissionRequestDto {
 
     @ConstructorProperties({ "correlationId", "productId", "datatype", "geometry", "files" })
     public SubmissionRequestDto(String correlationId,
-                                String productId,
+                                String id,
                                 String datatype,
                                 IGeometry geometry,
                                 List<ProductFileDto> files) {
         Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(productId, "productId is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(id, "id is mandatory ! Make sure other constraints are satisfied.");
         Assert.notNull(datatype, "datatype is mandatory ! Make sure other constraints are satisfied.");
         Assert.notNull(geometry, "geometry is mandatory ! Make sure other constraints are satisfied.");
         Assert.notEmpty(files, "at least one file is mandatory ! Make sure other constraints are satisfied. ");
 
         this.correlationId = correlationId;
-        this.productId = productId;
+        this.id = id;
         this.datatype = datatype;
         this.geometry = geometry;
         this.files = files;
     }
 
     public SubmissionRequestDto(String correlationId,
-                                String productId,
+                                String id,
                                 String datatype,
                                 IGeometry geometry,
                                 List<ProductFileDto> files,
@@ -126,7 +126,7 @@ public class SubmissionRequestDto {
                                 @Nullable String storePath,
                                 @Nullable String session,
                                 boolean replaceMode) {
-        this(correlationId, productId, datatype, geometry, files);
+        this(correlationId, id, datatype, geometry, files);
         this.tags = tags;
         this.originUrn = originUrn;
         this.properties = properties;
@@ -139,8 +139,8 @@ public class SubmissionRequestDto {
         return correlationId;
     }
 
-    public String getProductId() {
-        return productId;
+    public String getId() {
+        return id;
     }
 
     public String getDatatype() {
@@ -239,8 +239,8 @@ public class SubmissionRequestDto {
                + "correlationId='"
                + correlationId
                + '\''
-               + ", productId='"
-               + productId
+               + ", id='"
+               + id
                + '\''
                + ", datatype='"
                + datatype

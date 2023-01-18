@@ -176,7 +176,7 @@ public class SubmissionCreateEventHandlerTest {
             SubmissionResponseDtoEvent expectedResponse = new SubmissionResponseDtoEvent(requestCreated.getCorrelationId(),
                                                                                          SubmissionResponseStatus.GRANTED,
                                                                                          requestCreated.getProduct()
-                                                                                                       .getProductId(),
+                                                                                                       .getId(),
                                                                                          requestCreated.getCreationDate()
                                                                                                        .plusSeconds(
                                                                                                            REQ_EXPIRES_IN_HOURS),

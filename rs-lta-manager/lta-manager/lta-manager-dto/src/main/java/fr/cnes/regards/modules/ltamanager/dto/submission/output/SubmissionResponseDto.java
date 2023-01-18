@@ -43,7 +43,7 @@ public class SubmissionResponseDto  {
 
     @Nullable
     @Schema(description = "Identifier of the submitted product.")
-    private final String productId;
+    private final String id;
 
     @Nullable
     @Schema(description = "Expiration date of the created request.", nullable = true)
@@ -59,21 +59,21 @@ public class SubmissionResponseDto  {
 
     public SubmissionResponseDto(String correlationId,
                                  SubmissionResponseStatus responseStatus,
-                                 @Nullable String productId,
+                                 @Nullable String id,
                                  @Nullable String message) {
         this.correlationId = correlationId;
-        this.productId = productId;
+        this.id = id;
         this.responseStatus = responseStatus;
         this.message = message;
     }
 
     public SubmissionResponseDto(String correlationId,
                                  SubmissionResponseStatus responseStatus,
-                                 @Nullable String productId,
+                                 @Nullable String id,
                                  @Nullable OffsetDateTime expires,
                                  @Nullable String session,
                                  @Nullable String message) {
-        this(correlationId, responseStatus, productId, message);
+        this(correlationId, responseStatus, id, message);
         this.correlationId = correlationId;
         this.expires = expires;
         this.session = session;
@@ -84,8 +84,8 @@ public class SubmissionResponseDto  {
     }
 
     @Nullable
-    public String getProductId() {
-        return productId;
+    public String getId() {
+        return id;
     }
 
     public SubmissionResponseStatus getResponseStatus() {
@@ -133,7 +133,7 @@ public class SubmissionResponseDto  {
         }
         SubmissionResponseDto that = (SubmissionResponseDto) o;
         return correlationId.equals(that.correlationId)
-               && Objects.equals(productId, that.productId)
+               && Objects.equals(id, that.id)
                && responseStatus == that.responseStatus
                && Objects.equals(expires, that.expires)
                && Objects.equals(session, that.session)
@@ -142,7 +142,7 @@ public class SubmissionResponseDto  {
 
     @Override
     public int hashCode() {
-        return Objects.hash(correlationId, productId, responseStatus, expires, session, message);
+        return Objects.hash(correlationId, id, responseStatus, expires, session, message);
     }
 
     @Override
@@ -151,8 +151,8 @@ public class SubmissionResponseDto  {
                + "correlationId='"
                + correlationId
                + '\''
-               + ", productId='"
-               + productId
+               + ", id='"
+               + id
                + '\''
                + ", responseStatus="
                + responseStatus

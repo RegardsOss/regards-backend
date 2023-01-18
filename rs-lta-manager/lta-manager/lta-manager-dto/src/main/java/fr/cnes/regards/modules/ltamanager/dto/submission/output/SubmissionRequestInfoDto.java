@@ -38,9 +38,9 @@ public final class SubmissionRequestInfoDto {
     @Schema(description = "Submission request id.")
     private final String correlationId;
 
-    @NotBlank(message = "productId is required")
+    @NotBlank(message = "id is required")
     @Schema(description = "Id of the product sent.")
-    private final String productId;
+    private final String id;
 
     @NotNull(message = "status is required")
     @Schema(description = "Submission request progress status.")
@@ -59,13 +59,13 @@ public final class SubmissionRequestInfoDto {
     private final String message;
 
     public SubmissionRequestInfoDto(String correlationId,
-                                    String productId,
+                                    String id,
                                     SubmissionRequestState status,
                                     OffsetDateTime statusDate,
                                     String session,
                                     @Nullable String message) {
         this.correlationId = correlationId;
-        this.productId = productId;
+        this.id = id;
         this.status = status;
         this.statusDate = statusDate;
         this.session = session;
@@ -82,7 +82,7 @@ public final class SubmissionRequestInfoDto {
         }
         SubmissionRequestInfoDto that = (SubmissionRequestInfoDto) o;
         return correlationId.equals(that.correlationId)
-               && productId.equals(that.productId)
+               && id.equals(that.id)
                && status == that.status
                && statusDate.equals(that.statusDate)
                && Objects.equals(session, that.session)
@@ -91,7 +91,7 @@ public final class SubmissionRequestInfoDto {
 
     @Override
     public int hashCode() {
-        return Objects.hash(correlationId, productId, status, statusDate, session, message);
+        return Objects.hash(correlationId, id, status, statusDate, session, message);
     }
 
     @Override
@@ -100,8 +100,8 @@ public final class SubmissionRequestInfoDto {
                + "correlationId='"
                + correlationId
                + '\''
-               + ", productId='"
-               + productId
+               + ", id='"
+               + id
                + '\''
                + ", status="
                + status

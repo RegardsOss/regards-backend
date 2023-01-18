@@ -42,11 +42,11 @@ public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements I
     private MessageProperties messageProperties;
 
     public SubmissionRequestDtoEvent(String correlationId,
-                                     String productId,
+                                     String id,
                                      String datatype,
                                      IGeometry geometry,
                                      List<ProductFileDto> files) {
-        super(correlationId, productId, datatype, geometry, files);
+        super(correlationId, id, datatype, geometry, files);
         this.messageProperties = new MessageProperties();
     }
 
