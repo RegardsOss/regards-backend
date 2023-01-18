@@ -212,7 +212,7 @@ public class CreateDatatypeService {
      * @param builtStorePath storePath to check
      */
     private void checkBuiltStorePath(String builtStorePath) {
-        if (!Pattern.compile("^[\\w\\/]+$").matcher(builtStorePath).matches()) {
+        if (!Pattern.compile("^[\\w\\/\\-_:]*$").matcher(builtStorePath).matches()) {
             throw new IllegalArgumentException(String.format(
                 "An error occurred while replacing placeholders in the storePath \"%s\"."
                 + "It must contain only alphanumeric characters.",
