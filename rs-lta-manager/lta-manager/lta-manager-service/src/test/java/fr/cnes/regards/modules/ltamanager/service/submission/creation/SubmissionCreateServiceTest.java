@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequest
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.settings.LtaSettingService;
-import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;

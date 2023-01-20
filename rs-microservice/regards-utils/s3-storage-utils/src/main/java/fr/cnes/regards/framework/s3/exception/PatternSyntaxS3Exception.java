@@ -16,25 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.framework.s3.exception;
 
-package fr.cnes.regards.modules.storage.service.download.s3;
-import fr.cnes.regards.framework.s3.domain.S3Server;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 /**
- * @author Thibaud Michaudel
- **/
-@ConfigurationProperties(prefix = "regards.s3")
-@Component
-public class KnownS3Storages {
+ * @author Stephane Cortine
+ */
+public class PatternSyntaxS3Exception extends IOException {
 
-    private final List<S3Server> storages = new ArrayList<>();
+    public PatternSyntaxS3Exception(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    public List<S3Server> getStorages() {
-        return storages;
+    public PatternSyntaxS3Exception(String message) {
+        super(message);
     }
 }

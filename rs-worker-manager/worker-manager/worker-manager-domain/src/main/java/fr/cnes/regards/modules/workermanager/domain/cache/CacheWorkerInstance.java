@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.workermanager.domain.cache;
 
-import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerHeartBeatEvent;
 
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;

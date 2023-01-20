@@ -58,10 +58,6 @@
             <artifactId>jpa-commons-regards</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>amqp-regards</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
             <artifactId>tenant-settings-domain</artifactId>
         </dependency>
@@ -72,6 +68,10 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.workermanager</groupId>
             <artifactId>worker-manager-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.workermanager</groupId>
+            <artifactId>worker-manager-amqp</artifactId>
         </dependency>
         <!-- Swagger dependency -->
         <dependency>

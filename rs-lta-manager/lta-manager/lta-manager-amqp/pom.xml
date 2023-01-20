@@ -55,8 +55,8 @@
     <dependencies>
         <!-- Regards -->
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>amqp-regards</artifactId>
+            <groupId>fr.cnes.regards.modules.workermanager</groupId>
+            <artifactId>worker-manager-amqp</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.ltamanager</groupId>

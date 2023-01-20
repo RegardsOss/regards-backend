@@ -51,6 +51,16 @@
     </developers>
 
     <dependencies>
+        <!-- REGARDS -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>s3-storage-utils</artifactId>
+        </dependency>
+        <!-- External -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
@@ -70,10 +80,6 @@
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.utils</groupId>
-            <artifactId>s3-storage-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>io.vavr</groupId>
@@ -105,10 +111,6 @@
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
         </dependency>
     </dependencies>
 </project>

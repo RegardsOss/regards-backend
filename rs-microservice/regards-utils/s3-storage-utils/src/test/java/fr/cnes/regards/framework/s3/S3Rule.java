@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.s3.client;
+package fr.cnes.regards.framework.s3;
 
 import com.google.common.collect.ImmutableMap;
 import io.vavr.Tuple2;

@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.s3.S3StorageConfiguration

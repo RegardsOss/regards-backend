@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+import java.beans.ConstructorProperties;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +40,7 @@ public class SubmissionRequestDto {
     @NotBlank(message = "correlationId is required to track this request.")
     @Size(max = 255, message = "correlationId length is limited to 255 characters.")
     @Schema(description = "Identifier to track this request during the entire workflow. It must be unique.",
-            maxLength = 255)
+        maxLength = 255)
     private final String correlationId;
 
     @NotBlank(message = "productId is required.")
@@ -78,7 +79,7 @@ public class SubmissionRequestDto {
     @Nullable
     @Size(max = 255, message = "storePath length is limited to 255 characters.")
     @Pattern(regexp = "^[\\w/]*$",
-             message = "storePath must only contain alphanumeric characters and slash separators.")
+        message = "storePath must only contain alphanumeric characters and slash separators.")
     @Schema(description = "Path to store the product. If null, the storePath will be built from the lta-manager "
                           + "configuration.", nullable = true)
     private String storePath;
@@ -95,6 +96,7 @@ public class SubmissionRequestDto {
     // owner is set after the construction of the request
     private String owner;
 
+    @ConstructorProperties({ "correlationId", "productId", "datatype", "geometry", "files" })
     public SubmissionRequestDto(String correlationId,
                                 String productId,
                                 String datatype,

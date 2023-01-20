@@ -25,9 +25,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionsRequestsInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Type;

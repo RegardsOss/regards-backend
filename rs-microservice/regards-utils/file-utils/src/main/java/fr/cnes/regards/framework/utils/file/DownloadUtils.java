@@ -24,7 +24,7 @@ import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
-import org.apache.commons.lang3.StringUtils;
+import fr.cnes.regards.framework.s3.utils.S3ServerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBufferFactory;
@@ -50,7 +50,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -91,11 +90,11 @@ public final class DownloadUtils {
         }
 
         if (source.getProtocol().equals("http") || source.getProtocol().equals("https")) {
-            Optional<S3Server> s3Server = isUrlFromS3Host(source, knownS3Servers);
+            Optional<S3Server> s3Server = S3ServerUtils.isUrlFromS3Server(source, knownS3Servers);
             if (s3Server.isPresent()) {
                 //S3
-                KeyAndStorage keyAndStorage = getKeyAndStorage(source, s3Server.get());
-                return existsS3(keyAndStorage.key, keyAndStorage.storageConfig);
+                S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(source, s3Server.get());
+                return existsS3(keyAndStorage.key(), keyAndStorage.storageConfig());
             } else {
                 //Regular download
                 HttpURLConnection conn = (HttpURLConnection) connection;
@@ -295,11 +294,11 @@ public final class DownloadUtils {
                                                          Collection<String> nonProxyHosts,
                                                          Integer pConnectTimeout,
                                                          List<S3Server> knownS3Servers) throws IOException {
-        Optional<S3Server> s3Server = isUrlFromS3Host(source, knownS3Servers);
+        Optional<S3Server> s3Server = S3ServerUtils.isUrlFromS3Server(source, knownS3Servers);
         if (s3Server.isPresent()) {
-            KeyAndStorage keyAndStorage = getKeyAndStorage(source, s3Server.get());
-            StorageCommandID cmdId = new StorageCommandID(keyAndStorage.key, UUID.randomUUID());
-            return getInputStreamFromS3Source(keyAndStorage.key, keyAndStorage.storageConfig, cmdId);
+            S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(source, s3Server.get());
+            StorageCommandID cmdId = new StorageCommandID(keyAndStorage.key(), UUID.randomUUID());
+            return getInputStreamFromS3Source(keyAndStorage.key(), keyAndStorage.storageConfig(), cmdId);
         } else {
             return getInputStreamThroughProxyFromRegularSource(source, proxy, nonProxyHosts, pConnectTimeout);
         }
@@ -402,31 +401,6 @@ public final class DownloadUtils {
     }
 
     /**
-     * Return the S3Server the URL belong to or null if there is no corresponding server
-     *
-     * @param url       the url to check
-     * @param s3Servers the list of servers to check
-     * @return the server hosting the file at the url if it's present.
-     */
-    private static Optional<S3Server> isUrlFromS3Host(URL url, List<S3Server> s3Servers) {
-        return s3Servers == null ?
-            Optional.empty() :
-            s3Servers.stream().filter(s -> isTheSameHost(s.getEndpoint(), url.getHost(), url.getPort())).findAny();
-    }
-
-    private static boolean isTheSameHost(String endPoint, String hostUrl, int hostPort) {
-        try {
-            URL url = new URL(endPoint);
-            String endPointUrl = url.getHost();
-            int endPointHost = url.getPort();
-            return endPointUrl.equals(hostUrl) && endPointHost == hostPort;
-        } catch (MalformedURLException e) {
-            LOGGER.error("The url {} is invalid", endPoint, e);
-            return false;
-        }
-    }
-
-    /**
      * Get an InputStream of the file to download
      *
      * @param source          the file to download
@@ -483,51 +457,5 @@ public final class DownloadUtils {
             connection.setConnectTimeout(pConnectTimeout);
         }
         return connection;
-    }
-
-    /**
-     * Use the given server and source to build the s3Storage and key to be used during s3 operations
-     *
-     * @param source   the file url on the server
-     * @param s3Server the server configuration
-     * @return a record with the s3 key for the file and the storage
-     */
-    private static KeyAndStorage getKeyAndStorage(URL source, S3Server s3Server) throws MalformedURLException {
-        String bucket;
-        Pattern pattern = Pattern.compile(s3Server.getPattern());
-        Matcher matcher = pattern.matcher(source.toString());
-        matcher.find();
-        String filePath;
-        try {
-            filePath = matcher.group(2);
-        } catch (IllegalStateException e) {
-            throw new MalformedURLException(String.format("Could not retrieve filename from url %s using pattern %s",
-                                                          source,
-                                                          pattern));
-        }
-        if (StringUtils.isNotBlank(s3Server.getBucket())) {
-            bucket = s3Server.getBucket();
-        } else {
-            bucket = matcher.group(1);
-        }
-        StorageConfig storageConfig = StorageConfig.builder()
-                                                   .endpoint(s3Server.getEndpoint())
-                                                   .bucket(bucket)
-                                                   .key(s3Server.getKey())
-                                                   .secret(s3Server.getSecret())
-                                                   .region(s3Server.getRegion())
-                                                   .build();
-        KeyAndStorage keyAndStorage = new KeyAndStorage(filePath, storageConfig);
-        return keyAndStorage;
-    }
-
-    /**
-     * Record with an s3 key and the s3 storage config
-     *
-     * @param key           an s3 key
-     * @param storageConfig an s3 storage configuration
-     */
-    private record KeyAndStorage(String key, StorageConfig storageConfig) {
-
     }
 }

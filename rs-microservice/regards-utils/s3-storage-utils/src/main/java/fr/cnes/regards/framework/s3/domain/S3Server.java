@@ -18,22 +18,36 @@
  */
 package fr.cnes.regards.framework.s3.domain;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * @author Thibaud Michaudel
  **/
 
 public class S3Server {
 
+    /**
+     * Url of endpoint for the S3 server
+     */
+    @NotBlank(message = "Endpoint is required.")
     private String endpoint;
 
+    @NotBlank(message = "Region is required.")
     private String region;
 
+    @NotBlank(message = "Key is required.")
     private String key;
 
+    @NotBlank(message = "Secret is required.")
     private String secret;
 
+    @NotBlank(message = "Bucket is required.")
     private String bucket;
 
+    /**
+     * Pattern for regex to retrieve bucket(first group) and path with filename(second group) from url.
+     * If the bucket field {@link S3Server#bucket} is null, this pattern allows to retrieve it.
+     */
     private String pattern;
 
     public S3Server() {
@@ -100,5 +114,48 @@ public class S3Server {
     public S3Server setPattern(String pattern) {
         this.pattern = pattern;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        S3Server s3Server = (S3Server) o;
+
+        return endpoint.equals(s3Server.endpoint);
+    }
+
+    @Override
+    public int hashCode() {
+        return endpoint.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "S3Server{"
+               + "endpoint='"
+               + endpoint
+               + '\''
+               + ", region='"
+               + region
+               + '\''
+               + ", key='"
+               + key
+               + '\''
+               + ", secret='"
+               + secret
+               + '\''
+               + ", bucket='"
+               + bucket
+               + '\''
+               + ", pattern='"
+               + pattern
+               + '\''
+               + '}';
     }
 }

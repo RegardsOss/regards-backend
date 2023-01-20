@@ -22,12 +22,12 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
-import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionsRequestsInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -103,6 +103,7 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
         long start = System.currentTimeMillis();
         LOGGER.info("Handling {} messages", rawMessages.size());
         SessionsRequestsInfo requestInfo = workerManagerService.registerRequests(rawMessages);
+
         LOGGER.info("{} dispatched request(s) ,{} delayed request(s) and {} skipped event(s) registered in {} ms",
                     requestInfo.getRequests(RequestStatus.DISPATCHED).size(),
                     requestInfo.getRequests(RequestStatus.NO_WORKER_AVAILABLE).size(),

@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequest
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.settings.LtaSettingService;
-import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

@@ -16,12 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.dto.events.out;
+package fr.cnes.regards.modules.workermanager.amqp.events.out;
 
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
-import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
 import org.springframework.amqp.core.MessageProperties;
 
 import javax.validation.constraints.NotNull;

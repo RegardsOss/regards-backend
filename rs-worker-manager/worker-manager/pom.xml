@@ -58,5 +58,6 @@
         <module>worker-manager-dao</module>
         <module>worker-manager-service</module>
         <module>worker-manager-rest</module>
+        <module>worker-manager-amqp</module>
     </modules>
 </project>

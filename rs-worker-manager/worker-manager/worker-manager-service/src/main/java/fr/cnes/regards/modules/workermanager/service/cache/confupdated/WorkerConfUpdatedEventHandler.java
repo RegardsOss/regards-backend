@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.workermanager.service.cache.confupdated;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.workermanager.dto.events.internal.WorkerConfUpdatedEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.internal.WorkerConfUpdatedEvent;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

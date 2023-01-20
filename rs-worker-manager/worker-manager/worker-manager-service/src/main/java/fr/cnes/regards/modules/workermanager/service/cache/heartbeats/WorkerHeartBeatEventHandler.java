@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.workermanager.service.cache.heartbeats;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerHeartBeatEvent;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

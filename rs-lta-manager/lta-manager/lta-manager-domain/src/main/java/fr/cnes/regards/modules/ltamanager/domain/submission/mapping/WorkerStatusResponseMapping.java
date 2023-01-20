@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ltamanager.domain.submission.mapping;
 
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 
 /**
  * Map between worker {@link ResponseStatus} received and {@link SubmissionRequestState}.

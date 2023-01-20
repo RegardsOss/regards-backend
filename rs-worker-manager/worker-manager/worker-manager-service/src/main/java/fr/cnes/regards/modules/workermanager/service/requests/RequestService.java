@@ -28,28 +28,28 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.amqp.events.RawMessageBuilder;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerRequestDlqEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerResponseEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.RequestSpecificationsBuilder;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
-import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
-import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerRequestDlqEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
-import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.WorkerManagerJobsPriority;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
 import fr.cnes.regards.modules.workermanager.service.requests.job.ScanRequestJob;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionsRequestsInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -197,6 +197,7 @@ public class RequestService {
      * @return {@link Request}
      */
     public SessionsRequestsInfo registerRequests(List<Message> events) {
+
         SessionsRequestsInfo requestInfo = new SessionsRequestsInfo();
 
         // Omit request not valid
@@ -287,7 +288,7 @@ public class RequestService {
      * @param validEvents events to convert
      * @return Requests
      */
-    private Collection<Request> getRequestsFromEvents(Collection<Message> validEvents) {
+    public Collection<Request> getRequestsFromEvents(Collection<Message> validEvents) {
         return validEvents.stream()
                           .map(event -> new Request(event, RequestStatus.TO_DISPATCH))
                           .collect(Collectors.toList());

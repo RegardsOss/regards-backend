@@ -1695,13 +1695,13 @@
                 <artifactId>processing-demo</artifactId>
                 <version>${revision}</version>
             </dependency>
-            <!--WorkerManager -->
             <!-- Worker common DTO -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.worker-common</groupId>
                 <artifactId>worker-common-dto</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <!-- Worker Manager -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.workermanager</groupId>
                 <artifactId>worker-manager-dto</artifactId>
@@ -1727,7 +1727,12 @@
                 <artifactId>worker-manager-rest</artifactId>
                 <version>${revision}</version>
             </dependency>
-            <!--LtaManager -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.workermanager</groupId>
+                <artifactId>worker-manager-amqp</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <!--Lta Manager -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.ltamanager</groupId>
                 <artifactId>lta-manager-domain</artifactId>

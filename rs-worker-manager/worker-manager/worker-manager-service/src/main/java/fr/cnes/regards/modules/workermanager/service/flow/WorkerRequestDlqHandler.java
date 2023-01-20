@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
-import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerRequestDlqEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerRequestDlqEvent;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

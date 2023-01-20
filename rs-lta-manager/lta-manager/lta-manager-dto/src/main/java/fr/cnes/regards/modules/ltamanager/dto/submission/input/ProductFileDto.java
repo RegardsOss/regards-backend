@@ -26,6 +26,7 @@ import org.springframework.util.MimeType;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.beans.ConstructorProperties;
 import java.util.Objects;
 
 /**
@@ -55,6 +56,7 @@ public final class ProductFileDto {
     @Schema(description = "Mimetype of the file.")
     private final MimeType mimeType;
 
+    @ConstructorProperties({ "type", "url", "filename", "checksumMd5", "mimeType" })
     public ProductFileDto(DataType type, String url, String filename, String checksumMd5, MimeType mimeType) {
         Assert.notNull(type, "type is mandatory ! Make sure other constraints are satisfied.");
         Assert.notNull(url, "url is mandatory ! Make sure other constraints are satisfied.");

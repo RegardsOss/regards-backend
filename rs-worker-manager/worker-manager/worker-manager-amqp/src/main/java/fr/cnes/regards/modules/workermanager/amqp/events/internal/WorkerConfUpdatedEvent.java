@@ -16,27 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.dto.events.in;
+package fr.cnes.regards.modules.workermanager.amqp.events.internal;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.workercommon.dto.WorkerHeartBeat;
-
-import java.time.OffsetDateTime;
 
 /**
- * The heart beat received by the worker manager
+ * The event raises when there is an updates upon WorkerConfiguration saved on DB
  *
  * @author Léo Mieulet
  */
-@Event(target = Target.ALL, converter = JsonMessageConverter.GSON, routingKey = "#", autoDelete = true)
-public class WorkerHeartBeatEvent extends WorkerHeartBeat implements ISubscribable {
+@Event(target = Target.MICROSERVICE, converter = JsonMessageConverter.GSON)
+public class WorkerConfUpdatedEvent implements ISubscribable {
 
-    public WorkerHeartBeatEvent(String id, String type, OffsetDateTime heartBeatDate) {
-        this.setId(id);
-        this.setType(type);
-        this.setHeartBeatDate(heartBeatDate);
-    }
 }

@@ -25,9 +25,9 @@ import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
-import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;

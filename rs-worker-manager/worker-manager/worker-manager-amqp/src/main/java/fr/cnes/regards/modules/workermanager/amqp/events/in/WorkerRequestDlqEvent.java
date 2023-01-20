@@ -16,12 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.dto.events.in;
+package fr.cnes.regards.modules.workermanager.amqp.events.in;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.WorkerRequestEvent;
 
 /**
  * Empty POJO to handle worker requests DLQ sent by manager with undefined body.

@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.workermanager.service.cache;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerHeartBeatEvent;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
-import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigService;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerManagerConfigManager;

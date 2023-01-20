@@ -22,6 +22,7 @@ package fr.cnes.regards.framework.utils.file;
 import fr.cnes.regards.framework.s3.domain.S3Server;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import fr.cnes.regards.framework.s3.test.FileIdentificationEnum;
+import fr.cnes.regards.framework.s3.test.S3BucketTestUtils;
 import fr.cnes.regards.framework.s3.test.S3FileTestUtils;
 import fr.cnes.regards.framework.test.integration.RegardsActiveProfileResolver;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
@@ -29,10 +30,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,10 +87,6 @@ public class DownloadUtilsIT {
     // Storage used for this test
     private S3Server testServer;
 
-    public DownloadUtilsIT() {
-
-    }
-
     @Before
     public void setUp() throws MalformedURLException {
         this.testServer = new S3Server(new URL(s3Protocol, s3Host, s3Port, "").toString(),
@@ -101,9 +95,14 @@ public class DownloadUtilsIT {
                                        secret,
                                        "bucket-test-download-utils",
                                        "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
-        S3FileTestUtils.createBucket(testServer);
+        S3BucketTestUtils.createBucket(testServer);
         createTestFileOnServer();
         createDeepTestFileOnServer();
+    }
+
+    @After
+    public void clean() {
+        S3BucketTestUtils.deleteBucket(testServer);
     }
 
     @Test
@@ -254,8 +253,10 @@ public class DownloadUtilsIT {
         fileReferenceMetaInfo.setMimeType(MimeType.valueOf("text/plain"));
         fileReferenceMetaInfo.setChecksum("040befd332b3ce3d7d5f12943771af4e");
         fileStorageRequest.setMetaInfo(fileReferenceMetaInfo);
-        FileStorageWorkingSubset subset = new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest));
-        S3FileTestUtils.store(subset, testServer, FileIdentificationEnum.FILENAME);
+
+        S3FileTestUtils.store(new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest)),
+                              testServer,
+                              FileIdentificationEnum.FILENAME);
     }
 
     private void createDeepTestFileOnServer() {
@@ -269,7 +270,9 @@ public class DownloadUtilsIT {
         fileReferenceMetaInfo.setMimeType(MimeType.valueOf("text/plain"));
         fileReferenceMetaInfo.setChecksum("9dad4a34995d58e0a55aebaed5029f43");
         fileStorageRequest.setMetaInfo(fileReferenceMetaInfo);
-        FileStorageWorkingSubset subset = new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest));
-        S3FileTestUtils.store(subset, testServer, FileIdentificationEnum.FILENAME);
+
+        S3FileTestUtils.store(new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest)),
+                              testServer,
+                              FileIdentificationEnum.FILENAME);
     }
 }

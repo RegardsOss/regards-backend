@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.LtaWorkerRequestDto;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import org.springframework.amqp.core.MessageProperties;
 
 import java.nio.file.Path;

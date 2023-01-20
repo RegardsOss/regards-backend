@@ -16,10 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.dto.requests;
+package fr.cnes.regards.modules.workermanager.service.sessions;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestsInfo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.amqp.core.Message;
 

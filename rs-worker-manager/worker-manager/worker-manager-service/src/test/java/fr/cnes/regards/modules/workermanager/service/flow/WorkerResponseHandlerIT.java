@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 
 import com.google.common.collect.Lists;
 import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerResponseEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;

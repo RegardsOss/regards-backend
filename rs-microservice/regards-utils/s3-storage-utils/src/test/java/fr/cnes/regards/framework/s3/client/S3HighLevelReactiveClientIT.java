@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.s3.client;
 
+import fr.cnes.regards.framework.s3.S3Rule;
 import fr.cnes.regards.framework.s3.domain.StorageCommand;
 import fr.cnes.regards.framework.s3.domain.StorageCommandID;
 import fr.cnes.regards.framework.s3.domain.StorageConfig;
@@ -39,7 +40,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @ActiveProfiles(resolver = RegardsActiveProfileResolver.class)
 public class S3HighLevelReactiveClientIT {
 
-    private static final Logger LOGGER = getLogger(S3HighLevelReactiveClientIT.class);
+    private final static Logger LOGGER = getLogger(S3HighLevelReactiveClientIT.class);
 
     @Value("${s3.server}")
     private String s3Host;

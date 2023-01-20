@@ -23,8 +23,8 @@ import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepos
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.WorkerStatusResponseMapping;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
-import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -64,7 +64,7 @@ public class SwaggerAutoConfiguration {
     @Value("${spring.application.name}")
     private String springAppName;
 
-    @Value("${prefix.path}")
+    @Value("${prefix.path:/api/v1}")
     private String prefixPath;
 
     @Value("${regards.instance.tenant.name:instance}")
@@ -88,7 +88,7 @@ public class SwaggerAutoConfiguration {
     private String regardsSwaggerHost;
 
     @Bean
-    public OpenAPI customOpenAPI(@Value("${springdoc.version}") String appVersion) {
+    public OpenAPI customOpenAPI(@Value("${springdoc.version:@springdoc.version@}") String appVersion) {
         overrideSwaggerSchemaConverter();
         return new OpenAPI().components(new Components().addSecuritySchemes(AUTHENTICATION_KEY,
                                                                             new SecurityScheme().type(SecurityScheme.Type.OAUTH2)

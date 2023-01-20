@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.workermanager.domain.request;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import org.hibernate.annotations.Type;

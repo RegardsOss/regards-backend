@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.workermanager.dto.events.out;
+package fr.cnes.regards.modules.workermanager.amqp.events.out;
 
 /**
  * WorkerManager responses

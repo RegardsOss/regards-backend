@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.workermanager.service.flow.mock;
 
-import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;

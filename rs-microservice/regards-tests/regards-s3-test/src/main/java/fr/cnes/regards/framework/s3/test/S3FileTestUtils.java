@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageProgressManager;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Stream;
@@ -38,18 +37,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3Configuration;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.util.UUID;
@@ -59,11 +49,15 @@ import java.util.UUID;
  *
  * @author Thibaud Michaudel
  **/
-public class S3FileTestUtils {
+public final class S3FileTestUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(S3FileTestUtils.class);
 
+    private static final String THREAD_PREFIX = "s3-reactive-client-test";
+
     private static final int MULTIPART_THRESHOLD_MB = 5;
+
+    private static final int MULTIPART_UPLOAD_PREFETCH = 1;
 
     /**
      * Store files on a s3 server
@@ -79,7 +73,7 @@ public class S3FileTestUtils {
             LOGGER.info("Start storing {}", request.getOriginUrl());
             URL sourceUrl = new URL(request.getOriginUrl());
 
-            request.getMetaInfo().setFileSize(getFileSize(sourceUrl));
+            request.getMetaInfo().setFileSize(FileTestUtils.getFileSize(sourceUrl));
 
             Flux<ByteBuffer> buffers = DataBufferUtils.readInputStream(sourceUrl::openStream,
                                                                        new DefaultDataBufferFactory(),
@@ -105,6 +99,8 @@ public class S3FileTestUtils {
                 case FILENAME:
                     entryKey = Paths.get(storageConfig.entryKey(request.getOriginUrl())).getFileName().toString();
                     break;
+                default:
+                    throw new IllegalArgumentException("Unknown file identification");
             }
 
             StorageEntry storageEntry = StorageEntry.builder()
@@ -118,37 +114,12 @@ public class S3FileTestUtils {
 
             StorageCommand.Write writeCmd = new StorageCommand.Write.Impl(storageConfig, cmdId, entryKey, storageEntry);
 
-            Scheduler scheduler = Schedulers.newParallel("s3-reactive-client", 10);
+            Scheduler scheduler = Schedulers.newParallel(THREAD_PREFIX, 10);
             int maxBytesPerPart = MULTIPART_THRESHOLD_MB * 1024 * 1024;
-            S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
+            S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
+                                                                             maxBytesPerPart,
+                                                                             MULTIPART_UPLOAD_PREFETCH);
 
-            IStorageProgressManager progressManager = new IStorageProgressManager() {
-
-                @Override
-                public void storageSucceed(FileStorageRequest fileReferenceRequest, URL storedUrl, Long fileSize) {
-
-                }
-
-                @Override
-                public void storageSucceedWithPendingActionRemaining(FileStorageRequest fileReferenceRequest,
-                                                                     URL storedUrl,
-                                                                     Long fileSize,
-                                                                     Boolean notifyAdministrators) {
-
-                }
-
-                @Override
-                public void storagePendingActionSucceed(String storedUrl) {
-
-                }
-
-                @Override
-                public void storageFailed(FileStorageRequest fileReferenceRequest, String cause) {
-
-                }
-            };
-
-            String finalEntryKey = entryKey;
             return client.write(writeCmd)
                          .flatMap(writeResult -> writeResult.matchWriteResult(Mono::just,
                                                                               unreachable -> Mono.error(new RuntimeException(
@@ -157,35 +128,12 @@ public class S3FileTestUtils {
                                                                                   "Write failure in S3 storage"))))
                          .doOnError(t -> {
                              LOGGER.error("End storing {}", request.getOriginUrl(), t);
-                             progressManager.storageFailed(request, "Write failure in S3 storage");
-
                          })
                          .doOnSuccess(success -> {
                              LOGGER.info("End storing {}", request.getOriginUrl());
-                             progressManager.storageSucceed(request,
-                                                            storageConfig.entryKeyUrl(finalEntryKey.replaceFirst("^/*",
-                                                                                                                 "")),
-                                                            success.getSize());
                          })
                          .block();
         }));
-    }
-
-    public static void createBucket(S3Server s3Server) {
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(s3Server.getKey(), s3Server.getSecret());
-        S3Client s3Client = S3Client.builder()
-                                    .endpointOverride(URI.create(s3Server.getEndpoint()))
-                                    .region(Region.of(s3Server.getRegion()))
-                                    .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                                    .serviceConfiguration(S3Configuration.builder()
-                                                                         .pathStyleAccessEnabled(true)
-                                                                         .build())
-                                    .build();
-
-        if (s3Client.listBuckets().buckets().stream().noneMatch(bucket -> bucket.name().equals(s3Server.getBucket()))) {
-            s3Client.createBucket(CreateBucketRequest.builder().bucket(s3Server.getBucket()).build());
-        }
-
     }
 
     private static Option<Long> entrySize(FileStorageRequest request) {
@@ -196,20 +144,6 @@ public class S3FileTestUtils {
         return Option.some(Tuple.of(request.getMetaInfo().getAlgorithm(), request.getMetaInfo().getChecksum()));
     }
 
-    private static long getFileSize(URL sourceUrl) {
-        long fileSize = 0l;
-        URLConnection urlConnection = null;
-        try {
-            try {
-                urlConnection = sourceUrl.openConnection();
-                fileSize = urlConnection.getContentLengthLong();
-            } finally {
-                if (urlConnection != null)
-                    urlConnection.getInputStream().close();
-            }
-        } catch (IOException e) {
-            LOGGER.error("Failure in the getting of file size : {}", sourceUrl, e);
-        }
-        return fileSize;
+    private S3FileTestUtils() {
     }
 }

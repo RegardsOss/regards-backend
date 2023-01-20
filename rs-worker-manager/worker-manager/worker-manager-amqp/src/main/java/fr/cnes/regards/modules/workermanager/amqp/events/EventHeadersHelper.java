@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.dto.events;
+package fr.cnes.regards.modules.workermanager.amqp.events;
 
 import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import org.springframework.amqp.core.Message;

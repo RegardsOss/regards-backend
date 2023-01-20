@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.dto.events.in;
+package fr.cnes.regards.modules.workermanager.amqp.events.out;
 
 import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
@@ -25,12 +25,16 @@ import org.springframework.amqp.core.MessageProperties;
 import javax.validation.constraints.NotNull;
 
 /**
- * Event sent to WorkerManager to submit a new request
+ * Empty POJO to handle worker requests sent by manager with undefined body.
+ * We use this class to declare the DLQ and during tests
  *
- * @author Sébastien Binda
+ * @autor Sébastien Binda
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class RequestEvent implements ISubscribable, IMessagePropertiesAware {
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON,
+    routingKey = WorkerRequestEvent.DLQ_ROOTING_KEY)
+public class WorkerRequestEvent implements ISubscribable, IMessagePropertiesAware {
+
+    public final static String DLQ_ROOTING_KEY = "regards.worker.manager.request.dlq";
 
     // Prevent GSON converter from serializing this field
     @GsonIgnore
