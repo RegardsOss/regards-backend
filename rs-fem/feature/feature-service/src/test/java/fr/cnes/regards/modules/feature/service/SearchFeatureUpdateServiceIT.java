@@ -76,19 +76,14 @@ public class SearchFeatureUpdateServiceIT extends AbstractFeatureMultitenantServ
                                                                                      EntityType.DATA,
                                                                                      "tenant1",
                                                                                      1);
-        String model = mockModelClient("feature_model_01.xml",
-                                       cps,
-                                       factory,
-                                       this.getDefaultTenant(),
-                                       modelAttrAssocClientMock);
 
         Feature feature0 = Feature.build(PROVIDER_ID0,
                                          "owner",
                                          URN0,
                                          IGeometry.point(IGeometry.position(10.0, 20.0)),
                                          EntityType.DATA,
-                                         model);
-        FeatureEntity featureEntity = FeatureEntity.build(SESSION_OWNER_0, SESSION_0, feature0, null, model);
+                                         featureModelName);
+        FeatureEntity featureEntity = FeatureEntity.build(SESSION_OWNER_0, SESSION_0, feature0, null, featureModelName);
         featureRepo.save(featureEntity);
 
         Feature feature1 = Feature.build(PROVIDER_ID2,
@@ -96,8 +91,8 @@ public class SearchFeatureUpdateServiceIT extends AbstractFeatureMultitenantServ
                                          URN1,
                                          IGeometry.point(IGeometry.position(10.0, 20.0)),
                                          EntityType.DATA,
-                                         model);
-        featureEntity = FeatureEntity.build("owner", "session", feature1, null, model);
+                                         featureModelName);
+        featureEntity = FeatureEntity.build("owner", "session", feature1, null, featureModelName);
         featureRepo.save(featureEntity);
 
         FeatureUpdateRequest featureUpdateRequest0 = new FeatureUpdateRequest();

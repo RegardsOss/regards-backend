@@ -27,7 +27,6 @@ import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import org.assertj.core.util.Lists;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -59,23 +58,8 @@ public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceIT {
 
     private static final Integer PUBLISH_BULK_SIZE = 5000;
 
-    private String modelName;
-
     @Autowired
     private IPublisher publisher;
-
-    @Before
-    public void prepareContext() throws Exception {
-        super.before();
-
-        // Manage model
-        modelName = mockModelClient(GeodeProperties.getGeodeModel(),
-                                    this.getCps(),
-                                    this.getFactory(),
-                                    this.getDefaultTenant(),
-                                    this.getModelAttrAssocClientMock());
-        Thread.sleep(5_000);
-    }
 
     @Test
     public void requestCreation() {
@@ -96,7 +80,7 @@ public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceIT {
                                             null,
                                             IGeometry.unlocated(),
                                             EntityType.DATA,
-                                            modelName);
+                                            geoModelName);
             GeodeProperties.addGeodeProperties(feature);
             events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
 

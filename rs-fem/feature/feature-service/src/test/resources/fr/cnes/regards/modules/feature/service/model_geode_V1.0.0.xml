@@ -256,7 +256,7 @@
 					<max>99</max>
 				</integer_range>
 			</restriction>
-		</attribute>		
+		</attribute>
 		<attribute optional="true">
 			<label>Station</label>
 			<name>station</name>

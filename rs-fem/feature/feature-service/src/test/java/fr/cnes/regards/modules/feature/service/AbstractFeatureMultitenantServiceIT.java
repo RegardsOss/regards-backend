@@ -106,7 +106,7 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeatureMultitenantServiceIT.class);
 
-    private static final String RESOURCE_PATH = "fr/cnes/regards/modules/feature/service/";
+    protected static final String RESOURCE_PATH = "fr/cnes/regards/modules/feature/service/";
 
     protected final String sessionStepName = (String) ReflectionTestUtils.getField(FeatureSessionNotifier.class,
                                                                                    "GLOBAL_SESSION_STEP");
@@ -205,6 +205,18 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
     @Autowired
     private JobTestCleaner jobTestCleaner;
 
+    protected String geoModelName;
+
+    protected String geoModel100Name;
+
+    protected String featureModelName;
+
+    protected String mutationModelName;
+
+    private List<EntityModel<Model>> models = new ArrayList<>();
+
+    private Map<String, List<EntityModel<ModelAttrAssoc>>> modelResources = new HashMap<>();
+
     // ------------------------
     // TO CLEAN TESTS
     // ------------------------
@@ -217,6 +229,12 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
         simulateApplicationReadyEvent();
         setNotificationSetting(true);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        // Mock models
+        geoModel100Name = geoModelName;
+        featureModelName = mockModelClient("feature_model_01.xml");
+        mutationModelName = mockModelClient("feature_mutation_model.xml");
+        geoModelName = mockModelClient("model_geode_V1.0.0.xml");
         doInit();
     }
 
@@ -242,12 +260,12 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
         this.featureSaveMetadataRequestRepository.deleteAllInBatch();
         this.featureDisseminationInfoRepository.deleteAllInBatch();
         this.featureUpdateDisseminationRequestRepository.deleteAllInBatch();
-        this.featureRepo.deleteAllInBatch();
+        this.featureRepo.deleteAll();
         this.notificationRequestRepo.deleteAllInBatch();
         this.jobInfoRepository.deleteAll();
         this.stepPropertyUpdateRequestRepository.deleteAllInBatch();
         this.sessionStepRepository.deleteAllInBatch();
-        this.snapshotProcessRepository.deleteAll();
+        this.snapshotProcessRepository.deleteAllInBatch();
     }
 
     // ------------------------
@@ -375,16 +393,18 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
             }
 
             // Property factory registration
+            LOGGER.info("Registering {} attributes from model {}", atts.size(), modelName);
             factory.registerAttributes(tenant, atts);
+            modelResources.put(modelName, resources);
 
             // Mock client
-            List<EntityModel<Model>> models = new ArrayList<>();
+
             Model mockModel = Mockito.mock(Model.class);
             Mockito.when(mockModel.getName()).thenReturn(modelName);
             models.add(EntityModel.of(mockModel));
             Mockito.when(modelClientMock.getModels(null)).thenReturn(ResponseEntity.ok(models));
             Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(modelName))
-                   .thenReturn(ResponseEntity.ok(resources));
+                   .thenReturn(ResponseEntity.ok(modelResources.get(modelName)));
 
             return modelName;
         } catch (IOException | ImportException e) {
@@ -515,17 +535,6 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
         FeatureCreationRequestEvent toAdd;
         Feature featureToAdd;
         FeatureFile file;
-        String model = mockModelClient("feature_model_01.xml",
-                                       cps,
-                                       factory,
-                                       this.getDefaultTenant(),
-                                       modelAttrAssocClientMock);
-
-        try {
-            TimeUnit.MILLISECONDS.sleep(5000);
-        } catch (InterruptedException e) {
-            // Skip
-        }
 
         // create events to publish
         for (int i = 0; i < featureNumberToCreate; i++) {
@@ -542,7 +551,7 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
                                          null,
                                          IGeometry.point(IGeometry.position(10.0, 20.0)),
                                          EntityType.DATA,
-                                         model).withFiles(file);
+                                         featureModelName).withFiles(file);
             // data_type is configured to be not alterable. For creation with update if exists do not set this property.
             if (!updateIfExists) {
                 featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));

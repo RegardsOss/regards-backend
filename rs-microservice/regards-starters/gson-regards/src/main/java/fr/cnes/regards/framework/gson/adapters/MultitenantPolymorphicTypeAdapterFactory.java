@@ -321,6 +321,23 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             }
             return newMap;
         });
+        logMapsForTenant(tenant);
+    }
+
+    /**
+     * Log content of current factory discToDelegateMap and subtypeToDelegateMap for the given tenant.
+     *
+     * @param tenant
+     */
+    private void logMapsForTenant(String tenant) {
+        LOGGER.debug("###############################################");
+        LOGGER.debug("Compute for tenant {} - DISC -> DELEGATE ::: {} attributes",
+                     tenant,
+                     discToDelegateMap.get(tenant).size());
+        LOGGER.debug("Compute for tenant {} - SubType -> DELEGATE ::: {} attributes",
+                     tenant,
+                     subtypeToDelegateMap.get(tenant).size());
+        LOGGER.debug("###############################################");
     }
 
     protected void doMapping(Gson gson, String inTenant) {
@@ -411,6 +428,21 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         return jsonObject;
     }
 
+    /**
+     * Ensure to refresh mapping maps if needed
+     *
+     * @param tenant {@link String} tenant mapping to refresh
+     * @param gson   {@link Gson}
+     */
+    private void refreshMapping(String tenant, Gson gson) {
+        if (needRefreshMapping(tenant)) {
+            refreshMappingMap.compute(tenant, (k, v) -> {
+                doMapping(gson, tenant);
+                return false;
+            });
+        }
+    }
+
     // The create() is called many types and return null for unmanaged types.
     // A factory is typically called once per type, but the returned type adapter may be used many times.
     @Override
@@ -428,16 +460,22 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             @Override
             public void write(JsonWriter out, T value) throws IOException {
                 String tenant = runtimeTenantResolver.getTenant();
-                if (needRefreshMapping(tenant)) {
-                    doMapping(gson, tenant);
-                    setRefreshMapping(tenant, false);
-                }
+                refreshMapping(tenant, gson);
 
                 final Class<?> srcType = value.getClass();
 
                 // registration requires that subtype extends base type
                 TypeAdapter<T> delegate = getDelegate(srcType);
 
+                int nbRetry = 0;
+                // HARD Fix to understand why sometimes attributes mapping is not valid.
+                while (delegate == null && nbRetry < 3) {
+                    // Retry mapping of attributes
+                    LOGGER.warn("Serialization error, cannot find delegated adapter for class {}", srcType.getName());
+                    doMapping(gson, tenant);
+                    delegate = getDelegate(srcType);
+                    nbRetry++;
+                }
                 if (delegate == null) {
                     String errorMessage = String.format(
                         "Cannot serialize attribute '%s' of type %s. Did you forget to register a subtype ? (tenant = %s)",
@@ -470,10 +508,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             @Override
             public T read(JsonReader in) {
                 String tenant = runtimeTenantResolver.getTenant();
-                if (needRefreshMapping(tenant)) {
-                    doMapping(gson, tenant);
-                    setRefreshMapping(runtimeTenantResolver.getTenant(), false);
-                }
+                refreshMapping(tenant, gson);
 
                 // Compute raw JSON object
                 final JsonElement jsonElement = Streams.parse(in);
@@ -494,7 +529,16 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
                 final String discriminator = discriminatorEl.getAsString();
                 // registration requires that sub type extends T
                 TypeAdapter<T> delegate = getDelegate(discriminator);
-
+                int nbRetry = 0;
+                // HARD Fix to understand why sometimes attributes mapping is not valid.
+                while (delegate == null && nbRetry < 3) {
+                    // Retry mapping of attributes
+                    LOGGER.warn("Deserialization error, cannot find delegated adapter for discriminator {}",
+                                discriminator);
+                    doMapping(gson, tenant);
+                    delegate = getDelegate(discriminator);
+                    nbRetry++;
+                }
                 if (delegate == null) {
                     String errorMessage = String.format(
                         "Cannot deserialize %s subtype named %s. Did you forget to register a subtype?",

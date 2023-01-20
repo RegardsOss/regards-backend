@@ -60,12 +60,6 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
 
     @Before
     public void init() {
-        String model = mockModelClient("feature_model_01.xml",
-                                       cps,
-                                       factory,
-                                       this.getDefaultTenant(),
-                                       modelAttrAssocClientMock);
-
         FeatureEntity feature = FeatureEntity.build("owner",
                                                     "session",
                                                     Feature.build("id2",
@@ -77,9 +71,9 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
                                                                                                    1),
                                                                   IGeometry.point(IGeometry.position(10.0, 20.0)),
                                                                   EntityType.DATA,
-                                                                  model),
+                                                                  featureModelName),
                                                     null,
-                                                    model);
+                                                    featureModelName);
         featureRepo.save(feature);
 
         FeatureCreationRequest featureCreationRequest0 = new FeatureCreationRequest();

@@ -77,9 +77,6 @@ public class FeaturePerformanceGeodeIT extends AbstractFeatureMultitenantService
                                                                                        Lists.emptyList(),
                                                                                        true,
                                                                                        false);
-        String modelName = mockModelClient(GeodeProperties.getGeodeModel());
-
-        Thread.sleep(5_000);
 
         long start = System.currentTimeMillis();
 
@@ -88,7 +85,7 @@ public class FeaturePerformanceGeodeIT extends AbstractFeatureMultitenantService
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
             String id = String.format(format, i);
-            Feature feature = Feature.build(id, "owner", null, IGeometry.unlocated(), EntityType.DATA, modelName);
+            Feature feature = Feature.build(id, "owner", null, IGeometry.unlocated(), EntityType.DATA, geoModelName);
             GeodeProperties.addGeodeProperties(feature);
             events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
 

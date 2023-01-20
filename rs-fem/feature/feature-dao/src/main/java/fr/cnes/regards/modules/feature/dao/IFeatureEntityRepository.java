@@ -26,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -69,5 +70,9 @@ public interface IFeatureEntityRepository
     Page<ILightFeatureEntity> findBySessionOwner(String sessionOwner, Pageable pageable);
 
     Page<ILightFeatureEntity> findBySessionOwnerAndSession(String sessionOwner, String session, Pageable pageable);
+
+    @Modifying
+    @Query(value = "truncate table t_feature CASCADE", nativeQuery = true)
+    void deleteAll();
 
 }

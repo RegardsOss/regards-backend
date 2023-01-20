@@ -60,8 +60,6 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
     @Autowired
     private IFeatureService featureService;
 
-    private String model;
-
     private FeatureEntity firstFeature;
 
     private FeatureEntity secondFeature;
@@ -70,12 +68,6 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
 
     @Before
     public void init() {
-        model = mockModelClient("feature_model_01.xml",
-                                cps,
-                                factory,
-                                this.getDefaultTenant(),
-                                modelAttrAssocClientMock);
-
         firstFeature = FeatureEntity.build("owner",
                                            "session",
                                            Feature.build("id2",
@@ -87,9 +79,9 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
                                                                                           1),
                                                          IGeometry.point(IGeometry.position(10.0, 20.0)),
                                                          EntityType.DATA,
-                                                         model),
+                                                         featureModelName),
                                            null,
-                                           model);
+                                           featureModelName);
 
         firstFeature.setProviderId("providerId1");
         featureRepo.save(firstFeature);
@@ -107,9 +99,9 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
                                                                                            1),
                                                           IGeometry.point(IGeometry.position(10.0, 20.0)),
                                                           EntityType.DATA,
-                                                          model),
+                                                          featureModelName),
                                             null,
-                                            model);
+                                            featureModelName);
         secondFeature.getFeature().addProperty(IProperty.buildString("data_type", "TYPE01"));
         secondFeature.setProviderId("providerId2");
 
@@ -125,8 +117,9 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
     public void test_findAll() {
         // Given
         Pageable page = PageRequest.of(0, 10);
-        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build().withModel(model);
-        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel(model);
+        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build().withModel(featureModelName);
+        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel(
+            featureModelName);
         // When
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
         Page<FeatureEntityDto> featureEntityDtos = featureService.findAll(filters, page);
@@ -208,8 +201,8 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         assertEquals(0, featureEntityDtos.getNumberOfElements());
 
         // Given
-        selection = FeaturesSelectionDTO.build().withModel(model);
-        filters = new SearchFeatureSimpleEntityParameters().withModel(model);
+        selection = FeaturesSelectionDTO.build().withModel(featureModelName);
+        filters = new SearchFeatureSimpleEntityParameters().withModel(featureModelName);
         // When
         results = featureService.findAll(selection, page);
         featureEntityDtos = featureService.findAll(filters, page);
@@ -224,10 +217,10 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         Pageable page = PageRequest.of(0, 10);
 
         FeaturesSelectionDTO selection = FeaturesSelectionDTO.build()
-                                                             .withModel(model)
+                                                             .withModel(featureModelName)
                                                              .withFrom(dateAfterCreatedFirstFeature);
         SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withLastUpdateBefore(
-            dateAfterCreatedFirstFeature).withModel(model);
+            dateAfterCreatedFirstFeature).withModel(featureModelName);
         // When
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
         Page<FeatureEntityDto> featureEntityDtos = featureService.findAll(filters, page);

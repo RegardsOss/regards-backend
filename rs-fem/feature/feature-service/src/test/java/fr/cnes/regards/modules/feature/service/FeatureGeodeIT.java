@@ -27,7 +27,6 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.assertj.core.util.Lists;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,19 +63,6 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
     private static final String PROVIDER_ID_FORMAT = "F%05d";
 
     private static final Integer PUBLISH_BULK_SIZE = 100;
-
-    private String modelName;
-
-    @Before
-    public void prepareContext() throws Exception {
-        super.before();
-        modelName = mockModelClient(GeodeProperties.getGeodeModel(),
-                                    this.getCps(),
-                                    this.getFactory(),
-                                    this.getDefaultTenant(),
-                                    this.getModelAttrAssocClientMock());
-        Thread.sleep(5_000);
-    }
 
     @Test
     public void createAndUpdateTest() {
@@ -131,7 +117,7 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
                                             null,
                                             IGeometry.unlocated(),
                                             EntityType.DATA,
-                                            modelName);
+                                            geoModelName);
             GeodeProperties.addGeodeProperties(feature);
             events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
 
@@ -160,8 +146,12 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
             String id = String.format(PROVIDER_ID_FORMAT, i);
-            Feature feature = Feature.build(id, "owner", getURN(id), IGeometry.unlocated(), EntityType.DATA, modelName);
-            GeodeProperties.addGeodeUpdateProperties(feature);
+            Feature feature = Feature.build(id,
+                                            "owner",
+                                            getURN(id),
+                                            IGeometry.unlocated(),
+                                            EntityType.DATA,
+                                            geoModelName);
             uEvents.add(FeatureUpdateRequestEvent.build("TEST", featureMetadata, feature, requestDate));
 
             if (bulk == PUBLISH_BULK_SIZE) {

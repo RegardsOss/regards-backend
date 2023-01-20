@@ -56,20 +56,13 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void validationTest() throws ModuleException {
 
-        // Set model client mock from model
-        String modelName = mockModelClient("feature_model_01.xml",
-                                           this.getCps(),
-                                           this.getFactory(),
-                                           this.getDefaultTenant(),
-                                           this.getModelAttrAssocClientMock());
-
         // Init feature without files and properties
         Feature feature = Feature.build("id01",
                                         "owner",
                                         null,
                                         IGeometry.point(IGeometry.position(10.0, 20.0)),
                                         EntityType.DATA,
-                                        modelName);
+                                        featureModelName);
 
         // Validate feature
         Errors errors = validationService.validate(feature, ValidationMode.CREATION);
@@ -97,7 +90,7 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
                                                                   EntityType.DATA,
                                                                   getDefaultTenant(),
                                                                   1));
-        featureRepo.save(FeatureEntity.build("sessionOwner", "session", feature, null, modelName));
+        featureRepo.save(FeatureEntity.build("sessionOwner", "session", feature, null, featureModelName));
 
         errors = validationService.validate(feature, ValidationMode.PATCH);
 

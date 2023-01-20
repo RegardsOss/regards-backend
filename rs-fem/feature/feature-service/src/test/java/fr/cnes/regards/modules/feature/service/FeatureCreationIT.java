@@ -522,18 +522,14 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testRegisterScheduleProcess() {
         List<Feature> features = new ArrayList<>();
-        String model = mockModelClient("feature_model_01.xml",
-                                       cps,
-                                       factory,
-                                       this.getDefaultTenant(),
-                                       modelAttrAssocClientMock);
+
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
             Feature toAdd = Feature.build("id" + i,
                                           "owner",
                                           null,
                                           IGeometry.point(IGeometry.position(10.0, 20.0)),
                                           EntityType.DATA,
-                                          model);
+                                          featureModelName);
             features.add(toAdd);
             toAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
             toAdd.addProperty(IProperty.buildObject("file_characterization",

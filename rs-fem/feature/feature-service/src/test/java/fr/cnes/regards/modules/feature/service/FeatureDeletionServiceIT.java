@@ -72,11 +72,6 @@ public class FeatureDeletionServiceIT extends AbstractFeatureMultitenantServiceI
                                                                                      EntityType.DATA,
                                                                                      "tenant1",
                                                                                      1);
-        String model = mockModelClient("feature_model_01.xml",
-                                       cps,
-                                       factory,
-                                       this.getDefaultTenant(),
-                                       modelAttrAssocClientMock);
 
         FeatureEntity feature = FeatureEntity.build(SESSION_OWNER_0,
                                                     SESSION_0,
@@ -85,9 +80,9 @@ public class FeatureDeletionServiceIT extends AbstractFeatureMultitenantServiceI
                                                                   URN0,
                                                                   IGeometry.point(IGeometry.position(10.0, 20.0)),
                                                                   EntityType.DATA,
-                                                                  model),
+                                                                  featureModelName),
                                                     null,
-                                                    model);
+                                                    featureModelName);
         featureRepo.save(feature);
 
         feature = FeatureEntity.build("owner",
@@ -97,9 +92,9 @@ public class FeatureDeletionServiceIT extends AbstractFeatureMultitenantServiceI
                                                     URN1,
                                                     IGeometry.point(IGeometry.position(10.0, 20.0)),
                                                     EntityType.DATA,
-                                                    model),
+                                                    featureModelName),
                                       null,
-                                      model);
+                                      featureModelName);
         featureRepo.save(feature);
 
         FeatureDeletionRequest featureDeletionRequest0 = new FeatureDeletionRequest();

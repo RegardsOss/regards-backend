@@ -80,15 +80,10 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceIT {
                                                                                        Lists.emptyList(),
                                                                                        true,
                                                                                        false);
-        String modelName = mockModelClient("feature_mutation_model.xml",
-                                           this.getCps(),
-                                           this.getFactory(),
-                                           this.getDefaultTenant(),
-                                           this.getModelAttrAssocClientMock());
 
         // Build feature to create
         String id = String.format("F%05d", 1);
-        Feature feature = Feature.build(id, "owner", null, IGeometry.unlocated(), EntityType.DATA, modelName);
+        Feature feature = Feature.build(id, "owner", null, IGeometry.unlocated(), EntityType.DATA, mutationModelName);
         feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
         feature.addProperty(IProperty.buildObject("file_characterization",
                                                   IProperty.buildBoolean("valid", Boolean.FALSE),
@@ -114,7 +109,7 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceIT {
                                         entity.getFeature().getUrn(),
                                         IGeometry.unlocated(),
                                         EntityType.DATA,
-                                        modelName);
+                                        mutationModelName);
         updated.addProperty(IProperty.buildObject("file_characterization",
                                                   IProperty.buildBoolean("valid", Boolean.TRUE),
                                                   IProperty.buildDate("invalidation_date", null)));

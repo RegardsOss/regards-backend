@@ -61,12 +61,9 @@ public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServic
                                                                        "session",
                                                                        PriorityLevel.NORMAL,
                                                                        Lists.emptyList());
-        String modelName = mockModelClient(GeodeProperties.getGeodeModel());
-
-        Thread.sleep(5_000);
 
         // Register referenced features
-        Map<String, FeatureUniformResourceName> refs = savePreviousVersions(modelName);
+        Map<String, FeatureUniformResourceName> refs = savePreviousVersions(geoModelName);
 
         long start = System.currentTimeMillis();
 
@@ -81,8 +78,7 @@ public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServic
                                             refs.get(id),
                                             IGeometry.unlocated(),
                                             EntityType.DATA,
-                                            modelName);
-            GeodeProperties.addGeodeUpdateProperties(feature);
+                                            geoModelName);
             events.add(FeatureUpdateRequestEvent.build("test", metadata, feature, requestDate));
 
             if (bulk == properties.getMaxBulkSize()) {

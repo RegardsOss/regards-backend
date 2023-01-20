@@ -21,19 +21,18 @@ package fr.cnes.regards.modules.feature.service;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode_rc" })
 @ActiveProfiles(value = { "noscheduler", "noFemHandler" })
@@ -44,21 +43,10 @@ public class FeatureCreationGeodeIT extends AbstractFeatureMultitenantServiceIT 
     @Autowired
     private Gson gson;
 
-    @Override
-    @Before
-    public void before() throws Exception {
-        super.before();
-        mockModelClient("model_geode_V1.0.0.xml");
-    }
-
     @Test
     public void parseGeodeRequest() throws UnsupportedEncodingException, IOException {
-        try (JsonReader reader = new JsonReader(new InputStreamReader(Files.newInputStream(Paths.get("src",
-                                                                                                     "test",
-                                                                                                     "resources",
-                                                                                                     "GEODE",
-                                                                                                     "2321-feature-request.json")),
-                                                                      "UTF-8"))) {
+        InputStream is = new ClassPathResource(RESOURCE_PATH + "2321-feature-request.json").getInputStream();
+        try (JsonReader reader = new JsonReader(new InputStreamReader(is, "UTF-8"))) {
             FeatureCreationRequestEvent request = gson.fromJson(reader, FeatureCreationRequestEvent.class);
             LOGGER.debug(request.toString());
         }

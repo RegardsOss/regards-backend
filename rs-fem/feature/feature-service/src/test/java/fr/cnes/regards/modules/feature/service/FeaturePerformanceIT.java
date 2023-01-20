@@ -81,13 +81,6 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
                                                                                        Lists.emptyList(),
                                                                                        true,
                                                                                        false);
-        String modelName = mockModelClient("feature_mutation_model.xml",
-                                           this.getCps(),
-                                           this.getFactory(),
-                                           this.getDefaultTenant(),
-                                           this.getModelAttrAssocClientMock());
-
-        Thread.sleep(5_000);
 
         long creationStart = System.currentTimeMillis();
         List<FeatureCreationRequestEvent> creationRequestEvents = new ArrayList<>();
@@ -97,7 +90,7 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
                                             null,
                                             IGeometry.unlocated(),
                                             EntityType.DATA,
-                                            modelName);
+                                            mutationModelName);
             feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
             feature.addProperty(IProperty.buildObject("file_characterization",
                                                       IProperty.buildBoolean("valid", Boolean.TRUE)));
@@ -118,7 +111,12 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
         List<FeatureUpdateRequestEvent> featureUpdateRequestEvents = new ArrayList<>();
         for (int i = 1; i <= NB_FEATURES; i++) {
             String id = String.format(format, i);
-            Feature feature = Feature.build(id, "owner", getURN(id), IGeometry.unlocated(), EntityType.DATA, modelName);
+            Feature feature = Feature.build(id,
+                                            "owner",
+                                            getURN(id),
+                                            IGeometry.unlocated(),
+                                            EntityType.DATA,
+                                            mutationModelName);
             feature.addProperty(IProperty.buildObject("file_characterization",
                                                       IProperty.buildBoolean("valid", Boolean.FALSE),
                                                       IProperty.buildDate("invalidation_date", OffsetDateTime.now())));

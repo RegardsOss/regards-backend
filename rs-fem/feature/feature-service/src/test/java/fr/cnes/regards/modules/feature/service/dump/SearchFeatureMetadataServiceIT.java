@@ -76,11 +76,6 @@ public class SearchFeatureMetadataServiceIT extends AbstractFeatureMultitenantSe
     public void init() {
         FeatureUniformResourceName URN0 = createPseudoRandomUrn();
         FeatureUniformResourceName URN1 = createPseudoRandomUrn();
-        String model = mockModelClient("feature_model_01.xml",
-                                       cps,
-                                       factory,
-                                       this.getDefaultTenant(),
-                                       modelAttrAssocClientMock);
         featureRepo.save(FeatureEntity.build(SESSION_OWNER_0,
                                              SESSION_0,
                                              Feature.build(PROVIDER_ID0,
@@ -88,9 +83,9 @@ public class SearchFeatureMetadataServiceIT extends AbstractFeatureMultitenantSe
                                                            URN0,
                                                            IGeometry.point(IGeometry.position(10.0, 20.0)),
                                                            EntityType.DATA,
-                                                           model),
+                                                           featureModelName),
                                              null,
-                                             model));
+                                             featureModelName));
 
         featureRepo.save(FeatureEntity.build("owner",
                                              "session",
@@ -99,9 +94,9 @@ public class SearchFeatureMetadataServiceIT extends AbstractFeatureMultitenantSe
                                                            URN1,
                                                            IGeometry.point(IGeometry.position(10.0, 20.0)),
                                                            EntityType.DATA,
-                                                           model),
+                                                           featureModelName),
                                              null,
-                                             model));
+                                             featureModelName));
 
         FeatureSaveMetadataRequest featureSaveMetadataRequest0 = new FeatureSaveMetadataRequest();
         featureSaveMetadataRequest0.setRequestId("request_id0");
