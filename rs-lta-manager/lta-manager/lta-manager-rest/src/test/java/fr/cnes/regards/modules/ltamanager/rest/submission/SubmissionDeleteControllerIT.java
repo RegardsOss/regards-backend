@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.ltamanager.rest.submission;
 
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -29,7 +31,10 @@ import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmiss
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionInfo;
 import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionRequestHelper;
+import fr.cnes.regards.modules.ltamanager.service.deletion.SubmissionRequestDeletionJob;
 import fr.cnes.regards.modules.model.client.IModelClient;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +47,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -69,6 +76,12 @@ public class SubmissionDeleteControllerIT extends AbstractRegardsIT {
 
     @Autowired
     private SubmissionRequestHelper submissionRequestHelper;
+
+    @Autowired
+    private JobInfoService jobInfoService;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @MockBean
     private IModelClient modelClient;
@@ -129,15 +142,24 @@ public class SubmissionDeleteControllerIT extends AbstractRegardsIT {
                                                            searchParameters,
                                                            customizer().expectStatusOk(),
                                                            "Error while creating deletion request");
-        waitForJobEnd();
+        waitForDeletionJobEnd();
         // THEN
         response.andExpect(MockMvcResultMatchers.status().isOk());
         Page<SubmissionRequest> after = requestRepository.findAll(spec, page);
         Assert.assertEquals(0, after.getTotalElements());
     }
 
-    private static void waitForJobEnd() throws InterruptedException {
-        Thread.sleep(3000);
+    private void waitForDeletionJobEnd() {
+        try {
+            Awaitility.await().atMost(Duration.of(5, ChronoUnit.SECONDS)).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                return jobInfoService.retrieveJobsCount(SubmissionRequestDeletionJob.class.getName(),
+                                                        JobStatus.getAllNotFinishedStatus()) == 0;
+            });
+        } catch (ConditionTimeoutException e) {
+            Assert.fail(String.format("Deletion jobs did not finish in the expected amount of time : %s. ",
+                                      jobInfoService.retrieveJobs()));
+        }
     }
 
     /// HELPERS
