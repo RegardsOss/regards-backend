@@ -111,11 +111,14 @@ public class IngestValidationService extends AbstractValidationService {
                 if (attributeInFrag.contains(".")) {
                     throw new UnsupportedOperationException("Fragments cannot contains other fragments");
                 }
-                att = ((Map) pptyMap.get(frag)).get(attributeInFrag);
-                // Remove the fragment as it is not a real attribute and replace it by the real child attribute.
-                // The fragment might have been removed already.
-                toCheckProperties.remove(frag);
-                toCheckProperties.add(attPath);
+                Map<String, Object> fragMap = (Map) pptyMap.get(frag);
+                att = fragMap.get(attributeInFrag);
+                // If this is the first time this fragment is validated,
+                // remove it as it is not a real attribute and replace it by its children attributes
+                if (toCheckProperties.contains(frag)) {
+                    toCheckProperties.remove(frag);
+                    fragMap.forEach((key, value) -> toCheckProperties.add(frag + "." + key));
+                }
             } else {
                 att = pptyMap.get(attPath);
             }

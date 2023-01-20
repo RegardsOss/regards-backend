@@ -18,6 +18,7 @@
  */
 
 package fr.cnes.regards.modules.ingest.service;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping;
@@ -85,6 +86,24 @@ public class IngestValidationIT extends AbstractValidationIngestMultitenantServi
         } else {
             Assert.fail();
         }
+
+        Map<String, Object> descInfoTooMany = new HashMap<>();
+        descInfoTooMany.put("string_field", "String value");
+        descInfoTooMany.put("integer_field", 8);
+        descInfoTooMany.put("double_field", 10.58);
+        descInfoTooMany.put("long_field", 154785478L);
+        descInfoTooMany.put("boolean_field", true);
+        descInfoTooMany.put("unexpectedField1", 1);
+        descInfoTooMany.put("unexpectedField2", "value");
+
+        // 2 unexpected properties
+        errors = validationService.validate(modelName, descInfoTooMany, "Ingest1");
+        if (errors.hasErrors()) {
+            Assert.assertEquals(2, errors.getErrorCount());
+        } else {
+            Assert.fail();
+        }
+
     }
 
     @Test
@@ -443,6 +462,21 @@ public class IngestValidationIT extends AbstractValidationIngestMultitenantServi
 
         // 1 missing attribute in the fragment
         errors = validationService.validate(modelName, descInfoMissingAttribute, "Ingest10");
+        if (errors.hasErrors()) {
+            Assert.assertEquals(1, errors.getErrorCount());
+        } else {
+            Assert.fail();
+        }
+
+        Map<String, Object> descInfoTooMany = new HashMap<>();
+        Map<String, Object> fragmentTooMany = new HashMap<>();
+        fragmentTooMany.put("startDate", "2022-01-01T00:00:00.000Z");
+        fragmentTooMany.put("stopDate", "2022-01-10T00:00:00.000Z");
+        fragmentTooMany.put("christmasDate", "2022-12-25T00:00:00.000Z");
+        descInfoTooMany.put("TimePeriod", fragmentTooMany);
+
+        // 1 too many attribute in the fragment
+        errors = validationService.validate(modelName, descInfoTooMany, "Ingest10");
         if (errors.hasErrors()) {
             Assert.assertEquals(1, errors.getErrorCount());
         } else {
