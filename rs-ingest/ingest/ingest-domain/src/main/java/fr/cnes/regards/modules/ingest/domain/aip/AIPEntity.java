@@ -31,7 +31,8 @@ import javax.validation.constraints.NotNull;
     @Index(name = "idx_aip_storage", columnList = "storages"), @Index(name = "idx_aip_tags", columnList = "tags"),
     @Index(name = "idx_aip_categories", columnList = "categories"),
     @Index(name = "idx_aip_sip_id", columnList = "sip_id"), @Index(name = "idx_aip_state", columnList = "state"),
-    @Index(name = "idx_aipid", columnList = "aip_id") })
+    @Index(name = "idx_aipid", columnList = "aip_id"), @Index(name = "idx_origin_urn", columnList = "origin_urn") })
+
 // There cannot be any unique constraint on last because there will always be multiple value with false!!!!
 public class AIPEntity extends AbstractAIPEntity {
 

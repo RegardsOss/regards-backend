@@ -80,6 +80,13 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> storages = new HashSet<>();
 
+    /**
+     * Optional parameter showing that the entity come from another entity in an external catalog.
+     * The origin urn is the urn of the external entity.
+     */
+    @Column(name = "origin_urn", length = SIPEntity.MAX_URN_SIZE)
+    private String originUrn;
+
     @Column
     private boolean last = false;
 
@@ -127,6 +134,14 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
         this.storages = storages;
     }
 
+    public String getOriginUrn() {
+        return originUrn;
+    }
+
+    public void setOriginUrn(String originUrn) {
+        this.originUrn = originUrn;
+    }
+
     public boolean isLast() {
         return last;
     }
@@ -141,6 +156,7 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
         aipEntity.setState(state);
         aipEntity.setAipId(aip.getId());
         aipEntity.setCreationDate(OffsetDateTime.now());
+        aipEntity.setOriginUrn(aip.getProperties().getPdi().getProvenanceInformation().getOriginUrn());
         aipEntity.setLastUpdate(aipEntity.getCreationDate());
 
         // Extracted from AIP for search purpose

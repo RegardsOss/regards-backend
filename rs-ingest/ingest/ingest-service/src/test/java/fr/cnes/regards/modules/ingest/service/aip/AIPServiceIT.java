@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.assertj.core.util.Sets;
@@ -66,9 +67,11 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
 
     private static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY", "CATEGORY2");
 
-    private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
+    public static final String TEST_TAG = "toto";
 
-    private static final List<String> TAG_1 = Lists.newArrayList("toto", "tutu");
+    private static final List<String> TAG_0 = Lists.newArrayList(TEST_TAG, "tata");
+
+    private static final List<String> TAG_1 = Lists.newArrayList(TEST_TAG, "tutu");
 
     private static final List<String> TAG_2 = Lists.newArrayList("antonio", "farra's");
 
@@ -85,6 +88,10 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
     public static final String SESSION_0 = OffsetDateTime.now().toString();
 
     public static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
+
+    public static final String TEST_ORIGIN_URN = "testOriginUrn";
+
+    public static final String ORIGIN_URN_ADDITIONAL_INFORMATION = "originUrn";
 
     @Autowired
     private IAIPService aipService;
@@ -151,10 +158,12 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
         publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
         publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        SIP sip = create("provider 7", TAG_2);
+        sip.withAdditionalProvenanceInformation(ORIGIN_URN_ADDITIONAL_INFORMATION, TEST_ORIGIN_URN);
+        publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
-        
+
         // When
         Page<AIPEntity> results = aipService.findByFilters(SearchAIPsParameters.build()
                                                                                .withTags(TAG_0)
@@ -211,7 +220,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         Assert.assertEquals(7, results.getTotalElements());
 
         // When
-        results = aipService.findByFilters(SearchAIPsParameters.build().withTag("toto"), PageRequest.of(0, 100));
+        results = aipService.findByFilters(SearchAIPsParameters.build().withTag(TEST_TAG), PageRequest.of(0, 100));
         // Then
         Assert.assertEquals(6, results.getTotalElements());
 
@@ -237,6 +246,13 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
                                                                .withStorages(STORAGE_2)
                                                                .withCategories(CATEGORIES_2)
                                                                .withIpType(EntityType.DATA), PageRequest.of(0, 100));
+        // Then
+        Assert.assertEquals(1, results.getTotalElements());
+
+        //When
+        results = aipService.findByFilters(SearchAIPsParameters.build().withOriginUrn(TEST_ORIGIN_URN),
+                                           PageRequest.of(0, 100));
+
         // Then
         Assert.assertEquals(1, results.getTotalElements());
     }

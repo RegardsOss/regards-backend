@@ -54,6 +54,12 @@ public abstract class AbstractSearchAIPsParameters<T extends AbstractSearchAIPsP
 
     private List<String> tags = Lists.newArrayList();
 
+    /**
+     * Attribute used to search AIP which are copy from an external catalog.
+     * The originUrn is the urn of the AIP in the external catalog.
+     */
+    private String originUrn;
+
     private Boolean last = null;
 
     /**
@@ -186,6 +192,11 @@ public abstract class AbstractSearchAIPsParameters<T extends AbstractSearchAIPsP
         return (T) this;
     }
 
+    public T withOriginUrn(String originUrn) {
+        this.originUrn = originUrn;
+        return (T) this;
+    }
+
     public T withLast(Boolean last) {
         this.last = last;
         return (T) this;
@@ -285,5 +296,13 @@ public abstract class AbstractSearchAIPsParameters<T extends AbstractSearchAIPsP
 
     public void setIpType(EntityType ipType) {
         this.ipType = ipType;
+    }
+
+    public String getOriginUrn() {
+        return originUrn;
+    }
+
+    public void setOriginUrn(String originUrn) {
+        this.originUrn = originUrn;
     }
 }

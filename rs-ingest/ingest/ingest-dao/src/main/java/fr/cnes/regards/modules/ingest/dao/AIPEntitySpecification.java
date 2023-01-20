@@ -57,11 +57,15 @@ public final class AIPEntitySpecification {
                 predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), filters.getLastUpdate().getTo()));
             }
             if ((filters.getStorages() != null) && !filters.getStorages().isEmpty()) {
-                Path<Object> attributeRequeted = root.get("storages");
-                predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequeted,
+                Path<Object> attributeRequested = root.get("storages");
+                predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequested,
                                                                                                    Lists.newArrayList(
                                                                                                        filters.getStorages()),
                                                                                                    cb));
+            }
+
+            if (filters.getOriginUrn() != null) {
+                predicates.add(cb.equal(root.get("originUrn"), filters.getOriginUrn()));
             }
 
             if (filters.getLast() != null) {
