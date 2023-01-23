@@ -108,7 +108,7 @@ public class S3ClientReloader<S extends SdkClient> implements AutoCloseable {
                                           config.getKey(),
                                           c.getClass().getSimpleName(),
                                           c.hashCode()))
-                  .peek(c -> s3 = c);
+                  .peek(c -> s3 = c); //NOSONAR there is no synchronization issue in real use cases
     }
 
     private synchronized void recordError(S client) {

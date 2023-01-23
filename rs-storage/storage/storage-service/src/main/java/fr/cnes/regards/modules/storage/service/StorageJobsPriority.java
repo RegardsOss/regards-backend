@@ -25,19 +25,19 @@ package fr.cnes.regards.modules.storage.service;
  */
 public final class StorageJobsPriority {
 
-    public static int FILE_CACHE_JOB = 30;
+    public static final int FILE_CACHE_JOB = 30;
 
-    public static int FILE_STORAGE_JOB = 40;
+    public static final int FILE_STORAGE_JOB = 40;
 
-    public static int FILE_DELETION_JOB = 60;
+    public static final int FILE_DELETION_JOB = 60;
 
-    public static int FILE_COPY_JOB = 80;
+    public static final int FILE_COPY_JOB = 80;
 
-    public static int CACHE_VERIFICATION = 90;
+    public static final int CACHE_VERIFICATION = 90;
 
-    public static int CACHE_PURGE = 100;
+    public static final int CACHE_PURGE = 100;
 
-    public static int STORAGE_PERIODIC_ACTION_JOB = 150;
+    public static final int STORAGE_PERIODIC_ACTION_JOB = 150;
 
     private StorageJobsPriority() {
     }

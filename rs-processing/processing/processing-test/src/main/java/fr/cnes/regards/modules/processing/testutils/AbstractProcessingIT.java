@@ -46,6 +46,7 @@ import org.testcontainers.containers.RabbitMQContainer;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -55,6 +56,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Properties;
 import java.util.Random;
 
 /**
@@ -90,12 +92,23 @@ public abstract class AbstractProcessingIT implements InitializingBean {
 
     public static final String TENANT_PROJECTB = "projectb";
 
-    protected static final String PGSQL_USER = "azertyuiop123456789";
+    protected static final PostgreSQLContainer<?> postgreSQLContainer;
 
-    protected static final String PGSQL_SECRET = "azertyuiop123456789";
-
-    protected static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.5").withDatabaseName(
-        "postgres").withUsername(PGSQL_USER).withPassword(PGSQL_SECRET);
+    static {
+        try {
+            InputStream proxyInput = AbstractProcessingIT.class.getClassLoader()
+                                                               .getResourceAsStream("postgresql.properties");
+            Properties pgsqlProperties = new Properties();
+            pgsqlProperties.load(proxyInput);
+            String pgsqlUser = pgsqlProperties.getProperty("pgsqlUser");
+            String pgsqlSecret = pgsqlProperties.getProperty("pgsqlPassword");
+            postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.5").withDatabaseName("postgres")
+                                                                            .withUsername(pgsqlUser)
+                                                                            .withPassword(pgsqlSecret);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     protected static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.6.5-management").withUser(
         "guest",
@@ -184,172 +197,182 @@ public abstract class AbstractProcessingIT implements InitializingBean {
 
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
-            if (onLocal) {
-                Try.run(() -> {
-                    LOGGER.info("################## Creating DB for tenant {}", DEFAULT_PROJECT_TENANT);
-                    Container.ExecResult result = postgreSQLContainer.execInContainer(CREATE_DB,
-                                                                                      "-U",
-                                                                                      PGSQL_USER,
-                                                                                      DEFAULT_PROJECT_TENANT);
-                    LOGGER.info(LOGGER_MSG,
-                                DEFAULT_PROJECT_TENANT,
-                                result.getExitCode(),
-                                result.getStdout(),
-                                result.getStderr());
+            try {
+                InputStream proxyInput = getClass().getClassLoader().getResourceAsStream("postgresql.properties");
+                Properties pgsqlProperties = new Properties();
+                pgsqlProperties.load(proxyInput);
+                String pgsqlAddress = pgsqlProperties.getProperty("pgsqlAddress");
+                String pgsqlUser = pgsqlProperties.getProperty("pgsqlUser");
+                String pgsqlSecret = pgsqlProperties.getProperty("pgsqlPassword");
+                if (onLocal) {
+                    Try.run(() -> {
+                        LOGGER.info("################## Creating DB for tenant {}", DEFAULT_PROJECT_TENANT);
+                        Container.ExecResult result = postgreSQLContainer.execInContainer(CREATE_DB,
+                                                                                          "-U",
+                                                                                          pgsqlUser,
+                                                                                          DEFAULT_PROJECT_TENANT);
+                        LOGGER.info(LOGGER_MSG,
+                                    DEFAULT_PROJECT_TENANT,
+                                    result.getExitCode(),
+                                    result.getStdout(),
+                                    result.getStderr());
 
-                    LOGGER.info("################## Creating DB for tenant {}", TENANT_PROJECTA);
-                    Container.ExecResult resultA = postgreSQLContainer.execInContainer(CREATE_DB,
-                                                                                       "-U",
-                                                                                       PGSQL_USER,
-                                                                                       TENANT_PROJECTA);
-                    LOGGER.info(LOGGER_MSG,
-                                TENANT_PROJECTA,
-                                resultA.getExitCode(),
-                                resultA.getStdout(),
-                                resultA.getStderr());
+                        LOGGER.info("################## Creating DB for tenant {}", TENANT_PROJECTA);
+                        Container.ExecResult resultA = postgreSQLContainer.execInContainer(CREATE_DB,
+                                                                                           "-U",
+                                                                                           pgsqlUser,
+                                                                                           TENANT_PROJECTA);
+                        LOGGER.info(LOGGER_MSG,
+                                    TENANT_PROJECTA,
+                                    resultA.getExitCode(),
+                                    resultA.getStdout(),
+                                    resultA.getStderr());
 
-                    LOGGER.info("################## Creating DB for tenant " + TENANT_PROJECTB);
-                    Container.ExecResult resultB = postgreSQLContainer.execInContainer(CREATE_DB,
-                                                                                       "-U",
-                                                                                       PGSQL_USER,
-                                                                                       TENANT_PROJECTB);
-                    LOGGER.info(LOGGER_MSG,
-                                TENANT_PROJECTB,
-                                resultB.getExitCode(),
-                                resultB.getStdout(),
-                                resultB.getStderr());
+                        LOGGER.info("################## Creating DB for tenant " + TENANT_PROJECTB);
+                        Container.ExecResult resultB = postgreSQLContainer.execInContainer(CREATE_DB,
+                                                                                           "-U",
+                                                                                           pgsqlUser,
+                                                                                           TENANT_PROJECTB);
+                        LOGGER.info(LOGGER_MSG,
+                                    TENANT_PROJECTB,
+                                    resultB.getExitCode(),
+                                    resultB.getStdout(),
+                                    resultB.getStderr());
 
-                    LOGGER.info("################## Creating DB for r2dbc");
-                    Container.ExecResult r2dbc = postgreSQLContainer.execInContainer(CREATE_DB,
-                                                                                     "-U",
-                                                                                     PGSQL_USER,
-                                                                                     R2DBCDB_NAME);
-                    LOGGER.info("################## Created DB for r2dbc: {}\n{}\n{}",
-                                r2dbc.getExitCode(),
-                                r2dbc.getStdout(),
-                                r2dbc.getStderr());
-                }).onFailure(t -> LOGGER.error(t.getMessage(), t));
-            } else {
-                Try.run(() -> {
-                    Connection connection = DriverManager.getConnection("jdbc:postgresql://rs-postgres:5432/postgres",
-                                                                        PGSQL_USER,
-                                                                        PGSQL_SECRET);
+                        LOGGER.info("################## Creating DB for r2dbc");
+                        Container.ExecResult r2dbc = postgreSQLContainer.execInContainer(CREATE_DB,
+                                                                                         "-U",
+                                                                                         pgsqlUser,
+                                                                                         R2DBCDB_NAME);
+                        LOGGER.info("################## Created DB for r2dbc: {}\n{}\n{}",
+                                    r2dbc.getExitCode(),
+                                    r2dbc.getStdout(),
+                                    r2dbc.getStderr());
+                    }).onFailure(t -> LOGGER.error(t.getMessage(), t));
+                } else {
+                    Try.run(() -> {
+                        Connection connection = DriverManager.getConnection(pgsqlAddress, pgsqlUser, pgsqlSecret);
 
-                    Stream.of(DEFAULT_PROJECT_TENANT, TENANT_PROJECTA, TENANT_PROJECTB, R2DBCDB_NAME)
-                          .forEach(dbName -> {
-                              try {
-                                  LOGGER.info("################## Creating DB {}", dbName);
-                                  Statement statement = connection.createStatement();
-                                  int resultA = statement.executeUpdate("DROP DATABASE IF EXISTS "
-                                                                        + dbName
-                                                                        + "; "
-                                                                        + "CREATE DATABASE "
-                                                                        + dbName
-                                                                        + ";");
-                                  statement.close();
-                                  LOGGER.info("################## Created DB {}: {}", dbName, resultA);
-                              } catch (Exception e) {
-                                  LOGGER.error("################## Error creating DB {}: {}", dbName, e.getMessage());
-                              }
-                          });
+                        Stream.of(DEFAULT_PROJECT_TENANT, TENANT_PROJECTA, TENANT_PROJECTB, R2DBCDB_NAME)
+                              .forEach(dbName -> {
+                                  try {
+                                      LOGGER.info("################## Creating DB {}", dbName);
+                                      Statement statement = connection.createStatement();
+                                      int resultA = statement.executeUpdate("DROP DATABASE IF EXISTS "
+                                                                            + dbName
+                                                                            + "; "
+                                                                            + "CREATE DATABASE "
+                                                                            + dbName
+                                                                            + ";");
+                                      statement.close();
+                                      LOGGER.info("################## Created DB {}: {}", dbName, resultA);
+                                  } catch (Exception e) {
+                                      LOGGER.error("################## Error creating DB {}: {}",
+                                                   dbName,
+                                                   e.getMessage());
+                                  }
+                              });
 
-                    connection.close();
-                }).onFailure(t -> LOGGER.error(t.getMessage(), t));
+                        connection.close();
+                    }).onFailure(t -> LOGGER.error(t.getMessage(), t));
+                }
+
+                Path keyPath = Try.of(() -> Files.createTempFile("testKey_", ".tmp")).get();
+                Try.run(() -> Files.write(keyPath, "746f746f746f746f".getBytes()));
+
+                Path sharedStorage = Try.of(() -> Files.createTempDirectory("sharedStorage")).get();
+                Path execWorkdir = Try.of(() -> Files.createTempDirectory("execWorkdir")).get();
+
+                String pgHost = onCi ? "rs-postgres" : postgreSQLContainer.getContainerIpAddress();
+                int pgPort = onCi ? 5432 : postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
+                String rabbitHost = onCi ? "rs-rabbitmq" : rabbitMQContainer.getContainerIpAddress();
+                int rabbitPort = onCi ? 5672 : rabbitMQContainer.getMappedPort(5672);
+                int rabbitManagementPort = onCi ? 15672 : rabbitMQContainer.getMappedPort(15672);
+
+                TestPropertyValues.of("regards.jpa.multitenant.enabled=true",
+                                      "regards.jpa.multitenant.embedded=false",
+                                      "regards.amqp.enabled=true",
+
+                                      "debug=true",
+                                      //"spring.main.allow-bean-definition-overriding=true",
+
+                                      "regards.test.role=USER_ROLE",
+                                      "regards.test.user=user@regards.fr",
+                                      "regards.test.tenant=" + TENANT_PROJECTA,
+
+                                      "regards.processing.sharedStorage.basePath=" + sharedStorage.toFile()
+                                                                                                  .getAbsolutePath(),
+                                      "regards.processing.executionWorkdir.basePath=" + execWorkdir.toFile()
+                                                                                                   .getAbsolutePath(),
+
+                                      "regards.cipher.keyLocation=" + keyPath.toFile().getAbsolutePath(),
+                                      "regards.cipher.iv=1234567812345678",
+
+                                      "regards.tenant=" + DEFAULT_PROJECT_TENANT,
+                                      "regards.tenants=" + TENANT_PROJECTA + "," + TENANT_PROJECTB,
+                                      "regards.test.tenant=" + DEFAULT_PROJECT_TENANT,
+
+                                      "spring.jpa.properties.hibernate.default_schema=" + R2DBCDB_NAME,
+
+                                      "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://"
+                                      + pgHost
+                                      + ":"
+                                      + pgPort
+                                      + "/"
+                                      + DEFAULT_PROJECT_TENANT,
+                                      "regards.jpa.multitenant.tenants[0].tenant=" + DEFAULT_PROJECT_TENANT,
+                                      "regards.jpa.multitenant.tenants[0].driverClassName=org.postgresql.Driver",
+                                      "regards.jpa.multitenant.tenants[0].userName=" + pgsqlUser,
+                                      "regards.jpa.multitenant.tenants[0].password=" + pgsqlSecret,
+
+                                      "regards.jpa.multitenant.tenants[1].url=jdbc:postgresql://"
+                                      + pgHost
+                                      + ":"
+                                      + pgPort
+                                      + "/"
+                                      + TENANT_PROJECTA,
+                                      "regards.jpa.multitenant.tenants[1].tenant=" + TENANT_PROJECTA,
+                                      "regards.jpa.multitenant.tenants[1].driverClassName=org.postgresql.Driver",
+                                      "regards.jpa.multitenant.tenants[1].userName=" + pgsqlUser,
+                                      "regards.jpa.multitenant.tenants[1].password=" + pgsqlSecret,
+
+                                      "regards.jpa.multitenant.tenants[2].url=jdbc:postgresql://"
+                                      + pgHost
+                                      + ":"
+                                      + pgPort
+                                      + "/"
+                                      + TENANT_PROJECTB,
+                                      "regards.jpa.multitenant.tenants[2].tenant=" + TENANT_PROJECTB,
+                                      "regards.jpa.multitenant.tenants[2].driverClassName=org.postgresql.Driver",
+                                      "regards.jpa.multitenant.tenants[2].userName=" + pgsqlUser,
+                                      "regards.jpa.multitenant.tenants[2].password=" + pgsqlSecret,
+
+                                      "regards.processing.r2dbc.host=" + pgHost,
+                                      "regards.processing.r2dbc.port=" + pgPort,
+                                      "regards.processing.r2dbc.username=" + pgsqlUser,
+                                      "regards.processing.r2dbc.password=" + pgsqlSecret,
+                                      "regards.processing.r2dbc.dbname=" + R2DBCDB_NAME,
+                                      "regards.processing.r2dbc.schema=public",
+
+                                      "spring.rabbitmq.host=" + rabbitHost,
+                                      "spring.rabbitmq.port=" + rabbitPort,
+                                      "spring.rabbitmq.username=guest",
+                                      "spring.rabbitmq.password=guest",
+                                      "regards.amqp.management.host=" + rabbitHost,
+                                      "regards.amqp.management.port=" + rabbitManagementPort,
+                                      "regards.amqp.microservice.typeIdentifier=rs-procesing",
+                                      "regards.amqp.microservice.instanceIdentifier=rs-processing-"
+                                      + new Random().nextInt(100_000_000),
+
+                                      "jwt.secret=!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!",
+                                      "cloud.config.address=localhost",
+                                      "cloud.config.port=9031",
+                                      "cloud.config.searchLocations=classpath:/regards",
+                                      "cloud.registry.host=localhost",
+                                      "cloud.registry.port=9032").applyTo(applicationContext);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
-            Path keyPath = Try.of(() -> Files.createTempFile("testKey_", ".tmp")).get();
-            Try.run(() -> Files.write(keyPath, "746f746f746f746f".getBytes()));
-
-            Path sharedStorage = Try.of(() -> Files.createTempDirectory("sharedStorage")).get();
-            Path execWorkdir = Try.of(() -> Files.createTempDirectory("execWorkdir")).get();
-
-            String pgHost = onCi ? "rs-postgres" : postgreSQLContainer.getContainerIpAddress();
-            int pgPort = onCi ? 5432 : postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
-            String rabbitHost = onCi ? "rs-rabbitmq" : rabbitMQContainer.getContainerIpAddress();
-            int rabbitPort = onCi ? 5672 : rabbitMQContainer.getMappedPort(5672);
-            int rabbitManagementPort = onCi ? 15672 : rabbitMQContainer.getMappedPort(15672);
-
-            TestPropertyValues.of("regards.jpa.multitenant.enabled=true",
-                                  "regards.jpa.multitenant.embedded=false",
-                                  "regards.amqp.enabled=true",
-
-                                  "debug=true",
-                                  //"spring.main.allow-bean-definition-overriding=true",
-
-                                  "regards.test.role=USER_ROLE",
-                                  "regards.test.user=user@regards.fr",
-                                  "regards.test.tenant=" + TENANT_PROJECTA,
-
-                                  "regards.processing.sharedStorage.basePath=" + sharedStorage.toFile()
-                                                                                              .getAbsolutePath(),
-                                  "regards.processing.executionWorkdir.basePath=" + execWorkdir.toFile()
-                                                                                               .getAbsolutePath(),
-
-                                  "regards.cipher.keyLocation=" + keyPath.toFile().getAbsolutePath(),
-                                  "regards.cipher.iv=1234567812345678",
-
-                                  "regards.tenant=" + DEFAULT_PROJECT_TENANT,
-                                  "regards.tenants=" + TENANT_PROJECTA + "," + TENANT_PROJECTB,
-                                  "regards.test.tenant=" + DEFAULT_PROJECT_TENANT,
-
-                                  "spring.jpa.properties.hibernate.default_schema=" + R2DBCDB_NAME,
-
-                                  "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://"
-                                  + pgHost
-                                  + ":"
-                                  + pgPort
-                                  + "/"
-                                  + DEFAULT_PROJECT_TENANT,
-                                  "regards.jpa.multitenant.tenants[0].tenant=" + DEFAULT_PROJECT_TENANT,
-                                  "regards.jpa.multitenant.tenants[0].driverClassName=org.postgresql.Driver",
-                                  "regards.jpa.multitenant.tenants[0].userName=" + PGSQL_USER,
-                                  "regards.jpa.multitenant.tenants[0].password=" + PGSQL_SECRET,
-
-                                  "regards.jpa.multitenant.tenants[1].url=jdbc:postgresql://"
-                                  + pgHost
-                                  + ":"
-                                  + pgPort
-                                  + "/"
-                                  + TENANT_PROJECTA,
-                                  "regards.jpa.multitenant.tenants[1].tenant=" + TENANT_PROJECTA,
-                                  "regards.jpa.multitenant.tenants[1].driverClassName=org.postgresql.Driver",
-                                  "regards.jpa.multitenant.tenants[1].userName=" + PGSQL_USER,
-                                  "regards.jpa.multitenant.tenants[1].password=" + PGSQL_SECRET,
-
-                                  "regards.jpa.multitenant.tenants[2].url=jdbc:postgresql://"
-                                  + pgHost
-                                  + ":"
-                                  + pgPort
-                                  + "/"
-                                  + TENANT_PROJECTB,
-                                  "regards.jpa.multitenant.tenants[2].tenant=" + TENANT_PROJECTB,
-                                  "regards.jpa.multitenant.tenants[2].driverClassName=org.postgresql.Driver",
-                                  "regards.jpa.multitenant.tenants[2].userName=" + PGSQL_USER,
-                                  "regards.jpa.multitenant.tenants[2].password=" + PGSQL_SECRET,
-
-                                  "regards.processing.r2dbc.host=" + pgHost,
-                                  "regards.processing.r2dbc.port=" + pgPort,
-                                  "regards.processing.r2dbc.username=" + PGSQL_USER,
-                                  "regards.processing.r2dbc.password=" + PGSQL_SECRET,
-                                  "regards.processing.r2dbc.dbname=" + R2DBCDB_NAME,
-                                  "regards.processing.r2dbc.schema=public",
-
-                                  "spring.rabbitmq.host=" + rabbitHost,
-                                  "spring.rabbitmq.port=" + rabbitPort,
-                                  "spring.rabbitmq.username=guest",
-                                  "spring.rabbitmq.password=guest",
-                                  "regards.amqp.management.host=" + rabbitHost,
-                                  "regards.amqp.management.port=" + rabbitManagementPort,
-                                  "regards.amqp.microservice.typeIdentifier=rs-procesing",
-                                  "regards.amqp.microservice.instanceIdentifier=rs-processing-" + new Random().nextInt(
-                                      100_000_000),
-
-                                  "jwt.secret=!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!",
-                                  "cloud.config.address=localhost",
-                                  "cloud.config.port=9031",
-                                  "cloud.config.searchLocations=classpath:/regards",
-                                  "cloud.registry.host=localhost",
-                                  "cloud.registry.port=9032").applyTo(applicationContext);
         }
     }
 

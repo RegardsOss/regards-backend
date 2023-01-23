@@ -2749,6 +2749,13 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*test*/**/*</exclude>
+                        <exclude>**/test/**/*</exclude>
+                        <exclude>**/regards-test/**/*</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <!-- set arg line property for surefire -->
                     <execution>

@@ -25,11 +25,11 @@ package fr.cnes.regards.modules.workermanager.service;
  */
 public final class WorkerManagerJobsPriority {
 
-    public static int REQUEST_DELETION_JOB = 10;
+    public static final int REQUEST_DELETION_JOB = 10;
 
-    public static int REQUEST_SCAN_JOB = 20;
+    public static final int REQUEST_SCAN_JOB = 20;
 
-    public static int REQUEST_DISPATCH_JOB = 30;
+    public static final int REQUEST_DISPATCH_JOB = 30;
 
     private WorkerManagerJobsPriority() {
     }

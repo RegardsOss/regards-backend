@@ -26,27 +26,27 @@ package fr.cnes.regards.modules.ingest.service.job;
  */
 public final class IngestJobPriority {
 
-    public static int INGEST_PROCESSING_JOB_PRIORITY = 0;
+    public static final int INGEST_PROCESSING_JOB_PRIORITY = 0;
 
-    public static int CHOOSE_VERSIONING_JOB_PRIORITY = 0;
+    public static final int CHOOSE_VERSIONING_JOB_PRIORITY = 0;
 
-    public static int SESSION_DELETION_JOB_PRIORITY = 0;
+    public static final int SESSION_DELETION_JOB_PRIORITY = 0;
 
-    public static int UPDATE_AIP_SCAN_JOB_PRIORITY = 0;
+    public static final int UPDATE_AIP_SCAN_JOB_PRIORITY = 0;
 
-    public static int UPDATE_AIP_RUNNER_PRIORITY = 0;
+    public static final int UPDATE_AIP_RUNNER_PRIORITY = 0;
 
-    public static int AIP_SAVE_METADATA_RUNNER_PRIORITY = 0;
+    public static final int AIP_SAVE_METADATA_RUNNER_PRIORITY = 0;
 
-    public static int OAIS_DELETION_JOB_PRIORITY = 0;
+    public static final int OAIS_DELETION_JOB_PRIORITY = 0;
 
-    public static int REQUEST_DELETION_JOB_PRIORITY = 0;
+    public static final int REQUEST_DELETION_JOB_PRIORITY = 0;
 
-    public static int REQUEST_RETRY_JOB_PRIORITY = 0;
+    public static final int REQUEST_RETRY_JOB_PRIORITY = 0;
 
-    public static int POST_PROCESSING_JOB = 0;
+    public static final int POST_PROCESSING_JOB = 0;
 
-    public static int DELETE_SIP_BODY_JOB_PRIORITY = 0;
+    public static final int DELETE_SIP_BODY_JOB_PRIORITY = 0;
 
     private IngestJobPriority() {
     }
