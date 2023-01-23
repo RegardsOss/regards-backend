@@ -117,7 +117,8 @@ public class OrderRetryService implements IOrderRetryService {
                                                                owner,
                                                                subOrderDuration,
                                                                priority,
-                                                               role));
+                                                               role,
+                                                               order.getCorrelationId()));
 
             // Update Order expiration date and JobInfo expiration date
             OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(orderCounts.getSubOrderCount(),
@@ -144,7 +145,8 @@ public class OrderRetryService implements IOrderRetryService {
                                  String owner,
                                  int subOrderDuration,
                                  int priority,
-                                 String role) {
+                                 String role,
+                                 String correlationId) {
 
         DatasetTask datasetTask = datasetTaskService.loadComplete(datasetTaskId);
 
@@ -160,7 +162,13 @@ public class OrderRetryService implements IOrderRetryService {
                 resetState(orderDataFile);
                 if (Boolean.TRUE.equals(orderDataFile.isReference())) {
                     externalBucketFiles.add(orderDataFile);
-                    manageExternalBucket(externalBucketFiles, false, datasetTask, orderCounts, orderId, owner);
+                    manageExternalBucket(externalBucketFiles,
+                                         false,
+                                         datasetTask,
+                                         orderCounts,
+                                         orderId,
+                                         owner,
+                                         correlationId);
                 } else {
                     storageBucketFiles.add(orderDataFile);
                     manageStorageBucket(storageBucketFiles,
@@ -176,7 +184,7 @@ public class OrderRetryService implements IOrderRetryService {
             });
         } while (orderDataFiles.size() >= LIMIT);
 
-        manageExternalBucket(externalBucketFiles, true, datasetTask, orderCounts, orderId, owner);
+        manageExternalBucket(externalBucketFiles, true, datasetTask, orderCounts, orderId, owner, correlationId);
         manageStorageBucket(storageBucketFiles,
                             true,
                             datasetTask,
@@ -218,11 +226,12 @@ public class OrderRetryService implements IOrderRetryService {
                                       DatasetTask datasetTask,
                                       OrderCounts counts,
                                       long orderId,
-                                      String owner) {
+                                      String owner,
+                                      String correlationId) {
         if (!bucket.isEmpty() && (last
                                   || bucket.size() >= MAX_BUCKET_FILE_COUNT
                                   || suborderSizeCounter.externalBucketTooBig(bucket))) {
-            self.createExternalSubOrder(datasetTask, bucket, orderId, owner);
+            self.createExternalSubOrder(datasetTask, bucket, orderId, owner, correlationId);
             counts.incrSubOrderCount();
             bucket.clear();
         }
@@ -251,8 +260,9 @@ public class OrderRetryService implements IOrderRetryService {
     public void createExternalSubOrder(DatasetTask datasetTask,
                                        Set<OrderDataFile> orderDataFiles,
                                        long orderId,
-                                       String owner) {
-        orderHelperService.createExternalSubOrder(datasetTask, orderDataFiles, orderId, owner);
+                                       String owner,
+                                       String correlationId) {
+        orderHelperService.createExternalSubOrder(datasetTask, orderDataFiles, orderId, owner, correlationId);
     }
 
     private void resetState(OrderDataFile orderDataFile) {

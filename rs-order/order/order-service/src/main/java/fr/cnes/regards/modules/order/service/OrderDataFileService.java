@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.service;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import feign.Response;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.ResponseStreamProxy;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -90,6 +91,10 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     private IProcessingEventSender processingEventSender;
 
+    private final IPublisher publisher;
+
+    private final OrderRequestResponseService orderRequestResponseService;
+
     @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
 
@@ -108,7 +113,9 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                                 IOrderRepository orderRepository,
                                 IStorageRestClient storageClient,
                                 IAuthenticationResolver authResolver,
-                                IProcessingEventSender processingEventSender) {
+                                IProcessingEventSender processingEventSender,
+                                IPublisher publisher,
+                                OrderRequestResponseService orderRequestResponseService) {
         this.orderDataFileRepository = orderDataFileRepository;
         this.orderJobService = orderJobService;
         this.self = orderDataFileService;
@@ -117,6 +124,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         this.storageClient = storageClient;
         this.authResolver = authResolver;
         this.processingEventSender = processingEventSender;
+        this.publisher = publisher;
+        this.orderRequestResponseService = orderRequestResponseService;
     }
 
     private static MediaType asMediaType(MimeType mimeType) {
@@ -148,12 +157,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         FilesTask filesTask = filesTasksRepository.findDistinctByFilesContaining(dataFile);
         // In case FilesTask does not yet exist
         if (filesTask != null) {
-            if (filesTask.getFiles()
-                         .stream()
-                         .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR) || (
-                             f.getState()
-                             == FileState.DOWNLOAD_ERROR) || (f.getState() == FileState.PROCESSING_ERROR))) {
-                filesTask.setEnded(true);
+            filesTask.computeTaskEnded();
+            if (filesTask.isEnded()) {
                 LOGGER.trace("File task {} on order {} has ended (no more file to download)",
                              filesTask.getId(),
                              filesTask.getOrderId());
@@ -190,17 +195,9 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         Long orderId = null;
         // Update all these FileTasks
         for (FilesTask filesTask : filesTasks) {
-            if (filesTask.getFiles()
-                         .stream()
-                         .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR) || (
-                             f.getState()
-                             == FileState.DOWNLOAD_ERROR) || (f.getState() == FileState.PROCESSING_ERROR))) {
-                filesTask.setEnded(true);
-            }
+            computeFilesTaskStates(filesTask);
             // Save order id for later
             orderId = filesTask.getOrderId();
-            // ...and if it is waiting for user
-            filesTask.computeWaitingForUser();
             filesTasksRepository.save(filesTask);
         }
         // All files come from same order
@@ -216,6 +213,16 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                          order.getStatus(),
                          order.getAvailableFilesCount());
             orderRepository.save(order);
+        }
+    }
+
+    private void computeFilesTaskStates(FilesTask filesTask) {
+        filesTask.computeTaskEnded();
+        boolean wasWaitingForUser = filesTask.isWaitingForUser();
+        filesTask.computeWaitingForUser();
+        if (!wasWaitingForUser && filesTask.isWaitingForUser()) {
+            // notification must be sent once
+            orderRequestResponseService.notifySuborderDone(filesTask);
         }
     }
 
@@ -443,18 +450,24 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     /**
      * Update finished order status and clean associated FileTasks not in error
+     * If status updated, send an amqp notification
      */
     private void updateOrderIfFinished(Order order, long errorCount) {
         // Update order status if percent_complete has reached 100%
         if (order.getPercentCompleted() == 100) {
-            // If no files in error = DONE
-            if (errorCount == 0) {
-                order.setStatus(OrderStatus.DONE);
-            } else if (errorCount == order.getDatasetTasks().stream().mapToLong(DatasetTask::getFilesCount).sum()) {
-                // If all files in error => FAILED
-                order.setStatus(OrderStatus.FAILED);
-            } else { // DONE_WITH_WARNING
-                order.setStatus(OrderStatus.DONE_WITH_WARNING);
+            // update only once the order status
+            if (!order.getStatus()
+                      .isOneOfStatuses(OrderStatus.DONE, OrderStatus.FAILED, OrderStatus.DONE_WITH_WARNING)) {
+                // If no files in error = DONE
+                if (errorCount == 0) {
+                    order.setStatus(OrderStatus.DONE);
+                } else if (errorCount == order.getDatasetTasks().stream().mapToLong(DatasetTask::getFilesCount).sum()) {
+                    // If all files in error => FAILED
+                    order.setStatus(OrderStatus.FAILED);
+                } else { // DONE_WITH_WARNING
+                    order.setStatus(OrderStatus.DONE_WITH_WARNING);
+                }
+                orderRequestResponseService.notifyOrderFinished(order);
             }
         }
     }

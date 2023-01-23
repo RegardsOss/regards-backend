@@ -39,6 +39,8 @@ public interface IFilesTasksRepository extends JpaRepository<FilesTask, Long> {
 
     Stream<FilesTask> findByOrderId(Long orderId);
 
+    long countByOrderId(Long orderId);
+
     long countByOwnerAndWaitingForUser(String user, Boolean waitingForUser);
 
     /**

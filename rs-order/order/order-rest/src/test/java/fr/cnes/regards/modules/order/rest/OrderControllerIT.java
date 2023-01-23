@@ -24,7 +24,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -69,7 +68,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -173,7 +171,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
     private IBasketRepository basketRepository;
 
     @Autowired
-    private IOrderRepository orderRepository;
+    protected IOrderRepository orderRepository;
 
     @Autowired
     private IOrderDataFileRepository dataFileRepository;
@@ -190,9 +188,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @MockBean
     private IProjectUsersClient projectUsersClient;
 
-    private String projectAdminToken;
+    protected String projectAdminToken;
 
-    private String projectUserToken;
+    protected String projectUserToken;
 
     private String adminEmail = "admin@regards.fr";
 
@@ -1034,7 +1032,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
                           lastDataFileId);
     }
 
-    private Order createOrderAsRunning() throws URISyntaxException {
+    protected Order createOrderAsRunning() throws URISyntaxException {
         Order order = createOrderAsPending();
 
         order.setStatus(OrderStatus.RUNNING);
@@ -1046,7 +1044,16 @@ public class OrderControllerIT extends AbstractRegardsIT {
         return order;
     }
 
-    private Order createOrderAsPending() throws URISyntaxException {
+    protected Long createOrderAs(OrderStatus status) throws URISyntaxException, InterruptedException {
+        Order order = createOrderAsRunning();
+        order.setStatus(status);
+        order = orderRepository.save(order);
+        // Waiting for maintenance to update order properties
+        TimeUnit.SECONDS.sleep(2);
+        return order.getId();
+    }
+
+    protected Order createOrderAsPending() throws URISyntaxException {
         Order order = new Order();
         order.setOwner(getDefaultUserEmail());
         order.setCreationDate(OffsetDateTime.now());
@@ -1313,96 +1320,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         return dataFile1;
     }
 
-    @Test
-    public void testHateoasLinks_Running() throws URISyntaxException, InterruptedException {
-        Long id = createOrderAsRunning().getId();
-        checkAdminLinks(id, "download", "pause");
-        checkUserLinks(id, "download", "pause");
-    }
-
-    @Test
-    public void testHateoasLinks_Pending() throws URISyntaxException, InterruptedException {
-        Long id = createOrderAsPending().getId();
-        checkAdminLinks(id, "pause");
-        checkUserLinks(id, "pause");
-    }
-
-    @Test
-    public void testHateoasLinks_Paused() throws URISyntaxException, InterruptedException {
-        Long id = createOrderAs(OrderStatus.PAUSED);
-        checkAdminLinks(id, "download", "resume", "delete");
-        checkUserLinks(id, "download", "resume", "delete");
-    }
-
-    @Test
-    public void testHateoasLinks_Done() throws URISyntaxException, InterruptedException {
-        Long id = createOrderAs(OrderStatus.DONE);
-        checkAdminLinks(id, "restart", "delete");
-        checkUserLinks(id, "restart", "delete");
-    }
-
-    @Test
-    public void testHateoasLinks_DoneWithWarning() throws URISyntaxException, InterruptedException {
-        Long id = createOrderAs(OrderStatus.DONE_WITH_WARNING);
-        checkAdminLinks(id, "restart", "retry", "delete");
-        checkUserLinks(id, "restart", "retry", "delete");
-    }
-
-    @Test
-    public void testHateoasLinks_Failed() throws URISyntaxException, InterruptedException {
-        Long id = createOrderAs(OrderStatus.FAILED);
-        checkAdminLinks(id, "restart", "retry", "delete");
-        checkUserLinks(id, "restart", "retry", "delete");
-    }
-
-    @Test
-    public void testHateoasLinks_Deleted() throws URISyntaxException, InterruptedException {
-        Long id = createOrderAs(OrderStatus.DELETED);
-        checkAdminLinks(id, "remove");
-        checkBasicLinks(getOrderDtoAsUser(id));
-    }
-
-    private Long createOrderAs(OrderStatus status) throws URISyntaxException, InterruptedException {
-        Order order = createOrderAsRunning();
-        order.setStatus(status);
-        order = orderRepository.save(order);
-        // Waiting for maintenance to update order properties
-        TimeUnit.SECONDS.sleep(2);
-        return order.getId();
-    }
-
-    private void checkUserLinks(Long id, String... links) throws InterruptedException {
-        checkLinks(getOrderDtoAsUser(id), links);
-    }
-
-    private void checkAdminLinks(Long id, String... links) throws InterruptedException {
-        checkLinks(getOrderDtoAsAdmin(id), links);
-    }
-
-    private void checkLinks(EntityModel<OrderDto> entityModel, String... links) {
-        checkBasicLinks(entityModel);
-        // Check proper number of links
-        Assertions.assertTrue(entityModel.getLinks().hasSize(2 + links.length));
-        // Check additional links
-        Arrays.stream(links).forEach(link -> Assertions.assertTrue(entityModel.getLink(link).isPresent()));
-
-    }
-
-    private void checkBasicLinks(EntityModel<OrderDto> entityModel) {
-        // Check basic links (always there)
-        Assertions.assertTrue(entityModel.getLink(LinkRels.SELF).isPresent());
-        Assertions.assertTrue(entityModel.getLink(LinkRels.LIST).isPresent());
-    }
-
-    private EntityModel<OrderDto> getOrderDtoAsAdmin(Long orderId) throws InterruptedException {
-        return getOrderDtoEntityModel(orderId, projectAdminToken);
-    }
-
-    private EntityModel<OrderDto> getOrderDtoAsUser(Long orderId) throws InterruptedException {
-        return getOrderDtoEntityModel(orderId, projectUserToken);
-    }
-
-    private EntityModel<OrderDto> getOrderDtoEntityModel(Long orderId, String token) throws InterruptedException {
+    protected EntityModel<OrderDto> getOrderDtoEntityModel(Long orderId, String token) throws InterruptedException {
         // Seems to fail with no pause here
         TimeUnit.SECONDS.sleep(5);
         String payload = payload(performGet(OrderController.GET_ORDER_PATH,

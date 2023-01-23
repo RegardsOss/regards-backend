@@ -80,6 +80,8 @@ public class OrderHelperService {
 
     private final IOrderSettingsService orderSettingsService;
 
+    private final OrderRequestResponseService orderRequestResponseService;
+
     @Value("${regards.order.secret}")
     private String secret;
 
@@ -102,13 +104,15 @@ public class OrderHelperService {
                               IAuthenticationResolver authenticationResolver,
                               IRuntimeTenantResolver runtimeTenantResolver,
                               IProjectUsersClient projectUsersClient,
-                              IOrderSettingsService orderSettingsService) {
+                              IOrderSettingsService orderSettingsService,
+                              OrderRequestResponseService orderRequestResponseService) {
         this.jwtService = jwtService;
         this.jobInfoService = jobInfoService;
         this.authenticationResolver = authenticationResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.projectUsersClient = projectUsersClient;
         this.orderSettingsService = orderSettingsService;
+        this.orderRequestResponseService = orderRequestResponseService;
     }
 
     public static boolean isOrderEffectivelyInPause(Order order) {
@@ -183,7 +187,8 @@ public class OrderHelperService {
     public void createExternalSubOrder(DatasetTask datasetTask,
                                        Set<OrderDataFile> orderDataFiles,
                                        long orderId,
-                                       String owner) {
+                                       String owner,
+                                       String correlationId) {
 
         LOGGER.info("Creating external sub-order of {} files (Order: {} - Owner: {})",
                     orderDataFiles.size(),
@@ -195,6 +200,7 @@ public class OrderHelperService {
         currentFilesTask.setOwner(owner);
         currentFilesTask.addAllFiles(orderDataFiles);
         datasetTask.addReliantTask(currentFilesTask);
+        orderRequestResponseService.notifySuborderDone(correlationId, owner);
     }
 
     @MultitenantTransactional

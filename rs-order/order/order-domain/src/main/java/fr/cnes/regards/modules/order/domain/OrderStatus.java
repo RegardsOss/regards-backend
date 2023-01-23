@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.order.domain;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 /**
  * Order status
  *
@@ -59,5 +62,10 @@ public enum OrderStatus {
      * Only a {@link OrderStatus#PAUSED}, {@link OrderStatus#DONE}, {@link OrderStatus#DONE_WITH_WARNING},
      * {@link OrderStatus#FAILED} order can be {@link OrderStatus#DELETED} (with no running jobs)
      */
-    DELETED
+    DELETED;
+
+    public boolean isOneOfStatuses(OrderStatus... status) {
+        Stream<OrderStatus> orderStatuses = Arrays.stream(status);
+        return orderStatuses.anyMatch(this::equals);
+    }
 }

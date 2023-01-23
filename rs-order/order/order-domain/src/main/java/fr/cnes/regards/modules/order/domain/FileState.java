@@ -34,10 +34,20 @@ package fr.cnes.regards.modules.order.domain;
  * @author oroussel
  */
 public enum FileState {
-    AVAILABLE,
-    DOWNLOADED,
-    DOWNLOAD_ERROR,
-    PROCESSING_ERROR,
-    ERROR,
-    PENDING,
+    AVAILABLE(false),
+    DOWNLOADED(true),
+    DOWNLOAD_ERROR(true),
+    PROCESSING_ERROR(true),
+    ERROR(true),
+    PENDING(false);
+
+    private final boolean finalState;
+
+    FileState(boolean finalState) {
+        this.finalState = finalState;
+    }
+
+    public boolean isFinalState() {
+        return finalState;
+    }
 }

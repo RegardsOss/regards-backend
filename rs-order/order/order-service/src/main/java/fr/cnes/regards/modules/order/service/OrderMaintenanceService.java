@@ -38,10 +38,8 @@ import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -53,8 +51,6 @@ import java.util.*;
 
 @Service
 @MultitenantTransactional
-@RefreshScope
-@EnableScheduling
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderMaintenanceService implements IOrderMaintenanceService {
 
@@ -100,23 +96,6 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         this.emailClient = emailClient;
         this.orderSettingsService = orderSettingsService;
         this.self = orderMaintenanceService;
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NEVER) // Must not create a transaction, it is a multitenant method
-    @Scheduled(fixedDelayString = "${regards.order.computation.update.rate.ms:1000}")
-    public void updateCurrentOrdersComputations() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            try {
-                self.updateTenantOrdersComputations();
-            } catch (Exception e) {
-                // FIXME - The Spring type of exception is not stable yet
-                // So the catch can be more specific once Spring will be updated 5.3.0
-                // @see https://github.com/spring-projects/spring-framework/issues/24064
-                LOGGER.warn("Failed to update orders as the database returned us a serialisation anomaly", e);
-            }
-        }
     }
 
     @Override

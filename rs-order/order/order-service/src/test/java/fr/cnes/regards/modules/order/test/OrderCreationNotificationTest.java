@@ -32,11 +32,13 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
 import fr.cnes.regards.modules.order.service.OrderCreationService;
 import fr.cnes.regards.modules.order.service.OrderHelperService;
+import fr.cnes.regards.modules.order.service.OrderRequestResponseService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -96,7 +98,12 @@ public class OrderCreationNotificationTest {
                                         mockCurrentTenant(),
                                         null,
                                         templateService,
+                                        mockOrderRequestResponseService(),
                                         null);
+    }
+
+    private OrderRequestResponseService mockOrderRequestResponseService() {
+        return Mockito.mock(OrderRequestResponseService.class);
     }
 
     private IOrderRepository mockOrderRepo() {

@@ -28,14 +28,14 @@ package fr.cnes.regards.modules.order.dto.output;
  *      /           \
  *    DENIED      GRANTED
  *                   |
- *                   |  loop  ______ SUBORDER_DONE
- *                   |_______|
- *                   |       |______ SUBORDER_FAILED
+ *                   |  loop
+ *                   |_____________ SUBORDER_DONE (a suborder is done if at least one file is available to download)
+ *                   |
  *                   |
  *           ________|______________
  *          |                      |
  *      FAILED                  DONE
- * (>0 SUBORDER_FAILED) (0 SUBORDER_FAILED)
+ * (>0 suborder failed) (0 suborder failed)
  *
  * </pre>
  *
@@ -54,11 +54,6 @@ public enum OrderRequestStatus {
      * One of the subcommand has ended in success
      */
     SUBORDER_DONE,
-    /**
-     * One of the subcommand has ended in failure
-     */
-
-    SUBORDER_FAILED,
     /**
      * The order has ended in success
      */

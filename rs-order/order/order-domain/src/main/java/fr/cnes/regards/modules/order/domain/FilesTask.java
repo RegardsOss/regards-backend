@@ -24,7 +24,6 @@ import javax.persistence.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * A sub-order task is a job that manage a set of data files.
@@ -115,18 +114,19 @@ public class FilesTask extends LeafTask {
     /**
      * Permit to know if a user action is mandatory to completely finish this task ie :
      * - if associated jobInfo has ended (=> no file with PENDING status)
-     * - if no file has been downloaded (=> no file with DOWNLOADED status)
+     * - if any file is available to download (=> any file with AVAILABLE status)
      */
     public void computeWaitingForUser() {
-        Set<OrderDataFile> notInErrorFiles = files.stream()
-                                                  .filter(f -> (f.getState() != FileState.ERROR)
-                                                               && (f.getState()
-                                                                   != FileState.DOWNLOAD_ERROR)
-                                                               && (f.getState() != FileState.PROCESSING_ERROR))
-                                                  .collect(Collectors.toSet());
-        // Not in error nor download_error files are all available
-        this.waitingForUser = !notInErrorFiles.isEmpty() && notInErrorFiles.stream()
-                                                                           .allMatch(f -> f.getState()
-                                                                                          == FileState.AVAILABLE);
+        boolean anyPending = files.stream().anyMatch(file -> file.getState() == FileState.PENDING);
+        boolean anyAvailable = files.stream().anyMatch(f -> f.getState() == FileState.AVAILABLE);
+        this.waitingForUser = !anyPending && anyAvailable;
+    }
+
+    public void computeTaskEnded() {
+        this.ended = allFilesHaveFinalStatus();
+    }
+
+    private boolean allFilesHaveFinalStatus() {
+        return this.getFiles().stream().map(OrderDataFile::getState).allMatch(FileState::isFinalState);
     }
 }

@@ -161,7 +161,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
             Thread.currentThread().interrupt();
             logger.info("Order job has been interrupted !");
         } finally {
-            // All files have bean treated by storage, no more event subscriber needed...
+            // All files have been treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);
 
             processJobInfoId

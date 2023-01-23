@@ -21,12 +21,6 @@ package fr.cnes.regards.modules.order.service;
 public interface IOrderMaintenanceService {
 
     /**
-     * Scheduled method to update all current running orders completions values and all order available files count
-     * values into database
-     */
-    void updateCurrentOrdersComputations();
-
-    /**
      * Same method as previous one but for one tenant (hence transactional)
      */
     void updateTenantOrdersComputations();

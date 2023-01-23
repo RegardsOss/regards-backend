@@ -97,6 +97,8 @@ public class OrderCreationService implements IOrderCreationService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    private final OrderRequestResponseService orderRequestResponseService;
+
     private final IOrderCreationService self;
 
     public OrderCreationService(IOrderRepository orderRepository,
@@ -112,6 +114,7 @@ public class OrderCreationService implements IOrderCreationService {
                                 IRuntimeTenantResolver runtimeTenantResolver,
                                 IOrderProcessingService orderProcessingService,
                                 TemplateService templateService,
+                                OrderRequestResponseService orderRequestResponseService,
                                 IOrderCreationService orderCreationService) {
         this.orderRepository = orderRepository;
         this.dataFileService = dataFileService;
@@ -126,6 +129,7 @@ public class OrderCreationService implements IOrderCreationService {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.orderProcessingService = orderProcessingService;
         this.templateService = templateService;
+        this.orderRequestResponseService = orderRequestResponseService;
         this.self = orderCreationService;
     }
 
@@ -201,6 +205,7 @@ public class OrderCreationService implements IOrderCreationService {
             order.setExpirationDate(orderHelperService.computeOrderExpirationDate(0, subOrderDuration));
         }
         manageOrderState(order, orderCounts);
+        notifyIfOrderIsDone(order);
         order = orderRepository.save(order);
         LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
 
@@ -211,6 +216,12 @@ public class OrderCreationService implements IOrderCreationService {
             orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
         }
         applicationEventPublisher.publishEvent(new OrderCreationCompletedEvent(order));
+    }
+
+    private void notifyIfOrderIsDone(Order order) {
+        if (order.getStatus().isOneOfStatuses(OrderStatus.DONE, OrderStatus.FAILED, OrderStatus.DONE_WITH_WARNING)) {
+            orderRequestResponseService.notifyOrderFinished(order);
+        }
     }
 
     private void manageOrderState(Order order, OrderCounts orderCounts) {
@@ -443,7 +454,11 @@ public class OrderCreationService implements IOrderCreationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createExternalSubOrder(DatasetTask datasetTask, Set<OrderDataFile> bucketFiles, Order order) {
         dataFileService.create(bucketFiles);
-        orderHelperService.createExternalSubOrder(datasetTask, bucketFiles, order.getId(), order.getOwner());
+        orderHelperService.createExternalSubOrder(datasetTask,
+                                                  bucketFiles,
+                                                  order.getId(),
+                                                  order.getOwner(),
+                                                  order.getCorrelationId());
     }
 
     /**

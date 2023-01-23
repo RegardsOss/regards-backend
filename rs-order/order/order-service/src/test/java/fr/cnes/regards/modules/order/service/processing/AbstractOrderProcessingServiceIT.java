@@ -199,6 +199,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         jobInfoRepos.deleteAll();
         execResultHandlerResultEventHandler.clear();
         orderCreationCompletedEventHandler.clear();
+        Mockito.reset(publisher);
     }
 
     protected void showMetalink(Order order) throws IOException {
