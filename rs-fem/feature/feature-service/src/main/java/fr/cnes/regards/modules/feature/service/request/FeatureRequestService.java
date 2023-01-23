@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
@@ -299,6 +300,7 @@ public class FeatureRequestService implements IFeatureRequestService {
         // set FeatureDeletionRequest to error state
         deletionRequests.forEach(r -> {
             r.setState(RequestState.ERROR);
+            r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
             r.addError(String.format("Error during file deletion : %s",
                                      Optional.ofNullable(errorByGroupId.get(r.getGroupId())).orElse("unknown error.")));
         });
