@@ -187,7 +187,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                 Try.run(() -> {
                     Connection connection = DriverManager.getConnection("jdbc:postgresql://rs-postgres:5432/postgres",
                                                                         PGSQL_USER,
-                                                                        PGSQL_SECRET);
+                                                                        PGSQL_SECRET); // NOSONAR
 
                     Stream.of(TENANT_PROJECTA, TENANT_PROJECTB, R2DBCDB_NAME).forEach(dbName -> {
                         try {

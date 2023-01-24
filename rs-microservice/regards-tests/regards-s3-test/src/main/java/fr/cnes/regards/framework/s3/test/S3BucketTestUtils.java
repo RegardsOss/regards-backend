@@ -146,7 +146,16 @@ public final class S3BucketTestUtils {
                                                                          maxBytesPerPart,
                                                                          MULTIPART_UPLOAD_PREFETCH);
 
-        client.write(StorageCommand.write(storageConfig, cmdId, entryKey, entry)).block().matchWriteResult(success -> {
+        StorageCommandResult.WriteResult result = client.write(StorageCommand.write(storageConfig,
+                                                                                    cmdId,
+                                                                                    entryKey,
+                                                                                    entry)).block();
+        if (result == null) {
+            throw new S3ClientException(String.format("Invalid S3 write command result [bucket: %s] [endpoint: %s]",
+                                                      s3Server.getBucket(),
+                                                      s3Server.getEndpoint()));
+        }
+        result.matchWriteResult(success -> {
             LOGGER.info("Success [bucket: {}] end writing of file {} [endpoint: {}]",
                         s3Server.getBucket(),
                         sourceFile,
