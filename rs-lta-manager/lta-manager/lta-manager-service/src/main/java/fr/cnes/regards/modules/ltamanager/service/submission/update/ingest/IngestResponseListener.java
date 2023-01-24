@@ -21,14 +21,17 @@ package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.ingest.client.IIngestClientListener;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
+import fr.cnes.regards.modules.ltamanager.amqp.output.LtaCleanWorkerRequestDtoEvent;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.IngestStatusResponseMapping;
+import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
+import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Update {@link fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest} states following the
@@ -39,28 +42,44 @@ import java.util.Set;
 @Service
 public class IngestResponseListener implements IIngestClientListener {
 
-    private final IngestResponseService responseService;
+    /**
+     * Content type for the LTA Clean worker
+     */
+    public final static String CONTENT_TYPE_LTA_CLEAN_WORKER = "lta-clean";
+
+    /**
+     * Service class for ingest response
+     */
+    private final IngestResponseService ingestResponseService;
+
+    /**
+     * Service class for the reading of submission request
+     */
+    private final SubmissionReadService submissionReadService;
 
     private final IPublisher publisher;
 
-    public IngestResponseListener(IngestResponseService responseService, IPublisher publisher) {
-        this.responseService = responseService;
+    public IngestResponseListener(IngestResponseService responseService,
+                                  SubmissionReadService submissionReadService,
+                                  IPublisher publisher) {
+        this.ingestResponseService = responseService;
+        this.submissionReadService = submissionReadService;
         this.publisher = publisher;
     }
 
     @Override
     public void onDenied(Collection<RequestInfo> infos) {
-        responseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.DENIED_MAP);
+        ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.DENIED_MAP);
     }
 
     @Override
     public void onGranted(Collection<RequestInfo> infos) {
-        responseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.GRANTED_MAP);
+        ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.GRANTED_MAP);
     }
 
     @Override
     public void onError(Collection<RequestInfo> infos) {
-        responseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.ERROR_MAP);
+        ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.ERROR_MAP);
         List<SubmissionResponseDtoEvent> requestsCompleteError = infos.stream()
                                                                       .map(info -> new SubmissionResponseDtoEvent(info.getRequestId(),
                                                                                                                   SubmissionResponseStatus.DENIED,
@@ -72,6 +91,12 @@ public class IngestResponseListener implements IIngestClientListener {
 
     }
 
+    /**
+     * Build the error message
+     *
+     * @param errors the set of errors
+     * @return the error message
+     */
     private String buildErrorMessage(Set<String> errors) {
         if (errors == null) {
             return null;
@@ -86,18 +111,41 @@ public class IngestResponseListener implements IIngestClientListener {
 
     @Override
     public void onSuccess(Collection<RequestInfo> infos) {
-        responseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.SUCCESS_MAP);
-        List<SubmissionResponseDtoEvent> requestsCompleteSuccess = infos.stream()
-                                                                        .map(info -> new SubmissionResponseDtoEvent(info.getRequestId(),
-                                                                                                                    SubmissionResponseStatus.GRANTED,
-                                                                                                                    null,
-                                                                                                                    null))
-                                                                        .toList();
-        publisher.publish(requestsCompleteSuccess);
+        ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.SUCCESS_MAP);
+
+        List<SubmissionResponseDtoEvent> submissionResponseDtoEvents = new ArrayList<>();
+        List<LtaCleanWorkerRequestDtoEvent> ltaCleanWorkerRequestDtoEvents = new ArrayList<>();
+        infos.stream().forEach(info -> {
+            submissionResponseDtoEvents.add(new SubmissionResponseDtoEvent(info.getRequestId(),
+                                                                           SubmissionResponseStatus.GRANTED,
+                                                                           null,
+                                                                           null));
+
+            Optional<SubmissionRequestDto> submissionRequestDto = submissionReadService.findSubmissionRequestByCorrelationId(
+                info.getRequestId());
+            if (submissionRequestDto.isPresent()) {
+                LtaCleanWorkerRequestDtoEvent ltaCleanWorkerRequestDtoEvent = new LtaCleanWorkerRequestDtoEvent(
+                    submissionRequestDto.get().getCorrelationId(),
+                    submissionRequestDto.get().getId(),
+                    submissionRequestDto.get().getDatatype(),
+                    submissionRequestDto.get().getGeometry(),
+                    submissionRequestDto.get().getFiles());
+                ltaCleanWorkerRequestDtoEvent.addHeader(EventHeadersHelper.CONTENT_TYPE_HEADER,
+                                                        CONTENT_TYPE_LTA_CLEAN_WORKER);
+
+                ltaCleanWorkerRequestDtoEvents.add(ltaCleanWorkerRequestDtoEvent);
+            }
+        });
+        publisher.publish(submissionResponseDtoEvents);
+
+        // Publish list of events to LTA clean worker
+        publisher.publish(ltaCleanWorkerRequestDtoEvents,
+                          "regards.broadcast." + RequestEvent.class.getName(),
+                          Optional.empty());
     }
 
     @Override
     public void onDeleted(Set<RequestInfo> infos) {
-        responseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.DELETED_MAP);
+        ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.DELETED_MAP);
     }
 }

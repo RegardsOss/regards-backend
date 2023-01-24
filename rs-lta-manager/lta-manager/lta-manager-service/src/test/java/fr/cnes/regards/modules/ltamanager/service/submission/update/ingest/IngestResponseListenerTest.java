@@ -20,17 +20,25 @@ package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest;
 
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
+import fr.cnes.regards.modules.ltamanager.amqp.output.LtaCleanWorkerRequestDtoEvent;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
+import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
 import fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.notification.SuccessLtaRequestNotification;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,6 +49,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.MediaType;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -58,10 +67,10 @@ import static org.mockito.Mockito.times;
 public class IngestResponseListenerTest {
 
     @Mock
-    private ISubmissionRequestRepository requestRepository;
+    private ISubmissionRequestRepository submissionRequestRepository;
 
     // class under test
-    private IngestResponseListener responseListener;
+    private IngestResponseListener ingestResponseListener;
 
     @Mock
     private INotifierClient notifierClient;
@@ -72,20 +81,24 @@ public class IngestResponseListenerTest {
     @Spy
     private IPublisher publisher;
 
+    @Mock
+    private SubmissionReadService submissionReadService;
+
     @Before
     public void init() {
-        IngestResponseService responseService = new IngestResponseService(requestRepository,
+        IngestResponseService responseService = new IngestResponseService(submissionRequestRepository,
                                                                           notifierClient,
                                                                           runtimeTenantResolver,
                                                                           new Gson());
-        responseListener = new IngestResponseListener(responseService, publisher);
+
+        ingestResponseListener = new IngestResponseListener(responseService, submissionReadService, publisher);
     }
 
     @Test
     @Purpose(
         "Check that submission requests are successfully updated following the receiving of ingest request events.")
     public void update_request_success() {
-        // ---- GIVEN ----
+        // GIVEN
         // Create request info event
         int nbEvents = 4;
         List<RequestInfo> events = new ArrayList<>();
@@ -99,59 +112,69 @@ public class IngestResponseListenerTest {
             }
             events.add(event);
             // Mock database behaviour to simulate request ids exist
-            Mockito.when(requestRepository.findIdsByCorrelationIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+            Mockito.when(submissionRequestRepository.findIdsByCorrelationIdIn(List.of(reqId)))
+                   .thenReturn(List.of(reqId));
         }
+        SubmissionRequestDto submissionRequestDto = createSubmissionRequestDto();
+        Mockito.when(submissionReadService.findSubmissionRequestByCorrelationId(any()))
+               .thenReturn(Optional.of(submissionRequestDto));
 
-        // ---- WHEN -----
+        // WHEN
         // Responses events are sent to the worker manager listener
-        responseListener.onSuccess(List.of(events.get(0)));
-        responseListener.onGranted(List.of(events.get(1)));
-        responseListener.onDenied(List.of(events.get(2)));
-        responseListener.onError(List.of(events.get(3)));
+        ingestResponseListener.onSuccess(List.of(events.get(0)));
+        ingestResponseListener.onGranted(List.of(events.get(1)));
+        ingestResponseListener.onDenied(List.of(events.get(2)));
+        ingestResponseListener.onError(List.of(events.get(3)));
 
-        // ---- THEN -----
+        //  THEN
         // Check submission requests are updated with correct corresponding status
-        Mockito.verify(requestRepository, times(nbEvents)).updateRequestState(any(), any(), any(), any());
+        Mockito.verify(submissionRequestRepository, times(nbEvents)).updateRequestState(any(), any(), any(), any());
 
         // success
-        Mockito.verify(requestRepository)
+        Mockito.verify(submissionRequestRepository)
                .updateRequestState(eq(events.get(0).getRequestId()),
                                    eq(SubmissionRequestState.DONE),
                                    eq(null),
                                    any(OffsetDateTime.class));
         // granted
-        Mockito.verify(requestRepository)
+        Mockito.verify(submissionRequestRepository)
                .updateRequestState(eq(events.get(1).getRequestId()),
                                    eq(SubmissionRequestState.INGESTION_PENDING),
                                    eq(null),
                                    any(OffsetDateTime.class));
 
         // denied
-        Mockito.verify(requestRepository)
+        Mockito.verify(submissionRequestRepository)
                .updateRequestState(eq(events.get(2).getRequestId()),
                                    eq(SubmissionRequestState.INGESTION_ERROR),
                                    eq(StringUtils.join(events.get(2).getErrors(), " | ")),
                                    any(OffsetDateTime.class));
         // error
-        Mockito.verify(requestRepository)
+        Mockito.verify(submissionRequestRepository)
                .updateRequestState(eq(events.get(3).getRequestId()),
                                    eq(SubmissionRequestState.INGESTION_ERROR),
                                    eq(StringUtils.join(events.get(3).getErrors(), " | ")),
                                    any(OffsetDateTime.class));
 
         //Check messages were sent onSuccess and onError
-        ArgumentCaptor<List<SubmissionResponseDtoEvent>> captorPublished = ArgumentCaptor.forClass(List.class);
-        Mockito.verify(publisher, times(2)).publish(captorPublished.capture());
-        List<SubmissionResponseDtoEvent> capturedPublishedEvents = captorPublished.getAllValues()
-                                                                                  .stream()
-                                                                                  .flatMap(List::stream)
-                                                                                  .toList();
-        Assert.assertEquals("Expected 2 events", 2, capturedPublishedEvents.size());
-        Optional<SubmissionResponseDtoEvent> successEvent = capturedPublishedEvents.stream()
-                                                                                   .filter(event -> event.getResponseStatus()
-                                                                                                         .equals(
-                                                                                                             SubmissionResponseStatus.GRANTED))
-                                                                                   .findFirst();
+        ArgumentCaptor<List<ISubscribable>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+
+        Mockito.verify(publisher, times(2)).publish(argumentCaptor.capture());
+        List<SubmissionResponseDtoEvent> capturedSubmissionResponseDtoEvents = getSubmissionResponseDtoEvents(
+            argumentCaptor);
+
+        Mockito.verify(publisher, times(1)).publish(argumentCaptor.capture(), any(), any());
+        List<LtaCleanWorkerRequestDtoEvent> capturedLtaCleanWorkerRequestDtoEvents = getLtaCleanWorkerRequestDtoEvents(
+            argumentCaptor);
+
+        // Check List<SubmissionResponseDtoEvent>
+        Assert.assertNotNull(capturedSubmissionResponseDtoEvents);
+        Assert.assertEquals("Expected 2 events", 2, capturedSubmissionResponseDtoEvents.size());
+        Optional<SubmissionResponseDtoEvent> successEvent = capturedSubmissionResponseDtoEvents.stream()
+                                                                                               .filter(event -> event.getResponseStatus()
+                                                                                                                     .equals(
+                                                                                                                         SubmissionResponseStatus.GRANTED))
+                                                                                               .findFirst();
         //onSuccess
         if (successEvent.isEmpty()) {
             Assert.fail("Expected a SUCCESS event");
@@ -161,11 +184,11 @@ public class IngestResponseListenerTest {
                             successEvent.get().getCorrelationId());
 
         //onError
-        Optional<SubmissionResponseDtoEvent> errorEvent = capturedPublishedEvents.stream()
-                                                                                 .filter(event -> event.getResponseStatus()
-                                                                                                       .equals(
-                                                                                                           SubmissionResponseStatus.DENIED))
-                                                                                 .findFirst();
+        Optional<SubmissionResponseDtoEvent> errorEvent = capturedSubmissionResponseDtoEvents.stream()
+                                                                                             .filter(event -> event.getResponseStatus()
+                                                                                                                   .equals(
+                                                                                                                       SubmissionResponseStatus.DENIED))
+                                                                                             .findFirst();
         if (errorEvent.isEmpty()) {
             Assert.fail("Expected an ERROR event");
         }
@@ -173,22 +196,43 @@ public class IngestResponseListenerTest {
                             events.get(3).getRequestId(),
                             errorEvent.get().getCorrelationId());
 
+        // Check List<LtaCleanWorkerRequestDtoEvent>
+        Assert.assertNotNull(capturedLtaCleanWorkerRequestDtoEvents);
+        Assert.assertEquals("Expected 1 event", 1, capturedLtaCleanWorkerRequestDtoEvents.size());
+
+        Assert.assertEquals(submissionRequestDto.getCorrelationId(),
+                            capturedLtaCleanWorkerRequestDtoEvents.get(0).getCorrelationId());
+        Assert.assertEquals(submissionRequestDto.getId(), capturedLtaCleanWorkerRequestDtoEvents.get(0).getId());
+        Assert.assertEquals(submissionRequestDto.getDatatype(),
+                            capturedLtaCleanWorkerRequestDtoEvents.get(0).getDatatype());
+
+        Assert.assertTrue(capturedLtaCleanWorkerRequestDtoEvents.get(0)
+                                                                .getMessageProperties()
+                                                                .getHeaders()
+                                                                .containsKey(EventHeadersHelper.CONTENT_TYPE_HEADER));
+        Assert.assertEquals(IngestResponseListener.CONTENT_TYPE_LTA_CLEAN_WORKER,
+                            capturedLtaCleanWorkerRequestDtoEvents.get(0)
+                                                                  .getMessageProperties()
+                                                                  .getHeader(EventHeadersHelper.CONTENT_TYPE_HEADER));
     }
 
     @Test
     @Purpose("Check that no submission requests are updated if request events received do not correspond to any "
              + "request")
     public void update_request_no_request_update() {
-        // ---- GIVEN ----
+        // GIVEN
         // Response events init
 
-        // ---- WHEN ----
+        // WHEN
         // Responses events are sent to the worker manager listener
-        responseListener.onSuccess(List.of(RequestInfo.build(UUID.randomUUID().toString(), null, null)));
+        ingestResponseListener.onSuccess(List.of(RequestInfo.build(UUID.randomUUID().toString(), null, null)));
 
-        // --- THEN ----
+        // THEN
         // Check no submission requests are updated
-        Mockito.verify(requestRepository, times(0)).updateRequestState(any(), any(), any(), any());
+        Mockito.verify(submissionRequestRepository, times(0)).updateRequestState(any(), any(), any(), any());
+
+        Mockito.verify(publisher, times(1)).publish((List<ISubscribable>) any());
+        Mockito.verify(publisher, times(1)).publish((List<ISubscribable>) any(), any(), any());
     }
 
     // ACKs tests
@@ -199,27 +243,51 @@ public class IngestResponseListenerTest {
         String tenantName = "tenantName";
         String reqId = UUID.randomUUID().toString();
         RequestInfo event = RequestInfo.build(reqId, reqId, null, null);
-        Mockito.when(requestRepository.findIdsByCorrelationIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+
+        Mockito.when(submissionRequestRepository.findIdsByCorrelationIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+
         SubmissionRequest request = new SubmissionRequest();
         request.setOriginUrn(urnTest);
-        Mockito.when(requestRepository.findAllByCorrelationIdIn(List.of(event.getRequestId())))
+        Mockito.when(submissionRequestRepository.findAllByCorrelationIdIn(List.of(event.getRequestId())))
                .thenReturn(List.of(request));
+
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(tenantName);
+
+        Mockito.when(submissionReadService.findSubmissionRequestByCorrelationId(any())).thenReturn(Optional.empty());
+
         // WHEN
-        responseListener.onSuccess(List.of(event));
+        ingestResponseListener.onSuccess(List.of(event));
+
         // THEN
         ArgumentCaptor<List<NotificationRequestEvent>> eventCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(notifierClient).sendNotifications(eventCaptor.capture());
         List<NotificationRequestEvent> value = eventCaptor.getValue();
         Assert.assertEquals(1, value.size());
+        Assert.assertTrue(value.get(0) instanceof NotificationRequestEvent);
         NotificationRequestEvent notif = value.get(0);
-        Assert.assertTrue(notif instanceof NotificationRequestEvent);
+
         Assert.assertEquals(urnTest, notif.getPayload().get("urn").getAsString());
         Assert.assertEquals(SuccessLtaRequestNotification.NOTIF_ACTION,
                             notif.getMetadata().get("action").getAsString());
         Assert.assertEquals(tenantName, notif.getMetadata().get("sessionOwner").getAsString());
         // Only one notification is sent to notifier.
         Mockito.verify(notifierClient, Mockito.times(1)).sendNotifications(Mockito.any(List.class));
+
+        ArgumentCaptor<List<ISubscribable>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+
+        Mockito.verify(publisher, times(1)).publish(argumentCaptor.capture());
+        List<SubmissionResponseDtoEvent> capturedSubmissionResponseDtoEvents = getSubmissionResponseDtoEvents(
+            argumentCaptor);
+
+        Mockito.verify(publisher, times(1)).publish(argumentCaptor.capture(), any(), any());
+        List<LtaCleanWorkerRequestDtoEvent> capturedLtaCleanWorkerRequestDtoEvents = getLtaCleanWorkerRequestDtoEvents(
+            argumentCaptor);
+
+        Assert.assertNotNull(capturedSubmissionResponseDtoEvents);
+        Assert.assertEquals("Expected 1 event", 1, capturedSubmissionResponseDtoEvents.size());
+
+        Assert.assertNotNull(capturedLtaCleanWorkerRequestDtoEvents);
+        Assert.assertEquals("Expected 0 event", 0, capturedLtaCleanWorkerRequestDtoEvents.size());
     }
 
     @Test
@@ -227,14 +295,46 @@ public class IngestResponseListenerTest {
         // GIVEN
         String reqId = UUID.randomUUID().toString();
         RequestInfo event = RequestInfo.build(reqId, reqId, null, null);
-        Mockito.when(requestRepository.findIdsByCorrelationIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+        Mockito.when(submissionRequestRepository.findIdsByCorrelationIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+
         // WHEN
-        responseListener.onGranted(List.of(event));
-        responseListener.onDenied(List.of(event));
-        responseListener.onError(List.of(event));
+        ingestResponseListener.onGranted(List.of(event));
+        ingestResponseListener.onDenied(List.of(event));
+        ingestResponseListener.onError(List.of(event));
+
         // THEN
         // No success request so zero notif sent.
         Mockito.verify(notifierClient, Mockito.times(0)).sendNotifications(Mockito.any(List.class));
+    }
+
+    private SubmissionRequestDto createSubmissionRequestDto() {
+        return new SubmissionRequestDto("correlationId",
+                                        "id",
+                                        "datatype",
+                                        IGeometry.unlocated(),
+                                        Collections.singletonList(new ProductFileDto(DataType.OTHER,
+                                                                                     "url",
+                                                                                     "filename",
+                                                                                     "checksum",
+                                                                                     MediaType.APPLICATION_OCTET_STREAM)));
+    }
+
+    private List<SubmissionResponseDtoEvent> getSubmissionResponseDtoEvents(ArgumentCaptor<List<ISubscribable>> argumentCaptor) {
+        return argumentCaptor.getAllValues()
+                             .stream()
+                             .flatMap(List::stream)
+                             .filter(SubmissionResponseDtoEvent.class::isInstance)
+                             .map(SubmissionResponseDtoEvent.class::cast)
+                             .toList();
+    }
+
+    private List<LtaCleanWorkerRequestDtoEvent> getLtaCleanWorkerRequestDtoEvents(ArgumentCaptor<List<ISubscribable>> argumentCaptor) {
+        return argumentCaptor.getAllValues()
+                             .stream()
+                             .flatMap(List::stream)
+                             .filter(LtaCleanWorkerRequestDtoEvent.class::isInstance)
+                             .map(LtaCleanWorkerRequestDtoEvent.class::cast)
+                             .toList();
     }
 
 }

@@ -16,26 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ltamanager.amqp.input;
+package fr.cnes.regards.modules.ltamanager.amqp.output;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * See {@link SubmissionRequestDto}
+ * AMQP event class in order to communicate with LTA Clean worker (See {@link SubmissionRequestDto})
  *
- * @author Iliana Ghazali
- **/
+ * @author Stephane Cortine
+ */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements ISubscribable, IMessagePropertiesAware {
+public class LtaCleanWorkerRequestDtoEvent extends SubmissionRequestDto
+    implements ISubscribable, IMessagePropertiesAware {
 
     /**
      * Properties of event
@@ -43,19 +45,14 @@ public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements I
      */
     @GsonIgnore
     private MessageProperties messageProperties;
-    
-    public SubmissionRequestDtoEvent(String correlationId,
-                                     String id,
-                                     String datatype,
-                                     IGeometry geometry,
-                                     List<ProductFileDto> files) {
+
+    public LtaCleanWorkerRequestDtoEvent(String correlationId,
+                                         String id,
+                                         String datatype,
+                                         IGeometry geometry,
+                                         List<ProductFileDto> files) {
         super(correlationId, id, datatype, geometry, files);
         this.messageProperties = new MessageProperties();
-    }
-
-    @Override
-    public MessageProperties getMessageProperties() {
-        return messageProperties;
     }
 
     @Override
@@ -64,13 +61,22 @@ public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements I
     }
 
     @Override
-    public String getOwner() {
-        return this.getMessageProperties().getHeader(AmqpConstants.REGARDS_REQUEST_OWNER_HEADER);
+    public MessageProperties getMessageProperties() {
+        return messageProperties;
     }
 
-    @Override
-    public void setOwner(String owner) {
-        setHeader(AmqpConstants.REGARDS_REQUEST_OWNER_HEADER, owner);
+    /**
+     * Add a header in the event
+     *
+     * @param key   the key of header
+     * @param value the value of header
+     */
+    public void addHeader(String key, @Nullable String value) {
+        Assert.notNull(key, "key is mandatory for header ! Make sure other constraints are satisfied.");
+        if (messageProperties == null) {
+            return;
+        }
+        messageProperties.setHeader(key, value);
     }
 
     @Override
@@ -84,7 +90,8 @@ public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements I
         if (!super.equals(o)) {
             return false;
         }
-        SubmissionRequestDtoEvent that = (SubmissionRequestDtoEvent) o;
+
+        LtaCleanWorkerRequestDtoEvent that = (LtaCleanWorkerRequestDtoEvent) o;
         return messageProperties.equals(that.messageProperties);
     }
 

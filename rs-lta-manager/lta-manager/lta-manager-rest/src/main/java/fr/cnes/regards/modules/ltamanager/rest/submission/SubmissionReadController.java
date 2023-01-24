@@ -47,6 +47,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 /**
  * @author Iliana Ghazali
@@ -85,13 +86,13 @@ public class SubmissionReadController extends AbstractSubmissionController
     @ResourceAccess(description = "Endpoint to check the progress of a submission request.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<SubmissionRequestInfoDto>> checkSubmissionRequestStatus(
         @Parameter(description = "Identifier of the submission request to check.") @PathVariable String correlationId) {
-        SubmissionRequestInfoDto requestStatusInfo = readService.retrieveRequestStatusInfo(correlationId);
-        if (requestStatusInfo != null) {
-            return ResponseEntity.ok(EntityModel.of(requestStatusInfo));
-        } else {
-            LOGGER.warn("Submission request with id {} was not found in the database", correlationId);
-            return ResponseEntity.notFound().build();
+        Optional<SubmissionRequestInfoDto> requestStatusInfo = readService.retrieveRequestStatusInfo(correlationId);
+        if (requestStatusInfo.isPresent()) {
+            return ResponseEntity.ok(EntityModel.of(requestStatusInfo.get()));
         }
+        
+        LOGGER.warn("Submission request with id {} was not found in the database", correlationId);
+        return ResponseEntity.notFound().build();
     }
 
     @Operation(summary = "Search for submission requests with criteria")
