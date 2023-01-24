@@ -51,7 +51,7 @@ import java.util.stream.IntStream;
 @ActiveProfiles(value = { "default", "test", "testAmqp", "noscheduler" }, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true",
+    properties = { "spring.jpa.properties.hibernate.default_schema=order_test_amqp_it", "regards.amqp.enabled=true",
         "regards.order.max.storage.files.jobs.per.user=1" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD,
     hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
@@ -126,6 +126,9 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
                                                                   .toList();
         Assertions.assertEquals(2, suborderEvents.size());
         Assertions.assertTrue(suborderEvents.stream().allMatch(ev -> CORRELATION_ID.equals(ev.getCorrelationId())));
+        String downloadUrl = "regardsHost/api/v1/rs-order/user/orders/" + order.getId() + "/download";
+        Assertions.assertEquals(downloadUrl, mainEvent.getDownloadLink());
+        Assertions.assertTrue(suborderEvents.stream().allMatch(ev -> downloadUrl.equals(ev.getDownloadLink())));
     }
 
     @Test

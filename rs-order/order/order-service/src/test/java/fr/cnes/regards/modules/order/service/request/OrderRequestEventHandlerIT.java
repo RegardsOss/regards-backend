@@ -39,6 +39,8 @@ import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventHandler;
 import fr.cnes.regards.modules.order.service.commons.OrderRequestResponseEventHandler;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
@@ -50,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -89,7 +92,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 @ActiveProfiles(value = { "default", "test", "testAmqp", "noscheduler", "nojobs" }, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_request_handler_test_it",
-                                   "regards.amqp.enabled=true" })
+    "regards.amqp.enabled=true" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJobIT {
 
@@ -113,6 +116,9 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
     @Autowired
     private IProjectUsersClient projectUsersClient;
+
+    @Autowired
+    private IProjectsClient projectsClient;
 
     @Autowired
     private OrderCreationCompletedEventHandler completedEventHandler;
@@ -169,6 +175,12 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         completedEventHandler.setConsumer(orderCompletedEvent -> new CountDownLatch(nbOrders).countDown());
         // throw an exception during the catalog search to make the order fail
         Mockito.doThrow(new RsRuntimeException("expected exception")).when(searchClient).searchDataObjects(any());
+
+        Project project = new Project();
+        project.setHost("test-host:666");
+        EntityModel entityModel = EntityModel.of(project);
+        ResponseEntity responseEntity = new ResponseEntity<>(entityModel, HttpStatus.ACCEPTED);
+        Mockito.doReturn(responseEntity).when(projectsClient).retrieveProject(any());
 
         // --- WHEN ---
         publisher.publish(validOrderRequests);

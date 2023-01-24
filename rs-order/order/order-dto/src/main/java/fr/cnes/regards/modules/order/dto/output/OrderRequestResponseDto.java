@@ -45,10 +45,17 @@ public class OrderRequestResponseDto {
     @Nullable
     private String message;
 
-    public OrderRequestResponseDto(String correlationId, OrderRequestStatus status, @Nullable String message) {
+    @Nullable
+    private String downloadLink;
+
+    public OrderRequestResponseDto(String correlationId,
+                                   OrderRequestStatus status,
+                                   @Nullable String message,
+                                   @Nullable String downloadLink) {
         this.correlationId = correlationId;
         this.status = status;
         this.message = message;
+        this.downloadLink = downloadLink;
     }
 
     public String getCorrelationId() {
@@ -76,6 +83,15 @@ public class OrderRequestResponseDto {
         this.message = message;
     }
 
+    @Nullable
+    public String getDownloadLink() {
+        return downloadLink;
+    }
+
+    public void setDownloadLink(@Nullable String downloadLink) {
+        this.downloadLink = downloadLink;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -85,13 +101,16 @@ public class OrderRequestResponseDto {
             return false;
         }
         OrderRequestResponseDto that = (OrderRequestResponseDto) o;
-        return correlationId.equals(that.correlationId) && status == that.status && Objects.equals(message,
-                                                                                                   that.message);
+        return Objects.equals(correlationId, that.correlationId)
+               && status == that.status
+               && Objects.equals(message,
+                                 that.message)
+               && Objects.equals(downloadLink, that.downloadLink);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(correlationId, status, message);
+        return Objects.hash(correlationId, status, message, downloadLink);
     }
 
     @Override
@@ -104,6 +123,9 @@ public class OrderRequestResponseDto {
                + status
                + ", message='"
                + message
+               + '\''
+               + ", downloadLink='"
+               + downloadLink
                + '\''
                + '}';
     }

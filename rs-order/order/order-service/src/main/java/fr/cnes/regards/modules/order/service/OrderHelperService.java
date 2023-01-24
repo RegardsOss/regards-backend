@@ -200,7 +200,7 @@ public class OrderHelperService {
         currentFilesTask.setOwner(owner);
         currentFilesTask.addAllFiles(orderDataFiles);
         datasetTask.addReliantTask(currentFilesTask);
-        orderRequestResponseService.notifySuborderDone(correlationId, owner);
+        orderRequestResponseService.notifySuborderDone(correlationId, owner, orderId);
     }
 
     @MultitenantTransactional

@@ -18,30 +18,64 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.time.Duration;
+
 /**
- * Service to send amqp notification when an order or a sub-order is done
+ * Service to send amqp notification when an order or a sub-order done
  *
  * @author Thomas GUILLOU
  **/
 @Service
 public class OrderRequestResponseService {
 
+    // FIXME see how to get that path without duplicating
+    private static final String ZIP_DOWNLOAD_PATH = "user/orders/{orderId}/download";
+
     private final IPublisher publisher;
 
     private final IOrderRepository orderRepository;
 
-    public OrderRequestResponseService(IPublisher publisher, IOrderRepository orderRepository) {
+    private final IProjectsClient projectClient;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Value("${prefix.path}")
+    private String prefixPath;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+
+    private Cache<String, String> projectHostCache = Caffeine.newBuilder()
+                                                             .expireAfterWrite(Duration.ofMinutes(5))
+                                                             .build();
+
+    public OrderRequestResponseService(IPublisher publisher,
+                                       IOrderRepository orderRepository,
+                                       IProjectsClient projectClient,
+                                       IRuntimeTenantResolver runtimeTenantResolver) {
         this.publisher = publisher;
         this.orderRepository = orderRepository;
+        this.projectClient = projectClient;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     /**
@@ -55,24 +89,54 @@ public class OrderRequestResponseService {
                                                                                                      responseStatus,
                                                                                                      "Order of user "
                                                                                                      + order.getOwner()
-                                                                                                     + " is finished");
+                                                                                                     + " is finished",
+                                                                                                     computeDownloadLink(
+                                                                                                         order.getId()));
         publisher.publish(orderRequestResponseDtoEvent);
     }
 
     public void notifySuborderDone(FilesTask filesTask) {
-        Order order = orderRepository.getById(filesTask.getOrderId());
-        notifySuborderDone(order.getCorrelationId(), order.getOwner());
+        Long orderId = filesTask.getOrderId();
+        Order order = orderRepository.getById(orderId);
+        notifySuborderDone(order.getCorrelationId(), order.getOwner(), orderId);
     }
 
     /**
      * Send a SUBORDER_DONE amqp notification.
      */
-    public void notifySuborderDone(String correlationId, String owner) {
+    public void notifySuborderDone(String correlationId, String owner, Long orderId) {
         OrderRequestResponseDtoEvent orderRequestResponseDtoEvent = new OrderRequestResponseDtoEvent(correlationId,
                                                                                                      OrderRequestStatus.SUBORDER_DONE,
                                                                                                      "A sub-order of user "
                                                                                                      + owner
-                                                                                                     + " is finished and ready to download");
+                                                                                                     + " is finished and ready to download",
+                                                                                                     computeDownloadLink(
+                                                                                                         orderId));
         publisher.publish(orderRequestResponseDtoEvent);
+    }
+
+    public String computeDownloadLink(Long orderId) {
+        return getProjectHost()
+               + prefixPath
+               + File.separator
+               + applicationName
+               + File.separator
+               + ZIP_DOWNLOAD_PATH.replace("{orderId}", orderId.toString());
+    }
+
+    /**
+     * Lazy loading of project host
+     */
+    private String getProjectHost() {
+        return projectHostCache.get(runtimeTenantResolver.getTenant(), t -> {
+            FeignSecurityManager.asSystem();
+            Project project = ResponseEntityUtils.extractContentOrThrow(projectClient.retrieveProject(
+                                                                            runtimeTenantResolver.getTenant()),
+                                                                        () -> new RsRuntimeException(
+                                                                            "An error occurred while retrieving project"));
+            String host = project.getHost();
+            FeignSecurityManager.reset();
+            return host;
+        });
     }
 }

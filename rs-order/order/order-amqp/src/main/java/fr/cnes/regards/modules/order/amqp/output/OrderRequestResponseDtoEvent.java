@@ -35,7 +35,14 @@ import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 public class OrderRequestResponseDtoEvent extends OrderRequestResponseDto implements ISubscribable {
 
     public OrderRequestResponseDtoEvent(String correlationId, OrderRequestStatus status, String message) {
-        super(correlationId, status, message);
+        super(correlationId, status, message, null);
+    }
+
+    public OrderRequestResponseDtoEvent(String correlationId,
+                                        OrderRequestStatus status,
+                                        String message,
+                                        String downloadLink) {
+        super(correlationId, status, message, downloadLink);
     }
 
 }
