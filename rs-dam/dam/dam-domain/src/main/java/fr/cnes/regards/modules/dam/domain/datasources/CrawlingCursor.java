@@ -49,7 +49,7 @@ public class CrawlingCursor {
      */
     @Column(name = "cursor_previous_last_entity_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime previousLastEntityDate;
+    private OffsetDateTime lastEntityDate;
 
     @Transient
     private int size;
@@ -58,7 +58,7 @@ public class CrawlingCursor {
     private boolean hasNext;
 
     @Transient
-    private OffsetDateTime lastEntityDate;
+    private OffsetDateTime currentLastEntityDate;
 
     public CrawlingCursor() {
         // for hibernate
@@ -69,27 +69,27 @@ public class CrawlingCursor {
         this(position, size, null, null);
     }
 
-    public CrawlingCursor(OffsetDateTime previousLastEntityDate) {
-        this(0, 1, null, previousLastEntityDate);
+    public CrawlingCursor(OffsetDateTime lastEntityDate) {
+        this(0, 1, null, lastEntityDate);
     }
 
     private CrawlingCursor(int position,
                            int size,
-                           OffsetDateTime lastEntityDate,
-                           OffsetDateTime previousLastEntityDate) {
+                           OffsetDateTime currentLastEntityDate,
+                           OffsetDateTime lastEntityDate) {
         Assert.isTrue(size > 0, "Cursor size should be greater than 0");
         Assert.isTrue(position >= 0, "Position should be greater than 0");
         this.hasNext = false;
         this.size = size;
         this.position = position;
+        this.currentLastEntityDate = currentLastEntityDate;
         this.lastEntityDate = lastEntityDate;
-        this.previousLastEntityDate = previousLastEntityDate;
     }
 
     /**
      * Iterate the current cursor to get the next page to retrieve.
      * By default, the next page to retrieve is previousPageNumber + 1.
-     * If the {@link #lastEntityDate} is not provided:
+     * If the {@link #currentLastEntityDate} is not provided:
      * <ul>
      *   <li>increment page number</li>
      * </ul>
@@ -101,20 +101,28 @@ public class CrawlingCursor {
      */
     public void next() {
         if (hasNext) {
-            if (lastEntityDate == null) {
+            if (currentLastEntityDate == null) {
                 position++;
             } else {
-                if (previousLastEntityDate == null || !lastEntityDate.isEqual(previousLastEntityDate)) {
+                if (lastEntityDate == null || !currentLastEntityDate.isEqual(lastEntityDate)) {
                     position = 0;
                 } else {
                     position++;
                 }
-                previousLastEntityDate = lastEntityDate;
-                lastEntityDate = null;
+                lastEntityDate = currentLastEntityDate;
+                currentLastEntityDate = null;
             }
         } else {
             throw new IllegalStateException("This cursor does not have a next position!");
         }
+    }
+
+    public OffsetDateTime getCurrentLastEntityDate() {
+        return currentLastEntityDate;
+    }
+
+    public void setCurrentLastEntityDate(OffsetDateTime currentLastEntityDate) {
+        this.currentLastEntityDate = currentLastEntityDate.truncatedTo(ChronoUnit.MICROS);
     }
 
     public OffsetDateTime getLastEntityDate() {
@@ -123,14 +131,6 @@ public class CrawlingCursor {
 
     public void setLastEntityDate(OffsetDateTime lastEntityDate) {
         this.lastEntityDate = lastEntityDate.truncatedTo(ChronoUnit.MICROS);
-    }
-
-    public OffsetDateTime getPreviousLastEntityDate() {
-        return previousLastEntityDate;
-    }
-
-    public void setPreviousLastEntityDate(OffsetDateTime previousLastEntityDate) {
-        this.previousLastEntityDate = previousLastEntityDate.truncatedTo(ChronoUnit.MICROS);
     }
 
     public int getPosition() {
@@ -164,13 +164,13 @@ public class CrawlingCursor {
 
         return position == that.position
                && size == that.size
-               && previousLastEntityDate.isEqual(that.previousLastEntityDate)
-               && lastEntityDate.isEqual(that.lastEntityDate);
+               && lastEntityDate.isEqual(that.lastEntityDate)
+               && currentLastEntityDate.isEqual(that.currentLastEntityDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(position, size, previousLastEntityDate, lastEntityDate);
+        return Objects.hash(position, size, lastEntityDate, currentLastEntityDate);
     }
 
     @Override
@@ -182,10 +182,10 @@ public class CrawlingCursor {
                + size
                + ", hasNext="
                + hasNext
-               + ", previousLastEntityDate="
-               + previousLastEntityDate
                + ", lastEntityDate="
                + lastEntityDate
+               + ", currentLastEntityDate="
+               + currentLastEntityDate
                + '}';
     }
 }

@@ -222,7 +222,7 @@ public class DatasourceIngestion {
         if (cursor == null) {
             cursor = new CrawlingCursor(lastEntityDate);
         } else {
-            cursor.setPreviousLastEntityDate(lastEntityDate);
+            cursor.setLastEntityDate(lastEntityDate);
         }
     }
 }

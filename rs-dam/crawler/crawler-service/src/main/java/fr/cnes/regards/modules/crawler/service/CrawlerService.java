@@ -217,7 +217,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             return Optional.of(new IngestionResult(ingestionStart,
                                                    saveResult.getSavedDocsCount(),
                                                    saveResult.getInErrorDocsCount(),
-                                                   dsi.getCursor().getLastEntityDate()));
+                                                   dsi.getCursor().getCurrentLastEntityDate()));
         }
         return Optional.empty();
     }
@@ -366,7 +366,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             LOGGER.info("Searching entities (size={}, page={}, lastUpdateDate={}) from datasource plugin took {}ms",
                         cursor.getSize(),
                         cursor.getPosition(),
-                        cursor.getPreviousLastEntityDate(),
+                        cursor.getLastEntityDate(),
                         System.currentTimeMillis() - start);
         } catch (Exception e) {
             // Catch Exception in order to catch all exceptions (in particular runtime) from plugins. Plugins can be out of our scope.

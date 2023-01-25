@@ -165,11 +165,10 @@ class CrawlingCursorTest {
         int maxSublist = Math.min(offset + cursor.getSize(), listData.size());
 
         List<DataObject> subListElements;
-        if (cursor.getPreviousLastEntityDate() != null) {
+        if (cursor.getLastEntityDate() != null) {
             subListElements = listData.stream()
-                                      .filter(data -> (data.lastUpdateDate().isAfter(cursor.getPreviousLastEntityDate())
-                                                       || data.lastUpdateDate()
-                                                              .isEqual(cursor.getPreviousLastEntityDate())))
+                                      .filter(data -> (data.lastUpdateDate().isAfter(cursor.getLastEntityDate())
+                                                       || data.lastUpdateDate().isEqual(cursor.getLastEntityDate())))
                                       .toList();
 
             subListElements = subListElements.subList(offset, Math.min(subListElements.size(), maxSublist));
@@ -184,7 +183,7 @@ class CrawlingCursorTest {
         // SIMULATE computations from plugins
         // lastUpdateDate
         if (lastUpdateDatePresent) {
-            cursor.setLastEntityDate(getMaxLastUpdateDate(subListElements));
+            cursor.setCurrentLastEntityDate(getMaxLastUpdateDate(subListElements));
         }
         // hasNext()
         cursor.setHasNext(subListElements.get(subListElements.size() - 1) != listData.get(listData.size() - 1));
