@@ -42,7 +42,7 @@ import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.
 /**
  * Scheduler to periodically check if there is some pending request that can be scheduled
  * <p>
- * NOTE : Number of parallel schedule execution is defined by spring configuration property regards.scheduler.pool.size.
+ * NOTE : Number of parallel schedule execution is defined by spring configuration property spring.task.scheduling.pool.size
  *
  * @author Léo Mieulet
  */

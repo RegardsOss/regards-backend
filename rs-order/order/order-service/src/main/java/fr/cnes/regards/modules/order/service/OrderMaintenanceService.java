@@ -56,6 +56,8 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderMaintenanceService.class);
 
+    private static final int ORDER_JOB_PAUSED_MAX_RETRY = 10;
+
     private IOrderMaintenanceService self;
 
     private final IOrderService orderService;
@@ -204,14 +206,20 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
         // Wait for its complete stop
         order = orderService.loadComplete(order.getId());
-        while (!OrderHelperService.isOrderEffectivelyInPause(order)) {
+        int loopCount = 0;
+        while (!OrderHelperService.isOrderEffectivelyInPause(order) && loopCount < ORDER_JOB_PAUSED_MAX_RETRY) {
             try {
+                LOGGER.info("Waiting for order {} job to finish ... ", order.getId());
                 Thread.sleep(1_000);
+                loopCount++;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RsRuntimeException(e); // NOSONAR
             }
             order = orderService.loadComplete(order.getId());
+        }
+        if (!OrderHelperService.isOrderEffectivelyInPause(order)) {
+            LOGGER.warn("Force order {} to finish after waiting for 10 seconds on expired order. ", order.getId());
         }
         // Delete all its data files
         // Don't forget no relation is hardly mapped between OrderDataFile and Order

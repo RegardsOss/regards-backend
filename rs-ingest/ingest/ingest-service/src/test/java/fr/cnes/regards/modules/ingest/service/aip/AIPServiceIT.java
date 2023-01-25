@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 
 @TestPropertySource(
     properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "spring.jpa.show-sql=false",
-        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100",
+        "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=4", "regards.ingest.maxBulkSize=100",
         "eureka.client.enabled=false", "regards.ingest.aip.delete.bulk.delay=100" },
     locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })

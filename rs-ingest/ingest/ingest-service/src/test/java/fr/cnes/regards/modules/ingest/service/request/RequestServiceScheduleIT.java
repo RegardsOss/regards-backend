@@ -62,8 +62,8 @@ import java.util.*;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_service_schedule_it",
-    "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.scheduler.pool.size=0",
-    "regards.ingest.maxBulkSize=100" }, locations = { "classpath:application-test.properties" })
+    "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.ingest.maxBulkSize=100" },
+    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
 

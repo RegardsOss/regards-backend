@@ -45,7 +45,7 @@ import java.time.Instant;
  * <li> {@link FileCacheRequest} for availability</li>
  * </ul>
  * <p>
- * NOTE : Number of parallel schedule execution is defined by spring configuration property regards.scheduler.pool.size.
+ * NOTE : Number of parallel schedule execution is defined by spring configuration property spring.task.scheduling.pool.size.
  *
  * @author Sébastien Binda
  */
