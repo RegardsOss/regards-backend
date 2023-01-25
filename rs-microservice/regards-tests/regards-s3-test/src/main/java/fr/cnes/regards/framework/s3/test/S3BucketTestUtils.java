@@ -67,6 +67,9 @@ public final class S3BucketTestUtils {
 
     private static final int MULTIPART_UPLOAD_PREFETCH = 1;
 
+    private S3BucketTestUtils() {
+    }
+
     public static void createBucket(S3Server s3Server) {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(s3Server.getKey(), s3Server.getSecret());
         S3Client s3Client = S3Client.builder()
@@ -186,13 +189,18 @@ public final class S3BucketTestUtils {
                                                                          maxBytesPerPart,
                                                                          MULTIPART_UPLOAD_PREFETCH);
 
-        return client.check(StorageCommand.check(storageConfig, cmdId, entryKey))
-                     .block()
-                     .matchCheckResult(present -> true, absent -> false, unreachableStorage -> {
-                         throw new S3ClientException(String.format("Unreachable storage [bucket: %s] [endpoint: %s]",
-                                                                   s3Server.getBucket(),
-                                                                   s3Server.getEndpoint()));
-                     });
+        StorageCommandResult.CheckResult result = client.check(StorageCommand.check(storageConfig, cmdId, entryKey))
+                                                        .block();
+        if (result == null) {
+            throw new S3ClientException(String.format("Invalid S3 write command result [bucket: %s] [endpoint: %s]",
+                                                      s3Server.getBucket(),
+                                                      s3Server.getEndpoint()));
+        }
+        return result.matchCheckResult(present -> true, absent -> false, unreachableStorage -> {
+            throw new S3ClientException(String.format("Unreachable storage [bucket: %s] [endpoint: %s]",
+                                                      s3Server.getBucket(),
+                                                      s3Server.getEndpoint()));
+        });
     }
 
     private static StorageConfig buildStorageConfiguration(String rootPath, S3Server s3Server) {
@@ -206,6 +214,4 @@ public final class S3BucketTestUtils {
                             .build();
     }
 
-    private S3BucketTestUtils() {
-    }
 }

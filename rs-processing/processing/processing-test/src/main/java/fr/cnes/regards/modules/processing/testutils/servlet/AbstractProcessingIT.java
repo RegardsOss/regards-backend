@@ -90,6 +90,8 @@ public abstract class AbstractProcessingIT implements InitializingBean {
 
     protected static final String PGSQL_SECRET = "azertyuiop123456789";
 
+    protected static final String PGSQL_URL = "jdbc:postgresql://rs-postgres:5432/postgres";
+
     protected static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.5").withDatabaseName(
         "postgres").withUsername(PGSQL_USER).withPassword(PGSQL_SECRET);
 
@@ -185,9 +187,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                 }).onFailure(t -> LOGGER.error(t.getMessage(), t));
             } else {
                 Try.run(() -> {
-                    Connection connection = DriverManager.getConnection("jdbc:postgresql://rs-postgres:5432/postgres",
-                                                                        PGSQL_USER,
-                                                                        PGSQL_SECRET); // NOSONAR
+                    Connection connection = DriverManager.getConnection(PGSQL_URL, PGSQL_USER, PGSQL_SECRET); // NOSONAR
 
                     Stream.of(TENANT_PROJECTA, TENANT_PROJECTB, R2DBCDB_NAME).forEach(dbName -> {
                         try {
