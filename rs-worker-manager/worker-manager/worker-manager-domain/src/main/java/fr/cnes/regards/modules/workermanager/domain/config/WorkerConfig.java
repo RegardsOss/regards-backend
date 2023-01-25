@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
@@ -38,18 +39,22 @@ public class WorkerConfig {
 
     public static final String WORKER_TYPE_COLUMN_NAME = "worker_type";
 
-    public static final String CONTENT_TYPE_NAME = "content_type";
+    public static final String CONTENT_TYPE_IN_NAME = "content_type_in";
+
+    public static final String CONTENT_TYPE_OUT_NAME = "content_type_out";
+
+    public static final String TABLE_CONTENT_TYPE_NAME = "ta_worker_conf_content_types_in";
 
     /**
      * List of Content Types treatable by this worker
      */
     @ElementCollection(fetch = FetchType.EAGER)
-    @Column(name = CONTENT_TYPE_NAME)
-    @CollectionTable(name = "ta_worker_conf_content_types", joinColumns = @JoinColumn(name = "worker_conf_id",
+    @Column(name = CONTENT_TYPE_IN_NAME)
+    @CollectionTable(name = TABLE_CONTENT_TYPE_NAME, joinColumns = @JoinColumn(name = "worker_conf_id",
         foreignKey = @ForeignKey(name = "fk_worker_conf_content_type")),
         uniqueConstraints = @UniqueConstraint(name = "uk_worker_conf_content_type",
-            columnNames = { CONTENT_TYPE_NAME }))
-    private final Set<String> contentTypes = Sets.newHashSet();
+            columnNames = { CONTENT_TYPE_IN_NAME }))
+    private final Set<String> contentTypeInputs = Sets.newHashSet();
 
     @Id
     @SequenceGenerator(name = "workerConfSequence", initialValue = 1, sequenceName = "seq_worker_conf")
@@ -61,10 +66,15 @@ public class WorkerConfig {
     @NotNull
     private String workerType;
 
-    public static WorkerConfig build(String type, Set<String> contentTypes) {
+    @Column(name = CONTENT_TYPE_OUT_NAME)
+    @Nullable
+    private String contentTypeOutput;
+
+    public static WorkerConfig build(String type, Set<String> contentTypesIn, String contentTypeOut) {
         WorkerConfig workerConfig = new WorkerConfig();
         workerConfig.workerType = type;
-        workerConfig.contentTypes.addAll(contentTypes);
+        workerConfig.contentTypeInputs.addAll(contentTypesIn);
+        workerConfig.contentTypeOutput = contentTypeOut;
         return workerConfig;
     }
 
@@ -84,16 +94,25 @@ public class WorkerConfig {
         this.workerType = type;
     }
 
-    public Set<String> getContentTypes() {
-        return contentTypes;
+    public Set<String> getContentTypeInputs() {
+        return contentTypeInputs;
     }
 
-    public void setContentTypes(Set<String> contentTypes) {
-        this.contentTypes.clear();
-        this.contentTypes.addAll(contentTypes);
+    public void setContentTypeInputs(Set<String> contentTypeInputs) {
+        this.contentTypeInputs.clear();
+        this.contentTypeInputs.addAll(contentTypeInputs);
+    }
+
+    @Nullable
+    public String getContentTypeOutput() {
+        return contentTypeOutput;
+    }
+
+    public void setContentTypeOutput(@Nullable String contentTypeOutput) {
+        this.contentTypeOutput = contentTypeOutput;
     }
 
     public WorkerConfigDto toDto() {
-        return new WorkerConfigDto(this.workerType, this.contentTypes);
+        return new WorkerConfigDto(this.workerType, this.contentTypeInputs, this.contentTypeOutput);
     }
 }

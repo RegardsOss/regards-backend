@@ -22,11 +22,12 @@ import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractModuleManagerWithTenantSettings;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
+import fr.cnes.regards.modules.workermanager.dto.WorkflowDto;
 import fr.cnes.regards.modules.workermanager.service.cache.confupdated.WorkerConfUpdatedEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -45,27 +46,40 @@ public class WorkerManagerConfigManager extends AbstractModuleManagerWithTenantS
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkerManagerConfigManager.class);
 
-    @Autowired
-    private WorkerConfigService workerConfigService;
+    private final WorkerConfigService workerConfigService;
 
-    @Autowired
-    private WorkerConfUpdatedEventPublisher workerConfUpdatedEventPublisher;
+    private final WorkerConfUpdatedEventPublisher workerConfUpdatedEventPublisher;
+
+    private final WorkflowConfigService workflowConfigService;
+
+    public WorkerManagerConfigManager(WorkerConfigService workerConfigService,
+                                      WorkerConfUpdatedEventPublisher workerConfUpdatedEventPublisher,
+                                      WorkflowConfigService workflowConfigService) {
+        this.workerConfigService = workerConfigService;
+        this.workerConfUpdatedEventPublisher = workerConfUpdatedEventPublisher;
+        this.workflowConfigService = workflowConfigService;
+    }
 
     @Override
     public ModuleConfiguration exportConfiguration(List<ModuleConfigurationItem<?>> configuration) {
         for (WorkerConfig conf : workerConfigService.searchAll()) {
             configuration.add(ModuleConfigurationItem.build(conf.toDto()));
         }
+        for (Workflow workflow : workflowConfigService.findAll()) {
+            configuration.add(ModuleConfigurationItem.build(workflow.toDto()));
+        }
         return ModuleConfiguration.build(info, configuration);
     }
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration, Set<String> importErrors) {
-
-        Set<WorkerConfigDto> workerConfigs = getWorkerConfigs(configuration.getConfiguration());
+        List<ModuleConfigurationItem<?>> configurationItems = configuration.getConfiguration();
+        Set<WorkerConfigDto> workerConfigs = getWorkerConfigs(configurationItems);
+        Set<WorkflowDto> workflows = getWorkflow(configurationItems);
 
         // Import configuration into transaction
         importErrors.addAll(workerConfigService.importConfiguration(workerConfigs));
+        importErrors.addAll(workflowConfigService.importConfiguration(workflows));
 
         // Clear cache
         workerConfUpdatedEventPublisher.publishEvent();
@@ -75,17 +89,28 @@ public class WorkerManagerConfigManager extends AbstractModuleManagerWithTenantS
 
     @Override
     public Set<String> resetConfiguration(Set<String> errors) {
+        // delete all worker configurations
         for (WorkerConfig conf : workerConfigService.searchAll()) {
             workerConfigService.delete(conf);
         }
+        // delete all workflow configurations
+        workflowConfigService.deleteAllInBatch();
+        // publish conf updated event
         workerConfUpdatedEventPublisher.publishEvent();
         return errors;
     }
 
-    public Set<WorkerConfigDto> getWorkerConfigs(Collection<ModuleConfigurationItem<?>> items) {
+    private Set<WorkerConfigDto> getWorkerConfigs(Collection<ModuleConfigurationItem<?>> items) {
         return items.stream()
                     .filter(i -> WorkerConfigDto.class.isAssignableFrom(i.getKey()))
                     .map(i -> (WorkerConfigDto) i.getTypedValue())
+                    .collect(Collectors.toSet());
+    }
+
+    private Set<WorkflowDto> getWorkflow(Collection<ModuleConfigurationItem<?>> items) {
+        return items.stream()
+                    .filter(i -> WorkflowDto.class.isAssignableFrom(i.getKey()))
+                    .map(i -> (WorkflowDto) i.getTypedValue())
                     .collect(Collectors.toSet());
     }
 }

@@ -32,6 +32,8 @@ public class WorkerResponse {
 
     private List<String> messages = new ArrayList<>();
 
+    private byte[] content;
+
     public WorkerResponseStatus getStatus() {
         return status;
     }
@@ -46,5 +48,13 @@ public class WorkerResponse {
 
     public void setMessages(List<String> messages) {
         this.messages = messages;
+    }
+
+    public byte[] getContent() {
+        return content;
+    }
+
+    public void setContent(byte[] content) {
+        this.content = content;
     }
 }

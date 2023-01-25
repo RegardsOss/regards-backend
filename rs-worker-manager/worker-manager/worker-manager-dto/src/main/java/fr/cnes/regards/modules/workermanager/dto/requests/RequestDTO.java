@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.workermanager.dto.requests;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 /**
  * DTO POJO for WorkerManagerRequest
@@ -27,25 +28,28 @@ import java.time.OffsetDateTime;
  */
 public class RequestDTO {
 
-    private String requestId;
+    private final String requestId;
 
-    private OffsetDateTime creationDate;
+    private final OffsetDateTime creationDate;
 
-    private String contentType;
+    private final String contentType;
 
-    private String source;
+    private final int step;
 
-    private String session;
+    private final String source;
 
-    private RequestStatus status;
+    private final String session;
 
-    private String dispatchedWorkerType;
+    private final RequestStatus status;
 
-    private String error;
+    private final String dispatchedWorkerType;
+
+    private final String error;
 
     public RequestDTO(String requestId,
                       OffsetDateTime creationDate,
                       String contentType,
+                      Integer step,
                       String source,
                       String session,
                       RequestStatus status,
@@ -54,6 +58,7 @@ public class RequestDTO {
         this.requestId = requestId;
         this.creationDate = creationDate;
         this.contentType = contentType;
+        this.step = step;
         this.source = source;
         this.session = session;
         this.status = status;
@@ -71,6 +76,10 @@ public class RequestDTO {
 
     public String getContentType() {
         return contentType;
+    }
+
+    public int getStep() {
+        return step;
     }
 
     public String getSource() {
@@ -92,4 +101,68 @@ public class RequestDTO {
     public String getError() {
         return error;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RequestDTO that = (RequestDTO) o;
+        return step == that.step
+               && requestId.equals(that.requestId)
+               && creationDate.equals(that.creationDate)
+               && contentType.equals(that.contentType)
+               && source.equals(that.source)
+               && session.equals(that.session)
+               && status == that.status
+               && Objects.equals(dispatchedWorkerType, that.dispatchedWorkerType)
+               && Objects.equals(error, that.error);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(requestId,
+                            creationDate,
+                            contentType,
+                            step,
+                            source,
+                            session,
+                            status,
+                            dispatchedWorkerType,
+                            error);
+    }
+
+    @Override
+    public String toString() {
+        return "RequestDTO{"
+               + "requestId='"
+               + requestId
+               + '\''
+               + ", creationDate="
+               + creationDate
+               + ", contentType='"
+               + contentType
+               + '\''
+               + ", step="
+               + step
+               + ", source='"
+               + source
+               + '\''
+               + ", session='"
+               + session
+               + '\''
+               + ", status="
+               + status
+               + ", dispatchedWorkerType='"
+               + dispatchedWorkerType
+               + '\''
+               + ", error='"
+               + error
+               + '\''
+               + '}';
+    }
+
 }

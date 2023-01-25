@@ -182,7 +182,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         Assert.assertTrue("Error during worker conf import",
                           workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(
                               RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE,
-                              Sets.newHashSet(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE)))).isEmpty());
+                              Sets.newHashSet(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE), null))).isEmpty());
 
         // Scan
         requestScanService.scanNoWorkerAvailableRequests();

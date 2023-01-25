@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.workermanager.service.requests;
 
-import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
@@ -28,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -51,12 +49,6 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     }
 
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    private RequestService requestService;
-
-    @Autowired
-    private IRequestRepository requestRepository;
 
     /**
      * Custom test initialization to override

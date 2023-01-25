@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.workermanager.service.config;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
@@ -26,8 +27,10 @@ import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,11 +46,19 @@ public class WorkerConfigService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkerConfigService.class);
 
-    @Autowired
-    private IWorkerConfigRepository workerConfigRepository;
+    private final IWorkerConfigRepository workerConfigRepository;
 
-    @Autowired
-    private WorkerManagerSettingsService workerManagerSettingsService;
+    private final WorkerManagerSettingsService workerManagerSettingsService;
+
+    private final Validator validator;
+
+    public WorkerConfigService(IWorkerConfigRepository workerConfigRepository,
+                               WorkerManagerSettingsService workerManagerSettingsService,
+                               Validator validator) {
+        this.workerConfigRepository = workerConfigRepository;
+        this.workerManagerSettingsService = workerManagerSettingsService;
+        this.validator = validator;
+    }
 
     /**
      * Search for all worker configuration.
@@ -105,11 +116,14 @@ public class WorkerConfigService {
                 if (workerConfigOpt.isPresent()) {
                     // Update entities on base
                     WorkerConfig workerConfig = workerConfigOpt.get();
-                    workerConfig.setContentTypes(workerConfigDto.getContentTypes());
+                    workerConfig.setContentTypeInputs(workerConfigDto.getContentTypeInputs());
+                    workerConfig.setContentTypeOutput(workerConfigDto.getContentTypeOutput());
                     update(workerConfig);
                 } else {
                     // Create missing worker config
-                    create(WorkerConfig.build(workerConfigDto.getWorkerType(), workerConfigDto.getContentTypes()));
+                    create(WorkerConfig.build(workerConfigDto.getWorkerType(),
+                                              workerConfigDto.getContentTypeInputs(),
+                                              workerConfigDto.getContentTypeOutput()));
                 }
             }
         }
@@ -118,32 +132,27 @@ public class WorkerConfigService {
 
     private boolean isWorkerConfValid(Set<String> errors, WorkerConfigDto workerConfigDto) {
         boolean currentWorkerConfValid = true;
-        if (workerConfigDto.getWorkerType().isEmpty()) {
-            String errorMessage = "Invalid worker conf with empty name";
-            LOGGER.error(errorMessage);
+        // check workerConfigDto model
+        Errors modelViolations = new MapBindingResult(new HashMap<>(), WorkerConfigDto.class.getName());
+        validator.validate(workerConfigDto, modelViolations);
+        if (modelViolations.hasErrors()) {
             currentWorkerConfValid = false;
-            errors.add(errorMessage);
+            errors.addAll(ErrorTranslator.getErrors(modelViolations));
         }
-        if (workerConfigDto.getContentTypes().isEmpty()) {
-            String errorMessage = String.format("WorkerConf with type=%s cannot declare empty contentType list",
-                                                workerConfigDto.getWorkerType());
-            LOGGER.error(errorMessage);
-            currentWorkerConfValid = false;
-            errors.add(errorMessage);
-        }
+
         // Check if this WorkerConfig use content type already used by another WorkerConfig(s)
-        List<WorkerConfig> workerConfigUsingSameContentTypes = workerConfigRepository.findAllByContentTypesIn(
-            workerConfigDto.getContentTypes());
-        if (workerConfigUsingSameContentTypes.size() > 0) {
+        List<WorkerConfig> workerConfigUsingSameContentTypes = workerConfigRepository.findAllByContentTypeInputsIn(
+            workerConfigDto.getContentTypeInputs());
+        if (!workerConfigUsingSameContentTypes.isEmpty()) {
             // Get the list of worker types that conflicts with the current one
             Set<String> workerTypes = workerConfigUsingSameContentTypes.stream()
                                                                        .map(WorkerConfig::getWorkerType)
                                                                        .collect(Collectors.toSet());
             // Get the list of content types that are conflicting
             Set<String> commonContentTypes = workerConfigUsingSameContentTypes.stream()
-                                                                              .map(WorkerConfig::getContentTypes)
+                                                                              .map(WorkerConfig::getContentTypeInputs)
                                                                               .flatMap(Collection::stream)
-                                                                              .filter(contentType -> workerConfigDto.getContentTypes()
+                                                                              .filter(contentType -> workerConfigDto.getContentTypeInputs()
                                                                                                                     .contains(
                                                                                                                         contentType))
                                                                               .collect(Collectors.toSet());
@@ -161,10 +170,10 @@ public class WorkerConfigService {
         // Retrieve list of content types configured to be automatically skipped
         List<String> contentTypesToSkip = workerManagerSettingsService.getValue(WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME);
         List<String> contentTypesInsideSkipConf = contentTypesToSkip.stream()
-                                                                    .filter(contentTypeToSkip -> workerConfigDto.getContentTypes()
+                                                                    .filter(contentTypeToSkip -> workerConfigDto.getContentTypeInputs()
                                                                                                                 .contains(
                                                                                                                     contentTypeToSkip))
-                                                                    .collect(Collectors.toList());
+                                                                    .toList();
         if (!contentTypesInsideSkipConf.isEmpty()) {
 
             String errorMessage = String.format(

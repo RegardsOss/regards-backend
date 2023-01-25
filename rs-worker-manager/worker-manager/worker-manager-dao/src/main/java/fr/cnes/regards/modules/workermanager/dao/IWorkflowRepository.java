@@ -18,23 +18,15 @@
  */
 package fr.cnes.regards.modules.workermanager.dao;
 
-import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 /**
- * JPA Repository to handle access to {@link WorkerConfig} entities.
+ * JPA Repository to handle access to {@link Workflow} entities.
  *
- * @author Léo Mieulet
+ * @author Iliana Ghazali
  */
-public interface IWorkerConfigRepository
-    extends JpaRepository<WorkerConfig, Long>, JpaSpecificationExecutor<WorkerConfig> {
+public interface IWorkflowRepository extends JpaRepository<Workflow, String>, JpaSpecificationExecutor<Workflow> {
 
-    Optional<WorkerConfig> findByWorkerType(String name);
-
-    List<WorkerConfig> findAllByContentTypeInputsIn(Set<String> contentTypes);
 }

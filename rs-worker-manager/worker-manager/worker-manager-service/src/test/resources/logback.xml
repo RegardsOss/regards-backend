@@ -37,7 +37,7 @@
 	<logger name="fr.cnes.regards.framework.test.util" level="INFO"/>
 
 	<logger name="fr.cnes.regards" level="INFO" />
-	<logger name="fr.cnes.regards.modules.workermanager" level="INFO" />
+	<logger name="fr.cnes.regards.modules.workermanager" level="TRACE" />
 
 	<root level="info">
 		<appender-ref ref="STDOUT" />

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.workermanager.dto;
 
 import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import java.util.Set;
@@ -32,36 +33,41 @@ import java.util.Set;
  */
 public class WorkerConfigDto {
 
-    @NotBlank
-    private String workerType;
+    @NotBlank(message = "Invalid worker conf with empty name")
+    private final String workerType;
 
     /**
-     * List of Content Types treatable by this worker
+     * Input types handled by this worker
      */
-    @NotEmpty
-    private Set<String> contentTypes;
+    @NotEmpty(message = "WorkerConf cannot declare empty contentTypesIn list")
+    private final Set<String> contentTypeInputs;
+
+    /**
+     * Response type expected by this worker
+     */
+    @Nullable
+    private final String contentTypeOutput;
+
+    public WorkerConfigDto(String workerType, Set<String> contentTypeInputs, @Nullable String contentTypeOutput) {
+        Assert.notNull(workerType, "WorkerType is mandatory.");
+        Assert.notNull(contentTypeInputs, "Content types is mandatory.");
+        // We check later for emptiness
+        this.workerType = workerType;
+        this.contentTypeInputs = contentTypeInputs;
+        this.contentTypeOutput = contentTypeOutput;
+    }
 
     public String getWorkerType() {
         return workerType;
     }
 
-    public Set<String> getContentTypes() {
-        return contentTypes;
+    public Set<String> getContentTypeInputs() {
+        return contentTypeInputs;
     }
 
-    public void setWorkerType(String workerType) {
-        this.workerType = workerType;
+    @Nullable
+    public String getContentTypeOutput() {
+        return contentTypeOutput;
     }
 
-    public void setContentTypes(Set<String> contentTypes) {
-        this.contentTypes = contentTypes;
-    }
-
-    public WorkerConfigDto(String workerType, Set<String> contentTypes) {
-        Assert.notNull(workerType, "WorkerType is mandatory.");
-        Assert.notNull(contentTypes, "Content types is mandatory");
-        // We check later for emptiness
-        this.workerType = workerType;
-        this.contentTypes = contentTypes;
-    }
 }

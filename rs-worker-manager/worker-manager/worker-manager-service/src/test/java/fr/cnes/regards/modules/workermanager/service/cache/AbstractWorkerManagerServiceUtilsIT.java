@@ -26,10 +26,12 @@ import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSetti
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
+import fr.cnes.regards.modules.workermanager.dao.IWorkflowRepository;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerManagerConfigManager;
+import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
@@ -59,29 +61,37 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IDynamicTenantSettingRepository dynamicTenantSettingRepository;
+    protected IDynamicTenantSettingRepository dynamicTenantSettingRepository;
 
     @Autowired
-    private IWorkerConfigRepository workerConfigRepository;
+    protected IWorkerConfigRepository workerConfigRepository;
 
     @Autowired
-    private WorkerManagerConfigManager configManager;
+    protected IWorkflowRepository workflowRepository;
 
     @Autowired
-    private WorkerConfigCacheService workerConfigCacheService;
+    protected WorkerManagerConfigManager configManager;
 
     @Autowired
-    private IRequestRepository requestRepository;
+    protected IRequestRepository requestRepository;
 
     @Autowired
-    private ISessionStepRepository sessionStepRepository;
+    protected ISessionStepRepository sessionStepRepository;
 
     @Autowired
-    private ISnapshotProcessRepository sessionSnapshotRepository;
+    protected ISnapshotProcessRepository sessionSnapshotRepository;
 
     @Autowired
     protected IStepPropertyUpdateRequestRepository stepPropertyUpdateRepository;
 
+    @Autowired
+    protected RequestService requestService;
+
+    @Autowired
+    protected WorkerCacheService workerCacheService;
+
+    @Autowired
+    protected WorkerConfigCacheService workerConfigCacheService;
     // -------------
     // BEFORE METHODS
     // -------------
@@ -122,7 +132,6 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
 
     @After
     public void after() throws Exception {
-        cleanRepositories();
         doAfter();
     }
 
@@ -146,20 +155,21 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
         stepPropertyUpdateRepository.deleteAll();
         sessionSnapshotRepository.deleteAll();
         sessionStepRepository.deleteAll();
+        workflowRepository.deleteAllInBatch();
     }
 
     // --------------
     //  WORKER MANAGER UTILS
     // --------------
-    protected void createRequests(String requestId,
-                                  OffsetDateTime creationDate,
-                                  String contentType,
-                                  String source,
-                                  String session,
-                                  RequestStatus status,
-                                  byte[] content,
-                                  String error,
-                                  int nbRequests) {
+    protected List<Request> createRequests(String requestId,
+                                           OffsetDateTime creationDate,
+                                           String contentType,
+                                           String source,
+                                           String session,
+                                           RequestStatus status,
+                                           byte[] content,
+                                           String error,
+                                           int nbRequests) {
         List<Request> requests = Lists.newArrayList();
         for (int i = 0; i < nbRequests; i++) {
             Request request = new Request();
@@ -175,6 +185,7 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
         }
         requests = requestRepository.saveAll(requests);
         Assert.assertEquals(nbRequests, requests.size());
+        return requests;
     }
 
 }

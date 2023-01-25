@@ -76,7 +76,8 @@ public abstract class AbstractRequestJobIT extends AbstractMultitenantServiceWit
 
         workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE,
                                                                                     Sets.newHashSet(
-                                                                                        RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE))));
+                                                                                        RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE),
+                                                                                    null)));
     }
 
     @After

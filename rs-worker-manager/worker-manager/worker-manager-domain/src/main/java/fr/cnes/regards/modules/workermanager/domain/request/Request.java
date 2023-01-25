@@ -77,6 +77,9 @@ public class Request {
     @Type(type = "text")
     private String error;
 
+    @Column(name = "step", columnDefinition = "integer default 0")
+    private int step;
+
     public Request() {
     }
 
@@ -88,6 +91,7 @@ public class Request {
         this.session = EventHeadersHelper.getSessionHeader(message).get();
         this.status = status;
         this.content = message.getBody();
+        this.step = 0;
     }
 
     public Long getId() {
@@ -120,6 +124,14 @@ public class Request {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    public int getStep() {
+        return step;
+    }
+
+    public void setStep(int step) {
+        this.step = step;
     }
 
     public String getSource() {
@@ -191,6 +203,7 @@ public class Request {
         return new RequestDTO(this.requestId,
                               this.creationDate,
                               this.contentType,
+                              this.step,
                               this.source,
                               this.session,
                               this.status,

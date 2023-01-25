@@ -101,6 +101,10 @@ public class WorkerCacheService implements InitializingBean {
         return Optional.empty();
     }
 
+    public boolean isWorkerTypeInCache(String workerType) {
+        return cache.getIfPresent(workerType) != null;
+    }
+
     public List<WorkerTypeAlive> getWorkersInstance(List<String> contentTypes) {
         List<WorkerTypeAlive> result = new ArrayList<>();
         Set<String> workerTypesToKeep = new HashSet<>();

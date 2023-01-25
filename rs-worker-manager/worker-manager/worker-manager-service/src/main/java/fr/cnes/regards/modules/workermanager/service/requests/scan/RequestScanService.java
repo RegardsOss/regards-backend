@@ -123,12 +123,12 @@ public class RequestScanService {
         for (WorkerConfig workerConfig : workerConfigs) {
             // Check if there is such type of workers alive
             // And check if there is some requests waiting for available worker
-            Optional<String> firstContentType = workerConfig.getContentTypes().stream().findFirst();
+            Optional<String> firstContentType = workerConfig.getContentTypeInputs().stream().findFirst();
             if (firstContentType.isPresent()
                 && workerCacheService.getWorkerTypeByContentType(firstContentType.get())
                                      .isPresent()
-                && requestService.hasRequestsMatchingContentTypeAndNoWorkerAvailable(workerConfig.getContentTypes())) {
-                SearchRequestParameters filters = new SearchRequestParameters().withContentTypesIncluded(workerConfig.getContentTypes())
+                && requestService.hasRequestsMatchingContentTypeAndNoWorkerAvailable(workerConfig.getContentTypeInputs())) {
+                SearchRequestParameters filters = new SearchRequestParameters().withContentTypesIncluded(workerConfig.getContentTypeInputs())
                                                                                .withStatusesIncluded(RequestStatus.NO_WORKER_AVAILABLE);
                 scanUsingFilters(filters, RequestStatus.TO_DISPATCH, MAX_TASK_WAIT_DURING_SCHEDULE);
             }

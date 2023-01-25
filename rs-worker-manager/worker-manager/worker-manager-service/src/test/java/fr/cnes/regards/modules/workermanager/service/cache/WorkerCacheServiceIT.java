@@ -73,9 +73,9 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     @Test
     public void testRegisterWorkers() {
         // Save configuration used by this test
-        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1),
-                                                                new WorkerConfigDto(workerType2, contentTypes2),
-                                                                new WorkerConfigDto(workerType3, contentTypes3)));
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1, null),
+                                                                new WorkerConfigDto(workerType2, contentTypes2, null),
+                                                                new WorkerConfigDto(workerType3, contentTypes3, null)));
 
         String workerId1 = UUID.randomUUID().toString();
         String workerId2 = UUID.randomUUID().toString();
@@ -117,9 +117,9 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     public void testConfigurationChanged() {
 
         // Save configuration used by this test
-        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1),
-                                                                new WorkerConfigDto(workerType2, contentTypes2),
-                                                                new WorkerConfigDto(workerType3, contentTypes3)));
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1, null),
+                                                                new WorkerConfigDto(workerType2, contentTypes2, null),
+                                                                new WorkerConfigDto(workerType3, contentTypes3, null)));
 
         String workerId1 = UUID.randomUUID().toString();
 
@@ -146,8 +146,8 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     public void testCacheExpiration() throws InterruptedException {
 
         // Save configuration used by this test
-        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1),
-                                                                new WorkerConfigDto(workerType2, contentTypes2)));
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1, null),
+                                                                new WorkerConfigDto(workerType2, contentTypes2, null)));
 
         String workerId1 = UUID.randomUUID().toString();
         String workerId2 = UUID.randomUUID().toString();
@@ -185,9 +185,9 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     @Ignore("Useless perf test")
     public void testHandleManyRequests() {
         // Save configuration used by this test
-        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1),
-                                                                new WorkerConfigDto(workerType2, contentTypes2),
-                                                                new WorkerConfigDto(workerType3, contentTypes3)));
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1, null),
+                                                                new WorkerConfigDto(workerType2, contentTypes2, null),
+                                                                new WorkerConfigDto(workerType3, contentTypes3, null)));
 
         String workerId1 = UUID.randomUUID().toString();
         String workerId2 = UUID.randomUUID().toString();

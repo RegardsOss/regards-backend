@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.workermanager.amqp.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.RequestSpecificationsBuilder;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
+import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
@@ -111,6 +112,9 @@ public class RequestService {
 
     @Autowired
     private WorkerCacheService workerCacheService;
+
+    @Autowired
+    private WorkflowService workflowService;
 
     @Autowired
     private IAuthenticationResolver authenticationResolver;
@@ -235,14 +239,18 @@ public class RequestService {
         Multimap<String, Request> toDispatchRequests = ArrayListMultimap.create();
         // Check and update request depending on whether they can be dispatched (using Worker cache)
         for (Request request : requests) {
-            Optional<String> workerTypeOpt = workerCacheService.getWorkerTypeByContentType(request.getContentType());
-            if (workerTypeOpt.isPresent()) {
-                // Matching a worker alive
-                request.setStatus(RequestStatus.DISPATCHED);
-                request.setDispatchedWorkerType(workerTypeOpt.get());
-                toDispatchRequests.put(workerTypeOpt.get(), request);
-            } else {
-                // No worker alive
+            // request can be associated to a worker configuration or a workflow of workers
+            if (!addRequestFromWorker(request, toDispatchRequests) && !addRequestFromWorkflow(toDispatchRequests,
+                                                                                              request)) {
+                LOGGER.warn("""
+                                Worker with contentType "{}" was not found from request "{}" (source: "{}", session: "{}")."!
+                                Check if :
+                                - the contentType is linked to an existing worker or workflow,
+                                - the related worker is alive.""",
+                            request.getContentType(),
+                            request.getRequestId(),
+                            request.getSource(),
+                            request.getSession());
                 request.setStatus(RequestStatus.NO_WORKER_AVAILABLE);
             }
             newRequestsInfo.addRequest(request.toDTO());
@@ -253,6 +261,51 @@ public class RequestService {
         // Save status update
         requestRepository.saveAll(requests);
 
+        dispatchRequests(requests, requestInfo, newRequestsInfo, toDispatchRequests);
+        return newRequestsInfo;
+    }
+
+    /**
+     * Add a request to a map of requests to dispatch only if it is linked to an alive worker.
+     *
+     * @return if request was added
+     */
+    private boolean addRequestFromWorker(Request request, Multimap<String, Request> toDispatchRequests) {
+        return workerCacheService.getWorkerTypeByContentType(request.getContentType()).map(workerType -> {
+            // Matching a worker alive
+            request.setStatus(RequestStatus.DISPATCHED);
+            request.setDispatchedWorkerType(workerType);
+            return toDispatchRequests.put(workerType, request);
+        }).orElse(false);
+    }
+
+    /**
+     * Add a request to a map of requests to dispatch only if it is linked to an alive worker retrieved from a workflow.
+     *
+     * @return if request was added
+     */
+    private boolean addRequestFromWorkflow(Multimap<String, Request> toDispatchRequests, Request request) {
+        // retrieve worker type in workflow
+        return workflowService.findWorkflowByType(request.getContentType())
+                              .map(workflow -> {
+                                  boolean isRequestDispatched = false;
+                                  String workerType = workflowService.getWorkerTypeInWorkflow(workflow,
+                                                                                              request.getStep());
+                                  // if worker is present in cache add request to the list of requests to dispatch
+                                  if (workerType != null && workerCacheService.isWorkerTypeInCache(workerType)) {
+                                      request.setStatus(RequestStatus.DISPATCHED);
+                                      request.setDispatchedWorkerType(workerType);
+                                      isRequestDispatched = toDispatchRequests.put(workerType, request);
+                                  }
+                                  return isRequestDispatched;
+                              })
+                              .orElse(false);
+    }
+
+    private void dispatchRequests(Collection<Request> requests,
+                                  SessionsRequestsInfo requestInfo,
+                                  SessionsRequestsInfo newRequestsInfo,
+                                  Multimap<String, Request> toDispatchRequests) {
         // Publish requests to corresponding workers
         for (String workerType : toDispatchRequests.keySet()) {
             Collection<Request> requestsByWorkerType = toDispatchRequests.get(workerType);
@@ -279,7 +332,6 @@ public class RequestService {
         // Notify owner of the request
         notifyStatus(requests);
         sessionService.notifySessions(requestInfo, newRequestsInfo);
-        return newRequestsInfo;
     }
 
     /**
@@ -313,23 +365,26 @@ public class RequestService {
             Optional<Request> oRequest = requests.stream()
                                                  .filter(r -> e.getRequestIdHeader().equals(r.getRequestId()))
                                                  .findFirst();
+
             if (oRequest.isPresent()) {
                 Request request = oRequest.get();
+                // if request is linked to a workflow, override request content with response
+                Optional<Workflow> workflowOpt = workflowService.findWorkflowByType(request.getContentType());
+                if(workflowOpt.isPresent()) {
+                    request.setContent(e.getContent());
+                }
+                // update request according to response status
                 switch (e.getStatus()) {
-                    case RUNNING:
-                        request.setStatus(RequestStatus.RUNNING);
-                        break;
-                    case INVALID_CONTENT:
+                    case RUNNING -> request.setStatus(RequestStatus.RUNNING);
+                    case INVALID_CONTENT -> {
                         request.setStatus(RequestStatus.INVALID_CONTENT);
                         request.setError(String.join(",", e.getMessages()));
-                        break;
-                    case SUCCESS:
-                        request.setStatus(RequestStatus.SUCCESS);
-                        break;
-                    case ERROR:
+                    }
+                    case SUCCESS -> updateRequestSuccess(request, workflowOpt);
+                    case ERROR -> {
                         request.setStatus(RequestStatus.ERROR);
                         request.setError(String.join(",", e.getMessages()));
-                        break;
+                    }
                 }
             } else {
                 LOGGER.warn("Request id {} from worker {} does not match ay known request on manager.",
@@ -339,13 +394,33 @@ public class RequestService {
         });
         // Save updated requests and notify clients
         requestRepository.saveAll(requests);
-        notifyStatus(requests);
-        newRequestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
+
+        // only notify requests not in TO_DISPATCH status
+        List<Request> requestsToNotify = requests.stream()
+                                                 .filter(r -> !r.getStatus().equals(RequestStatus.TO_DISPATCH))
+                                                 .toList();
+        notifyStatus(requestsToNotify);
+        newRequestInfo.addRequests(requestsToNotify.stream().map(Request::toDTO).collect(Collectors.toList()));
         sessionService.notifySessions(requestInfo, newRequestInfo);
 
         // Delete succeeded requests. Success requests do not need to be persisted
-        requests.stream().filter(r -> r.getStatus().equals(RequestStatus.SUCCESS)).forEach(requestRepository::delete);
+        requestRepository.deleteAllInBatch(requestsToNotify.stream().filter(r -> r.getStatus().equals(RequestStatus.SUCCESS)).toList());
+
         return newRequestInfo;
+    }
+
+    /**
+     * Update request state in case of {@link WorkerResponseEvent} in success. If request is linked to a workflow,
+     * request will be redispatched if there are still steps to be executed.
+     **/
+    private void updateRequestSuccess(Request request, Optional<Workflow> workflow) {
+        if (workflow.isPresent() && workflowService.hasNextWorkerTypeStep(workflow.get(), request.getStep())) {
+            request.setStatus(RequestStatus.TO_DISPATCH);
+            request.setDispatchedWorkerType(null);
+            request.setStep(request.getStep() + 1);
+        } else {
+            request.setStatus(RequestStatus.SUCCESS);
+        }
     }
 
     /**

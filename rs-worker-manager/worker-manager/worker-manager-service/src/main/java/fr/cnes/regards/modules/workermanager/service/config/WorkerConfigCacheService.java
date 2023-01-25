@@ -63,7 +63,7 @@ public class WorkerConfigCacheService {
                                                                                                               // Reorganise worker configs into a Map with content type as key and worker type as value
                                                                                                               Map<String, String> workerTypeByContentType = new HashMap<>();
                                                                                                               for (WorkerConfig workerConfig : workerConfigs) {
-                                                                                                                  for (String contentType : workerConfig.getContentTypes()) {
+                                                                                                                  for (String contentType : workerConfig.getContentTypeInputs()) {
                                                                                                                       workerTypeByContentType.put(
                                                                                                                           contentType,
                                                                                                                           workerConfig.getWorkerType());
