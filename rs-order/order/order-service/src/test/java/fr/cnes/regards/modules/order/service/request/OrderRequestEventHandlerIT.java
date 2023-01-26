@@ -35,8 +35,12 @@ import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
+import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
-import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventHandler;
+import fr.cnes.regards.modules.order.service.IOrderService;
+import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventTestHandler;
 import fr.cnes.regards.modules.order.service.commons.OrderRequestResponseEventHandler;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -50,6 +54,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -91,7 +96,7 @@ import static org.mockito.ArgumentMatchers.anyString;
  **/
 @ActiveProfiles(value = { "default", "test", "testAmqp", "noscheduler", "nojobs" }, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_request_handler_test_it",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_request_handler_it",
     "regards.amqp.enabled=true" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJobIT {
@@ -121,7 +126,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
     private IProjectsClient projectsClient;
 
     @Autowired
-    private OrderCreationCompletedEventHandler completedEventHandler;
+    private OrderCreationCompletedEventTestHandler completedEventTestHandler;
 
     @SpyBean
     private IEmailClient emailClient;
@@ -141,38 +146,49 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void create_order_success() {
         // --- GIVEN ---
         int nbOrders = 2;
         List<OrderRequestDtoEvent> validOrderRequests = createValidOrderRequestEvents(nbOrders);
-        completedEventHandler.setConsumer(orderCompletedEvent -> new CountDownLatch(nbOrders).countDown());
+        completedEventTestHandler.setConsumer(orderCompletedEvent -> new CountDownLatch(nbOrders).countDown());
 
         // --- WHEN ---
         publisher.publish(validOrderRequests);
         Mockito.verify(requestHandler, Mockito.timeout(10000)).handleBatch(any());
 
         // --- THEN ---
-        // Wait for job and order to be executed / completed in running status
+        // Wait for jobs to be executed and for orders taken into account (in RUNNING state @see
+        // OrderCreationService#manageOrderState{Order, OrderCounts))
         awaitForJobAndOrderAsyncCompletion(nbOrders, OrderStatus.RUNNING);
 
         // Check order response messages granted
         ArgumentCaptor<List<OrderRequestResponseDtoEvent>> responseCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(responseCaptor.capture());
-        checkOrderRequestResponses(nbOrders, responseCaptor.getAllValues().get(1), OrderRequestStatus.GRANTED, null);
+        Long firstOrderId = getFirstOrderId();
+        checkOrderRequestResponsesEvents(responseCaptor.getAllValues().get(1),
+                                         nbOrders,
+                                         OrderRequestStatus.GRANTED,
+                                         null,
+                                         firstOrderId);
 
         // check no mail was sent
         Mockito.verifyNoInteractions(emailClient);
 
         // check completed event
-        assertThat(completedEventHandler.getEvents()).hasSize(nbOrders);
+        assertThat(completedEventTestHandler.getEvents()).hasSize(nbOrders);
+
+        // check basket was successfully created
+        checkOrderBaskets(nbOrders, firstOrderId);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void create_order_unreachable_catalog() {
         // --- GIVEN ---
         int nbOrders = 2;
         List<OrderRequestDtoEvent> validOrderRequests = createValidOrderRequestEvents(nbOrders);
-        completedEventHandler.setConsumer(orderCompletedEvent -> new CountDownLatch(nbOrders).countDown());
+        completedEventTestHandler.setConsumer(orderCompletedEvent -> new CountDownLatch(nbOrders).countDown());
         // throw an exception during the catalog search to make the order fail
         Mockito.doThrow(new RsRuntimeException("expected exception")).when(searchClient).searchDataObjects(any());
 
@@ -194,16 +210,21 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         // the order, which is asynchronous.
         ArgumentCaptor<List<OrderRequestResponseDtoEvent>> responseCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(responseCaptor.capture());
-        checkOrderRequestResponses(nbOrders, responseCaptor.getAllValues().get(1), OrderRequestStatus.GRANTED, null);
+        checkOrderRequestResponsesEvents(responseCaptor.getAllValues().get(1),
+                                         nbOrders,
+                                         OrderRequestStatus.GRANTED,
+                                         null,
+                                         getFirstOrderId());
 
         // check no mail was sent
         Mockito.verifyNoInteractions(emailClient);
 
         // check completed event were sent
-        assertThat(completedEventHandler.getEvents()).hasSize(nbOrders);
+        assertThat(completedEventTestHandler.getEvents()).hasSize(nbOrders);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void create_order_invalid_requests() {
         // --- GIVEN ---
         int nbOrders = 3;
@@ -242,7 +263,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         orderRepository.deleteAll();
         basketRepository.deleteAll();
         jobInfoRepository.deleteAll();
-        completedEventHandler.clear();
+        completedEventTestHandler.clear();
         Mockito.reset(publisher);
     }
 
@@ -284,4 +305,19 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         }
     }
 
+    private Long getFirstOrderId() {
+        return orderRepository.findAll(PageRequest.of(0, 1, Sort.by("id"))).getContent().get(0).getId();
+    }
+
+    private void checkOrderBaskets(int nbOrders, Long firstOrderId) {
+        for (int i = 0; i < nbOrders; i++) {
+            Basket basket = basketRepository.findByOwner(IOrderService.BASKET_OWNER_PREFIX + (firstOrderId + i));
+            basket.getDatasetSelections().forEach(ds -> {
+                FileSelectionDescription filters = ds.getFileSelectionDescription();
+                assertThat(filters).isNotNull();
+                assertThat(filters.getFileTypes()).containsExactlyInAnyOrder(DataTypeLight.RAWDATA);
+                assertThat(filters.getFileNamePattern()).isEqualTo(FILENAME_FILTER);
+            });
+        }
+    }
 }

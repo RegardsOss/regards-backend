@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.order.dto.output;
 
-import org.hibernate.validator.constraints.Length;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
@@ -32,15 +30,14 @@ import java.util.Objects;
  **/
 public class OrderRequestResponseDto {
 
-    /**
-     * Order identifier
-     */
-    @NotBlank(message = "correlationId must be present")
-    @Length(message = "correlationId must not exceed 100 characters.", max = 100)
-    private String correlationId;
-
     @NotNull(message = "status should be present")
     private OrderRequestStatus status;
+
+    @Nullable
+    private Long orderId;
+
+    @Nullable
+    private String correlationId;
 
     @Nullable
     private String message;
@@ -48,22 +45,16 @@ public class OrderRequestResponseDto {
     @Nullable
     private String downloadLink;
 
-    public OrderRequestResponseDto(String correlationId,
-                                   OrderRequestStatus status,
+    public OrderRequestResponseDto(OrderRequestStatus status,
+                                   @Nullable Long orderId,
+                                   @Nullable String correlationId,
                                    @Nullable String message,
                                    @Nullable String downloadLink) {
-        this.correlationId = correlationId;
         this.status = status;
+        this.orderId = orderId;
+        this.correlationId = correlationId;
         this.message = message;
         this.downloadLink = downloadLink;
-    }
-
-    public String getCorrelationId() {
-        return correlationId;
-    }
-
-    public void setCorrelationId(String correlationId) {
-        this.correlationId = correlationId;
     }
 
     public OrderRequestStatus getStatus() {
@@ -72,6 +63,24 @@ public class OrderRequestResponseDto {
 
     public void setStatus(OrderRequestStatus status) {
         this.status = status;
+    }
+
+    @Nullable
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(@Nullable Long orderId) {
+        this.orderId = orderId;
+    }
+
+    @Nullable
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public void setCorrelationId(@Nullable String correlationId) {
+        this.correlationId = correlationId;
     }
 
     @Nullable
@@ -101,26 +110,29 @@ public class OrderRequestResponseDto {
             return false;
         }
         OrderRequestResponseDto that = (OrderRequestResponseDto) o;
-        return Objects.equals(correlationId, that.correlationId)
-               && status == that.status
-               && Objects.equals(message,
-                                 that.message)
+        return status == that.status
+               && Objects.equals(orderId, that.orderId)
+               && Objects.equals(correlationId,
+                                 that.correlationId)
+               && Objects.equals(message, that.message)
                && Objects.equals(downloadLink, that.downloadLink);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(correlationId, status, message, downloadLink);
+        return Objects.hash(status, orderId, correlationId, message, downloadLink);
     }
 
     @Override
     public String toString() {
         return "OrderRequestResponseDto{"
-               + "correlationId='"
+               + "status="
+               + status
+               + ", createdOrderId="
+               + orderId
+               + ", correlationId='"
                + correlationId
                + '\''
-               + ", status="
-               + status
                + ", message='"
                + message
                + '\''

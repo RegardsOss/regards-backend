@@ -34,15 +34,20 @@ import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class OrderRequestResponseDtoEvent extends OrderRequestResponseDto implements ISubscribable {
 
-    public OrderRequestResponseDtoEvent(String correlationId, OrderRequestStatus status, String message) {
-        super(correlationId, status, message, null);
-    }
-
-    public OrderRequestResponseDtoEvent(String correlationId,
-                                        OrderRequestStatus status,
+    public OrderRequestResponseDtoEvent(OrderRequestStatus status,
+                                        Long createdOrderId,
+                                        String correlationId,
                                         String message,
                                         String downloadLink) {
-        super(correlationId, status, message, downloadLink);
+        super(status, createdOrderId, correlationId, message, downloadLink);
+    }
+
+    public OrderRequestResponseDtoEvent(OrderRequestResponseDto orderResponse) {
+        super(orderResponse.getStatus(),
+              orderResponse.getOrderId(),
+              orderResponse.getCorrelationId(),
+              orderResponse.getMessage(),
+              orderResponse.getDownloadLink());
     }
 
 }

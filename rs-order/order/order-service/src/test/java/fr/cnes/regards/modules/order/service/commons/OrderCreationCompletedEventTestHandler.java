@@ -30,7 +30,7 @@ import java.util.function.Consumer;
  * @author gandrieu
  **/
 @Component
-public class OrderCreationCompletedEventHandler
+public class OrderCreationCompletedEventTestHandler
     implements ApplicationListener<OrderCreationService.OrderCreationCompletedEvent> {
 
     protected final java.util.Queue<OrderCreationService.OrderCreationCompletedEvent> events = new ConcurrentLinkedQueue<>();

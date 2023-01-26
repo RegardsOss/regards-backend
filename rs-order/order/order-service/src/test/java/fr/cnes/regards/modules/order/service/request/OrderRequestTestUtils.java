@@ -19,20 +19,19 @@
 package fr.cnes.regards.modules.order.service.request;
 
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
 import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestFilters;
+import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Set;
 
 /**
  * Helper for order request tests
@@ -45,17 +44,16 @@ public class OrderRequestTestUtils {
 
     public static final DefaultRole TEST_USER_ROLE = DefaultRole.EXPLOIT;
 
-    public static final List<String> SEARCH_QUERIES = List.of("some:opensearchrequest");
+    public static final List<String> SEARCH_QUERIES = List.of("type:Feature");
 
-    public static final String CORR_ID_FORMAT = "Corr n°%d";
+    public static final String FILENAME_FILTER = "^.*";
 
     static List<OrderRequestDtoEvent> createValidOrderRequestEvents(int nbReq) {
         List<OrderRequestDtoEvent> orderRequestDtos = new ArrayList<>();
         for (int i = 0; i < nbReq; i++) {
-            orderRequestDtos.add(new OrderRequestDtoEvent(SEARCH_QUERIES,
-                                                          String.format(CORR_ID_FORMAT, i),
-                                                          TEST_USER_ORDER,
-                                                          new OrderRequestFilters(List.of(DataType.AIP), null)));
+            orderRequestDtos.add(new OrderRequestDtoEvent(SEARCH_QUERIES, new OrderRequestFilters(Set.of(DataTypeLight.RAWDATA),
+                                    FILENAME_FILTER), String.valueOf(i),
+                                                          TEST_USER_ORDER));
         }
         return orderRequestDtos;
     }
@@ -63,10 +61,13 @@ public class OrderRequestTestUtils {
     static List<OrderRequestDtoEvent> createInvalidOrderRequestEvents(int nbReq) {
         List<OrderRequestDtoEvent> orderRequestDtos = new ArrayList<>();
         for (int i = 0; i < nbReq; i++) {
-            orderRequestDtos.add(new OrderRequestDtoEvent(SEARCH_QUERIES,
-                                                          null,
-                                                          TEST_USER_ORDER,
-                                                          new OrderRequestFilters(List.of(), null)));
+            OrderRequestDtoEvent invalidOrderRequest = new OrderRequestDtoEvent(SEARCH_QUERIES,
+                                                                                new OrderRequestFilters(Set.of(
+                                                                                    DataTypeLight.RAWDATA), null),
+                                                                                String.valueOf(i),
+                                                                                TEST_USER_ORDER);
+            invalidOrderRequest.setUser(RandomStringUtils.randomAlphanumeric(129));
+            orderRequestDtos.add(invalidOrderRequest);
         }
         return orderRequestDtos;
     }
@@ -76,31 +77,47 @@ public class OrderRequestTestUtils {
 
         for (int i = 0; i < nbReq; i++) {
             orderRequestDtos.add(new OrderRequestDto(SEARCH_QUERIES,
-                                                     String.format(CORR_ID_FORMAT, i),
-                                                     TEST_USER_ORDER,
-                                                     new OrderRequestFilters(List.of(DataType.AIP), null)));
+                                                     new OrderRequestFilters(Set.of(DataTypeLight.RAWDATA), null),
+                                                     String.valueOf(i),
+                                                     TEST_USER_ORDER));
         }
         return orderRequestDtos;
     }
 
-    static void checkOrderRequestResponses(int nbReq,
-                                           List<OrderRequestResponseDtoEvent> actualResponseDtoEvents,
-                                           OrderRequestStatus status,
-                                           String message) {
+    static void checkOrderRequestResponsesEvents(List<OrderRequestResponseDtoEvent> actualResponseDtoEvents,
+                                                 int expectedNbReq,
+                                                 OrderRequestStatus expectedStatus,
+                                                 String expectedMessage,
+                                                 Long firstOrderId) {
         List<OrderRequestResponseDtoEvent> expectedResponses = new ArrayList<>();
-        for (int i = 0; i < nbReq; i++) {
-            expectedResponses.add(new OrderRequestResponseDtoEvent(String.format(CORR_ID_FORMAT, i), status, message));
+        for (int i = 0; i < expectedNbReq; i++) {
+            Long orderId = expectedStatus.equals(OrderRequestStatus.FAILED)
+                           || expectedStatus.equals(OrderRequestStatus.DENIED) ? null : firstOrderId + i;
+            expectedResponses.add(new OrderRequestResponseDtoEvent(expectedStatus,
+                                                                   orderId,
+                                                                   String.valueOf(i),
+                                                                   expectedMessage,
+                                                                   null));
         }
         Assertions.assertThat(actualResponseDtoEvents).hasSameElementsAs(expectedResponses);
     }
 
-    static void checkOrders(List<Order> createdOrders, int nbReq, OrderStatus status) {
-        for (int i = 0; i < nbReq; i++) {
-            Order order = createdOrders.get(i);
-            assertThat(order.getOwner()).isEqualTo(TEST_USER_ORDER);
-            assertThat(order.getCorrelationId()).isEqualTo(String.valueOf(i));
-            assertThat(order.getStatus()).isEqualTo(status);
-
+    static void checkOrderRequestResponses(List<OrderRequestResponseDto> actualResponseDtos,
+                                           int expectedNbReq,
+                                           OrderRequestStatus expectedStatus,
+                                           String expectedMessage,
+                                           Long firstOrderId) {
+        List<OrderRequestResponseDto> expectedResponses = new ArrayList<>();
+        for (int i = 0; i < expectedNbReq; i++) {
+            Long orderId = expectedStatus.equals(OrderRequestStatus.FAILED)
+                           || expectedStatus.equals(OrderRequestStatus.DENIED) ? null : firstOrderId + i;
+            expectedResponses.add(new OrderRequestResponseDto(expectedStatus,
+                                                              orderId,
+                                                              String.valueOf(i),
+                                                              expectedMessage,
+                                                              null));
         }
+        Assertions.assertThat(actualResponseDtos).hasSameElementsAs(expectedResponses);
     }
+
 }

@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.order.dto.input;
 
-import fr.cnes.regards.framework.urn.DataType;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotEmpty;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Filters to select files to order. Linked to {@link OrderRequestDto}
@@ -36,34 +36,28 @@ public class OrderRequestFilters {
      * File types to order
      */
     @NotEmpty(message = "There should be at least one datatype to order")
-    private List<DataType> dataTypes;
+    private final Set<DataTypeLight> dataTypes;
 
     /**
      * Regexp to filter filenames
      */
     @Nullable
-    private String filenameRegExp;
+    private final String filenameRegExp;
 
-    public OrderRequestFilters(List<DataType> dataTypes, @Nullable String filenameRegExp) {
+    public OrderRequestFilters(Set<DataTypeLight> dataTypes, @Nullable String filenameRegExp) {
+        Assert.notEmpty(dataTypes, "at least one dataType is mandatory");
+
         this.dataTypes = dataTypes;
         this.filenameRegExp = filenameRegExp;
     }
 
-    public List<DataType> getDataTypes() {
+    public Set<DataTypeLight> getDataTypes() {
         return dataTypes;
-    }
-
-    public void setDataTypes(List<DataType> dataTypes) {
-        this.dataTypes = dataTypes;
     }
 
     @Nullable
     public String getFilenameRegExp() {
         return filenameRegExp;
-    }
-
-    public void setFilenameRegExp(@Nullable String filenameRegExp) {
-        this.filenameRegExp = filenameRegExp;
     }
 
     @Override

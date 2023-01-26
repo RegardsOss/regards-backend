@@ -39,15 +39,21 @@ import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
+import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
+import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.service.*;
+import fr.cnes.regards.modules.order.service.request.OrderRequestService;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Encoders;
+import io.micrometer.core.instrument.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
@@ -67,6 +73,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -118,6 +125,8 @@ public class OrderController implements IResourceController<OrderDto> {
 
     public static final String USER_ROOT_PATH = "/user/orders";
 
+    public static final String AUTO_ORDER_PATH = USER_ROOT_PATH + "/apply";
+
     public static final String SEARCH_ORDER_PATH = ADMIN_ROOT_PATH + "/search";
 
     public static final String REMOVE_ORDER_PATH = USER_ROOT_PATH + "/remove/{orderId}";
@@ -152,6 +161,9 @@ public class OrderController implements IResourceController<OrderDto> {
     private IOrderService orderService;
 
     @Autowired
+    private OrderRequestService orderRequestService;
+
+    @Autowired
     private IOrderDownloadService orderDownloadService;
 
     @Autowired
@@ -183,6 +195,39 @@ public class OrderController implements IResourceController<OrderDto> {
                                                orderRequest.getOnSuccessUrl(),
                                                orderSettingsService.getUserOrderParameters().getSubOrderDuration());
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Create an order automatically from a OrderRequestDto.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "The order was successfully initiated. "
+                                                       + "Returns OrderRequestResponseDtoEvent with the createdOrderId.",
+                                         content = @Content(mediaType = "application/json")),
+                            @ApiResponse(responseCode = "400",
+                                         description = "The order could not be created. "
+                                                       + "Refer to the response returned for more information.",
+                                         content = @Content(mediaType = "application/json")),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         content = @Content(mediaType = "application/html")),
+                            @ApiResponse(responseCode = "422",
+                                         description = "The submission request dto syntax is incorrect.",
+                                         content = @Content(mediaType = "application/json")) })
+    @ResponseBody
+    @PostMapping(path = AUTO_ORDER_PATH)
+    @ResourceAccess(description = "Create order automatically from a OrderRequestDto", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<EntityModel<OrderRequestResponseDto>> createOrder(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "OrderRequestDto to create an order.",
+                                                              content = @Content(schema = @Schema(implementation = OrderRequestDto.class)))
+        @RequestBody @Valid OrderRequestDto orderRequestDto) {
+        // set request user with connected user
+        orderRequestDto.setUser(StringUtils.truncate(authResolver.getUser(), 128));
+        // create order from request
+        OrderRequestResponseDto orderResponseDto = orderRequestService.createOrderFromRequest(orderRequestDto,
+                                                                                              authResolver.getRole());
+        HttpStatus status = orderResponseDto.getStatus() == OrderRequestStatus.GRANTED ?
+            HttpStatus.OK :
+            HttpStatus.BAD_REQUEST;
+        return new ResponseEntity<>(EntityModel.of(orderResponseDto), status);
     }
 
     @ResourceAccess(description = "Validate current basket and create corresponding order", role = DefaultRole.ADMIN)

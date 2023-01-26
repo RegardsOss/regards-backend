@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
+import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public class CreateOrderJob extends AbstractJob<Void> {
 
     public static final String ORDER_REQUEST_EVENT = "ORDER_REQUEST_EVENT";
 
-    private List<OrderRequestDto> orderRequestDto;
+    private List<OrderRequestDto> orderRequestDtos;
 
     @Autowired
     private OrderRequestService orderRequestService;
@@ -46,17 +47,23 @@ public class CreateOrderJob extends AbstractJob<Void> {
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
-        this.orderRequestDto = getValue(parameters, ORDER_REQUEST_EVENT, new TypeToken<List<OrderRequestDto>>() {
+        this.orderRequestDtos = getValue(parameters, ORDER_REQUEST_EVENT, new TypeToken<List<OrderRequestDto>>() {
 
         }.getType());
     }
 
     @Override
     public void run() {
-        logger.debug("[{}] SubmissionDeleteExpiredJob starts", jobInfoId);
+        logger.debug("[{}] SubmissionDeleteExpiredJob starts. Handle {} OrderRequestDto.",
+                     jobInfoId,
+                     orderRequestDtos.size());
         long start = System.currentTimeMillis();
-        orderRequestService.createOrderFromRequests(orderRequestDto);
-        logger.debug("[{}] SubmissionDeleteExpiredJob ended in {}ms.", jobInfoId, System.currentTimeMillis() - start);
+        List<OrderRequestResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequestDtos, null);
+        orderRequestService.publishResponses(responses);
+        logger.debug("[{}] SubmissionDeleteExpiredJob ended in {}ms. Handled {} OrderRequestResponseDtos.",
+                     jobInfoId,
+                     System.currentTimeMillis() - start,
+                     responses.size());
     }
 
 }

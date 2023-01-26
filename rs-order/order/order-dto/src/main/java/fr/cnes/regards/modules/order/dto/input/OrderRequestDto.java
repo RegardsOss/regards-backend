@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.order.dto.input;
 
-import org.hibernate.validator.constraints.Length;
+import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,65 +39,64 @@ public class OrderRequestDto {
      * Lucene queries to select products to order
      */
     @NotEmpty(message = "list of queries should not be empty")
-    private List<String> queries;
-
-    /**
-     * Order identifier
-     */
-    @NotBlank(message = "correlationId must be present")
-    @Length(message = "correlationId must not exceed 100 characters.", max = 100)
-    private String correlationId;
-
-    /**
-     * Ordering user login name
-     */
-    @NotBlank(message = "user should be present")
-    private String user;
+    private final List<String> queries;
 
     /**
      * see {@link OrderRequestFilters}
      */
     @NotNull(message = "filters should be present")
     @Valid
-    private OrderRequestFilters filters;
+    private final OrderRequestFilters filters;
 
-    public OrderRequestDto(List<String> queries, String correlationId, String user, OrderRequestFilters filters) {
+    /**
+     * Order identifier provided by the user. Is nullable in case of REST.
+     */
+    @Size(message = "provided correlationId must not exceed 100 characters.", max = 100)
+    @Nullable
+    private final String correlationId;
+
+    /**
+     * Ordering user login name
+     */
+    @Size(message = "user must not exceed 128 characters.", max = 128)
+    @Nullable
+    private String user;
+
+
+
+    public OrderRequestDto(List<String> queries,
+                           OrderRequestFilters filters,
+                           @Nullable String correlationId,
+                           @Nullable String user) {
+        Assert.notEmpty(queries, "at least one query is mandatory!");
+        Assert.notNull(filters, "filters are mandatory!");
+
         this.queries = queries;
+        this.filters = filters;
         this.correlationId = correlationId;
         this.user = user;
-        this.filters = filters;
     }
 
     public List<String> getQueries() {
         return queries;
     }
 
-    public void setQueries(List<String> queries) {
-        this.queries = queries;
-    }
-
+    @Nullable
     public String getCorrelationId() {
         return correlationId;
     }
 
-    public void setCorrelationId(String correlationId) {
-        this.correlationId = correlationId;
-    }
-
+    @Nullable
     public String getUser() {
         return user;
     }
 
-    public void setUser(String user) {
+    public void setUser(@Nullable String user) {
         this.user = user;
     }
 
     public OrderRequestFilters getFilters() {
         return filters;
-    }
-
-    public void setFilters(OrderRequestFilters filters) {
-        this.filters = filters;
     }
 
     @Override
@@ -108,12 +108,16 @@ public class OrderRequestDto {
             return false;
         }
         OrderRequestDto that = (OrderRequestDto) o;
-        return correlationId.equals(that.correlationId);
+        return queries.equals(that.queries)
+               && filters.equals(that.filters)
+               && Objects.equals(correlationId,
+                                 that.correlationId)
+               && Objects.equals(user, that.user);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(correlationId);
+        return Objects.hash(queries, filters, correlationId, user);
     }
 
     @Override
@@ -121,14 +125,14 @@ public class OrderRequestDto {
         return "OrderRequestDto{"
                + "queries="
                + queries
+               + ", filters="
+               + filters
                + ", correlationId='"
                + correlationId
                + '\''
                + ", user='"
                + user
                + '\''
-               + ", filters="
-               + filters
                + '}';
     }
 }

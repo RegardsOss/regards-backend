@@ -19,28 +19,17 @@
 package fr.cnes.regards.modules.order.service.request;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
-import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
+import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
-import fr.cnes.regards.modules.order.service.BasketService;
-import fr.cnes.regards.modules.order.service.IOrderService;
-import fr.cnes.regards.modules.order.service.settings.OrderSettingsService;
+import fr.cnes.regards.modules.order.exception.OrderRequestServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,94 +45,64 @@ public class OrderRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderRequestService.class);
 
-    /**
-     * Constants
-     */
-    public static final String SEARCH_ENGINE_TYPE = "legacy";
+    public static final String ERROR_RESPONSE_FORMAT = "%s: \"%s\""; // Exception: "error cause"
 
-    private static final String DEFAULT_ACCESS_ROLE = DefaultRole.EXPLOIT.toString();
-
-    public static final String ERROR_RESPONSE_FORMAT = "%s: %s"; // "Exception: error cause"
-
-    /**
-     * Services
-     */
-    private final BasketService basketService;
-
-    private final IOrderService orderService;
-
-    private final OrderSettingsService orderSettings;
+    private final AutoOrderCompletionService autoOrderCompletionService;
 
     private final IPublisher publisher;
 
-    public OrderRequestService(BasketService basketService,
-                               IOrderService orderService,
-                               OrderSettingsService orderSettings,
-                               IPublisher publisher) {
-        this.basketService = basketService;
-        this.orderService = orderService;
-        this.orderSettings = orderSettings;
+    public OrderRequestService(AutoOrderCompletionService autoOrderCompletionService, IPublisher publisher) {
+        this.autoOrderCompletionService = autoOrderCompletionService;
         this.publisher = publisher;
     }
 
     /**
-     * Generic method to create an {@link Order} from {@link OrderRequestDto}s.
-     * <br/>
-     * A {@link Basket} is built from requests and used to create an {@link Order}.
-     * {@link OrderRequestResponseDtoEvent}s are then published with the creation status.
+     * see {@link this#createOrderFromRequests(List, String)}
      */
-    public void createOrderFromRequests(List<OrderRequestDto> orderRequests) {
-        List<OrderRequestResponseDtoEvent> responses = new ArrayList<>();
+    public OrderRequestResponseDto createOrderFromRequest(OrderRequestDto orderRequest, String role) {
+        return createOrderFromRequests(List.of(orderRequest), role).get(0);
+    }
+
+    /**
+     * Generic method to create an {@link Order} from {@link OrderRequestDto}s.
+     */
+    public List<OrderRequestResponseDto> createOrderFromRequests(List<OrderRequestDto> orderRequests, String role) {
+        List<OrderRequestResponseDto> responses = new ArrayList<>();
         for (OrderRequestDto orderRequest : orderRequests) {
             try {
-                Basket basket = createBasketFromRequests(orderRequest);
-                orderService.createOrder(basket,
-                                         "Generated order " + OffsetDateTimeAdapter.format(OffsetDateTime.now()),
-                                         null,
-                                         orderSettings.getAppSubOrderDuration(),
-                                         orderRequest.getUser(),
-                                         orderRequest.getCorrelationId());
-                responses.add(buildSuccessResponse(orderRequest));
-            } catch (EmptySelectionException | TooManyItemsSelectedInBasketException | EntityInvalidException e) {
-                LOGGER.error("Request with correlationId {} has failed. Cause:", orderRequest.getCorrelationId(), e);
+                Order createdOrder = autoOrderCompletionService.generateOrder(orderRequest, role);
+                responses.add(buildSuccessResponse(orderRequest, createdOrder.getId()));
+            } catch (OrderRequestServiceException e) {
+                LOGGER.error("Request with correlationId {} has failed. Cause:",
+                             orderRequest.getCorrelationId(),
+                             e);
                 responses.add(buildErrorResponse(orderRequest,
                                                  String.format(ERROR_RESPONSE_FORMAT,
                                                                e.getClass().getSimpleName(),
                                                                e.getMessage())));
             }
         }
-        publisher.publish(responses);
+        return responses;
     }
 
-    private Basket createBasketFromRequests(OrderRequestDto orderRequest)
-        throws TooManyItemsSelectedInBasketException, EmptySelectionException {
-        Basket basket = basketService.findOrCreate(orderRequest.getCorrelationId());
-        for (String query : orderRequest.getQueries()) {
-            //FIXME: user and role should not be given directly for security reasons.
-            // Instead a token must be used, this feature will be released later.
-            basket = basketService.addSelection(basket.getId(),
-                                                createBasketSelectionRequest(query),
-                                                orderRequest.getUser(),
-                                                DEFAULT_ACCESS_ROLE);
-        }
-        return basket;
+    private OrderRequestResponseDto buildErrorResponse(OrderRequestDto orderRequest, String cause) {
+        return new OrderRequestResponseDto(OrderRequestStatus.FAILED,
+                                           null,
+                                           orderRequest.getCorrelationId(),
+                                           cause,
+                                           null);
     }
 
-    private BasketSelectionRequest createBasketSelectionRequest(String query) {
-        BasketSelectionRequest basketSelectionRequest = new BasketSelectionRequest();
-        basketSelectionRequest.setEngineType(SEARCH_ENGINE_TYPE);
-        MultiValueMap<String, String> searchParameters = new LinkedMultiValueMap<>();
-        searchParameters.add("q", query);
-        basketSelectionRequest.setSearchParameters(searchParameters);
-        return basketSelectionRequest;
+    private OrderRequestResponseDto buildSuccessResponse(OrderRequestDto orderRequest, Long createdOrderId) {
+        return new OrderRequestResponseDto(OrderRequestStatus.GRANTED,
+                                           createdOrderId,
+                                           orderRequest.getCorrelationId(),
+                                           null,
+                                           null);
     }
 
-    private OrderRequestResponseDtoEvent buildErrorResponse(OrderRequestDto orderRequest, String cause) {
-        return new OrderRequestResponseDtoEvent(orderRequest.getCorrelationId(), OrderRequestStatus.FAILED, cause);
-    }
-
-    private OrderRequestResponseDtoEvent buildSuccessResponse(OrderRequestDto orderRequest) {
-        return new OrderRequestResponseDtoEvent(orderRequest.getCorrelationId(), OrderRequestStatus.GRANTED, null);
+    public void publishResponses(List<OrderRequestResponseDto> responses) {
+        publisher.publish(responses.stream().map(OrderRequestResponseDtoEvent::new).toList());
     }
 
 }

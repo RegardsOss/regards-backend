@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestFilters;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -35,7 +36,8 @@ import java.util.List;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class OrderRequestDtoEvent extends OrderRequestDto implements ISubscribable {
 
-    public OrderRequestDtoEvent(List<String> queries, String correlationId, String user, OrderRequestFilters filters) {
-        super(queries, correlationId, user, filters);
+    public OrderRequestDtoEvent(List<String> queries, OrderRequestFilters filters, String correlationId, String user) {
+        super(queries, filters, correlationId, user);
+        Assert.notNull(correlationId,  "correlationId is mandatory for OrderRequestDtoEvents");
     }
 }

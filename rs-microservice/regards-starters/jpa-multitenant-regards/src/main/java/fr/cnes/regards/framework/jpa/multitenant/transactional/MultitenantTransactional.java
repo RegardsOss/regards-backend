@@ -48,4 +48,7 @@ public @interface MultitenantTransactional {
     @AliasFor(annotation = Transactional.class) Propagation propagation() default Propagation.REQUIRED;
 
     @AliasFor(annotation = Transactional.class) boolean readOnly() default false;
+
+    @AliasFor(annotation = Transactional.class) Class<? extends Throwable>[] noRollbackFor() default {};
+
 }

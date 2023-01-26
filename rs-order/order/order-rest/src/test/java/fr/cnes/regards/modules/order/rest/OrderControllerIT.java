@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -43,6 +44,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -53,6 +56,10 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
+import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
+import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
+import fr.cnes.regards.modules.order.dto.input.OrderRequestFilters;
+import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
 import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
@@ -63,6 +70,7 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
+import org.hamcrest.Matchers;
 import org.hamcrest.text.MatchesPattern;
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,6 +82,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -240,6 +250,95 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.document(getCreateOrderDocumentation());
         // Test POST with empty order => 201, an order creation cannot fail
         performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(), customizer, "error");
+    }
+
+    @Test
+    @Purpose("Tests the successful creation of an order by bypassing user interactions.")
+    public void testNominalOrderAutoCreation() throws Exception {
+        // GIVEN
+        // Before: clear basket for next order and mock search client results
+        initForNextOrder();
+        // Note: this is not a complete version of a DocFilesSummary as it is not required
+        Mockito.when(searchClient.computeDatasetsSummary(Mockito.any())).thenAnswer(invocationOnMock -> {
+            DocFilesSummary summary = new DocFilesSummary();
+            summary.addFilesCount(2);
+            return ResponseEntity.ok(summary);
+        });
+        // Create order request
+        OrderRequestDto orderRequestDto = new OrderRequestDto(List.of("q:\"\""),
+                                                              new OrderRequestFilters(Set.of(DataTypeLight.AIP), null),
+                                                              null,
+                                                              null);
+        // WHEN
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        ResultActions actualResponse = performDefaultPost(OrderController.AUTO_ORDER_PATH,
+                                                          orderRequestDto,
+                                                          customizer,
+                                                          "order was not created from orderRequestDto!");
+
+        // THEN
+        // expect amqp response event
+        OrderRequestResponseDtoEvent expectedResponseEvent = new OrderRequestResponseDtoEvent(OrderRequestStatus.GRANTED,
+                                                                                              orderRepository.findAll(
+                                                                                                                 PageRequest.of(0,
+                                                                                                                                1,
+                                                                                                                                Sort.by(
+                                                                                                                                    "id")))
+                                                                                                             .getContent()
+                                                                                                             .get(0)
+                                                                                                             .getId(),
+                                                                                              null,
+                                                                                              null,
+                                                                                              null);
+
+        // expect rest response
+        actualResponse.andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.status",
+                                                                Matchers.equalTo(expectedResponseEvent.getStatus()
+                                                                                                      .toString())))
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.orderId",
+                                                                Matchers.comparesEqualTo(expectedResponseEvent.getOrderId()),
+                                                                Long.class))
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId").doesNotExist())
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.message").doesNotExist());
+    }
+
+    @Test
+    @Purpose("Tests that an order is not automatically created when an error occurred during the process.")
+    public void testErrorOrderAutoCreation() throws Exception {
+        // GIVEN
+        // Create order request
+        OrderRequestDto orderRequestDto = new OrderRequestDto(List.of("q:\"\""),
+                                                              new OrderRequestFilters(Set.of(DataTypeLight.AIP), null),
+                                                              null,
+                                                              null);
+        // mock result of search with 0 files returned
+        Mockito.when(searchClient.computeDatasetsSummary(Mockito.any())).thenAnswer(invocationOnMock -> {
+            DocFilesSummary summary = new DocFilesSummary();
+            summary.addFilesCount(0);
+            return ResponseEntity.ok(summary);
+        });
+
+        // WHEN
+        // expected status is 400 because searchClient.computeDatasetsSummary contains 0 files. This will result in a
+        // EmptySelectionException.
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.BAD_REQUEST);
+        ResultActions actualResponse = performDefaultPost(OrderController.AUTO_ORDER_PATH,
+                                                          orderRequestDto,
+                                                          customizer,
+                                                          "order was not created from orderRequestDto!");
+
+        // THEN
+        // empty basket should be created
+        Assert.assertNotNull(basketRepository.findByOwner(getDefaultUserEmail()));
+
+        // expect rest response
+        actualResponse.andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.status",
+                                                                Matchers.equalTo(OrderRequestStatus.FAILED.toString())))
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.createdOrderId").doesNotExist())
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId").doesNotExist())
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.message").exists());
     }
 
     @Test

@@ -111,6 +111,11 @@ public class OrderRequestEventHandler
     public Errors validate(OrderRequestDtoEvent requestDto) {
         Errors errors = new MapBindingResult(new HashMap<>(), requestDto.getClass().getName());
         validator.validate(requestDto, errors);
+        if (requestDto.getCorrelationId() == null) {
+            errors.rejectValue("correlationId",
+                               "requestDto.correlationId.notnull.error.message",
+                               "correlationId is mandatory!");
+        }
         if (errors.hasErrors()) {
             publisher.publish(buildDeniedResponse(requestDto, errors));
         }
@@ -139,8 +144,10 @@ public class OrderRequestEventHandler
                          List of errors detected:
                          {}""", orderRequest.getCorrelationId(), errorsConcat);
 
-        return new OrderRequestResponseDtoEvent(orderRequest.getCorrelationId(),
-                                                OrderRequestStatus.DENIED,
-                                                errorsConcat);
+        return new OrderRequestResponseDtoEvent(OrderRequestStatus.DENIED,
+                                                null,
+                                                orderRequest.getCorrelationId(),
+                                                errorsConcat,
+                                                null);
     }
 }

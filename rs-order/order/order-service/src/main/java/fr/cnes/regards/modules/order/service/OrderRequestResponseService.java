@@ -85,8 +85,9 @@ public class OrderRequestResponseService {
         OrderRequestStatus responseStatus = order.getStatus() == OrderStatus.DONE ?
             OrderRequestStatus.DONE :
             OrderRequestStatus.FAILED;
-        OrderRequestResponseDtoEvent orderRequestResponseDtoEvent = new OrderRequestResponseDtoEvent(order.getCorrelationId(),
-                                                                                                     responseStatus,
+        OrderRequestResponseDtoEvent orderRequestResponseDtoEvent = new OrderRequestResponseDtoEvent(responseStatus,
+                                                                                                     order.getId(),
+                                                                                                     order.getCorrelationId(),
                                                                                                      "Order of user "
                                                                                                      + order.getOwner()
                                                                                                      + " is finished",
@@ -105,8 +106,9 @@ public class OrderRequestResponseService {
      * Send a SUBORDER_DONE amqp notification.
      */
     public void notifySuborderDone(String correlationId, String owner, Long orderId) {
-        OrderRequestResponseDtoEvent orderRequestResponseDtoEvent = new OrderRequestResponseDtoEvent(correlationId,
-                                                                                                     OrderRequestStatus.SUBORDER_DONE,
+        OrderRequestResponseDtoEvent orderRequestResponseDtoEvent = new OrderRequestResponseDtoEvent(OrderRequestStatus.SUBORDER_DONE,
+                                                                                                     orderId,
+                                                                                                     correlationId,
                                                                                                      "A sub-order of user "
                                                                                                      + owner
                                                                                                      + " is finished and ready to download",

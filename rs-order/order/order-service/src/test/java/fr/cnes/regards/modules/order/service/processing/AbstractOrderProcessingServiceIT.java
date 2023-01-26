@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.*;
-import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventHandler;
+import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventTestHandler;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.test.SearchClientMock;
@@ -159,7 +159,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     protected ExecResultHandlerResultEventHandler execResultHandlerResultEventHandler;
 
     @Autowired
-    protected OrderCreationCompletedEventHandler orderCreationCompletedEventHandler;
+    protected OrderCreationCompletedEventTestHandler orderCreationCompletedEventTestHandler;
 
     @Autowired
     protected IBasketService basketService;
@@ -198,7 +198,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         dataFileRepos.deleteAll();
         jobInfoRepos.deleteAll();
         execResultHandlerResultEventHandler.clear();
-        orderCreationCompletedEventHandler.clear();
+        orderCreationCompletedEventTestHandler.clear();
         Mockito.reset(publisher);
     }
 
@@ -262,7 +262,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
                                                 processInfoMapper);
         });
 
-        orderCreationCompletedEventHandler.setConsumer(order -> orderCreatedLatch.countDown());
+        orderCreationCompletedEventTestHandler.setConsumer(order -> orderCreatedLatch.countDown());
 
         execResultHandlerResultEventHandler.setConsumer(evt -> {
             // When a file is available, simulate a download for this file by calling downloadOrderCurrentZip

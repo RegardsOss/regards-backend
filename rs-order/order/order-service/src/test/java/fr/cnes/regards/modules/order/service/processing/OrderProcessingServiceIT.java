@@ -222,8 +222,8 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         assertThat(execResultEvents).hasSize(expectedExecutions);
 
         // check the status of the event processed
-        java.util.List<OrderCreationService.OrderCreationCompletedEvent> orderExecutions = orderCreationCompletedEventHandler.getEvents()
-                                                                                                                             .asJava();
+        java.util.List<OrderCreationService.OrderCreationCompletedEvent> orderExecutions = orderCreationCompletedEventTestHandler.getEvents()
+                                                                                                                                 .asJava();
         assertThat(orderExecutions).isNotEmpty();
         assertTrue("Unexpected status after order execution",
                    expectedOrderStatus.contains(orderExecutions.get(0).getOrder().getStatus()));
