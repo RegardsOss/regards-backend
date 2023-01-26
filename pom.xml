@@ -516,6 +516,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>s3-starter</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>microservice-regards-test</artifactId>
                 <version>${revision}</version>
             </dependency>
