@@ -35,4 +35,6 @@ public class OrderControllerEndpointConfiguration {
 
     public static final String ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES = "/orders/{orderId}/dataset/{datasetId}/files";
 
+    public static final String FIND_AVAILABLE_FILES_BY_ORDER_PATH = "/orders/{orderId}/files/available";
+
 }

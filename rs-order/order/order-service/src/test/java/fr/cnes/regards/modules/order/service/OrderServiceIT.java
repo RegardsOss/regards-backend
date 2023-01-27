@@ -123,6 +123,8 @@ public class OrderServiceIT {
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
+    private static final String PRODUCT_ID = "productId";
+
     @Autowired
     private IOrderService orderService;
 
@@ -377,7 +379,7 @@ public class OrderServiceIT {
         dataFile1.setFilesize(1_000_000L);
         dataFile1.setFilename("tutu");
         dataFile1.setReference(false);
-        OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId());
+        OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId(), PRODUCT_ID);
         // dataFile is ONLINE, its state will be AVAILABLE after asking Storage
         df1.setState(FileState.AVAILABLE);
 
@@ -392,7 +394,7 @@ public class OrderServiceIT {
         dataFile2.setReference(false);
         dataFile2.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
         dataFile2.setDataType(DataType.RAWDATA);
-        OrderDataFile df2 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId());
+        OrderDataFile df2 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId(), PRODUCT_ID);
         dataFileRepos.save(df2);
         ds1SubOrder1Task.addFile(df2);
 
@@ -402,8 +404,8 @@ public class OrderServiceIT {
         storageJobInfo.setPriority(1);
         storageJobInfo.updateStatus(JobStatus.PENDING);
 
-        OrderDataFile df3 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId());
-        OrderDataFile df4 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId());
+        OrderDataFile df3 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId(), PRODUCT_ID);
+        OrderDataFile df4 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId(), PRODUCT_ID);
 
         storageJobInfo.setParameters(new FilesJobParameter(new Long[] { df3.getId(), df4.getId() }));
 

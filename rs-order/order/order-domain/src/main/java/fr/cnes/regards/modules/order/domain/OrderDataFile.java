@@ -28,6 +28,7 @@ import org.hibernate.annotations.Type;
 import org.springframework.util.MimeType;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 
 /**
@@ -127,11 +128,17 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
      */
     private String downloadError;
 
+    private String productId;
+
     public OrderDataFile() {
         super();
     }
 
     public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId) {
+        this(dataFile, ipId, orderId, null);
+    }
+
+    public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId, String productId) {
         super.setFilename(dataFile.getFilename());
         super.setFilesize(dataFile.getFilesize());
         super.setUri(dataFile.getUri());
@@ -144,6 +151,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         super.setOnline(dataFile.isOnline());
         this.ipId = ipId;
         this.orderId = orderId;
+        this.productId = productId;
     }
 
     public void setState(FileState state) {
@@ -238,6 +246,16 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     @Column(name = "reference")
     public Boolean isReference() {
         return super.isReference();
+    }
+
+    @Size(max = 255, message = "id length is limited to 255 characters.")
+    @Column(name = "product_id")
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
     }
 
     public void setOrderId(Long orderId) {

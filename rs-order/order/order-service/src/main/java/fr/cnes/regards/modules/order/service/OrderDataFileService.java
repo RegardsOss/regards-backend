@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.slf4j.Logger;
@@ -42,6 +43,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
@@ -272,6 +276,12 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         Order order = orderRepository.findSimpleById(dataFile.getOrderId());
         orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
         return response;
+    }
+
+    @Override
+    public Page<OrderDataFileDTO> findAvailableFilesByOrder(Order order, Pageable page) {
+        Page<OrderDataFile> availableByOrderId = orderDataFileRepository.findAvailableByOrderId(order.getId(), page);
+        return new PageImpl<>(availableByOrderId.stream().map(OrderDataFileDTO::fromOrderDataFile).toList(), availableByOrderId.getPageable(), availableByOrderId.getTotalElements());
     }
 
     /**

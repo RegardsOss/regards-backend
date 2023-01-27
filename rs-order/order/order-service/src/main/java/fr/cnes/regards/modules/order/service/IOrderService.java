@@ -212,5 +212,4 @@ public interface IOrderService {
      * @return false if none of these conditions are validated
      */
     boolean hasCurrentUserAccessTo(Order order);
-
 }

@@ -21,6 +21,8 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -138,5 +140,11 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
         ORDER BY df.id
         """, nativeQuery = true)
     List<OrderDataFile> selectByDatasetTaskAndStateAndLimit(long datasetTaskId, List<String> states, int limit);
+
+    default Page<OrderDataFile> findAvailableByOrderId(Long orderId, Pageable page) {
+        return findByStateAndOrderId(FileState.AVAILABLE, orderId, page);
+    }
+
+    Page<OrderDataFile> findByStateAndOrderId(FileState state, Long orderId, Pageable page);
 
 }

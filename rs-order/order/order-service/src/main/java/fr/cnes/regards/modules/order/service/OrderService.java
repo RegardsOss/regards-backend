@@ -210,9 +210,12 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user,
-                              String correlationId)
-        throws EntityInvalidException {
+    public Order createOrder(Basket basket,
+                             String label,
+                             String url,
+                             int subOrderDuration,
+                             String user,
+                             String correlationId) throws EntityInvalidException {
 
         LOGGER.info("Generate and / or check label is unique for owner before creating back");
         // generate label when none is provided

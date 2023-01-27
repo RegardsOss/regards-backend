@@ -14,3 +14,6 @@ ALTER TABLE t_order
 
 ALTER TABLE t_dataset_task
     ADD COLUMN file_selection_description jsonb;
+
+ALTER TABLE t_data_file
+    ADD COLUMN product_id varchar(255)

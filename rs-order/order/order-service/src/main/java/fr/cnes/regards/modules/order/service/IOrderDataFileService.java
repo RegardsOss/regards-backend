@@ -21,7 +21,10 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -115,5 +118,13 @@ public interface IOrderDataFileService {
     void removeAll(Long orderId);
 
     boolean hasDownloadErrors(Long orderId);
+
+    /**
+     * Get a page of available files in a specific order
+     *
+     * @param order
+     * @param page
+     */
+    Page<OrderDataFileDTO> findAvailableFilesByOrder(Order order, Pageable page);
 
 }

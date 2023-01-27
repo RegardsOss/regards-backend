@@ -1,0 +1,126 @@
+/*
+ * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.order.domain.dto;
+
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.util.MimeType;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+/**
+ * @author Thomas GUILLOU
+ **/
+public class OrderDataFileDTO {
+
+    @Schema(description = "Identifier of the file represented by this dto.")
+    private final Long id;
+
+    @Schema(description = "providerId of the product containing this file.", maxLength = 255)
+    private final String productId;
+
+    /**
+     * Required file reference
+     */
+    @Schema(description = "URI of the file represented by this dto.", maxLength = 255)
+    @NotBlank(message = "URI is required")
+    private final String uri;
+
+    /**
+     * Required {@link MimeType}
+     */
+    @Schema(description = "MIME type of the file represented by this dto.")
+    @NotNull(message = "MIME type is required")
+    private final MimeType mimeType;
+
+    /**
+     * Optional file checksum to verify data consistency
+     */
+    @Schema(description = "Checksum of the file represented by this dto.", maxLength = 255)
+    private final String checksum;
+
+    /**
+     * Optional file size
+     */
+    @Schema(description = "Size of the file represented by this dto.")
+    private final Long filesize;
+
+    /**
+     * Required filename
+     */
+    @NotBlank(message = "Filename is required")
+    @Schema(description = "Name of the file represented by this dto.", maxLength = 255)
+    private String filename;
+
+    public OrderDataFileDTO(Long id,
+                            @Nullable String productId,
+                            String uri,
+                            MimeType mimeType,
+                            @Nullable String checksum,
+                            @Nullable Long filesize,
+                            String filename) {
+        this.id = id;
+        this.productId = productId;
+        this.uri = uri;
+        this.mimeType = mimeType;
+        this.checksum = checksum;
+        this.filesize = filesize;
+        this.filename = filename;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public MimeType getMimeType() {
+        return mimeType;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public Long getFilesize() {
+        return filesize;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public static OrderDataFileDTO fromOrderDataFile(OrderDataFile orderDataFile) {
+        return new OrderDataFileDTO(orderDataFile.getId(),
+                                    orderDataFile.getProductId(),
+                                    orderDataFile.getUri(),
+                                    orderDataFile.getMimeType(),
+                                    orderDataFile.getChecksum(),
+                                    orderDataFile.getFilesize(),
+                                    orderDataFile.getFilename());
+    }
+}
