@@ -24,6 +24,7 @@ import org.springframework.util.Assert;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.beans.ConstructorProperties;
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -44,17 +45,19 @@ public class LtaWorkerRequestDto {
     private final String model;
 
     @Valid
-    private final SubmissionRequestDto product;
+    private SubmissionRequestDto product;
 
     private boolean replace;
 
+    @ConstructorProperties({ "storage", "dataTypeStorePath", "model", "product", "replace" })
     public LtaWorkerRequestDto(String storage,
                                Path dataTypeStorePath,
                                String model,
                                SubmissionRequestDto product,
                                boolean replace) {
         Assert.notNull(storage, "storage is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(dataTypeStorePath, "dataTypeStorePath is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(dataTypeStorePath,
+                       "dataTypeStorePath is mandatory ! Make sure other constraints are satisfied.");
         Assert.notNull(model, "model is mandatory ! Make sure other constraints are satisfied.");
         Assert.notNull(product, "product is mandatory ! Make sure other constraints are satisfied.");
 
@@ -79,6 +82,10 @@ public class LtaWorkerRequestDto {
 
     public SubmissionRequestDto getProduct() {
         return product;
+    }
+
+    public void setProduct(SubmissionRequestDto submissionRequestDto) {
+        this.product = submissionRequestDto;
     }
 
     public boolean isReplace() {

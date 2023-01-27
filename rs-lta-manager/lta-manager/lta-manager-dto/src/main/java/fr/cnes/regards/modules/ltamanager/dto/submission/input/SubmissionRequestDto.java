@@ -79,7 +79,7 @@ public class SubmissionRequestDto {
     @Nullable
     @Size(max = 255, message = "storePath length is limited to 255 characters.")
     @Pattern(regexp = "^[\\w\\/\\-_:]*$",
-             message = "storePath must only contain alphanumeric characters and the following characters [/-_:].")
+        message = "storePath must only contain alphanumeric characters and the following characters [/-_:].")
     @Schema(description = "Path to store the product. If null, the storePath will be built from the lta-manager "
                           + "configuration.", nullable = true)
     private String storePath;
@@ -96,7 +96,7 @@ public class SubmissionRequestDto {
     // owner is set after the construction of the request
     private String owner;
 
-    @ConstructorProperties({ "correlationId", "productId", "datatype", "geometry", "files" })
+    @ConstructorProperties({ "correlationId", "id", "datatype", "geometry", "files" })
     public SubmissionRequestDto(String correlationId,
                                 String id,
                                 String datatype,
