@@ -63,4 +63,15 @@ public interface IDataSourcePlugin {
     List<DataObjectFeature> findAll(String tenant, CrawlingCursor cursor, OffsetDateTime from)
         throws DataSourceException;
 
+    /**
+     * @return a duration in second which indicates to the service an overlapping time
+     * to be respected to avoid data loss.
+     *
+     * Explanation : harvesting done at the same time as ingestion can cause data loss
+     * due to the random duration of the transactions.
+     */
+    default long getOverlap() {
+        return 0;
+    }
+
 }

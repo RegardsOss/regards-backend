@@ -191,11 +191,14 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                 // In case Dataset associated with datasourceId already exists (or had been created between datasource creation
                 // and its ingestion), we must search for it and do as it has been updated (to update all associated data
                 // objects which have a lastUpdate date >= now)
-                SimpleSearchKey<Dataset> searchKey = new SimpleSearchKey<>(EntityType.DATASET.toString(), Dataset.class);
+                SimpleSearchKey<Dataset> searchKey = new SimpleSearchKey<>(EntityType.DATASET.toString(),
+                                                                           Dataset.class);
                 searchKey.setSearchIndex(tenant);
                 searchKey.setCrs(projectGeoSettings.getCrs());
                 Set<Dataset> datasetsToUpdate = new HashSet<>();
-                esRepos.searchAll(searchKey, datasetsToUpdate::add, ICriterion.eq("plgConfDataSource.id", datasourceId));
+                esRepos.searchAll(searchKey,
+                                  datasetsToUpdate::add,
+                                  ICriterion.eq("plgConfDataSource.id", datasourceId));
                 if (!datasetsToUpdate.isEmpty()) {
                     sendMessage("Start updating datasets associated to datasource...", datasourceIngestionId);
                     try {
@@ -206,7 +209,8 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                                                             true,
                                                             datasourceIngestionId);
                     } catch (ModuleException e) {
-                        sendMessage(String.format("Error updating datasets associated to datasource. Cause : %s.", e.getMessage()), datasourceIngestionId);
+                        sendMessage(String.format("Error updating datasets associated to datasource. Cause : %s.",
+                                                  e.getMessage()), datasourceIngestionId);
                     }
                     sendMessage("...End updating datasets.", datasourceIngestionId);
                 }
@@ -217,7 +221,8 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             return Optional.of(new IngestionResult(ingestionStart,
                                                    saveResult.getSavedDocsCount(),
                                                    saveResult.getInErrorDocsCount(),
-                                                   dsi.getCursor().getCurrentLastEntityDate()));
+                                                   dsi.getCursor().getCurrentLastEntityDate(),
+                                                   dsi.getCursor().getPreviousLastEntityDate()));
         }
         return Optional.empty();
     }
@@ -236,8 +241,11 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         CrawlingCursor cursor = dsi.getCursor();
         if (cursor == null) {
             dsi.setCursor(new CrawlingCursor(0, crawlerConf.getMaxBulkSize()));
+            // Do not apply overlap as crawling begins from scratch
         } else {
             cursor.setSize(crawlerConf.getMaxBulkSize());
+            // Try Applying overlap
+            cursor.tryApplyOverlap(crawlingParameters.dsPlugin().getOverlap());
         }
         boolean isFirstFind = true;
         try {

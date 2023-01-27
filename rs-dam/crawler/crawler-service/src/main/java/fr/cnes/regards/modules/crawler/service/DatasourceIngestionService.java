@@ -173,7 +173,7 @@ public class DatasourceIngestionService {
             dsIngestion.setNextPlannedIngestDate(null);
             // To avoid redoing an ingestion from beginning in case where plugin are date optimized
             if (summary.getLastEntityDate() != null) {
-                dsIngestion.setLastEntityDate(summary.getLastEntityDate());
+                dsIngestion.setLastEntityDate(summary.getLastEntityDate(), summary.getPenultimateLastEntityDate());
             }
             // Save ingestion status
             sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
