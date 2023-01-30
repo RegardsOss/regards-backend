@@ -22,7 +22,9 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
+import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
+import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -46,6 +48,8 @@ public class WorkerManagerResponseListener
 
     private final WorkerManagerResponseService responseService;
 
+    private final ISubmissionRequestRepository requestRepository;
+
     private final ISubscriber subscriber;
 
     private final IPublisher publisher;
@@ -53,6 +57,7 @@ public class WorkerManagerResponseListener
     private final Validator validator;
 
     public WorkerManagerResponseListener(WorkerManagerResponseService responseService,
+                                         ISubmissionRequestRepository requestRepository,
                                          ISubscriber subscriber,
                                          IPublisher publisher,
                                          Validator validator) {
@@ -60,6 +65,7 @@ public class WorkerManagerResponseListener
         this.subscriber = subscriber;
         this.publisher = publisher;
         this.validator = validator;
+        this.requestRepository = requestRepository;
     }
 
     @Override
@@ -86,11 +92,12 @@ public class WorkerManagerResponseListener
         List<SubmissionResponseDtoEvent> requestsCompleteError = responseEvents.stream()
                                                                                .filter(response -> finalStatus.contains(
                                                                                    response.getState()))
-                                                                               .map(response -> new SubmissionResponseDtoEvent(
+                                                                               .map(response -> SubmissionResponseDtoUtils.createEvent(
                                                                                    response.getRequestId(),
-                                                                                   SubmissionResponseStatus.DENIED,
-                                                                                   null,
-                                                                                   buildErrorMessage(response.getMessage())))
+                                                                                   requestRepository.findById(response.getRequestId()),
+                                                                                   SubmissionResponseStatus.ERROR,
+                                                                                   SubmissionResponseDtoUtils.buildErrorMessage(
+                                                                                       new HashSet<>(response.getMessage()))))
                                                                                .toList();
         if (!requestsCompleteError.isEmpty()) {
             publisher.publish(requestsCompleteError);
@@ -99,17 +106,4 @@ public class WorkerManagerResponseListener
                      responseEvents.size(),
                      System.currentTimeMillis() - start);
     }
-
-    private String buildErrorMessage(Collection<String> errors) {
-        if (errors == null) {
-            return null;
-        }
-        StringBuilder errorMessage = new StringBuilder();
-        for (String error : errors) {
-            errorMessage.append(error);
-            errorMessage.append("  \\n");
-        }
-        return errorMessage.toString();
-    }
-
 }

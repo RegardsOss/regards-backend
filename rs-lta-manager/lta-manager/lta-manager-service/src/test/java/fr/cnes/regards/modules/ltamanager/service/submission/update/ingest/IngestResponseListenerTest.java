@@ -91,7 +91,10 @@ public class IngestResponseListenerTest {
                                                                           runtimeTenantResolver,
                                                                           new Gson());
 
-        ingestResponseListener = new IngestResponseListener(responseService, submissionReadService, publisher);
+        ingestResponseListener = new IngestResponseListener(responseService,
+                                                            submissionRequestRepository,
+                                                            submissionReadService,
+                                                            publisher);
     }
 
     @Test
@@ -173,7 +176,7 @@ public class IngestResponseListenerTest {
         Optional<SubmissionResponseDtoEvent> successEvent = capturedSubmissionResponseDtoEvents.stream()
                                                                                                .filter(event -> event.getResponseStatus()
                                                                                                                      .equals(
-                                                                                                                         SubmissionResponseStatus.GRANTED))
+                                                                                                                         SubmissionResponseStatus.SUCCESS))
                                                                                                .findFirst();
         //onSuccess
         if (successEvent.isEmpty()) {
@@ -187,7 +190,7 @@ public class IngestResponseListenerTest {
         Optional<SubmissionResponseDtoEvent> errorEvent = capturedSubmissionResponseDtoEvents.stream()
                                                                                              .filter(event -> event.getResponseStatus()
                                                                                                                    .equals(
-                                                                                                                       SubmissionResponseStatus.DENIED))
+                                                                                                                       SubmissionResponseStatus.ERROR))
                                                                                              .findFirst();
         if (errorEvent.isEmpty()) {
             Assert.fail("Expected an ERROR event");

@@ -81,7 +81,11 @@ public class WorkerManagerResponseListenerTest {
     @Before
     public void init() {
         WorkerManagerResponseService responseService = new WorkerManagerResponseService(requestRepository);
-        responseListener = new WorkerManagerResponseListener(responseService, subscriber, publisher, validator);
+        responseListener = new WorkerManagerResponseListener(responseService,
+                                                             requestRepository,
+                                                             subscriber,
+                                                             publisher,
+                                                             validator);
         initResponseEvents();
     }
 
@@ -140,7 +144,7 @@ public class WorkerManagerResponseListenerTest {
         Assertions.assertEquals(3, capturedPublishedEvents.size(), "There should be 3 responses sent");
         Assertions.assertTrue(capturedPublishedEvents.stream()
                                                      .allMatch(event -> event.getResponseStatus()
-                                                                        == SubmissionResponseStatus.DENIED),
+                                                                        == SubmissionResponseStatus.ERROR),
                               "All responses should have denied status");
         Assertions.assertTrue(capturedPublishedEvents.stream()
                                                      .anyMatch(event -> responsesInErrorIds.contains(event.getCorrelationId())),

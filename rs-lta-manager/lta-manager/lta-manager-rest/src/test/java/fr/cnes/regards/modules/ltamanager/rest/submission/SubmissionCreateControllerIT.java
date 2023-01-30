@@ -169,7 +169,7 @@ public class SubmissionCreateControllerIT extends AbstractRegardsIT {
                                                           Matchers.equalTo(requestSaved.getCorrelationId())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.expires",
                                                           Matchers.equalTo(OffsetDateTimeAdapter.format(requestSaved.getCreationDate()
-                                                                                                                    .plusSeconds(
+                                                                                                                    .plusHours(
                                                                                                                         LtaSettings.DEFAULT_SUCCESS_EXPIRATION_HOURS)))))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.responseStatus",
                                                           Matchers.equalTo(SubmissionResponseStatus.GRANTED.toString())))

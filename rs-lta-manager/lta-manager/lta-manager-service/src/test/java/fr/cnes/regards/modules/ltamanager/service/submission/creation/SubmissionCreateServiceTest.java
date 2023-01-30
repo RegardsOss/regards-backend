@@ -233,7 +233,7 @@ public class SubmissionCreateServiceTest {
         Assertions.assertThat(dtoResponses.stream()
                                           .map(SubmissionResponseDto::getResponseStatus)
                                           .collect(Collectors.toSet()))
-                  .isEqualTo(Set.of(SubmissionResponseStatus.DENIED));
+                  .isEqualTo(Set.of(SubmissionResponseStatus.ERROR));
         // check no worker requests have been sent
         Mockito.verifyNoInteractions(publisher);
     }
@@ -241,17 +241,17 @@ public class SubmissionCreateServiceTest {
     private SubmissionRequestDto createRequestWithSimpleStorePath() {
         SubmissionRequestDto requestDtoWithSimpleStorePath = new SubmissionRequestDto("test simple path",
                                                                                       UUID.randomUUID().toString(),
-                                                                                        EntityType.DATA.toString(),
-                                                                                        IGeometry.point(IGeometry.position(
-                                                                                            10.0,
-                                                                                            20.0)),
-                                                                                        getProductFileDtos(),
-                                                                                        null,
-                                                                                        "URN:AIP:DATA:example:12345678-9abc-def0-1234-56789abcdef0:V1",
-                                                                                        null,
-                                                                                        SIMPLE_STORE_PATH,
-                                                                                        "sessionSimpleStore",
-                                                                                        false);
+                                                                                      EntityType.DATA.toString(),
+                                                                                      IGeometry.point(IGeometry.position(
+                                                                                          10.0,
+                                                                                          20.0)),
+                                                                                      getProductFileDtos(),
+                                                                                      null,
+                                                                                      "URN:AIP:DATA:example:12345678-9abc-def0-1234-56789abcdef0:V1",
+                                                                                      null,
+                                                                                      SIMPLE_STORE_PATH,
+                                                                                      "sessionSimpleStore",
+                                                                                      false);
         requestDtoWithSimpleStorePath.setOwner(OWNER);
         return requestDtoWithSimpleStorePath;
     }

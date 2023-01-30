@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmittedProduct;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
+import fr.cnes.regards.modules.ltamanager.service.settings.LtaSettingService;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
@@ -43,8 +44,11 @@ public class SubmissionRequestHelper {
 
     private final ISubmissionRequestRepository requestRepository;
 
-    public SubmissionRequestHelper(ISubmissionRequestRepository requestRepository) {
+    private final LtaSettingService settingService;
+
+    public SubmissionRequestHelper(ISubmissionRequestRepository requestRepository, LtaSettingService settingService) {
         this.requestRepository = requestRepository;
+        this.settingService = settingService;
     }
 
     @NotNull
@@ -52,27 +56,30 @@ public class SubmissionRequestHelper {
 
         SubmissionStatus status = new SubmissionStatus(info.creationDate(),
                                                        info.statusDate(),
+                                                       settingService.getRequestExpiresInHoursConfig(settingService.retrieve()),
                                                        info.state(),
                                                        "sample message");
         SubmittedProduct product = new SubmittedProduct(info.datatype(),
                                                         "model",
                                                         Paths.get("/path/example"),
                                                         new SubmissionRequestDto("test req n°" + UUID.randomUUID(),
-                                                                                   UUID.randomUUID().toString(),
-                                                                                   EntityType.DATA.toString(),
-                                                                                   IGeometry.point(IGeometry.position(
-                                                                                       10.0,
-                                                                                       20.0)),
-                                                                                   List.of(new ProductFileDto(DataType.RAWDATA,
-                                                                                                              "http://localhost/notexisting",
-                                                                                                              "example.raw",
-                                                                                                              "f016852239a8a919f05f6d2225c5aaca",
-                                                                                                              MediaType.APPLICATION_OCTET_STREAM))));
+                                                                                 UUID.randomUUID().toString(),
+                                                                                 EntityType.DATA.toString(),
+                                                                                 IGeometry.point(IGeometry.position(10.0,
+                                                                                                                    20.0)),
+                                                                                 List.of(new ProductFileDto(DataType.RAWDATA,
+                                                                                                            "http://localhost/notexisting",
+                                                                                                            "example.raw",
+                                                                                                            "f016852239a8a919f05f6d2225c5aaca",
+                                                                                                            MediaType.APPLICATION_OCTET_STREAM))));
 
         return requestRepository.save(new SubmissionRequest(product.getProduct().getCorrelationId(),
                                                             info.owner(),
                                                             info.session(),
-                                                            false, status, product, null));
+                                                            false,
+                                                            status,
+                                                            product,
+                                                            null));
     }
 
 }

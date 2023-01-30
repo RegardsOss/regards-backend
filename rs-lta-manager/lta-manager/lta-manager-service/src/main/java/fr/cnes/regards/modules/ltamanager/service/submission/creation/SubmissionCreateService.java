@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequest
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.settings.LtaSettingService;
+import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,7 +115,8 @@ public class SubmissionCreateService {
         // 1) Prepare requests : create submission requests from requests dtos
         OffsetDateTime currentDateTime = OffsetDateTime.now();
         for (SubmissionRequestDto requestDto : requestDtos) {
-            LOGGER.debug("---> Processing SubmissionRequestDto with correlationId \"{}\"", requestDto.getCorrelationId());
+            LOGGER.debug("---> Processing SubmissionRequestDto with correlationId \"{}\"",
+                         requestDto.getCorrelationId());
             // Create a submission request only from a valid submission request dto
             try {
                 DatatypeParameter datatypeConfig = createDatatypeService.createValidConfiguration(requestDto,
@@ -156,6 +158,7 @@ public class SubmissionCreateService {
                                      requestDto.isReplaceMode(),
                                      new SubmissionStatus(currentDateTime,
                                                           currentDateTime,
+                                                          settingService.getRequestExpiresInHoursConfig(settingService.retrieve()),
                                                           SubmissionRequestState.VALIDATED,
                                                           null),
                                      new SubmittedProduct(requestDto.getDatatype(),
@@ -177,23 +180,20 @@ public class SubmissionCreateService {
         // handle responses
         List<LtaWorkerRequestDtoEvent> workerRequests = new ArrayList<>();
         for (SubmissionRequest successRequest : savedRequests) {
-            responses.add(buildSuccessResponse(successRequest, settings));
+            responses.add(buildSuccessResponse(successRequest));
             workerRequests.add(buildWorkerRequest(successRequest, settings));
         }
         this.publisher.publish(workerRequests, "regards.broadcast." + RequestEvent.class.getName(), Optional.empty());
     }
 
-    private SubmissionResponseDtoEvent buildSuccessResponse(SubmissionRequest requestSaved,
-                                                            Set<DynamicTenantSetting> settings) {
+    private SubmissionResponseDtoEvent buildSuccessResponse(SubmissionRequest requestSaved) {
         LOGGER.debug("SubmissionRequest was successfully created from SubmissionRequestDto with correlationId \"{}\"",
                      requestSaved.getCorrelationId());
 
         return new SubmissionResponseDtoEvent(requestSaved.getCorrelationId(),
                                               SubmissionResponseStatus.GRANTED,
                                               requestSaved.getProduct().getId(),
-                                              requestSaved.getCreationDate()
-                                                          .plusSeconds(settingService.getRequestExpiresInHoursConfig(
-                                                              settings)),
+                                              requestSaved.getExpiryDate(),
                                               requestSaved.getSession(),
                                               requestSaved.getMessage());
     }
@@ -235,7 +235,9 @@ public class SubmissionCreateService {
                      correlationId,
                      id,
                      exception);
-        return new SubmissionResponseDtoEvent(correlationId, SubmissionResponseStatus.DENIED, id, exception.getMessage());
+        return SubmissionResponseDtoUtils.createEvent(correlationId,
+                                                      requestRepository.findById(correlationId),
+                                                      SubmissionResponseStatus.ERROR,
+                                                      exception.getMessage());
     }
-
 }

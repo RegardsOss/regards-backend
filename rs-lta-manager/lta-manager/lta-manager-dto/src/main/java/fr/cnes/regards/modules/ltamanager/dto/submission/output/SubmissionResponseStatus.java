@@ -32,6 +32,14 @@ public enum SubmissionResponseStatus {
     /**
      * An error occurred and the SubmissionRequest is rejected and not saved
      */
-    DENIED
+    DENIED,
+    /**
+     * SubmissionRequest is successfully completed
+     */
+    SUCCESS,
+    /**
+     * SubmissionRequest ended in error
+     */
+    ERROR
 
 }

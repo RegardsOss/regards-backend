@@ -7,6 +7,7 @@ create table t_submission_requests
     status         varchar(50)  not null,
     status_date    timestamp    not null default CURRENT_TIMESTAMP,
     creation_date  timestamp    not null default CURRENT_TIMESTAMP,
+    expiry_date    timestamp    not null,
     model          varchar(32)  not null,
     datatype       varchar(255) not null,
     store_path     varchar(255) not null,

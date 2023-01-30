@@ -42,6 +42,11 @@ public class SubmissionStatus {
     @NotNull(message = "creationDate is required")
     private OffsetDateTime creationDate;
 
+    @Column(name = "expiry_date", nullable = false)
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    @NotNull(message = "expiryDate is required")
+    private OffsetDateTime expiryDate;
+
     @Column(name = "status_date", nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     @NotNull(message = "statusDate is required")
@@ -63,20 +68,28 @@ public class SubmissionStatus {
 
     public SubmissionStatus(OffsetDateTime creationDate,
                             OffsetDateTime statusDate,
+                            Integer requestExpiresInHour,
                             SubmissionRequestState status,
                             @Nullable String message) {
         Assert.notNull(creationDate, "creationDate is mandatory ! Make sure other constraints are satisfied.");
         Assert.notNull(statusDate, "statusDate is mandatory ! Make sure other constraints are satisfied.");
         Assert.notNull(status, "status is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(requestExpiresInHour,
+                       "requestExpiresInHour is mandatory ! Make sure other constraints are satisfied");
 
         this.creationDate = creationDate;
         this.statusDate = statusDate;
+        this.expiryDate = creationDate.plusHours(requestExpiresInHour);
         this.status = status;
         this.message = message;
     }
 
     public OffsetDateTime getCreationDate() {
         return creationDate;
+    }
+
+    public OffsetDateTime getExpiryDate() {
+        return expiryDate;
     }
 
     public OffsetDateTime getStatusDate() {

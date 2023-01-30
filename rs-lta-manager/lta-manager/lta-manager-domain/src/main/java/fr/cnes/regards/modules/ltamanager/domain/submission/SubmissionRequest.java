@@ -147,6 +147,10 @@ public class SubmissionRequest {
         return getSubmissionStatus().getCreationDate();
     }
 
+    public OffsetDateTime getExpiryDate() {
+        return getSubmissionStatus().getExpiryDate();
+    }
+
     public OffsetDateTime getStatusDate() {
         return getSubmissionStatus().getStatusDate();
     }

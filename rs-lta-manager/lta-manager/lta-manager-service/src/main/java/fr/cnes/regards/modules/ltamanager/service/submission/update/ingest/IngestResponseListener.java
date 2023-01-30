@@ -23,10 +23,12 @@ import fr.cnes.regards.modules.ingest.client.IIngestClientListener;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
 import fr.cnes.regards.modules.ltamanager.amqp.output.LtaCleanWorkerRequestDtoEvent;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
+import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.IngestStatusResponseMapping;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
+import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
 import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
 import org.springframework.stereotype.Service;
@@ -59,12 +61,16 @@ public class IngestResponseListener implements IIngestClientListener {
 
     private final IPublisher publisher;
 
+    private final ISubmissionRequestRepository requestRepository;
+
     public IngestResponseListener(IngestResponseService responseService,
+                                  ISubmissionRequestRepository requestRepository,
                                   SubmissionReadService submissionReadService,
                                   IPublisher publisher) {
         this.ingestResponseService = responseService;
         this.submissionReadService = submissionReadService;
         this.publisher = publisher;
+        this.requestRepository = requestRepository;
     }
 
     @Override
@@ -81,22 +87,17 @@ public class IngestResponseListener implements IIngestClientListener {
     public void onError(Collection<RequestInfo> infos) {
         ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.ERROR_MAP);
         List<SubmissionResponseDtoEvent> requestsCompleteError = infos.stream()
-                                                                      .map(info -> new SubmissionResponseDtoEvent(info.getRequestId(),
-                                                                                                                  SubmissionResponseStatus.DENIED,
-                                                                                                                  null,
-                                                                                                                  buildErrorMessage(
-                                                                                                                      info.getErrors())))
+                                                                      .map(info -> SubmissionResponseDtoUtils.createEvent(
+                                                                          info.getRequestId(),
+                                                                          requestRepository.findById(info.getRequestId()),
+                                                                          SubmissionResponseStatus.ERROR,
+                                                                          SubmissionResponseDtoUtils.buildErrorMessage(
+                                                                              info.getErrors())))
                                                                       .toList();
         publisher.publish(requestsCompleteError);
 
     }
 
-    /**
-     * Build the error message
-     *
-     * @param errors the set of errors
-     * @return the error message
-     */
     private String buildErrorMessage(Set<String> errors) {
         if (errors == null) {
             return null;
@@ -116,10 +117,10 @@ public class IngestResponseListener implements IIngestClientListener {
         List<SubmissionResponseDtoEvent> submissionResponseDtoEvents = new ArrayList<>();
         List<LtaCleanWorkerRequestDtoEvent> ltaCleanWorkerRequestDtoEvents = new ArrayList<>();
         infos.stream().forEach(info -> {
-            submissionResponseDtoEvents.add(new SubmissionResponseDtoEvent(info.getRequestId(),
-                                                                           SubmissionResponseStatus.GRANTED,
-                                                                           null,
-                                                                           null));
+            submissionResponseDtoEvents.add(SubmissionResponseDtoUtils.createEvent(info.getRequestId(),
+                                                                                   requestRepository.findById(info.getRequestId()),
+                                                                                   SubmissionResponseStatus.SUCCESS,
+                                                                                   null));
 
             Optional<SubmissionRequestDto> submissionRequestDto = submissionReadService.findSubmissionRequestByCorrelationId(
                 info.getRequestId());

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ltamanager.dto.submission.output;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
@@ -31,7 +32,7 @@ import java.util.Objects;
  *
  * @author Iliana Ghazali
  **/
-public class SubmissionResponseDto  {
+public class SubmissionResponseDto {
 
     @NotBlank(message = "correlationId is required")
     @Schema(description = "Identifier to track the request through the workflow.")
@@ -60,20 +61,14 @@ public class SubmissionResponseDto  {
     public SubmissionResponseDto(String correlationId,
                                  SubmissionResponseStatus responseStatus,
                                  @Nullable String id,
-                                 @Nullable String message) {
-        this.correlationId = correlationId;
-        this.id = id;
-        this.responseStatus = responseStatus;
-        this.message = message;
-    }
-
-    public SubmissionResponseDto(String correlationId,
-                                 SubmissionResponseStatus responseStatus,
-                                 @Nullable String id,
                                  @Nullable OffsetDateTime expires,
                                  @Nullable String session,
                                  @Nullable String message) {
-        this(correlationId, responseStatus, id, message);
+        Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied");
+        Assert.notNull(responseStatus, "responseStatus is mandatory ! Make sure other constraints are satisfied");
+        this.id = id;
+        this.responseStatus = responseStatus;
+        this.message = message;
         this.correlationId = correlationId;
         this.expires = expires;
         this.session = session;

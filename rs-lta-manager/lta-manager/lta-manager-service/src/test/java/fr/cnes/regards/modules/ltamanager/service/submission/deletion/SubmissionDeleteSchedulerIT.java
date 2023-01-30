@@ -68,6 +68,8 @@ public class SubmissionDeleteSchedulerIT extends AbstractMultitenantServiceWithJ
 
     private static final int NB_REQUEST = 10;
 
+    private static final Integer REQUEST_EXPIRY_IN_HOUR = 1;
+
     @Autowired
     private SubmissionDeleteExpiredService deleteService;
 
@@ -163,23 +165,23 @@ public class SubmissionDeleteSchedulerIT extends AbstractMultitenantServiceWithJ
         for (int i = 1; i <= NB_REQUEST; i++) {
             SubmissionStatus status = new SubmissionStatus(creationDate,
                                                            creationDate,
+                                                           REQUEST_EXPIRY_IN_HOUR,
                                                            SubmissionRequestState.DONE,
                                                            null);
             SubmittedProduct product = new SubmittedProduct(EntityType.DATA.toString(),
                                                             "model",
                                                             Paths.get("/path/example"),
                                                             new SubmissionRequestDto("test req n°" + i,
-                                                                                       UUID.randomUUID().toString(),
-                                                                                       EntityType.DATA.toString(),
-                                                                                       IGeometry.point(IGeometry.position(
-                                                                                           10.0,
-                                                                                           20.0)),
-                                                                                       List.of(new ProductFileDto(
-                                                                                           DataType.RAWDATA,
-                                                                                           "http://localhost/notexisting",
-                                                                                           "example.raw",
-                                                                                           "f016852239a8a919f05f6d2225c5aaca",
-                                                                                           MediaType.APPLICATION_OCTET_STREAM))));
+                                                                                     UUID.randomUUID().toString(),
+                                                                                     EntityType.DATA.toString(),
+                                                                                     IGeometry.point(IGeometry.position(
+                                                                                         10.0,
+                                                                                         20.0)),
+                                                                                     List.of(new ProductFileDto(DataType.RAWDATA,
+                                                                                                                "http://localhost/notexisting",
+                                                                                                                "example.raw",
+                                                                                                                "f016852239a8a919f05f6d2225c5aaca",
+                                                                                                                MediaType.APPLICATION_OCTET_STREAM))));
             SubmissionRequest submissionRequest = new SubmissionRequest(product.getProduct().getCorrelationId(),
                                                                         "owner",
                                                                         "session",

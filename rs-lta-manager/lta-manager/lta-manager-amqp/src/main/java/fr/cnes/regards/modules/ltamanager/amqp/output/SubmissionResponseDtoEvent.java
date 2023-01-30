@@ -39,13 +39,6 @@ public class SubmissionResponseDtoEvent extends SubmissionResponseDto implements
     public SubmissionResponseDtoEvent(String correlationId,
                                       SubmissionResponseStatus responseStatus,
                                       @Nullable String id,
-                                      @Nullable String message) {
-        super(correlationId, responseStatus, id, message);
-    }
-
-    public SubmissionResponseDtoEvent(String correlationId,
-                                      SubmissionResponseStatus responseStatus,
-                                      @Nullable String id,
                                       @Nullable OffsetDateTime expires,
                                       @Nullable String session,
                                       @Nullable String message) {

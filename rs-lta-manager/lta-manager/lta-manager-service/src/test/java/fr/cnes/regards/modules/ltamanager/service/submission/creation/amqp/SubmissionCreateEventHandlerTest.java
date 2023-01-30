@@ -85,7 +85,7 @@ public class SubmissionCreateEventHandlerTest {
 
     @Mock
     private ISubmissionRequestRepository requestRepository;
-    
+
     @Spy
     private IPublisher publisher;
 
@@ -112,7 +112,7 @@ public class SubmissionCreateEventHandlerTest {
     public void init() {
         closable = openMocks(this);
         CreateDatatypeService createDatatypeService = new CreateDatatypeService(requestRepository);
-        
+
         SubmissionCreateService createService = new SubmissionCreateService(requestRepository,
                                                                             settingService,
                                                                             createDatatypeService,
@@ -178,7 +178,7 @@ public class SubmissionCreateEventHandlerTest {
                                                                                          requestCreated.getProduct()
                                                                                                        .getId(),
                                                                                          requestCreated.getCreationDate()
-                                                                                                       .plusSeconds(
+                                                                                                       .plusHours(
                                                                                                            REQ_EXPIRES_IN_HOURS),
                                                                                          OWNER
                                                                                          + "-"
