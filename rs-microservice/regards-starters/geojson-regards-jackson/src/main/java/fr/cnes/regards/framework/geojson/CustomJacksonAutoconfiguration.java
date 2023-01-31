@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import fr.cnes.regards.framework.geojson.deserializers.GeometryDeserializerModule;
 import fr.cnes.regards.framework.geojson.serializers.GeometrySerializerModule;
+import fr.cnes.regards.framework.geojson.serializers.MimeTypeSerializerModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -42,7 +43,8 @@ public class CustomJacksonAutoconfiguration {
         // it will also register automatically some modules because they are present on the classpath :
         // jackson-datatype-jdk8: support for other Java 8 types like Optional
         // jackson-datatype-jsr310: support for Java 8 Date & Time API types
-        return new Jackson2ObjectMapperBuilder().modulesToInstall(new GeometrySerializerModule(),
+        return new Jackson2ObjectMapperBuilder().modulesToInstall(new MimeTypeSerializerModule(),
+                                                                  new GeometrySerializerModule(),
                                                                   new GeometryDeserializerModule())
                                                 .serializationInclusion(JsonInclude.Include.NON_ABSENT)
                                                 .failOnUnknownProperties(false)

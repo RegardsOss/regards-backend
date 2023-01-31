@@ -80,6 +80,7 @@ public final class GsonCustomizer {
         builder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter().nullSafe());
         builder.registerTypeAdapter(MimeType.class, new MimeTypeAdapter().nullSafe());
         builder.registerTypeAdapter(Optional.class, new OptionalAdapter<>());
+        builder.registerTypeAdapter(byte[].class, new ByteArrayToBase64TypeAdapter().nullSafe());
         builder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
         builder.registerTypeHierarchyAdapter(MultiValueMap.class, new MultiValueMapAdapter());
         builder.setExclusionStrategies(new GsonIgnoreExclusionStrategy(), new PagedModelExclusionStrategy());
