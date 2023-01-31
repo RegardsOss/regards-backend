@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.submission.utils;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
@@ -65,8 +64,6 @@ public class SubmissionRequestHelper {
                                                         new SubmissionRequestDto("test req n°" + UUID.randomUUID(),
                                                                                  UUID.randomUUID().toString(),
                                                                                  EntityType.DATA.toString(),
-                                                                                 IGeometry.point(IGeometry.position(10.0,
-                                                                                                                    20.0)),
                                                                                  List.of(new ProductFileDto(LtaDataType.RAWDATA,
                                                                                                             "http://localhost/notexisting",
                                                                                                             "example.raw",

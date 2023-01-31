@@ -319,7 +319,13 @@ public class IngestResponseListenerTest {
                                                                                      "url",
                                                                                      "filename",
                                                                                      "checksum",
-                                                                                     MediaType.APPLICATION_OCTET_STREAM)));
+                                                                                     MediaType.APPLICATION_OCTET_STREAM)),
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        false);
     }
 
     private List<SubmissionResponseDtoEvent> getSubmissionResponseDtoEvents(ArgumentCaptor<List<ISubscribable>> argumentCaptor) {

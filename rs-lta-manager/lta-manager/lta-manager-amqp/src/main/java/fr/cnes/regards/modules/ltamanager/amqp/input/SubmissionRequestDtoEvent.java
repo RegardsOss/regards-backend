@@ -26,7 +26,9 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import org.springframework.amqp.core.MessageProperties;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -43,14 +45,32 @@ public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements I
      */
     @GsonIgnore
     private MessageProperties messageProperties;
-    
+
+    public SubmissionRequestDtoEvent(String correlationId, String id, String datatype, List<ProductFileDto> files) {
+        super(correlationId, id, datatype, files);
+        this.messageProperties = new MessageProperties();
+    }
+
     public SubmissionRequestDtoEvent(String correlationId,
                                      String id,
                                      String datatype,
-                                     IGeometry geometry,
-                                     List<ProductFileDto> files) {
-        super(correlationId, id, datatype, geometry, files);
-        this.messageProperties = new MessageProperties();
+                                     @Nullable IGeometry geometry,
+                                     List<ProductFileDto> files,
+                                     @Nullable List<String> tags,
+                                     @Nullable String originUrn,
+                                     @Nullable Map<String, Object> properties,
+                                     @Nullable String storePath,
+                                     @Nullable String session,
+                                     boolean replaceMode) {
+        this(correlationId, id, datatype, files);
+        this.setGeometry(geometry);
+        this.setTags(tags);
+        this.setOriginUrn(originUrn);
+        this.setProperties(properties);
+        this.setStorePath(storePath);
+        this.setSession(session);
+        this.setReplaceMode(replaceMode);
+
     }
 
     @Override

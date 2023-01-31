@@ -125,12 +125,18 @@ public class IngestResponseListener implements IIngestClientListener {
             Optional<SubmissionRequestDto> submissionRequestDto = submissionReadService.findSubmissionRequestByCorrelationId(
                 info.getRequestId());
             if (submissionRequestDto.isPresent()) {
-                LtaCleanWorkerRequestDtoEvent ltaCleanWorkerRequestDtoEvent = new LtaCleanWorkerRequestDtoEvent(
-                    submissionRequestDto.get().getCorrelationId(),
-                    submissionRequestDto.get().getId(),
-                    submissionRequestDto.get().getDatatype(),
-                    submissionRequestDto.get().getGeometry(),
-                    submissionRequestDto.get().getFiles());
+                SubmissionRequestDto request = submissionRequestDto.get();
+                LtaCleanWorkerRequestDtoEvent ltaCleanWorkerRequestDtoEvent = new LtaCleanWorkerRequestDtoEvent(request.getCorrelationId(),
+                                                                                                                request.getId(),
+                                                                                                                request.getDatatype(),
+                                                                                                                request.getGeometry(),
+                                                                                                                request.getFiles(),
+                                                                                                                request.getTags(),
+                                                                                                                request.getOriginUrn(),
+                                                                                                                request.getProperties(),
+                                                                                                                request.getStorePath(),
+                                                                                                                request.getSession(),
+                                                                                                                request.isReplaceMode());
                 ltaCleanWorkerRequestDtoEvent.addHeader(EventHeadersHelper.CONTENT_TYPE_HEADER,
                                                         CONTENT_TYPE_LTA_CLEAN_WORKER);
 

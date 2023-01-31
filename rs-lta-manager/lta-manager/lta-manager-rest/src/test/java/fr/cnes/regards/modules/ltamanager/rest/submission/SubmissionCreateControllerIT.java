@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ltamanager.rest.submission;
 
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -213,9 +212,6 @@ public class SubmissionCreateControllerIT extends AbstractRegardsIT {
         SubmissionRequestDto submissionRequestDtoMalformed = new SubmissionRequestDto("Test RequestDto",
                                                                                       UUID.randomUUID().toString(),
                                                                                       EntityType.DATA.toString(),
-                                                                                      IGeometry.point(IGeometry.position(
-                                                                                          10.0,
-                                                                                          20.0)),
                                                                                       files);
 
         // WHEN

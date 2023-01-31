@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ltamanager.service.submission.deletion;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.integration.test.job.AbstractMultitenantServiceWithJobIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -174,9 +173,6 @@ public class SubmissionDeleteSchedulerIT extends AbstractMultitenantServiceWithJ
                                                             new SubmissionRequestDto("test req n°" + i,
                                                                                      UUID.randomUUID().toString(),
                                                                                      EntityType.DATA.toString(),
-                                                                                     IGeometry.point(IGeometry.position(
-                                                                                         10.0,
-                                                                                         20.0)),
                                                                                      List.of(new ProductFileDto(
                                                                                          LtaDataType.RAWDATA,
                                                                                          "http://localhost/notexisting",

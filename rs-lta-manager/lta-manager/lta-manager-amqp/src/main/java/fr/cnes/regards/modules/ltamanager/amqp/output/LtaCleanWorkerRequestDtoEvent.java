@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -49,9 +50,25 @@ public class LtaCleanWorkerRequestDtoEvent extends SubmissionRequestDto
     public LtaCleanWorkerRequestDtoEvent(String correlationId,
                                          String id,
                                          String datatype,
-                                         IGeometry geometry,
-                                         List<ProductFileDto> files) {
-        super(correlationId, id, datatype, geometry, files);
+                                         @Nullable IGeometry geometry,
+                                         List<ProductFileDto> files,
+                                         @Nullable List<String> tags,
+                                         @Nullable String originUrn,
+                                         @Nullable Map<String, Object> properties,
+                                         @Nullable String storePath,
+                                         @Nullable String session,
+                                         boolean replaceMode) {
+        super(correlationId,
+              id,
+              datatype,
+              geometry,
+              files,
+              tags,
+              originUrn,
+              properties,
+              storePath,
+              session,
+              replaceMode);
         this.messageProperties = new MessageProperties();
     }
 

@@ -24,7 +24,10 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.beans.ConstructorProperties;
 import java.util.List;
 import java.util.Map;
@@ -53,10 +56,9 @@ public class SubmissionRequestDto {
     @Schema(description = "Product datatype. Must be present in the lta-manager configuration.", maxLength = 255)
     private final String datatype;
 
-    @NotNull(message = "geometry is required.")
     @Valid
-    @Schema(description = "Product geometry in GeoJSON RFC 7946 Format.")
-    private final IGeometry geometry;
+    @Schema(description = "Product geometry in GeoJSON RFC 7946 Format.", nullable = true)
+    private IGeometry geometry;
 
     @NotEmpty(message = "At least one file in a valid format is required.")
     @Valid
@@ -96,29 +98,13 @@ public class SubmissionRequestDto {
     // owner is set after the construction of the request
     private String owner;
 
-    @ConstructorProperties({ "correlationId", "id", "datatype", "geometry", "files" })
+    @ConstructorProperties(
+        { "correlationId", "id", "datatype", "geometry", "files", "tags", "originUrn", "properties", "storePath",
+            "session", "replaceMode" })
     public SubmissionRequestDto(String correlationId,
                                 String id,
                                 String datatype,
-                                IGeometry geometry,
-                                List<ProductFileDto> files) {
-        Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(id, "id is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(datatype, "datatype is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(geometry, "geometry is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notEmpty(files, "at least one file is mandatory ! Make sure other constraints are satisfied. ");
-
-        this.correlationId = correlationId;
-        this.id = id;
-        this.datatype = datatype;
-        this.geometry = geometry;
-        this.files = files;
-    }
-
-    public SubmissionRequestDto(String correlationId,
-                                String id,
-                                String datatype,
-                                IGeometry geometry,
+                                @Nullable IGeometry geometry,
                                 List<ProductFileDto> files,
                                 @Nullable List<String> tags,
                                 @Nullable String originUrn,
@@ -126,13 +112,26 @@ public class SubmissionRequestDto {
                                 @Nullable String storePath,
                                 @Nullable String session,
                                 boolean replaceMode) {
-        this(correlationId, id, datatype, geometry, files);
+        this(correlationId, id, datatype, files);
         this.tags = tags;
         this.originUrn = originUrn;
         this.properties = properties;
         this.storePath = storePath;
         this.session = session;
         this.replaceMode = replaceMode;
+        this.geometry = geometry;
+    }
+
+    public SubmissionRequestDto(String correlationId, String id, String datatype, List<ProductFileDto> files) {
+        Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(id, "id is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(datatype, "datatype is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notEmpty(files, "at least one file is mandatory ! Make sure other constraints are satisfied. ");
+
+        this.correlationId = correlationId;
+        this.id = id;
+        this.datatype = datatype;
+        this.files = files;
     }
 
     public String getCorrelationId() {
@@ -214,6 +213,10 @@ public class SubmissionRequestDto {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    public void setGeometry(@Nullable IGeometry geometry) {
+        this.geometry = geometry;
     }
 
     @Override

@@ -73,19 +73,19 @@ public class SubmissionRequestHelper {
                                                        settingService.getRequestExpiresInHoursConfig(settingService.retrieve()),
                                                        info.state(),
                                                        "sample message");
+        SubmissionRequestDto requestDto = new SubmissionRequestDto("test req n°" + UUID.randomUUID(),
+                                                                   UUID.randomUUID().toString(),
+                                                                   EntityType.DATA.toString(),
+                                                                   List.of(new ProductFileDto(LtaDataType.RAWDATA,
+                                                                                              "http://localhost/notexisting",
+                                                                                              "example.raw",
+                                                                                              "f016852239a8a919f05f6d2225c5aaca",
+                                                                                              MediaType.APPLICATION_OCTET_STREAM)));
+        requestDto.setGeometry(IGeometry.point(IGeometry.position(10.0, 20.0)));
         SubmittedProduct product = new SubmittedProduct(info.datatype(),
                                                         "model",
                                                         Paths.get("/path/example"),
-                                                        new SubmissionRequestDto("test req n°" + UUID.randomUUID(),
-                                                                                 UUID.randomUUID().toString(),
-                                                                                 EntityType.DATA.toString(),
-                                                                                 IGeometry.point(IGeometry.position(10.0,
-                                                                                                                    20.0)),
-                                                                                 List.of(new ProductFileDto(LtaDataType.RAWDATA,
-                                                                                                            "http://localhost/notexisting",
-                                                                                                            "example.raw",
-                                                                                                            "f016852239a8a919f05f6d2225c5aaca",
-                                                                                                            MediaType.APPLICATION_OCTET_STREAM))));
+                                                        requestDto);
 
         return requestRepository.save(new SubmissionRequest(product.getProduct().getCorrelationId(),
                                                             info.owner(),

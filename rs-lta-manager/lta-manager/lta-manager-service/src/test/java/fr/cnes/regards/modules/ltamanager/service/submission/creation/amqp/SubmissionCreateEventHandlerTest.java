@@ -142,9 +142,8 @@ public class SubmissionCreateEventHandlerTest {
             SubmissionRequestDtoEvent requestDto = new SubmissionRequestDtoEvent("Test RequestDto n°" + i,
                                                                                  UUID.randomUUID().toString(),
                                                                                  EntityType.DATA.toString(),
-                                                                                 IGeometry.point(IGeometry.position(10.0,
-                                                                                                                    20.0)),
                                                                                  files);
+            requestDto.setGeometry(IGeometry.point(IGeometry.position(10.0, 20.0)));
             requestDto.setStorePath(STORE_PATH);
             requestDto.setOwner(OWNER);
             requestDtos.add(requestDto);
