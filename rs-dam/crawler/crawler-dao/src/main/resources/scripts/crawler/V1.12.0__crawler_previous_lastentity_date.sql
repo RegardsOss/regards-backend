@@ -3,3 +3,6 @@ ALTER TABLE t_datasource_ingestion
 
 ALTER TABLE t_datasource_ingestion
     ADD COLUMN cursor_previous_last_entity_date timestamp;
+
+ALTER TABLE t_datasource_ingestion
+ALTER COLUMN duration TYPE varchar(128);
