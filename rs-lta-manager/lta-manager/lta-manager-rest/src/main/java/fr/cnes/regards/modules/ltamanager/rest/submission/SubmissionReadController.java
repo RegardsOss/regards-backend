@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ltamanager.rest.submission;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
@@ -90,7 +91,7 @@ public class SubmissionReadController extends AbstractSubmissionController
         if (requestStatusInfo.isPresent()) {
             return ResponseEntity.ok(EntityModel.of(requestStatusInfo.get()));
         }
-        
+
         LOGGER.warn("Submission request with id {} was not found in the database", correlationId);
         return ResponseEntity.notFound().build();
     }
@@ -118,6 +119,13 @@ public class SubmissionReadController extends AbstractSubmissionController
     @Override
     public EntityModel<SubmittedSearchResponseDto> toResource(SubmittedSearchResponseDto searchResponseDto,
                                                               Object... extras) {
-        return resourceService.toResource(searchResponseDto);
+        EntityModel<SubmittedSearchResponseDto> resource = resourceService.toResource(searchResponseDto);
+        if (searchResponseDto.getStatus().isFinalState()) {
+            resourceService.addLink(resource,
+                                    SubmissionDeleteController.class,
+                                    "deleteSubmissionRequests",
+                                    LinkRels.DELETE);
+        }
+        return resource;
     }
 }
