@@ -22,13 +22,13 @@ import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.amqp.output.LtaWorkerRequestDtoEvent;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.settings.DatatypeParameter;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.dto.submission.LtaDataType;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
@@ -302,7 +302,7 @@ public class SubmissionCreateServiceTest {
 
     private static List<ProductFileDto> getProductFileDtos() {
         // - SubmissionRequestDtos (product requests to send) -
-        return List.of(new ProductFileDto(DataType.RAWDATA,
+        return List.of(new ProductFileDto(LtaDataType.RAWDATA,
                                           "http://localhost/notexisting",
                                           "example.raw",
                                           "f016852239a8a919f05f6d225c5aaca",

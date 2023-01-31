@@ -30,13 +30,13 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.amqp.output.LtaWorkerRequestDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.settings.DatatypeParameter;
 import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettings;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.dto.submission.LtaDataType;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
@@ -205,7 +205,7 @@ public class SubmissionCreateControllerIT extends AbstractRegardsIT {
         // GIVEN
         // submissionRequestDto (product request to send)
         // put not valid url and checksum to trigger the error
-        List<ProductFileDto> files = List.of(new ProductFileDto(DataType.RAWDATA,
+        List<ProductFileDto> files = List.of(new ProductFileDto(LtaDataType.RAWDATA,
                                                                 "not valid url!",
                                                                 "example.raw",
                                                                 "f016852239a8a919f05f6d2225c5aac",

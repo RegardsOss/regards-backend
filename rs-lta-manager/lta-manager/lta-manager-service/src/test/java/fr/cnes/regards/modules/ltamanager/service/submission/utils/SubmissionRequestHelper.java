@@ -19,12 +19,12 @@
 package fr.cnes.regards.modules.ltamanager.service.submission.utils;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmittedProduct;
+import fr.cnes.regards.modules.ltamanager.dto.submission.LtaDataType;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.service.settings.LtaSettingService;
@@ -67,7 +67,7 @@ public class SubmissionRequestHelper {
                                                                                  EntityType.DATA.toString(),
                                                                                  IGeometry.point(IGeometry.position(10.0,
                                                                                                                     20.0)),
-                                                                                 List.of(new ProductFileDto(DataType.RAWDATA,
+                                                                                 List.of(new ProductFileDto(LtaDataType.RAWDATA,
                                                                                                             "http://localhost/notexisting",
                                                                                                             "example.raw",
                                                                                                             "f016852239a8a919f05f6d2225c5aaca",

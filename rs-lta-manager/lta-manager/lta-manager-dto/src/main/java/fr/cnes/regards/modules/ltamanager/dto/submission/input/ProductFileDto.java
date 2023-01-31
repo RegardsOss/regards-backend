@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ltamanager.dto.submission.input;
 
-import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.ltamanager.dto.submission.LtaDataType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.util.Assert;
@@ -38,7 +38,7 @@ public final class ProductFileDto {
 
     @NotNull(message = "type is required")
     @Schema(description = "Type of the file among RAWDATA, QUICKLOOK(_SD|_MD_|_HD), THUMBNAIL.")
-    private final DataType type;
+    private final LtaDataType type;
 
     @URL(regexp = "^(http|file).*", message = "The url must be valid and declare http(s) or file protocol")
     @Schema(description = "Location of the file. Only http(s) or file protocols are accepted.")
@@ -57,7 +57,7 @@ public final class ProductFileDto {
     private final MimeType mimeType;
 
     @ConstructorProperties({ "type", "url", "filename", "checksumMd5", "mimeType" })
-    public ProductFileDto(DataType type, String url, String filename, String checksumMd5, MimeType mimeType) {
+    public ProductFileDto(LtaDataType type, String url, String filename, String checksumMd5, MimeType mimeType) {
         Assert.notNull(type, "type is mandatory ! Make sure other constraints are satisfied.");
         Assert.notNull(url, "url is mandatory ! Make sure other constraints are satisfied.");
         Assert.notNull(filename, "filename is mandatory ! Make sure other constraints are satisfied.");
@@ -71,7 +71,7 @@ public final class ProductFileDto {
         this.mimeType = mimeType;
     }
 
-    public DataType getType() {
+    public LtaDataType getType() {
         return type;
     }
 

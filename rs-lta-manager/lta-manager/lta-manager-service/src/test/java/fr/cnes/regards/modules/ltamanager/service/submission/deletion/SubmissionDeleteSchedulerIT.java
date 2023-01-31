@@ -31,13 +31,13 @@ import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSetti
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettings;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmittedProduct;
+import fr.cnes.regards.modules.ltamanager.dto.submission.LtaDataType;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
@@ -177,11 +177,12 @@ public class SubmissionDeleteSchedulerIT extends AbstractMultitenantServiceWithJ
                                                                                      IGeometry.point(IGeometry.position(
                                                                                          10.0,
                                                                                          20.0)),
-                                                                                     List.of(new ProductFileDto(DataType.RAWDATA,
-                                                                                                                "http://localhost/notexisting",
-                                                                                                                "example.raw",
-                                                                                                                "f016852239a8a919f05f6d2225c5aaca",
-                                                                                                                MediaType.APPLICATION_OCTET_STREAM))));
+                                                                                     List.of(new ProductFileDto(
+                                                                                         LtaDataType.RAWDATA,
+                                                                                         "http://localhost/notexisting",
+                                                                                         "example.raw",
+                                                                                         "f016852239a8a919f05f6d2225c5aaca",
+                                                                                         MediaType.APPLICATION_OCTET_STREAM))));
             SubmissionRequest submissionRequest = new SubmissionRequest(product.getProduct().getCorrelationId(),
                                                                         "owner",
                                                                         "session",

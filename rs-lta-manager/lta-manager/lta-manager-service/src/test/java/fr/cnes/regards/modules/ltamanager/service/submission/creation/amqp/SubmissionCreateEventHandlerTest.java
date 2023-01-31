@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.amqp.input.SubmissionRequestDtoEvent;
 import fr.cnes.regards.modules.ltamanager.amqp.output.LtaWorkerRequestDtoEvent;
@@ -32,6 +31,7 @@ import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.settings.DatatypeParameter;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.dto.submission.LtaDataType;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.settings.LtaSettingService;
@@ -133,7 +133,7 @@ public class SubmissionCreateEventHandlerTest {
     }
 
     private void initData() {
-        List<ProductFileDto> files = List.of(new ProductFileDto(DataType.RAWDATA,
+        List<ProductFileDto> files = List.of(new ProductFileDto(LtaDataType.RAWDATA,
                                                                 "http://localhost/notexisting",
                                                                 "example.raw",
                                                                 "f016852239a8a919f05f6d2225c5aaca",
