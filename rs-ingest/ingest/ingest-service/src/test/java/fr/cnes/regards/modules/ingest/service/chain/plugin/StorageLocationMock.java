@@ -37,11 +37,23 @@ public class StorageLocationMock {
 
     protected static String A_VIRTUAL_STORAGE_NAME = "A_VIRTUAL_STORAGE_NAME";
 
+    protected static String A_REQUEST_STORAGE_PATH = "a request storage path";
+
     // ------- Plugins configurations -------
 
     public static Set<StorageMetadata> validRealStorageLocations() {
-        return Sets.newHashSet(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1),
+        return Sets.newHashSet(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1,
+                                                     "some/store/path",
+                                                     Sets.newHashSet()),
                                StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2));
+    }
+
+    public static Set<StorageMetadata> storageLocationsOverrideByStoragePath(Set<StorageMetadata> storageLocations,
+                                                                             String storagePath) {
+        for (StorageMetadata storageLocation : storageLocations) {
+            storageLocation.setStorePath(storagePath);
+        }
+        return storageLocations;
     }
 
     public static Set<StorageMetadata> invalidRealStorageLocations() {
@@ -79,6 +91,11 @@ public class StorageLocationMock {
 
     public static Set<StorageMetadata> validRequestStorageLocations_MixedVirtualAndReal() {
         return Sets.newHashSet(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME),
+                               StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_3));
+    }
+
+    public static Set<StorageMetadata> validRequestStorageLocations_MixedVirtualAndRealWithStoragePath() {
+        return Sets.newHashSet(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME, A_REQUEST_STORAGE_PATH, Sets.newHashSet()),
                                StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_3));
     }
 

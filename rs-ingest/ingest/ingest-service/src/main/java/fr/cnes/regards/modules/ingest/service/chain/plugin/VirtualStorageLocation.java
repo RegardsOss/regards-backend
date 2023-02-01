@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,25 +143,44 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
     @Override
     public Set<StorageMetadata> getStorageMetadata(Set<StorageMetadata> requestStorageMetadataList)
         throws ModuleException {
-        Optional<StorageMetadata> virtualStorageMetadata = requestStorageMetadataList.stream()
-                                                                                     .filter(storageMetadata -> virtualStorageName.equals(
-                                                                                         storageMetadata.getPluginBusinessId()))
-                                                                                     .findAny();
-        if (virtualStorageMetadata.isPresent()) {
+        Optional<StorageMetadata> virtualStorageMetadataOpt = requestStorageMetadataList.stream()
+                                                                                        .filter(storageMetadata -> virtualStorageName.equals(
+                                                                                            storageMetadata.getPluginBusinessId()))
+                                                                                        .findAny();
+        if (virtualStorageMetadataOpt.isPresent()) {
             // validation
-            validateVirtualStorageMetadata(virtualStorageMetadata.get());
+            StorageMetadata virtualStorageMetadata = virtualStorageMetadataOpt.get();
+            validateVirtualStorageMetadata(virtualStorageMetadata);
             validateNoDuplicateStorageMetadata(requestStorageMetadataList);
 
-            // build result
+            // Take the list of StorageMetadata from the request and remove the virtual one
             List<StorageMetadata> realStorageLocationsFromRequest = requestStorageMetadataList.stream()
                                                                                               .filter(storageMetadata -> !virtualStorageName.equals(
                                                                                                   storageMetadata.getPluginBusinessId()))
                                                                                               .toList();
-            HashSet<StorageMetadata> newRequestStorageMetadataList = Sets.newHashSet(realStorageLocations);
+            // Create a list of StorageMetadata using the plugin conf and the storePath associated to the request.
+            HashSet<StorageMetadata> newRequestStorageMetadataList = getRealStorageLocations(virtualStorageMetadata.getStorePath());
             newRequestStorageMetadataList.addAll(realStorageLocationsFromRequest);
             return newRequestStorageMetadataList;
         }
         return requestStorageMetadataList;
+    }
+
+    /**
+     * Create storage metadata for current request that replaces the Virtual StorageMetadata.
+     * If the virtual StorageMetadata from the request contains a storage path, we use it
+     *
+     * @param virtualStorageStorePath the request store path associated to the virtual storage metadata
+     * @return the list of {@link StorageMetadata} to save inside the request
+     */
+    private HashSet<StorageMetadata> getRealStorageLocations(String virtualStorageStorePath) {
+        HashSet<StorageMetadata> newRequestStorageMetadataList = Sets.newHashSet(realStorageLocations);
+        if (StringUtils.isBlank(virtualStorageStorePath)) {
+            for (StorageMetadata storageMetadata : newRequestStorageMetadataList) {
+                storageMetadata.setStorePath(virtualStorageStorePath);
+            }
+        }
+        return newRequestStorageMetadataList;
     }
 
     /**
@@ -189,15 +208,14 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
 
     /**
      * Throw a {@link ModuleException} if the virtual storage metadata coming from the request
-     * defines some attributes like store path or target types. As we cannot use properly these values when
+     * defines some attributes like file size or target types. As we cannot use properly these values when
      * it's a virtual storage metadata inside the {@link IngestRequest}, we decided to block the request as it's a bad usage
      */
     private void validateVirtualStorageMetadata(StorageMetadata requestVirtualStorageMetadata) throws ModuleException {
-        if (StringUtils.isNotEmpty(requestVirtualStorageMetadata.getStorePath())
-            || !requestVirtualStorageMetadata.getTargetTypes().isEmpty()
+        if (!requestVirtualStorageMetadata.getTargetTypes().isEmpty()
             || requestVirtualStorageMetadata.getSize() != null) {
             String message = String.format(
-                "Invalid virtual storage metadata %s inside your request : storagePath and/or targetTypes and/or file size must be empty or null",
+                "Invalid virtual storage metadata %s inside your request : targetTypes and/or file size must be empty or null",
                 requestVirtualStorageMetadata.getPluginBusinessId());
             LOGGER.warn(message);
             throw new ModuleException(message);

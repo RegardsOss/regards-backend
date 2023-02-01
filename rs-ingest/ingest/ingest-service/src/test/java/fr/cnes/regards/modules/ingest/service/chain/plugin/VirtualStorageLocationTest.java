@@ -92,6 +92,23 @@ public class VirtualStorageLocationTest {
         assertEquals(expectedResult, resultingStorageMetadata);
     }
 
+    @Test
+    public void retrieve_mixed_result_with_request_store_metadata_over_configured_one()
+        throws ModuleException, PluginInitException {
+        // given
+        VirtualStorageLocation virtualStorageLocation = new FakeVirtualStorageLocationFactory().createValid();
+
+        // when
+        Set<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(StorageLocationMock.validRequestStorageLocations_MixedVirtualAndRealWithStoragePath());
+
+        // then
+        Set<StorageMetadata> expectedResult = Sets.newHashSet(StorageMetadata.build(StorageLocationMock.SOME_REAL_STORAGE_LOCATION_3));
+        // result contains the list of storage locations provided as plugin param, but every location path are from the request
+        expectedResult.addAll(StorageLocationMock.storageLocationsOverrideByStoragePath(StorageLocationMock.validRealStorageLocations(),
+                                                                                        StorageLocationMock.A_REQUEST_STORAGE_PATH));
+        assertEquals(expectedResult, resultingStorageMetadata);
+    }
+
     @Test(expected = ModuleException.class)
     public void error_when_providing_virtual_storage_with_attributes_defined()
         throws ModuleException, PluginInitException {
