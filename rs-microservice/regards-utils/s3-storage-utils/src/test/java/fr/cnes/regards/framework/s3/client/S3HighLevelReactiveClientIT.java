@@ -125,6 +125,12 @@ public class S3HighLevelReactiveClientIT {
         Assert.assertTrue("Missing etag property", eTag.isPresent());
         Assert.assertEquals("Invalid etag. Does not match expected checksum", checksum, eTag.get());
 
+        Optional<Long> contentLength = client.contentLength(StorageCommand.check(config, cmdId, entryKey)).block();
+        Assert.assertTrue("Missing contentLength property", contentLength.isPresent());
+        Assert.assertEquals("Invalid contentLength. Does not match expected contentLength",
+                            size,
+                            contentLength.get().longValue());
+
         client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
             pipe.getEntry().doOnNext(e -> LOGGER.info("entry: {}", readString(e))).block();
             return true;

@@ -108,12 +108,23 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
 
     @Override
     public Mono<Optional<String>> eTag(String bucket, String key) {
+        return getHeadObjectResponse(bucket, key).flatMap(optional -> optional.map(headObjectResponse -> Mono.just(
+            // Etag specification indicates that the string is quoted so remove quotes to get eTag content value
+            Optional.of(headObjectResponse.eTag().replace("\"", "")))).orElse(Mono.just(Optional.empty())));
+    }
+
+    @Override
+    public Mono<Optional<Long>> contentLength(String bucket, String key) {
+        return getHeadObjectResponse(bucket, key).flatMap(optional -> optional.map(headObjectResponse -> Mono.just(
+            Optional.of(headObjectResponse.contentLength()))).orElse(Mono.just(Optional.empty())));
+    }
+
+    private Mono<Optional<HeadObjectResponse>> getHeadObjectResponse(String bucket, String key) {
         return withClient(client -> {
             HeadObjectRequest request = HeadObjectRequest.builder().bucket(bucket).key(key).build();
             return fromFutureSupplier(() -> client.headObject(request)).map(response -> {
                 LOGGER.debug("File ({}) in bucket ({}) exists", key, bucket);
-                // Etag specification indicates that the string is quoted so remove quotes to get eTag content value
-                return Optional.of(response.eTag().replace("\"", ""));
+                return Optional.of(response);
             }).onErrorResume(NoSuchKeyException.class, t -> {
                 LOGGER.debug("File ({}) in bucket ({}) does not exist", key, bucket, t);
                 return Mono.just(Optional.empty());

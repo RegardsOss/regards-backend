@@ -139,6 +139,20 @@ public final class DownloadUtils {
     }
 
     /**
+     * Get file content length on s3 storage
+     *
+     * @param key           the file to check
+     * @param storageConfig the StorageConfig of the server
+     * @return file content length
+     */
+    private static Long getContentLengthS3(String key, StorageConfig storageConfig) throws FileNotFoundException {
+        S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
+        StorageCommandID cmdId = new StorageCommandID(key, UUID.randomUUID());
+        StorageCommand.Check check = StorageCommand.check(storageConfig, cmdId, key);
+        return client.contentLength(check).block().orElseThrow(FileNotFoundException::new);
+    }
+
+    /**
      * Get an InputStream on a source URL with no proxy used
      *
      * @param source        the source URL
@@ -276,7 +290,7 @@ public final class DownloadUtils {
                                                nonProxyHosts,
                                                pConnectionTimeout,
                                                knownS3Servers);
-        return checksum.toLowerCase().equals(expectedChecksum.toLowerCase());
+        return checksum.equalsIgnoreCase(expectedChecksum);
     }
 
     public static InputStream getInputStreamThroughProxy(URL source,
@@ -379,10 +393,68 @@ public final class DownloadUtils {
         return Mono.just(inputStream);
     }
 
-    public static Long getContentLength(URL source, Integer pConnectTimeout) throws IOException {
-        URLConnection connection = source.openConnection();
-        connection.setConnectTimeout(pConnectTimeout);
-        return connection.getContentLengthLong();
+    /**
+     * works as {@link DownloadUtils#getContentLengthThroughProxy} without proxy.
+     */
+    public static Long getContentLength(URL source, Integer pConnectTimeout, List<S3Server> knownS3Servers)
+        throws IOException {
+        return getContentLengthThroughProxy(source, Proxy.NO_PROXY, Sets.newHashSet(), pConnectTimeout, knownS3Servers);
+    }
+
+    /**
+     * Retrieve the file size of the source file
+     *
+     * @param source          the url of the file to download
+     * @param proxy           the proxy to use if needed
+     * @param nonProxyHosts   the list of hosts for which the proxy is not needed
+     * @param pConnectTimeout the time the process will wait while trying to connect, can be null
+     * @param knownS3Servers  the list of known S3 hosts, the process will use the specific s3 download algorithm if the downloaded file belong to one of these hosts
+     * @return checksum, computed using the provided algorithm, of the file created at destination
+     */
+    public static Long getContentLengthThroughProxy(URL source,
+                                                    Proxy proxy,
+                                                    Collection<String> nonProxyHosts,
+                                                    Integer pConnectTimeout,
+                                                    List<S3Server> knownS3Servers) throws IOException {
+
+        URLConnection connection = getConnectionThroughProxy(source, proxy, nonProxyHosts, pConnectTimeout);
+
+        //Filesystem
+        if (source.getProtocol().equals("file")) {
+            return connection.getContentLengthLong();
+        }
+
+        if (source.getProtocol().equals("http") || source.getProtocol().equals("https")) {
+            Optional<S3Server> s3Server = S3ServerUtils.isUrlFromS3Server(source, knownS3Servers);
+            if (s3Server.isPresent()) {
+                //S3
+                S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(source, s3Server.get());
+                try {
+                    return getContentLengthS3(keyAndStorage.key(), keyAndStorage.storageConfig());
+                } catch (FileNotFoundException e) {
+                    throw new FileNotFoundException(String.format("File %s not found on S3 server", source));
+                }
+            } else {
+                //Regular download
+                HttpURLConnection conn = (HttpURLConnection) connection;
+                conn.setRequestMethod("HEAD");
+                connection.connect();
+                int responseCode = conn.getResponseCode();
+                conn.disconnect();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    return connection.getContentLengthLong();
+                } else {
+                    throw new ConnectException(String.format(
+                        "Error during http/https access for URL %s, got response code : %d",
+                        source,
+                        conn.getResponseCode()));
+                }
+            }
+        }
+
+        throw new UnsupportedOperationException(String.format("Unsupported protocol %s for URL %s",
+                                                              source.getProtocol(),
+                                                              source));
     }
 
     /**

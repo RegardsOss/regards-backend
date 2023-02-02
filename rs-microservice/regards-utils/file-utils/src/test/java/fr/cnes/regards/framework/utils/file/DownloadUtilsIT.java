@@ -87,6 +87,12 @@ public class DownloadUtilsIT {
     // Storage used for this test
     private S3Server testServer;
 
+    public static final String FILE_EXISTING = "/buckets/bucket-test-download-utils/file1.txt";
+
+    public static final String FILE_NOT_EXISTING = "/buckets/bucket-test-download-utils/file11.txt";
+
+    public static final String FILE_EXISTING_DEEP = "/buckets/bucket-test-download-utils/test/deep/file/sub/directory/file2.txt";
+
     @Before
     public void setUp() throws MalformedURLException {
         this.testServer = new S3Server(new URL(s3Protocol, s3Host, s3Port, "").toString(),
@@ -108,7 +114,7 @@ public class DownloadUtilsIT {
     @Test
     public void testS3DownloadThroughInputStream() throws IOException {
 
-        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
 
         List<S3Server> knownStorages = Arrays.asList(testServer);
 
@@ -121,7 +127,7 @@ public class DownloadUtilsIT {
 
     @Test
     public void testS3DownloadThroughFileCopy() throws IOException, NoSuchAlgorithmException {
-        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
 
         List<S3Server> knownStorages = Arrays.asList(testServer);
 
@@ -138,10 +144,7 @@ public class DownloadUtilsIT {
 
     @Test
     public void testS3DownloadDeepFile() throws IOException {
-        URL url = new URL(s3Protocol,
-                          s3Host,
-                          s3Port,
-                          "/buckets/bucket-test-download-utils/test/deep/file/sub/directory/file2.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING_DEEP);
 
         List<S3Server> knownStorages = Arrays.asList(testServer);
 
@@ -165,7 +168,7 @@ public class DownloadUtilsIT {
 
         List<S3Server> knownStorages = Arrays.asList(testServerWithoutBucket);
 
-        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
         InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
         Assert.assertNotNull(stream);
 
@@ -201,17 +204,17 @@ public class DownloadUtilsIT {
 
     @Test
     public void testS3Exists() throws IOException {
-        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
         List<S3Server> knownStorages = Arrays.asList(testServer);
         Assert.assertTrue(DownloadUtils.exists(url, Proxy.NO_PROXY, knownStorages, null, null));
 
-        URL url2 = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file11.txt");
+        URL url2 = new URL(s3Protocol, s3Host, s3Port, FILE_NOT_EXISTING);
         Assert.assertFalse(DownloadUtils.exists(url2, Proxy.NO_PROXY, knownStorages, null, null));
     }
 
     @Test
     public void testMissingS3File() throws IOException {
-        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file11.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, FILE_NOT_EXISTING);
 
         List<S3Server> knownStorages = Arrays.asList(testServer);
 
@@ -220,6 +223,25 @@ public class DownloadUtilsIT {
             Assert.fail();
         } catch (FileNotFoundException e) {
         }
+    }
+
+    @Test(expected = FileNotFoundException.class)
+    public void testS3FileContentLengthFileNotFound() throws IOException {
+        URL url = new URL(s3Protocol, s3Host, s3Port, FILE_NOT_EXISTING);
+
+        List<S3Server> knownStorages = Arrays.asList(testServer);
+
+        DownloadUtils.getContentLength(url, 60, knownStorages);
+    }
+
+    @Test
+    public void testS3FileContentLength() throws IOException {
+        URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
+
+        List<S3Server> knownStorages = Arrays.asList(testServer);
+
+        long size = DownloadUtils.getContentLength(url, 60, knownStorages);
+        Assert.assertEquals(31L, size);
     }
 
     @Test
@@ -233,7 +255,7 @@ public class DownloadUtilsIT {
 
         List<S3Server> knownStorages = Arrays.asList(testUnreachableServer);
 
-        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
         try {
             InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
             Assert.fail();

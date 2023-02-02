@@ -153,6 +153,13 @@ public class S3HighLevelReactiveClient {
         return getClient(config).eTag(bucket, archivePath);
     }
 
+    public Mono<Optional<Long>> contentLength(Check checkCmd) {
+        StorageConfig config = checkCmd.getConfig();
+        String archivePath = checkCmd.getEntryKey();
+        String bucket = config.getBucket();
+        return getClient(config).contentLength(bucket, archivePath);
+    }
+
     private Mono<ReadResult> readingCallableMono(Read readCmd) {
         StorageConfig config = readCmd.getConfig();
         String bucket = config.getBucket();

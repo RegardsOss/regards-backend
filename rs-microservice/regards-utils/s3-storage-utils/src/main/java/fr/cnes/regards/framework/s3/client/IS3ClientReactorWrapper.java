@@ -36,6 +36,8 @@ public interface IS3ClientReactorWrapper {
 
     Mono<Optional<String>> eTag(String bucket, String key);
 
+    Mono<Optional<Long>> contentLength(String bucket, String key);
+
     Mono<ResponseAndStream> readContentFlux(String bucket, String key, boolean failIfMissing);
 
     Flux<String> listObjects(String bucket, String prefix);

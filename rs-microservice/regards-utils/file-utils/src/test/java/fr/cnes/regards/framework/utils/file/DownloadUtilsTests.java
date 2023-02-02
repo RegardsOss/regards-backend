@@ -123,6 +123,24 @@ public class DownloadUtilsTests {
     }
 
     @Test
+    public void testContentLengthWithHttpProtocolWithProxy() throws IOException, NoSuchAlgorithmException {
+        URL source = new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-3");
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        long fileSize = DownloadUtils.getContentLengthThroughProxy(source, proxy, null, 10, Collections.emptyList())
+                                     .longValue();
+
+        Assert.assertEquals(1795L, fileSize);
+    }
+
+    @Test
+    public void testContentLengthWithFile() throws IOException {
+        String fileLocation = "src/test/resources/data.txt";
+        URL source = new URL("file", "localhost", fileLocation);
+        long size = DownloadUtils.getContentLength(source, 50, Collections.emptyList()).longValue();
+        Assert.assertEquals(445L, size);
+    }
+
+    @Test
     public void testNonProxyHosts() throws MalformedURLException {
         Set<String> nonProxyHosts = Sets.newHashSet("localhost", "plop.com");
         Assert.assertFalse(DownloadUtils.needProxy(new URL("http://plop.com/files/myFile.txt"), nonProxyHosts));
