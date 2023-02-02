@@ -205,7 +205,6 @@ public class AIPStorageService implements IAIPStorageService {
      * @param storageError       storage in error where to store/reference files
      * @param filesToStore       dispatched files to store
      * @param filesToRefer       dispatched files to reference
-     * @throws ModuleException
      */
     private void dispatchOAISDataObjectForStorageInError(IngestRequestError error,
                                                          ContentInformation contentInformation,
@@ -255,7 +254,6 @@ public class AIPStorageService implements IAIPStorageService {
      * @param requestedStorages  storages where to store/reference files
      * @param filesToStore       dispatched files to store
      * @param filesToRefer       dispatched files to reference
-     * @throws ModuleException
      */
     private void dispatchOAISDataObjectForStorage(ContentInformation contentInformation,
                                                   AIPEntity aipEntity,
@@ -318,8 +316,15 @@ public class AIPStorageService implements IAIPStorageService {
      * @return distinct {@link StorageMetadata}s
      */
     private List<StorageMetadata> getDistinctStorageForDataObject(OAISDataObject dataObject,
-                                                                  List<StorageMetadata> storages) {
-        return storages.stream().filter(s -> matchStorage(s, dataObject)).distinct().toList();
+                                                                  List<StorageMetadata> storages)
+        throws ModuleException {
+        List<StorageMetadata> matchingStorages = new ArrayList<>();
+        for (StorageMetadata storage : storages) {
+            if (matchStorage(storage, dataObject)) {
+                matchingStorages.add(storage);
+            }
+        }
+        return matchingStorages.stream().distinct().toList();
     }
 
     /**
@@ -332,16 +337,18 @@ public class AIPStorageService implements IAIPStorageService {
      * @param storage    metadata about the storage location
      * @param dataObject file to store
      */
-    private boolean matchStorage(StorageMetadata storage, OAISDataObject dataObject) {
+    private boolean matchStorage(StorageMetadata storage, OAISDataObject dataObject) throws ModuleException {
         // targetTypes empty = this storage accepts all types
         boolean isMatch = storage.getTargetTypes().isEmpty() || storage.getTargetTypes()
                                                                        .contains(dataObject.getRegardsDataType());
         StorageSize storageAcceptedSize = storage.getSize();
-        if (storageAcceptedSize != null && dataObject.getFileSize() != null) {
+        if (storageAcceptedSize != null) {
             if (storageAcceptedSize.getMin() != null) {
+                checkValidDataObjectFileSizeForStorage(storage, dataObject);
                 isMatch &= dataObject.getFileSize() >= storageAcceptedSize.getMin();
             }
             if (storageAcceptedSize.getMax() != null) {
+                checkValidDataObjectFileSizeForStorage(storage, dataObject);
                 isMatch &= dataObject.getFileSize() <= storageAcceptedSize.getMax();
             }
         } else if (storageAcceptedSize != null && dataObject.getFileSize() == null) {
@@ -351,9 +358,21 @@ public class AIPStorageService implements IAIPStorageService {
     }
 
     /**
-     * @param dataObject
-     * @throws ModuleException
+     * Check if dataObject file size is provided for storage thaht needs to know it.
+     * If file size is not provided throw a {@link ModuleException}
+     *
+     * @throws ModuleException if data object file size is null
      */
+    private void checkValidDataObjectFileSizeForStorage(StorageMetadata storage, OAISDataObject dataObject)
+        throws ModuleException {
+        if (dataObject.getFileSize() == null) {
+            throw new ModuleException(String.format(
+                "File %s can not be handled by ingestion process cause file size is required to know if file should be stored on %s storage",
+                dataObject.getFilename(),
+                storage.getPluginBusinessId()));
+        }
+    }
+
     private void validateForReference(OAISDataObject dataObject) throws ModuleException {
         Set<String> errors = Sets.newHashSet();
         if ((dataObject.getAlgorithm() == null) || dataObject.getAlgorithm().isEmpty()) {
