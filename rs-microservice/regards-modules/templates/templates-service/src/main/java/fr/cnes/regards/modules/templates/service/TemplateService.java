@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
@@ -62,6 +63,7 @@ import java.util.Set;
 @Service
 @RegardsTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+@PropertySource("classpath:regards-templates.properties")
 public class TemplateService implements ITemplateService {
 
     /**
