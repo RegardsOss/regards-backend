@@ -90,7 +90,7 @@ public class AIPStorageService implements IAIPStorageService {
         // Build file reference requests
         Collection<FileReferenceRequestDTO> filesToRefer = new ArrayList<>();
 
-        Set<StorageMetadata> storages = request.getMetadata().getStorages();
+        List<StorageMetadata> storages = request.getMetadata().getStorages();
         // Check if request contains errors. If true retry error requests, else create new storage requests
         if (!request.isErrorInformation()) {
             // Iterate over AIPs
@@ -259,7 +259,7 @@ public class AIPStorageService implements IAIPStorageService {
      */
     private void dispatchOAISDataObjectForStorage(ContentInformation contentInformation,
                                                   AIPEntity aipEntity,
-                                                  Set<StorageMetadata> requestedStorages,
+                                                  List<StorageMetadata> requestedStorages,
                                                   Collection<FileStorageRequestDTO> filesToStore,
                                                   Collection<FileReferenceRequestDTO> filesToRefer)
         throws ModuleException {
@@ -289,14 +289,15 @@ public class AIPStorageService implements IAIPStorageService {
         for (OAISDataObjectLocation location : dataObject.getLocations()) {
             // Check : should be store on each storage location or should only be referenced
             if (location.getStorage() == null) {
-                for (StorageMetadata storage : requestedStorages) {
-                    if (matchStorage(storage, dataObject)) {
-                        filesToStore.add(createFileStorageRequestDTO(dataObject,
-                                                                     representationInformation,
-                                                                     aipEntity,
-                                                                     location,
-                                                                     storage));
-                    }
+                for (StorageMetadata storage : getDistinctStorageForDataObject(dataObject, requestedStorages)) {
+                    LOGGER.debug("New storage request for file={} and storage={}",
+                                 dataObject.getFilename(),
+                                 storage.getPluginBusinessId());
+                    filesToStore.add(createFileStorageRequestDTO(dataObject,
+                                                                 representationInformation,
+                                                                 aipEntity,
+                                                                 location,
+                                                                 storage));
                 }
             } else {
                 filesToRefer.add(createFileReferenceRequestDTO(dataObject,
@@ -305,6 +306,20 @@ public class AIPStorageService implements IAIPStorageService {
                                                                location));
             }
         }
+    }
+
+    /**
+     * Calculates distinct storage destination for the given feature file (or data object).
+     * Check into all given available {@link StorageMetadata} to find distinct ones to match the file to store.
+     * Note :{@link StorageMetadata} unique identifier is the businessId.
+     *
+     * @param dataObject {@link OAISDataObject} data object do caluclate distinct storage destination
+     * @param storages   {@link StorageMetadata}s available storage destinations cofiguration.
+     * @return distinct {@link StorageMetadata}s
+     */
+    private List<StorageMetadata> getDistinctStorageForDataObject(OAISDataObject dataObject,
+                                                                  List<StorageMetadata> storages) {
+        return storages.stream().filter(s -> matchStorage(s, dataObject)).distinct().toList();
     }
 
     /**
@@ -622,3 +637,5 @@ public class AIPStorageService implements IAIPStorageService {
     }
 
 }
+
+

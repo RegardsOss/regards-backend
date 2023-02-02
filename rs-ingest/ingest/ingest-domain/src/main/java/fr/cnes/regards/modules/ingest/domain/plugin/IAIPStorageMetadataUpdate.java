@@ -21,12 +21,12 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 
-import java.util.Set;
+import java.util.List;
 
 @FunctionalInterface
 @PluginInterface(description = "AIP storage metadata update plugin contract")
 public interface IAIPStorageMetadataUpdate {
 
-    Set<StorageMetadata> getStorageMetadata(Set<StorageMetadata> storageMetadata) throws ModuleException;
+    List<StorageMetadata> getStorageMetadata(List<StorageMetadata> storageMetadata) throws ModuleException;
 
 }

@@ -143,8 +143,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         IProcessingStep<SIPEntity, List<AIP>> generationStep = new GenerationStep(this, ingestChain);
         beanFactory.autowireBean(generationStep);
         // Step 4 : optional AIP update storage metadata
-        IProcessingStep<Set<StorageMetadata>, Void> aipStorageMetadataUpdateStep = new AipStorageMetadataUpdateStep(this,
-                                                                                                                    ingestChain);
+        IProcessingStep<List<StorageMetadata>, Void> aipStorageMetadataUpdateStep = new AipStorageMetadataUpdateStep(
+            this,
+            ingestChain);
         beanFactory.autowireBean(aipStorageMetadataUpdateStep);
         // Step 5 : optional AIP tagging
         IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this, ingestChain);

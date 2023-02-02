@@ -137,7 +137,7 @@ public class StorageMetadata {
                + size
                + '}';
     }
-
+    
     @Override
     public int hashCode() {
         return Objects.hash(pluginBusinessId);

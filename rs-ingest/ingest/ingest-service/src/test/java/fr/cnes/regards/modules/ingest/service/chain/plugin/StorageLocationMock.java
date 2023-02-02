@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
+import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import org.apache.commons.compress.utils.Sets;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -41,77 +42,75 @@ public class StorageLocationMock {
 
     // ------- Plugins configurations -------
 
-    public static Set<StorageMetadata> validRealStorageLocations() {
-        return Sets.newHashSet(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1,
-                                                     "some/store/path",
-                                                     Sets.newHashSet()),
-                               StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2));
+    public static List<StorageMetadata> validRealStorageLocations() {
+        return Lists.newArrayList(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1, "some/store/path", Set.of()),
+                                  StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2));
     }
 
-    public static Set<StorageMetadata> storageLocationsOverrideByStoragePath(Set<StorageMetadata> storageLocations,
-                                                                             String storagePath) {
+    public static List<StorageMetadata> storageLocationsOverrideByStoragePath(List<StorageMetadata> storageLocations,
+                                                                              String storagePath) {
         for (StorageMetadata storageLocation : storageLocations) {
             storageLocation.setStorePath(storagePath);
         }
         return storageLocations;
     }
 
-    public static Set<StorageMetadata> invalidRealStorageLocations() {
+    public static List<StorageMetadata> invalidRealStorageLocations() {
         // all values from {@link DataType} are not used, which is incorrect
-        return Sets.newHashSet(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1,
-                                                     null,
-                                                     Sets.newHashSet(DataType.DESCRIPTION, DataType.AIP)),
-                               StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2,
-                                                     null,
-                                                     Sets.newHashSet(DataType.QUICKLOOK_HD,
-                                                                     DataType.QUICKLOOK_MD,
-                                                                     DataType.QUICKLOOK_SD)));
+        return Lists.newArrayList(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1,
+                                                        null,
+                                                        Set.of(DataType.DESCRIPTION, DataType.AIP)),
+                                  StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2,
+                                                        null,
+                                                        Set.of(DataType.QUICKLOOK_HD,
+                                                               DataType.QUICKLOOK_MD,
+                                                               DataType.QUICKLOOK_SD)));
     }
 
-    public static Set<StorageMetadata> validRealStorageLocationsWithAllDataType() {
-        return Sets.newHashSet(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1,
-                                                     null,
-                                                     Sets.newHashSet(DataType.DESCRIPTION,
-                                                                     DataType.AIP,
-                                                                     DataType.RAWDATA,
-                                                                     DataType.DOCUMENT)),
-                               StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2,
-                                                     null,
-                                                     Sets.newHashSet(DataType.QUICKLOOK_HD,
-                                                                     DataType.QUICKLOOK_MD,
-                                                                     DataType.QUICKLOOK_SD,
-                                                                     DataType.THUMBNAIL,
-                                                                     DataType.OTHER)));
+    public static List<StorageMetadata> validRealStorageLocationsWithAllDataType() {
+        return Lists.newArrayList(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1,
+                                                        null,
+                                                        Set.of(DataType.DESCRIPTION,
+                                                               DataType.AIP,
+                                                               DataType.RAWDATA,
+                                                               DataType.DOCUMENT)),
+                                  StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2,
+                                                        null,
+                                                        Set.of(DataType.QUICKLOOK_HD,
+                                                               DataType.QUICKLOOK_MD,
+                                                               DataType.QUICKLOOK_SD,
+                                                               DataType.THUMBNAIL,
+                                                               DataType.OTHER)));
     }
     // ------- Request payload -------
 
-    public static Set<StorageMetadata> validRequestStorageLocations_OnlyVirtual() {
-        return Sets.newHashSet(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME));
+    public static List<StorageMetadata> validRequestStorageLocations_OnlyVirtual() {
+        return Lists.newArrayList(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME));
     }
 
-    public static Set<StorageMetadata> validRequestStorageLocations_MixedVirtualAndReal() {
-        return Sets.newHashSet(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME),
-                               StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_3));
+    public static List<StorageMetadata> validRequestStorageLocations_MixedVirtualAndReal() {
+        return Lists.newArrayList(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME),
+                                  StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_3));
     }
 
-    public static Set<StorageMetadata> validRequestStorageLocations_MixedVirtualAndRealWithStoragePath() {
-        return Sets.newHashSet(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME, A_REQUEST_STORAGE_PATH, Sets.newHashSet()),
-                               StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_3));
+    public static List<StorageMetadata> validRequestStorageLocations_MixedVirtualAndRealWithStoragePath() {
+        return Lists.newArrayList(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME, A_REQUEST_STORAGE_PATH, Set.of()),
+                                  StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_3));
     }
 
-    public static Set<StorageMetadata> validRequestStorageLocations_OnlyReal() {
-        return Sets.newHashSet(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1),
-                               StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2));
+    public static List<StorageMetadata> validRequestStorageLocations_OnlyReal() {
+        return Lists.newArrayList(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1),
+                                  StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2));
     }
 
-    public static Set<StorageMetadata> invalidRequestStorageLocations_VirtualWithUnreadableConf() {
-        return Sets.newHashSet(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME,
-                                                     "some storage path",
-                                                     Sets.newHashSet(DataType.DESCRIPTION)));
+    public static List<StorageMetadata> invalidRequestStorageLocations_VirtualWithUnreadableConf() {
+        return Lists.newArrayList(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME,
+                                                        "some storage path",
+                                                        Set.of(DataType.DESCRIPTION)));
     }
 
-    public static Set<StorageMetadata> invalidRequestStorageLocations_DefineSameStorageLocationThanPluginParam() {
-        return Sets.newHashSet(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME),
-                               StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2));
+    public static List<StorageMetadata> invalidRequestStorageLocations_DefineSameStorageLocationThanPluginParam() {
+        return Lists.newArrayList(StorageMetadata.build(A_VIRTUAL_STORAGE_NAME),
+                                  StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2));
     }
 }

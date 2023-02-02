@@ -25,7 +25,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Léo Mieulet
@@ -33,7 +32,7 @@ import java.util.Set;
 public class FakeVirtualStorageLocationFactory {
 
     public static VirtualStorageLocation create(String virtualStorageLocationLabel,
-                                                Set<StorageMetadata> realStorageLocations,
+                                                List<StorageMetadata> realStorageLocations,
                                                 List<EntityModel<StorageLocationDTO>> mockStorageLocationContent)
         throws PluginInitException {
         VirtualStorageLocation virtualStorageLocation = new VirtualStorageLocation();

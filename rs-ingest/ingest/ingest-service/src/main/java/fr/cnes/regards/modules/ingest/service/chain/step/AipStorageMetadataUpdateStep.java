@@ -29,15 +29,15 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Step that updates request StorageMetadata if the location matches the one expected by the plugin
  *
  * @author Léo Mieulet
  */
-public class AipStorageMetadataUpdateStep extends AbstractIngestStep<Set<StorageMetadata>, Void> {
+public class AipStorageMetadataUpdateStep extends AbstractIngestStep<List<StorageMetadata>, Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AipStorageMetadataUpdateStep.class);
 
@@ -46,7 +46,7 @@ public class AipStorageMetadataUpdateStep extends AbstractIngestStep<Set<Storage
     }
 
     @Override
-    protected Void doExecute(Set<StorageMetadata> storageMetadata) throws ProcessingStepException {
+    protected Void doExecute(List<StorageMetadata> storageMetadata) throws ProcessingStepException {
         job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_AIP_STORAGE_METADATA_UPDATE);
         Optional<PluginConfiguration> conf = ingestChain.getAipStorageMetadataPlugin();
         if (conf.isPresent()) {
@@ -67,7 +67,7 @@ public class AipStorageMetadataUpdateStep extends AbstractIngestStep<Set<Storage
     }
 
     @Override
-    protected void doAfterError(Set<StorageMetadata> in, Optional<ProcessingStepException> e) {
+    protected void doAfterError(List<StorageMetadata> in, Optional<ProcessingStepException> e) {
         String error = "unknown cause";
         if (e.isPresent()) {
             error = e.get().getMessage();

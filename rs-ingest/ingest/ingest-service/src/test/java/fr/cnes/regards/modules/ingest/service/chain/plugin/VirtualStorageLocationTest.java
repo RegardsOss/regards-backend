@@ -18,17 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.exception.PluginInitException;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Léo Mieulet
@@ -42,7 +43,7 @@ public class VirtualStorageLocationTest {
         VirtualStorageLocation virtualStorageLocation = new FakeVirtualStorageLocationFactory().createValid();
 
         // when
-        Set<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(StorageLocationMock.validRequestStorageLocations_OnlyVirtual());
+        List<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(StorageLocationMock.validRequestStorageLocations_OnlyVirtual());
 
         // then
         assertEquals(StorageLocationMock.validRealStorageLocations(), resultingStorageMetadata);
@@ -54,8 +55,8 @@ public class VirtualStorageLocationTest {
         VirtualStorageLocation virtualStorageLocation = new FakeVirtualStorageLocationFactory().createValidWithAllDataTypes();
 
         // when
-        HashSet<StorageMetadata> emptyListStorageLocations = Sets.newHashSet();
-        Set<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(
+        List<StorageMetadata> emptyListStorageLocations = new ArrayList<>();
+        List<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(
             emptyListStorageLocations);
 
         // then
@@ -69,8 +70,8 @@ public class VirtualStorageLocationTest {
         VirtualStorageLocation virtualStorageLocation = new FakeVirtualStorageLocationFactory().createValid();
 
         // when
-        Set<StorageMetadata> onlyRealStorageLocations = StorageLocationMock.validRequestStorageLocations_OnlyReal();
-        Set<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(
+        List<StorageMetadata> onlyRealStorageLocations = StorageLocationMock.validRequestStorageLocations_OnlyReal();
+        List<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(
             onlyRealStorageLocations);
 
         // then
@@ -84,12 +85,13 @@ public class VirtualStorageLocationTest {
         VirtualStorageLocation virtualStorageLocation = new FakeVirtualStorageLocationFactory().createValid();
 
         // when
-        Set<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(StorageLocationMock.validRequestStorageLocations_MixedVirtualAndReal());
+        List<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(StorageLocationMock.validRequestStorageLocations_MixedVirtualAndReal());
 
         // then
-        Set<StorageMetadata> expectedResult = Sets.newHashSet(StorageMetadata.build(StorageLocationMock.SOME_REAL_STORAGE_LOCATION_3));
+        List<StorageMetadata> expectedResult = Lists.newArrayList(StorageMetadata.build(StorageLocationMock.SOME_REAL_STORAGE_LOCATION_3));
         expectedResult.addAll(StorageLocationMock.validRealStorageLocations());
-        assertEquals(expectedResult, resultingStorageMetadata);
+        assertTrue(expectedResult.size() == resultingStorageMetadata.size() && expectedResult.containsAll(
+            resultingStorageMetadata));
     }
 
     @Test
@@ -99,14 +101,15 @@ public class VirtualStorageLocationTest {
         VirtualStorageLocation virtualStorageLocation = new FakeVirtualStorageLocationFactory().createValid();
 
         // when
-        Set<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(StorageLocationMock.validRequestStorageLocations_MixedVirtualAndRealWithStoragePath());
+        List<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(StorageLocationMock.validRequestStorageLocations_MixedVirtualAndRealWithStoragePath());
 
         // then
-        Set<StorageMetadata> expectedResult = Sets.newHashSet(StorageMetadata.build(StorageLocationMock.SOME_REAL_STORAGE_LOCATION_3));
+        List<StorageMetadata> expectedResult = Lists.newArrayList(StorageMetadata.build(StorageLocationMock.SOME_REAL_STORAGE_LOCATION_3));
         // result contains the list of storage locations provided as plugin param, but every location path are from the request
         expectedResult.addAll(StorageLocationMock.storageLocationsOverrideByStoragePath(StorageLocationMock.validRealStorageLocations(),
                                                                                         StorageLocationMock.A_REQUEST_STORAGE_PATH));
-        assertEquals(expectedResult, resultingStorageMetadata);
+        assertTrue(expectedResult.size() == resultingStorageMetadata.size() && expectedResult.containsAll(
+            resultingStorageMetadata));
     }
 
     @Test(expected = ModuleException.class)
@@ -134,7 +137,7 @@ public class VirtualStorageLocationTest {
     @Test(expected = PluginInitException.class)
     public void error_plugin_init_real_location_empty() throws PluginInitException {
         FakeVirtualStorageLocationFactory.create(StorageLocationMock.A_VIRTUAL_STORAGE_NAME,
-                                                 Collections.emptySet(),
+                                                 Collections.emptyList(),
                                                  Collections.emptyList());
     }
 
@@ -147,8 +150,8 @@ public class VirtualStorageLocationTest {
 
     @Test(expected = PluginInitException.class)
     public void error_plugin_storage_response_real_storage_location_not_found() throws PluginInitException {
-        Set<StorageMetadata> storageMetadata = StorageLocationMock.validRealStorageLocations();
-        Set<StorageMetadata> partialStorageMetadata = Sets.newHashSet(storageMetadata.stream().findAny().get());
+        List<StorageMetadata> storageMetadata = StorageLocationMock.validRealStorageLocations();
+        List<StorageMetadata> partialStorageMetadata = List.of(storageMetadata.stream().findAny().get());
         FakeVirtualStorageLocationFactory.create(StorageLocationMock.A_VIRTUAL_STORAGE_NAME,
                                                  storageMetadata,
                                                  FakeStorageRestClientFactory.createResponse(partialStorageMetadata,
@@ -165,7 +168,7 @@ public class VirtualStorageLocationTest {
 
     @Test(expected = PluginInitException.class)
     public void error_plugin_storage_response_virtual_storage_exist() throws PluginInitException {
-        Set<StorageMetadata> storageMetadataOnStorage = StorageLocationMock.validRealStorageLocations();
+        List<StorageMetadata> storageMetadataOnStorage = StorageLocationMock.validRealStorageLocations();
         storageMetadataOnStorage.add(StorageMetadata.build(StorageLocationMock.A_VIRTUAL_STORAGE_NAME));
         FakeVirtualStorageLocationFactory.create(StorageLocationMock.A_VIRTUAL_STORAGE_NAME,
                                                  StorageLocationMock.validRealStorageLocations(),

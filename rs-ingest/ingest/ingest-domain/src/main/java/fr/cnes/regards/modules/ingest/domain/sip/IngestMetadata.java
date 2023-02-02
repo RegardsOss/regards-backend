@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
@@ -36,6 +35,7 @@ import javax.persistence.Enumerated;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -70,7 +70,7 @@ public class IngestMetadata {
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
         value = "fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata") })
-    private Set<StorageMetadata> storages;
+    private List<StorageMetadata> storages;
 
     @NotNull(message = IngestValidationMessages.MISSING_VERSIONING_MODE)
     @Column(name = "versioning_mode")
@@ -116,11 +116,11 @@ public class IngestMetadata {
         this.session = session;
     }
 
-    public Set<StorageMetadata> getStorages() {
+    public List<StorageMetadata> getStorages() {
         return storages;
     }
 
-    public void setStorages(Set<StorageMetadata> storages) {
+    public void setStorages(List<StorageMetadata> storages) {
         this.storages = storages;
     }
 
@@ -223,7 +223,7 @@ public class IngestMetadata {
         m.setSessionOwner(sessionOwner);
         m.setSession(session);
         m.setCategories(categories);
-        m.setStorages(Sets.newHashSet(storages));
+        m.setStorages(List.of(storages));
         m.setVersioningMode(versioningMode);
         m.setModel(model);
         return m;

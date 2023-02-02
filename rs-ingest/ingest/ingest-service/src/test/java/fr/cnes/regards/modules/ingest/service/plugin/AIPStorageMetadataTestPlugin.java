@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * @author Léo Mieulet
@@ -39,7 +39,7 @@ public class AIPStorageMetadataTestPlugin implements IAIPStorageMetadataUpdate {
     private ProcessingChainTestErrorSimulator errorSimulator;
 
     @Override
-    public Set<StorageMetadata> getStorageMetadata(Set<StorageMetadata> storageMetadata) throws ModuleException {
+    public List<StorageMetadata> getStorageMetadata(List<StorageMetadata> storageMetadata) throws ModuleException {
         if (AIPStorageMetadataTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new ModuleException("Simulated exception for step AIPStorageMetadataTestPlugin");
         }

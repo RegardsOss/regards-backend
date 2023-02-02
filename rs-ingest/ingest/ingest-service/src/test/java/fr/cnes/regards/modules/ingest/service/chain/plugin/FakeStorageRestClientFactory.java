@@ -31,7 +31,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Léo Mieulet
@@ -44,7 +43,7 @@ public class FakeStorageRestClientFactory {
         return client;
     }
 
-    public static List<EntityModel<StorageLocationDTO>> createResponse(Set<StorageMetadata> storageMetadata,
+    public static List<EntityModel<StorageLocationDTO>> createResponse(List<StorageMetadata> storageMetadata,
                                                                        boolean isOffline) {
         return storageMetadata.stream()
                               .map(storageMeta -> new StorageLocationDTO(storageMeta.getPluginBusinessId(),

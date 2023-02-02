@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -33,7 +32,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +65,7 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
     @PluginParameter(name = REAL_STORAGE_LOCATIONS, label = "Real storage locations", description =
         "Real storage locations we add inside an Ingest Request when the virtual storage is present. "
         + "Allowed target types are: RAWDATA, QUICKLOOK_SD, QUICKLOOK_MD, QUICKLOOK_HD, DOCUMENT, THUMBNAIL, OTHER, AIP, DESCRIPTION")
-    private Set<StorageMetadata> realStorageLocations;
+    private List<StorageMetadata> realStorageLocations;
 
     @Autowired
     private IStorageRestClient storageRestClient;
@@ -141,7 +139,7 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
     }
 
     @Override
-    public Set<StorageMetadata> getStorageMetadata(Set<StorageMetadata> requestStorageMetadataList)
+    public List<StorageMetadata> getStorageMetadata(List<StorageMetadata> requestStorageMetadataList)
         throws ModuleException {
         Optional<StorageMetadata> virtualStorageMetadataOpt = requestStorageMetadataList.stream()
                                                                                         .filter(storageMetadata -> virtualStorageName.equals(
@@ -159,7 +157,7 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
                                                                                                   storageMetadata.getPluginBusinessId()))
                                                                                               .toList();
             // Create a list of StorageMetadata using the plugin conf and the storePath associated to the request.
-            HashSet<StorageMetadata> newRequestStorageMetadataList = getRealStorageLocations(virtualStorageMetadata.getStorePath());
+            List<StorageMetadata> newRequestStorageMetadataList = realStorageLocations;
             newRequestStorageMetadataList.addAll(realStorageLocationsFromRequest);
             return newRequestStorageMetadataList;
         }
@@ -167,27 +165,10 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
     }
 
     /**
-     * Create storage metadata for current request that replaces the Virtual StorageMetadata.
-     * If the virtual StorageMetadata from the request contains a storage path, we use it
-     *
-     * @param virtualStorageStorePath the request store path associated to the virtual storage metadata
-     * @return the list of {@link StorageMetadata} to save inside the request
-     */
-    private HashSet<StorageMetadata> getRealStorageLocations(String virtualStorageStorePath) {
-        HashSet<StorageMetadata> newRequestStorageMetadataList = Sets.newHashSet(realStorageLocations);
-        if (StringUtils.isBlank(virtualStorageStorePath)) {
-            for (StorageMetadata storageMetadata : newRequestStorageMetadataList) {
-                storageMetadata.setStorePath(virtualStorageStorePath);
-            }
-        }
-        return newRequestStorageMetadataList;
-    }
-
-    /**
      * Throw a {@link ModuleException} if we detect one of the storage metadata from the request contains a storage
      * location id that this plugin would like to add in the returned list of storage locations
      */
-    private void validateNoDuplicateStorageMetadata(Set<StorageMetadata> requestStorageMetadataList)
+    private void validateNoDuplicateStorageMetadata(List<StorageMetadata> requestStorageMetadataList)
         throws ModuleException {
         Set<String> conflictingStorageLocations = realStorageLocations.stream()
                                                                       .map(StorageMetadata::getPluginBusinessId)
