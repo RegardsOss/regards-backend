@@ -23,6 +23,9 @@ import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.ingest.dao.IngestRequestSpecifications;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
@@ -37,6 +40,7 @@ import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
@@ -93,7 +97,7 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
     // LOCAL-ALL      | all                                              | none
     // Local-RAW      | ["RAWDATA", "DOCUMENT", "OTHER"]                 | 10 <= T <= 20
     // Local-IMG-MIN  | ["THUMBNAIL", "QUICKLOOK_MD", "QUICKLOOK_HD"]    | T >= 10
-    // Local-IMG-MAX  | ["THUMBNAIL", "QUICKLOOK_MD", "QUICKLOOK_HD"]    | T <= 20
+    // Local-IMG-MAX  | ["THUMBNAIL", "QUICKLOOK_MD" ]                   | T <= 20
 
     // files                | file size (o) | type          | ** EXPECTED LOCATION **
     // _____________________|_______________|_________________________________________
@@ -102,7 +106,7 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
     // other.mp4            |      9        | OTHER         | LOCAL-ALL
     // thumbnail-01.jpg     |      21       | THUMBNAIL     | Local-IMG-MIN, LOCAL-ALL
     // quicklook_md.jpg     |      9        | QUICKLOOK_MD  | Local-IMG-MAX, LOCAL-ALL
-    // quicklook_hd.jpg     |      no size  | QUICKLOOK_HD  | LOCAL-ALL
+    // quicklook_hd.jpg     |      9        | QUICKLOOK_HD  | LOCAL-ALL
     // simple_sip_02.dat    |      20       | RAWDATA       | LOCAL-RAW, LOCAL-ALL
     public void store_on_different_storages_success() throws FileNotFoundException, EntityInvalidException {
         // GIVEN 
@@ -144,6 +148,55 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
                 Assert.fail("Unexpected number of FileStorageRequests.");
             }
         }
+    }
+
+    @Test
+    @Purpose("Test ingest process fail if storage needs file size and file size not provided in sip")
+    // According to the sip storage metadata (see: src/test/resources/data/sip-with-storage-meta.json),
+    // the related files should be stored on specific storage locations depending on their size and types.
+    //
+    // storage        | target type                                      | size range (o)
+    // _______________|__________________________________________________|_______________
+    // LOCAL-ALL      | all                                              | none
+    // Local-SMALL    | [ "RAWDATA" ]                                    | T <= 20
+
+    // files                | file size (o) | type          | ** EXPECTED LOCATION **
+    // _____________________|_______________|_________________________________________
+    // simple_sip_01.dat    |      10       | RAWDATA       | Local-RAW, LOCAL-ALL
+    // simple_sip_01.dat    |  no file size | RAWDATA       | error exptected
+    public void valid_ingest_process_fail_if_file_size_not_provided()
+        throws FileNotFoundException, EntityInvalidException {
+        // CHECK
+        ChooseVersioningRequestParameters filters = ChooseVersioningRequestParameters.build();
+        filters.withState(InternalRequestState.ERROR);
+        int errorRequestsCount = this.ingestRequestRepository.findAll(IngestRequestSpecifications.searchAllByFilters(
+            filters,
+            Pageable.ofSize(10))).size();
+        Assert.assertEquals(0, errorRequestsCount);
+        // GIVEN
+        // build sips with storage metadata
+        JsonReader input = new JsonReader(new FileReader(Paths.get("src/test/resources/data/sip-with-storage-meta-and"
+                                                                   + "-object-without-file-size.json").toFile()));
+        SIPCollection sips = gson.fromJson(input, SIPCollection.class);
+
+        // WHEN
+        // sips are handled
+        ingestService.handleSIPCollection(sips);
+
+        // THEN
+        // request is in error status
+        Awaitility.await().atMost(10000, TimeUnit.MILLISECONDS).pollInterval(1, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return this.ingestRequestRepository.findAll(IngestRequestSpecifications.searchAllByFilters(filters,
+                                                                                                       Pageable.ofSize(
+                                                                                                           10))).size()
+                   == 1;
+        });
+        errorRequestsCount = this.ingestRequestRepository.findAll(IngestRequestSpecifications.searchAllByFilters(filters,
+                                                                                                                 Pageable.ofSize(
+                                                                                                                     10)))
+                                                         .size();
+        Assert.assertEquals(1, errorRequestsCount);
     }
 
     private void validateStorageRequests(List<FileStorageRequestDTO> actualStorageRequests,
