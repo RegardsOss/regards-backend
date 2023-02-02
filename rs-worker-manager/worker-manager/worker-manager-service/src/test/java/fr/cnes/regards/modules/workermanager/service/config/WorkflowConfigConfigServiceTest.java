@@ -18,12 +18,15 @@
  */
 package fr.cnes.regards.modules.workermanager.service.config;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.gson.GsonCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
 import fr.cnes.regards.modules.workermanager.dao.IWorkflowRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
-import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
-import fr.cnes.regards.modules.workermanager.dto.WorkflowDto;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep;
+import fr.cnes.regards.modules.workermanager.dto.WorkflowConfigDto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -35,6 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.Validator;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -47,13 +52,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Iliana Ghazali
  **/
 @RunWith(MockitoJUnitRunner.class)
-public class WorkflowConfigServiceTest {
+public class WorkflowConfigConfigServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowConfigServiceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowConfigConfigServiceTest.class);
 
     /**
      * Error status codes
      */
+    private static final String DUPLICATED_STEP_NUMBER_ERROR_KEY = "DuplicatedStepNumber";
+
     private static final String NOT_EXISTING_WORKER_ERROR_KEY = "NotExistingWorkerError";
 
     private static final String NULL_CONTENT_TYPE_OUT_ERROR_KEY = "NullContentTypeOutError";
@@ -67,15 +74,19 @@ public class WorkflowConfigServiceTest {
 
     private static final String WORKFLOW_2 = "workflow2";
 
-    public static final String WORKER_1 = "worker1";
+    private static final String WORKER_1 = "worker1";
 
-    public static final String WORKER_2 = "worker2";
+    private static final String WORKER_2 = "worker2";
 
-    public static final String CONTENT_TYPE_1 = "contentType1";
+    private static final String CONTENT_TYPE_1 = "contentType1";
 
-    public static final String CONTENT_TYPE_2 = "contentType2";
+    private static final String CONTENT_TYPE_2 = "contentType2";
 
-    public static final String CONTENT_TYPE_3 = "contentType3";
+    private static final String CONTENT_TYPE_3 = "contentType3";
+
+    private static final String SRC_TEST_RESOURCES_CONFIG = "src/test/resources/config/";
+
+    private final Gson gson = GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty()).create();
 
     @InjectMocks
     private WorkflowConfigService workflowConfigService;
@@ -91,10 +102,11 @@ public class WorkflowConfigServiceTest {
 
     @Test
     @Purpose("Verify workflows can be created from valid workflowDtos.")
-    public void import_conf_nominal() {
+    public void import_conf_nominal() throws FileNotFoundException {
         // --- GIVEN ---
-        WorkflowDto workflowDto1 = new WorkflowDto(WORKFLOW_1, List.of(WORKER_1, WORKER_2));
-        WorkflowDto workflowDto2 = new WorkflowDto(WORKFLOW_2, List.of(WORKER_1));
+        Set<WorkflowConfigDto> workflowDtos = Set.of(getWorkflowDto("workflow1_conf_nominal.json"),
+                                                     getWorkflowDto("workflow2_conf_nominal.json"));
+
         // mock workerConfigs to validate workflow
         Mockito.when(workerConfigRepository.findByWorkerType(WORKER_1))
                .thenReturn(Optional.of(WorkerConfig.build("type1", Set.of(CONTENT_TYPE_1), CONTENT_TYPE_2)));
@@ -102,36 +114,38 @@ public class WorkflowConfigServiceTest {
                .thenReturn(Optional.of(WorkerConfig.build("type2", Set.of(CONTENT_TYPE_2), CONTENT_TYPE_3)));
 
         // --- WHEN ---
-        Set<String> errors = workflowConfigService.importConfiguration(Set.of(workflowDto1, workflowDto2));
+        Set<String> errors = workflowConfigService.importConfiguration(workflowDtos);
 
         // --- THEN ---
-        Mockito.verify(workflowRepository).save(new Workflow(WORKFLOW_1, List.of(WORKER_1, WORKER_2)));
-        Mockito.verify(workflowRepository).save(new Workflow(WORKFLOW_2, List.of(WORKER_1)));
+        Mockito.verify(workflowRepository)
+               .save(new WorkflowConfig(WORKFLOW_1,
+                                        List.of(new WorkflowStep(1, WORKER_1), new WorkflowStep(2, WORKER_2))));
+        Mockito.verify(workflowRepository).save(new WorkflowConfig(WORKFLOW_2, List.of(new WorkflowStep(1, WORKER_1))));
         assertThat(errors).isEmpty();
     }
 
     @Test
     @Purpose("Verify workflows are not created if associated workers do not exist.")
-    public void import_conf_error_not_existing_workers() {
+    public void import_conf_error_not_existing_workers() throws FileNotFoundException {
         // --- GIVEN ---
-        WorkflowDto workflowDto1 = new WorkflowDto(WORKFLOW_1, List.of(WORKER_1));
-        WorkflowDto workflowDto2 = new WorkflowDto(WORKFLOW_2, List.of(WORKER_2));
+        Set<WorkflowConfigDto> workflowDtos = Set.of(getWorkflowDto("workflow1_conf_nominal.json"),
+                                                     getWorkflowDto("workflow2_conf_nominal.json"));
 
         // --- WHEN ---
-        Set<String> errors = workflowConfigService.importConfiguration(Set.of(workflowDto1, workflowDto2));
+        Set<String> errors = workflowConfigService.importConfiguration(workflowDtos);
 
         // --- THEN ---
         Mockito.verifyNoInteractions(workflowRepository);
-        assertThat(errors).hasSize(2);
+        assertThat(errors).hasSize(3);
         assertThat(errors.stream().allMatch(error -> error.contains(NOT_EXISTING_WORKER_ERROR_KEY))).isTrue();
         LOGGER.error("Expected errors during the test {}", errors);
     }
 
     @Test
     @Purpose("Verify workflows are not created if associated workers are not chainable")
-    public void import_conf_error_not_chainable_workers() {
+    public void import_conf_error_not_chainable_workers() throws FileNotFoundException {
         // --- GIVEN ---
-        WorkflowDto workflowDto1 = new WorkflowDto(WORKFLOW_1, List.of(WORKER_1, WORKER_2));
+        Set<WorkflowConfigDto> workflowDto = Set.of(getWorkflowDto("workflow1_conf_nominal.json"));
 
         // mock workerConfigs to invalidate workflow
         Mockito.when(workerConfigRepository.findByWorkerType(WORKER_1))
@@ -140,20 +154,21 @@ public class WorkflowConfigServiceTest {
                .thenReturn(Optional.of(WorkerConfig.build("type2", Set.of(CONTENT_TYPE_3), CONTENT_TYPE_3)));
 
         // --- WHEN ---
-        Set<String> errors = workflowConfigService.importConfiguration(Set.of(workflowDto1));
+        Set<String> errors = workflowConfigService.importConfiguration(workflowDto);
 
         // --- THEN ---
         Mockito.verifyNoInteractions(workflowRepository);
         assertThat(errors).hasSize(1);
-        assertThat(errors.stream().allMatch(error -> error.contains(NOT_CONSISTENT_CONTENT_TYPE_OUT_ERROR_KEY))).isTrue();
+        assertThat(errors.stream()
+                         .allMatch(error -> error.contains(NOT_CONSISTENT_CONTENT_TYPE_OUT_ERROR_KEY))).isTrue();
         LOGGER.error("Expected errors during the test {}", errors);
     }
 
     @Test
     @Purpose("Verify workflows are not created if associated workers contain null contentTypeOut")
-    public void import_conf_error_contentTypeOut_null() {
+    public void import_conf_error_contentTypeOut_null() throws FileNotFoundException {
         // --- GIVEN ---
-        WorkflowDto workflowDto1 = new WorkflowDto(WORKFLOW_1, List.of(WORKER_1, WORKER_2));
+        Set<WorkflowConfigDto> workflowDto = Set.of(getWorkflowDto("workflow1_conf_nominal.json"));
 
         // mock workerConfigs to invalidate workflow
         Mockito.when(workerConfigRepository.findByWorkerType(WORKER_1))
@@ -162,13 +177,33 @@ public class WorkflowConfigServiceTest {
                .thenReturn(Optional.of(WorkerConfig.build("type2", Set.of(CONTENT_TYPE_2), null)));
 
         // --- WHEN ---
-        Set<String> errors = workflowConfigService.importConfiguration(Set.of(workflowDto1));
+        Set<String> errors = workflowConfigService.importConfiguration(workflowDto);
 
         // --- THEN ---
         Mockito.verifyNoInteractions(workflowRepository);
         assertThat(errors).hasSize(1);
         assertThat(errors.stream().allMatch(error -> error.contains(NULL_CONTENT_TYPE_OUT_ERROR_KEY))).isTrue();
         LOGGER.error("Expected errors during the test {}", errors);
+    }
+
+    @Test
+    @Purpose("Verify workflows are not created if step numbers are duplicated")
+    public void import_conf_error_duplicated_step_numbers() throws FileNotFoundException {
+        // --- GIVEN ---
+        Set<WorkflowConfigDto> workflowDto = Set.of(getWorkflowDto("workflow_conf_error_duplicated_steps.json"));
+
+        // --- WHEN ---
+        Set<String> errors = workflowConfigService.importConfiguration(workflowDto);
+
+        // --- THEN ---
+        Mockito.verifyNoInteractions(workflowRepository);
+        assertThat(errors).hasSize(1);
+        assertThat(errors.stream().allMatch(error -> error.contains(DUPLICATED_STEP_NUMBER_ERROR_KEY))).isTrue();
+        LOGGER.error("Expected errors during the test {}", errors);
+    }
+
+    private WorkflowConfigDto getWorkflowDto(String workflow) throws FileNotFoundException {
+        return gson.fromJson(new FileReader(SRC_TEST_RESOURCES_CONFIG + workflow), WorkflowConfigDto.class);
     }
 
 }

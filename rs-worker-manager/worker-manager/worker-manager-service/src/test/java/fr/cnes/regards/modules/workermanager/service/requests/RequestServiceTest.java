@@ -22,7 +22,8 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
-import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
@@ -70,6 +71,8 @@ public class RequestServiceTest {
 
     public static final String WORKER_TYPE_2 = "workerType2";
 
+    public static final Integer INIT_STEP = 1;
+
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @InjectMocks
@@ -112,13 +115,12 @@ public class RequestServiceTest {
         Mockito.when(workerCacheService.getWorkerTypeByContentType(CONTENT_TYPE_WORKER_1))
                .thenReturn(Optional.of(WORKER_TYPE_1));
         // Worker will be retrieved from the workflow for the request with workflow
-        Mockito.when(workerCacheService.getWorkerTypeByContentType(WORKFLOW_TYPE_1))
-               .thenReturn(Optional.empty());
-        Workflow workflow = new Workflow(WORKFLOW_TYPE_1, List.of(WORKER_TYPE_2));
-        Mockito.when(workflowService.findWorkflowByType(WORKFLOW_TYPE_1))
-               .thenReturn(Optional.of(workflow));
-        Mockito.when(workflowService.getWorkerTypeInWorkflow(workflow, 0))
-               .thenReturn(WORKER_TYPE_2);
+        Mockito.when(workerCacheService.getWorkerTypeByContentType(WORKFLOW_TYPE_1)).thenReturn(Optional.empty());
+        WorkflowConfig workflowConfig = new WorkflowConfig(WORKFLOW_TYPE_1,
+                                                           List.of(new WorkflowStep(INIT_STEP, WORKER_TYPE_2)));
+        Mockito.when(workflowService.findWorkflowByType(WORKFLOW_TYPE_1)).thenReturn(Optional.of(workflowConfig));
+        Mockito.when(workflowService.getWorkerTypeInWorkflow(workflowConfig, INIT_STEP))
+               .thenReturn(Optional.of(WORKER_TYPE_2));
         Mockito.when(workerCacheService.isWorkerTypeInCache(WORKER_TYPE_2)).thenReturn(true);
 
         // --- WHEN ---
@@ -210,7 +212,7 @@ public class RequestServiceTest {
         request.setSession(session);
         request.setStatus(RequestStatus.TO_DISPATCH);
         request.setContent(content);
-
+        request.setStep(INIT_STEP);
         return request;
     }
 

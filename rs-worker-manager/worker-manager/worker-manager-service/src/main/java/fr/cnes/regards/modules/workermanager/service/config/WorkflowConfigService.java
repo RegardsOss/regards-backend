@@ -23,8 +23,10 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
 import fr.cnes.regards.modules.workermanager.dao.IWorkflowRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
-import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
-import fr.cnes.regards.modules.workermanager.dto.WorkflowDto;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep;
+import fr.cnes.regards.modules.workermanager.dto.WorkflowConfigDto;
+import fr.cnes.regards.modules.workermanager.dto.WorkflowStepDto;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -33,7 +35,7 @@ import org.springframework.validation.Validator;
 import java.util.*;
 
 /**
- * Service to save {@link Workflow} from {@link WorkflowDto} configuration
+ * Service to save {@link WorkflowConfig} from {@link WorkflowConfigDto} configuration
  *
  * @author Iliana Ghazali
  **/
@@ -44,6 +46,8 @@ public class WorkflowConfigService {
     /**
      * Error status codes
      */
+    private static final String DUPLICATED_STEP_NUMBER_ERROR_KEY = "DuplicatedStepNumber";
+
     private static final String NOT_EXISTING_WORKER_ERROR_KEY = "NotExistingWorkerError";
 
     private static final String NULL_CONTENT_TYPE_OUT_ERROR_KEY = "NullContentTypeOutError";
@@ -68,85 +72,112 @@ public class WorkflowConfigService {
     }
 
     /**
-     * Save new workflow configurations only if valid
+     * Save new workflowConfig configurations only if valid
      *
      * @return set of errors. Empty if all configuration are valid.
      */
-    public Set<String> importConfiguration(Set<WorkflowDto> workflows) {
+    public Set<String> importConfiguration(Set<WorkflowConfigDto> workflowConfigDtos) {
         Set<String> errors = new HashSet<>();
-        for (WorkflowDto workflow : workflows) {
+        for (WorkflowConfigDto workflowConfigDto : workflowConfigDtos) {
             // check workflowDto model and consistency
-            Errors modelViolations = new MapBindingResult(new HashMap<>(), WorkflowDto.class.getName());
-            validator.validate(workflow, modelViolations);
-            // import workflow configuration if valid
+            Errors modelViolations = new MapBindingResult(new HashMap<>(), WorkflowConfigDto.class.getName());
+            validator.validate(workflowConfigDto, modelViolations);
+            // import workflowConfigDto configuration if valid
             if (modelViolations.hasErrors()) {
                 errors.addAll(ErrorTranslator.getErrors(modelViolations));
-            } else if (isWorkflowValid(workflow, errors)) {
-                workflowRepository.save(new Workflow(workflow.getType(), workflow.getWorkerTypes()));
+            } else {
+                // sort workflow steps by step numbers to guarantee order
+                workflowConfigDto.getSteps().sort(Comparator.comparingInt(WorkflowStepDto::getStep));
+                // check if workflow is valid
+                if (areStepNumbersUnique(workflowConfigDto, errors) && areWorkflowStepContentsValid(workflowConfigDto,
+                                                                                                    errors)) {
+                    List<WorkflowStep> steps = workflowConfigDto.getSteps()
+                                                                .stream()
+                                                                .map(stepDto -> new WorkflowStep(stepDto.getStep(),
+                                                                                                 stepDto.getWorkerType()))
+                                                                .toList();
+                    // import valid workflow configuration
+                    workflowRepository.save(new WorkflowConfig(workflowConfigDto.getWorkflowType(), steps));
+                }
             }
+
         }
         return errors;
     }
 
     /**
-     * Check if the workflow is valid on 2 conditions :
+     * Check if all step numbers of workflow are unique
+     */
+    private boolean areStepNumbersUnique(WorkflowConfigDto workflowConfigDto, Set<String> errors) {
+        boolean isValid = workflowConfigDto.getSteps().stream().map(WorkflowStepDto::getStep).distinct().count()
+                          == workflowConfigDto.getSteps().size();
+        if (!isValid) {
+            errors.add(String.format("[%s - %s]: step duplications detected! Make sure all step numbers are unique!",
+                                     DUPLICATED_STEP_NUMBER_ERROR_KEY,
+                                     workflowConfigDto.getWorkflowType()));
+        }
+        return isValid;
+    }
+
+    /**
+     * Check if workflowConfigDto steps are all valid :
      * <ul>
      *     <li>all worker configurations of the chain must exist,</li>
      *     <li>contentTypeOut of each workers are chainable</li>
      * </ul>
      */
-    private boolean isWorkflowValid(WorkflowDto workflow, Set<String> errors) {
+    private boolean areWorkflowStepContentsValid(WorkflowConfigDto workflowConfig, Set<String> errors) {
         String lastContentTypeOut = null;
-        int step = 0;
-        boolean isWorkflowValid = true;
+        boolean isValid = true;
+        int stepPos = 0;
 
-        for (String workerType : workflow.getWorkerTypes()) {
-            Optional<WorkerConfig> workerConfig = workerConfigRepository.findByWorkerType(workerType);
+        for (WorkflowStepDto workflowStepDto : workflowConfig.getSteps()) {
+            Optional<WorkerConfig> workerConfig = workerConfigRepository.findByWorkerType(workflowStepDto.getWorkerType());
             // Check if worker config exists
             if (workerConfig.isEmpty()) {
                 errors.add(String.format("""
-                                             [%s] %s : worker "%s" configured at step %d does not exist.
+                                             [%s - %s]: worker "%s" configured at step %d does not exist.
                                              You can only configure a worker type that is already registered.""",
                                          NOT_EXISTING_WORKER_ERROR_KEY,
-                                         workflow.getType(),
-                                         workerType,
-                                         step));
-                isWorkflowValid = false;
+                                         workflowConfig.getWorkflowType(),
+                                         workflowStepDto.getWorkerType(),
+                                         workflowStepDto.getStep()));
+                isValid = false;
             } else {
                 // Check if contentTypeOut is present
                 String currentContentTypeOut = workerConfig.get().getContentTypeOutput();
                 if (currentContentTypeOut == null) {
                     errors.add(String.format("""
-                                                 [%s] %s : contentTypeOut of worker "%s" configured \
+                                                 [%s - %s]: contentTypeOut of worker "%s" configured \
                                                  at step %d must be present.
-                                                 Make sure all contentTypeOuts of the workflow are configured and chainable.""",
+                                                 Make sure all contentTypeOuts of the workflowConfig are configured and chainable.""",
                                              NULL_CONTENT_TYPE_OUT_ERROR_KEY,
-                                             workflow.getType(),
-                                             workerType,
-                                             step));
-                    isWorkflowValid = false;
+                                             workflowConfig.getWorkflowType(),
+                                             workflowStepDto.getWorkerType(),
+                                             workflowStepDto.getStep()));
+                    isValid = false;
                 } // verify if current worker can be chained to the previous one
-                else if (step != 0 && !workerConfig.get().getContentTypeInputs().contains(lastContentTypeOut)) {
+                else if (stepPos != 0 && !workerConfig.get().getContentTypeInputs().contains(lastContentTypeOut)) {
                     errors.add(String.format("""
-                                                 [%s] %s : contentTypeInputs of worker "%s" configured \
+                                                 [%s - %s]: contentTypeInputs of worker "%s" configured \
                                                  at step %d do not contain the last worker contentTypeOut "%s".
                                                  Make sure each contentTypeOut is managed by the next worker inputs.""",
                                              NOT_CONSISTENT_CONTENT_TYPE_OUT_ERROR_KEY,
-                                             workflow.getType(),
-                                             workerType,
-                                             step,
+                                             workflowConfig.getWorkflowType(),
+                                             workflowStepDto.getWorkerType(),
+                                             workflowStepDto.getStep(),
                                              lastContentTypeOut));
-                    isWorkflowValid = false;
+                    isValid = false;
                 } else {
                     lastContentTypeOut = currentContentTypeOut;
                 }
-                step++;
             }
+            stepPos++;
         }
-        return isWorkflowValid;
+        return isValid;
     }
 
-    public List<Workflow> findAll() {
+    public List<WorkflowConfig> findAll() {
         return workflowRepository.findAll();
     }
 

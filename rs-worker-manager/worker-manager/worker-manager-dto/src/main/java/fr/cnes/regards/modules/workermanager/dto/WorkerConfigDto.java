@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.util.Set;
 
 /**
@@ -34,6 +35,7 @@ import java.util.Set;
 public class WorkerConfigDto {
 
     @NotBlank(message = "Invalid worker conf with empty name")
+    @Size(max = 128, message = "workerType is limited to 128 characters")
     private final String workerType;
 
     /**

@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepReposit
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
 import fr.cnes.regards.modules.workermanager.dao.IWorkflowRepository;
@@ -38,10 +39,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -161,6 +165,25 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
     // --------------
     //  WORKER MANAGER UTILS
     // --------------
+
+    protected List<Message> createRequestEvents(String requestId,
+                                                String contentType,
+                                                String source,
+                                                String session,
+                                                byte[] content,
+                                                int nbRequests) {
+        List<Message> messages = new ArrayList<>(nbRequests);
+        for (int i = 0; i < nbRequests; i++) {
+            MessageProperties properties = new MessageProperties();
+            properties.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId + i);
+            properties.setHeader(EventHeadersHelper.CONTENT_TYPE_HEADER, contentType);
+            properties.setHeader(EventHeadersHelper.OWNER_HEADER, source);
+            properties.setHeader(EventHeadersHelper.SESSION_HEADER, session);
+            messages.add(new Message(content, properties));
+        }
+        return messages;
+    }
+
     protected List<Request> createRequests(String requestId,
                                            OffsetDateTime creationDate,
                                            String contentType,

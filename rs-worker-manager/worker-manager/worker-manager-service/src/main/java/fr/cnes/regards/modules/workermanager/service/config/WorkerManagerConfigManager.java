@@ -22,9 +22,9 @@ import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractModuleManagerWithTenantSettings;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
-import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
-import fr.cnes.regards.modules.workermanager.dto.WorkflowDto;
+import fr.cnes.regards.modules.workermanager.dto.WorkflowConfigDto;
 import fr.cnes.regards.modules.workermanager.service.cache.confupdated.WorkerConfUpdatedEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +65,8 @@ public class WorkerManagerConfigManager extends AbstractModuleManagerWithTenantS
         for (WorkerConfig conf : workerConfigService.searchAll()) {
             configuration.add(ModuleConfigurationItem.build(conf.toDto()));
         }
-        for (Workflow workflow : workflowConfigService.findAll()) {
-            configuration.add(ModuleConfigurationItem.build(workflow.toDto()));
+        for (WorkflowConfig workflowConfig : workflowConfigService.findAll()) {
+            configuration.add(ModuleConfigurationItem.build(workflowConfig.toDto()));
         }
         return ModuleConfiguration.build(info, configuration);
     }
@@ -75,7 +75,7 @@ public class WorkerManagerConfigManager extends AbstractModuleManagerWithTenantS
     protected Set<String> importConfiguration(ModuleConfiguration configuration, Set<String> importErrors) {
         List<ModuleConfigurationItem<?>> configurationItems = configuration.getConfiguration();
         Set<WorkerConfigDto> workerConfigs = getWorkerConfigs(configurationItems);
-        Set<WorkflowDto> workflows = getWorkflow(configurationItems);
+        Set<WorkflowConfigDto> workflows = getWorkflow(configurationItems);
 
         // Import configuration into transaction
         importErrors.addAll(workerConfigService.importConfiguration(workerConfigs));
@@ -107,10 +107,10 @@ public class WorkerManagerConfigManager extends AbstractModuleManagerWithTenantS
                     .collect(Collectors.toSet());
     }
 
-    private Set<WorkflowDto> getWorkflow(Collection<ModuleConfigurationItem<?>> items) {
+    private Set<WorkflowConfigDto> getWorkflow(Collection<ModuleConfigurationItem<?>> items) {
         return items.stream()
-                    .filter(i -> WorkflowDto.class.isAssignableFrom(i.getKey()))
-                    .map(i -> (WorkflowDto) i.getTypedValue())
+                    .filter(i -> WorkflowConfigDto.class.isAssignableFrom(i.getKey()))
+                    .map(i -> (WorkflowConfigDto) i.getTypedValue())
                     .collect(Collectors.toSet());
     }
 }

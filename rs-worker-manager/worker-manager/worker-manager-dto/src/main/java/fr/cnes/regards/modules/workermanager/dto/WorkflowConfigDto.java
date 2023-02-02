@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.workermanager.dto;
 
 import org.springframework.util.Assert;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -31,30 +32,31 @@ import java.util.Objects;
  *
  * @author Iliana Ghazali
  **/
-public class WorkflowDto {
+public class WorkflowConfigDto {
 
-    @NotBlank(message = "workflow type is mandatory")
-    @Size(max = 255, message = "workflow type is limited to 255 characters")
-    private final String type;
+    @NotBlank(message = "workflowType is mandatory")
+    @Size(max = 255, message = "workflowType is limited to 255 characters")
+    private final String workflowType;
     /**
      * Ordered list of worker configurations to execute {@see WorkerConfig#workerType}
      */
-    @NotEmpty(message = "at least one workerType is expected")
-    private final List<String> workerTypes;
+    @NotEmpty(message = "at least one step is expected")
+    @Valid
+    private final List<WorkflowStepDto> steps;
 
-    public WorkflowDto(String type, List<String> workerTypes) {
-        Assert.notNull(type, "workflow type is mandatory");
-        Assert.notEmpty(workerTypes, "at least one workerType is expected");
-        this.type = type;
-        this.workerTypes = workerTypes;
+    public WorkflowConfigDto(String workflowType, List<WorkflowStepDto> steps) {
+        Assert.notNull(workflowType, "workflowType is mandatory");
+        Assert.notEmpty(steps, "at least one step is expected");
+        this.workflowType = workflowType;
+        this.steps = steps;
     }
 
-    public String getType() {
-        return type;
+    public String getWorkflowType() {
+        return workflowType;
     }
 
-    public List<String> getWorkerTypes() {
-        return workerTypes;
+    public List<WorkflowStepDto> getSteps() {
+        return steps;
     }
 
     @Override
@@ -65,17 +67,17 @@ public class WorkflowDto {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        WorkflowDto that = (WorkflowDto) o;
-        return type.equals(that.type);
+        WorkflowConfigDto that = (WorkflowConfigDto) o;
+        return workflowType.equals(that.workflowType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type);
+        return Objects.hash(workflowType);
     }
 
     @Override
     public String toString() {
-        return "WorkflowDto{" + "type='" + type + '\'' + ", workerTypes=" + workerTypes + '}';
+        return "WorkflowConfigDto{" + "workflowType='" + workflowType + '\'' + ", steps=" + steps + '}';
     }
 }

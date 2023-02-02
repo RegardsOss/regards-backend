@@ -1,0 +1,17 @@
+{
+  "workflowType": "workflow2",
+  "steps": [
+    {
+      "step": 2,
+      "workerType": "worker1"
+    },
+    {
+      "step": 1,
+      "workerType": "worker2"
+    },
+    {
+      "step": 2,
+      "workerType": "worker3"
+    }
+  ]
+}

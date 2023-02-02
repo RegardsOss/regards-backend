@@ -34,7 +34,7 @@ public class RequestDTO {
 
     private final String contentType;
 
-    private final int step;
+    private final Integer step;
 
     private final String source;
 
@@ -111,15 +111,15 @@ public class RequestDTO {
             return false;
         }
         RequestDTO that = (RequestDTO) o;
-        return step == that.step
-               && requestId.equals(that.requestId)
+        return requestId.equals(that.requestId)
                && creationDate.equals(that.creationDate)
                && contentType.equals(that.contentType)
                && source.equals(that.source)
                && session.equals(that.session)
                && status == that.status
                && Objects.equals(dispatchedWorkerType, that.dispatchedWorkerType)
-               && Objects.equals(error, that.error);
+               && Objects.equals(error, that.error)
+               && Objects.equals(step, that.step);
     }
 
     @Override

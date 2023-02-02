@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import org.hibernate.annotations.Type;
 import org.springframework.amqp.core.Message;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
@@ -77,8 +78,9 @@ public class Request {
     @Type(type = "text")
     private String error;
 
-    @Column(name = "step", columnDefinition = "integer default 0")
-    private int step;
+    @Column(name = "step")
+    @Nullable
+    private Integer step;
 
     public Request() {
     }
@@ -91,7 +93,6 @@ public class Request {
         this.session = EventHeadersHelper.getSessionHeader(message).get();
         this.status = status;
         this.content = message.getBody();
-        this.step = 0;
     }
 
     public Long getId() {
@@ -126,11 +127,12 @@ public class Request {
         this.contentType = contentType;
     }
 
-    public int getStep() {
+    @Nullable
+    public Integer getStep() {
         return step;
     }
 
-    public void setStep(int step) {
+    public void setStep(@Nullable Integer step) {
         this.step = step;
     }
 

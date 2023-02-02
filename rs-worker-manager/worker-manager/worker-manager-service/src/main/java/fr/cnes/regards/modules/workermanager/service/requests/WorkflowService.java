@@ -20,16 +20,20 @@ package fr.cnes.regards.modules.workermanager.service.requests;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.workermanager.dao.IWorkflowRepository;
-import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.stream.IntStream;
 
 /**
- * Service to handle {@link fr.cnes.regards.modules.workermanager.domain.config.Workflow}
+ * Service to handle {@link WorkflowConfig}
  *
  * @author Iliana Ghazali
  **/
@@ -46,27 +50,59 @@ public class WorkflowService {
     }
 
     /**
-     * Find specific workerType on a workflow with index. Null if index is greater than workflow size.
+     * Find specific workerType on a workflow with index.
      *
-     * @param workflow containing workerType to find
-     * @param step     workerType position to retrieve
-     * @return workerType. Can be null if none was found.
+     * @param workflowConfig containing workerType to find
+     * @param step           workerType position to retrieve
+     * @return optional workerType.
      */
-    public String getWorkerTypeInWorkflow(Workflow workflow, int step) {
-        List<String> workerTypes = workflow.getWorkerTypes();
-        String workerType = null;
-        if (step < workerTypes.size()) {
-            workerType = workerTypes.get(step);
-        }
-        return workerType;
+    public Optional<String> getWorkerTypeInWorkflow(WorkflowConfig workflowConfig, Integer step) {
+        return workflowConfig.getSteps()
+                             .stream()
+                             .filter(workflowStep -> workflowStep.getStep() == step)
+                             .map(WorkflowStep::getWorkerType)
+                             .findFirst();
     }
 
-    public Optional<Workflow> findWorkflowByType(String workflowType) {
+    public Optional<WorkflowConfig> findWorkflowByType(String workflowType) {
         return workflowRepository.findById(workflowType);
     }
 
-    public boolean hasNextWorkerTypeStep(Workflow workflow, int step) {
-        return step + 1 < workflow.getWorkerTypes().size();
+    /**
+     * Find the next step to execute in a workflow. Empty if workflow is completed.
+     *
+     * @param workflowConfig workflow of steps to execute
+     * @param step           number of the current step
+     * @return index of next step to execute if found
+     */
+    public OptionalInt getNextWorkflowStepIndex(WorkflowConfig workflowConfig, Integer step) {
+        // sort list to guarantee step order
+        List<WorkflowStep> steps = getSortedWorkflowSteps(workflowConfig);
+        // get next step index
+        return IntStream.range(0, steps.size() - 1)
+                        .filter(stepInd -> steps.get(stepInd).getStep() == step)
+                        .map(currentIndex -> currentIndex + 1)
+                        .findFirst();
+
+    }
+
+    /**
+     * Find the first step of workflow.
+     */
+    public int getFirstStep(WorkflowConfig workflowConfig) {
+        // sort list to guarantee step order
+        List<WorkflowStep> steps = getSortedWorkflowSteps(workflowConfig);
+        // get first step number
+        return steps.get(0).getStep();
+    }
+
+    /**
+     * Sort workflow steps by ascending step number
+     */
+    private List<WorkflowStep> getSortedWorkflowSteps(WorkflowConfig workflowConfig) {
+        List<WorkflowStep> steps = workflowConfig.getSteps();
+        steps.sort(Comparator.comparingInt(WorkflowStep::getStep));
+        return steps;
     }
 
 }

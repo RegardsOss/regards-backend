@@ -24,22 +24,20 @@ import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerHeartBeatEvent;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerResponseEvent;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
-import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsIT;
-import fr.cnes.regards.modules.workermanager.service.sessions.SessionsRequestsInfo;
 import org.junit.Test;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -89,6 +87,8 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
 
     private static final int INIT_STEP = 0;
 
+    private static final int STEP_INC = 10;
+
     @Override
     protected void doInit() {
         initWorkers();
@@ -113,47 +113,48 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
         // --- GIVEN ---
         // -------------
         // create worker requests
-        List<Request> requestsWorkflow1 = createRequests("requestIdWorkflowNominal1-",
-                                                         OffsetDateTime.now(),
-                                                         WORKFLOW_TYPE_1,
-                                                         "sourceWorkflowNominal1",
-                                                         "sessionWorkflowNominal1",
-                                                         RequestStatus.TO_DISPATCH,
-                                                         CONTENT_BODY.getBytes(),
-                                                         null,
-                                                         2);
-        List<Request> requestsWorkflow2 = createRequests("requestIdWorkflowNominal2-",
-                                                         OffsetDateTime.now(),
-                                                         WORKFLOW_TYPE_2,
-                                                         "sourceWorkflowNominal2",
-                                                         "sessionWorkflowNominal2",
-                                                         RequestStatus.TO_DISPATCH,
-                                                         CONTENT_BODY.getBytes(),
-                                                         null,
-                                                         2);
+        List<Message> requestsWorkflow1 = createRequestEvents("requestIdWorkflowNominal1-",
+                                                              WORKFLOW_TYPE_1,
+                                                              "sourceWorkflowNominal1",
+                                                              "sessionWorkflowNominal1",
+                                                              CONTENT_BODY.getBytes(),
+                                                              2);
+        List<Message> requestsWorkflow2 = createRequestEvents("requestIdWorkflowNominal2-",
+                                                              WORKFLOW_TYPE_2,
+                                                              "sourceWorkflowNominal2",
+                                                              "sessionWorkflowNominal2",
+                                                              CONTENT_BODY.getBytes(),
+                                                              2);
+
         // -------------------
-        // --- WHEN / THEN ---
+        // ------  WHEN ------
+        // -------------------
+        requestService.registerRequests(requestsWorkflow1);
+        requestService.registerRequests(requestsWorkflow2);
+
+        // -------------------
+        // ------  THEN ------
         // -------------------
         // --> STEP 0
         // simulate and handle responses in success
         executeWorkflowsSteps(new ExpectedWorkflowIncrement(requestsWorkflow1.size() + requestsWorkflow2.size(),
-                                                            0,
+                                                            INIT_STEP,
                                                             CONTENT_BODY,
                                                             requestsWorkflow1.size() + requestsWorkflow2.size(),
-                                                            RequestStatus.TO_DISPATCH,
-                                                            1,
+                                                            RequestStatus.DISPATCHED,
+                                                            INIT_STEP + STEP_INC,
                                                             String.format(CONTENT_BODY_RESPONSE, INIT_STEP)), false);
 
         // --> STEP 1
         // simulate and handle responses in success
         // requests associated to WORKFLOW_TYPE_1 have no more step thus they have been deleted
         executeWorkflowsSteps(new ExpectedWorkflowIncrement(requestsWorkflow1.size() + requestsWorkflow2.size(),
-                                                            1,
+                                                            INIT_STEP + STEP_INC,
                                                             String.format(CONTENT_BODY_RESPONSE, INIT_STEP),
                                                             requestsWorkflow2.size(),
-                                                            RequestStatus.TO_DISPATCH,
-                                                            2,
-                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + 1)),
+                                                            RequestStatus.DISPATCHED,
+                                                            INIT_STEP + 2 * STEP_INC,
+                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + STEP_INC)),
                               false);
 
         // --> STEP 2
@@ -161,13 +162,13 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
         // requests associated to WORKFLOW_TYPE_2 have no more step thus they have been deleted (requests in success
         // are deleted)
         executeWorkflowsSteps(new ExpectedWorkflowIncrement(requestsWorkflow2.size(),
-                                                            2,
-                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + 1),
+                                                            INIT_STEP + 2 * STEP_INC,
+                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + STEP_INC),
                                                             0,
                                                             RequestStatus.SUCCESS,
-                                                            2,
-                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + 2)),
-                              false);
+                                                            INIT_STEP + 2 * STEP_INC,
+                                                            String.format(CONTENT_BODY_RESPONSE,
+                                                                          INIT_STEP + 2 * STEP_INC)), false);
     }
 
     /**
@@ -181,36 +182,39 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
         // --- GIVEN ---
         // -------------
         // create worker requests
-        List<Request> requestsWorkflow = createRequests("requestIdWorkflowError-",
-                                                        OffsetDateTime.now(),
-                                                        WORKFLOW_TYPE_2,
-                                                        "sourceWorkflowError",
-                                                        "sessionWorkflowError",
-                                                        RequestStatus.TO_DISPATCH,
-                                                        CONTENT_BODY.getBytes(),
-                                                        null,
-                                                        2);
+        List<Message> requestsWorkflow = createRequestEvents("requestIdWorkflowError-",
+                                                             WORKFLOW_TYPE_2,
+                                                             "sourceWorkflowError",
+                                                             "sessionWorkflowError",
+                                                             CONTENT_BODY.getBytes(),
+                                                             2);
+
         // -------------------
-        // --- WHEN / THEN ---
+        // ------  WHEN ------
+        // -------------------
+        requestService.registerRequests(requestsWorkflow);
+
+        // -------------------
+        // ------  THEN ------
         // -------------------
         // --> STEP 0
         // simulate and handle responses in success
         executeWorkflowsSteps(new ExpectedWorkflowIncrement(requestsWorkflow.size(),
-                                                            0,
+                                                            INIT_STEP,
                                                             CONTENT_BODY,
                                                             requestsWorkflow.size(),
-                                                            RequestStatus.TO_DISPATCH,
-                                                            1,
+                                                            RequestStatus.DISPATCHED,
+                                                            INIT_STEP + STEP_INC,
                                                             String.format(CONTENT_BODY_RESPONSE, INIT_STEP)), false);
         // --> STEP 1
         // simulate and handle responses in error
         executeWorkflowsSteps(new ExpectedWorkflowIncrement(requestsWorkflow.size(),
-                                                            1,
+                                                            INIT_STEP + STEP_INC,
                                                             String.format(CONTENT_BODY_RESPONSE, INIT_STEP),
                                                             requestsWorkflow.size(),
                                                             RequestStatus.ERROR,
-                                                            1,
-                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + 1)), true);
+                                                            INIT_STEP + STEP_INC,
+                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP)), true);
     }
 
     /**
@@ -228,17 +232,20 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
         // --- GIVEN ---
         // -------------
         // create worker requests
-        List<Request> requestsWorkflow = createRequests("requestIdWorkflowErrorWithRetry-",
-                                                        OffsetDateTime.now(),
-                                                        WORKFLOW_TYPE_2,
-                                                        "sourceWorkflowErrorWithRetry",
-                                                        "sessionWorkflowErrorWithRetry",
-                                                        RequestStatus.TO_DISPATCH,
-                                                        CONTENT_BODY.getBytes(),
-                                                        null,
-                                                        2);
+        List<Message> requestsWorkflow = createRequestEvents("requestIdWorkflowErrorWithRetry-",
+                                                             WORKFLOW_TYPE_2,
+                                                             "sourceWorkflowErrorWithRetry",
+                                                             "sessionWorkflowErrorWithRetry",
+                                                             CONTENT_BODY.getBytes(),
+                                                             2);
+
         // -------------------
-        // --- WHEN / THEN ---
+        // ------  WHEN ------
+        // -------------------
+        requestService.registerRequests(requestsWorkflow);
+
+        // -------------------
+        // ------  THEN ------
         // -------------------
         // --> STEP 0
         // simulate and handle responses in success
@@ -246,19 +253,18 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
                                                             INIT_STEP,
                                                             CONTENT_BODY,
                                                             requestsWorkflow.size(),
-                                                            RequestStatus.TO_DISPATCH,
-                                                            INIT_STEP + 1,
+                                                            RequestStatus.DISPATCHED,
+                                                            INIT_STEP + STEP_INC,
                                                             String.format(CONTENT_BODY_RESPONSE, INIT_STEP)), false);
         // --> STEP 1
         // simulate and handle responses in error
         executeWorkflowsSteps(new ExpectedWorkflowIncrement(requestsWorkflow.size(),
-                                                            INIT_STEP + 1,
+                                                            INIT_STEP + STEP_INC,
                                                             String.format(CONTENT_BODY_RESPONSE, INIT_STEP),
                                                             requestsWorkflow.size(),
                                                             RequestStatus.ERROR,
-                                                            INIT_STEP + 1,
-
-                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + 1)), true);
+                                                            INIT_STEP + STEP_INC,
+                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP)), true);
 
         // --> RETRY
         requestService.updateRequestsStatusTo(new PageImpl<>(requestRepository.findAll()), RequestStatus.DISPATCHED);
@@ -266,12 +272,12 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
         // --> STEP 1
         // simulate and handle responses with retry
         executeWorkflowsSteps(new ExpectedWorkflowIncrement(requestsWorkflow.size(),
-                                                            INIT_STEP + 1,
-                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + 1),
+                                                            INIT_STEP + STEP_INC,
+                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP),
                                                             requestsWorkflow.size(),
-                                                            RequestStatus.TO_DISPATCH,
-                                                            INIT_STEP + 2,
-                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + 1)),
+                                                            RequestStatus.DISPATCHED,
+                                                            INIT_STEP + 2 * STEP_INC,
+                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + STEP_INC)),
                               false);
 
         // --> STEP 2
@@ -279,13 +285,13 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
         // requests associated to WORKFLOW_TYPE_2 have no more step thus they have been deleted (requests in success
         // are deleted)
         executeWorkflowsSteps(new ExpectedWorkflowIncrement(requestsWorkflow.size(),
-                                                            2,
-                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + 1),
+                                                            INIT_STEP + 2 * STEP_INC,
+                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + STEP_INC),
                                                             0,
                                                             RequestStatus.SUCCESS,
-                                                            2,
-                                                            String.format(CONTENT_BODY_RESPONSE, INIT_STEP + 2)),
-                              false);
+                                                            INIT_STEP + 2 * STEP_INC,
+                                                            String.format(CONTENT_BODY_RESPONSE,
+                                                                          INIT_STEP + 2 * STEP_INC)), false);
 
     }
 
@@ -314,9 +320,17 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
     }
 
     private void initWorkflows() {
-        Workflow workflow1 = new Workflow(WORKFLOW_TYPE_1, List.of(WORKER_TYPE_1, WORKER_TYPE_2));
-        Workflow workflow2 = new Workflow(WORKFLOW_TYPE_2, List.of(WORKER_TYPE_3, WORKER_TYPE_1, WORKER_TYPE_2));
-        workflowRepository.saveAll(List.of(workflow1, workflow2));
+        WorkflowConfig workflowConfig1 = new WorkflowConfig(WORKFLOW_TYPE_1,
+                                                            List.of(new WorkflowStep(INIT_STEP + STEP_INC,
+                                                                                     WORKER_TYPE_2),
+                                                                    new WorkflowStep(INIT_STEP, WORKER_TYPE_1)));
+        WorkflowConfig workflowConfig2 = new WorkflowConfig(WORKFLOW_TYPE_2,
+                                                            List.of(new WorkflowStep(INIT_STEP + STEP_INC,
+                                                                                     WORKER_TYPE_1),
+                                                                    new WorkflowStep(INIT_STEP + 2 * STEP_INC,
+                                                                                     WORKER_TYPE_2),
+                                                                    new WorkflowStep(INIT_STEP, WORKER_TYPE_3)));
+        workflowRepository.saveAll(List.of(workflowConfig1, workflowConfig2));
     }
 
     // ----------------------
@@ -324,12 +338,12 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
     // ----------------------
 
     private void executeWorkflowsSteps(ExpectedWorkflowIncrement expected, boolean triggerResponseError) {
-        requestService.handleRequests(requestRepository.findAll(), new SessionsRequestsInfo(), false);
+        // check request states after previous handle
         assertRequestsUpdate(expected.nbExpectedRequestsAfterHandle,
                              RequestStatus.DISPATCHED,
                              expected.expectedStepAfterHandle,
                              expected.expectedContentAfterHandle);
-        // simulate and handle responses
+        // simulate workerResponse
         simulateWorkerResponse(requestRepository.findAll(), expected.expectedStepAfterHandle, triggerResponseError);
         assertRequestsUpdate(expected.nbExpectedRequestsAfterResponse,
                              expected.expectedStatusAfterResponse,
@@ -352,7 +366,8 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
                 expectedRequestStatus)).isTrue();
             // Check final workflow step
             assertThat(updatedRequests.stream()
-                                      .allMatch(request -> request.getStep() == expectedStep)).as(String.format(
+                                      .allMatch(request -> Objects.requireNonNull(request.getStep())
+                                                           == expectedStep)).as(String.format(
                 "Expected all Requests to be in step %d",
                 expectedStep)).isTrue();
             // Check final body content

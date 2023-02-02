@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.workermanager.service.config;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -26,15 +27,16 @@ import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
 import fr.cnes.regards.modules.workermanager.dao.IWorkflowRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
-import fr.cnes.regards.modules.workermanager.dto.WorkflowDto;
+import fr.cnes.regards.modules.workermanager.dto.WorkflowConfigDto;
 import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsIT;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +47,8 @@ import java.util.Set;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_conf_manager" })
 public class WorkerManagerConfigManagerIT extends AbstractWorkerManagerServiceUtilsIT {
 
+    private static final String SRC_TEST_RESOURCES_CONFIG = "src/test/resources/config/";
+
     @Autowired
     private WorkerManagerConfigManager configManager;
 
@@ -53,6 +57,9 @@ public class WorkerManagerConfigManagerIT extends AbstractWorkerManagerServiceUt
 
     @Autowired
     private IWorkflowRepository workflowRepository;
+
+    @Autowired
+    private Gson gson;
 
     @Test
     public void import_worker_conf_nominal() {
@@ -85,23 +92,21 @@ public class WorkerManagerConfigManagerIT extends AbstractWorkerManagerServiceUt
 
     @Test
     @Purpose("Verify if workflows are imported from valid workflowDtos.")
-    public void import_workflow_conf_nominal() {
+    public void import_workflow_conf_nominal() throws FileNotFoundException {
         // GIVEN
-        String workerType1 = "worker1";
-        String workerType2 = "worker2";
-        WorkflowDto workflowDto1 = new WorkflowDto("workflow1", List.of(workerType1, workerType2));
-        WorkflowDto workflowDto2 = new WorkflowDto("workflow2", List.of(workerType1));
         // save corresponding worker configurations first
-        WorkerConfig workerConfig1 = WorkerConfig.build(workerType1, Set.of("contentType1"), "contentType2");
-        WorkerConfig workerConfig2 = WorkerConfig.build(workerType2, Set.of("contentType2"), "contentType3");
+        WorkerConfig workerConfig1 = WorkerConfig.build("worker1", Set.of("contentType1"), "contentType2");
+        WorkerConfig workerConfig2 = WorkerConfig.build("worker2", Set.of("contentType2"), "contentType3");
         workerConfigRepository.saveAll(List.of(workerConfig1, workerConfig2));
 
         // WHEN
         Set<String> errors = configManager.importConfiguration(ModuleConfiguration.build(null,
                                                                                          List.of(ModuleConfigurationItem.build(
-                                                                                                     workflowDto1),
+                                                                                                     getWorkflowDto(
+                                                                                                         "workflow1_conf_nominal.json")),
                                                                                                  ModuleConfigurationItem.build(
-                                                                                                     workflowDto2))),
+                                                                                                     getWorkflowDto(
+                                                                                                         "workflow2_conf_nominal.json")))),
                                                                new HashSet<>());
 
         // THEN
@@ -119,31 +124,39 @@ public class WorkerManagerConfigManagerIT extends AbstractWorkerManagerServiceUt
 
     @Test
     @Purpose("Verify if configuration is not imported when workflows are malformed.")
-    public void import_workflow_conf_error() {
+    public void import_workflow_conf_error() throws FileNotFoundException {
         // GIVEN
         // invalid workflows
-        WorkflowDto workflowDto1 = new WorkflowDto("workflow1", List.of("worker1"));
-        WorkflowDto workflowDto2 = new WorkflowDto(RandomStringUtils.randomAlphanumeric(256), List.of("worker2"));
+        WorkflowConfigDto workflowConfigDtoNotExistingWorker = getWorkflowDto("workflow2_conf_nominal.json");
+        WorkflowConfigDto workflowConfigDtoLongType = getWorkflowDto("workflow_conf_error_too_long_type.json");
 
         // WHEN
         Set<String> errors = configManager.importConfiguration(ModuleConfiguration.build(null,
                                                                                          List.of(ModuleConfigurationItem.build(
-                                                                                                     workflowDto1),
+                                                                                                     workflowConfigDtoNotExistingWorker),
                                                                                                  ModuleConfigurationItem.build(
-                                                                                                     workflowDto2))),
+                                                                                                     workflowConfigDtoLongType))),
                                                                new HashSet<>());
 
         // THEN
         LOGGER.error("Errors detected during import_workflow_conf_error test :\n {}", errors);
         Assert.assertEquals("Should get errors", 2, errors.size());
-        Assert.assertEquals("expected errors did not occur",
+        Assert.assertEquals("expected limited to 128 characters to occur once",
+                            1,
+                            errors.stream().filter(error -> error.contains("limited to 128 characters")).count());
+        Assert.assertEquals("expected NotExistingWorkerError to occur once",
+                            1,
+                            errors.stream().filter(error -> error.contains("NotExistingWorkerError")).count());
+        Assert.assertEquals("Should get no configuration when export",
                             0,
-                            errors.stream()
-                                  .filter(error -> error.contains("limited to 255 characters") && error.contains(
-                                      "NotExistingWorkerError"))
-                                  .count());
+                            configManager.exportConfiguration(Lists.newArrayList()).getConfiguration().size());
         Assert.assertEquals("Should get no configuration when export",
                             0,
                             configManager.exportConfiguration(Lists.newArrayList()).getConfiguration().size());
     }
+
+    private WorkflowConfigDto getWorkflowDto(String workflow) throws FileNotFoundException {
+        return gson.fromJson(new FileReader(SRC_TEST_RESOURCES_CONFIG + workflow), WorkflowConfigDto.class);
+    }
+
 }

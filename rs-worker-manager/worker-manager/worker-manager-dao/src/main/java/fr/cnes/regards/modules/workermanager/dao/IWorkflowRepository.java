@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.workermanager.dao;
 
-import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 /**
- * JPA Repository to handle access to {@link Workflow} entities.
+ * JPA Repository to handle access to {@link WorkflowConfig} entities.
  *
  * @author Iliana Ghazali
  */
-public interface IWorkflowRepository extends JpaRepository<Workflow, String>, JpaSpecificationExecutor<Workflow> {
+public interface IWorkflowRepository extends JpaRepository<WorkflowConfig, String>, JpaSpecificationExecutor<WorkflowConfig> {
 
 }

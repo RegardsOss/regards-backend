@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.workermanager.amqp.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.RequestSpecificationsBuilder;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
-import fr.cnes.regards.modules.workermanager.domain.config.Workflow;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
@@ -210,6 +210,9 @@ public class RequestService {
         // Transform events to Requests
         Collection<Request> requests = getRequestsFromEvents(validEvents);
 
+        // init requests only if they handle workflows
+        this.initRequestsFirstStepInWorkflow(requests);
+
         // Handle requests
         return this.handleRequests(requests, requestInfo, false);
     }
@@ -239,13 +242,14 @@ public class RequestService {
         Multimap<String, Request> toDispatchRequests = ArrayListMultimap.create();
         // Check and update request depending on whether they can be dispatched (using Worker cache)
         for (Request request : requests) {
-            // request can be associated to a worker configuration or a workflow of workers
+            // request can be associated to a worker configuration or a workflowConfig of workers
             if (!addRequestFromWorker(request, toDispatchRequests) && !addRequestFromWorkflow(toDispatchRequests,
                                                                                               request)) {
                 LOGGER.warn("""
-                                Worker with contentType "{}" was not found from request "{}" (source: "{}", session: "{}")."!
+                                An error occurred during the processing of contentType "{}" for request "{}" \
+                                (source: "{}", session: "{}")."
                                 Check if :
-                                - the contentType is linked to an existing worker or workflow,
+                                - the contentType is linked to an existing workerConfig or workflowConfig,
                                 - the related worker is alive.""",
                             request.getContentType(),
                             request.getRequestId(),
@@ -280,19 +284,31 @@ public class RequestService {
     }
 
     /**
-     * Add a request to a map of requests to dispatch only if it is linked to an alive worker retrieved from a workflow.
+     * Initialize requests if they process the first step of a workflow
+     */
+    private void initRequestsFirstStepInWorkflow(Collection<Request> requests) {
+        requests.forEach(request -> workflowService.findWorkflowByType(request.getContentType())
+                                                   .ifPresent(workflowConfig -> {
+                                                       if (request.getStep() == null) {
+                                                           request.setStep(workflowService.getFirstStep(workflowConfig));
+                                                       }
+                                                   }));
+    }
+
+    /**
+     * Add a request to a map of requests to dispatch only if it is linked to an alive worker retrieved from a workflowConfig.
      *
      * @return if request was added
      */
     private boolean addRequestFromWorkflow(Multimap<String, Request> toDispatchRequests, Request request) {
-        // retrieve worker type in workflow
+        // retrieve worker type in workflowConfig
         return workflowService.findWorkflowByType(request.getContentType())
-                              .map(workflow -> {
-                                  boolean isRequestDispatched = false;
-                                  String workerType = workflowService.getWorkerTypeInWorkflow(workflow,
-                                                                                              request.getStep());
+                              .flatMap(workflowConfig -> workflowService.getWorkerTypeInWorkflow(workflowConfig,
+                                                                                                 request.getStep()))
+                              .map(workerType -> {
+                                  boolean isRequestDispatched = true;
                                   // if worker is present in cache add request to the list of requests to dispatch
-                                  if (workerType != null && workerCacheService.isWorkerTypeInCache(workerType)) {
+                                  if (workerCacheService.isWorkerTypeInCache(workerType)) {
                                       request.setStatus(RequestStatus.DISPATCHED);
                                       request.setDispatchedWorkerType(workerType);
                                       isRequestDispatched = toDispatchRequests.put(workerType, request);
@@ -301,6 +317,8 @@ public class RequestService {
                               })
                               .orElse(false);
     }
+
+
 
     private void dispatchRequests(Collection<Request> requests,
                                   SessionsRequestsInfo requestInfo,
@@ -361,66 +379,91 @@ public class RequestService {
                                                                            .collect(Collectors.toList()));
         requestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         // For each worker response update matching request status
-        events.forEach(e -> {
+        events.forEach(workerResponseEvent -> {
             Optional<Request> oRequest = requests.stream()
-                                                 .filter(r -> e.getRequestIdHeader().equals(r.getRequestId()))
+                                                 .filter(r -> workerResponseEvent.getRequestIdHeader().equals(r.getRequestId()))
                                                  .findFirst();
 
             if (oRequest.isPresent()) {
                 Request request = oRequest.get();
-                // if request is linked to a workflow, override request content with response
-                Optional<Workflow> workflowOpt = workflowService.findWorkflowByType(request.getContentType());
-                if(workflowOpt.isPresent()) {
-                    request.setContent(e.getContent());
-                }
+                LOGGER.debug("Handling request {} with workerResponseEvent in {}",
+                             request.getRequestId(),
+                             workerResponseEvent.getStatus());
                 // update request according to response status
-                switch (e.getStatus()) {
+                switch (workerResponseEvent.getStatus()) {
                     case RUNNING -> request.setStatus(RequestStatus.RUNNING);
                     case INVALID_CONTENT -> {
                         request.setStatus(RequestStatus.INVALID_CONTENT);
-                        request.setError(String.join(",", e.getMessages()));
+                        request.setError(String.join(",", workerResponseEvent.getMessages()));
                     }
-                    case SUCCESS -> updateRequestSuccess(request, workflowOpt);
+                    case SUCCESS -> handleRequestSuccess(request, workerResponseEvent);
                     case ERROR -> {
                         request.setStatus(RequestStatus.ERROR);
-                        request.setError(String.join(",", e.getMessages()));
+                        request.setError(String.join(",", workerResponseEvent.getMessages()));
                     }
                 }
             } else {
                 LOGGER.warn("Request id {} from worker {} does not match ay known request on manager.",
-                            e.getRequestIdHeader(),
-                            e.getRequestIdHeader());
+                            workerResponseEvent.getRequestIdHeader(),
+                            workerResponseEvent.getRequestIdHeader());
             }
         });
         // Save updated requests and notify clients
         requestRepository.saveAll(requests);
 
+        // Handle requests to dispatch to workflow next step if any
+        List<Request> requestsToDispatch = requests.stream()
+                                                   .filter(r -> r.getStatus().equals(RequestStatus.TO_DISPATCH))
+                                                   .toList();
+        this.handleRequests(requestsToDispatch, requestInfo, false);
+
         // only notify requests not in TO_DISPATCH status
-        List<Request> requestsToNotify = requests.stream()
-                                                 .filter(r -> !r.getStatus().equals(RequestStatus.TO_DISPATCH))
-                                                 .toList();
-        notifyStatus(requestsToNotify);
-        newRequestInfo.addRequests(requestsToNotify.stream().map(Request::toDTO).collect(Collectors.toList()));
+        requests.removeAll(requestsToDispatch);
+        notifyStatus(requests);
+        newRequestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         sessionService.notifySessions(requestInfo, newRequestInfo);
 
         // Delete succeeded requests. Success requests do not need to be persisted
-        requestRepository.deleteAllInBatch(requestsToNotify.stream().filter(r -> r.getStatus().equals(RequestStatus.SUCCESS)).toList());
+        requestRepository.deleteAllInBatch(requests.stream().filter(r -> r.getStatus().equals(RequestStatus.SUCCESS)).toList());
 
         return newRequestInfo;
     }
 
     /**
-     * Update request state in case of {@link WorkerResponseEvent} in success. If request is linked to a workflow,
-     * request will be redispatched if there are still steps to be executed.
+     * Handle request state in case of {@link WorkerResponseEvent} in success.
      **/
-    private void updateRequestSuccess(Request request, Optional<Workflow> workflow) {
-        if (workflow.isPresent() && workflowService.hasNextWorkerTypeStep(workflow.get(), request.getStep())) {
-            request.setStatus(RequestStatus.TO_DISPATCH);
-            request.setDispatchedWorkerType(null);
-            request.setStep(request.getStep() + 1);
-        } else {
-            request.setStatus(RequestStatus.SUCCESS);
-        }
+    private void handleRequestSuccess(Request request, WorkerResponseEvent e) {
+        // check if request is linked to a workflowConfig,
+        workflowService.findWorkflowByType(request.getContentType())
+                       .ifPresentOrElse(workflowConfig -> updateRequestWithNextStep(request, e, workflowConfig),
+                                        () -> request.setStatus(RequestStatus.SUCCESS));
+    }
+
+    /**
+     * Update a request linked to a workflowConfig. The request will be redispatched if there are still valid
+     * steps to be executed.
+     */
+    private void updateRequestWithNextStep(Request request, WorkerResponseEvent event, WorkflowConfig workflowConfig) {
+        // check if workflow is finished
+        workflowService.getNextWorkflowStepIndex(workflowConfig, request.getStep()).ifPresentOrElse((nextStepInd) -> {
+            byte[] content = event.getContent();
+            // dispatch to next workflow step only if content response is valid
+            if (content != null) {
+                request.setContent(event.getContent());
+                request.setStatus(RequestStatus.TO_DISPATCH);
+                request.setDispatchedWorkerType(null);
+                request.setStep(workflowConfig.getSteps().get(nextStepInd).getStep());
+            } else {
+                request.setStatus(RequestStatus.ERROR);
+                request.setError(String.format("""
+                                                   An error occurred at step %d of the workflow "%s". \
+                                                   The workerResponseEvent %s did not return any content while it is \
+                                                   required by the next worker. Workflow is therefore stopped at this step.""",
+                                               request.getStep(),
+                                               workflowConfig.getWorkflowType(),
+                                               event.getRequestIdHeader()));
+            }
+        }, () -> request.setStatus(RequestStatus.SUCCESS));
     }
 
     /**
