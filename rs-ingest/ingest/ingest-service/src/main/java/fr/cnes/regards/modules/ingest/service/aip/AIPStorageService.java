@@ -342,7 +342,8 @@ public class AIPStorageService implements IAIPStorageService {
         boolean isMatch = storage.getTargetTypes().isEmpty() || storage.getTargetTypes()
                                                                        .contains(dataObject.getRegardsDataType());
         StorageSize storageAcceptedSize = storage.getSize();
-        if (storageAcceptedSize != null) {
+        // If target type match and storage depends on file size check if file size match
+        if (isMatch && storageAcceptedSize != null) {
             if (storageAcceptedSize.getMin() != null) {
                 checkValidDataObjectFileSizeForStorage(storage, dataObject);
                 isMatch &= dataObject.getFileSize() >= storageAcceptedSize.getMin();
@@ -351,8 +352,6 @@ public class AIPStorageService implements IAIPStorageService {
                 checkValidDataObjectFileSizeForStorage(storage, dataObject);
                 isMatch &= dataObject.getFileSize() <= storageAcceptedSize.getMax();
             }
-        } else if (storageAcceptedSize != null && dataObject.getFileSize() == null) {
-            isMatch = false;
         }
         return isMatch;
     }
