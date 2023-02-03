@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.workermanager.service.config;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * @author Léo Mieulet
  */
 @Service
-@RegardsTransactional
+@MultitenantTransactional
 public class WorkerConfigService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkerConfigService.class);

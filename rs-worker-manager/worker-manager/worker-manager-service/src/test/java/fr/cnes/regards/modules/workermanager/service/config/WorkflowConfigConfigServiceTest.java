@@ -43,6 +43,7 @@ import java.io.FileReader;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,7 +60,9 @@ public class WorkflowConfigConfigServiceTest {
     /**
      * Error status codes
      */
-    private static final String DUPLICATED_STEP_NUMBER_ERROR_KEY = "DuplicatedStepNumber";
+    private static final String DUPLICATED_STEP_NUMBERS_ERROR_KEY = "DuplicatedStepNumbersError";
+
+    private static final String DUPLICATED_WORKFLOW_TYPES_ERROR_KEY = "DuplicatedWorkflowTypesError";
 
     private static final String NOT_EXISTING_WORKER_ERROR_KEY = "NotExistingWorkerError";
 
@@ -122,6 +125,28 @@ public class WorkflowConfigConfigServiceTest {
                                         List.of(new WorkflowStep(1, WORKER_1), new WorkflowStep(2, WORKER_2))));
         Mockito.verify(workflowRepository).save(new WorkflowConfig(WORKFLOW_2, List.of(new WorkflowStep(1, WORKER_1))));
         assertThat(errors).isEmpty();
+    }
+
+    @Test
+    @Purpose("Verify workflows are not created when same worker types exist.")
+    public void import_conf_error_duplicated_workflow_types() throws FileNotFoundException {
+        // --- GIVEN ---
+        Set<WorkflowConfigDto> workflowDtos = Set.of(getWorkflowDto("workflow_conf_error_duplicated_types_1.json"),
+                                                     getWorkflowDto("workflow_conf_error_duplicated_types_2.json"));
+
+        Set<String> duplicatedWorkflowTypes = workflowDtos.stream()
+                                                          .map(WorkflowConfigDto::getWorkflowType)
+                                                          .collect(Collectors.toUnmodifiableSet());
+        Mockito.when(workerConfigRepository.findAllByWorkerTypeIn(duplicatedWorkflowTypes))
+               .thenReturn(duplicatedWorkflowTypes);
+
+        // --- WHEN ---
+        Set<String> errors = workflowConfigService.importConfiguration(workflowDtos);
+
+        // --- THEN ---
+        assertThat(errors).hasSize(1);
+        assertThat(errors.stream().allMatch(error -> error.contains(DUPLICATED_WORKFLOW_TYPES_ERROR_KEY))).isTrue();
+        LOGGER.error("Expected errors during the test {}", errors);
     }
 
     @Test
@@ -198,7 +223,7 @@ public class WorkflowConfigConfigServiceTest {
         // --- THEN ---
         Mockito.verifyNoInteractions(workflowRepository);
         assertThat(errors).hasSize(1);
-        assertThat(errors.stream().allMatch(error -> error.contains(DUPLICATED_STEP_NUMBER_ERROR_KEY))).isTrue();
+        assertThat(errors.stream().allMatch(error -> error.contains(DUPLICATED_STEP_NUMBERS_ERROR_KEY))).isTrue();
         LOGGER.error("Expected errors during the test {}", errors);
     }
 

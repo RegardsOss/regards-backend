@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.workermanager.dao;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,4 +39,7 @@ public interface IWorkerConfigRepository
     Optional<WorkerConfig> findByWorkerType(String name);
 
     List<WorkerConfig> findAllByContentTypeInputsIn(Set<String> contentTypes);
+
+    @Query("select workerType from WorkerConfig where workerType in :workerTypes")
+    Set<String> findAllByWorkerTypeIn(@Param("workerTypes") Set<String> workerTypes);
 }

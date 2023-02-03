@@ -1,0 +1,9 @@
+{
+  "workflowType": "otherWorkerType",
+  "steps": [
+    {
+      "step": 1,
+      "workerType": "worker1"
+    }
+  ]
+}
