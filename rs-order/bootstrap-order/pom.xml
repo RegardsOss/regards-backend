@@ -33,6 +33,7 @@
     <properties>
         <fr.cnes.regards.docker.image.name>rs-order</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9043</docker.guest.port>
+        <microservice.heap.size>1g</microservice.heap.size>
     </properties>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

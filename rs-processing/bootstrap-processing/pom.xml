@@ -33,6 +33,7 @@
 
     <properties>
         <fr.cnes.regards.docker.image.name>rs-processing</fr.cnes.regards.docker.image.name>
+        <microservice.heap.size>1g</microservice.heap.size>
     </properties>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

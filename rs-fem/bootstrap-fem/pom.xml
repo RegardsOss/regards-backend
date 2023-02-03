@@ -56,6 +56,7 @@
     <properties>
         <fr.cnes.regards.docker.image.name>rs-fem</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9038</docker.guest.port>
+        <microservice.heap.size>1500m</microservice.heap.size>
     </properties>
 
     <dependencies>
