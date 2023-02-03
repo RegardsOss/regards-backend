@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.ltamanager.amqp.input.SubmissionRequestDtoEvent;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.service.submission.creation.SubmissionCreateService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -88,8 +89,8 @@ public class SubmissionCreateEventHandler
         LOGGER.debug("Handling {} submission request dto", events.size());
 
         // save submission requests to database and publish responses
-        List<SubmissionResponseDtoEvent> responses = createService.handleSubmissionRequestsCreation(events);
-        publisher.publish(responses);
+        List<SubmissionResponseDto> responses = createService.handleSubmissionRequestsCreation(events);
+        publisher.publish(responses.stream().map(SubmissionResponseDtoEvent::new).toList());
 
         LOGGER.debug("{} submission responses created from {} submission events. Handled in {}ms.",
                      responses.size(),

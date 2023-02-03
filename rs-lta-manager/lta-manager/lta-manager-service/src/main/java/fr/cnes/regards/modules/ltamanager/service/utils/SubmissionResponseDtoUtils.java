@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.ltamanager.service.utils;
 
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
+import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettingsException;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import org.slf4j.Logger;
@@ -31,16 +33,20 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Utils method to create {@link SubmissionResponseDto}
+ * Utils method to create submission responses
  *
  * @author Thibaud Michaudel
  **/
-public class SubmissionResponseDtoUtils {
+public final class SubmissionResponseDtoUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubmissionResponseDtoUtils.class);
 
     private SubmissionResponseDtoUtils() {
     }
+
+    // ----------------------
+    // ------- EVENTS -------
+    // ----------------------
 
     /**
      * Create an event with the given status using the request
@@ -87,4 +93,38 @@ public class SubmissionResponseDtoUtils {
         }
         return errorMessage.toString();
     }
+
+    // ----------------------
+    // -------- DTOS --------
+    // ----------------------
+
+    public static SubmissionResponseDto buildSuccessResponseDto(SubmissionRequest request) {
+        String correlationId = request.getCorrelationId();
+        LOGGER.debug("SubmissionRequest was successfully created from SubmissionRequestDto with correlationId \"{}\"",
+                     correlationId);
+
+        return new SubmissionResponseDto(correlationId,
+                                         SubmissionResponseStatus.GRANTED,
+                                         request.getProduct().getId(),
+                                         request.getExpiryDate(),
+                                         request.getSession(),
+                                         null);
+    }
+
+    public static SubmissionResponseDto buildErrorResponseDto(SubmissionRequestDto requestDto,
+                                                              LtaSettingsException exception) {
+        String productId = requestDto.getId();
+        String correlationId = requestDto.getCorrelationId();
+        LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and id \"{}\" was rejected.",
+                     correlationId,
+                     productId,
+                     exception);
+        return new SubmissionResponseDto(correlationId,
+                                         SubmissionResponseStatus.ERROR,
+                                         productId,
+                                         null,
+                                         requestDto.getSession(),
+                                         exception.getMessage());
+    }
+
 }

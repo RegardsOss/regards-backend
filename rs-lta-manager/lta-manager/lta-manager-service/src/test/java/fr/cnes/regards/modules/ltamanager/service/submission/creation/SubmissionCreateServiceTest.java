@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.amqp.output.LtaWorkerRequestDtoEvent;
-import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.settings.DatatypeParameter;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
@@ -134,7 +133,7 @@ public class SubmissionCreateServiceTest {
 
         // ---- WHEN ----
         // main method is called (submission request dtos are sent to save submission requests)
-        List<SubmissionResponseDtoEvent> dtoResponses = createService.handleSubmissionRequestsCreation(List.of(
+        List<SubmissionResponseDto> dtoResponses = createService.handleSubmissionRequestsCreation(List.of(
             requestDtoWithSimpleStorePath,
             requestDtoWithProperties,
             requestDtoWithReplace));
@@ -222,7 +221,7 @@ public class SubmissionCreateServiceTest {
 
         // ---- WHEN ----
         // main method is called (submission request dtos are sent to save submission requests)
-        List<SubmissionResponseDtoEvent> dtoResponses = createService.handleSubmissionRequestsCreation(List.of(
+        List<SubmissionResponseDto> dtoResponses = createService.handleSubmissionRequestsCreation(List.of(
             requestDtoWithSimpleStorePath,
             requestDtoWithProperties));
 

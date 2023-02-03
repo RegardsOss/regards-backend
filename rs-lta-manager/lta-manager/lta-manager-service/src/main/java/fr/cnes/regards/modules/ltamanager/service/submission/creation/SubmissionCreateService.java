@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmittedProduct;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.service.settings.LtaSettingService;
 import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
@@ -87,7 +87,7 @@ public class SubmissionCreateService {
     /**
      * See {@link this#handleSubmissionRequestsCreation(List)}
      */
-    public SubmissionResponseDtoEvent handleSubmissionRequestCreation(SubmissionRequestDto requestDto) {
+    public SubmissionResponseDto handleSubmissionRequestCreation(SubmissionRequestDto requestDto) {
         return handleSubmissionRequestsCreation(List.of(requestDto)).get(0);
     }
 
@@ -100,15 +100,15 @@ public class SubmissionCreateService {
      * <li>the storePath can be generated successfully either from the request dto or the configuration</li>
      * </ul>
      * In case of error, the response indicates the reason why it could not be saved. <br/>
-     * In case of success, {@link SubmissionResponseDtoEvent}s are built and {@link LtaWorkerRequestDtoEvent} events are
+     * In case of success, {@link SubmissionResponseDto}s are built and {@link LtaWorkerRequestDtoEvent} events are
      * sent to the worker manager microservice.
      *
      * @return {@link SubmissionResponseDtoEvent}s containing the ids and the status of the submission requests created or
      * rejected.
      */
-    public List<SubmissionResponseDtoEvent> handleSubmissionRequestsCreation(List<? extends SubmissionRequestDto> requestDtos) {
+    public List<SubmissionResponseDto> handleSubmissionRequestsCreation(List<? extends SubmissionRequestDto> requestDtos) {
         List<SubmissionRequest> submissionRequestsToSave = new ArrayList<>();
-        List<SubmissionResponseDtoEvent> responses = new ArrayList<>();
+        List<SubmissionResponseDto> responses = new ArrayList<>();
         // Get lta setting configuration from database
         Set<DynamicTenantSetting> settings = settingService.retrieve();
 
@@ -128,7 +128,7 @@ public class SubmissionCreateService {
                                                                              currentDateTime);
                 submissionRequestsToSave.add(submissionRequest);
             } catch (LtaSettingsException e) {
-                responses.add(buildErrorResponse(requestDto.getCorrelationId(), requestDto.getId(), e));
+                responses.add(SubmissionResponseDtoUtils.buildErrorResponseDto(requestDto, e));
             }
         }
         // 2) Handle submission requests in success
@@ -173,29 +173,17 @@ public class SubmissionCreateService {
     // -------------------------------
 
     private void handleSuccess(List<SubmissionRequest> submissionRequestsToSave,
-                               List<SubmissionResponseDtoEvent> responses,
+                               List<SubmissionResponseDto> responses,
                                Set<DynamicTenantSetting> settings) {
         // save requests in success in database
         List<SubmissionRequest> savedRequests = requestRepository.saveAll(submissionRequestsToSave);
         // handle responses
         List<LtaWorkerRequestDtoEvent> workerRequests = new ArrayList<>();
         for (SubmissionRequest successRequest : savedRequests) {
-            responses.add(buildSuccessResponse(successRequest));
+            responses.add(SubmissionResponseDtoUtils.buildSuccessResponseDto(successRequest));
             workerRequests.add(buildWorkerRequest(successRequest, settings));
         }
         this.publisher.publish(workerRequests, "regards.broadcast." + RequestEvent.class.getName(), Optional.empty());
-    }
-
-    private SubmissionResponseDtoEvent buildSuccessResponse(SubmissionRequest requestSaved) {
-        LOGGER.debug("SubmissionRequest was successfully created from SubmissionRequestDto with correlationId \"{}\"",
-                     requestSaved.getCorrelationId());
-
-        return new SubmissionResponseDtoEvent(requestSaved.getCorrelationId(),
-                                              SubmissionResponseStatus.GRANTED,
-                                              requestSaved.getProduct().getId(),
-                                              requestSaved.getExpiryDate(),
-                                              requestSaved.getSession(),
-                                              requestSaved.getMessage());
     }
 
     private LtaWorkerRequestDtoEvent buildWorkerRequest(SubmissionRequest requestSaved,
@@ -228,16 +216,4 @@ public class SubmissionCreateService {
         return workerRequest;
     }
 
-    private SubmissionResponseDtoEvent buildErrorResponse(String correlationId,
-                                                          String id,
-                                                          LtaSettingsException exception) {
-        LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and id \"{}\" was rejected.",
-                     correlationId,
-                     id,
-                     exception);
-        return SubmissionResponseDtoUtils.createEvent(correlationId,
-                                                      requestRepository.findById(correlationId),
-                                                      SubmissionResponseStatus.ERROR,
-                                                      exception.getMessage());
-    }
 }

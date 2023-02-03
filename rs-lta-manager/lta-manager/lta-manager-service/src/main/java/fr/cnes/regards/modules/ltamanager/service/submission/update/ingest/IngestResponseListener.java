@@ -98,25 +98,13 @@ public class IngestResponseListener implements IIngestClientListener {
 
     }
 
-    private String buildErrorMessage(Set<String> errors) {
-        if (errors == null) {
-            return null;
-        }
-        StringBuilder errorMessage = new StringBuilder();
-        for (String error : errors) {
-            errorMessage.append(error);
-            errorMessage.append("  \\n");
-        }
-        return errorMessage.toString();
-    }
-
     @Override
     public void onSuccess(Collection<RequestInfo> infos) {
         ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.SUCCESS_MAP);
 
         List<SubmissionResponseDtoEvent> submissionResponseDtoEvents = new ArrayList<>();
         List<LtaCleanWorkerRequestDtoEvent> ltaCleanWorkerRequestDtoEvents = new ArrayList<>();
-        infos.stream().forEach(info -> {
+        infos.forEach(info -> {
             submissionResponseDtoEvents.add(SubmissionResponseDtoUtils.createEvent(info.getRequestId(),
                                                                                    requestRepository.findById(info.getRequestId()),
                                                                                    SubmissionResponseStatus.SUCCESS,
