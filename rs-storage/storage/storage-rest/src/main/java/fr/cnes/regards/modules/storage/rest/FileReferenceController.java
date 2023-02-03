@@ -250,7 +250,9 @@ public class FileReferenceController {
                         outs.write(bytes, 0, length);
                     }
                 } catch (final IOException e) {
-                    LOGGER.error("Exception while reading and streaming data", e);
+                    LOGGER.error("Exception while reading and streaming data of file url=[{}]",
+                                 downloadFile.getFileName(),
+                                 e);
                 } finally {
                     downloadFile.close();
                 }
