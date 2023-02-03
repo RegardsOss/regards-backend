@@ -18,11 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureFile;
+import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
+import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -32,6 +37,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.validation.Errors;
@@ -64,6 +70,14 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
                                         EntityType.DATA,
                                         featureModelName);
 
+        testMissingRequiredAttr(feature);
+        testWithAllRequiredAttr(feature);
+        testUpdateNotAlterableAttr(feature);
+        testUpdateAlterableAttr(feature);
+        testFilesSharingSameChecksum(feature);
+    }
+
+    private void testMissingRequiredAttr(Feature feature) {
         // Validate feature
         Errors errors = validationService.validate(feature, ValidationMode.CREATION);
 
@@ -73,6 +87,10 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
         } else {
             Assert.fail();
         }
+    }
+
+    private void testWithAllRequiredAttr(Feature feature) {
+        Errors errors;
 
         // Add required properties and validate
         feature.withProperties(IProperty.set(IProperty.buildString("data_type", "TYPE01"),
@@ -84,7 +102,10 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
         if (errors.hasErrors()) {
             Assert.fail();
         }
+    }
 
+    private void testUpdateNotAlterableAttr(Feature feature) {
+        Errors errors;
         // Update feature with non alterable properties
         feature.setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
                                                                   EntityType.DATA,
@@ -100,7 +121,10 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
         } else {
             Assert.fail();
         }
+    }
 
+    private void testUpdateAlterableAttr(Feature feature) {
+        Errors errors;
         // Update feature with authorized properties
         feature.withProperties(IProperty.set(IProperty.buildObject("file_characterization",
                                                                    IProperty.buildBoolean("valid", Boolean.TRUE),
@@ -112,6 +136,33 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
         if (errors.hasErrors()) {
             // Expected non alterable properties
             Assert.fail();
+        }
+    }
+
+    private void testFilesSharingSameChecksum(Feature feature) {
+        Errors errors;
+        // Update feature with two files having same checksum
+        String SAME_CHECKSUM = "new_file_checksum";
+        FeatureFileAttributes attributes = FeatureFileAttributes.build(DataType.RAWDATA,
+                                                                       MediaType.APPLICATION_OCTET_STREAM,
+                                                                       "fileName",
+                                                                       10L,
+                                                                       "MD5",
+                                                                       SAME_CHECKSUM);
+        FeatureFileLocation location = FeatureFileLocation.build("file:///test/file.txt", "somewhere");
+        FeatureFileAttributes attributes2 = FeatureFileAttributes.build(DataType.RAWDATA,
+                                                                        MediaType.APPLICATION_OCTET_STREAM,
+                                                                        "fileName2",
+                                                                        10L,
+                                                                        "MD5",
+                                                                        SAME_CHECKSUM);
+        FeatureFileLocation location2 = FeatureFileLocation.build("file:///dir/file.txt", "somewhere");
+        feature.setFiles(Lists.newArrayList(FeatureFile.build(attributes, location),
+                                            FeatureFile.build(attributes2, location2)));
+        errors = validationService.validate(feature, ValidationMode.PATCH);
+
+        if (errors.hasErrors()) {
+            Assert.assertEquals(1, errors.getErrorCount());
         }
     }
 }

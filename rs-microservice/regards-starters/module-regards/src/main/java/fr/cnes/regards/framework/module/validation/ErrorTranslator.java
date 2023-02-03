@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.module.validation;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -43,12 +44,13 @@ public final class ErrorTranslator {
         if (errors.hasErrors()) {
             Set<String> err = new HashSet<>();
             errors.getAllErrors().forEach(error -> {
-                if (error instanceof FieldError) {
-                    FieldError fieldError = (FieldError) error;
+                if (error instanceof FieldError fieldError) {
                     err.add(String.format("%s at %s: rejected value [%s].",
                                           fieldError.getDefaultMessage(),
                                           fieldError.getField(),
                                           ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
+                } else if (error instanceof ObjectError) {
+                    err.add(error.getCode());
                 } else {
                     err.add(error.getDefaultMessage());
                 }
@@ -65,7 +67,7 @@ public final class ErrorTranslator {
     public static String getErrorsAsString(Errors errors) {
         Set<String> errs = ErrorTranslator.getErrors(errors);
         StringJoiner joiner = new StringJoiner(", ");
-        errs.forEach(err -> joiner.add(err));
+        errs.forEach(joiner::add);
         return joiner.toString();
     }
 }
