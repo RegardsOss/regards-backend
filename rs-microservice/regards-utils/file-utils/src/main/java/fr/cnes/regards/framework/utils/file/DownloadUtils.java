@@ -149,7 +149,7 @@ public final class DownloadUtils {
         S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
         StorageCommandID cmdId = new StorageCommandID(key, UUID.randomUUID());
         StorageCommand.Check check = StorageCommand.check(storageConfig, cmdId, key);
-        return client.contentLength(check).block().orElseThrow(FileNotFoundException::new);
+        return client.contentLength(check).block().orElseThrow(FileNotFoundException::new); // NOSONAR impossible npe
     }
 
     /**
