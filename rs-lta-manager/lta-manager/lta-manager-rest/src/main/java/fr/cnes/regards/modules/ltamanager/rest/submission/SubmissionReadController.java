@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ltamanager.rest.submission;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
@@ -124,7 +125,8 @@ public class SubmissionReadController extends AbstractSubmissionController
             resourceService.addLink(resource,
                                     SubmissionDeleteController.class,
                                     "deleteSubmissionRequests",
-                                    LinkRels.DELETE);
+                                    LinkRels.DELETE,
+                                    MethodParamFactory.build(SearchSubmissionRequestParameters.class));
         }
         return resource;
     }
