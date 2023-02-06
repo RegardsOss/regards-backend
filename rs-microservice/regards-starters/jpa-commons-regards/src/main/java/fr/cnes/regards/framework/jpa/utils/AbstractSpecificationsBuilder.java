@@ -212,7 +212,6 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             return null;
         }
         Collection<?> values = valuesRestriction.getValues();
-        Assert.notEmpty(values, "Values must not be empty");
         if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
             return isIncluded(pathToField, values);
         }
@@ -228,8 +227,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
 
     protected Specification<T> isExcluded(String pathToField, Collection<?> values) {
         Assert.notNull(values, "Values must not be null");
-        Assert.notEmpty(values, "Values must not be empty");
-
+        // The list can empty when the user ticks select all in the front
         return (root, query, criteriaBuilder) -> getPath(root, pathToField).in(values).not();
     }
 
@@ -240,8 +238,6 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             return null;
         }
         Collection<?> values = valuesRestriction.getValues();
-        Assert.notEmpty(values, "Values must not be empty");
-
         if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
             return isIncludedJoined(join, pathToField, values);
         }
@@ -257,8 +253,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
 
     protected Specification<T> isExcludedJoined(String join, String pathToField, Collection<?> values) {
         Assert.notNull(values, "Values must not be null");
-        Assert.notEmpty(values, "Values must not be empty");
-
+        // The list can empty when the user ticks select all in the front
         return (root, query, criteriaBuilder) -> root.join(join).get(pathToField).in(values).not();
     }
 
@@ -268,8 +263,6 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             return null;
         }
         Collection<?> values = valuesRestriction.getValues();
-        Assert.notEmpty(values, "Values must not be empty");
-
         if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
             return isIncludedJoinSet(pathToField, values);
         }
@@ -285,8 +278,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
 
     protected Specification<T> isExcludedJoinSet(String pathToField, Collection<?> values) {
         Assert.notNull(values, "Values must not be null");
-        Assert.notEmpty(values, "Values must not be empty");
-
+        // The list can empty when the user ticks select all in the front
         return (root, query, criteriaBuilder) -> root.joinSet(pathToField).in(values).not();
     }
 
