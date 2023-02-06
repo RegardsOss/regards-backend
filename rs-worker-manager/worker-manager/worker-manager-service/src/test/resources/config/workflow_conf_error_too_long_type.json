@@ -2,7 +2,7 @@
   "workflowType": "workflow1",
   "steps": [
     {
-      "step": 1,
+      "stepNumber": 1,
       "workerType": " Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer bibendum ultricies vulputate. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Mauris velit libero, tristique pharetra felis in, iaculis maximus id. "
     }
   ]

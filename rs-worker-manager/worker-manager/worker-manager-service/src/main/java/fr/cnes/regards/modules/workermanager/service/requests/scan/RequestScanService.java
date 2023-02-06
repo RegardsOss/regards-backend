@@ -127,7 +127,7 @@ public class RequestScanService {
             if (firstContentType.isPresent()
                 && workerCacheService.getWorkerTypeByContentType(firstContentType.get())
                                      .isPresent()
-                && requestService.hasRequestsMatchingContentTypeAndNoWorkerAvailable(workerConfig.getContentTypeInputs())) {
+                && requestService.hasRequestsMatchingStepWorkerTypeAndNoWorkerAvailable(workerConfig.getWorkerType())) {
                 SearchRequestParameters filters = new SearchRequestParameters().withContentTypesIncluded(workerConfig.getContentTypeInputs())
                                                                                .withStatusesIncluded(RequestStatus.NO_WORKER_AVAILABLE);
                 scanUsingFilters(filters, RequestStatus.TO_DISPATCH, MAX_TASK_WAIT_DURING_SCHEDULE);

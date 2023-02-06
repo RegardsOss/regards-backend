@@ -2,8 +2,8 @@
   "workflowType": "otherWorkerType",
   "steps": [
     {
-      "step": 1,
-      "workerType": "worker1"
+      "stepNumber": 1,
+      "workerType": "workerType1"
     }
   ]
 }

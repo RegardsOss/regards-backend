@@ -104,7 +104,7 @@ public class WorkflowConfig {
     public WorkflowConfigDto toDto() {
         return new WorkflowConfigDto(this.workflowType,
                                      this.steps.stream()
-                                               .map(stepDto -> new WorkflowStepDto(stepDto.getStep(),
+                                               .map(stepDto -> new WorkflowStepDto(stepDto.getStepNumber(),
                                                                                    stepDto.getWorkerType()))
                                                .toList());
     }

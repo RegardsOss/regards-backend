@@ -23,25 +23,52 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyString;
 
 public class RequestHandlerConfiguration {
 
-    public final static String AVAILABLE_CONTENT_TYPE = "available_content";
+    public final static String AVAILABLE_CONTENT_TYPE_0 = "available_content";
 
-    public final static String AVAILABLE_WORKER_TYPE = "workerType1";
+    public final static String AVAILABLE_CONTENT_TYPE_1 = "content1";
+
+    public final static String AVAILABLE_CONTENT_TYPE_2 = "content2";
+
+    public final static String AVAILABLE_CONTENT_TYPE_3 = "content3";
+
+    private final static List<String> AVAILABLE_CONTENT_TYPES = List.of(AVAILABLE_CONTENT_TYPE_0,
+                                                                        AVAILABLE_CONTENT_TYPE_1,
+                                                                        AVAILABLE_CONTENT_TYPE_2,
+                                                                        AVAILABLE_CONTENT_TYPE_3);
+
+
+    public final static String AVAILABLE_WORKER_TYPE_1 = "workerType1";
+
+    public final static String AVAILABLE_WORKER_TYPE_2 = "workerType2";
+
+    private final static List<String> AVAILABLE_WORKER_TYPES = List.of(AbstractWorkerManagerIT.DEFAULT_WORKER,
+                                                                       AVAILABLE_WORKER_TYPE_1,
+                                                                       AVAILABLE_WORKER_TYPE_2);
+
 
     @Bean
     @Primary
     public WorkerCacheService workerCacheMock() {
         WorkerCacheService localMockWorkerCacheService = Mockito.mock(WorkerCacheService.class);
+        // Mock getWorkerTypeByContentType
         Mockito.when(localMockWorkerCacheService.getWorkerTypeByContentType(anyString())).then(invocation -> {
-            if (AVAILABLE_CONTENT_TYPE.equals(invocation.getArguments()[0])) {
+            String contentType = (String) invocation.getArguments()[0];
+            if (AVAILABLE_CONTENT_TYPES.contains(contentType)) {
                 return Optional.of(AbstractWorkerManagerIT.DEFAULT_WORKER);
             }
             return Optional.empty();
+        });
+        // Mock isWorkerTypeInCache
+        Mockito.when(localMockWorkerCacheService.isWorkerTypeInCache(anyString())).then(invocation -> {
+            String workerType = (String) invocation.getArguments()[0];
+            return AVAILABLE_WORKER_TYPES.contains(workerType);
         });
         return localMockWorkerCacheService;
     }

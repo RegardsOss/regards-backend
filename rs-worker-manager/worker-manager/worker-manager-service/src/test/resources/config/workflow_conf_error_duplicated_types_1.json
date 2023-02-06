@@ -1,9 +1,9 @@
 {
-  "workflowType": "workerType",
+  "workflowType": "content1",
   "steps": [
     {
-      "step": 1,
-      "workerType": "worker1"
+      "stepNumber": 1,
+      "workerType": "workerType1"
     }
   ]
 }

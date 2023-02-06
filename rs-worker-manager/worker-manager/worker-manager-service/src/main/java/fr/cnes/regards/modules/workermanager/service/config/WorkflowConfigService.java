@@ -82,7 +82,10 @@ public class WorkflowConfigService {
     public Set<String> importConfiguration(Set<WorkflowConfigDto> workflowConfigDtos) {
         Set<String> errors = new HashSet<>();
         if (checkWorkflowModels(workflowConfigDtos, errors) && checkUniqueTypes(workflowConfigDtos, errors)) {
-            checkWorkflowContent(workflowConfigDtos, errors);
+            Set<WorkflowConfig> workflowConfigsCreated = createWorkflowConfigsFromValidDtos(workflowConfigDtos, errors);
+            if (!workflowConfigsCreated.isEmpty()) {
+                workflowRepository.saveAll(workflowConfigsCreated);
+            }
         }
         return errors;
     }
@@ -111,43 +114,53 @@ public class WorkflowConfigService {
      * @return description of errors if any
      */
     private boolean checkUniqueTypes(Set<WorkflowConfigDto> workflowConfigs, Set<String> errors) {
-        Set<String> duplicatedTypes = workerConfigRepository.findAllByWorkerTypeIn(workflowConfigs.stream()
-                                                                                                  .map(WorkflowConfigDto::getWorkflowType)
-                                                                                                  .collect(Collectors.toUnmodifiableSet()));
-        boolean areWorkflowNamesUnique = duplicatedTypes.isEmpty();
+        Long nbDuplicated = workerConfigRepository.countByContentTypeInputsIn(workflowConfigs.stream()
+                                                                                             .map(WorkflowConfigDto::getWorkflowType)
+                                                                                             .collect(Collectors.toUnmodifiableSet()));
+        boolean areWorkflowNamesUnique = nbDuplicated == 0;
         if (!areWorkflowNamesUnique) {
             errors.add(String.format("""
                                          [%s]: Cannot import workflow configuration because duplicated types were \
-                                         found within the worker configurations : %s.
+                                         found within the worker configurations.
                                          To fix the configuration make sure the workflowTypes are not the same than the \
-                                         workerTypes.""", DUPLICATED_WORKFLOW_TYPES_ERROR_KEY, duplicatedTypes));
+                                         workers contentTypeInputs.""", DUPLICATED_WORKFLOW_TYPES_ERROR_KEY));
         }
         return areWorkflowNamesUnique;
     }
 
-    private void checkWorkflowContent(Set<WorkflowConfigDto> workflowConfigDtos, Set<String> errors) {
+    /**
+     * Create {@link WorkflowConfig}s from {@link WorkflowConfigDto}s only if configurations sent are valid
+     *
+     * @param workflowConfigDtos dtos sent to import new workflow configurations
+     * @param errors             set of possible errors
+     * @return {@link WorkflowConfig}s created in success
+     */
+    private Set<WorkflowConfig> createWorkflowConfigsFromValidDtos(Set<WorkflowConfigDto> workflowConfigDtos,
+                                                                   Set<String> errors) {
+        Set<WorkflowConfig> workflowsCreated = new HashSet<>(workflowConfigDtos.size());
         for (WorkflowConfigDto workflowConfigDto : workflowConfigDtos) {
             // sort workflow steps by step numbers to guarantee order
-            workflowConfigDto.getSteps().sort(Comparator.comparingInt(WorkflowStepDto::getStep));
+            workflowConfigDto.getSteps().sort(Comparator.comparingInt(WorkflowStepDto::getStepNumber));
             // check if workflow is valid
             if (areStepNumbersUnique(workflowConfigDto, errors) && areWorkflowStepContentsValid(workflowConfigDto,
                                                                                                 errors)) {
                 List<WorkflowStep> steps = workflowConfigDto.getSteps()
                                                             .stream()
-                                                            .map(stepDto -> new WorkflowStep(stepDto.getStep(),
+                                                            .map(stepDto -> new WorkflowStep(stepDto.getStepNumber(),
                                                                                              stepDto.getWorkerType()))
                                                             .toList();
-                // import valid workflow configuration
-                workflowRepository.save(new WorkflowConfig(workflowConfigDto.getWorkflowType(), steps));
+                // add valid workflow configuration
+                workflowsCreated.add(new WorkflowConfig(workflowConfigDto.getWorkflowType(), steps));
             }
         }
+        return workflowsCreated;
     }
 
     /**
      * Check if all step numbers of workflow are unique
      */
     private boolean areStepNumbersUnique(WorkflowConfigDto workflowConfigDto, Set<String> errors) {
-        boolean isValid = workflowConfigDto.getSteps().stream().map(WorkflowStepDto::getStep).distinct().count()
+        boolean isValid = workflowConfigDto.getSteps().stream().map(WorkflowStepDto::getStepNumber).distinct().count()
                           == workflowConfigDto.getSteps().size();
         if (!isValid) {
             errors.add(String.format("[%s - %s]: step duplications detected! Make sure all step numbers are unique!",
@@ -179,7 +192,7 @@ public class WorkflowConfigService {
                                          NOT_EXISTING_WORKER_ERROR_KEY,
                                          workflowConfig.getWorkflowType(),
                                          workflowStepDto.getWorkerType(),
-                                         workflowStepDto.getStep()));
+                                         workflowStepDto.getStepNumber()));
                 isValid = false;
             } else {
                 // Check if contentTypeOut is present
@@ -192,7 +205,7 @@ public class WorkflowConfigService {
                                              NULL_CONTENT_TYPE_OUT_ERROR_KEY,
                                              workflowConfig.getWorkflowType(),
                                              workflowStepDto.getWorkerType(),
-                                             workflowStepDto.getStep()));
+                                             workflowStepDto.getStepNumber()));
                     isValid = false;
                 } // verify if current worker can be chained to the previous one
                 else if (stepPos != 0 && !workerConfig.get().getContentTypeInputs().contains(lastContentTypeOut)) {
@@ -203,7 +216,7 @@ public class WorkflowConfigService {
                                              NOT_CONSISTENT_CONTENT_TYPE_OUT_ERROR_KEY,
                                              workflowConfig.getWorkflowType(),
                                              workflowStepDto.getWorkerType(),
-                                             workflowStepDto.getStep(),
+                                             workflowStepDto.getStepNumber(),
                                              lastContentTypeOut));
                     isValid = false;
                 } else {

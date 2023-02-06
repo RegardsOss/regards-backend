@@ -181,8 +181,8 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         // Simulate new conf for worker. So request in status NO_WORKER_AVAILABLE can be sent
         Assert.assertTrue("Error during worker conf import",
                           workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(
-                              RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE,
-                              Sets.newHashSet(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE), null))).isEmpty());
+                              RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE_1,
+                              Sets.newHashSet(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0), null))).isEmpty());
 
         // Scan
         requestScanService.scanNoWorkerAvailableRequests();
@@ -296,7 +296,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
 
     @Test
     public void handleRequestAlreadyExists() {
-        Message message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE));
+        Message message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0));
         String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
         Request request = new Request();
         request.setStatus(RequestStatus.NO_WORKER_AVAILABLE);
@@ -345,7 +345,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
 
     @Test
     public void handleValidRequest() {
-        Message message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE));
+        Message message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0));
         String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
         broadcastMessage(message, Optional.empty());
 
@@ -383,13 +383,13 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
     @Test
     public void handleValidAndInvalidRequest() {
         List<Message> events = new ArrayList<>();
-        events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE)));
+        events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0)));
         events.add(createEvent(Optional.empty()));
-        events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE)));
+        events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0)));
         events.add(createEvent(Optional.empty()));
-        events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE)));
+        events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0)));
         events.add(createEvent(Optional.empty()));
-        events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE)));
+        events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0)));
         events.add(createEvent(Optional.of("unknown")));
         broadcastMessages(events, Optional.empty());
         waitForResponses(8, 5, TimeUnit.SECONDS);
@@ -443,7 +443,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         List<Message> events = new ArrayList<>();
         LOGGER.info("Start to send events");
         for (int i = 0; i < 1_000; i++) {
-            events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE)));
+            events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0)));
             if (events.size() > 500) {
                 broadcastMessages(events, Optional.empty());
                 events.clear();

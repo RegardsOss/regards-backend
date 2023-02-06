@@ -24,10 +24,10 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import org.hibernate.annotations.Type;
 import org.springframework.amqp.core.Message;
-import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -78,9 +78,11 @@ public class Request {
     @Type(type = "text")
     private String error;
 
-    @Column(name = "step")
-    @Nullable
-    private Integer step;
+    @Column(name = "step_number")
+    private int stepNumber;
+
+    @Column(length = 128, name = "step_worker_type")
+    private String stepWorkerType;
 
     public Request() {
     }
@@ -127,13 +129,20 @@ public class Request {
         this.contentType = contentType;
     }
 
-    @Nullable
-    public Integer getStep() {
-        return step;
+    public int getStepNumber() {
+        return stepNumber;
     }
 
-    public void setStep(@Nullable Integer step) {
-        this.step = step;
+    public void setStepNumber(int step) {
+        this.stepNumber = step;
+    }
+
+    public String getStepWorkerType() {
+        return stepWorkerType;
+    }
+
+    public void setStepWorkerType(String stepWorker) {
+        this.stepWorkerType = stepWorker;
     }
 
     public String getSource() {
@@ -205,11 +214,49 @@ public class Request {
         return new RequestDTO(this.requestId,
                               this.creationDate,
                               this.contentType,
-                              this.step,
+                              this.stepNumber,
+                              this.stepWorkerType,
                               this.source,
                               this.session,
                               this.status,
                               this.dispatchedWorkerType,
                               this.error);
+    }
+
+    @Override
+    public String toString() {
+        return "Request{"
+               + "id="
+               + id
+               + ", requestId='"
+               + requestId
+               + '\''
+               + ", creationDate="
+               + creationDate
+               + ", contentType='"
+               + contentType
+               + '\''
+               + ", source='"
+               + source
+               + '\''
+               + ", session='"
+               + session
+               + '\''
+               + ", status="
+               + status
+               + ", dispatchedWorkerType='"
+               + dispatchedWorkerType
+               + '\''
+               + ", content="
+               + Arrays.toString(content)
+               + ", error='"
+               + error
+               + '\''
+               + ", stepNumber="
+               + stepNumber
+               + ", stepWorkerType='"
+               + stepWorkerType
+               + '\''
+               + '}';
     }
 }

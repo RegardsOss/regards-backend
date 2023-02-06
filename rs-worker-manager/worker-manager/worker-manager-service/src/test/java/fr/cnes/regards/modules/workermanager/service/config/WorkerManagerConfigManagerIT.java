@@ -99,7 +99,7 @@ public class WorkerManagerConfigManagerIT extends AbstractWorkerManagerServiceUt
     public void import_conf_error_duplicate_types() throws FileNotFoundException {
         // GIVEN
         // workflowType = workerType => not allowed!
-        WorkerConfigDto workerConfig = getWorkerConfigDto("worker_conf_nominal.json");
+        WorkerConfigDto workerConfig = getWorkerConfigDto("worker1_conf_nominal.json");
         WorkflowConfigDto duplicatedWorkflowTypeConfig = getWorkflowConfigDto(
             "workflow_conf_error_duplicated_types_1.json");
 
@@ -129,8 +129,8 @@ public class WorkerManagerConfigManagerIT extends AbstractWorkerManagerServiceUt
     public void import_workflow_conf_nominal() throws FileNotFoundException {
         // GIVEN
         // save corresponding worker configurations first
-        WorkerConfig workerConfig1 = WorkerConfig.build("worker1", Set.of("contentType1"), "contentType2");
-        WorkerConfig workerConfig2 = WorkerConfig.build("worker2", Set.of("contentType2"), "contentType3");
+        WorkerConfig workerConfig1 = WorkerConfig.build("workerType1", Set.of("contentType1"), "contentType2");
+        WorkerConfig workerConfig2 = WorkerConfig.build("workerType2", Set.of("contentType2"), "contentType3");
         workerConfigRepository.saveAll(List.of(workerConfig1, workerConfig2));
 
         // WHEN

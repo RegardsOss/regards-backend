@@ -34,7 +34,9 @@ public class RequestDTO {
 
     private final String contentType;
 
-    private final Integer step;
+    private final int stepNumber;
+
+    private final String stepWorkerType;
 
     private final String source;
 
@@ -49,7 +51,8 @@ public class RequestDTO {
     public RequestDTO(String requestId,
                       OffsetDateTime creationDate,
                       String contentType,
-                      Integer step,
+                      Integer stepNumber,
+                      String stepWorkerType,
                       String source,
                       String session,
                       RequestStatus status,
@@ -58,7 +61,8 @@ public class RequestDTO {
         this.requestId = requestId;
         this.creationDate = creationDate;
         this.contentType = contentType;
-        this.step = step;
+        this.stepNumber = stepNumber;
+        this.stepWorkerType = stepWorkerType;
         this.source = source;
         this.session = session;
         this.status = status;
@@ -78,8 +82,8 @@ public class RequestDTO {
         return contentType;
     }
 
-    public int getStep() {
-        return step;
+    public int getStepNumber() {
+        return stepNumber;
     }
 
     public String getSource() {
@@ -117,9 +121,10 @@ public class RequestDTO {
                && source.equals(that.source)
                && session.equals(that.session)
                && status == that.status
+               && stepNumber == that.stepNumber
+               && Objects.equals(stepWorkerType, that.stepWorkerType)
                && Objects.equals(dispatchedWorkerType, that.dispatchedWorkerType)
-               && Objects.equals(error, that.error)
-               && Objects.equals(step, that.step);
+               && Objects.equals(error, that.error);
     }
 
     @Override
@@ -127,7 +132,8 @@ public class RequestDTO {
         return Objects.hash(requestId,
                             creationDate,
                             contentType,
-                            step,
+                            stepNumber,
+                            stepWorkerType,
                             source,
                             session,
                             status,
@@ -146,8 +152,11 @@ public class RequestDTO {
                + ", contentType='"
                + contentType
                + '\''
-               + ", step="
-               + step
+               + ", stepNumber="
+               + stepNumber
+               + ", stepWorkerType='"
+               + stepWorkerType
+               + '\''
                + ", source='"
                + source
                + '\''

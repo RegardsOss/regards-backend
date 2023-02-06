@@ -63,7 +63,7 @@ public interface IRequestRepository extends JpaRepository<Request, Long>, JpaSpe
 
     Optional<LightRequest> findLightByRequestId(String requestId);
 
-    long countByContentTypeInAndStatus(Set<String> contentTypes, RequestStatus requestStatus);
+    long countByStepWorkerTypeAndStatus(String workerType, RequestStatus requestStatus);
 
     @Modifying
     @Query("update Request request set request.status = :newStatus where request.id in :ids ")

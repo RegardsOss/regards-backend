@@ -74,9 +74,9 @@ public abstract class AbstractRequestJobIT extends AbstractMultitenantServiceWit
         cleanRepository();
         configManager.resetConfiguration();
 
-        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE,
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE_1,
                                                                                     Sets.newHashSet(
-                                                                                        RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE),
+                                                                                        RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0),
                                                                                     null)));
     }
 
@@ -97,12 +97,13 @@ public abstract class AbstractRequestJobIT extends AbstractMultitenantServiceWit
             Request request = new Request();
             request.setRequestId("requestId" + i);
             request.setCreationDate(OffsetDateTime.now());
-            request.setContentType(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE);
+            request.setContentType(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0);
             request.setSource("source1");
             request.setSession("session1");
             request.setStatus(RequestStatus.NO_WORKER_AVAILABLE);
             request.setContent("blbl".getBytes());
             request.setError("error");
+            request.setStepWorkerType(RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE_1);
             requests.add(request);
         }
         requestRepository.saveAll(requests);

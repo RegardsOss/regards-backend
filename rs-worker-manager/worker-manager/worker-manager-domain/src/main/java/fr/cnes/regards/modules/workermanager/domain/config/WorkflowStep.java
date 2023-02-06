@@ -31,21 +31,21 @@ import java.util.Objects;
  **/
 public class WorkflowStep {
 
-    @NotNull(message = "step must be present")
-    @Min(value = 0, message = "step must be a positive number")
-    private final int step;
+    @NotNull(message = "stepNumber must be present")
+    @Min(value = 0, message = "stepNumber must be a positive number")
+    private final int stepNumber;
 
     @NotBlank(message = "workerType must be present")
     @Size(max = 128, message = "workerType is limited to 128 characters")
     private final String workerType;
 
-    public WorkflowStep(int step, String workerType) {
-        this.step = step;
+    public WorkflowStep(int stepNumber, String workerType) {
+        this.stepNumber = stepNumber;
         this.workerType = workerType;
     }
 
-    public int getStep() {
-        return step;
+    public int getStepNumber() {
+        return stepNumber;
     }
 
     public String getWorkerType() {
@@ -61,16 +61,16 @@ public class WorkflowStep {
             return false;
         }
         WorkflowStep that = (WorkflowStep) o;
-        return step == that.step && workerType.equals(that.workerType);
+        return stepNumber == that.stepNumber && workerType.equals(that.workerType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(step, workerType);
+        return Objects.hash(stepNumber, workerType);
     }
 
     @Override
     public String toString() {
-        return "WorkflowStep{" + "step=" + step + ", workflowType='" + workerType + '\'' + '}';
+        return "WorkflowStep{" + "stepNumber=" + stepNumber + ", workerType='" + workerType + '\'' + '}';
     }
 }

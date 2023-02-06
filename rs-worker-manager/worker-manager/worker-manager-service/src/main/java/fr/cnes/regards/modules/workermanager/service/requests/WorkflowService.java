@@ -52,14 +52,14 @@ public class WorkflowService {
     /**
      * Find specific workerType on a workflow with index.
      *
-     * @param workflowConfig containing workerType to find
-     * @param step           workerType position to retrieve
+     * @param workflowConfig    containing workerType to find
+     * @param currentStepNumber workerType position to retrieve
      * @return optional workerType.
      */
-    public Optional<String> getWorkerTypeInWorkflow(WorkflowConfig workflowConfig, Integer step) {
+    public Optional<String> getWorkerTypeInWorkflow(WorkflowConfig workflowConfig, int currentStepNumber) {
         return workflowConfig.getSteps()
                              .stream()
-                             .filter(workflowStep -> workflowStep.getStep() == step)
+                             .filter(workflowStep -> workflowStep.getStepNumber() == currentStepNumber)
                              .map(WorkflowStep::getWorkerType)
                              .findFirst();
     }
@@ -71,16 +71,16 @@ public class WorkflowService {
     /**
      * Find the next step to execute in a workflow. Empty if workflow is completed.
      *
-     * @param workflowConfig workflow of steps to execute
-     * @param step           number of the current step
+     * @param workflowConfig    workflow of steps to execute
+     * @param currentStepNumber number of the current step
      * @return index of next step to execute if found
      */
-    public OptionalInt getNextWorkflowStepIndex(WorkflowConfig workflowConfig, Integer step) {
+    public OptionalInt getNextWorkflowStepIndex(WorkflowConfig workflowConfig, int currentStepNumber) {
         // sort list to guarantee step order
         List<WorkflowStep> steps = getSortedWorkflowSteps(workflowConfig);
         // get next step index
         return IntStream.range(0, steps.size() - 1)
-                        .filter(stepInd -> steps.get(stepInd).getStep() == step)
+                        .filter(stepInd -> steps.get(stepInd).getStepNumber() == currentStepNumber)
                         .map(currentIndex -> currentIndex + 1)
                         .findFirst();
 
@@ -89,11 +89,11 @@ public class WorkflowService {
     /**
      * Find the first step of workflow.
      */
-    public int getFirstStep(WorkflowConfig workflowConfig) {
+    public WorkflowStep getFirstStep(WorkflowConfig workflowConfig) {
         // sort list to guarantee step order
         List<WorkflowStep> steps = getSortedWorkflowSteps(workflowConfig);
         // get first step number
-        return steps.get(0).getStep();
+        return steps.get(0);
     }
 
     /**
@@ -101,7 +101,7 @@ public class WorkflowService {
      */
     private List<WorkflowStep> getSortedWorkflowSteps(WorkflowConfig workflowConfig) {
         List<WorkflowStep> steps = workflowConfig.getSteps();
-        steps.sort(Comparator.comparingInt(WorkflowStep::getStep));
+        steps.sort(Comparator.comparingInt(WorkflowStep::getStepNumber));
         return steps;
     }
 

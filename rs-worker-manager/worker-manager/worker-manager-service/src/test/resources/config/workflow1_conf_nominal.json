@@ -1,13 +1,13 @@
 {
-  "workflowType": "workflow1",
+  "workflowType": "workflowType1",
   "steps": [
     {
-      "step": 5,
-      "workerType": "worker2"
+      "stepNumber": 5,
+      "workerType": "workerType2"
     },
     {
-      "step": 2,
-      "workerType": "worker1"
+      "stepNumber": 2,
+      "workerType": "workerType1"
     }
   ]
 }

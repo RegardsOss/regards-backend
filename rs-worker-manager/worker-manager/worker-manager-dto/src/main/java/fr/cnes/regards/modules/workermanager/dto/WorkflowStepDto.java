@@ -31,22 +31,22 @@ import java.util.Objects;
  **/
 public class WorkflowStepDto {
 
-    @NotNull(message = "step must be present")
-    @Min(value = 0, message = "step must be a positive number")
-    private final int step;
+    @NotNull(message = "stepNumber must be present")
+    @Min(value = 0, message = "stepNumber must be a positive number")
+    private final int stepNumber;
 
     @NotBlank(message = "workerType must be present")
     @Size(max = 128, message = "workerType is limited to 128 characters")
     private final String workerType;
 
-    public WorkflowStepDto(int step, String workerType) {
+    public WorkflowStepDto(int stepNumber, String workerType) {
         Assert.notNull(workerType, "workerType is required");
-        this.step = step;
+        this.stepNumber = stepNumber;
         this.workerType = workerType;
     }
 
-    public int getStep() {
-        return step;
+    public int getStepNumber() {
+        return stepNumber;
     }
 
     public String getWorkerType() {
@@ -62,16 +62,16 @@ public class WorkflowStepDto {
             return false;
         }
         WorkflowStepDto that = (WorkflowStepDto) o;
-        return step == that.step && workerType.equals(that.workerType);
+        return stepNumber == that.stepNumber && workerType.equals(that.workerType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(step, workerType);
+        return Objects.hash(stepNumber, workerType);
     }
 
     @Override
     public String toString() {
-        return "WorkflowStepDto{" + "step=" + step + ", workerType='" + workerType + '\'' + '}';
+        return "WorkflowStepDto{" + "stepNumber=" + stepNumber + ", workerType='" + workerType + '\'' + '}';
     }
 }

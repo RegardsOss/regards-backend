@@ -37,7 +37,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -366,7 +369,7 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
                 expectedRequestStatus)).isTrue();
             // Check final workflow step
             assertThat(updatedRequests.stream()
-                                      .allMatch(request -> Objects.requireNonNull(request.getStep())
+                                      .allMatch(request -> request.getStepNumber()
                                                            == expectedStep)).as(String.format(
                 "Expected all Requests to be in step %d",
                 expectedStep)).isTrue();

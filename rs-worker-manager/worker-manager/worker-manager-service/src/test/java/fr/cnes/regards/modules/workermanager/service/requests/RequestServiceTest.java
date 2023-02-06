@@ -212,7 +212,7 @@ public class RequestServiceTest {
         request.setSession(session);
         request.setStatus(RequestStatus.TO_DISPATCH);
         request.setContent(content);
-        request.setStep(INIT_STEP);
+        request.setStepNumber(INIT_STEP);
         return request;
     }
 

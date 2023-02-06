@@ -68,7 +68,7 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
 
     public final static String DEFAULT_WORKER = "WorkerTest";
 
-    public final static String DEFAULT_CONTENT_TYPE = RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE;
+    public final static String DEFAULT_CONTENT_TYPE = RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0;
 
     @Autowired
     protected IPublisher publisher;
@@ -115,19 +115,33 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
         workerRequestMock.reset();
     }
 
-    protected Request createRequest(String requestId, RequestStatus status) {
+    protected Request createRequest(String requestId,
+                                    RequestStatus status,
+                                    String contentType,
+                                    int initStepNumber,
+                                    String initStepWorkerType) {
         Request request = new Request();
         request.setRequestId(requestId);
         request.setStatus(status);
         request.setContent(BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
-        request.setContentType(DEFAULT_CONTENT_TYPE);
+        request.setContentType(contentType);
         request.setSession(DEFAULT_SESSION);
         request.setSource(DEFAULT_SOURCE);
         request.setCreationDate(OffsetDateTime.now());
+        request.setStepNumber(initStepNumber);
+        request.setStepWorkerType(initStepWorkerType);
         if (status != RequestStatus.NO_WORKER_AVAILABLE) {
             request.setDispatchedWorkerType(DEFAULT_WORKER);
         }
         return request;
+    }
+
+    protected Request createRequest(String requestId, RequestStatus status) {
+        return createRequest(requestId,
+                             status,
+                             DEFAULT_CONTENT_TYPE,
+                             0,
+                             RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE_1);
     }
 
     protected WorkerResponseEvent createWorkerResponseEvent(String requestId, WorkerResponseStatus status) {

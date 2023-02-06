@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.RequestSpecificationsBuilder;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
@@ -211,7 +212,7 @@ public class RequestService {
         Collection<Request> requests = getRequestsFromEvents(validEvents);
 
         // init requests only if they handle workflows
-        this.initRequestsFirstStepInWorkflow(requests);
+        this.initRequestsFirstStep(requests);
 
         // Handle requests
         return this.handleRequests(requests, requestInfo, false);
@@ -284,15 +285,31 @@ public class RequestService {
     }
 
     /**
-     * Initialize requests if they process the first step of a workflow
+     * Initialize requests if they process the first step of a worker or a workflow
      */
-    private void initRequestsFirstStepInWorkflow(Collection<Request> requests) {
+    private void initRequestsFirstStep(Collection<Request> requests) {
         requests.forEach(request -> workflowService.findWorkflowByType(request.getContentType())
-                                                   .ifPresent(workflowConfig -> {
-                                                       if (request.getStep() == null) {
-                                                           request.setStep(workflowService.getFirstStep(workflowConfig));
-                                                       }
-                                                   }));
+                                                   .ifPresentOrElse(workflowConfig -> initFirstWorkflowStep(
+                                                       workflowConfig,
+                                                       request), () -> initFirstWorkerStep(request)));
+    }
+
+    /**
+     * Initialise a request linked to a worker
+     */
+    private void initFirstWorkerStep(Request request) {
+        request.setStepWorkerType(workerCacheService.getWorkerTypeByContentType(request.getContentType()).orElse(null));
+    }
+
+    /**
+     * Initialise a request linked to workflow if it is the first step
+     */
+    private void initFirstWorkflowStep(WorkflowConfig workflowConfig, Request request) {
+        if (request.getStepNumber() == 0) {
+            WorkflowStep firstStep = workflowService.getFirstStep(workflowConfig);
+            request.setStepNumber(firstStep.getStepNumber());
+            request.setStepWorkerType(firstStep.getWorkerType());
+        }
     }
 
     /**
@@ -304,9 +321,9 @@ public class RequestService {
         // retrieve worker type in workflowConfig
         return workflowService.findWorkflowByType(request.getContentType())
                               .flatMap(workflowConfig -> workflowService.getWorkerTypeInWorkflow(workflowConfig,
-                                                                                                 request.getStep()))
+                                                                                                 request.getStepNumber()))
                               .map(workerType -> {
-                                  boolean isRequestDispatched = true;
+                                  boolean isRequestDispatched = false;
                                   // if worker is present in cache add request to the list of requests to dispatch
                                   if (workerCacheService.isWorkerTypeInCache(workerType)) {
                                       request.setStatus(RequestStatus.DISPATCHED);
@@ -445,21 +462,23 @@ public class RequestService {
      */
     private void updateRequestWithNextStep(Request request, WorkerResponseEvent event, WorkflowConfig workflowConfig) {
         // check if workflow is finished
-        workflowService.getNextWorkflowStepIndex(workflowConfig, request.getStep()).ifPresentOrElse((nextStepInd) -> {
+        workflowService.getNextWorkflowStepIndex(workflowConfig, request.getStepNumber()).ifPresentOrElse((nextStepInd) -> {
             byte[] content = event.getContent();
             // dispatch to next workflow step only if content response is valid
             if (content != null) {
                 request.setContent(event.getContent());
                 request.setStatus(RequestStatus.TO_DISPATCH);
                 request.setDispatchedWorkerType(null);
-                request.setStep(workflowConfig.getSteps().get(nextStepInd).getStep());
+                WorkflowStep nextStep = workflowConfig.getSteps().get(nextStepInd);
+                request.setStepNumber(nextStep.getStepNumber());
+                request.setStepWorkerType(nextStep.getWorkerType());
             } else {
                 request.setStatus(RequestStatus.ERROR);
                 request.setError(String.format("""
                                                    An error occurred at step %d of the workflow "%s". \
                                                    The workerResponseEvent %s did not return any content while it is \
                                                    required by the next worker. Workflow is therefore stopped at this step.""",
-                                               request.getStep(),
+                                               request.getStepNumber(),
                                                workflowConfig.getWorkflowType(),
                                                event.getRequestIdHeader()));
             }
@@ -779,12 +798,10 @@ public class RequestService {
 
     /**
      * Return true when there is at least one request with NO_WORKER_AVAILABLE
-     *
-     * @param contentTypes
      */
-    public boolean hasRequestsMatchingContentTypeAndNoWorkerAvailable(Set<String> contentTypes) {
-        long nbWaitingRequests = requestRepository.countByContentTypeInAndStatus(contentTypes,
-                                                                                 RequestStatus.NO_WORKER_AVAILABLE);
+    public boolean hasRequestsMatchingStepWorkerTypeAndNoWorkerAvailable(String workerType) {
+        long nbWaitingRequests = requestRepository.countByStepWorkerTypeAndStatus(workerType,
+                                                                                    RequestStatus.NO_WORKER_AVAILABLE);
         return nbWaitingRequests > 0;
     }
 

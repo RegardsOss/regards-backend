@@ -73,13 +73,13 @@ public class WorkflowConfigConfigServiceTest {
     /**
      * Testing environment
      */
-    private static final String WORKFLOW_1 = "workflow1";
+    private static final String WORKFLOW_1 = "workflowType1";
 
-    private static final String WORKFLOW_2 = "workflow2";
+    private static final String WORKFLOW_2 = "workflowType2";
 
-    private static final String WORKER_1 = "worker1";
+    private static final String WORKER_1 = "workerType1";
 
-    private static final String WORKER_2 = "worker2";
+    private static final String WORKER_2 = "workerType2";
 
     private static final String CONTENT_TYPE_1 = "contentType1";
 
@@ -121,9 +121,10 @@ public class WorkflowConfigConfigServiceTest {
 
         // --- THEN ---
         Mockito.verify(workflowRepository)
-               .save(new WorkflowConfig(WORKFLOW_1,
-                                        List.of(new WorkflowStep(1, WORKER_1), new WorkflowStep(2, WORKER_2))));
-        Mockito.verify(workflowRepository).save(new WorkflowConfig(WORKFLOW_2, List.of(new WorkflowStep(1, WORKER_1))));
+               .saveAll(Set.of(new WorkflowConfig(WORKFLOW_1,
+                                                  List.of(new WorkflowStep(1, WORKER_1),
+                                                          new WorkflowStep(2, WORKER_2))),
+                               new WorkflowConfig(WORKFLOW_2, List.of(new WorkflowStep(1, WORKER_1)))));
         assertThat(errors).isEmpty();
     }
 
@@ -137,8 +138,8 @@ public class WorkflowConfigConfigServiceTest {
         Set<String> duplicatedWorkflowTypes = workflowDtos.stream()
                                                           .map(WorkflowConfigDto::getWorkflowType)
                                                           .collect(Collectors.toUnmodifiableSet());
-        Mockito.when(workerConfigRepository.findAllByWorkerTypeIn(duplicatedWorkflowTypes))
-               .thenReturn(duplicatedWorkflowTypes);
+        Mockito.when(workerConfigRepository.countByContentTypeInputsIn(duplicatedWorkflowTypes))
+               .thenReturn(Long.valueOf(duplicatedWorkflowTypes.size()));
 
         // --- WHEN ---
         Set<String> errors = workflowConfigService.importConfiguration(workflowDtos);
