@@ -14,9 +14,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -43,12 +42,17 @@ public class WorkerCacheService implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         cache = CacheBuilder.newBuilder()
-                            .expireAfterWrite(Duration.of(expireInCacheDuration, ChronoUnit.SECONDS))
+                            .removalListener(workerType -> LOGGER.info("All instances of {} worker removed from cache",
+                                                                       workerType.getKey()))
                             .build();
     }
 
     public Cache<String, CacheEntry> getCache() {
         return cache;
+    }
+
+    public long getExpireInCacheDuration() {
+        return expireInCacheDuration;
     }
 
     /**
@@ -65,8 +69,6 @@ public class WorkerCacheService implements InitializingBean {
 
     /**
      * Update the cache
-     *
-     * @param workerInsSetByWorkerType
      */
     private void updateCache(Map<String, Set<CacheWorkerInstance>> workerInsSetByWorkerType) {
         // Iterate over worker types from requests received
@@ -77,6 +79,7 @@ public class WorkerCacheService implements InitializingBean {
             if (cacheEntry != null) {
                 cacheEntry.addWorkers(workerInsSet);
             } else {
+                LOGGER.info("New worker register {} with {} instances", workerType, workerInsSet.size());
                 cache.put(workerType, new CacheEntry(workerInsSet, expireInCacheDuration));
             }
             LOGGER.debug("{} heartbeat(s) received from worker type {}", workerInsSet.size(), workerType);
@@ -110,12 +113,9 @@ public class WorkerCacheService implements InitializingBean {
         Set<String> workerTypesToKeep = new HashSet<>();
         Map<String, String> workerConfigs = workerConfigCacheService.getWorkerConfigs();
         // Init worker types to keep
-        for (Map.Entry<String, String> workerConfig : workerConfigs.entrySet()) {
-            String workerType = workerConfig.getValue();
-            if (contentTypes == null || contentTypes.isEmpty()) {
-                // Don't ignore any worker type
-                workerTypesToKeep.add(workerType);
-            } else {
+        if (!CollectionUtils.isEmpty(contentTypes)) {
+            for (Map.Entry<String, String> workerConfig : workerConfigs.entrySet()) {
+                String workerType = workerConfig.getValue();
                 // Ignore all worker types not having their content types referenced in provided contentTypes
                 String contentType = workerConfig.getKey();
                 if (contentTypes.contains(contentType)) {
@@ -126,7 +126,7 @@ public class WorkerCacheService implements InitializingBean {
         // Compute result
         for (Map.Entry<String, CacheEntry> entry : cache.asMap().entrySet()) {
             String workerType = entry.getKey();
-            if (workerTypesToKeep.contains(workerType)) {
+            if (CollectionUtils.isEmpty(contentTypes) || workerTypesToKeep.contains(workerType)) {
                 result.add(new WorkerTypeAlive(workerType, entry.getValue().getNbWorkerIns()));
             }
         }
@@ -140,7 +140,7 @@ public class WorkerCacheService implements InitializingBean {
         Map<String, Set<CacheWorkerInstance>> messagesByWorkerType = new HashMap<>();
         events.stream()
               // Remove events outdated
-              .filter(event -> CacheEntry.isValidHeartBeat(event.getHeartBeatDate(), expireInCacheDuration))
+              .filter(event -> CacheEntry.isValidHeartBeat(event.getHeartBeatDate(), expireInCacheDuration, true))
               // Regroup events into a Map with workerType as key and a list of CacheWorkerIns as value
               .forEach(workerHeartBeatEvent -> {
                   String workerType = workerHeartBeatEvent.getType();

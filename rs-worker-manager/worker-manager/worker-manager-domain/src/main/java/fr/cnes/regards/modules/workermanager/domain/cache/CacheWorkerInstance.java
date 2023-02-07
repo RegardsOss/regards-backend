@@ -39,7 +39,7 @@ public class CacheWorkerInstance {
     /**
      * Date used by the last heart beat
      */
-    private final OffsetDateTime lastHeartBeatDate;
+    private OffsetDateTime lastHeartBeatDate;
 
     private final String workerType;
 
@@ -65,6 +65,10 @@ public class CacheWorkerInstance {
 
     public String getWorkerType() {
         return workerType;
+    }
+
+    public void setLastHeartBeatDate(OffsetDateTime lastHeartBeatDate) {
+        this.lastHeartBeatDate = lastHeartBeatDate;
     }
 
     @Override

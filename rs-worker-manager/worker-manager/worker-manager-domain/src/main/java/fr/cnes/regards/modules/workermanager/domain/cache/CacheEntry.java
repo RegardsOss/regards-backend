@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -43,34 +44,54 @@ public class CacheEntry {
      */
     Set<CacheWorkerInstance> workerInsList;
 
+    private OffsetDateTime lastUpdateDate;
+
     public CacheEntry(Set<CacheWorkerInstance> workerInsList, long expireInCacheDuration) {
         this.workerInsList = workerInsList;
         this.expireInCacheDuration = expireInCacheDuration;
+        this.lastUpdateDate = OffsetDateTime.now();
         this.removeOutdatedWorkerIns();
     }
 
     public void addWorkers(Set<CacheWorkerInstance> workerInsList) {
-        this.workerInsList.removeAll(workerInsList);
-        this.workerInsList.addAll(workerInsList);
+        workerInsList.forEach(newInstance -> {
+            Optional<CacheWorkerInstance> inst = findInstanceById(newInstance.getId());
+            if (inst.isPresent()) {
+                inst.get().setLastHeartBeatDate(newInstance.getLastHeartBeatDate());
+            } else {
+                LOGGER.info("New instance for worker {} registered", newInstance.getWorkerType());
+                this.workerInsList.add(newInstance);
+            }
+        });
+        this.lastUpdateDate = OffsetDateTime.now();
         this.removeOutdatedWorkerIns();
+    }
+
+    private Optional<CacheWorkerInstance> findInstanceById(String id) {
+        return this.workerInsList.stream().filter(w -> w.getId().equals(id)).findFirst();
     }
 
     /**
      * Iterate over the list of WorkerIns and remove instances that are outdated
      */
     private void removeOutdatedWorkerIns() {
-        this.workerInsList.removeIf(cacheWorkerInstance -> !isValidHeartBeat(cacheWorkerInstance.getLastHeartBeatDate(),
-                                                                             expireInCacheDuration));
+        this.workerInsList.removeIf(cacheWorkerInstance -> {
+            boolean valid = isValidHeartBeat(cacheWorkerInstance.getLastHeartBeatDate(), expireInCacheDuration, false);
+            if (!valid) {
+                LOGGER.info("Instance {} for {} worker expired",
+                            cacheWorkerInstance.getId(),
+                            cacheWorkerInstance.getWorkerType());
+            }
+            return !valid;
+        });
     }
 
     /**
      * Function used to check if an heartbeat is considered valid
-     *
-     * @param lastHeartBeatDate
-     * @param expireInCacheDuration
-     * @return
      */
-    public static boolean isValidHeartBeat(OffsetDateTime lastHeartBeatDate, long expireInCacheDuration) {
+    public static boolean isValidHeartBeat(OffsetDateTime lastHeartBeatDate,
+                                           long expireInCacheDuration,
+                                           boolean enableLog) {
         OffsetDateTime now = OffsetDateTime.now();
         boolean valid = lastHeartBeatDate.plusSeconds(expireInCacheDuration).isAfter(now);
         if (!valid) {
@@ -83,4 +104,7 @@ public class CacheEntry {
         return Long.valueOf(workerInsList.size());
     }
 
+    public OffsetDateTime getLastUpdateDate() {
+        return lastUpdateDate;
+    }
 }
