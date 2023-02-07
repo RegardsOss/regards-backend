@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.workermanager.service.requests;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.workermanager.dao.IWorkflowRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep;
+import fr.cnes.regards.modules.workermanager.service.config.WorkflowConfigCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,10 +43,10 @@ public class WorkflowService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowService.class);
 
-    private final IWorkflowRepository workflowRepository;
+    private final WorkflowConfigCacheService workflowConfigCache;
 
-    public WorkflowService(IWorkflowRepository workflowRepository) {
-        this.workflowRepository = workflowRepository;
+    public WorkflowService(WorkflowConfigCacheService workflowConfigCache) {
+        this.workflowConfigCache = workflowConfigCache;
     }
 
     /**
@@ -65,7 +65,24 @@ public class WorkflowService {
     }
 
     public Optional<WorkflowConfig> findWorkflowByType(String workflowType) {
-        return workflowRepository.findById(workflowType);
+        return workflowConfigCache.getWorkflowConfig(workflowType);
+    }
+
+    /**
+     * Find the current step to execute in a workflow.
+     *
+     * @param workflowConfig    workflow of steps to execute
+     * @param currentStepNumber number of the current step
+     * @return index of current step to execute if found
+     */
+    public OptionalInt getCurrentWorkflowStepIndex(WorkflowConfig workflowConfig, int currentStepNumber) {
+        // sort list to guarantee step order
+        List<WorkflowStep> steps = getSortedWorkflowSteps(workflowConfig);
+        // get current step index
+        return IntStream.range(0, steps.size())
+                        .filter(stepInd -> steps.get(stepInd).getStepNumber() == currentStepNumber)
+                        .findFirst();
+
     }
 
     /**
@@ -78,22 +95,11 @@ public class WorkflowService {
     public OptionalInt getNextWorkflowStepIndex(WorkflowConfig workflowConfig, int currentStepNumber) {
         // sort list to guarantee step order
         List<WorkflowStep> steps = getSortedWorkflowSteps(workflowConfig);
-        // get next step index
+        // get current step index
         return IntStream.range(0, steps.size() - 1)
                         .filter(stepInd -> steps.get(stepInd).getStepNumber() == currentStepNumber)
-                        .map(currentIndex -> currentIndex + 1)
+                        .map(nextStepInd -> nextStepInd + 1)
                         .findFirst();
-
-    }
-
-    /**
-     * Find the first step of workflow.
-     */
-    public WorkflowStep getFirstStep(WorkflowConfig workflowConfig) {
-        // sort list to guarantee step order
-        List<WorkflowStep> steps = getSortedWorkflowSteps(workflowConfig);
-        // get first step number
-        return steps.get(0);
     }
 
     /**

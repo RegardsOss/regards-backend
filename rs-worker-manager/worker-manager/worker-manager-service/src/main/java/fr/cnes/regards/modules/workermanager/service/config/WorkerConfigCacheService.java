@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,24 +55,7 @@ public class WorkerConfigCacheService {
      * WorkerConfig cache is used to avoid useless database request as worker config rarely change!<br/>
      */
     private final LoadingCache<String, Map<String, String>> workerConfigsCachePerTenant = CacheBuilder.newBuilder()
-                                                                                                      .build(new CacheLoader<String, Map<String, String>>() {
-
-                                                                                                          @Override
-                                                                                                          public Map<String, String> load(
-                                                                                                              String tenant) {
-                                                                                                              List<WorkerConfig> workerConfigs = workerConfigRepository.findAll();
-                                                                                                              // Reorganise worker configs into a Map with content type as key and worker type as value
-                                                                                                              Map<String, String> workerTypeByContentType = new HashMap<>();
-                                                                                                              for (WorkerConfig workerConfig : workerConfigs) {
-                                                                                                                  for (String contentType : workerConfig.getContentTypeInputs()) {
-                                                                                                                      workerTypeByContentType.put(
-                                                                                                                          contentType,
-                                                                                                                          workerConfig.getWorkerType());
-                                                                                                                  }
-                                                                                                              }
-                                                                                                              return workerTypeByContentType;
-                                                                                                          }
-                                                                                                      });
+                                                                                                      .build(new WorkerCacheLoader());
 
     /**
      * Get the worker type as an optional
@@ -106,4 +90,23 @@ public class WorkerConfigCacheService {
         return workerConfigsCachePerTenant.getUnchecked(tenant);
     }
 
+    /**
+     * Cache {@link WorkerConfig}s in a map of Map<Content type, Worker type>
+     */
+    class WorkerCacheLoader extends CacheLoader<String, Map<String, String>> {
+
+        @Override
+        @Nonnull
+        public Map<String, String> load(@Nonnull String tenant) {
+            List<WorkerConfig> workerConfigs = workerConfigRepository.findAll();
+            // Reorganise worker configs into a Map with content type as key and worker type as value
+            Map<String, String> workerTypeByContentType = new HashMap<>();
+            for (WorkerConfig workerConfig : workerConfigs) {
+                for (String contentType : workerConfig.getContentTypeInputs()) {
+                    workerTypeByContentType.put(contentType, workerConfig.getWorkerType());
+                }
+            }
+            return workerTypeByContentType;
+        }
+    }
 }

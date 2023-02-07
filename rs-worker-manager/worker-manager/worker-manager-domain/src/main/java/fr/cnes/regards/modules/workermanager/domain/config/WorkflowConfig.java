@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.workermanager.domain.config;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.workermanager.dto.WorkflowConfigDto;
-import fr.cnes.regards.modules.workermanager.dto.WorkflowStepDto;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -102,10 +101,6 @@ public class WorkflowConfig {
     }
 
     public WorkflowConfigDto toDto() {
-        return new WorkflowConfigDto(this.workflowType,
-                                     this.steps.stream()
-                                               .map(stepDto -> new WorkflowStepDto(stepDto.getStepNumber(),
-                                                                                   stepDto.getWorkerType()))
-                                               .toList());
+        return new WorkflowConfigDto(this.workflowType, this.steps.stream().map(WorkflowStep::toDto).toList());
     }
 }

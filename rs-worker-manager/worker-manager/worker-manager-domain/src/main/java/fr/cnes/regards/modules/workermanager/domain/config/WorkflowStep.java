@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.workermanager.domain.config;
 
+import fr.cnes.regards.modules.workermanager.dto.WorkflowStepDto;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -72,5 +74,9 @@ public class WorkflowStep {
     @Override
     public String toString() {
         return "WorkflowStep{" + "stepNumber=" + stepNumber + ", workerType='" + workerType + '\'' + '}';
+    }
+
+    public WorkflowStepDto toDto() {
+        return new WorkflowStepDto(stepNumber, workerType);
     }
 }

@@ -55,7 +55,7 @@ public class RequestHandlerConfiguration {
 
     @Bean
     @Primary
-    public WorkerCacheService workerCacheMock() {
+    public WorkerCacheService createWorkerCacheServiceMock() {
         WorkerCacheService localMockWorkerCacheService = Mockito.mock(WorkerCacheService.class);
         // Mock getWorkerTypeByContentType
         Mockito.when(localMockWorkerCacheService.getWorkerTypeByContentType(anyString())).then(invocation -> {

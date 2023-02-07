@@ -53,9 +53,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Iliana Ghazali
  **/
 @RunWith(MockitoJUnitRunner.class)
-public class WorkflowConfigConfigServiceTest {
+public class WorkflowConfigServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowConfigConfigServiceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowConfigServiceTest.class);
 
     /**
      * Error status codes

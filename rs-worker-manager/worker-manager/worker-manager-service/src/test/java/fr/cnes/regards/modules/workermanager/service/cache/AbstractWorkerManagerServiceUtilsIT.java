@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerManagerConfigManager;
+import fr.cnes.regards.modules.workermanager.service.config.WorkflowConfigCacheService;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.assertj.core.util.Lists;
 import org.junit.After;
@@ -96,6 +97,10 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
 
     @Autowired
     protected WorkerConfigCacheService workerConfigCacheService;
+
+    @Autowired
+    private WorkflowConfigCacheService workflowConfigCacheService;
+
     // -------------
     // BEFORE METHODS
     // -------------
@@ -110,6 +115,7 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
         // Clean cache
         configManager.resetConfiguration();
         workerConfigCacheService.cleanCache();
+        workflowConfigCacheService.cleanCache();
 
         // simulate application started and ready
         simulateApplicationStartedEvent();

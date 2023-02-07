@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.workermanager.dto.requests;
 
+import org.springframework.lang.Nullable;
+
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
@@ -36,6 +38,7 @@ public class RequestDTO {
 
     private final int stepNumber;
 
+    @Nullable
     private final String stepWorkerType;
 
     private final String source;
@@ -44,20 +47,22 @@ public class RequestDTO {
 
     private final RequestStatus status;
 
+    @Nullable
     private final String dispatchedWorkerType;
 
+    @Nullable
     private final String error;
 
     public RequestDTO(String requestId,
                       OffsetDateTime creationDate,
                       String contentType,
                       Integer stepNumber,
-                      String stepWorkerType,
+                      @Nullable String stepWorkerType,
                       String source,
                       String session,
                       RequestStatus status,
-                      String dispatchedWorkerType,
-                      String error) {
+                      @Nullable String dispatchedWorkerType,
+                      @Nullable String error) {
         this.requestId = requestId;
         this.creationDate = creationDate;
         this.contentType = contentType;
@@ -82,10 +87,6 @@ public class RequestDTO {
         return contentType;
     }
 
-    public int getStepNumber() {
-        return stepNumber;
-    }
-
     public String getSource() {
         return source;
     }
@@ -98,10 +99,12 @@ public class RequestDTO {
         return status;
     }
 
+    @Nullable
     public String getDispatchedWorkerType() {
         return dispatchedWorkerType;
     }
 
+    @Nullable
     public String getError() {
         return error;
     }

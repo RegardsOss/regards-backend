@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.amqp.events.internal.WorkerConfUpdatedEvent;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
+import fr.cnes.regards.modules.workermanager.service.config.WorkflowConfigCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -47,6 +48,9 @@ public class WorkerConfUpdatedEventHandler
     @Autowired
     private WorkerConfigCacheService workerConfigCacheService;
 
+    @Autowired
+    private WorkflowConfigCacheService workflowConfigCacheService;
+
     @Override
     public Class<WorkerConfUpdatedEvent> getMType() {
         return WorkerConfUpdatedEvent.class;
@@ -60,6 +64,7 @@ public class WorkerConfUpdatedEventHandler
     @Override
     public void handleBatch(List<WorkerConfUpdatedEvent> messages) {
         workerConfigCacheService.cleanCache();
+        workflowConfigCacheService.cleanCache();
     }
 
     @Override

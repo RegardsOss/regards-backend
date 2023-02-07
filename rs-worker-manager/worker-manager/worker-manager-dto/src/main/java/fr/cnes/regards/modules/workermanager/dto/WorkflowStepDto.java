@@ -33,19 +33,20 @@ public class WorkflowStepDto {
 
     @NotNull(message = "stepNumber must be present")
     @Min(value = 0, message = "stepNumber must be a positive number")
-    private final int stepNumber;
+    private final Integer stepNumber;
 
     @NotBlank(message = "workerType must be present")
     @Size(max = 128, message = "workerType is limited to 128 characters")
     private final String workerType;
 
-    public WorkflowStepDto(int stepNumber, String workerType) {
+    public WorkflowStepDto(Integer stepNumber, String workerType) {
+        Assert.isTrue(stepNumber != null && stepNumber >= 0, "stepNumber must be a valid positive number");
         Assert.notNull(workerType, "workerType is required");
         this.stepNumber = stepNumber;
         this.workerType = workerType;
     }
 
-    public int getStepNumber() {
+    public Integer getStepNumber() {
         return stepNumber;
     }
 
@@ -62,7 +63,7 @@ public class WorkflowStepDto {
             return false;
         }
         WorkflowStepDto that = (WorkflowStepDto) o;
-        return stepNumber == that.stepNumber && workerType.equals(that.workerType);
+        return stepNumber.equals(that.stepNumber) && workerType.equals(that.workerType);
     }
 
     @Override

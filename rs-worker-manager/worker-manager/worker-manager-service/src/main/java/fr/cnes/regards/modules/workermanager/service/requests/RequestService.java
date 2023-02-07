@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.WorkerManagerJobsPriority;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
 import fr.cnes.regards.modules.workermanager.service.requests.job.ScanRequestJob;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
@@ -125,6 +126,9 @@ public class RequestService {
 
     @Autowired
     private SessionService sessionService;
+
+    @Autowired
+    private WorkerConfigCacheService workerConfigCacheService;
 
     @Value("${worker.request.queue.name.template:regards.worker.%s.request}")
     private String WORKER_REQUEST_QUEUE_NAME_TEMPLATE;
@@ -211,8 +215,8 @@ public class RequestService {
         // Transform events to Requests
         Collection<Request> requests = getRequestsFromEvents(validEvents);
 
-        // init requests only if they handle workflows
-        this.initRequestsFirstStep(requests);
+        // init requests
+        this.initRequestsStepWorkerType(requests);
 
         // Handle requests
         return this.handleRequests(requests, requestInfo, false);
@@ -285,31 +289,35 @@ public class RequestService {
     }
 
     /**
-     * Initialize requests if they process the first step of a worker or a workflow
+     * Initialize {@link Request#getStepWorkerType()} if null in case of a worker or a workflow process
      */
-    private void initRequestsFirstStep(Collection<Request> requests) {
-        requests.forEach(request -> workflowService.findWorkflowByType(request.getContentType())
-                                                   .ifPresentOrElse(workflowConfig -> initFirstWorkflowStep(
-                                                       workflowConfig,
-                                                       request), () -> initFirstWorkerStep(request)));
+    private void initRequestsStepWorkerType(Collection<Request> requests) {
+        requests.forEach(request -> {
+            if (request.getStepWorkerType() == null) {
+                workflowService.findWorkflowByType(request.getContentType())
+                               .ifPresentOrElse(workflowConfig -> initNullWorkflowStep(workflowConfig, request),
+                                                () -> initNullWorkerStep(request));
+            }
+        });
     }
 
     /**
      * Initialise a request linked to a worker
      */
-    private void initFirstWorkerStep(Request request) {
-        request.setStepWorkerType(workerCacheService.getWorkerTypeByContentType(request.getContentType()).orElse(null));
+    private void initNullWorkerStep(Request request) {
+        request.setStepWorkerType(workerConfigCacheService.getWorkerType(request.getContentType()).orElse(null));
     }
 
     /**
-     * Initialise a request linked to workflow if it is the first step
+     * Initialise a request linked to workflow
      */
-    private void initFirstWorkflowStep(WorkflowConfig workflowConfig, Request request) {
-        if (request.getStepNumber() == 0) {
-            WorkflowStep firstStep = workflowService.getFirstStep(workflowConfig);
-            request.setStepNumber(firstStep.getStepNumber());
-            request.setStepWorkerType(firstStep.getWorkerType());
-        }
+    private void initNullWorkflowStep(WorkflowConfig workflowConfig, Request request) {
+        workflowService.getCurrentWorkflowStepIndex(workflowConfig, request.getStepNumber())
+                       .ifPresent(currentStepInd -> {
+                           WorkflowStep currentStep = workflowConfig.getSteps().get(currentStepInd);
+                           request.setStepNumber(currentStep.getStepNumber());
+                           request.setStepWorkerType(currentStep.getWorkerType());
+                       });
     }
 
     /**
