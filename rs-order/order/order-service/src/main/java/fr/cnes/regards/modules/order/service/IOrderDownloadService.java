@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 import java.io.OutputStream;
@@ -31,7 +32,6 @@ public interface IOrderDownloadService {
      *
      * @param orderOwner  order owner
      * @param inDataFiles concerned order data files
-     * @param os
      */
     void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os);
 
@@ -39,8 +39,7 @@ public interface IOrderDownloadService {
      * Create a metalink file with all files.
      *
      * @param orderId concerned order id
-     * @param os
      */
-    void downloadOrderMetalink(Long orderId, OutputStream os);
+    void downloadOrderMetalink(Long orderId, OutputStream os) throws ModuleException;
 
 }

@@ -18,7 +18,7 @@
 package fr.cnes.regards.modules.order.service.processing;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
@@ -59,8 +59,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=order_processing_test_it_scope_item", })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_processing_test_it_scope_item", })
 public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
@@ -169,7 +168,7 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
     private void launchOrderAndExpectResults(OrderProcessInfo processInfo,
                                              int expectedExecutions,
                                              java.util.List<OrderStatus> expectedOrderStatus)
-        throws EntityInvalidException, InterruptedException, IOException {
+        throws ModuleException, InterruptedException, IOException {
         //########################
         //######## GIVE
         // These parameters are necessary for tests but do not define the test behaviour:

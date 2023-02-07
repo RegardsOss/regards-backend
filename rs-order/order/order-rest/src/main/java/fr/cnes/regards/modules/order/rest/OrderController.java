@@ -185,7 +185,7 @@ public class OrderController implements IResourceController<OrderDto> {
     private String secret;
 
     @ResourceAccess(description = "Validate current basket and create corresponding order",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
     public ResponseEntity<EntityModel<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
         throws IllegalStateException, EntityInvalidException, EmptyBasketException {
@@ -244,13 +244,15 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @Operation(summary = "Retrieve specified order",
-        description = "Return order corresponding to the orderId input, if exists and user has access to it")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "The order has been successfully retrieved."),
-            @ApiResponse(responseCode = "403", description = "Order is not accessible for the current user.",
-                content = { @Content(mediaType = "application/html") }),
-            @ApiResponse(responseCode = "404", description = "Order not found",
-                content = { @Content(mediaType = "application/json") }) })
+               description = "Return order corresponding to the orderId input, if exists and user has access to it")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "The order has been successfully retrieved."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "Order is not accessible for the current user.",
+                                         content = { @Content(mediaType = "application/html") }),
+                            @ApiResponse(responseCode = "404",
+                                         description = "Order not found",
+                                         content = { @Content(mediaType = "application/json") }) })
     @ResourceAccess(description = "Retrieve specified order", role = DefaultRole.REGISTERED_USER)
     @GetMapping(GET_ORDER_PATH)
     public ResponseEntity<EntityModel<OrderDto>> retrieveOrder(@PathVariable("orderId") Long orderId) {
@@ -311,7 +313,7 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @ResourceAccess(description = "Find all specified user orders or all users orders matching given filters",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST, path = SEARCH_ORDER_PATH)
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAllAdmin(
         @PageableDefault(sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageRequest,
@@ -344,7 +346,7 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ZIP_DOWNLOAD_PATH)
     public ResponseEntity<Void> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
                                                           HttpServletResponse response) throws EntityNotFoundException {
@@ -387,7 +389,7 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @ResourceAccess(description = "Download a metalink file containing all files granted by a token",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = PUBLIC_METALINK_DOWNLOAD_PATH)
     public ResponseEntity<Void> publicDownloadMetalinkFile(
         @RequestParam(name = IOrderService.ORDER_TOKEN) String validityToken, HttpServletResponse response)
@@ -411,8 +413,6 @@ public class OrderController implements IResourceController<OrderDto> {
 
     /**
      * Fill Response headers and create streaming response
-     *
-     * @throws EntityNotFoundException
      */
     private ResponseEntity<Void> createMetalinkDownloadResponse(Order order, HttpServletResponse response) {
         String error = null;
@@ -445,7 +445,7 @@ public class OrderController implements IResourceController<OrderDto> {
             response.setContentType("application/metalink+xml");
             try {
                 orderDownloadService.downloadOrderMetalink(order.getId(), response.getOutputStream());
-            } catch (IOException e) {
+            } catch (IOException | ModuleException e) {
                 LOGGER.error(e.getMessage(), e);
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }

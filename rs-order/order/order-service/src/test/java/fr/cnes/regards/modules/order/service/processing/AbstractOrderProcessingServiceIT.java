@@ -22,6 +22,7 @@ import com.google.common.io.Files;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -97,11 +98,12 @@ import static org.mockito.Mockito.when;
 
 @ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
 @ContextConfiguration(classes = ProcessingServiceConfiguration.class)
-@TestPropertySource(
-    properties = { "regards.amqp.enabled=true", "logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE",
-        "logging.level.org.springframework.transaction=TRACE", "regards.order.files.bucket.size.Mb=50",
-        // We regulate the suborder sizes with process info limits
-    })
+@TestPropertySource(properties = { "regards.amqp.enabled=true",
+                                   "logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE",
+                                   "logging.level.org.springframework.transaction=TRACE",
+                                   "regards.order.files.bucket.size.Mb=50",
+                                   // We regulate the suborder sizes with process info limits
+})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitenantServiceIT {
 
@@ -202,7 +204,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         Mockito.reset(publisher);
     }
 
-    protected void showMetalink(Order order) throws IOException {
+    protected void showMetalink(Order order) throws IOException, ModuleException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             orderDownloadService.downloadOrderMetalink(order.getId(), out);
             out.flush();

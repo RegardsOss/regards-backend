@@ -27,6 +27,7 @@ import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
@@ -50,7 +51,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
@@ -67,7 +70,6 @@ import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @MultitenantTransactional
@@ -179,7 +181,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         // Set statuses of all not downloaded files
         downloadErrorFiles.forEach(f -> f.getLeft().setState(FileState.DOWNLOAD_ERROR));
         // use one set to save everybody
-        availableFiles.addAll(downloadErrorFiles.stream().map(Pair::getLeft).collect(Collectors.toList()));
+        availableFiles.addAll(downloadErrorFiles.stream().map(Pair::getLeft).toList());
         dataFileService.save(availableFiles);
 
         processingEventSender.sendDownloadedFilesNotification(availableFiles);
@@ -206,7 +208,6 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                          fileNamesInZip,
                                          currentFileIterator,
                                          dataFile,
-                                         10_000,
                                          dataFile.getIpId().toString());
         } else {
             downloadOk = downloadDataFileToZipFromStorage(dataFile,
@@ -257,12 +258,17 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                     "null" :
                     response.toString()));
         } else { // Download ok
+            Long contentLength = Long.parseLong(response.headers()
+                                                        .get(OrderDataFileService.CONTENT_LENGTH_HEADER)
+                                                        .iterator()
+                                                        .next());
             try (InputStream is = response.body().asInputStream()) {
                 readInputStreamAndAddToZip(downloadErrorFiles,
                                            zos,
                                            fileNamesInZip,
                                            currentFileIterator,
                                            dataFile,
+                                           Optional.of(contentLength),
                                            aip,
                                            is);
                 downloadOk = true;
@@ -280,17 +286,23 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
     protected boolean downloadDataFileToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles,
                                             ZipArchiveOutputStream zos,
                                             Multiset<String> fileNamesInZip,
-                                            Iterator<OrderDataFile> i,
+                                            Iterator<OrderDataFile> currentFileIterator,
                                             OrderDataFile dataFile,
-                                            int timeout,
                                             String dataObjectIpId) {
         boolean downloadOk = false;
         try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()),
                                                                        proxy,
                                                                        noProxyHosts,
-                                                                       timeout,
+                                                                       10_000,
                                                                        Collections.emptyList())) {
-            readInputStreamAndAddToZip(downloadErrorFiles, zos, fileNamesInZip, i, dataFile, dataObjectIpId, is);
+            readInputStreamAndAddToZip(downloadErrorFiles,
+                                       zos,
+                                       fileNamesInZip,
+                                       currentFileIterator,
+                                       dataFile,
+                                       Optional.empty(),
+                                       dataObjectIpId,
+                                       is);
             downloadOk = true;
         } catch (IOException e) {
             String externalDlErrorPrefix = "Error while downloading external file";
@@ -298,7 +310,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
             LOGGER.error(String.format("%s (url : %s)", externalDlErrorPrefix, dataFile.getUrl()), e);
             dataFile.setDownloadError(String.format("%s\n%s", externalDlErrorPrefix, stack));
             downloadErrorFiles.add(Pair.of(dataFile, "I/O error during external download"));
-            i.remove();
+            currentFileIterator.remove();
         }
         return downloadOk;
     }
@@ -307,20 +319,19 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         return response.map(r -> {
             Response.Body body = r.body();
             boolean nullBody = body == null;
-            switch (r.status()) {
-                case 429:
-                    if (nullBody) {
-                        return "Download failed due to exceeded quota";
-                    }
+            if (r.status() == 429) {
+                if (nullBody) {
+                    return "Download failed due to exceeded quota";
+                }
 
-                    try (InputStream is = body.asInputStream()) {
-                        return IOUtils.toString(is, StandardCharsets.UTF_8);
-                    } catch (IOException e) {
-                        LOGGER.debug("I/O error ready response body", e);
-                        return "Download failed due to exceeded quota";
-                    }
-                default:
-                    return String.format("Server returned HTTP error code %d", r.status());
+                try (InputStream is = body.asInputStream()) {
+                    return IOUtils.toString(is, StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    LOGGER.debug("I/O error ready response body", e);
+                    return "Download failed due to exceeded quota";
+                }
+            } else {
+                return String.format("Server returned HTTP error code %d", r.status());
             }
         }).orElse("Server returned no content");
     }
@@ -336,6 +347,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                             Multiset<String> fileNamesInZip,
                                             Iterator<OrderDataFile> i,
                                             OrderDataFile dataFile,
+                                            Optional<Long> realContentLength,
                                             String dataObjectIpId,
                                             InputStream is) throws IOException {
         // Add filename to multiset
@@ -360,25 +372,25 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         long copiedBytes = ByteStreams.copy(is, zos);
         zos.closeArchiveEntry();
         // We can only check copied bytes if we know expected size (ie if file is internal)
-        if (dataFile.getFilesize() != null) {
+        Long fileSize = realContentLength.orElse(dataFile.getFilesize());
+        if (fileSize != null && copiedBytes != fileSize) {
             // Check that file has been completely been copied
-            if (copiedBytes != dataFile.getFilesize()) {
-                i.remove();
-                LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})",
-                            dataObjectIpId,
-                            dataFile.getFilename());
-                String downloadError = String.format(
-                    "Cannot completely download data file from storage, only %d/%d bytes",
-                    copiedBytes,
-                    dataFile.getFilesize());
-                downloadErrorFiles.add(Pair.of(dataFile, downloadError));
-                dataFile.setDownloadError(downloadError);
-            }
+            i.remove();
+            LOGGER.warn("Cannot completely download ({}/{}) data file (data object IP_ID: {}, file name: {})",
+                        copiedBytes,
+                        fileSize,
+                        dataObjectIpId,
+                        dataFile.getFilename());
+            String downloadError = String.format("Cannot completely download data file from storage, only %d/%d bytes",
+                                                 copiedBytes,
+                                                 fileSize);
+            downloadErrorFiles.add(Pair.of(dataFile, downloadError));
+            dataFile.setDownloadError(downloadError);
         }
     }
 
     @Override
-    public void downloadOrderMetalink(Long orderId, OutputStream os) {
+    public void downloadOrderMetalink(Long orderId, OutputStream os) throws ModuleException {
         Order order = orderRepository.findSimpleById(orderId);
         String tokenRequestParam = IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(
             order);
@@ -388,7 +400,14 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
 
         // Retrieve host for generating datafiles download urls
         FeignSecurityManager.asSystem();
-        Project project = projectClient.retrieveProject(runtimeTenantResolver.getTenant()).getBody().getContent();
+        ResponseEntity<EntityModel<Project>> clientResponse = projectClient.retrieveProject(runtimeTenantResolver.getTenant());
+        if (clientResponse == null
+            || clientResponse.getBody() == null
+            || clientResponse.getBody().getContent() == null
+            || clientResponse.getBody().getContent().getHost() == null) {
+            throw new ModuleException("Error retrieving project information from admin instance service");
+        }
+        Project project = clientResponse.getBody().getContent();
         String host = project.getHost();
         FeignSecurityManager.reset();
 
