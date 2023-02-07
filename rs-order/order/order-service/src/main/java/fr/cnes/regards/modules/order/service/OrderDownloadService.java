@@ -142,66 +142,21 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
     @Override
     public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os) {
         List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
+        List<OrderDataFile> downloadedFiles = new ArrayList<>();
+        // A multiset to manage multi-occurrences of files with same name
+        Multiset<String> fileNamesInZip = HashMultiset.create();
         List<Pair<OrderDataFile, String>> downloadErrorFiles = new ArrayList<>();
-
-        String externalDlErrorPrefix = "Error while downloading external file";
-        String storageDlErrorPrefix = "Error while downloading file from Archival Storage";
 
         try (ZipArchiveOutputStream zos = new ZipArchiveOutputStream(os)) {
             zos.setEncoding("ASCII");
             zos.setCreateUnicodeExtraFields(ZipArchiveOutputStream.UnicodeExtraFieldPolicy.NOT_ENCODEABLE);
-            // A multiset to manage multi-occurrences of files
-            Multiset<String> dataFiles = HashMultiset.create();
             for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
                 OrderDataFile dataFile = i.next();
-                // Externally downloadable
-                if (dataFile.isReference()) {
-                    // Connection timeout
-                    int timeout = 10_000;
-                    String dataObjectIpId = dataFile.getIpId().toString();
-                    dataFile.setDownloadError(null);
-                    downloadDataFileToZip(downloadErrorFiles,
-                                          externalDlErrorPrefix,
-                                          zos,
-                                          dataFiles,
-                                          i,
-                                          dataFile,
-                                          timeout,
-                                          dataObjectIpId);
-                } else { // Managed by Storage
-                    String aip = dataFile.getIpId().toString();
-                    dataFile.setDownloadError(null);
-                    Response response = null;
-                    try {
-                        // To download through storage client we must be authenticate as user in order to
-                        // impact the download quotas, but we upgrade the privileges so that the request passes.
-                        FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
-                        // To download file with accessrights checked, we should use catalogDownloadClient
-                        // but the accessRight have already been checked here.
-                        response = storageClient.downloadFile(dataFile.getChecksum(), false);
-                    } catch (RuntimeException e) {
-                        String stack = getStack(e);
-                        LOGGER.error(storageDlErrorPrefix, e);
-                        dataFile.setDownloadError(String.format("%s\n%s", storageDlErrorPrefix, stack));
-                    } finally {
-                        FeignSecurityManager.reset();
-                    }
-                    // Unable to download file from storage
-                    if ((response == null) || (response.status() != HttpStatus.OK.value())) {
-                        downloadErrorFiles.add(Pair.of(dataFile, humanizeError(Optional.ofNullable(response))));
-                        i.remove();
-                        LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})",
-                                    aip,
-                                    dataFile.getChecksum());
-                        dataFile.setDownloadError(
-                            "Cannot retrieve data file from storage, feign downloadFile method returns " + (response
-                                                                                                            == null ?
-                                "null" :
-                                response.toString()));
-                    } else { // Download ok
-                        try (InputStream is = response.body().asInputStream()) {
-                            readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, aip, is);
-                        }
+                // Check if file is already download in zip
+                if (!fileAlreadyInZip(dataFile, downloadedFiles)) {
+                    // Download file
+                    if (downloadOrderDataFile(dataFile, i, fileNamesInZip, downloadErrorFiles, zos)) {
+                        downloadedFiles.add(dataFile);
                     }
                 }
             }
@@ -233,27 +188,119 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         orderJobService.manageUserOrderStorageFilesJobInfos(orderOwner);
     }
 
-    protected void downloadDataFileToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles,
-                                         String externalDlErrorPrefix,
-                                         ZipArchiveOutputStream zos,
-                                         Multiset<String> dataFiles,
-                                         Iterator<OrderDataFile> i,
-                                         OrderDataFile dataFile,
-                                         int timeout,
-                                         String dataObjectIpId) {
+    /**
+     * Download given {@link OrderDataFile} from external system (file or http protocol) or throught regards storage
+     * microservice into a {@link ZipArchiveOutputStream}.
+     */
+    private boolean downloadOrderDataFile(OrderDataFile dataFile,
+                                          Iterator<OrderDataFile> currentFileIterator,
+                                          Multiset<String> fileNamesInZip,
+                                          List<Pair<OrderDataFile, String>> downloadErrorFiles,
+                                          ZipArchiveOutputStream zos) throws IOException {
+        boolean downloadOk;
+        if (dataFile.isReference()) {
+            // Externally downloadable
+            dataFile.setDownloadError(null);
+            return downloadDataFileToZip(downloadErrorFiles,
+                                         zos,
+                                         fileNamesInZip,
+                                         currentFileIterator,
+                                         dataFile,
+                                         10_000,
+                                         dataFile.getIpId().toString());
+        } else {
+            downloadOk = downloadDataFileToZipFromStorage(dataFile,
+                                                          currentFileIterator,
+                                                          fileNamesInZip,
+                                                          downloadErrorFiles,
+                                                          zos);
+        }
+        return downloadOk;
+    }
+
+    /**
+     * Download given {@link OrderDataFile} from storage microservice into result {@link ZipArchiveOutputStream}
+     */
+    private boolean downloadDataFileToZipFromStorage(OrderDataFile dataFile,
+                                                     Iterator<OrderDataFile> currentFileIterator,
+                                                     Multiset<String> fileNamesInZip,
+                                                     List<Pair<OrderDataFile, String>> downloadErrorFiles,
+                                                     ZipArchiveOutputStream zos) throws IOException {
+        String storageDlErrorPrefix = "Error while downloading file from Archival Storage";
+        String aip = dataFile.getIpId().toString();
+        dataFile.setDownloadError(null);
+        Response response = null;
+        boolean downloadOk = false;
+        try {
+            // To download through storage client we must be authenticate as user in order to
+            // impact the download quotas, but we upgrade the privileges so that the request passes.
+            FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+            // To download file with accessrights checked, we should use catalogDownloadClient
+            // but the accessRight have already been checked here.
+            response = storageClient.downloadFile(dataFile.getChecksum(), false);
+        } catch (RuntimeException e) {
+            String stack = getStack(e);
+            LOGGER.error(storageDlErrorPrefix, e);
+            dataFile.setDownloadError(String.format("%s\n%s", storageDlErrorPrefix, stack));
+        } finally {
+            FeignSecurityManager.reset();
+        }
+        // Unable to download file from storage
+        if ((response == null) || (response.status() != HttpStatus.OK.value())) {
+            downloadErrorFiles.add(Pair.of(dataFile, humanizeError(Optional.ofNullable(response))));
+            currentFileIterator.remove();
+            LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})",
+                        aip,
+                        dataFile.getChecksum());
+            dataFile.setDownloadError("Cannot retrieve data file from storage, feign downloadFile method returns " + (
+                response == null ?
+                    "null" :
+                    response.toString()));
+        } else { // Download ok
+            try (InputStream is = response.body().asInputStream()) {
+                readInputStreamAndAddToZip(downloadErrorFiles,
+                                           zos,
+                                           fileNamesInZip,
+                                           currentFileIterator,
+                                           dataFile,
+                                           aip,
+                                           is);
+                downloadOk = true;
+            }
+        }
+        return downloadOk;
+    }
+
+    private boolean fileAlreadyInZip(OrderDataFile dataFile, List<OrderDataFile> downloadedFiles) {
+        return downloadedFiles.stream()
+                              .anyMatch(f -> f.getChecksum().equals(dataFile.getChecksum()) && f.getFilename()
+                                                                                                .equals(dataFile.getFilename()));
+    }
+
+    protected boolean downloadDataFileToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles,
+                                            ZipArchiveOutputStream zos,
+                                            Multiset<String> fileNamesInZip,
+                                            Iterator<OrderDataFile> i,
+                                            OrderDataFile dataFile,
+                                            int timeout,
+                                            String dataObjectIpId) {
+        boolean downloadOk = false;
         try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()),
                                                                        proxy,
                                                                        noProxyHosts,
                                                                        timeout,
                                                                        Collections.emptyList())) {
-            readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
+            readInputStreamAndAddToZip(downloadErrorFiles, zos, fileNamesInZip, i, dataFile, dataObjectIpId, is);
+            downloadOk = true;
         } catch (IOException e) {
+            String externalDlErrorPrefix = "Error while downloading external file";
             String stack = getStack(e);
             LOGGER.error(String.format("%s (url : %s)", externalDlErrorPrefix, dataFile.getUrl()), e);
             dataFile.setDownloadError(String.format("%s\n%s", externalDlErrorPrefix, stack));
             downloadErrorFiles.add(Pair.of(dataFile, "I/O error during external download"));
             i.remove();
         }
+        return downloadOk;
     }
 
     private String humanizeError(Optional<Response> response) {
@@ -286,7 +333,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
 
     private void readInputStreamAndAddToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles,
                                             ZipArchiveOutputStream zos,
-                                            Multiset<String> dataFiles,
+                                            Multiset<String> fileNamesInZip,
                                             Iterator<OrderDataFile> i,
                                             OrderDataFile dataFile,
                                             String dataObjectIpId,
@@ -296,10 +343,10 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         if (filename == null) {
             filename = dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
         }
-        dataFiles.add(filename);
+        fileNamesInZip.add(filename);
         // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
         // you dumb ass ! What do you thing it could be ?)
-        int filenameCount = dataFiles.count(filename);
+        int filenameCount = fileNamesInZip.count(filename);
         if (filenameCount > 1) {
             String suffix = " (" + (filenameCount - 1) + ")";
             int lastDotIdx = filename.lastIndexOf('.');
