@@ -49,11 +49,17 @@ public final class S3ServerUtils {
      * @return the S3 server hosting the file at the url if it's present.
      */
     public static Optional<S3Server> isUrlFromS3Server(URL url, @Nullable List<S3Server> s3Servers) {
-        return s3Servers == null ?
+        Optional<S3Server> s3server = s3Servers == null ?
             Optional.empty() :
             s3Servers.stream()
                      .filter(s3Server -> isTheSameEndPoint(s3Server.getEndpoint(), url.getHost(), url.getPort()))
                      .findFirst();
+        if (s3server.isPresent()) {
+            LOGGER.info("Accessing url {} from configured S3 server {}", s3server.get().getEndpoint());
+        } else {
+            LOGGER.info("Accessing url {} from HTTP server (not found in configured S3 server).", url);
+        }
+        return s3server;
     }
 
     private static boolean isTheSameEndPoint(String endPoint, String hostUrl, int portUrl) {
