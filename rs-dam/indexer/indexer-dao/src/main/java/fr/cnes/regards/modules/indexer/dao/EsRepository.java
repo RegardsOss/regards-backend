@@ -70,6 +70,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.nio.entity.NStringEntity;
@@ -303,7 +304,13 @@ public class EsRepository implements IEsRepository {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
-    private RequestOptions options = RequestOptions.DEFAULT;
+    @Value("${regards.elasticsearch.search.request.timeout:15000}")
+    private int searchRequestTimeout;
+
+    @Value("${regards.elasticsearch.index.request.timeout:1200000}")
+    private int indexRequestTimeout;
+
+    private RequestOptions searchOptions;
 
     /**
      * SearchAll cache used by {@link EsRepository#searchAll} to avoid redo same ES request while changing page.
@@ -314,25 +321,23 @@ public class EsRepository implements IEsRepository {
                                                                                                                     TARGET_FORWARDING_CACHE_MN,
                                                                                                                     TimeUnit.MINUTES)
                                                                                                                 .build(
-                                                                                                                    new CacheLoader<CacheKey, Tuple<SortedSet<Object>, Set<IFacet<?>>>>() {
+                                                                                                                    new EsCacheLoader());
 
-                                                                                                                        @Override
-                                                                                                                        public Tuple<SortedSet<Object>, Set<IFacet<?>>> load(
-                                                                                                                            CacheKey key) {
-                                                                                                                            // Using method Objects.hashCode(Object) to compare to be sure that the set will always be returned
-                                                                                                                            // with same order
-                                                                                                                            return searchJoined(
-                                                                                                                                key.getSearchKey(),
-                                                                                                                                key.getCriterion(),
-                                                                                                                                key.getSourceAttribute(),
-                                                                                                                                key.getFacetsMap());
-                                                                                                                        }
-                                                                                                                    });
+    private class EsCacheLoader extends CacheLoader<CacheKey, Tuple<SortedSet<Object>, Set<IFacet<?>>>> {
+
+        @Override
+        public Tuple<SortedSet<Object>, Set<IFacet<?>>> load(CacheKey key) {
+            // Using method Objects.hashCode(Object) to compare to be sure that the set will always be returned
+            // with same order
+            return searchJoined(key.getSearchKey(), key.getCriterion(), key.getSourceAttribute(), key.getFacetsMap());
+        }
+    }
 
     private DefaultScrollClearResponseActionListener scrollClearListener = new DefaultScrollClearResponseActionListener();
 
     public EsRepository(@Autowired Gson gson,
-                        @Value("${regards.elasticsearch.hosts:#{T(java.util.Collections).emptyList()}}") List<String> esHosts,
+                        @Value("${regards.elasticsearch.hosts:#{T(java.util.Collections).emptyList()}}")
+                        List<String> esHosts,
                         @Value("${regards.elasticsearch.host:}") String esHost,
                         @Value("${regards.elasticsearch.http.port}") int esPort,
                         @Value("${regards.elasticsearch.http.protocol:http}") String esProtocol,
@@ -360,10 +365,12 @@ public class EsRepository implements IEsRepository {
 
         // Timeouts are set to 20 minutes particularly for bulk save containing geo_shape
         RestClientBuilder restClientBuilder = RestClient.builder(httpHosts.stream()
-                                                                               .map(host -> new HttpHost(host, esPort, esProtocol))
-                                                                               .toArray(HttpHost[]::new))
+                                                                          .map(host -> new HttpHost(host,
+                                                                                                    esPort,
+                                                                                                    esProtocol))
+                                                                          .toArray(HttpHost[]::new))
                                                         .setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setSocketTimeout(
-                                                            1_200_000));
+                                                            indexRequestTimeout));
 
         // Add auth when provided
         if (Strings.isNotBlank(username) && Strings.isNotBlank(password)) {
@@ -373,11 +380,14 @@ public class EsRepository implements IEsRepository {
                 credentialsProvider));
         }
 
+        Builder builder = RequestOptions.DEFAULT.toBuilder();
         if (elasticClientBufferLimit > 0) {
-            Builder builder = RequestOptions.DEFAULT.toBuilder();
             builder.setHttpAsyncResponseConsumerFactory(new HeapBufferedResponseConsumerFactory(elasticClientBufferLimit));
-            options = builder.build();
         }
+        // Specific search option to lower timeout
+        searchOptions = builder.setRequestConfig(RequestConfig.custom().setSocketTimeout(searchRequestTimeout).build())
+                               .build();
+
         client = new RestHighLevelClient(restClientBuilder);
 
         try {
@@ -981,7 +991,7 @@ public class EsRepository implements IEsRepository {
 
     private SearchResponse getSearchResponse(SearchRequest request) throws IOException {
         try {
-            return client.search(request, options);
+            return client.search(request, searchOptions);
         } catch (ElasticsearchException ee) {
             LOGGER.error(ee.getMessage(), ee);
             if (ee.getMessage().contains(INDEX_NOT_FOUND_EXCEPTION)) {
@@ -1286,7 +1296,7 @@ public class EsRepository implements IEsRepository {
                 // Relaunch the request with replaced facets
                 request.source(builder);
                 LOGGER.trace("ElasticsearchRequest (2nd pass): {}", request);
-                response = client.search(request, options);
+                response = client.search(request, searchOptions);
             }
 
             // If offset >= MAX_RESULT_WINDOW or page size = MAX_RESULT_WINDOW, this means a next page should exist
@@ -2500,7 +2510,6 @@ public class EsRepository implements IEsRepository {
     /**
      * Return given index if present or retrieve index from RunTimeTenantResolver
      *
-     * @param index
      * @return String index
      * @throws RsRuntimeException if no index is found
      */
