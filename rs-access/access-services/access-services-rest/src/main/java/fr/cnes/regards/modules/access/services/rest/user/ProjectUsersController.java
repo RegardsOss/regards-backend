@@ -517,9 +517,9 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                     clazz,
                                     "retrieveProjectUserList",
                                     LinkRels.LIST,
+                                    MethodParamFactory.build(SearchProjectUserParameters.class),
                                     MethodParamFactory.build(Pageable.class),
-                                    MethodParamFactory.build(PagedResourcesAssembler.class),
-                                    MethodParamFactory.build(SearchProjectUserParameters.class));
+                                    MethodParamFactory.build(PagedResourcesAssembler.class));
 
             if (UserStatus.WAITING_ACCESS.equals(element.getStatus())) {
                 resourceService.addLink(resource,
