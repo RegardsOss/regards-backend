@@ -21,10 +21,22 @@ package fr.cnes.regards.framework.s3.domain;
 import javax.validation.constraints.NotBlank;
 
 /**
+ * Settings class for a S3 server.
+ *
  * @author Thibaud Michaudel
  **/
 
 public class S3Server {
+
+    public static final String REGEX_GROUP_BUCKET = "bucket";
+
+    public static final String REGEX_GROUP_PATHFILENAME = "pathWithFilename";
+
+    private static final String DEFAULT_PATTERN = "http[s]{0,1}://(?:.*?)/(?<"
+                                                  + REGEX_GROUP_BUCKET
+                                                  + ">.*?)/(?<"
+                                                  + REGEX_GROUP_PATHFILENAME
+                                                  + ">.*)";
 
     /**
      * Url of endpoint for the S3 server
@@ -41,24 +53,29 @@ public class S3Server {
     @NotBlank(message = "Secret is required.")
     private String secret;
 
-    @NotBlank(message = "Bucket is required.")
     private String bucket;
 
     /**
-     * Pattern for regex to retrieve bucket(first group) and path with filename(second group) from url.
+     * Pattern for regex to retrieve bucket(named group: {@link S3Server#REGEX_GROUP_BUCKET}) and path with filename(named group: {@link S3Server#REGEX_GROUP_PATHFILENAME}) from url.
      * If the bucket field {@link S3Server#bucket} is null, this pattern allows to retrieve it.
+     * <p>
+     * By default, the pattern is {@link S3Server#DEFAULT_PATTERN}
      */
-    private String pattern;
+    private String pattern = DEFAULT_PATTERN;
 
     public S3Server() {
     }
 
-    public S3Server(String endpoint, String region, String key, String secret, String bucket, String pattern) {
+    public S3Server(String endpoint, String region, String key, String secret, String bucket) {
         this.endpoint = endpoint;
         this.region = region;
         this.key = key;
         this.secret = secret;
         this.bucket = bucket;
+    }
+
+    public S3Server(String endpoint, String region, String key, String secret, String bucket, String pattern) {
+        this(endpoint, region, key, secret, bucket);
         this.pattern = pattern;
     }
 

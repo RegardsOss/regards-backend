@@ -99,7 +99,7 @@ public final class S3ServerUtils {
         LOGGER.debug("Bucket [{}] from the configuration file from S3 server ", bucket);
         if (StringUtils.isBlank(bucket)) {
             try {
-                bucket = matcher.group(1);
+                bucket = matcher.group(S3Server.REGEX_GROUP_BUCKET);
                 LOGGER.debug("Bucket [{}] from the url [{}] for S3 server", bucket, source.toString());
             } catch (IllegalStateException | IndexOutOfBoundsException e) {//NOSONAR
                 throw new MalformedURLException(String.format("Could not retrieve bucket from url %s using pattern [%s]",
@@ -112,7 +112,7 @@ public final class S3ServerUtils {
         // Retrieve the path with filename
         String filePath;
         try {
-            filePath = matcher.group(2);
+            filePath = matcher.group(S3Server.REGEX_GROUP_PATHFILENAME);
             LOGGER.debug("File path [{}] from the url [{}] for S3 server.", filePath, source.toString());
         } catch (IllegalStateException | IndexOutOfBoundsException e) {//NOSONAR
             throw new MalformedURLException(String.format("Could not retrieve filename from url %s using pattern [%s]",

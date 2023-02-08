@@ -41,7 +41,7 @@ public class S3ServerUtilsTest {
         String bucket = "bucket";
         String s3Key = "downloadFile.txt";
         URL url = createUrl("http://localhost:9000/" + bucket + File.separator + s3Key);
-        S3Server s3Server = createS3Server("http://localhost:9000", "bucket", "http[s]{0,1}://.*?:.*?/(.*?)/(.*)");
+        S3Server s3Server = createS3Server("http://localhost:9000", "bucket", null);
         // When
         S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
         // Then
@@ -62,7 +62,13 @@ public class S3ServerUtilsTest {
         String bucket = "bucket";
         String s3Key = "path0/downloadFile.txt";
         URL url = createUrl("http://localhost:9000/" + bucket + File.separator + s3Key);
-        S3Server s3Server = createS3Server("http://localhost:9000", bucket, "http[s]{0,1}://.*?:.*?/(.*?)/(.*)");
+        S3Server s3Server = createS3Server("http://localhost:9000",
+                                           bucket,
+                                           "http[s]{0,1}://.*?:.*?/(?<"
+                                           + S3Server.REGEX_GROUP_BUCKET
+                                           + ">.*?)/(?<"
+                                           + S3Server.REGEX_GROUP_PATHFILENAME
+                                           + ">.*)");
         // When
         S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
         // Then
@@ -85,7 +91,11 @@ public class S3ServerUtilsTest {
         URL url = createUrl("http://alias_enPoint.port/path0/" + bucket + File.separator + s3Key);
         S3Server s3Server = createS3Server("http://alias_enPoint.port",
                                            "",
-                                           "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
+                                           "http[s]{0,1}://(.*?)/(.*?)/(?<"
+                                           + S3Server.REGEX_GROUP_BUCKET
+                                           + ">.*?)/(?<"
+                                           + S3Server.REGEX_GROUP_PATHFILENAME
+                                           + ">.*)");
         // When
         S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
         // Then
@@ -121,7 +131,18 @@ public class S3ServerUtilsTest {
         assertEquals(keyAndStorage.storageConfig(), storageConfig);
     }
 
+    /**
+     * Create settings of S3 server
+     *
+     * @param endPoint the endPoint of S3 server
+     * @param bucket   the bucket of S3 server
+     * @param pattern  the pattern to retrieve bucket, path with filename (if null, using the default pattern {@link S3Server#DEFAULT_PATTERN})
+     * @return settings of S3 server with a default pattern or with the given pattern
+     */
     private S3Server createS3Server(String endPoint, String bucket, String pattern) {
+        if (pattern == null) {
+            return new S3Server(endPoint, "region", "key", "secret", bucket);
+        }
         return new S3Server(endPoint, "region", "key", "secret", bucket, pattern);
     }
 

@@ -100,7 +100,11 @@ public class DownloadUtilsIT {
                                        key,
                                        secret,
                                        "bucket-test-download-utils",
-                                       "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
+                                       "http[s]{0,1}://(?:.*?)/(?:.*?)/(?<"
+                                       + S3Server.REGEX_GROUP_BUCKET
+                                       + ">.*?)/(?<"
+                                       + S3Server.REGEX_GROUP_PATHFILENAME
+                                       + ">.*)");
         S3BucketTestUtils.createBucket(testServer);
         createTestFileOnServer();
         createDeepTestFileOnServer();
@@ -164,7 +168,11 @@ public class DownloadUtilsIT {
                                                         key,
                                                         secret,
                                                         "",
-                                                        "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
+                                                        "http[s]{0,1}://(?:.*?)/(?:.*?)/(?<"
+                                                        + S3Server.REGEX_GROUP_BUCKET
+                                                        + ">.*?)/(?<"
+                                                        + S3Server.REGEX_GROUP_PATHFILENAME
+                                                        + ">.*)");
 
         List<S3Server> knownStorages = Arrays.asList(testServerWithoutBucket);
 
@@ -185,7 +193,11 @@ public class DownloadUtilsIT {
                                                         key,
                                                         secret,
                                                         "",
-                                                        "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
+                                                        "http[s]{0,1}://(?:.*?)/(?:.*?)/(?<"
+                                                        + S3Server.REGEX_GROUP_BUCKET
+                                                        + ">.*?)/(?<"
+                                                        + S3Server.REGEX_GROUP_PATHFILENAME
+                                                        + ">.*)");
 
         List<S3Server> knownStorages = Arrays.asList(testServerWithoutBucket);
 
@@ -251,7 +263,11 @@ public class DownloadUtilsIT {
                                                       key,
                                                       secret,
                                                       "bucket-test-download-utils",
-                                                      "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
+                                                      "http[s]{0,1}://(?:.*?)/(?:.*?)/(?<"
+                                                      + S3Server.REGEX_GROUP_BUCKET
+                                                      + ">.*?)/(?<"
+                                                      + S3Server.REGEX_GROUP_PATHFILENAME
+                                                      + ">.*)");
 
         List<S3Server> knownStorages = Arrays.asList(testUnreachableServer);
 
