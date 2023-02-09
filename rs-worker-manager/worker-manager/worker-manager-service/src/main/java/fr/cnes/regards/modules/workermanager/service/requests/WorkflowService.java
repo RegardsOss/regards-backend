@@ -103,6 +103,18 @@ public class WorkflowService {
     }
 
     /**
+     * Get first step of a workflow. A workflow has necessarily at least one step.
+     *
+     * @param workflowConfig workflow of steps to execute
+     * @return first workflow step
+     */
+    public WorkflowStep getFirstStep(WorkflowConfig workflowConfig) {
+        // sort list to guarantee step order
+        List<WorkflowStep> steps = getSortedWorkflowSteps(workflowConfig);
+        return steps.get(0);
+    }
+
+    /**
      * Sort workflow steps by ascending step number
      */
     private List<WorkflowStep> getSortedWorkflowSteps(WorkflowConfig workflowConfig) {

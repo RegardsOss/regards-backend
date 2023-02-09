@@ -310,14 +310,25 @@ public class RequestService {
 
     /**
      * Initialise a request linked to workflow
+     *
+     * @param workflowConfig workflow of steps to execute
+     * @param request        worker manager request to handle
      */
     private void initNullWorkflowStep(WorkflowConfig workflowConfig, Request request) {
-        workflowService.getCurrentWorkflowStepIndex(workflowConfig, request.getStepNumber())
-                       .ifPresent(currentStepInd -> {
-                           WorkflowStep currentStep = workflowConfig.getSteps().get(currentStepInd);
-                           request.setStepNumber(currentStep.getStepNumber());
-                           request.setStepWorkerType(currentStep.getWorkerType());
-                       });
+        int stepNumber = request.getStepNumber();
+        // override step number if it is the first one (the first step number does not necessarily start with 0 value)
+        if (stepNumber == 0) {
+            WorkflowStep firstStep = workflowService.getFirstStep(workflowConfig);
+            request.setStepNumber(firstStep.getStepNumber());
+            request.setStepWorkerType(firstStep.getWorkerType());
+        } else {
+            workflowService.getCurrentWorkflowStepIndex(workflowConfig, request.getStepNumber())
+                           .ifPresent(currentStepInd -> {
+                               WorkflowStep currentStep = workflowConfig.getSteps().get(currentStepInd);
+                               request.setStepNumber(currentStep.getStepNumber());
+                               request.setStepWorkerType(currentStep.getWorkerType());
+                           });
+        }
     }
 
     /**
