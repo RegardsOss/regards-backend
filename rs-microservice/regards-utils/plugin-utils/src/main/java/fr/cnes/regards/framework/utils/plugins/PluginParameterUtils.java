@@ -32,6 +32,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -144,7 +146,7 @@ public final class PluginParameterUtils {
                                                   field.getName(),
                                                   null,
                                                   paramType,
-                                                  false,
+                                                  isOptionalField(field),
                                                   false,
                                                   false,
                                                   pluginType);
@@ -238,6 +240,10 @@ public final class PluginParameterUtils {
             result.setParameterizedSubTypes(subParamType0, subParamType1);
         }
         return result;
+    }
+
+    private static boolean isOptionalField(Field field) {
+        return !field.isAnnotationPresent(NotNull.class) && !field.isAnnotationPresent(NotBlank.class);
     }
 
     /**
@@ -460,9 +466,6 @@ public final class PluginParameterUtils {
     /**
      * Creates a new {@link IPluginParam} from a {@link PluginParamType}
      *
-     * @param paramType
-     * @param paramName
-     * @param value
      * @return new created {@link IPluginParam}
      */
     @SuppressWarnings({ "unchecked" })
