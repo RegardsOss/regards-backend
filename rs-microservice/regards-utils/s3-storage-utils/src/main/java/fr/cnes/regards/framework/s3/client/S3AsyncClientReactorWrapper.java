@@ -35,8 +35,12 @@ import reactor.core.publisher.Mono;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedAsyncClientOption;
 import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.retry.RetryPolicy;
+import software.amazon.awssdk.core.retry.backoff.BackoffStrategy;
+import software.amazon.awssdk.core.retry.backoff.EqualJitterBackoffStrategy;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -45,6 +49,7 @@ import software.amazon.awssdk.services.s3.model.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -79,6 +84,20 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         return Mono.fromFuture(futSupplier).onErrorMap(CompletionException.class, Throwable::getCause);
     }
 
+    private static ClientOverrideConfiguration createRetryConfiguration(StorageConfig config) {
+        BackoffStrategy backoffStrategy = EqualJitterBackoffStrategy.builder()
+                                                                    .baseDelay(Duration.ofSeconds(config.getRetryBackOffBaseDuration()))
+                                                                    .maxBackoffTime(Duration.ofSeconds(config.getRetryBackOffMaxDuration()))
+                                                                    .build();
+        return ClientOverrideConfiguration.builder()
+                                          .retryPolicy(RetryPolicy.builder()
+                                                                  .backoffStrategy(backoffStrategy)
+                                                                  .throttlingBackoffStrategy(backoffStrategy)
+                                                                  .numRetries(config.getMaxRetriesNumber())
+                                                                  .build())
+                                          .build();
+    }
+
     private static S3AsyncClient createS3Client(StorageConfig config) {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(config.getKey(), config.getSecret());
 
@@ -86,9 +105,10 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                             .endpointOverride(URI.create(config.getEndpoint()))
                             .region(Region.of(config.getRegion()))
                             .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+                            .serviceConfiguration(S3Configuration.builder().build())
                             .asyncConfiguration(b -> b.advancedOption(SdkAdvancedAsyncClientOption.FUTURE_COMPLETION_EXECUTOR,
                                                                       executor))
+                            .overrideConfiguration(createRetryConfiguration(config))
                             .build();
     }
 

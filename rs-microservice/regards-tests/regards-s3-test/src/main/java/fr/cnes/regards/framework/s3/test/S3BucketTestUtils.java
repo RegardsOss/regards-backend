@@ -204,14 +204,7 @@ public final class S3BucketTestUtils {
     }
 
     private static StorageConfig buildStorageConfiguration(String rootPath, S3Server s3Server) {
-        return StorageConfig.builder()
-                            .endpoint(s3Server.getEndpoint())
-                            .bucket(s3Server.getBucket())
-                            .key(s3Server.getKey())
-                            .secret(s3Server.getSecret())
-                            .region(s3Server.getRegion())
-                            .rootPath(rootPath)
-                            .build();
+        return StorageConfig.builder(s3Server).rootPath(rootPath).build();
     }
 
 }

@@ -80,12 +80,7 @@ public final class S3FileTestUtils {
                                                                        MULTIPART_THRESHOLD_MB * 1024 * 1024)
                                                       .map(DataBuffer::asByteBuffer);
 
-            StorageConfig storageConfig = StorageConfig.builder()
-                                                       .endpoint(s3Server.getEndpoint())
-                                                       .bucket(s3Server.getBucket())
-                                                       .key(s3Server.getKey())
-                                                       .secret(s3Server.getSecret())
-                                                       .region(s3Server.getRegion())
+            StorageConfig storageConfig = StorageConfig.builder(s3Server)
                                                        .rootPath(request.getStorageSubDirectory())
                                                        .build();
 

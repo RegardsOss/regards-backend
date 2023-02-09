@@ -64,12 +64,8 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteReadDeleteSmall() {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder()
-                                            .endpoint(s3Host)
+        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
                                             .bucket(bucket)
-                                            .region(region)
-                                            .key(key)
-                                            .secret(secret)
                                             .rootPath(rootPath)
                                             .build();
 
@@ -166,12 +162,8 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteBig() {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder()
-                                            .endpoint(s3Host)
+        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
                                             .bucket(bucket)
-                                            .region(region)
-                                            .key(key)
-                                            .secret(secret)
                                             .rootPath(rootPath)
                                             .build();
 

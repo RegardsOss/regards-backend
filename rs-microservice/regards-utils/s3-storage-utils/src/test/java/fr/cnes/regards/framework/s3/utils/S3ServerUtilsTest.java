@@ -45,15 +45,7 @@ public class S3ServerUtilsTest {
         // When
         S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
         // Then
-        verify(keyAndStorage,
-               s3Key,
-               StorageConfig.builder()
-                            .endpoint(s3Server.getEndpoint())
-                            .bucket(bucket)
-                            .key(s3Server.getKey())
-                            .secret(s3Server.getSecret())
-                            .region(s3Server.getRegion())
-                            .build());
+        verify(keyAndStorage, s3Key, StorageConfig.builder(s3Server).bucket(bucket).build());
     }
 
     @Test
@@ -72,15 +64,7 @@ public class S3ServerUtilsTest {
         // When
         S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
         // Then
-        verify(keyAndStorage,
-               s3Key,
-               StorageConfig.builder()
-                            .endpoint(s3Server.getEndpoint())
-                            .bucket(bucket)
-                            .key(s3Server.getKey())
-                            .secret(s3Server.getSecret())
-                            .region(s3Server.getRegion())
-                            .build());
+        verify(keyAndStorage, s3Key, StorageConfig.builder(s3Server).bucket(bucket).build());
     }
 
     @Test
@@ -99,19 +83,11 @@ public class S3ServerUtilsTest {
         // When
         S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
         // Then
-        verify(keyAndStorage,
-               s3Key,
-               StorageConfig.builder()
-                            .endpoint(s3Server.getEndpoint())
-                            .bucket(bucket)
-                            .key(s3Server.getKey())
-                            .secret(s3Server.getSecret())
-                            .region(s3Server.getRegion())
-                            .build());
+        verify(keyAndStorage, s3Key, StorageConfig.builder(s3Server).bucket(bucket).build());
     }
 
     @Test
-    public void test_getKeyAndStorage_pattern_not_available() throws IOException {
+    public void test_getKeyAndStorage_pattern_not_available() {
         // Given
         String bucket = "bucket";
         String s3Key = "downloadFile.txt";
@@ -120,7 +96,7 @@ public class S3ServerUtilsTest {
         // When
         // Then
         assertThrows(PatternSyntaxS3Exception.class, () -> {
-            S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
+            S3ServerUtils.getKeyAndStorage(url, s3Server);
         });
     }
 

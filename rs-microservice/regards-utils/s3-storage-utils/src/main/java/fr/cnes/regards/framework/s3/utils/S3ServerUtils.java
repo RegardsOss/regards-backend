@@ -120,13 +120,10 @@ public final class S3ServerUtils {
                                                           pattern));
         }
         return new KeyAndStorage(filePath,
-                                 StorageConfig.builder()
-                                              .endpoint(s3Server.getEndpoint())
-                                              .bucket(bucket)
-                                              .key(s3Server.getKey())
-                                              .secret(s3Server.getSecret())
-                                              .region(s3Server.getRegion())
-                                              .build());
+                                 StorageConfig.builder(s3Server.getEndpoint(),
+                                                       s3Server.getRegion(),
+                                                       s3Server.getKey(),
+                                                       s3Server.getSecret()).bucket(bucket).build());
 
     }
 
@@ -136,7 +133,8 @@ public final class S3ServerUtils {
      * @param key           an s3 key in S3 server(path with filename)
      * @param storageConfig an s3 storage configuration
      */
-    public record KeyAndStorage(String key, StorageConfig storageConfig) {
+    public record KeyAndStorage(String key,
+                                StorageConfig storageConfig) {
         //NOSONAR
     }
 
