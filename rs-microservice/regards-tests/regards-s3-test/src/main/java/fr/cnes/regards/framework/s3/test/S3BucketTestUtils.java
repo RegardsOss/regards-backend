@@ -204,7 +204,12 @@ public final class S3BucketTestUtils {
     }
 
     private static StorageConfig buildStorageConfiguration(String rootPath, S3Server s3Server) {
-        return StorageConfig.builder(s3Server).rootPath(rootPath).build();
+        return StorageConfig.builder(s3Server)
+                            .rootPath(rootPath)
+                            .maxRetriesNumber(1)
+                            .retryBackOffBaseDuration(1)
+                            .retryBackOffMaxDuration(2)
+                            .build();
     }
 
 }
