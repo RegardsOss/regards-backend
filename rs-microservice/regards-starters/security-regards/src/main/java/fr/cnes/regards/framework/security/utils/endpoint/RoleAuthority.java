@@ -148,6 +148,16 @@ public class RoleAuthority implements GrantedAuthority {
         return getRoleAuthority(roleName).equals(getRoleAuthority(DefaultRole.PROJECT_ADMIN.toString()));
     }
 
+    /**
+     * Is the given role a public role ?
+     *
+     * @param roleName The role name
+     * @return [true|false]
+     */
+    public static boolean isPublicRole(String roleName) {
+        return getRoleAuthority(roleName).equals(getRoleAuthority(DefaultRole.PUBLIC.toString()));
+    }
+
     @Override
     public String getAuthority() {
         return autority;
