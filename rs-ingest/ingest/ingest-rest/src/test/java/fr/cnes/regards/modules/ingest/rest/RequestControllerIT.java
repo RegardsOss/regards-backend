@@ -57,7 +57,8 @@ import java.util.stream.Collectors;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_controller_it",
-    "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+                                   "regards.aips.save-metadata.bulk.delay=100",
+                                   "regards.ingest.aip.delete.bulk.delay=100" })
 @ContextConfiguration(classes = { AIPControllerIT.Config.class })
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class RequestControllerIT extends AbstractRegardsTransactionalIT {
@@ -100,7 +101,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
         String SESSION_OWNER_0 = "NASA";
 
         String SESSION_0 = OffsetDateTime.now().toString();
-        
+
         for (int i = 0; i < 1000; i = i + 1) {
             AIPUpdatesCreatorRequest someRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(
                 SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
@@ -172,7 +173,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void retryRequests() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        SearchRequestsParameters body = SearchRequestsParameters.build();
+        SearchAbstractRequestParameters body = new SearchAbstractRequestParameters();
 
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(getSearchBodyDescriptors());
@@ -186,7 +187,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void deleteRequests() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        SearchRequestsParameters body = SearchRequestsParameters.build();
+        SearchAbstractRequestParameters body = new SearchAbstractRequestParameters();
 
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(getSearchBodyDescriptors());

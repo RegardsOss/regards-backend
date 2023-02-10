@@ -239,7 +239,7 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public void scheduleRequestDeletionJob(SearchRequestsParameters filters) {
+    public void scheduleRequestDeletionJob(SearchAbstractRequestParameters filters) {
         Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA_JOB_PARAM_NAME,
                                                                            filters));
         // Schedule request deletion job
@@ -253,7 +253,7 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public void scheduleRequestRetryJob(SearchRequestsParameters filters) {
+    public void scheduleRequestRetryJob(SearchAbstractRequestParameters filters) {
         Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestRetryJob.CRITERIA_JOB_PARAM_NAME,
                                                                            filters));
         // Schedule request retry job
@@ -340,8 +340,6 @@ public class RequestService implements IRequestService {
 
     /**
      * Notify if necessary the sessionNotifier, then switch the state
-     *
-     * @param request
      */
     @Override
     public void switchRequestState(AbstractRequest request) {
@@ -443,7 +441,6 @@ public class RequestService implements IRequestService {
     }
 
     /**
-     * @param request
      * @return true when the concrete {@link AbstractRequest} is run in a job
      * false when the request is processed by bulk
      */

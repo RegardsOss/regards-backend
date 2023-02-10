@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -48,16 +48,20 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Test SIP flow handling
  *
  * @author Marc SORDI
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "regards.amqp.enabled=true",
-        "spring.task.scheduling.pool.size=4", "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false",
-        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
+                                   "regards.amqp.enabled=true",
+                                   "spring.task.scheduling.pool.size=4",
+                                   "regards.ingest.maxBulkSize=100",
+                                   "eureka.client.enabled=false",
+                                   "regards.ingest.aip.delete.bulk.delay=100" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp", "StorageClientMock" })
 @Ignore("Performance test")
 public class IngestPerformanceIT extends IngestMultitenantServiceIT {
@@ -349,7 +353,8 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         ingestServiceTest.waitForIngestRequest(1, 30_000, InternalRequestState.ERROR);
 
         // Remove request
-        SearchRequestsParameters filters = SearchRequestsParameters.build().withProviderIds(providerId);
+        SearchAbstractRequestParameters filters = new SearchAbstractRequestParameters().withProviderIdsIncluded(Set.of(
+            providerId));
         requestService.scheduleRequestDeletionJob(filters);
 
         // Wait

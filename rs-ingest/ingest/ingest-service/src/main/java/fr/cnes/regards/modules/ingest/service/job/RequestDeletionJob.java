@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
 import fr.cnes.regards.modules.ingest.service.request.RequestDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +35,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This job handles request deletion
@@ -61,7 +62,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
 
     private int totalPages = 0;
 
-    private SearchRequestsParameters criteria;
+    private SearchAbstractRequestParameters criteria;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -77,7 +78,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         int nbRequestsDeleted = 0;
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
-        criteria.setStateExcluded(InternalRequestState.RUNNING);
+        criteria.withRequestStatesExcluded(Set.of(InternalRequestState.RUNNING));
         Page<AbstractRequest> requestsPage;
         do {
             // Page request isn't modified as entities are removed on every page fetched

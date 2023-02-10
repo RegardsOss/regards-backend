@@ -10,9 +10,13 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
+import fr.cnes.regards.modules.ingest.service.job.ChooseVersioningJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -32,11 +36,15 @@ import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.S
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=ingestversioning", "spring.jpa.show-sql=false",
-        "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=4", "regards.ingest.maxBulkSize=100",
-        "eureka.client.enabled=false", "regards.aips.save-metadata.bulk.delay=100",
-        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestversioning",
+                                   "spring.jpa.show-sql=false",
+                                   "regards.amqp.enabled=true",
+                                   "spring.task.scheduling.pool.size=4",
+                                   "regards.ingest.maxBulkSize=100",
+                                   "eureka.client.enabled=false",
+                                   "regards.aips.save-metadata.bulk.delay=100",
+                                   "regards.ingest.aip.delete.bulk.delay=100" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class VersioningModeIT extends IngestMultitenantServiceIT {
 
@@ -66,6 +74,9 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
 
     @Autowired
     private IIngestRequestService ingestRequestService;
+
+    @Autowired
+    private IRequestService requestService;
 
     @Override
     public void doInit() {
@@ -560,16 +571,23 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
     }
 
     @Test
-    public void testManualThenIncVersion() {
+    public void testManualThenIncVersion() throws IllegalAccessException {
+        // Init requests in WAITING_VERSIONING_MODE
         testManual();
-        // lets get that request in WAITING_VERSIONING_MODE and switch it to INC_VERSION
-        ingestRequestRepository.findOne((root, query, cb) -> {
-                                   Set<Predicate> predicates = Sets.newHashSet();
-                                   predicates.add(cb.equal(root.get(STATE_ATTRIBUTE), InternalRequestState.WAITING_VERSIONING_MODE));
-                                   return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-                               })
-                               .ifPresent(request -> ingestRequestService.fromWaitingTo(Lists.newArrayList(request),
-                                                                                        VersioningMode.INC_VERSION));
+
+        // Create job to set vesion mode state
+        ChooseVersioningJob job = new ChooseVersioningJob();
+        FieldUtils.writeField(job, "requestIterationLimit", 1000, true);
+        FieldUtils.writeField(job, "ingestRequestService", ingestRequestService, true);
+        FieldUtils.writeField(job, "requestService", requestService, true);
+
+        ChooseVersioningRequestParameters filters = new ChooseVersioningRequestParameters();
+        filters.setNewVersioningMode(VersioningMode.INC_VERSION);
+        FieldUtils.writeField(job, "filters", filters, true);
+
+        // Run job to set version mode to INC_VERSION
+        job.run();
+
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);

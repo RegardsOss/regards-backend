@@ -639,14 +639,16 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void fromWaitingTo(Collection<IngestRequest> requests, VersioningMode versioningMode) {
+    public void fromWaitingTo(Collection<AbstractRequest> requests, VersioningMode versioningMode) {
         MultiValueMap<String, IngestRequest> ingestRequestToSchedulePerChain = new LinkedMultiValueMap<>();
-        for (IngestRequest request : requests) {
-            sessionNotifier.decrementProductWaitingVersioningMode(request);
-            request.setState(InternalRequestState.CREATED);
-            request.getMetadata().setVersioningMode(versioningMode);
-            handleRequestGranted(request);
-            ingestRequestToSchedulePerChain.add(request.getMetadata().getIngestChain(), request);
+        for (AbstractRequest request : requests) {
+            if (request instanceof IngestRequest ingestRequest) {
+                sessionNotifier.decrementProductWaitingVersioningMode(ingestRequest);
+                ingestRequest.setState(InternalRequestState.CREATED);
+                ingestRequest.getMetadata().setVersioningMode(versioningMode);
+                handleRequestGranted(ingestRequest);
+                ingestRequestToSchedulePerChain.add(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
+            }
         }
         ingestRequestToSchedulePerChain.keySet()
                                        .forEach(chain -> scheduleIngestProcessingJobByChain(chain,
@@ -677,7 +679,6 @@ public class IngestRequestService implements IIngestRequestService {
     /**
      * Creates or update the given {@link IngestRequest} and lock associated jobs if any.
      *
-     * @param request
      * @return saved {@link IngestRequest}
      */
     public IngestRequest saveRequest(IngestRequest request) {

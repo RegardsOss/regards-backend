@@ -31,7 +31,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,7 +41,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -89,37 +87,39 @@ public class RequestController implements IResourceController<RequestDto> {
      */
     public static final String REQUEST_DELETE_PATH = "/delete";
 
-    @Autowired
-    private IRequestService requestService;
+    private final IRequestService requestService;
 
-    /**
-     * {@link IResourceService} instance
-     */
-    @Autowired
-    private IResourceService resourceService;
+    private final IResourceService resourceService;
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
-    private IIngestRequestService ingestRequestService;
+    private final IIngestRequestService ingestRequestService;
+
+    public RequestController(IResourceService resourceService,
+                             IRequestService requestService,
+                             IRuntimeTenantResolver runtimeTenantResolver,
+                             IIngestRequestService ingestRequestService) {
+        this.resourceService = resourceService;
+        this.requestService = requestService;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.ingestRequestService = ingestRequestService;
+
+    }
 
     /**
      * Retrieve a page of ingest requests according to the given filters
      *
-     * @param filters   request filters
-     * @param pageable
-     * @param assembler
+     * @param filters request filters
      * @return page of aip metadata respecting the constraints
      */
     @PostMapping
-    @Operation(summary = "Get requests", description = "Return a page of requests matching criterias")
+    @Operation(summary = "Get requests", description = "Return a page of requests matching criteria")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All requests were retrieved.") })
-    @ResourceAccess(description = "Endpoint to retrieve all requests matching criterias", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Endpoint to retrieve all requests matching criteria", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<RequestDto>>> searchRequest(
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
-            content = @Content(schema = @Schema(implementation = SearchAbstractRequestParameters.class)))
-        @Parameter(description = "Filter criterias for requests") @RequestBody SearchAbstractRequestParameters filters,
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
+                                                              content = @Content(schema = @Schema(implementation = SearchAbstractRequestParameters.class)))
+        @Parameter(description = "Filter criteria for requests") @RequestBody SearchAbstractRequestParameters filters,
         @Parameter(description = "Sorting and page configuration")
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<RequestDto> assembler) {
@@ -128,17 +128,36 @@ public class RequestController implements IResourceController<RequestDto> {
                                     HttpStatus.OK);
     }
 
-    @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
+    @PostMapping(REQUEST_RETRY_PATH)
+    @Operation(summary = "Retry selected requests", description = "Retry all requests matching given search criteria")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Retry process has been successfully initialized.") })
     @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.EXPLOIT)
-    public void retryRequests(@Valid @RequestBody SearchRequestsParameters filters) {
+    public void retryRequests(@io.swagger.v3.oas.annotations.parameters.RequestBody(description =
+                                                                                        "Set of search criteria to find requests"
+                                                                                        + " to retry",
+                                                                                    content = @Content(schema = @Schema(
+                                                                                        implementation = SearchAbstractRequestParameters.class)))
+                              @Parameter(description = "Filter criteria for requests") @Valid @RequestBody
+                              SearchAbstractRequestParameters filters) {
         LOGGER.debug("Received request to retry requests");
         requestService.scheduleRequestRetryJob(filters);
     }
 
-    @RequestMapping(value = VERSIONING_CHOICE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "choose versioning mode for requests matching provided filters",
-        role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Object> chooseVersioning(@Valid @RequestBody ChooseVersioningRequestParameters filters) {
+    @PutMapping(VERSIONING_CHOICE_PATH)
+    @Operation(summary = "Choose versioning mode",
+               description = "Apply given versioning mode to all requests " + "matching given search criteria")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Update versioning mode process has been successfully "
+                                                       + "initialized.") })
+    @ResourceAccess(description = "Choose versioning mode for requests matching provided filters",
+                    role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Object> chooseVersioningMode(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria to find requests"
+                                                                            + " to update with new versioning mode",
+                                                              content = @Content(schema = @Schema(implementation = SearchAbstractRequestParameters.class)))
+        @Parameter(description = "Filter criteria for requests") @Valid @RequestBody
+        ChooseVersioningRequestParameters filters) {
         if (filters.getNewVersioningMode() == VersioningMode.MANUAL) {
             return ResponseEntity.unprocessableEntity()
                                  .body("You cannot choose " + VersioningMode.MANUAL + " versioning mode!");
@@ -148,17 +167,29 @@ public class RequestController implements IResourceController<RequestDto> {
         return ResponseEntity.noContent().build();
     }
 
-    @RequestMapping(value = REQUEST_ABORT_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.ADMIN)
+    @PutMapping(REQUEST_ABORT_PATH)
+    @Operation(summary = "Abort all running requests", description = "Abort all running requests")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Abort process has been successfully initialized.") })
+    @ResourceAccess(description = "Abort all running requests", role = DefaultRole.PROJECT_ADMIN)
     public void abortRequests() {
         LOGGER.debug("Received request to abort requests");
         // abortRequests being asynchronous method, we have to give it the tenant
         requestService.abortRequests(runtimeTenantResolver.getTenant());
     }
 
+    @PostMapping(REQUEST_DELETE_PATH)
+    @Operation(summary = "Delete selected requests", description = "Delete all requests matching given search criteria")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Delete process has been successfully initialized.") })
     @ResourceAccess(description = "Delete requests", role = DefaultRole.ADMIN)
-    @RequestMapping(value = REQUEST_DELETE_PATH, method = RequestMethod.POST)
-    public void delete(@Valid @RequestBody SearchRequestsParameters filters) {
+    public void delete(@io.swagger.v3.oas.annotations.parameters.RequestBody(description =
+                                                                                 "Set of search criteria to find requests"
+                                                                                 + " to delete",
+                                                                             content = @Content(schema = @Schema(
+                                                                                 implementation = SearchAbstractRequestParameters.class)))
+                       @Parameter(description = "Search criteria for requests to delete") @Valid @RequestBody
+                       SearchAbstractRequestParameters filters) {
         LOGGER.debug("Received request to delete OAIS entities");
         requestService.scheduleRequestDeletionJob(filters);
     }
@@ -173,7 +204,7 @@ public class RequestController implements IResourceController<RequestDto> {
                                     this.getClass(),
                                     "retryRequests",
                                     LinkRelation.of("RETRY"),
-                                    MethodParamFactory.build(SearchRequestsParameters.class));
+                                    MethodParamFactory.build(SearchAbstractRequestParameters.class));
         }
         if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
                   .contains(element.getState())) {
@@ -181,7 +212,7 @@ public class RequestController implements IResourceController<RequestDto> {
                                     this.getClass(),
                                     "delete",
                                     LinkRels.DELETE,
-                                    MethodParamFactory.build(SearchRequestsParameters.class));
+                                    MethodParamFactory.build(SearchAbstractRequestParameters.class));
         }
 
         return resource;

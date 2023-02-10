@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorPayload;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -40,6 +41,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.OAISDateRange;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.*;
@@ -53,6 +55,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -62,10 +65,13 @@ import java.util.*;
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=request_crud_it", "regards.amqp.enabled=true",
-        "eureka.client.enabled=false", "spring.task.scheduling.pool.size=4", "regards.ingest.maxBulkSize=100",
-        "spring.jpa.show-sql=false" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_crud_it",
+                                   "regards.amqp.enabled=true",
+                                   "eureka.client.enabled=false",
+                                   "spring.task.scheduling.pool.size=4",
+                                   "regards.ingest.maxBulkSize=100",
+                                   "spring.jpa.show-sql=false" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
 
@@ -183,6 +189,40 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         oaisDeletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionRequestRepository.save(oaisDeletionRequest);
         LOGGER.info("=========================> END INIT DATA FOR TESTS <=====================");
+    }
+
+    @Test
+    public void test_search_multi_types() {
+
+        OAISDeletionCreatorPayload requestPayload = new OAISDeletionCreatorPayload();
+        requestPayload.setIpType(EntityType.DATA);
+        requestPayload.setDeletionMode(SessionDeletionMode.IRREVOCABLY);
+        requestPayload.setDeletePhysicalFiles(true);
+        OAISDeletionCreatorRequest oaisDelettionCreatorRequest = OAISDeletionCreatorRequest.build(requestPayload);
+        OAISDateRange date = new OAISDateRange();
+        date.setFrom(OffsetDateTime.now().minusSeconds(100));
+        date.setTo(OffsetDateTime.now());
+        IngestRequest ingestRequest = IngestRequest.build("toto",
+                                                          IngestMetadata.build("owner",
+                                                                               "session",
+                                                                               "dd",
+                                                                               new HashSet<>(),
+                                                                               new StorageMetadata()),
+                                                          InternalRequestState.ERROR,
+                                                          IngestRequestStep.REMOTE_STORAGE_ERROR,
+                                                          new SIP());
+
+        oaisDeletionCreatorRepository.save(oaisDelettionCreatorRequest);
+        ingestRequestRepository.save(ingestRequest);
+
+        Assert.assertEquals(2,
+                            requestService.findRequests(SearchRequestsParameters.build(), Pageable.ofSize(10))
+                                          .getTotalElements());
+
+        Assert.assertEquals(2,
+                            requestService.findRequests(new SearchAbstractRequestParameters(), Pageable.ofSize(10))
+                                          .getTotalElements());
+
     }
 
     @Test

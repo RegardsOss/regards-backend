@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
 import fr.cnes.regards.modules.ingest.service.request.IRequestRetryService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +61,7 @@ public class RequestRetryJob extends AbstractJob<Void> {
 
     private int totalPages = 0;
 
-    private SearchRequestsParameters criteria;
+    private SearchAbstractRequestParameters criteria;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -77,10 +77,8 @@ public class RequestRetryJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
         // Override state in filter
-        criteria.setStates(new HashSet<>());
-        criteria.addState(InternalRequestState.ERROR);
-        criteria.addState(InternalRequestState.ABORTED);
-        criteria.setStateExcluded(null);
+        criteria.withRequestStatesExcluded(null)
+                .withRequestStatesIncluded(Set.of(InternalRequestState.ERROR, InternalRequestState.ABORTED));
         int nbRelaunchedRequests = 0;
         Page<AbstractRequest> requestsPage;
         do {

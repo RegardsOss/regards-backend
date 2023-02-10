@@ -58,8 +58,6 @@ public interface IRequestService {
     /**
      * Retrieve all requests matching provided criteria
      *
-     * @param filters
-     * @param pageable
      * @return a page of entities
      */
     Page<AbstractRequest> findRequests(SearchRequestsParameters filters, Pageable pageable);
@@ -67,8 +65,6 @@ public interface IRequestService {
     /**
      * Retrieve all requests matching provided criteria
      *
-     * @param filters
-     * @param pageable
      * @return a page of entities
      */
     Page<AbstractRequest> findRequests(SearchAbstractRequestParameters filters, Pageable pageable);
@@ -76,8 +72,6 @@ public interface IRequestService {
     /**
      * Retrieve all requests matching provided criteria
      *
-     * @param filters
-     * @param pageable
      * @return a page of DTO entities
      */
     Page<RequestDto> findRequestDtos(SearchRequestsParameters filters, Pageable pageable);
@@ -85,16 +79,12 @@ public interface IRequestService {
     /**
      * Retrieve all requests matching provided criteria
      *
-     * @param filters
-     * @param pageable
      * @return a page of DTO entities
      */
     Page<RequestDto> findRequestDtos(SearchAbstractRequestParameters filters, Pageable pageable);
 
     /**
      * Delete all requests linked to provided aips
-     *
-     * @param aipsRelatedToSip
      */
     void deleteAllByAip(Set<AIPEntity> aipsRelatedToSip);
 
@@ -112,7 +102,6 @@ public interface IRequestService {
      * If the request cannot be run right now, the request status will change to pending
      *
      * @param request the request to save
-     * @return
      * @deprecated Use {@link #scheduleRequests(List)} instead to improve performances.
      */
     @Deprecated
@@ -120,17 +109,12 @@ public interface IRequestService {
 
     /**
      * Check the given request is runnable or should  be delayed.
-     *
-     * @param request
-     * @return
      */
     public boolean shouldDelayRequest(AbstractRequest request);
 
     /**
      * Abort every {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState#RUNNING}. <br>
      * This is an asynchronous method. So tenant has to be given in order to be able to do database queries.
-     *
-     * @param tenant
      */
     @Async
     void abortRequests(String tenant);
@@ -139,8 +123,6 @@ public interface IRequestService {
      * Allows to abort request page by page and save the process of abortion per page and stop jobs at the end of
      * each page and not at the end of everything
      *
-     * @param filters
-     * @param pageRequest
      * @param jobIdsAlreadyStopped this parameters should initially be empty and then reused between each page handling
      * @return next page to treat
      */
@@ -166,17 +148,13 @@ public interface IRequestService {
 
     /**
      * Schedule a job to delete all requests matching provided filters
-     *
-     * @param filters
      */
-    void scheduleRequestDeletionJob(SearchRequestsParameters filters);
+    void scheduleRequestDeletionJob(SearchAbstractRequestParameters filters);
 
     /**
      * Schedule a job to retry all requests matching provided filters from {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState} ERROR to CREATED
-     *
-     * @param filters
      */
-    void scheduleRequestRetryJob(SearchRequestsParameters filters);
+    void scheduleRequestRetryJob(SearchAbstractRequestParameters filters);
 
     void switchRequestState(AbstractRequest request);
 

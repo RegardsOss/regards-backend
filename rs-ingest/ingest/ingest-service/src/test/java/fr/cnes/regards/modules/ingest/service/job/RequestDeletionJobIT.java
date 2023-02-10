@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
@@ -59,15 +59,19 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=request_deletion_job", "regards.amqp.enabled=true",
-        "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false", "spring.jpa.show-sql=false",
-        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_deletion_job",
+                                   "regards.amqp.enabled=true",
+                                   "regards.ingest.aip.update.bulk.delay=100000000",
+                                   "eureka.client.enabled=false",
+                                   "spring.jpa.show-sql=false",
+                                   "regards.ingest.aip.delete.bulk.delay=100" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
@@ -203,7 +207,6 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
      *
      * @param expectedTasks expected count of task in db
      * @param timeout       in ms
-     * @throws InterruptedException
      */
     public void waitForRequestReach(long expectedTasks, long timeout) {
         long end = System.currentTimeMillis() + timeout;
@@ -232,16 +235,15 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
     public void testDeleteJob() {
         initData();
         Assert.assertEquals("Something went wrong while creating requests", 5, abstractRequestRepository.count());
-        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build()
-                                                                          .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
+        requestService.scheduleRequestDeletionJob(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+            RequestTypeEnum.AIP_UPDATES_CREATOR)));
         waitForRequestReach(5, 20_000);
 
-        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build()
-                                                                          .withSession(SESSION_0)
-                                                                          .withSessionOwner(SESSION_OWNER_0));
+        requestService.scheduleRequestDeletionJob(new SearchAbstractRequestParameters().withSession(SESSION_0)
+                                                                                       .withSessionOwner(SESSION_OWNER_0));
         waitForRequestReach(1, 10_000);
 
-        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build());
+        requestService.scheduleRequestDeletionJob(new SearchAbstractRequestParameters());
         waitForRequestReach(0, 10_000);
 
         List<IngestRequestEvent> events = getPublishedEvents(IngestRequestEvent.class);

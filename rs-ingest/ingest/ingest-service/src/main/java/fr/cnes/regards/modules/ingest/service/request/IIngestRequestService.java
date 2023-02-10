@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -126,5 +127,5 @@ public interface IIngestRequestService {
 
     void scheduleRequestWithVersioningMode(ChooseVersioningRequestParameters filters);
 
-    void fromWaitingTo(Collection<IngestRequest> requests, VersioningMode versioningMode);
+    void fromWaitingTo(Collection<AbstractRequest> requests, VersioningMode versioningMode);
 }

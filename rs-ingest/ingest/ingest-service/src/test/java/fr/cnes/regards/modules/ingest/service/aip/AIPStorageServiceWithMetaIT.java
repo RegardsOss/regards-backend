@@ -23,12 +23,12 @@ import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dao.IngestRequestSpecifications;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storage.client.StorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import org.assertj.core.api.Assertions;
@@ -74,6 +74,9 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
 
     @Autowired
     private IIngestService ingestService;
+
+    @Autowired
+    private IRequestService requestService;
 
     @Autowired
     private Gson gson;
@@ -168,10 +171,8 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
         throws FileNotFoundException, EntityInvalidException {
         // CHECK
         ChooseVersioningRequestParameters filters = ChooseVersioningRequestParameters.build();
-        filters.withState(InternalRequestState.ERROR);
-        int errorRequestsCount = this.ingestRequestRepository.findAll(IngestRequestSpecifications.searchAllByFilters(
-            filters,
-            Pageable.ofSize(10))).size();
+        filters.withRequestStatesIncluded(Set.of(InternalRequestState.ERROR));
+        long errorRequestsCount = requestService.findRequests(filters, Pageable.ofSize(10)).getTotalElements();
         Assert.assertEquals(0, errorRequestsCount);
         // GIVEN
         // build sips with storage metadata
@@ -187,15 +188,9 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
         // request is in error status
         Awaitility.await().atMost(10000, TimeUnit.MILLISECONDS).pollInterval(1, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
-            return this.ingestRequestRepository.findAll(IngestRequestSpecifications.searchAllByFilters(filters,
-                                                                                                       Pageable.ofSize(
-                                                                                                           10))).size()
-                   == 1;
+            return requestService.findRequests(filters, Pageable.ofSize(10)).getTotalElements() == 1;
         });
-        errorRequestsCount = this.ingestRequestRepository.findAll(IngestRequestSpecifications.searchAllByFilters(filters,
-                                                                                                                 Pageable.ofSize(
-                                                                                                                     10)))
-                                                         .size();
+        errorRequestsCount = requestService.findRequests(filters, Pageable.ofSize(10)).getTotalElements();
         Assert.assertEquals(1, errorRequestsCount);
     }
 

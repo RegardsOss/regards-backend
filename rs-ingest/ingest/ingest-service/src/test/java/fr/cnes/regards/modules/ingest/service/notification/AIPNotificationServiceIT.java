@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
@@ -56,6 +56,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static fr.cnes.regards.modules.ingest.service.TestData.*;
@@ -66,8 +67,10 @@ import static fr.cnes.regards.modules.ingest.service.TestData.*;
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_service_it",
-    "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.ingest.aip.delete.bulk.delay=100" },
-    locations = { "classpath:application-test.properties" })
+                                   "regards.amqp.enabled=true",
+                                   "eureka.client.enabled=false",
+                                   "regards.ingest.aip.delete.bulk.delay=100" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
 
@@ -151,8 +154,8 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
-        requestService.scheduleRequestRetryJob(SearchRequestsParameters.build()
-                                                                       .withRequestType(RequestTypeEnum.INGEST));
+        requestService.scheduleRequestRetryJob(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+            RequestTypeEnum.INGEST)));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
 
@@ -169,8 +172,8 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
-        requestService.scheduleRequestRetryJob(SearchRequestsParameters.build()
-                                                                       .withRequestType(RequestTypeEnum.UPDATE));
+        requestService.scheduleRequestRetryJob(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+            RequestTypeEnum.UPDATE)));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
 
@@ -183,8 +186,8 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
-        requestService.scheduleRequestRetryJob(SearchRequestsParameters.build()
-                                                                       .withRequestType(RequestTypeEnum.OAIS_DELETION));
+        requestService.scheduleRequestRetryJob(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+            RequestTypeEnum.OAIS_DELETION)));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
     }
