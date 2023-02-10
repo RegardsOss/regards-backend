@@ -82,7 +82,6 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-vavr</artifactId>
-            <version>0.2.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.vavr</groupId>

@@ -48,7 +48,6 @@
         <dependency>
             <groupId>io.vavr</groupId>
             <artifactId>vavr-gson</artifactId>
-            <version>${vavr-gson.version}</version>
         </dependency>
 
         <!-- Tests -->

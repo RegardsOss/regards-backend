@@ -100,7 +100,6 @@
         <dependency>
             <groupId>org.noggit</groupId>
             <artifactId>noggit</artifactId>
-            <version>0.5</version>
         </dependency>
         <!-- session handling -->
         <dependency>

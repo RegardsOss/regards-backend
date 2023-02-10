@@ -129,6 +129,7 @@
         <org.geotools.version>19.1</org.geotools.version>
         <org.hipparchus.version>1.3</org.hipparchus.version>
         <nl.pdok.gml3-jts.version>17.0.0</nl.pdok.gml3-jts.version>
+        <org.geolatte.geolatte.geojson.version>1.8.2</org.geolatte.geolatte.geojson.version>
         <!-- json -->
         <com.jsoniter.version>0.9.23</com.jsoniter.version>
         <com.networknt.json.schema.validation>1.0.49</com.networknt.json.schema.validation>
@@ -156,6 +157,9 @@
         <vavr.version>0.10.2</vavr.version>
         <vavr-gson.version>0.10.2</vavr-gson.version>
         <lucene.queryparser.version>8.8.2</lucene.queryparser.version>
+
+        <!-- TODO : Migrate to org.apache.commons:commons-lang3 -->
+        <commons-lang.commons-lang.version>2.6</commons-lang.commons-lang.version>
 
         <!-- amazon -->
         <software.amazon.awssdk.s3.version>2.17.267</software.amazon.awssdk.s3.version>
@@ -186,6 +190,10 @@
         <org.jeasy.easy-random-core.version>4.2.0</org.jeasy.easy-random-core.version>
         <com.thedeanda.lorem.version>2.1</com.thedeanda.lorem.version>
         <de.sven-jacobs.loremipsum.version>1.0</de.sven-jacobs.loremipsum.version>
+        <assertj-vavr.version>0.2.0</assertj-vavr.version>
+        <com.zaxxer.nuprocess.version>2.0.0</com.zaxxer.nuprocess.version>
+        <noggit.version>0.5</noggit.version>
+        <easy-random-vavr-extension.version>1.0.0</easy-random-vavr-extension.version>
         <sonar.coverage.exclusions>**/.*tests.*/**/*.*, **/.*test.*/**/*.*</sonar.coverage.exclusions>
     </properties>
 
@@ -1875,6 +1883,11 @@
                 <version>${org.springdoc.springdoc-openapi-hateoas.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-webmvc-core</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-annotations</artifactId>
                 <version>${io.swagger.core.v3.swagger-core.version}</version>
@@ -1923,6 +1936,11 @@
                 <groupId>org.springframework.hateoas</groupId>
                 <artifactId>spring-hateoas</artifactId>
                 <version>${org.springframework.hateoas.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${org.springframework.boot.spring-boot-maven-plugin.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
@@ -2072,6 +2090,11 @@
                 <version>${org.apache.commons.bean-utils.version}</version>
             </dependency>
             <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${commons-lang.commons-lang.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.jcraft</groupId>
                 <artifactId>jsch</artifactId>
                 <version>${com.jcraft.jsch.version}</version>
@@ -2086,6 +2109,38 @@
                 <artifactId>hipparchus-geometry</artifactId>
                 <version>${org.hipparchus.version}</version>
             </dependency>
+            <!-- Vavr-->
+            <dependency>
+                <groupId>io.vavr</groupId>
+                <artifactId>vavr</artifactId>
+                <version>${vavr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.vavr</groupId>
+                <artifactId>vavr-gson</artifactId>
+                <version>${vavr-gson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-vavr</artifactId>
+                <version>${assertj-vavr.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>nuprocess</artifactId>
+                <version>${com.zaxxer.nuprocess.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.xshadov</groupId>
+                <artifactId>easy-random-vavr-extension</artifactId>
+                <version>${easy-random-vavr-extension.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.noggit</groupId>
+                <artifactId>noggit</artifactId>
+                <version>${noggit.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.geotools</groupId>
                 <artifactId>gt-referencing</artifactId>
@@ -2095,6 +2150,11 @@
                 <groupId>org.geotools</groupId>
                 <artifactId>gt-metadata</artifactId>
                 <version>${org.geotools.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.geolatte</groupId>
+                <artifactId>geolatte-geojson</artifactId>
+                <version>${org.geolatte.geolatte.geojson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.networknt</groupId>
