@@ -165,4 +165,9 @@ public interface IJobInfoService {
                                                 String parameterValue,
                                                 JobStatus... jobStatuses);
 
+    /**
+     * Update last date when jobs ping has been processed
+     */
+    void updateLastJobsPingDate();
+
 }

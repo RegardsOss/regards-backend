@@ -93,6 +93,11 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     @Autowired
     private IJobInfoRepository jobInfoRepository;
 
+    /**
+     * Last {@link OffsetDateTime} when jobs ping has been processed
+     */
+    private OffsetDateTime lastJobPingDate = null;
+
     @EventListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onContextRefreshedEvent(ContextRefreshedEvent event) {
@@ -255,27 +260,31 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
 
     @Override
     public void cleanDeadJobs() {
-        List<JobInfo> jobs = retrieveJobs(JobStatus.RUNNING);
-        List<JobEvent> failEvents = new ArrayList<>();
         long deadAfter = JobService.HEARTBEAT_DELAY * timeSlotNumber;
         OffsetDateTime deadLimitDate = OffsetDateTime.now().minus(deadAfter, ChronoUnit.MILLIS);
-        for (JobInfo job : jobs) {
-            // if last heartbeat date is null it means job has been started but not yet pinged by job engine
-            if ((job.getLastHeartbeatDate() != null) && job.getLastHeartbeatDate().isBefore(deadLimitDate)) {
-                job.getStatus()
-                   .setStackTrace(String.format(
-                       "This jobs has been considered dead because heartbeat has not responded for more than %s ms",
-                       deadAfter));
-                job.updateStatus(JobStatus.FAILED);
-                LOGGER.warn("Job {} of type {} does not respond anymore after waiting activity ping for {} ms.",
-                            job.getId(),
-                            job.getClassName(),
-                            deadAfter);
-                failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
+        // Only clean dead jobs if last jobs ping date is after dead limit date to ensure ping is realy done by
+        // associated scheduler
+        if (lastJobPingDate != null && lastJobPingDate.isAfter(deadLimitDate)) {
+            List<JobInfo> jobs = retrieveJobs(JobStatus.RUNNING);
+            List<JobEvent> failEvents = new ArrayList<>();
+            for (JobInfo job : jobs) {
+                // if last heartbeat date is null it means job has been started but not yet pinged by job engine
+                if ((job.getLastHeartbeatDate() != null) && job.getLastHeartbeatDate().isBefore(deadLimitDate)) {
+                    job.getStatus()
+                       .setStackTrace(String.format(
+                           "This jobs has been considered dead because heartbeat has not responded for more than %s ms",
+                           deadAfter));
+                    job.updateStatus(JobStatus.FAILED);
+                    LOGGER.warn("Job {} of type {} does not respond anymore after waiting activity ping for {} ms.",
+                                job.getId(),
+                                job.getClassName(),
+                                deadAfter);
+                    failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
+                }
             }
+            publisher.publish(failEvents);
+            saveAll(jobs);
         }
-        publisher.publish(failEvents);
-        saveAll(jobs);
     }
 
     @Override
@@ -302,6 +311,12 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.NEVER)
+    public void updateLastJobsPingDate() {
+        lastJobPingDate = OffsetDateTime.now();
     }
 
 }

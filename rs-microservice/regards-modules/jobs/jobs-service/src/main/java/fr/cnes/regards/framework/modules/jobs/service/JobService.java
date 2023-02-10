@@ -234,6 +234,8 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 jobInfoService.updateJobInfosHeartbeat(entry.getValue());
             }
         }
+        // Always update last pingUpdateDate
+        jobInfoService.updateLastJobsPingDate();
     }
 
     @Override
@@ -379,8 +381,8 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
         }
     }
 
-    private record StopJobHandler(JobService jobService, IRuntimeTenantResolver runtimeTenantResolver)
-        implements IHandler<StopJobEvent> {
+    private record StopJobHandler(JobService jobService,
+                                  IRuntimeTenantResolver runtimeTenantResolver) implements IHandler<StopJobEvent> {
 
         @Override
         public void handle(TenantWrapper<StopJobEvent> wrapper) {
