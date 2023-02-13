@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
+import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -32,6 +33,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +46,16 @@ import java.util.stream.Collectors;
 /**
  * @author Léo Mieulet
  */
-@Plugin(author = "REGARDS Team", description = "VirtualStorageLocation updates AIP storage metadata, "
-                                               + "to replace from request a virtual storage location into a"
-                                               + " real list of storage location ", id = "VirtualStorageLocation",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "VirtualStorageLocation updates AIP storage metadata, "
+                      + "to replace from request a virtual storage location into a"
+                      + " real list of storage location ",
+        id = "VirtualStorageLocation",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VirtualStorageLocation.class);
@@ -57,14 +64,17 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
 
     private static final String REAL_STORAGE_LOCATIONS = "real_storage_locations";
 
-    @PluginParameter(name = VIRTUAL_STORAGE_NAME, label = "Virtual storage name", description =
-        "The name of the storage location this plugin is configured to react on. "
-        + "When detected inside an IngestRequest, this plugin replaces the virtual location by real locations (from plugin conf).")
+    @PluginParameter(name = VIRTUAL_STORAGE_NAME,
+                     label = "Virtual storage name",
+                     description = "The name of the storage location this plugin is configured to react on. "
+                                   + "When detected inside an IngestRequest, this plugin replaces the virtual location by real locations (from plugin conf).")
     private String virtualStorageName;
 
-    @PluginParameter(name = REAL_STORAGE_LOCATIONS, label = "Real storage locations", description =
-        "Real storage locations we add inside an Ingest Request when the virtual storage is present. "
-        + "Allowed target types are: RAWDATA, QUICKLOOK_SD, QUICKLOOK_MD, QUICKLOOK_HD, DOCUMENT, THUMBNAIL, OTHER, AIP, DESCRIPTION")
+    @PluginParameter(name = REAL_STORAGE_LOCATIONS,
+                     label = "Real storage locations",
+                     description =
+                         "Real storage locations we add inside an Ingest Request when the virtual storage is present. "
+                         + "Allowed target types are: RAWDATA, QUICKLOOK_SD, QUICKLOOK_MD, QUICKLOOK_HD, DOCUMENT, THUMBNAIL, OTHER, AIP, DESCRIPTION")
     private List<StorageMetadata> realStorageLocations;
 
     @Autowired
@@ -157,11 +167,28 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
                                                                                                   storageMetadata.getPluginBusinessId()))
                                                                                               .toList();
             // Create a list of StorageMetadata using the plugin conf and the storePath associated to the request.
-            List<StorageMetadata> newRequestStorageMetadataList = realStorageLocations;
+            List<StorageMetadata> newRequestStorageMetadataList = getRealStorageLocations(virtualStorageMetadata.getStorePath());
             newRequestStorageMetadataList.addAll(realStorageLocationsFromRequest);
             return newRequestStorageMetadataList;
         }
         return requestStorageMetadataList;
+    }
+
+    /**
+     * Create storage metadata for current request that replaces the Virtual StorageMetadata.
+     * If the virtual StorageMetadata from the request contains a storage path, we use it
+     *
+     * @param virtualStorageStorePath the request store path associated to the virtual storage metadata
+     * @return the list of {@link StorageMetadata} to save inside the request
+     */
+    private List<StorageMetadata> getRealStorageLocations(String virtualStorageStorePath) {
+        List<StorageMetadata> newRequestStorageMetadataList = Lists.newArrayList(realStorageLocations);
+        if (StringUtils.isBlank(virtualStorageStorePath)) {
+            for (StorageMetadata storageMetadata : newRequestStorageMetadataList) {
+                storageMetadata.setStorePath(virtualStorageStorePath);
+            }
+        }
+        return newRequestStorageMetadataList;
     }
 
     /**
