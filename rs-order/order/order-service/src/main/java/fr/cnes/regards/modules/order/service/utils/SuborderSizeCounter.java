@@ -47,7 +47,7 @@ public class SuborderSizeCounter implements InitializingBean {
     private Long storageBucketSize;
 
     /**
-     * Method called at creation AND after a resfresh
+     * Method called at creation AND after a refresh
      */
     @Override
     public void afterPropertiesSet() {

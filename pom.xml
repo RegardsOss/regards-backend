@@ -157,6 +157,12 @@
         <vavr.version>0.10.2</vavr.version>
         <vavr-gson.version>0.10.2</vavr-gson.version>
         <lucene.queryparser.version>8.8.2</lucene.queryparser.version>
+        <edu.ucar.netcdf.version>4.2.20</edu.ucar.netcdf.version>
+        <commons.net.version>3.3</commons.net.version>
+        <cz.jirutka.spring.spring-data-jdbc-repository.version>0.5.0</cz.jirutka.spring.spring-data-jdbc-repository.version>
+        <com.hubspot.jinjava.version>2.6.0</com.hubspot.jinjava.version>
+        <!-- Jackson -->
+        <com.fasterxml.jackson.datatype.jackson-datatype-jsr310.version>2.12.5</com.fasterxml.jackson.datatype.jackson-datatype-jsr310.version>
 
         <!-- TODO : Migrate to org.apache.commons:commons-lang3 -->
         <commons-lang.commons-lang.version>2.6</commons-lang.commons-lang.version>
@@ -185,6 +191,7 @@
         <jvm.opens.packages>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED</jvm.opens.packages>
 
         <!-- Test dependency versions -->
+        <org.owasp.dependency-check-maven.version>8.1.0</org.owasp.dependency-check-maven.version>
         <org.assertj.version>3.22.0</org.assertj.version>
         <org.testcontainers.version>1.16.3</org.testcontainers.version>
         <org.jeasy.easy-random-core.version>4.2.0</org.jeasy.easy-random-core.version>
@@ -194,6 +201,8 @@
         <com.zaxxer.nuprocess.version>2.0.0</com.zaxxer.nuprocess.version>
         <noggit.version>0.5</noggit.version>
         <easy-random-vavr-extension.version>1.0.0</easy-random-vavr-extension.version>
+        <xerces.version>2.9.1</xerces.version>
+        <org.jdom.version>1.1.3</org.jdom.version>
         <sonar.coverage.exclusions>**/.*tests.*/**/*.*, **/.*test.*/**/*.*</sonar.coverage.exclusions>
     </properties>
 
@@ -233,6 +242,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -364,11 +374,6 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>json-random-starter</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>json-dump-starter</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -533,7 +538,7 @@
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
+                <groupId>fr.cnes.regards.framework.test</groupId>
                 <artifactId>regards-test-aggregation</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -628,11 +633,6 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.dump</groupId>
-                <artifactId>dump-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.dump</groupId>
                 <artifactId>dump-service</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -682,11 +682,6 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
                 <artifactId>plugins-client</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.microservices.catalog</groupId>
-                <artifactId>plugin-client</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!-- query parser utils -->
@@ -743,22 +738,6 @@
                 <version>${revision}</version>
             </dependency>
 
-            <!-- Session -->
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session</groupId>
-                <artifactId>session-agent</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session</groupId>
-                <artifactId>session-commons</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session</groupId>
-                <artifactId>session-manager</artifactId>
-                <version>${revision}</version>
-            </dependency>
             <!-- Session agent -->
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
@@ -860,17 +839,6 @@
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>db-datasource-common</artifactId>
                 <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
-                <artifactId>datasource-oracle-plugins</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
-                <artifactId>datasource-oracle-plugins</artifactId>
-                <version>${revision}</version>
-                <classifier>shaded</classifier>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
@@ -1095,12 +1063,6 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights</groupId>
-                <artifactId>accessrights-test</artifactId>
-                <version>${revision}</version>
-                <type>test-jar</type>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.accessrights</groupId>
                 <artifactId>accessrights-dao</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -1133,17 +1095,6 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <!-- Access -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.access</groupId>
-                <artifactId>access-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.access</groupId>
-                <artifactId>access-signature</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!-- Access UI configuration -->
@@ -1218,11 +1169,6 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>storage-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
-                <artifactId>storage-dto</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -1315,46 +1261,10 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.acquisition</groupId>
-                <artifactId>acquisition-plugins-ssalto</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.acquisition</groupId>
                 <artifactId>acquisition-dao</artifactId>
                 <version>${revision}</version>
             </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.acquisition</groupId>
-                <artifactId>microscope-plugins</artifactId>
-                <version>${revision}</version>
-                <classifier>shaded</classifier>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.acquisition</groupId>
-                <artifactId>swh-plugins</artifactId>
-                <version>${revision}</version>
-                <classifier>shaded</classifier>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.acquisition</groupId>
-                <artifactId>cdpp-plugins</artifactId>
-                <version>${revision}</version>
-                <classifier>shaded</classifier>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.acquisition</groupId>
-                <artifactId>ssalto-plugins</artifactId>
-                <version>${revision}</version>
-                <classifier>shaded</classifier>
-            </dependency>
 
-            <!-- Frontend -->
-            <dependency>
-                <groupId>fr.cnes.regards</groupId>
-                <artifactId>bootstrap-frontend</artifactId>
-                <version>${revision}</version>
-                <type>war</type>
-            </dependency>
             <!-- Email -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.emails</groupId>
@@ -1379,19 +1289,6 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.emails</groupId>
                 <artifactId>emails-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.emails</groupId>
-                <artifactId>emails-test</artifactId>
-                <version>${revision}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-            </dependency>
-            <!-- Metrics -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.metrics</groupId>
-                <artifactId>metrics-rest</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!-- Notification -->
@@ -1621,8 +1518,8 @@
             </dependency>
             <!-- Ingest post processing plugin -->
             <dependency>
-                <groupId>fr.cnes.regards.modules.ingest</groupId>
-                <artifactId>ssalto-sipad-postprocessing</artifactId>
+                <groupId>fr.cnes.regards.modules.ingest.plugins</groupId>
+                <artifactId>ssalto-sipad-postprocessing-plugin</artifactId>
                 <version>${revision}</version>
                 <classifier>shaded</classifier>
             </dependency>
@@ -1778,56 +1675,34 @@
             </dependency>
             <!-- CNES REMOTE STORAGES -->
             <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
-                <artifactId>test-plugins</artifactId>
-                <version>${revision}</version>
-                <classifier>shaded</classifier>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
+                <groupId>fr.cnes.regards.modules.storage.plugins</groupId>
                 <artifactId>common-storages</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
+                <groupId>fr.cnes.regards.modules.storage.plugins</groupId>
                 <artifactId>common-plugins</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
-                <artifactId>cnes-url-protocols-handler</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
+                <groupId>fr.cnes.regards.modules.storage.plugins</groupId>
                 <artifactId>staf</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
-                <artifactId>staf-data-storage-plugin</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
+                <groupId>fr.cnes.regards.modules.storage.plugins</groupId>
                 <artifactId>staf-standalone</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!-- CNES REMOTE STORAGES - Shaded -->
             <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
-                <artifactId>cnes-url-protocols-handler</artifactId>
-                <version>${revision}</version>
-                <classifier>shaded</classifier>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
+                <groupId>fr.cnes.regards.modules.storage.plugins</groupId>
                 <artifactId>staf-data-storage-plugin</artifactId>
                 <version>${revision}</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.modules.storage</groupId>
+                <groupId>fr.cnes.regards.modules.storage.plugins</groupId>
                 <artifactId>hpss-data-storage-plugin</artifactId>
                 <version>${revision}</version>
                 <classifier>shaded</classifier>
@@ -2132,6 +2007,11 @@
                 <version>${com.zaxxer.nuprocess.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${org.owasp.dependency-check-maven.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.github.xshadov</groupId>
                 <artifactId>easy-random-vavr-extension</artifactId>
                 <version>${easy-random-vavr-extension.version}</version>
@@ -2160,6 +2040,48 @@
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>${com.networknt.json.schema.validation}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${commons.net.version}</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/cz.jirutka.spring/spring-data-jdbc-repository -->
+            <dependency>
+                <groupId>cz.jirutka.spring</groupId>
+                <artifactId>spring-data-jdbc-repository</artifactId>
+                <version>${cz.jirutka.spring.spring-data-jdbc-repository.version}</version>
+            </dependency>
+            <!-- Jackson -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${com.fasterxml.jackson.datatype.jackson-datatype-jsr310.version}</version>
+            </dependency>
+            <!-- Netcdf -->
+            <dependency>
+                <groupId>edu.ucar</groupId>
+                <artifactId>netcdf</artifactId>
+                <version>${edu.ucar.netcdf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hubspot.jinjava</groupId>
+                <artifactId>jinjava</artifactId>
+                <version>${com.hubspot.jinjava.version}</version>
+            </dependency>
+            <!-- Xerces (for tests) -->
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>${xerces.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- jdom (for tests) -->
+            <dependency>
+                <groupId>org.jdom</groupId>
+                <artifactId>jdom</artifactId>
+                <version>${org.jdom.version}</version>
+                <scope>test</scope>
             </dependency>
             <!-- FTP Mock server (for tests) -->
             <dependency>
@@ -2241,7 +2163,7 @@
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.microservices.ingestion</groupId>
+                <groupId>fr.cnes.regards.microservices.fem</groupId>
                 <artifactId>bootstrap-fem</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -2261,7 +2183,7 @@
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.microservices.workermanager</groupId>
+                <groupId>fr.cnes.regards.microservices.ltamanager</groupId>
                 <artifactId>bootstrap-lta-manager</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -2269,11 +2191,6 @@
                 <groupId>org.logback-extensions</groupId>
                 <artifactId>logback-ext-spring</artifactId>
                 <version>${logback-ext-spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.deployment</groupId>
-                <artifactId>custom-components</artifactId>
-                <version>${custom.deployment.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
