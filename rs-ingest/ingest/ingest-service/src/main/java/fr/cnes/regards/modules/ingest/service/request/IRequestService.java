@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,21 +59,7 @@ public interface IRequestService {
      *
      * @return a page of entities
      */
-    Page<AbstractRequest> findRequests(SearchRequestsParameters filters, Pageable pageable);
-
-    /**
-     * Retrieve all requests matching provided criteria
-     *
-     * @return a page of entities
-     */
     Page<AbstractRequest> findRequests(SearchAbstractRequestParameters filters, Pageable pageable);
-
-    /**
-     * Retrieve all requests matching provided criteria
-     *
-     * @return a page of DTO entities
-     */
-    Page<RequestDto> findRequestDtos(SearchRequestsParameters filters, Pageable pageable);
 
     /**
      * Retrieve all requests matching provided criteria
@@ -127,7 +112,7 @@ public interface IRequestService {
      * @return next page to treat
      */
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
-    Page<AbstractRequest> abortCurrentRequestPage(SearchRequestsParameters filters,
+    Page<AbstractRequest> abortCurrentRequestPage(SearchAbstractRequestParameters filters,
                                                   Pageable pageRequest,
                                                   Set<UUID> jobIdsAlreadyStopped);
 

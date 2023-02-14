@@ -137,27 +137,9 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public Page<AbstractRequest> findRequests(SearchRequestsParameters filters, Pageable pageable) {
-        return abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByFilters(filters, pageable),
-                                                 pageable);
-    }
-
-    @Override
     public Page<AbstractRequest> findRequests(SearchAbstractRequestParameters filters, Pageable pageable) {
         return abstractRequestRepository.findAll(new AbstractRequestSpecificationsBuilder().withParameters(filters)
                                                                                            .build(), pageable);
-    }
-
-    @Override
-    public Page<RequestDto> findRequestDtos(SearchRequestsParameters filters, Pageable pageable) {
-        Page<AbstractRequest> requests = findRequests(filters, pageable);
-
-        // Transform AbstractRequests to DTO
-        List<RequestDto> dtoList = new ArrayList<>();
-        for (AbstractRequest request : requests) {
-            dtoList.add(requestMapper.metadataToDto(request));
-        }
-        return new PageImpl<>(dtoList, pageable, requests.getTotalElements());
     }
 
     @Override
@@ -271,7 +253,8 @@ public class RequestService implements IRequestService {
     @Async
     public void abortRequests(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
-        SearchRequestsParameters filters = SearchRequestsParameters.build().withState(InternalRequestState.RUNNING);
+        SearchAbstractRequestParameters filters = new SearchAbstractRequestParameters().withRequestStatesIncluded(Set.of(
+            InternalRequestState.RUNNING));
         Pageable pageRequest = PageRequest.of(0, 1000, Sort.Direction.ASC, "id");
         Page<AbstractRequest> requestsPage;
         Set<UUID> jobIdsAlreadyStopped = new HashSet<>();
@@ -284,7 +267,7 @@ public class RequestService implements IRequestService {
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public Page<AbstractRequest> abortCurrentRequestPage(SearchRequestsParameters filters,
+    public Page<AbstractRequest> abortCurrentRequestPage(SearchAbstractRequestParameters filters,
                                                          Pageable pageRequest,
                                                          Set<UUID> jobIdsAlreadyStopped) {
         Page<AbstractRequest> requestsPage;
@@ -315,9 +298,8 @@ public class RequestService implements IRequestService {
     @Override
     public void unblockRequests(RequestTypeEnum requestType) {
         // Build search filters
-        SearchRequestsParameters searchFilters = SearchRequestsParameters.build()
-                                                                         .withRequestType(requestType)
-                                                                         .withState(InternalRequestState.BLOCKED);
+        SearchAbstractRequestParameters searchFilters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(
+            Set.of(requestType)).withRequestStatesIncluded(Set.of(InternalRequestState.BLOCKED));
         // Retrieve PENDING requests
         Page<AbstractRequest> pageRequests = findRequests(searchFilters, PageRequest.of(0, 500));
         List<AbstractRequest> requests = pageRequests.getContent();
@@ -465,7 +447,7 @@ public class RequestService implements IRequestService {
         Optional<String> sessionOp = Optional.ofNullable(request.getSession());
         switch (request.getDtype()) {
             case RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE:
-                spec = AbstractRequestSpecifications.searchRequestBlockingAipUpdatesCreator(sessionOwnerOp, sessionOp);
+                spec = AbstractRequestSpecifications.searchRequestBlockingAipUpdatesCreator();
                 break;
             case RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingOAISDeletionCreator(sessionOwnerOp,
@@ -473,10 +455,7 @@ public class RequestService implements IRequestService {
                 break;
             case RequestTypeConstant.OAIS_DELETION_VALUE:
                 if (((OAISDeletionRequest) request).getStep() != DeletionRequestStep.REMOTE_NOTIFICATION_ERROR) {
-                    spec = AbstractRequestSpecifications.searchRequestBlockingOAISDeletion(sessionOwnerOp,
-                                                                                           sessionOp,
-                                                                                           ((OAISDeletionRequest) request).getAip()
-                                                                                                                          .getId());
+                    spec = AbstractRequestSpecifications.searchRequestBlockingOAISDeletion(sessionOwnerOp, sessionOp);
                 } else {
                     // In case of notification error, aip has already been deleted so do not delay request.
                     return false;

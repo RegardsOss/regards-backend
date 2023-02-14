@@ -30,7 +30,6 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorPayload;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -41,10 +40,12 @@ import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.OAISDateRange;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.request.*;
+import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
+import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -55,7 +56,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -192,48 +192,12 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
     }
 
     @Test
-    public void test_search_multi_types() {
-
-        OAISDeletionCreatorPayload requestPayload = new OAISDeletionCreatorPayload();
-        requestPayload.setIpType(EntityType.DATA);
-        requestPayload.setDeletionMode(SessionDeletionMode.IRREVOCABLY);
-        requestPayload.setDeletePhysicalFiles(true);
-        OAISDeletionCreatorRequest oaisDelettionCreatorRequest = OAISDeletionCreatorRequest.build(requestPayload);
-        OAISDateRange date = new OAISDateRange();
-        date.setFrom(OffsetDateTime.now().minusSeconds(100));
-        date.setTo(OffsetDateTime.now());
-        IngestRequest ingestRequest = IngestRequest.build("toto",
-                                                          IngestMetadata.build("owner",
-                                                                               "session",
-                                                                               "dd",
-                                                                               new HashSet<>(),
-                                                                               new StorageMetadata()),
-                                                          InternalRequestState.ERROR,
-                                                          IngestRequestStep.REMOTE_STORAGE_ERROR,
-                                                          new SIP());
-
-        oaisDeletionCreatorRepository.save(oaisDelettionCreatorRequest);
-        ingestRequestRepository.save(ingestRequest);
-
-        Assert.assertEquals(2,
-                            requestService.findRequests(SearchRequestsParameters.build(), Pageable.ofSize(10))
-                                          .getTotalElements());
-
-        Assert.assertEquals(2,
-                            requestService.findRequests(new SearchAbstractRequestParameters(), Pageable.ofSize(10))
-                                          .getTotalElements());
-
-    }
-
-    @Test
     public void testSearchRequests() throws ModuleException {
         initData();
         PageRequest pr = PageRequest.of(0, 100);
         LOGGER.info("=========================> BEGIN SEARCH ALL IN ERROR <=====================");
-        Page<RequestDto> requests = requestService.findRequestDtos(SearchRequestsParameters.build()
-                                                                                           .withState(
-                                                                                               InternalRequestState.ERROR),
-                                                                   pr);
+        Page<RequestDto> requests = requestService.findRequestDtos(new SearchAbstractRequestParameters().withRequestStatesIncluded(
+            Set.of(InternalRequestState.ERROR)), pr);
         SearchAbstractRequestParameters searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestStatesIncluded(
             Arrays.asList(InternalRequestState.ERROR));
         Page<RequestDto> requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
@@ -243,9 +207,8 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
 
         LOGGER.info("=========================> BEGIN SEARCH INGEST IN ERROR <=====================");
 
-        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
-                                                                          .withRequestType(RequestTypeEnum.INGEST)
-                                                                          .withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequestDtos(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+            RequestTypeEnum.INGEST)).withRequestStatesIncluded(Set.of(InternalRequestState.ERROR)), pr);
 
         searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
             RequestTypeEnum.INGEST)).withRequestStatesIncluded(Arrays.asList(InternalRequestState.ERROR));
@@ -256,9 +219,8 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         Assert.assertEquals(1, requestDtos.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH AIP UPDATE CREATOR IN ERROR <=====================");
-        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
-                                                                          .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR)
-                                                                          .withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequestDtos(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+            RequestTypeEnum.AIP_UPDATES_CREATOR)).withRequestStatesIncluded(Set.of(InternalRequestState.ERROR)), pr);
         searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
             RequestTypeEnum.AIP_UPDATES_CREATOR)).withRequestStatesIncluded(Arrays.asList(InternalRequestState.ERROR));
         requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
@@ -267,9 +229,8 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         Assert.assertEquals(1, requestDtos.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH OAIS DELETION CREATOR IN ERROR <=====================");
-        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
-                                                                          .withRequestType(RequestTypeEnum.OAIS_DELETION_CREATOR)
-                                                                          .withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequestDtos(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+            RequestTypeEnum.OAIS_DELETION_CREATOR)).withRequestStatesIncluded(Set.of(InternalRequestState.ERROR)), pr);
         searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
                                                                                    RequestTypeEnum.OAIS_DELETION_CREATOR))
                                                                                .withRequestStatesIncluded(Arrays.asList(
@@ -280,9 +241,8 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         Assert.assertEquals(1, requestDtos.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH STORAGE DELETION IN ERROR <=====================");
-        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
-                                                                          .withRequestType(RequestTypeEnum.OAIS_DELETION)
-                                                                          .withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequestDtos(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+            RequestTypeEnum.OAIS_DELETION)).withRequestStatesIncluded(Set.of(InternalRequestState.ERROR)), pr);
         searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
             RequestTypeEnum.OAIS_DELETION)).withRequestStatesIncluded(Arrays.asList(InternalRequestState.ERROR));
         requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
@@ -291,9 +251,8 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         Assert.assertEquals(1, requestDtos.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH UPDATE IN ERROR <=====================");
-        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
-                                                                          .withRequestType(RequestTypeEnum.UPDATE)
-                                                                          .withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequestDtos(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+            RequestTypeEnum.UPDATE)).withRequestStatesIncluded(Set.of(InternalRequestState.ERROR)), pr);
         searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Arrays.asList(
             RequestTypeEnum.UPDATE)).withRequestStatesIncluded(Arrays.asList(InternalRequestState.ERROR));
         requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);

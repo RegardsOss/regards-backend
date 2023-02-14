@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.service.flow;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
@@ -40,7 +39,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
@@ -52,7 +51,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -69,8 +68,8 @@ import java.util.UUID;
  * @author sbinda
  */
 @TestPropertySource(properties = { "spring.jpa.show-sql=true",
-    "spring.jpa.properties.hibernate.default_schema=ingest_store_flow_request_it" },
-    locations = { "classpath:application-test.properties" })
+                                   "spring.jpa.properties.hibernate.default_schema=ingest_store_flow_request_it" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "noscheduler" })
 public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
 
@@ -169,7 +168,7 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
     }
 
     @Test
-    public void testStorageResponsesHandler() throws ModuleException {
+    public void testStorageResponsesHandler() {
         Set<RequestInfo> responses = initAips(100);
         long start = System.currentTimeMillis();
         storageResponseFlowHandler.onStoreSuccess(responses);
@@ -180,17 +179,16 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
         Assert.assertEquals(0,
-                            requestService.findRequestDtos(SearchRequestsParameters.build()
-                                                                                   .withSessionOwner("sessionOwner")
-                                                                                   .withRequestType(RequestTypeEnum.INGEST),
-                                                           PageRequest.of(0, 10)).getTotalElements());
+                            requestService.findRequestDtos(new SearchAbstractRequestParameters().withSessionOwner(
+                                                               "sessionOwner").withRequestIpTypesIncluded(Set.of(RequestTypeEnum.INGEST)),
+                                                           Pageable.ofSize(10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
         });
     }
 
     @Test
-    public void testReferenceResponsesHandler() throws ModuleException {
+    public void testReferenceResponsesHandler() {
         Set<RequestInfo> responses = initAips(100);
         long start = System.currentTimeMillis();
         storageResponseFlowHandler.onReferenceSuccess(responses);
@@ -201,10 +199,9 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
         Assert.assertEquals(0,
-                            requestService.findRequestDtos(SearchRequestsParameters.build()
-                                                                                   .withSessionOwner("sessionOwner")
-                                                                                   .withRequestType(RequestTypeEnum.INGEST),
-                                                           PageRequest.of(0, 10)).getTotalElements());
+                            requestService.findRequestDtos(new SearchAbstractRequestParameters().withSessionOwner(
+                                                               "sessionOwner").withRequestIpTypesIncluded(Set.of(RequestTypeEnum.INGEST)),
+                                                           Pageable.ofSize(10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
         });

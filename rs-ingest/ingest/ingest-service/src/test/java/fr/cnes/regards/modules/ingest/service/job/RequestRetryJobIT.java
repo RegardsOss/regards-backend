@@ -42,7 +42,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
@@ -212,9 +211,8 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
         long errorRequestCount;
         do {
             Pageable unpaged = Pageable.unpaged();
-            errorRequestCount = abstractRequestRepository.findAll(AbstractRequestSpecifications.searchAllByFilters(
-                SearchRequestsParameters.build().withState(InternalRequestState.ERROR),
-                unpaged), unpaged).getTotalElements();
+            errorRequestCount = requestService.findRequests(new SearchAbstractRequestParameters().withRequestStatesIncluded(
+                Set.of(InternalRequestState.ERROR)), Pageable.unpaged()).getTotalElements();
             LOGGER.info("{} UpdateRequest(s) existing in database", errorRequestCount);
             if (errorRequestCount == expectedTasks) {
                 break;
