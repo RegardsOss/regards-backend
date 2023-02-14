@@ -90,11 +90,14 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
         String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
         Errors errors = db.getBindingResult();
         if (StringUtils.isEmpty(tenant)) {
-            errors.rejectValue(EventHeadersHelper.TENANT_HEADER, EventHeadersHelper.MISSING_HEADER_CODE);
+            errors.reject(EventHeadersHelper.MISSING_HEADER_CODE, getErrorMessage(EventHeadersHelper.TENANT_HEADER));
         }
         if (StringUtils.isEmpty(requestId)) {
-            errors.rejectValue(EventHeadersHelper.REQUEST_ID_HEADER, EventHeadersHelper.MISSING_HEADER_CODE);
+            errors.reject(EventHeadersHelper.MISSING_HEADER_CODE,
+                          getErrorMessage(EventHeadersHelper.REQUEST_ID_HEADER));
         }
+        // Do not invalidate requests here cause of missing owner and session headers.
+        // With tenant and correlationId we can send a denied request instead of a rejected request in dlq done here.
         return errors;
     }
 
@@ -129,5 +132,12 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
         // same and the service that start up first would prevent the other one to boot
         // (as it cannot create the queue)
         return false;
+    }
+
+    /**
+     * Creates error message for given header missing in request.
+     */
+    private String getErrorMessage(String property) {
+        return String.format("Missing **%s** header in given request", property);
     }
 }

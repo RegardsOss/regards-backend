@@ -66,7 +66,7 @@ public final class SubmissionResponseDtoUtils {
         String session = null;
         OffsetDateTime expiryDate = null;
         if (request.isEmpty()) {
-            LOGGER.error("No submission request found for id {} ", requestId);
+            LOGGER.debug("No submission request found for id {} ", requestId);
         } else {
             productId = request.get().getProduct().getId();
             session = request.get().getSession();
