@@ -17,7 +17,11 @@ package fr.cnes.regards.modules.workermanager.service.cache;/*
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +35,11 @@ import java.time.OffsetDateTime;
  **/
 
 @Component
+@Profile("!noscheduler")
+@EnableScheduling
 public class CacheEvictScheduler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CacheEvictScheduler.class);
 
     private static final String DEFAULT_INITIAL_DELAY = "5000";
 
@@ -41,16 +49,22 @@ public class CacheEvictScheduler {
     private WorkerCacheService workerCacheService;
 
     @Scheduled(initialDelayString = "${regards.workers.cache.evict.scheduling.initial.delay:"
-                                    + DEFAULT_INITIAL_DELAY
-                                    + "}",
-               fixedDelayString = "${regards.workers.cache.evict.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+            + DEFAULT_INITIAL_DELAY
+            + "}",
+            fixedDelayString = "${regards.workers.cache.evict.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void evict() {
         OffsetDateTime now = OffsetDateTime.now();
-        workerCacheService.getCache().asMap().forEach((workerType, entry) -> {
-            if (entry.getLastUpdateDate().plusSeconds(workerCacheService.getExpireInCacheDuration()).isBefore(now)) {
-                workerCacheService.getCache().invalidate(workerType);
-            }
-        });
+        if (workerCacheService.getCache() != null) {
+            workerCacheService.getCache().asMap().forEach((workerType, entry) -> {
+                if (entry.getLastUpdateDate()
+                        .plusSeconds(workerCacheService.getExpireInCacheDuration())
+                        .isBefore(now)) {
+                    workerCacheService.getCache().invalidate(workerType);
+                }
+            });
+        } else {
+            LOGGER.warn("Worker manager cache is not available yet !");
+        }
     }
 
 }
