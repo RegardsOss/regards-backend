@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -55,7 +56,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -110,6 +111,11 @@ public class SearchEngineController implements IEntityLinkBuilder {
     private static final String PAGE_SIZE = "size";
 
     /**
+     * Tenant property
+     */
+    private static final String SCOPE = "scope";
+
+    /**
      * Engine request dispatcher
      */
     @Autowired
@@ -120,6 +126,9 @@ public class SearchEngineController implements IEntityLinkBuilder {
 
     @Autowired
     private IResourceService resourceService;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     private static String getMethod(SearchContext context) throws UnsupportedOperationException {
         switch (context.getSearchType()) {
@@ -426,7 +435,7 @@ public class SearchEngineController implements IEntityLinkBuilder {
 
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_ATTRIBUTES)
     @ResourceAccess(description = "Get common model attributes associated to data objects results of the given request",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<EntityModel<AttributeModel>>> searchDataobjectsAttributes(
         @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
         @RequestHeader HttpHeaders headers,
@@ -538,7 +547,7 @@ public class SearchEngineController implements IEntityLinkBuilder {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for dataset search with dataobject criterions",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchDataobjectsReturnDatasets(
         @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
         @RequestHeader HttpHeaders headers,
@@ -556,9 +565,6 @@ public class SearchEngineController implements IEntityLinkBuilder {
      * Build all pagination links from the ginve page results.
      * Can generate previous, current and next page links.
      *
-     * @param resourceService
-     * @param page
-     * @param context
      * @return {@link Link}s
      */
     @Override
@@ -581,7 +587,7 @@ public class SearchEngineController implements IEntityLinkBuilder {
                                       IanaLinkRelations.SELF));
         // Build next link
         if (page.hasNext()) {
-            int pageNumber = context.getPageable().getPageNumber() - 1;
+            int pageNumber = context.getPageable().getPageNumber() + 1;
             links.add(buildPaginationLink(resourceService,
                                           context,
                                           page.getSize(),
@@ -609,8 +615,11 @@ public class SearchEngineController implements IEntityLinkBuilder {
                                                        context.getHeaders(),
                                                        params,
                                                        context.getPageable());
-        newContext.getQueryParams().put(PAGE_NUMBER, Arrays.asList(String.valueOf(pageNumber)));
-        newContext.getQueryParams().put(PAGE_SIZE, Arrays.asList(String.valueOf(pageSize)));
+        newContext.getQueryParams().put(PAGE_NUMBER, Collections.singletonList(String.valueOf(pageNumber)));
+        newContext.getQueryParams().put(PAGE_SIZE, Collections.singletonList(String.valueOf(pageSize)));
+        newContext.getQueryParams().put(SCOPE, Collections.singletonList(runtimeTenantResolver.getTenant()));
+
+        // check if user not authenticated
         return buildPaginationLink(resourceService, newContext, rel);
     }
 
