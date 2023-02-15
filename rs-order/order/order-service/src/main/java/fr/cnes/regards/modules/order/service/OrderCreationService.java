@@ -272,7 +272,7 @@ public class OrderCreationService implements IOrderCreationService {
                 if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.storageBucketTooBig(
                     storageBucketFiles)) {
                     orderCounts.addToInternalFilesCount(storageBucketFiles.size());
-                    orderCounts.addFileSize(storageBucketFiles.stream().mapToLong(OrderDataFile::getFilesize).sum());
+                    orderCounts.addTotalFileSizeOf(storageBucketFiles);
                     orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask,
                                                                         storageBucketFiles,
                                                                         order,
@@ -286,7 +286,7 @@ public class OrderCreationService implements IOrderCreationService {
                 if ((externalBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.externalBucketTooBig(
                     externalBucketFiles)) {
                     orderCounts.addToExternalFilesCount(externalBucketFiles.size());
-                    orderCounts.addFileSize(externalBucketFiles.stream().mapToLong(OrderDataFile::getFilesize).sum());
+                    orderCounts.addTotalFileSizeOf(externalBucketFiles);
                     self.createExternalSubOrder(dsTask, externalBucketFiles, order);
                     externalBucketFiles.clear();
                 }
@@ -297,7 +297,7 @@ public class OrderCreationService implements IOrderCreationService {
         // Manage remaining files on each type of buckets
         if (!storageBucketFiles.isEmpty()) {
             orderCounts.addToInternalFilesCount(storageBucketFiles.size());
-            orderCounts.addFileSize(storageBucketFiles.stream().mapToLong(OrderDataFile::getFilesize).sum());
+            orderCounts.addTotalFileSizeOf(storageBucketFiles);
             orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask,
                                                                 storageBucketFiles,
                                                                 order,
@@ -308,7 +308,7 @@ public class OrderCreationService implements IOrderCreationService {
         }
         if (!externalBucketFiles.isEmpty()) {
             orderCounts.addToExternalFilesCount(externalBucketFiles.size());
-            orderCounts.addFileSize(externalBucketFiles.stream().mapToLong(OrderDataFile::getFilesize).sum());
+            orderCounts.addTotalFileSizeOf(externalBucketFiles);
             self.createExternalSubOrder(dsTask, externalBucketFiles, order);
         }
 

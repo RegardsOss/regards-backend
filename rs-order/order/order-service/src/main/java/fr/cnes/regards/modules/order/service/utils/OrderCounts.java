@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.order.service.utils;
 
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -119,6 +122,11 @@ public final class OrderCounts {
     public OrderCounts addFileSize(long add) {
         this.totalFilesSize += add;
         return this;
+    }
+
+    public OrderCounts addTotalFileSizeOf(Set<OrderDataFile> dataFiles) {
+        long sum = dataFiles.stream().filter(Objects::nonNull).mapToLong(OrderDataFile::getFilesize).sum();
+        return addFileSize(sum);
     }
 
     public void incrSubOrderCount() {
