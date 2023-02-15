@@ -50,12 +50,12 @@ public final class S3ServerUtils {
      */
     public static Optional<S3Server> isUrlFromS3Server(URL url, @Nullable List<S3Server> s3Servers) {
         Optional<S3Server> s3server = s3Servers == null ?
-            Optional.empty() :
-            s3Servers.stream()
-                     .filter(s3Server -> isTheSameEndPoint(s3Server.getEndpoint(), url.getHost(), url.getPort()))
-                     .findFirst();
+                Optional.empty() :
+                s3Servers.stream()
+                        .filter(s3Server -> isTheSameEndPoint(s3Server.getEndpoint(), url.getHost(), url.getPort()))
+                        .findFirst();
         if (s3server.isPresent()) {
-            LOGGER.info("Accessing url {} from configured S3 server {}", s3server.get().getEndpoint());
+            LOGGER.info("Accessing url {} from configured S3 server {}", url, s3server.get().getEndpoint());
         } else {
             LOGGER.info("Accessing url {} from HTTP server (not found in configured S3 server).", url);
         }
@@ -83,11 +83,11 @@ public final class S3ServerUtils {
      * @return a record with the s3 key for the file and the storage
      */
     public static KeyAndStorage getKeyAndStorage(URL source, S3Server s3Server)
-        throws MalformedURLException, PatternSyntaxS3Exception {
+            throws MalformedURLException, PatternSyntaxS3Exception {
         String pattern = s3Server.getPattern();
         if (StringUtils.isBlank(pattern)) {
             throw new PatternSyntaxS3Exception(
-                "Input pattern of regex is empty from the configuration file from S3 server");
+                    "Input pattern of regex is empty from the configuration file from S3 server");
         }
         LOGGER.trace("Available S3 server {}", s3Server);
         Matcher matcher;
@@ -96,8 +96,8 @@ public final class S3ServerUtils {
             matcher.find();
         } catch (PatternSyntaxException e) {
             throw new PatternSyntaxS3Exception(String.format(
-                "Input pattern syntax of regex is not correct from the configuration file from S3 server - pattern [%s]",
-                pattern), e);
+                    "Input pattern syntax of regex is not correct from the configuration file from S3 server - pattern [%s]",
+                    pattern), e);
         }
 
         // Retrieve bucket of S3 server
@@ -106,11 +106,11 @@ public final class S3ServerUtils {
         if (StringUtils.isBlank(bucket)) {
             try {
                 bucket = matcher.group(S3Server.REGEX_GROUP_BUCKET);
-                LOGGER.debug("Bucket [{}] from the url [{}] for S3 server", bucket, source.toString());
+                LOGGER.debug("Bucket [{}] from the url [{}] for S3 server", bucket, source);
             } catch (IllegalStateException | IndexOutOfBoundsException e) {//NOSONAR
                 throw new MalformedURLException(String.format("Could not retrieve bucket from url %s using pattern [%s]",
-                                                              source,
-                                                              pattern));
+                        source,
+                        pattern));
             }
 
         }
@@ -119,17 +119,17 @@ public final class S3ServerUtils {
         String filePath;
         try {
             filePath = matcher.group(S3Server.REGEX_GROUP_PATHFILENAME);
-            LOGGER.debug("File path [{}] from the url [{}] for S3 server.", filePath, source.toString());
+            LOGGER.debug("File path [{}] from the url [{}] for S3 server.", filePath, source);
         } catch (IllegalStateException | IndexOutOfBoundsException e) {//NOSONAR
             throw new MalformedURLException(String.format("Could not retrieve filename from url %s using pattern [%s]",
-                                                          source,
-                                                          pattern));
+                    source,
+                    pattern));
         }
         return new KeyAndStorage(filePath,
-                                 StorageConfig.builder(s3Server.getEndpoint(),
-                                                       s3Server.getRegion(),
-                                                       s3Server.getKey(),
-                                                       s3Server.getSecret()).bucket(bucket).build());
+                StorageConfig.builder(s3Server.getEndpoint(),
+                        s3Server.getRegion(),
+                        s3Server.getKey(),
+                        s3Server.getSecret()).bucket(bucket).build());
 
     }
 

@@ -64,7 +64,7 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
     @Override
     public void handleBatch(List<JobEvent> jobEvents) {
         long start = System.currentTimeMillis();
-        LOGGER.warn("[INGEST JOB EVENT HANDLER] Handling {} JobEvents...", jobEvents.size());
+        LOGGER.debug("[INGEST JOB EVENT HANDLER] Handling {} JobEvents...", jobEvents.size());
         long nbJobError = 0;
         for (JobEvent jobEvent : jobEvents) {
             if (jobEvent.getJobEventType() == JobEventType.FAILED
@@ -78,8 +78,8 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                 }
             }
         }
-        LOGGER.warn("[INGEST JOB EVENT HANDLER] {} JobEvents in error handled in {} ms",
-                    nbJobError,
-                    System.currentTimeMillis() - start);
+        LOGGER.debug("[INGEST JOB EVENT HANDLER] {} JobEvents in error handled in {} ms",
+                     nbJobError,
+                     System.currentTimeMillis() - start);
     }
 }

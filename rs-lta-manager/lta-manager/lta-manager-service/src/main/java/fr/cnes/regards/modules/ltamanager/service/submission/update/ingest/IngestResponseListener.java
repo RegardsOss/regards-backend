@@ -21,19 +21,17 @@ package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.ingest.client.IIngestClientListener;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
-import fr.cnes.regards.modules.ltamanager.amqp.output.LtaCleanWorkerRequestDtoEvent;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.IngestStatusResponseMapping;
-import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
 import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
-import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
-import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Update {@link fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest} states following the
@@ -102,41 +100,14 @@ public class IngestResponseListener implements IIngestClientListener {
     public void onSuccess(Collection<RequestInfo> infos) {
         ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.SUCCESS_MAP);
 
-        List<SubmissionResponseDtoEvent> submissionResponseDtoEvents = new ArrayList<>();
-        List<LtaCleanWorkerRequestDtoEvent> ltaCleanWorkerRequestDtoEvents = new ArrayList<>();
-        infos.forEach(info -> {
-            submissionResponseDtoEvents.add(SubmissionResponseDtoUtils.createEvent(info.getRequestId(),
-                                                                                   requestRepository.findById(info.getRequestId()),
-                                                                                   SubmissionResponseStatus.SUCCESS,
-                                                                                   null));
-
-            Optional<SubmissionRequestDto> submissionRequestDto = submissionReadService.findSubmissionRequestByCorrelationId(
-                info.getRequestId());
-            if (submissionRequestDto.isPresent()) {
-                SubmissionRequestDto request = submissionRequestDto.get();
-                LtaCleanWorkerRequestDtoEvent ltaCleanWorkerRequestDtoEvent = new LtaCleanWorkerRequestDtoEvent(request.getCorrelationId(),
-                                                                                                                request.getId(),
-                                                                                                                request.getDatatype(),
-                                                                                                                request.getGeometry(),
-                                                                                                                request.getFiles(),
-                                                                                                                request.getTags(),
-                                                                                                                request.getOriginUrn(),
-                                                                                                                request.getProperties(),
-                                                                                                                request.getStorePath(),
-                                                                                                                request.getSession(),
-                                                                                                                request.isReplaceMode());
-                ltaCleanWorkerRequestDtoEvent.addHeader(EventHeadersHelper.CONTENT_TYPE_HEADER,
-                                                        CONTENT_TYPE_LTA_CLEAN_WORKER);
-
-                ltaCleanWorkerRequestDtoEvents.add(ltaCleanWorkerRequestDtoEvent);
-            }
-        });
+        List<SubmissionResponseDtoEvent> submissionResponseDtoEvents = infos.stream()
+                                                                            .map(info -> SubmissionResponseDtoUtils.createEvent(
+                                                                                info.getRequestId(),
+                                                                                requestRepository.findById(info.getRequestId()),
+                                                                                SubmissionResponseStatus.SUCCESS,
+                                                                                null))
+                                                                            .toList();
         publisher.publish(submissionResponseDtoEvents);
-
-        // Publish list of events to LTA clean worker
-        publisher.publish(ltaCleanWorkerRequestDtoEvents,
-                          "regards.broadcast." + RequestEvent.class.getName(),
-                          Optional.empty());
     }
 
     @Override

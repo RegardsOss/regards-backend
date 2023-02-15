@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.workermanager.amqp.events;
 
+import com.google.gson.Gson;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * Helper to build a {@link Message} raw to send by broadcast to workers.
@@ -53,6 +56,33 @@ public final class RawMessageBuilder {
         properties.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
         properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         return new Message(payload, properties);
+    }
+
+    /**
+     * Build raw AMQP message to send to workers
+     *
+     * @param tenant      tenant for the request
+     * @param contentType content type of the request to dispatch on worker
+     * @param source      Request owner name
+     * @param session     Request session name
+     * @param requestId   Request unique identifier
+     * @param payload     Request body as object
+     * @param gson        gson builder to serialize object
+     * @return Message
+     */
+    public static Message build(String tenant,
+                                String contentType,
+                                String source,
+                                String session,
+                                String requestId,
+                                Object payload,
+                                Gson gson) {
+        return RawMessageBuilder.build(tenant,
+                                       contentType,
+                                       source,
+                                       session,
+                                       requestId,
+                                       gson.toJson(payload).getBytes(StandardCharsets.UTF_8));
     }
 
 }
