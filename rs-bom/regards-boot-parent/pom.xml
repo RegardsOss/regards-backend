@@ -90,33 +90,6 @@
                         </resources>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <version>5.2.1</version>
-                    <configuration>
-                        <skip>true</skip>
-                        <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
-                        <suppressionFiles>
-                            <!-- This file is located into regards-suppress-cve dependency -->
-                            <suppressionFile>suppressCVE.xml</suppressionFile>
-                        </suppressionFiles>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>fr.cnes.regards</groupId>
-                            <artifactId>regards-suppress-cve</artifactId>
-                            <version>${revision}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -127,10 +100,6 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
             </plugin>
         </plugins>
     </build>

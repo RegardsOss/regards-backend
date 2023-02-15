@@ -2377,6 +2377,72 @@
             </build>
         </profile>
         <profile>
+            <id>dependency-check</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>${org.owasp.dependency-check-maven.version}</version>
+                        <configuration>
+                            <skip>false</skip>
+                            <formats>
+                                <format>HTML</format>
+                                <format>XML</format>
+                            </formats>
+                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                            <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+                            <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
+                            <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+                            <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
+                            <cocoapodsAnalyzerEnabled>false</cocoapodsAnalyzerEnabled>
+                            <bundleAuditAnalyzerEnabled>false</bundleAuditAnalyzerEnabled>
+                            <swiftPackageManagerAnalyzerEnabled>false</swiftPackageManagerAnalyzerEnabled>
+                            <swiftPackageResolvedAnalyzerEnabled>false</swiftPackageResolvedAnalyzerEnabled>
+                            <msbuildAnalyzerEnabled>false</msbuildAnalyzerEnabled>
+                            <skipDependencyManagement>false</skipDependencyManagement>
+                            <golangDepEnabled>false</golangDepEnabled>
+                            <golangModEnabled>false</golangModEnabled>
+                            <pnpmAuditAnalyzerEnabled>false</pnpmAuditAnalyzerEnabled>
+                            <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
+                            <opensslAnalyzerEnabled>false</opensslAnalyzerEnabled>
+                            <archiveAnalyzerEnabled>false</archiveAnalyzerEnabled>
+                            <dartAnalyzerEnabled>false</dartAnalyzerEnabled>
+                            <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                            <rubygemsAnalyzerEnabled>false</rubygemsAnalyzerEnabled>
+
+                            <skipProvidedScope>true</skipProvidedScope>
+                            <skipRuntimeScope>true</skipRuntimeScope>
+                            <skipSystemScope>true</skipSystemScope>
+                            <skipArtifactType>^(pom|test-jar)$</skipArtifactType>
+                            <!-- Add here the list of POM projects -->
+                            <!-- Otherwise dependency-check-maven stops with ArtifactNotFoundException: Could not find artifact -->
+                            <!-- @see https://github.com/jeremylong/DependencyCheck/issues/4134 -->
+                            <failOnError>false</failOnError>
+                            <suppressionFiles>
+                                <!-- This file is located into regards-suppress-cve dependency -->
+                                <suppressionFile>suppressCVE.xml</suppressionFile>
+                            </suppressionFiles>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>fr.cnes.regards</groupId>
+                                <artifactId>regards-suppress-cve</artifactId>
+                                <version>${revision}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <!-- profile to desactivate resource filtering -->
             <id>install</id>
         </profile>
@@ -2774,7 +2840,6 @@
                 </executions>
 
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
