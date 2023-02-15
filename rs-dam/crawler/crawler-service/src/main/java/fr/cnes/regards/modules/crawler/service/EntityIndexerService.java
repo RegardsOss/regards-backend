@@ -405,7 +405,7 @@ public class EntityIndexerService implements IEntityIndexerService {
     private void manageDatasetUpdate(Dataset dataset,
                                      OffsetDateTime lastUpdateDate,
                                      OffsetDateTime updateDate,
-                                     String dsiId) {
+                                     String dsiId) throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
         sendDataSourceMessage(String.format(
             "      Updating dataset %s indexation and all its associated data objects...",
@@ -464,6 +464,7 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         computeComputedAttributes(dataset, dsiId, tenant);
 
+        prepareDatasetForEs(dataset);
         esRepos.save(tenant, dataset);
         LOGGER.info("Dataset {} updated", dataset.getId());
         sendDataSourceMessage("      ...Dataset indexation updated.", dsiId);
