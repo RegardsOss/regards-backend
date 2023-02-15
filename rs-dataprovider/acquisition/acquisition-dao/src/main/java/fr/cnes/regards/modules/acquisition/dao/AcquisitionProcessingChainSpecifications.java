@@ -41,20 +41,20 @@ public final class AcquisitionProcessingChainSpecifications {
     /**
      * Filter on the given attributes (label, locked and mode) and return result ordered by ascending label
      *
-     * @param label  {@link String}
-     * @param locked {@link Boolean}
-     * @param mode   {@link AcquisitionProcessingChainMode}
+     * @param label    {@link String}
+     * @param runnable {@link Boolean} search for runnable chains true or false
+     * @param mode     {@link AcquisitionProcessingChainMode}
      */
     public static Specification<AcquisitionProcessingChain> search(String label,
-                                                                   Boolean locked,
+                                                                   Boolean runnable,
                                                                    AcquisitionProcessingChainMode mode) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (label != null) {
                 predicates.add(cb.like(root.get("label"), LIKE_CHAR + label + LIKE_CHAR));
             }
-            if (locked != null) {
-                predicates.add(cb.equal(root.get("locked"), locked));
+            if (runnable != null) {
+                predicates.add(cb.equal(root.get("locked"), !runnable));
             }
             if (mode != null) {
                 predicates.add(cb.equal(root.get("mode"), mode));

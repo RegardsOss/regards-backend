@@ -635,23 +635,23 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private List<String> computePluginBlocker(AcquisitionProcessingChain processingChain,
                                               String pluginId,
                                               String pluginName) {
+        List<String> blockers = new ArrayList<>();
         try {
             Object plugin = pluginService.getPlugin(pluginId);
             if (plugin instanceof IChainBlockingPlugin) {
-                return ((IChainBlockingPlugin) plugin).getExecutionBlockers(processingChain);
+                blockers.addAll(((IChainBlockingPlugin) plugin).getExecutionBlockers(processingChain));
             }
         } catch (PluginUtilsRuntimeException e) {
             LOGGER.error(String.format("Could not instantiate %s.", pluginName), e);
-            return Arrays.asList(String.format("Could not instantiate %s. Check logs to get more information.",
-                                               pluginName));
+            blockers.add(String.format("Could not instantiate %s. Check logs to get more information.", pluginName));
         } catch (NotAvailablePluginConfigurationException e) {
             LOGGER.error(String.format("%s is not active.", pluginName), e);
-            return Arrays.asList(String.format("%s is not active.", pluginName));
+            blockers.add(String.format("%s is not active.", pluginName));
         } catch (ModuleException e) {
             LOGGER.error("Unable to evaluate chain blocking plugins", e);
-            return Arrays.asList("Unable to evaluate chain blocking plugins");
+            blockers.add("Unable to evaluate chain blocking plugins");
         }
-        return new ArrayList<>();
+        return blockers;
     }
 
     @Override
@@ -1081,12 +1081,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Override
     public Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label,
-                                                                                            Boolean running,
+                                                                                            Boolean runnable,
                                                                                             AcquisitionProcessingChainMode mode,
                                                                                             Pageable pageable) {
         Page<AcquisitionProcessingChain> acqChains = acqChainRepository.findAll(AcquisitionProcessingChainSpecifications.search(
             label,
-            running,
+            runnable,
             mode), pageable);
         List<AcquisitionProcessingChainMonitor> monitors = acqChains.getContent()
                                                                     .stream()

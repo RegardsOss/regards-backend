@@ -92,19 +92,12 @@ public interface IAcquisitionProcessingService {
 
     /**
      * Patch an existing processing chain with new values for active and state
-     *
-     * @param chainId
-     * @param payload
-     * @return
      */
     AcquisitionProcessingChain patchStateAndMode(Long chainId, UpdateAcquisitionProcessingChain payload)
         throws ModuleException;
 
     /**
      * Patch several existing processing chain with provided values for active and state
-     *
-     * @param payload
-     * @return
      */
     List<AcquisitionProcessingChain> patchChainsStateAndMode(UpdateAcquisitionProcessingChains payload)
         throws ModuleException;
@@ -122,7 +115,7 @@ public interface IAcquisitionProcessingService {
      *
      * @return boolean
      */
-    public boolean isDeletionPending(AcquisitionProcessingChain chain);
+    boolean isDeletionPending(AcquisitionProcessingChain chain);
 
     /**
      * Lock processing chain
@@ -229,17 +222,8 @@ public interface IAcquisitionProcessingService {
 
     /**
      * Register multiple files by creating multiple transactions by batch
-     *
-     * @param filePathsIt
-     * @param fileInfo
-     * @param scanDir
-     * @param scanningDate
-     * @param session
-     * @param sessionOwner
-     * @return
-     * @throws ModuleException
      */
-    public long registerFiles(Iterator<Path> filePathsIt,
+    long registerFiles(Iterator<Path> filePathsIt,
                               AcquisitionFileInfo fileInfo,
                               ScanDirectoryInfo scanDir,
                               Optional<OffsetDateTime> scanningDate,
@@ -285,11 +269,11 @@ public interface IAcquisitionProcessingService {
      * Build summaries list of {@link AcquisitionProcessingChain}s.
      * Each summary allow to monitor chain progress.
      *
-     * @param label   {@link String} optional search parameter on {@link AcquisitionProcessingChain}s label
-     * @param running {@link Boolean} optional search parameter on {@link AcquisitionProcessingChain}s running
+     * @param label    {@link String} optional search parameter on {@link AcquisitionProcessingChain}s label
+     * @param runnable {@link Boolean} optional search parameter on {@link AcquisitionProcessingChain}s running
      */
     Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label,
-                                                                                     Boolean running,
+                                                                                     Boolean runnable,
                                                                                      AcquisitionProcessingChainMode mode,
                                                                                      Pageable pageable);
 
