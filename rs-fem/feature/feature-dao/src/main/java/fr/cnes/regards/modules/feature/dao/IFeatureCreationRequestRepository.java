@@ -30,6 +30,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -70,9 +71,11 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
 
     @Modifying
     @Query(
-        value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns",
+        value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)), last_update = :now  WHERE urn IN :urns",
         nativeQuery = true)
-    void updateLastByUrnIn(@Param("last") boolean last, @Param("urns") Set<String> urns);
+    void updateLastByUrnIn(@Param("last") boolean last,
+                           @Param("now") Timestamp now,
+                           @Param("urns") Set<String> urns);
 
     Long deleteByFeatureEntityIn(Collection<FeatureEntity> features);
 }

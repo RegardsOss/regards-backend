@@ -73,7 +73,9 @@ import org.springframework.validation.Validator;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.sql.Timestamp;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -541,7 +543,8 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                                            .map(FeatureUniformResourceName::toString)
                                            .collect(Collectors.toSet());
         if (!previousUrns.isEmpty()) {
-            featureCreationRequestRepo.updateLastByUrnIn(false, previousUrns);
+            Timestamp now = Timestamp.valueOf(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime());
+            featureCreationRequestRepo.updateLastByUrnIn(false, now, previousUrns);
         }
 
         return entities;
