@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ltamanager.domain.submission;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.TypeDef;
 import org.springframework.util.Assert;
 
@@ -45,10 +44,9 @@ import java.util.Objects;
 public class SubmissionRequest {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(length = 36, nullable = false, updatable = false)
-    private String id;
+    @SequenceGenerator(name = "submissionRequestSequence", initialValue = 1, sequenceName = "seq_submission_request")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "submissionRequestSequence")
+    private Long id;
 
     @Column(name = "correlation_id", nullable = false, updatable = false, unique = true)
     @NotBlank(message = "correlationId is required to track this request.")
