@@ -145,7 +145,9 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
                 }
             }
         } catch (final LdapAuthenticationException e) {
-            LOGGER.error("LDAP authentication error : " + e.getMessage(), e);
+            LOGGER.error("LDAP authentication error returned by the LDAP server [{}]: {}",
+                         e.getResultCode(),
+                         e.getMessage());
             errorMessage = e.getMessage();
         } catch (final LdapException | IOException e) {
             LOGGER.error("LDAP error : " + e.getMessage(), e);
