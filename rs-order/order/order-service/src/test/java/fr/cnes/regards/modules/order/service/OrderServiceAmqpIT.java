@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
@@ -50,11 +50,11 @@ import java.util.stream.IntStream;
  **/
 @ActiveProfiles(value = { "default", "test", "testAmqp", "noscheduler" }, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=order_test_amqp_it", "regards.amqp.enabled=true",
-        "regards.order.max.storage.files.jobs.per.user=1" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_test_amqp_it",
+                                   "regards.amqp.enabled=true",
+                                   "regards.order.max.storage.files.jobs.per.user=1" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD,
-    hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
+                hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
 
     @Autowired
@@ -81,13 +81,13 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
 
         // THEN one suborder is done and ready to be downloaded (max job per user is set to 1)
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        List<OrderRequestResponseDtoEvent> events = argumentCaptor.getAllValues()
-                                                                  .stream()
-                                                                  .filter(OrderRequestResponseDtoEvent.class::isInstance)
-                                                                  .map(OrderRequestResponseDtoEvent.class::cast)
-                                                                  .toList();
+        List<OrderResponseDtoEvent> events = argumentCaptor.getAllValues()
+                                                           .stream()
+                                                           .filter(OrderResponseDtoEvent.class::isInstance)
+                                                           .map(OrderResponseDtoEvent.class::cast)
+                                                           .toList();
         Assertions.assertEquals(1, events.size());
-        OrderRequestResponseDtoEvent suborderDoneEvent = events.get(0);
+        OrderResponseDtoEvent suborderDoneEvent = events.get(0);
         Assertions.assertEquals(OrderRequestStatus.SUBORDER_DONE, suborderDoneEvent.getStatus());
         Assertions.assertEquals(CORRELATION_ID, suborderDoneEvent.getCorrelationId());
 
@@ -104,26 +104,25 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         events = argumentCaptor.getAllValues()
                                .stream()
-                               .filter(OrderRequestResponseDtoEvent.class::isInstance)
-                               .map(OrderRequestResponseDtoEvent.class::cast)
+                               .filter(OrderResponseDtoEvent.class::isInstance)
+                               .map(OrderResponseDtoEvent.class::cast)
                                .toList();
 
         // check that we received one and only one DONE order response
-        List<OrderRequestResponseDtoEvent> mainEventList = events.stream()
-                                                                 .filter(ev -> ev.getStatus()
-                                                                               == OrderRequestStatus.DONE)
-                                                                 .toList();
+        List<OrderResponseDtoEvent> mainEventList = events.stream()
+                                                          .filter(ev -> ev.getStatus() == OrderRequestStatus.DONE)
+                                                          .toList();
         Assertions.assertEquals(1, mainEventList.size());
-        OrderRequestResponseDtoEvent mainEvent = mainEventList.get(0);
+        OrderResponseDtoEvent mainEvent = mainEventList.get(0);
         Assertions.assertEquals(CORRELATION_ID, mainEvent.getCorrelationId());
         Assertions.assertEquals(OrderRequestStatus.DONE, mainEvent.getStatus());
         // assure that 2 sub-order has been created
         Assertions.assertEquals(2, filesTasksRepository.countByOrderId(order.getId()));
         // thus 2 amqp message SUBORDER_DONE
-        List<OrderRequestResponseDtoEvent> suborderEvents = events.stream()
-                                                                  .filter(ev -> ev.getStatus()
-                                                                                == OrderRequestStatus.SUBORDER_DONE)
-                                                                  .toList();
+        List<OrderResponseDtoEvent> suborderEvents = events.stream()
+                                                           .filter(ev -> ev.getStatus()
+                                                                         == OrderRequestStatus.SUBORDER_DONE)
+                                                           .toList();
         Assertions.assertEquals(2, suborderEvents.size());
         Assertions.assertTrue(suborderEvents.stream().allMatch(ev -> CORRELATION_ID.equals(ev.getCorrelationId())));
         String downloadUrl = "regardsHost/api/v1/rs-order/user/orders/" + order.getId() + "/download";
@@ -149,13 +148,13 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
         // THEN one suborder is done and ready to be downloaded (max job per user is set to 1)
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Mockito.reset(publisher);
-        List<OrderRequestResponseDtoEvent> events = argumentCaptor.getAllValues()
-                                                                  .stream()
-                                                                  .filter(OrderRequestResponseDtoEvent.class::isInstance)
-                                                                  .map(OrderRequestResponseDtoEvent.class::cast)
-                                                                  .toList();
+        List<OrderResponseDtoEvent> events = argumentCaptor.getAllValues()
+                                                           .stream()
+                                                           .filter(OrderResponseDtoEvent.class::isInstance)
+                                                           .map(OrderResponseDtoEvent.class::cast)
+                                                           .toList();
         Assertions.assertEquals(1, events.size());
-        OrderRequestResponseDtoEvent orderDoneEvent = events.get(0);
+        OrderResponseDtoEvent orderDoneEvent = events.get(0);
         order = orderRepository.findSimpleById(order.getId());
         Assertions.assertEquals(OrderStatus.DONE_WITH_WARNING, order.getStatus());
         Assertions.assertEquals(OrderRequestStatus.FAILED, orderDoneEvent.getStatus());

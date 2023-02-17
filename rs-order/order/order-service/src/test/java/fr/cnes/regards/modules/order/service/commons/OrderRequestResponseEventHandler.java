@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.order.service.commons;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -30,13 +30,13 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
- * Handler to receive {@link OrderRequestResponseDtoEvent}. Only for testing purposes.
+ * Handler to receive {@link OrderResponseDtoEvent}. Only for testing purposes.
  *
  * @author Iliana Ghazali
  */
 @Component
 public class OrderRequestResponseEventHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<OrderRequestResponseDtoEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<OrderResponseDtoEvent> {
 
     private final ISubscriber subscriber;
 
@@ -53,7 +53,7 @@ public class OrderRequestResponseEventHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(OrderRequestResponseDtoEvent.class, this);
+        subscriber.subscribeTo(OrderResponseDtoEvent.class, this);
     }
 
     @Override
@@ -62,17 +62,17 @@ public class OrderRequestResponseEventHandler
     }
 
     @Override
-    public Class<OrderRequestResponseDtoEvent> getMType() {
-        return OrderRequestResponseDtoEvent.class;
+    public Class<OrderResponseDtoEvent> getMType() {
+        return OrderResponseDtoEvent.class;
     }
 
     @Override
-    public void handleBatch(List<OrderRequestResponseDtoEvent> events) {
+    public void handleBatch(List<OrderResponseDtoEvent> events) {
         LOGGER.debug("Handling {} OrderRequestResponseDtoEvent", events.size());
     }
 
     @Override
-    public Errors validate(OrderRequestResponseDtoEvent requestDto) {
+    public Errors validate(OrderResponseDtoEvent requestDto) {
         return null;
     }
 

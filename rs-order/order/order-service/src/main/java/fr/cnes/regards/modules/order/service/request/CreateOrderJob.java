@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
-import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
+import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -58,7 +58,7 @@ public class CreateOrderJob extends AbstractJob<Void> {
                      jobInfoId,
                      orderRequestDtos.size());
         long start = System.currentTimeMillis();
-        List<OrderRequestResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequestDtos, null);
+        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequestDtos, null);
         orderRequestService.publishResponses(responses);
         logger.debug("[{}] SubmissionDeleteExpiredJob ended in {}ms. Handled {} OrderRequestResponseDtos.",
                      jobInfoId,

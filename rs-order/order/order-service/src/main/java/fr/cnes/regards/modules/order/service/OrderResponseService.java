@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
@@ -45,7 +45,7 @@ import java.time.Duration;
  * @author Thomas GUILLOU
  **/
 @Service
-public class OrderRequestResponseService {
+public class OrderResponseService {
 
     // FIXME see how to get that path without duplicating
     private static final String ZIP_DOWNLOAD_PATH = "user/orders/{orderId}/download";
@@ -64,14 +64,14 @@ public class OrderRequestResponseService {
     @Value("${spring.application.name}")
     private String applicationName;
 
-    private Cache<String, String> projectHostCache = Caffeine.newBuilder()
-                                                             .expireAfterWrite(Duration.ofMinutes(5))
-                                                             .build();
+    private final Cache<String, String> projectHostCache = Caffeine.newBuilder()
+                                                                   .expireAfterWrite(Duration.ofMinutes(5))
+                                                                   .build();
 
-    public OrderRequestResponseService(IPublisher publisher,
-                                       IOrderRepository orderRepository,
-                                       IProjectsClient projectClient,
-                                       IRuntimeTenantResolver runtimeTenantResolver) {
+    public OrderResponseService(IPublisher publisher,
+                                IOrderRepository orderRepository,
+                                IProjectsClient projectClient,
+                                IRuntimeTenantResolver runtimeTenantResolver) {
         this.publisher = publisher;
         this.orderRepository = orderRepository;
         this.projectClient = projectClient;
@@ -85,15 +85,14 @@ public class OrderRequestResponseService {
         OrderRequestStatus responseStatus = order.getStatus() == OrderStatus.DONE ?
             OrderRequestStatus.DONE :
             OrderRequestStatus.FAILED;
-        OrderRequestResponseDtoEvent orderRequestResponseDtoEvent = new OrderRequestResponseDtoEvent(responseStatus,
-                                                                                                     order.getId(),
-                                                                                                     order.getCorrelationId(),
-                                                                                                     "Order of user "
-                                                                                                     + order.getOwner()
-                                                                                                     + " is finished",
-                                                                                                     computeDownloadLink(
-                                                                                                         order.getId()));
-        publisher.publish(orderRequestResponseDtoEvent);
+        OrderResponseDtoEvent orderResponseDtoEvent = new OrderResponseDtoEvent(responseStatus,
+                                                                                order.getId(),
+                                                                                order.getCorrelationId(),
+                                                                                "Order of user "
+                                                                                + order.getOwner()
+                                                                                + " is finished",
+                                                                                computeDownloadLink(order.getId()));
+        publisher.publish(orderResponseDtoEvent);
     }
 
     public void notifySuborderDone(FilesTask filesTask) {
@@ -106,15 +105,14 @@ public class OrderRequestResponseService {
      * Send a SUBORDER_DONE amqp notification.
      */
     public void notifySuborderDone(String correlationId, String owner, Long orderId) {
-        OrderRequestResponseDtoEvent orderRequestResponseDtoEvent = new OrderRequestResponseDtoEvent(OrderRequestStatus.SUBORDER_DONE,
-                                                                                                     orderId,
-                                                                                                     correlationId,
-                                                                                                     "A sub-order of user "
-                                                                                                     + owner
-                                                                                                     + " is finished and ready to download",
-                                                                                                     computeDownloadLink(
-                                                                                                         orderId));
-        publisher.publish(orderRequestResponseDtoEvent);
+        OrderResponseDtoEvent orderResponseDtoEvent = new OrderResponseDtoEvent(OrderRequestStatus.SUBORDER_DONE,
+                                                                                orderId,
+                                                                                correlationId,
+                                                                                "A sub-order of user "
+                                                                                + owner
+                                                                                + " is finished and ready to download",
+                                                                                computeDownloadLink(orderId));
+        publisher.publish(orderResponseDtoEvent);
     }
 
     public String computeDownloadLink(Long orderId) {

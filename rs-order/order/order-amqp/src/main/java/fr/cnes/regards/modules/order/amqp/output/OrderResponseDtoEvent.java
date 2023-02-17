@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
-import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 
 /**
  * See {@link OrderRequestDto}
@@ -32,17 +32,17 @@ import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
  * @author Iliana Ghazali
  **/
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class OrderRequestResponseDtoEvent extends OrderRequestResponseDto implements ISubscribable {
+public class OrderResponseDtoEvent extends OrderResponseDto implements ISubscribable {
 
-    public OrderRequestResponseDtoEvent(OrderRequestStatus status,
-                                        Long createdOrderId,
-                                        String correlationId,
-                                        String message,
-                                        String downloadLink) {
+    public OrderResponseDtoEvent(OrderRequestStatus status,
+                                 Long createdOrderId,
+                                 String correlationId,
+                                 String message,
+                                 String downloadLink) {
         super(status, createdOrderId, correlationId, message, downloadLink);
     }
 
-    public OrderRequestResponseDtoEvent(OrderRequestResponseDto orderResponse) {
+    public OrderResponseDtoEvent(OrderResponseDto orderResponse) {
         super(orderResponse.getStatus(),
               orderResponse.getOrderId(),
               orderResponse.getCorrelationId(),

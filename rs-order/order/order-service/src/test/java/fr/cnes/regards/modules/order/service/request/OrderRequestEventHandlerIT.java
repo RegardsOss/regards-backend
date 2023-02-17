@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.Order;
@@ -97,7 +97,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 @ActiveProfiles(value = { "default", "test", "testAmqp", "noscheduler", "nojobs" }, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_request_handler_it",
-    "regards.amqp.enabled=true" })
+                                   "regards.amqp.enabled=true" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJobIT {
 
@@ -163,7 +163,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         awaitForJobAndOrderAsyncCompletion(nbOrders, OrderStatus.RUNNING);
 
         // Check order response messages granted
-        ArgumentCaptor<List<OrderRequestResponseDtoEvent>> responseCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<OrderResponseDtoEvent>> responseCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(responseCaptor.capture());
         Long firstOrderId = getFirstOrderId();
         checkOrderRequestResponsesEvents(responseCaptor.getAllValues().get(1),
@@ -208,7 +208,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // check that order response messages are still granted because they were sent before the completion of
         // the order, which is asynchronous.
-        ArgumentCaptor<List<OrderRequestResponseDtoEvent>> responseCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<OrderResponseDtoEvent>> responseCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(responseCaptor.capture());
         checkOrderRequestResponsesEvents(responseCaptor.getAllValues().get(1),
                                          nbOrders,
@@ -236,9 +236,9 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // --- THEN ---
         // check that OrderRequestResponseDtoEvents are sent with denied status
-        ArgumentCaptor<List<OrderRequestResponseDtoEvent>> responseCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<OrderResponseDtoEvent>> responseCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(responseHandler, Mockito.timeout(15000)).handleBatch(responseCaptor.capture());
-        for (OrderRequestResponseDtoEvent responseEvent : responseCaptor.getValue()) {
+        for (OrderResponseDtoEvent responseEvent : responseCaptor.getValue()) {
             assertThat(responseEvent.getStatus()).isEqualTo(OrderRequestStatus.DENIED);
             assertThat(responseEvent.getMessage()).isNotBlank();
         }

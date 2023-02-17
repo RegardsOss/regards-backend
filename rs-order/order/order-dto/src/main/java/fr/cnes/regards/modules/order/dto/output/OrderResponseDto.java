@@ -28,7 +28,7 @@ import java.util.Objects;
  *
  * @author Iliana Ghazali
  **/
-public class OrderRequestResponseDto {
+public class OrderResponseDto {
 
     @NotNull(message = "status should be present")
     private OrderRequestStatus status;
@@ -45,11 +45,11 @@ public class OrderRequestResponseDto {
     @Nullable
     private String downloadLink;
 
-    public OrderRequestResponseDto(OrderRequestStatus status,
-                                   @Nullable Long orderId,
-                                   @Nullable String correlationId,
-                                   @Nullable String message,
-                                   @Nullable String downloadLink) {
+    public OrderResponseDto(OrderRequestStatus status,
+                            @Nullable Long orderId,
+                            @Nullable String correlationId,
+                            @Nullable String message,
+                            @Nullable String downloadLink) {
         this.status = status;
         this.orderId = orderId;
         this.correlationId = correlationId;
@@ -109,7 +109,7 @@ public class OrderRequestResponseDto {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        OrderRequestResponseDto that = (OrderRequestResponseDto) o;
+        OrderResponseDto that = (OrderResponseDto) o;
         return status == that.status
                && Objects.equals(orderId, that.orderId)
                && Objects.equals(correlationId,

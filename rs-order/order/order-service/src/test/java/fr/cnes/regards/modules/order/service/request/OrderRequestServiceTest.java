@@ -21,14 +21,14 @@ package fr.cnes.regards.modules.order.service.request;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
-import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 import fr.cnes.regards.modules.order.exception.OrderRequestServiceException;
 import fr.cnes.regards.modules.order.service.BasketService;
 import fr.cnes.regards.modules.order.service.IOrderService;
@@ -49,7 +49,7 @@ import static org.mockito.ArgumentMatchers.*;
 
 /**
  * Test for {@link OrderRequestService} </br>
- * The purpose of this test is to verify that {@link OrderRequestResponseDtoEvent} are correctly sent following the
+ * The purpose of this test is to verify that {@link OrderResponseDtoEvent} are correctly sent following the
  * creation of an order in success or failure.
  *
  * @author Iliana Ghazali
@@ -96,7 +96,7 @@ public class OrderRequestServiceTest {
         List<OrderRequestDto> orderRequests = createValidOrderRequests(nbReq);
 
         // WHEN
-        List<OrderRequestResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequests, null);
+        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequests, null);
 
         // THEN
         checkOrderRequestResponses(responses, nbReq, OrderRequestStatus.GRANTED, null, 0L);
@@ -112,7 +112,7 @@ public class OrderRequestServiceTest {
         Mockito.when(basketService.addSelection(any(), any(), any(), any())).thenThrow(expectedException);
 
         // WHEN
-        List<OrderRequestResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequests, null);
+        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequests, null);
 
         // THEN
         checkOrderRequestResponses(responses,

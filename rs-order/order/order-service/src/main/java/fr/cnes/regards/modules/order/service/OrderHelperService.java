@@ -80,7 +80,7 @@ public class OrderHelperService {
 
     private final IOrderSettingsService orderSettingsService;
 
-    private final OrderRequestResponseService orderRequestResponseService;
+    private final OrderResponseService orderResponseService;
 
     @Value("${regards.order.secret}")
     private String secret;
@@ -105,14 +105,14 @@ public class OrderHelperService {
                               IRuntimeTenantResolver runtimeTenantResolver,
                               IProjectUsersClient projectUsersClient,
                               IOrderSettingsService orderSettingsService,
-                              OrderRequestResponseService orderRequestResponseService) {
+                              OrderResponseService orderResponseService) {
         this.jwtService = jwtService;
         this.jobInfoService = jobInfoService;
         this.authenticationResolver = authenticationResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.projectUsersClient = projectUsersClient;
         this.orderSettingsService = orderSettingsService;
-        this.orderRequestResponseService = orderRequestResponseService;
+        this.orderResponseService = orderResponseService;
     }
 
     public static boolean isOrderEffectivelyInPause(Order order) {
@@ -200,7 +200,7 @@ public class OrderHelperService {
         currentFilesTask.setOwner(owner);
         currentFilesTask.addAllFiles(orderDataFiles);
         datasetTask.addReliantTask(currentFilesTask);
-        orderRequestResponseService.notifySuborderDone(correlationId, owner, orderId);
+        orderResponseService.notifySuborderDone(correlationId, owner, orderId);
     }
 
     @MultitenantTransactional

@@ -31,13 +31,7 @@ public enum DataTypeLight {
     /**
      * Available data types
      */
-    RAWDATA,
-    QUICKLOOK,
-    DOCUMENT,
-    THUMBNAIL,
-    OTHER,
-    AIP,
-    DESCRIPTION;
+    RAWDATA, QUICKLOOK;
 
     public boolean isEquivalent(DataType dataType) {
         if (dataType == null) {

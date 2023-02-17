@@ -20,12 +20,12 @@ package fr.cnes.regards.modules.order.service.request;
 
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestFilters;
-import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 
@@ -51,8 +51,10 @@ public class OrderRequestTestUtils {
     static List<OrderRequestDtoEvent> createValidOrderRequestEvents(int nbReq) {
         List<OrderRequestDtoEvent> orderRequestDtos = new ArrayList<>();
         for (int i = 0; i < nbReq; i++) {
-            orderRequestDtos.add(new OrderRequestDtoEvent(SEARCH_QUERIES, new OrderRequestFilters(Set.of(DataTypeLight.RAWDATA),
-                                    FILENAME_FILTER), String.valueOf(i),
+            orderRequestDtos.add(new OrderRequestDtoEvent(SEARCH_QUERIES,
+                                                          new OrderRequestFilters(Set.of(DataTypeLight.RAWDATA),
+                                                                                  FILENAME_FILTER),
+                                                          String.valueOf(i),
                                                           TEST_USER_ORDER));
         }
         return orderRequestDtos;
@@ -84,38 +86,38 @@ public class OrderRequestTestUtils {
         return orderRequestDtos;
     }
 
-    static void checkOrderRequestResponsesEvents(List<OrderRequestResponseDtoEvent> actualResponseDtoEvents,
+    static void checkOrderRequestResponsesEvents(List<OrderResponseDtoEvent> actualResponseDtoEvents,
                                                  int expectedNbReq,
                                                  OrderRequestStatus expectedStatus,
                                                  String expectedMessage,
                                                  Long firstOrderId) {
-        List<OrderRequestResponseDtoEvent> expectedResponses = new ArrayList<>();
+        List<OrderResponseDtoEvent> expectedResponses = new ArrayList<>();
         for (int i = 0; i < expectedNbReq; i++) {
             Long orderId = expectedStatus.equals(OrderRequestStatus.FAILED)
                            || expectedStatus.equals(OrderRequestStatus.DENIED) ? null : firstOrderId + i;
-            expectedResponses.add(new OrderRequestResponseDtoEvent(expectedStatus,
-                                                                   orderId,
-                                                                   String.valueOf(i),
-                                                                   expectedMessage,
-                                                                   null));
+            expectedResponses.add(new OrderResponseDtoEvent(expectedStatus,
+                                                            orderId,
+                                                            String.valueOf(i),
+                                                            expectedMessage,
+                                                            null));
         }
         Assertions.assertThat(actualResponseDtoEvents).hasSameElementsAs(expectedResponses);
     }
 
-    static void checkOrderRequestResponses(List<OrderRequestResponseDto> actualResponseDtos,
+    static void checkOrderRequestResponses(List<OrderResponseDto> actualResponseDtos,
                                            int expectedNbReq,
                                            OrderRequestStatus expectedStatus,
                                            String expectedMessage,
                                            Long firstOrderId) {
-        List<OrderRequestResponseDto> expectedResponses = new ArrayList<>();
+        List<OrderResponseDto> expectedResponses = new ArrayList<>();
         for (int i = 0; i < expectedNbReq; i++) {
             Long orderId = expectedStatus.equals(OrderRequestStatus.FAILED)
                            || expectedStatus.equals(OrderRequestStatus.DENIED) ? null : firstOrderId + i;
-            expectedResponses.add(new OrderRequestResponseDto(expectedStatus,
-                                                              orderId,
-                                                              String.valueOf(i),
-                                                              expectedMessage,
-                                                              null));
+            expectedResponses.add(new OrderResponseDto(expectedStatus,
+                                                       orderId,
+                                                       String.valueOf(i),
+                                                       expectedMessage,
+                                                       null));
         }
         Assertions.assertThat(actualResponseDtos).hasSameElementsAs(expectedResponses);
     }

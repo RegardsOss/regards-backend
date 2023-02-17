@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
@@ -132,11 +132,11 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         launchOrderAndExpectResults(processInfo, 2, Collections.singletonList(OrderStatus.RUNNING));
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        java.util.List<OrderRequestResponseDtoEvent> events = argumentCaptor.getAllValues()
-                                                                            .stream()
-                                                                            .filter(OrderRequestResponseDtoEvent.class::isInstance)
-                                                                            .map(OrderRequestResponseDtoEvent.class::cast)
-                                                                            .toList();
+        java.util.List<OrderResponseDtoEvent> events = argumentCaptor.getAllValues()
+                                                                     .stream()
+                                                                     .filter(OrderResponseDtoEvent.class::isInstance)
+                                                                     .map(OrderResponseDtoEvent.class::cast)
+                                                                     .toList();
         Assertions.assertEquals(2,
                                 events.stream().filter(e -> e.getStatus() == OrderRequestStatus.SUBORDER_DONE).count());
     }

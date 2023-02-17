@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -202,7 +202,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     protected String projectUserToken;
 
-    private String adminEmail = "admin@regards.fr";
+    private final String adminEmail = "admin@regards.fr";
 
     @Before
     public void init() {
@@ -266,7 +266,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         });
         // Create order request
         OrderRequestDto orderRequestDto = new OrderRequestDto(List.of("q:\"\""),
-                                                              new OrderRequestFilters(Set.of(DataTypeLight.AIP), null),
+                                                              new OrderRequestFilters(Set.of(DataTypeLight.RAWDATA),
+                                                                                      null),
                                                               null,
                                                               null);
         // WHEN
@@ -278,18 +279,17 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         // THEN
         // expect amqp response event
-        OrderRequestResponseDtoEvent expectedResponseEvent = new OrderRequestResponseDtoEvent(OrderRequestStatus.GRANTED,
-                                                                                              orderRepository.findAll(
-                                                                                                                 PageRequest.of(0,
-                                                                                                                                1,
-                                                                                                                                Sort.by(
-                                                                                                                                    "id")))
-                                                                                                             .getContent()
-                                                                                                             .get(0)
-                                                                                                             .getId(),
-                                                                                              null,
-                                                                                              null,
-                                                                                              null);
+        OrderResponseDtoEvent expectedResponseEvent = new OrderResponseDtoEvent(OrderRequestStatus.GRANTED,
+                                                                                orderRepository.findAll(PageRequest.of(0,
+                                                                                                                       1,
+                                                                                                                       Sort.by(
+                                                                                                                           "id")))
+                                                                                               .getContent()
+                                                                                               .get(0)
+                                                                                               .getId(),
+                                                                                null,
+                                                                                null,
+                                                                                null);
 
         // expect rest response
         actualResponse.andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
@@ -309,7 +309,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // GIVEN
         // Create order request
         OrderRequestDto orderRequestDto = new OrderRequestDto(List.of("q:\"\""),
-                                                              new OrderRequestFilters(Set.of(DataTypeLight.AIP), null),
+                                                              new OrderRequestFilters(Set.of(DataTypeLight.QUICKLOOK),
+                                                                                      null),
                                                               null,
                                                               null);
         // mock result of search with 0 files returned
@@ -719,7 +720,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             ByteStreams.copy(is, fos);
             is.close();
         }
-        Assert.assertTrue(resultFileMl.length() > 8000l); // 14 files listed into metalink file (size is
+        Assert.assertTrue(resultFileMl.length() > 8000L); // 14 files listed into metalink file (size is
         // slightely different into jenkins)
 
     }
@@ -812,7 +813,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             ByteStreams.copy(is, fos);
             is.close();
         }
-        Assert.assertEquals(1816l, resultFile.length());
+        Assert.assertEquals(1816L, resultFile.length());
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderControllerIT.class);
@@ -943,7 +944,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             ByteStreams.copy(is, fos);
             is.close();
         }
-        Assert.assertTrue(resultFileMl.length() > 8000l); // 14 files listed into metalink file (size is
+        Assert.assertTrue(resultFileMl.length() > 8000L); // 14 files listed into metalink file (size is
         // slightely different into jenkins)
 
         //////////////////////////////////
@@ -963,7 +964,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             ByteStreams.copy(is, fos);
             is.close();
         }
-        Assert.assertEquals(1816l, resultFile.length());
+        Assert.assertEquals(1816L, resultFile.length());
 
         tenantResolver.forceTenant(getDefaultTenant()); // ?
 
@@ -1079,7 +1080,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             ByteStreams.copy(is, fos);
             is.close();
         }
-        Assert.assertTrue(resultFileMl.length() > 8000l); // 14 files listed into metalink file (size is
+        Assert.assertTrue(resultFileMl.length() > 8000L); // 14 files listed into metalink file (size is
         // slightely different into jenkins)
 
         tenantResolver.forceTenant(getDefaultTenant()); // ?
@@ -1099,7 +1100,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             resultFileMl);
         MetalinkType metalink = rootElt.getValue();
         // Some variable to make data file not yet available download as last action (for Doc with a 202 expectation)
-        long lastDataFileId = -1l;
+        long lastDataFileId = -1L;
         String lastDataFileAipId = null;
         String lastDataFileToken = null;
         for (FileType fileType : metalink.getFiles().getFile()) {
@@ -1117,7 +1118,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             // File file3.txt has a status PENDING...
             if (dataFileId == fileText3TxtId) {
                 lastDataFileId = dataFileId;
-                lastDataFileAipId = URLDecoder.decode(aipId, "UTF-8");
+                lastDataFileAipId = URLDecoder.decode(aipId, StandardCharsets.UTF_8);
                 lastDataFileToken = token;
                 break;
             }

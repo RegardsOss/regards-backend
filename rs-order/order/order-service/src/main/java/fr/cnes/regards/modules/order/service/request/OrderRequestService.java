@@ -20,11 +20,11 @@ package fr.cnes.regards.modules.order.service.request;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
-import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 import fr.cnes.regards.modules.order.exception.OrderRequestServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ import java.util.List;
 
 /**
  * This service creates orders through the execution of a {@link CreateOrderJob}.
- * {@link OrderRequestResponseDtoEvent} are sent to indicate the status of the creation.
+ * {@link OrderResponseDtoEvent} are sent to indicate the status of the creation.
  *
  * @author Iliana Ghazali
  **/
@@ -59,23 +59,21 @@ public class OrderRequestService {
     /**
      * see {@link this#createOrderFromRequests(List, String)}
      */
-    public OrderRequestResponseDto createOrderFromRequest(OrderRequestDto orderRequest, String role) {
+    public OrderResponseDto createOrderFromRequest(OrderRequestDto orderRequest, String role) {
         return createOrderFromRequests(List.of(orderRequest), role).get(0);
     }
 
     /**
      * Generic method to create an {@link Order} from {@link OrderRequestDto}s.
      */
-    public List<OrderRequestResponseDto> createOrderFromRequests(List<OrderRequestDto> orderRequests, String role) {
-        List<OrderRequestResponseDto> responses = new ArrayList<>();
+    public List<OrderResponseDto> createOrderFromRequests(List<OrderRequestDto> orderRequests, String role) {
+        List<OrderResponseDto> responses = new ArrayList<>();
         for (OrderRequestDto orderRequest : orderRequests) {
             try {
                 Order createdOrder = autoOrderCompletionService.generateOrder(orderRequest, role);
                 responses.add(buildSuccessResponse(orderRequest, createdOrder.getId()));
             } catch (OrderRequestServiceException e) {
-                LOGGER.error("Request with correlationId {} has failed. Cause:",
-                             orderRequest.getCorrelationId(),
-                             e);
+                LOGGER.error("Request with correlationId {} has failed. Cause:", orderRequest.getCorrelationId(), e);
                 responses.add(buildErrorResponse(orderRequest,
                                                  String.format(ERROR_RESPONSE_FORMAT,
                                                                e.getClass().getSimpleName(),
@@ -85,24 +83,20 @@ public class OrderRequestService {
         return responses;
     }
 
-    private OrderRequestResponseDto buildErrorResponse(OrderRequestDto orderRequest, String cause) {
-        return new OrderRequestResponseDto(OrderRequestStatus.FAILED,
-                                           null,
-                                           orderRequest.getCorrelationId(),
-                                           cause,
-                                           null);
+    private OrderResponseDto buildErrorResponse(OrderRequestDto orderRequest, String cause) {
+        return new OrderResponseDto(OrderRequestStatus.FAILED, null, orderRequest.getCorrelationId(), cause, null);
     }
 
-    private OrderRequestResponseDto buildSuccessResponse(OrderRequestDto orderRequest, Long createdOrderId) {
-        return new OrderRequestResponseDto(OrderRequestStatus.GRANTED,
-                                           createdOrderId,
-                                           orderRequest.getCorrelationId(),
-                                           null,
-                                           null);
+    private OrderResponseDto buildSuccessResponse(OrderRequestDto orderRequest, Long createdOrderId) {
+        return new OrderResponseDto(OrderRequestStatus.GRANTED,
+                                    createdOrderId,
+                                    orderRequest.getCorrelationId(),
+                                    null,
+                                    null);
     }
 
-    public void publishResponses(List<OrderRequestResponseDto> responses) {
-        publisher.publish(responses.stream().map(OrderRequestResponseDtoEvent::new).toList());
+    public void publishResponses(List<OrderResponseDto> responses) {
+        publisher.publish(responses.stream().map(OrderResponseDtoEvent::new).toList());
     }
 
 }

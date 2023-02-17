@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
 import fr.cnes.regards.modules.order.service.OrderCreationService;
 import fr.cnes.regards.modules.order.service.OrderHelperService;
-import fr.cnes.regards.modules.order.service.OrderRequestResponseService;
+import fr.cnes.regards.modules.order.service.OrderResponseService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.templates.service.TemplateService;
@@ -102,8 +102,8 @@ public class OrderCreationNotificationTest {
                                         null);
     }
 
-    private OrderRequestResponseService mockOrderRequestResponseService() {
-        return Mockito.mock(OrderRequestResponseService.class);
+    private OrderResponseService mockOrderRequestResponseService() {
+        return Mockito.mock(OrderResponseService.class);
     }
 
     private IOrderRepository mockOrderRepo() {

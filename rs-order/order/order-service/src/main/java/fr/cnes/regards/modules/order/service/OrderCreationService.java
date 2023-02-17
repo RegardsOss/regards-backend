@@ -97,7 +97,7 @@ public class OrderCreationService implements IOrderCreationService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    private final OrderRequestResponseService orderRequestResponseService;
+    private final OrderResponseService orderResponseService;
 
     private final IOrderCreationService self;
 
@@ -114,7 +114,7 @@ public class OrderCreationService implements IOrderCreationService {
                                 IRuntimeTenantResolver runtimeTenantResolver,
                                 IOrderProcessingService orderProcessingService,
                                 TemplateService templateService,
-                                OrderRequestResponseService orderRequestResponseService,
+                                OrderResponseService orderResponseService,
                                 IOrderCreationService orderCreationService) {
         this.orderRepository = orderRepository;
         this.dataFileService = dataFileService;
@@ -129,7 +129,7 @@ public class OrderCreationService implements IOrderCreationService {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.orderProcessingService = orderProcessingService;
         this.templateService = templateService;
-        this.orderRequestResponseService = orderRequestResponseService;
+        this.orderResponseService = orderResponseService;
         this.self = orderCreationService;
     }
 
@@ -220,7 +220,7 @@ public class OrderCreationService implements IOrderCreationService {
 
     private void notifyIfOrderIsDone(Order order) {
         if (order.getStatus().isOneOfStatuses(OrderStatus.DONE, OrderStatus.FAILED, OrderStatus.DONE_WITH_WARNING)) {
-            orderRequestResponseService.notifyOrderFinished(order);
+            orderResponseService.notifyOrderFinished(order);
         }
     }
 

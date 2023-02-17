@@ -109,11 +109,12 @@ public class AutoOrderCompletionService {
      *     <li>{@link BasketDatasetSelection} computed from the request opensearch queries</li>
      *     <li>{@link FileSelectionDescription} built with request filters</li>
      * </ul>
+     *
      * @param orderRequestDto order request with information to extract
-     * @param role user role that limits its access to data. Can be null if the request originates from AMQP.
+     * @param role            user role that limits its access to data. Can be null if the request originates from AMQP.
      * @return the updated basket
      * @throws TooManyItemsSelectedInBasketException if there are too many data on the basket
-     * @throws EmptySelectionException if the opensearch queries did not return any data
+     * @throws EmptySelectionException               if the opensearch queries did not return any data
      */
     private Basket createBasketFromRequest(OrderRequestDto orderRequestDto, String role)
         throws TooManyItemsSelectedInBasketException, EmptySelectionException {
@@ -130,11 +131,13 @@ public class AutoOrderCompletionService {
         }
         // add filters on dataTypes and filenames
         // /!\ to do after addSelection because datasetSelections are init in this method
-        basket.getDatasetSelections()
-              .forEach(ds -> ds.setFileSelectionDescription(new FileSelectionDescription(orderRequestDto.getFilters()
-                                                                                                        .getDataTypes(),
-                                                                                         orderRequestDto.getFilters()
-                                                                                                        .getFilenameRegExp())));
+        if (orderRequestDto.getFilters() != null) {
+            basket.getDatasetSelections()
+                  .forEach(ds -> ds.setFileSelectionDescription(new FileSelectionDescription(orderRequestDto.getFilters()
+                                                                                                            .getDataTypes(),
+                                                                                             orderRequestDto.getFilters()
+                                                                                                            .getFilenameRegExp())));
+        }
         return basket;
     }
 

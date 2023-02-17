@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
-import fr.cnes.regards.modules.order.amqp.output.OrderRequestResponseDtoEvent;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +37,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -95,31 +96,51 @@ public class OrderRequestEventHandler
     public void handleBatch(List<OrderRequestDtoEvent> events) {
         long start = System.currentTimeMillis();
         LOGGER.debug("Handling {} OrderRequestEvents", events.size());
-        JobInfo jobInfo = new JobInfo(false,
-                                      0,
-                                      Set.of(new JobParameter(CreateOrderJob.ORDER_REQUEST_EVENT, events)),
-                                      null,
-                                      CreateOrderJob.class.getName());
-        jobInfo = jobInfoService.createAsQueued(jobInfo);
-        LOGGER.debug("Created 1 CreateOrderJob with id {} from {} OrderRequestEvents. Handled in {}ms.",
-                     jobInfo.getId(),
-                     events.size(),
-                     System.currentTimeMillis() - start);
+        List<OrderRequestDtoEvent> validEvents = denyInvalidMessages(events);
+        if (validEvents.size() != events.size()) {
+            LOGGER.warn("{} OrderRequestEvents denied.", events.size() - validEvents.size());
+        }
+        if (!validEvents.isEmpty()) {
+            JobInfo jobInfo = new JobInfo(false,
+                                          0,
+                                          Set.of(new JobParameter(CreateOrderJob.ORDER_REQUEST_EVENT, validEvents)),
+                                          null,
+                                          CreateOrderJob.class.getName());
+            jobInfo = jobInfoService.createAsQueued(jobInfo);
+            LOGGER.debug("Created 1 CreateOrderJob with id {} from {} OrderRequestEvents. Handled in {}ms.",
+                         jobInfo.getId(),
+                         validEvents.size(),
+                         System.currentTimeMillis() - start);
+        }
     }
 
     @Override
     public Errors validate(OrderRequestDtoEvent requestDto) {
         Errors errors = new MapBindingResult(new HashMap<>(), requestDto.getClass().getName());
-        validator.validate(requestDto, errors);
+        // Send message to DLQ if correlation id not provided
         if (requestDto.getCorrelationId() == null) {
             errors.rejectValue("correlationId",
                                "requestDto.correlationId.notnull.error.message",
                                "correlationId is mandatory!");
         }
-        if (errors.hasErrors()) {
-            publisher.publish(buildDeniedResponse(requestDto, errors));
-        }
         return errors;
+    }
+
+    /**
+     * Send denied response for invalid messages and return valid ones.
+     */
+    public List<OrderRequestDtoEvent> denyInvalidMessages(List<OrderRequestDtoEvent> events) {
+        List<OrderRequestDtoEvent> validEvents = new ArrayList<>();
+        events.forEach(e -> {
+            Errors errors = new MapBindingResult(new HashMap<>(), OrderRequestDtoEvent.class.getName());
+            validator.validate(e, errors);
+            if (errors.hasErrors()) {
+                publisher.publish(buildDeniedResponse(e, errors));
+            } else {
+                validEvents.add(e);
+            }
+        });
+        return validEvents;
     }
 
     @Override
@@ -127,7 +148,7 @@ public class OrderRequestEventHandler
         return true;
     }
 
-    private OrderRequestResponseDtoEvent buildDeniedResponse(OrderRequestDto orderRequest, Errors errors) {
+    private OrderResponseDtoEvent buildDeniedResponse(OrderRequestDto orderRequest, Errors errors) {
         List<String> errorsFormatted = errors.getFieldErrors()
                                              .stream()
                                              .map(error -> String.format("Error detected on field \"%s\". Cause: "
@@ -144,10 +165,10 @@ public class OrderRequestEventHandler
                          List of errors detected:
                          {}""", orderRequest.getCorrelationId(), errorsConcat);
 
-        return new OrderRequestResponseDtoEvent(OrderRequestStatus.DENIED,
-                                                null,
-                                                orderRequest.getCorrelationId(),
-                                                errorsConcat,
-                                                null);
+        return new OrderResponseDtoEvent(OrderRequestStatus.DENIED,
+                                         null,
+                                         orderRequest.getCorrelationId(),
+                                         errorsConcat,
+                                         null);
     }
 }

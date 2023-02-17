@@ -40,8 +40,8 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
-import fr.cnes.regards.modules.order.dto.output.OrderRequestResponseDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 import fr.cnes.regards.modules.order.service.*;
 import fr.cnes.regards.modules.order.service.request.OrderRequestService;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
@@ -215,15 +215,15 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResponseBody
     @PostMapping(path = AUTO_ORDER_PATH)
     @ResourceAccess(description = "Create order automatically from a OrderRequestDto", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<OrderRequestResponseDto>> createOrder(
+    public ResponseEntity<EntityModel<OrderResponseDto>> createOrder(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "OrderRequestDto to create an order.",
                                                               content = @Content(schema = @Schema(implementation = OrderRequestDto.class)))
         @RequestBody @Valid OrderRequestDto orderRequestDto) {
         // set request user with connected user
         orderRequestDto.setUser(StringUtils.truncate(authResolver.getUser(), 128));
         // create order from request
-        OrderRequestResponseDto orderResponseDto = orderRequestService.createOrderFromRequest(orderRequestDto,
-                                                                                              authResolver.getRole());
+        OrderResponseDto orderResponseDto = orderRequestService.createOrderFromRequest(orderRequestDto,
+                                                                                       authResolver.getRole());
         HttpStatus status = orderResponseDto.getStatus() == OrderRequestStatus.GRANTED ?
             HttpStatus.OK :
             HttpStatus.BAD_REQUEST;

@@ -23,7 +23,6 @@ import org.springframework.util.Assert;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Objects;
@@ -44,7 +43,6 @@ public class OrderRequestDto {
     /**
      * see {@link OrderRequestFilters}
      */
-    @NotNull(message = "filters should be present")
     @Valid
     private final OrderRequestFilters filters;
 
@@ -61,8 +59,6 @@ public class OrderRequestDto {
     @Size(message = "user must not exceed 128 characters.", max = 128)
     @Nullable
     private String user;
-
-
 
     public OrderRequestDto(List<String> queries,
                            OrderRequestFilters filters,

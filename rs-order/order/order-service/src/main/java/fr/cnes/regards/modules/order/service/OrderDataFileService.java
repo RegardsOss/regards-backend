@@ -97,7 +97,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     private final IPublisher publisher;
 
-    private final OrderRequestResponseService orderRequestResponseService;
+    private final OrderResponseService orderResponseService;
 
     @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
@@ -119,7 +119,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                                 IAuthenticationResolver authResolver,
                                 IProcessingEventSender processingEventSender,
                                 IPublisher publisher,
-                                OrderRequestResponseService orderRequestResponseService) {
+                                OrderResponseService orderResponseService) {
         this.orderDataFileRepository = orderDataFileRepository;
         this.orderJobService = orderJobService;
         this.self = orderDataFileService;
@@ -129,7 +129,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         this.authResolver = authResolver;
         this.processingEventSender = processingEventSender;
         this.publisher = publisher;
-        this.orderRequestResponseService = orderRequestResponseService;
+        this.orderResponseService = orderResponseService;
     }
 
     private static MediaType asMediaType(MimeType mimeType) {
@@ -226,7 +226,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         filesTask.computeWaitingForUser();
         if (!wasWaitingForUser && filesTask.isWaitingForUser()) {
             // notification must be sent once
-            orderRequestResponseService.notifySuborderDone(filesTask);
+            orderResponseService.notifySuborderDone(filesTask);
         }
     }
 
@@ -281,13 +281,14 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     @Override
     public Page<OrderDataFileDTO> findAvailableFilesByOrder(Order order, Pageable page) {
         Page<OrderDataFile> availableByOrderId = orderDataFileRepository.findAvailableByOrderId(order.getId(), page);
-        return new PageImpl<>(availableByOrderId.stream().map(OrderDataFileDTO::fromOrderDataFile).toList(), availableByOrderId.getPageable(), availableByOrderId.getTotalElements());
+        return new PageImpl<>(availableByOrderId.stream().map(OrderDataFileDTO::fromOrderDataFile).toList(),
+                              availableByOrderId.getPageable(),
+                              availableByOrderId.getTotalElements());
     }
 
     /**
      * Download a file not stored with storage microservice.
      *
-     * @param dataFile
      * @return {@link InputStreamResource} of the file
      */
     private ResponseEntity<InputStreamResource> downloadReferenceFile(OrderDataFile dataFile) {
@@ -320,7 +321,6 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     /**
      * Download a file stored on storage microservice
      *
-     * @param dataFile
      * @return {@link InputStreamResource} of the file
      */
     private ResponseEntity<InputStreamResource> downloadStoredFile(OrderDataFile dataFile) {
@@ -477,7 +477,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                 } else { // DONE_WITH_WARNING
                     order.setStatus(OrderStatus.DONE_WITH_WARNING);
                 }
-                orderRequestResponseService.notifyOrderFinished(order);
+                orderResponseService.notifyOrderFinished(order);
             }
         }
     }
