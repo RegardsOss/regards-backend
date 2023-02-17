@@ -105,7 +105,7 @@ public class WorkerManagerResponseListener
      * Find {@link SubmissionRequest} associated to given {@link ResponseEvent}
      */
     private Pair<ResponseEvent, Optional<SubmissionRequest>> linkResponseToRequest(ResponseEvent response) {
-        return Pair.of(response, requestRepository.findById(response.getRequestId()));
+        return Pair.of(response, requestRepository.findSubmissionRequestByCorrelationId(response.getRequestId()));
     }
 
     /**

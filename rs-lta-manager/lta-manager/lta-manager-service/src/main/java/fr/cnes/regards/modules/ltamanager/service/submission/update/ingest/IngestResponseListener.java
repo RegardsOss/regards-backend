@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionR
 import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -80,12 +81,10 @@ public class IngestResponseListener implements IIngestClientListener {
     public void onError(Collection<RequestInfo> infos) {
         ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.ERROR_MAP);
         List<SubmissionResponseDtoEvent> requestsCompleteError = infos.stream()
-                                                                      .map(info -> SubmissionResponseDtoUtils.createEvent(
-                                                                          info.getRequestId(),
-                                                                          requestRepository.findById(info.getRequestId()),
-                                                                          SubmissionResponseStatus.ERROR,
-                                                                          SubmissionResponseDtoUtils.buildErrorMessage(
-                                                                              info.getErrors())))
+                                                                      .map(info -> createSubmissionResponseDtoEvent(info,
+                                                                                                                    SubmissionResponseStatus.ERROR,
+                                                                                                                    SubmissionResponseDtoUtils.buildErrorMessage(
+                                                                                                                        info.getErrors())))
                                                                       .toList();
         publisher.publish(requestsCompleteError);
 
@@ -96,13 +95,24 @@ public class IngestResponseListener implements IIngestClientListener {
         ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.SUCCESS_MAP);
 
         List<SubmissionResponseDtoEvent> submissionResponseDtoEvents = infos.stream()
-                                                                            .map(info -> SubmissionResponseDtoUtils.createEvent(
-                                                                                info.getRequestId(),
-                                                                                requestRepository.findById(info.getRequestId()),
+                                                                            .map(info -> createSubmissionResponseDtoEvent(
+                                                                                info,
                                                                                 SubmissionResponseStatus.SUCCESS,
                                                                                 null))
                                                                             .toList();
         publisher.publish(submissionResponseDtoEvents);
+    }
+
+    /**
+     * Build a {@link SubmissionResponseDtoEvent}
+     */
+    private SubmissionResponseDtoEvent createSubmissionResponseDtoEvent(RequestInfo info,
+                                                                        SubmissionResponseStatus status,
+                                                                        @Nullable String errorMessage) {
+        return SubmissionResponseDtoUtils.createEvent(info.getRequestId(),
+                                                      requestRepository.findSubmissionRequestByCorrelationId(info.getRequestId()),
+                                                      status,
+                                                      errorMessage);
     }
 
     @Override

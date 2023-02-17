@@ -107,7 +107,8 @@ public class WorkerManagerResponseListenerTest {
                                                                  .getHeader(EventHeadersHelper.REQUEST_ID_HEADER))
                                          .toList());
 
-        Mockito.when(requestRepository.findById(any())).thenReturn(Optional.of(simulateProductRequest()));
+        Mockito.when(requestRepository.findSubmissionRequestByCorrelationId(any()))
+               .thenReturn(Optional.of(simulateProductRequest()));
 
         // ---- WHEN ----
         // Responses events are sent to the worker manager listener
