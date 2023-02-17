@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventTestHandler;
-import fr.cnes.regards.modules.order.service.commons.OrderRequestResponseEventHandler;
+import fr.cnes.regards.modules.order.service.commons.OrderResponseEventHandler;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -132,7 +132,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
     private IEmailClient emailClient;
 
     @SpyBean
-    private OrderRequestResponseEventHandler responseHandler;
+    private OrderResponseEventHandler responseHandler;
 
     @SpyBean
     private IComplexSearchClient searchClient;

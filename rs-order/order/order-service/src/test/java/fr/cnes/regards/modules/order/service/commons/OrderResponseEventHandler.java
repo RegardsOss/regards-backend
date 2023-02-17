@@ -35,7 +35,7 @@ import java.util.List;
  * @author Iliana Ghazali
  */
 @Component
-public class OrderRequestResponseEventHandler
+public class OrderResponseEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<OrderResponseDtoEvent> {
 
     private final ISubscriber subscriber;
@@ -45,8 +45,8 @@ public class OrderRequestResponseEventHandler
      */
     private final int bulkSize;
 
-    public OrderRequestResponseEventHandler(@Value("${regards.order.request.response.bulk.size:1000}") int bulkSize,
-                                            ISubscriber subscriber) {
+    public OrderResponseEventHandler(@Value("${regards.order.request.response.bulk.size:1000}") int bulkSize,
+                                     ISubscriber subscriber) {
         this.bulkSize = bulkSize;
         this.subscriber = subscriber;
     }

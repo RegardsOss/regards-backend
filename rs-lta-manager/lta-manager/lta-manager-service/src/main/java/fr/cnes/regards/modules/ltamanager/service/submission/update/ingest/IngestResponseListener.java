@@ -43,11 +43,6 @@ import java.util.Set;
 public class IngestResponseListener implements IIngestClientListener {
 
     /**
-     * Content type for the LTA Clean worker
-     */
-    public final static String CONTENT_TYPE_LTA_CLEAN_WORKER = "lta-clean";
-
-    /**
      * Service class for ingest response
      */
     private final IngestResponseService ingestResponseService;
