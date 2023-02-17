@@ -23,10 +23,12 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
@@ -86,24 +88,46 @@ public class WorkerManagerResponseListener
         long start = System.currentTimeMillis();
         responseService.updateSubmissionRequestState(responseEvents);
 
-        Set<ResponseStatus> finalStatus = EnumSet.of(ResponseStatus.ERROR,
-                                                     ResponseStatus.SKIPPED,
-                                                     ResponseStatus.INVALID_CONTENT);
-        List<SubmissionResponseDtoEvent> requestsCompleteError = responseEvents.stream()
-                                                                               .filter(response -> finalStatus.contains(
-                                                                                   response.getState()))
-                                                                               .map(response -> SubmissionResponseDtoUtils.createEvent(
-                                                                                   response.getRequestId(),
-                                                                                   requestRepository.findById(response.getRequestId()),
-                                                                                   SubmissionResponseStatus.ERROR,
-                                                                                   SubmissionResponseDtoUtils.buildErrorMessage(
-                                                                                       new HashSet<>(response.getMessage()))))
-                                                                               .toList();
-        if (!requestsCompleteError.isEmpty()) {
-            publisher.publish(requestsCompleteError);
+        List<SubmissionResponseDtoEvent> errorSubmissionResponseEvents = responseEvents.stream()
+                                                                                       .map(this::linkResponseToRequest)
+                                                                                       .filter(this::filterByStateAndExistingRequest)
+                                                                                       .map(this::buildErrorResponseFromResponseEvent)
+                                                                                       .toList();
+        if (!errorSubmissionResponseEvents.isEmpty()) {
+            publisher.publish(errorSubmissionResponseEvents);
         }
         LOGGER.trace("[LTA WORKER RESPONSE EVENT HANDLER] {} RequestEvents handled in {} ms...",
                      responseEvents.size(),
                      System.currentTimeMillis() - start);
+    }
+
+    /**
+     * Find {@link SubmissionRequest} associated to given {@link ResponseEvent}
+     */
+    private Pair<ResponseEvent, Optional<SubmissionRequest>> linkResponseToRequest(ResponseEvent response) {
+        return Pair.of(response, requestRepository.findById(response.getRequestId()));
+    }
+
+    /**
+     * Filter given Pair of {@link ResponseEvent} and {@link SubmissionRequest} to only return error response
+     * associated to existing request.
+     */
+    private boolean filterByStateAndExistingRequest(Pair<ResponseEvent, Optional<SubmissionRequest>> responseAndRequest) {
+        Set<ResponseStatus> finalStatus = EnumSet.of(ResponseStatus.ERROR,
+                                                     ResponseStatus.SKIPPED,
+                                                     ResponseStatus.INVALID_CONTENT);
+        return finalStatus.contains(responseAndRequest.getLeft().getState()) && responseAndRequest.getRight()
+                                                                                                  .isPresent();
+    }
+
+    /**
+     * Build {@link SubmissionResponseDtoEvent} with error status for given {@link ResponseEvent}
+     */
+    private SubmissionResponseDtoEvent buildErrorResponseFromResponseEvent(Pair<ResponseEvent, Optional<SubmissionRequest>> responseAndRequest) {
+        return SubmissionResponseDtoUtils.createEvent(responseAndRequest.getLeft().getRequestId(),
+                                                      responseAndRequest.getRight(),
+                                                      SubmissionResponseStatus.ERROR,
+                                                      SubmissionResponseDtoUtils.buildErrorMessage(new HashSet<>(
+                                                          responseAndRequest.getLeft().getMessage())));
     }
 }

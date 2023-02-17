@@ -23,6 +23,12 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmittedProduct;
+import fr.cnes.regards.modules.ltamanager.dto.submission.LtaDataType;
+import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
@@ -38,13 +44,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.util.MimeType;
 import org.springframework.validation.Validator;
 
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
@@ -101,6 +106,8 @@ public class WorkerManagerResponseListenerTest {
                                          .map(res -> (String) res.getMessageProperties()
                                                                  .getHeader(EventHeadersHelper.REQUEST_ID_HEADER))
                                          .toList());
+
+        Mockito.when(requestRepository.findById(any())).thenReturn(Optional.of(simulateProductRequest()));
 
         // ---- WHEN ----
         // Responses events are sent to the worker manager listener
@@ -166,6 +173,28 @@ public class WorkerManagerResponseListenerTest {
         // --- THEN ----
         // Check no submission requests are updated
         Mockito.verify(requestRepository, times(0)).updateRequestState(any(), any(), any(), any());
+    }
+
+    private SubmissionRequest simulateProductRequest() {
+        return new SubmissionRequest("cid",
+                                     "owner",
+                                     "session",
+                                     false,
+                                     new SubmissionStatus(),
+                                     new SubmittedProduct("dt",
+                                                          "model",
+                                                          Path.of("/tmp"),
+                                                          new SubmissionRequestDto("cid",
+                                                                                   "id",
+                                                                                   "dt",
+                                                                                   List.of(new ProductFileDto(
+                                                                                       LtaDataType.RAWDATA,
+                                                                                       "",
+                                                                                       "",
+                                                                                       "",
+                                                                                       MimeType.valueOf(
+                                                                                           "application/octet-stream"))))),
+                                     null);
     }
 
     private void initResponseEvents() {
