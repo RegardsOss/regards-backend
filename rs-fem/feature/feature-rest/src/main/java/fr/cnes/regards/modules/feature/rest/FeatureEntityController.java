@@ -27,7 +27,8 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
-import fr.cnes.regards.modules.feature.dto.*;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -78,6 +79,10 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
     @Autowired
     private IResourceService resourceService;
 
+    /**
+     * Get a {@link Page} of {@link FeatureEntityDto} matching provided {@link SearchFeatureSimpleEntityParameters}
+     * filters
+     */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get features", description = "Return a page of features matching criterias.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All features were retrieved.") })
@@ -89,19 +94,12 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
         SearchFeatureSimpleEntityParameters filters,
         @Parameter(description = "Sorting and page configuration")
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<FeatureEntityDto> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<FeatureEntityDto> assembler) {
 
         return new ResponseEntity<>(toPagedResources(featureService.findAll(filters, pageable), assembler),
                                     HttpStatus.OK);
     }
 
-    /**
-     * Get a {@link Page} of {@link FeatureEntityDto} it will contain data of the last created {@link FeatureEntity}
-     *
-     * @param model          model of wanted {@link Feature}
-     * @param lastUpdateDate las modification date that we want {@link Feature}
-     * @return {@link RequestInfo} a {@link Page} of {@link FeatureEntityDto}
-     */
     @Operation(summary = "Retrieve one feature by its urn", description = "Retrieve one feature by its urn")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retrieve one feature by its urn") })
     @RequestMapping(method = RequestMethod.GET, path = URN_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -152,9 +150,14 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
         EntityModel<FeatureEntityDto> resource = resourceService.toResource(element);
         resourceService.addLink(resource,
                                 this.getClass(),
-                                "getFeatures",
+                                "getFeature",
                                 LinkRels.SELF,
-                                MethodParamFactory.build(FeaturesSearchParameters.class),
+                                MethodParamFactory.build(String.class, element.getUrn().toString()));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "searchFeatures",
+                                LinkRels.LIST,
+                                MethodParamFactory.build(SearchFeatureSimpleEntityParameters.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource,
