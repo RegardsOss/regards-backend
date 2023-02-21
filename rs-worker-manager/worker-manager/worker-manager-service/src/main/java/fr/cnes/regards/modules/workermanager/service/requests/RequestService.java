@@ -621,11 +621,11 @@ public class RequestService {
         }
         // Check requestId does not exist already.
         if (EventHeadersHelper.getRequestIdHeader(event).isPresent()) {
-            if (existingIds.contains(EventHeadersHelper.getRequestIdHeader(event).get())) {
-                errors.add(String.format(REQUEST_ID_ALREADY_EXISTS_MESSAGE,
-                                         EventHeadersHelper.getRequestIdHeader(event)));
+            String requestId = EventHeadersHelper.getRequestIdHeader(event).get();
+            if (existingIds.contains(requestId)) {
+                errors.add(String.format(REQUEST_ID_ALREADY_EXISTS_MESSAGE, requestId));
             } else {
-                existingIds.add(EventHeadersHelper.getRequestIdHeader(event).get());
+                existingIds.add(requestId);
             }
         }
         if (!errors.isEmpty()) {
