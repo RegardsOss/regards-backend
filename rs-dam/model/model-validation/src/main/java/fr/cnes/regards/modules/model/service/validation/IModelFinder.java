@@ -29,5 +29,8 @@ import java.util.List;
  */
 public interface IModelFinder {
 
+    /**
+     * Return the list of attributes related to the given model or null
+     */
     List<ModelAttrAssoc> findByModel(String model);
 }

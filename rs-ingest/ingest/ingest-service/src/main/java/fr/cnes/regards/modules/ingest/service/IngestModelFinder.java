@@ -63,11 +63,12 @@ public class IngestModelFinder extends AbstractCacheableModelFinder implements I
 
             // if the model doesn't exists we return null
             if (modelResponse == null) {
-                List<EntityModel<Model>> entityModels = ResponseEntityUtils.extractBodyOrThrow(modelResponse,
-                                                                                               "An error occurred while getting models");
-                if (!entityModels.stream().anyMatch(model -> model.getContent().getName().equals(modelName))) {
-                    return null; // NOSONAR
-                }
+                return null;
+            }
+            List<EntityModel<Model>> entityModels = ResponseEntityUtils.extractBodyOrThrow(modelResponse,
+                                                                                           "An error occurred while getting models");
+            if (!entityModels.stream().anyMatch(model -> model.getContent().getName().equals(modelName))) {
+                return null; // NOSONAR
             }
             ResponseEntity<List<EntityModel<ModelAttrAssoc>>> response = modelAttrAssocClient.getModelAttrAssocs(
                 modelName);

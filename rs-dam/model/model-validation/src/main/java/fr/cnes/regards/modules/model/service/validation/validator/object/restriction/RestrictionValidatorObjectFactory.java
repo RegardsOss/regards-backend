@@ -39,21 +39,25 @@ public final class RestrictionValidatorObjectFactory {
     }
 
     public static Validator getValidator(AbstractRestriction restriction, String attributeKey) {
-        if (restriction instanceof EnumerationRestriction) {
-            return getValidator((EnumerationRestriction) restriction, attributeKey);
+        if (restriction instanceof EnumerationRestriction enumerationRestriction) {
+            return getValidator(enumerationRestriction, attributeKey);
         }
-        if (restriction instanceof DoubleRangeRestriction) {
-            return getValidator((DoubleRangeRestriction) restriction, attributeKey);
+        if (restriction instanceof DoubleRangeRestriction doubleRangeRestriction) {
+            return getValidator(doubleRangeRestriction, attributeKey);
         }
-        if (restriction instanceof IntegerRangeRestriction) {
-            return getValidator((IntegerRangeRestriction) restriction, attributeKey);
+        if (restriction instanceof IntegerRangeRestriction integerRangeRestriction) {
+            return getValidator(integerRangeRestriction, attributeKey);
         }
-        if (restriction instanceof PatternRestriction) {
-            return getValidator((PatternRestriction) restriction, attributeKey);
+        if (restriction instanceof LongRangeRestriction longRangeRestriction) {
+            return getValidator(longRangeRestriction, attributeKey);
         }
-        if (restriction instanceof JsonSchemaRestriction) {
-            return getValidator((JsonSchemaRestriction) restriction, attributeKey);
+        if (restriction instanceof PatternRestriction patternRestriction) {
+            return getValidator(patternRestriction, attributeKey);
         }
+        if (restriction instanceof JsonSchemaRestriction jsonSchemaRestriction) {
+            return getValidator(jsonSchemaRestriction, attributeKey);
+        }
+
         String errorMessage = String.format("No validator found for restriction type %s and attribute %s.",
                                             restriction.getType(),
                                             attributeKey);
@@ -71,6 +75,10 @@ public final class RestrictionValidatorObjectFactory {
 
     public static Validator getValidator(IntegerRangeRestriction pRestriction, String pAttributeKey) {
         return new IntegerRangeObjectValidator(pRestriction, pAttributeKey);
+    }
+
+    public static Validator getValidator(LongRangeRestriction pRestriction, String pAttributeKey) {
+        return new LongRangeObjectValidator(pRestriction, pAttributeKey);
     }
 
     public static Validator getValidator(PatternRestriction pRestriction, String pAttributeKey) {

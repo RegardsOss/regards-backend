@@ -320,6 +320,7 @@ public class IngestValidationIT extends AbstractValidationIngestMultitenantServi
         Map<String, Object> descInfoOK = new HashMap<>();
         descInfoOK.put("strict_integer_field", 6);
         descInfoOK.put("integer_field", 5);
+        descInfoOK.put("long_field", 50l);
         descInfoOK.put("strict_double_field", 10.4);
         descInfoOK.put("double_field", 10.5);
 
@@ -332,13 +333,14 @@ public class IngestValidationIT extends AbstractValidationIngestMultitenantServi
         Map<String, Object> descInfoNOK = new HashMap<>();
         descInfoNOK.put("strict_integer_field", 5);
         descInfoNOK.put("integer_field", 4);
+        descInfoNOK.put("long_field", 80l);
         descInfoNOK.put("strict_double_field", 10.5);
         descInfoNOK.put("double_field", 11.0);
 
-        // 4 properties don't respect the range restrictions
+        // 5 properties don't respect the range restrictions
         errors = validationService.validate(modelName, descInfoNOK, "Ingest7");
         if (errors.hasErrors()) {
-            Assert.assertEquals(4, errors.getErrorCount());
+            Assert.assertEquals(5, errors.getErrorCount());
         } else {
             Assert.fail();
         }

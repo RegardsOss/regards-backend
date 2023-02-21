@@ -60,7 +60,7 @@ public class IngestValidationService extends AbstractValidationService {
 
         // if the model doesn't exists
         if (modAtts == null) {
-            errors.reject("error.unknow.model.message", String.format("Unknow model %s", model));
+            errors.reject("error.unknown.model.message", String.format("Unknown model %s", model));
             return errors;
         }
         // Get a copy of entity attributes values to optimize the search of unexpected properties

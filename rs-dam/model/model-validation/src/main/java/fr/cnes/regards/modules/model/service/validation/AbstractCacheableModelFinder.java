@@ -35,6 +35,7 @@ import org.springframework.validation.Errors;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +54,7 @@ public abstract class AbstractCacheableModelFinder
      * Model cache is used to avoid useless database request as models rarely change!<br/>
      * tenant key -> model key / attributes val
      */
-    private final Map<String, LoadingCache<String, List<ModelAttrAssoc>>> modelCacheMap = new ConcurrentHashMap<>();
+    private final Map<String, LoadingCache<String, Optional<List<ModelAttrAssoc>>>> modelCacheMap = new ConcurrentHashMap<>();
 
     @Autowired
     private ISubscriber subscriber;
@@ -70,36 +71,30 @@ public abstract class AbstractCacheableModelFinder
     public List<ModelAttrAssoc> findByModel(String model) {
         String tenant = runtimeTenantResolver.getTenant();
         try {
-            return getTenantCache(tenant).get(model);
+            return getTenantCache(tenant).get(model).orElse(null);
         } catch (ExecutionException e) {
             LOGGER.error("Error during cache initialisation", e);
             return null;
         }
     }
 
-    private LoadingCache<String, List<ModelAttrAssoc>> getTenantCache(String tenant) {
+    private LoadingCache<String, java.util.Optional<List<ModelAttrAssoc>>> getTenantCache(String tenant) {
         return modelCacheMap.computeIfAbsent(tenant,
                                              t -> CacheBuilder.newBuilder()
                                                               .expireAfterWrite(60, TimeUnit.MINUTES)
-                                                              .build(new CacheLoader<String, List<ModelAttrAssoc>>() {
+                                                              .build(new CacheLoader<>() {
 
                                                                   @Override
-                                                                  public List<ModelAttrAssoc> load(String modelName)
-                                                                      throws Exception {
+                                                                  public Optional<List<ModelAttrAssoc>> load(String modelName) {
                                                                       List<ModelAttrAssoc> attributesByModel = loadAttributesByModel(
                                                                           modelName);
-                                                                      if (attributesByModel == null) {
-                                                                          throw new Exception(String.format(
-                                                                              "Unknow Model %s",
-                                                                              modelName));
-                                                                      }
-                                                                      return attributesByModel;
+                                                                      return Optional.ofNullable(attributesByModel);
                                                                   }
                                                               }));
     }
 
     private void cleanTenantCache(String tenant, String model) {
-        LoadingCache<String, List<ModelAttrAssoc>> modelCache = modelCacheMap.get(tenant);
+        LoadingCache<String, Optional<List<ModelAttrAssoc>>> modelCache = modelCacheMap.get(tenant);
         if (modelCache != null) {
             modelCache.invalidate(model);
         }

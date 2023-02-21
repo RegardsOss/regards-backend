@@ -28,6 +28,17 @@
         </restriction>
     </attribute>
     <attribute alterable="false">
+        <label>Long in range with included bounds</label>
+        <name>long_field</name>
+        <type>LONG</type>
+        <restriction>
+            <integer_range>
+                <min>48</min>
+                <max>60</max>
+            </integer_range>
+        </restriction>
+    </attribute>
+    <attribute alterable="false">
         <label>Double in range with excluded bounds</label>
         <name>strict_double_field</name>
         <type>DOUBLE</type>

@@ -59,7 +59,7 @@ public abstract class AbstractFeatureValidationService<F extends AbstractFeature
 
         // if the model doesn't exists
         if (modAtts == null) {
-            errors.reject("error.unknow.model.message", String.format("Unknow model %s", model));
+            errors.reject("error.unknown.model.message", String.format("Unknown model %s", model));
             return errors;
         }
         // Build fast property access map
