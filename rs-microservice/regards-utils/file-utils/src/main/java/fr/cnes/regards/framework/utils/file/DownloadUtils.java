@@ -226,6 +226,10 @@ public final class DownloadUtils {
             DigestInputStream dis = new DigestInputStream(sourceStream, MessageDigest.getInstance(checksumAlgorithm))) {
             ByteStreams.copy(dis, os);
             return ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
+        } catch (IOException e) {
+            // Delete file in case of error
+            Files.deleteIfExists(destination);
+            throw e;
         }
     }
 
