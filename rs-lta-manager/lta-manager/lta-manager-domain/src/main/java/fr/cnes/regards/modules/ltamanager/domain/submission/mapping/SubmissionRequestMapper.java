@@ -40,7 +40,8 @@ public interface SubmissionRequestMapper {
      * Map between {@link SubmissionRequest} and {@link SubmissionRequestInfoDto}
      */
     default SubmissionRequestInfoDto convertToSubmissionRequestInfoDto(SubmissionRequest submissionRequest) {
-        return new SubmissionRequestInfoDto(submissionRequest.getCorrelationId(),
+        return new SubmissionRequestInfoDto(submissionRequest.getId(),
+                                            submissionRequest.getCorrelationId(),
                                             submissionRequest.getProduct().getId(),
                                             submissionRequest.getStatus(),
                                             submissionRequest.getStatusDate(),

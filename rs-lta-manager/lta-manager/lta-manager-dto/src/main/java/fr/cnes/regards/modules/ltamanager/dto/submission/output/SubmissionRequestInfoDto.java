@@ -34,13 +34,17 @@ import java.util.Objects;
  **/
 public final class SubmissionRequestInfoDto {
 
+    @NotBlank(message = "id is required")
+    @Schema(description = "Id of the submission request.")
+    private final Long id;
+
     @NotBlank(message = "correlationId is required")
-    @Schema(description = "Submission request id.")
+    @Schema(description = "Submission request correlation id.")
     private final String correlationId;
 
-    @NotBlank(message = "id is required")
-    @Schema(description = "Id of the product sent.")
-    private final String id;
+    @NotBlank(message = "productId is required")
+    @Schema(description = "Identifier of the product provided in the submission request.")
+    private final String productId;
 
     @NotNull(message = "status is required")
     @Schema(description = "Submission request progress status.")
@@ -58,13 +62,15 @@ public final class SubmissionRequestInfoDto {
     @Schema(description = "Possible error message.", nullable = true)
     private final String message;
 
-    public SubmissionRequestInfoDto(String correlationId,
-                                    String id,
+    public SubmissionRequestInfoDto(Long id,
+                                    String correlationId,
+                                    String productId,
                                     SubmissionRequestState status,
                                     OffsetDateTime statusDate,
                                     String session,
                                     @Nullable String message) {
         this.correlationId = correlationId;
+        this.productId = productId;
         this.id = id;
         this.status = status;
         this.statusDate = statusDate;
@@ -97,11 +103,13 @@ public final class SubmissionRequestInfoDto {
     @Override
     public String toString() {
         return "SubmissionRequestInfoDto{"
-               + "correlationId='"
+               + "id="
+               + id
+               + ", correlationId='"
                + correlationId
                + '\''
-               + ", id='"
-               + id
+               + ", productId='"
+               + productId
                + '\''
                + ", status="
                + status

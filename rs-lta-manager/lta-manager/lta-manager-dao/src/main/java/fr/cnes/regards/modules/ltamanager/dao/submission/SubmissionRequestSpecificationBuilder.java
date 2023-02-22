@@ -33,7 +33,7 @@ public class SubmissionRequestSpecificationBuilder
         if (parameters != null) {
             specifications.add(equals("owner", parameters.getOwner()));
             specifications.add(equals("session", parameters.getSession()));
-            specifications.add(useValuesRestriction("correlationId", parameters.getIdsRestriction()));
+            specifications.add(useValuesRestriction("id", parameters.getIdsRestriction()));
             specifications.add(equals("submittedProduct.datatype", parameters.getDatatype()));
             specifications.add(useDatesRestriction("submissionStatus.creationDate", parameters.getCreationDate()));
             specifications.add(useDatesRestriction("submissionStatus.statusDate", parameters.getStatusDate()));

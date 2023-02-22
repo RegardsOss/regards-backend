@@ -64,7 +64,7 @@ public class SearchSubmissionRequestParameters implements AbstractSearchParamete
     @Schema(description = "Restricted ids (INCLUDED or EXCLUDED).", nullable = true)
     @Nullable
     @Valid
-    private final ValuesRestriction<String> idsRestriction;
+    private final ValuesRestriction<Long> idsRestriction;
 
     public SearchSubmissionRequestParameters(@Nullable String owner,
                                              @Nullable String session,
@@ -72,7 +72,7 @@ public class SearchSubmissionRequestParameters implements AbstractSearchParamete
                                              @Nullable DatesRangeRestriction creationDate,
                                              @Nullable DatesRangeRestriction statusDate,
                                              @Nullable ValuesRestriction<SubmissionRequestState> statusesRestriction,
-                                             @Nullable ValuesRestriction<String> idsRestriction) {
+                                             @Nullable ValuesRestriction<Long> idsRestriction) {
         this.owner = owner;
         this.session = session;
         this.datatype = datatype;
@@ -113,7 +113,7 @@ public class SearchSubmissionRequestParameters implements AbstractSearchParamete
     }
 
     @Nullable
-    public ValuesRestriction<String> getIdsRestriction() {
+    public ValuesRestriction<Long> getIdsRestriction() {
         return idsRestriction;
     }
 

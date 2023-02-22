@@ -54,7 +54,7 @@ import static org.hamcrest.Matchers.equalTo;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(locations = { "classpath:application-test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=submission_read_controller_it" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=submission_read_controller_it" })
 public class SubmissionReadControllerIT extends AbstractRegardsIT {
 
     private static final String OWNER_1 = "Owner 1";
@@ -115,7 +115,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId",
                                                           equalTo(submissionRequest.getCorrelationId())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.id",
-                                                          equalTo(submissionRequest.getProduct().getId())))
+                                                          equalTo(submissionRequest.getId().intValue())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.status",
                                                           equalTo(submissionRequest.getStatus().toString())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.statusDate",
@@ -237,18 +237,15 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         OffsetDateTime now = OffsetDateTime.now();
         List<SubmissionRequest> requests = initSearchCriterionData(now);
         // WHEN
+        ValuesRestriction idRestriction = new ValuesRestriction<>(List.of(requests.get(1).getId()),
+                                                                  ValuesRestrictionMode.EXCLUDE);
         SearchSubmissionRequestParameters searchCriterionWithIds = new SearchSubmissionRequestParameters(null,
                                                                                                          null,
                                                                                                          null,
                                                                                                          null,
                                                                                                          null,
                                                                                                          null,
-                                                                                                         new ValuesRestriction<>(
-                                                                                                             List.of(
-                                                                                                                 requests.get(
-                                                                                                                             1)
-                                                                                                                         .getCorrelationId()),
-                                                                                                             ValuesRestrictionMode.EXCLUDE));
+                                                                                                         idRestriction);
 
         ResultActions response = performDefaultPost(AbstractSubmissionController.ROOT_PATH
                                                     + SubmissionReadController.SEARCH_MAPPING,
@@ -280,7 +277,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
             new DatesRangeRestriction(now.plusSeconds(10), now),
             new DatesRangeRestriction(now.plusSeconds(10), now),
             new ValuesRestriction<>(List.of(SubmissionRequestState.GENERATED), ValuesRestrictionMode.INCLUDE),
-            new ValuesRestriction<>(List.of(requests.get(0).getCorrelationId()), ValuesRestrictionMode.EXCLUDE));
+            new ValuesRestriction<>(List.of(requests.get(0).getId()), ValuesRestrictionMode.EXCLUDE));
 
         ResultActions response = performDefaultPost(AbstractSubmissionController.ROOT_PATH
                                                     + SubmissionReadController.SEARCH_MAPPING,
