@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,17 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.feature.dto;
+package fr.cnes.regards.framework.jpa.restriction;
 
 /**
- * Selection mode for {@link FeatureRequestsSelectionDTO} request id selection filters.
- *
  * @author Sébastien Binda
- */
-public enum SearchSelectionMode {
+ **/
+public enum ValuesRestrictionMatchMode {
 
-    INCLUDE,
-
-    EXCLUDE;
-
+    STRICT, STARTS_WITH, CONTAINS, ENDS_WITH
 }

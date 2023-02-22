@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.dto.request;
 
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotNull;
@@ -30,7 +30,7 @@ import javax.validation.constraints.NotNull;
  * @author Marc SORDI
  * @author Léo Mieulet
  */
-public class OAISDeletionPayloadDto extends AbstractSearchAIPsParameters<OAISDeletionPayloadDto> {
+public class OAISDeletionPayloadDto extends SearchAIPsParameters {
 
     @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
     private SessionDeletionMode deletionMode;

@@ -28,7 +28,6 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
@@ -83,12 +82,12 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
     @Operation(summary = "Get feature requests", description = "Return a page of feature requests according criterias")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All feature requests were retrieved.") })
     @ResourceAccess(description = "Endpoint to retrieve all feature requests according criterias",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<RequestsPagedModel<EntityModel<FeatureRequestDTO>>> searchFeatureRequests(
         @Parameter(description = "Type of feature requests to search for") @PathVariable("type")
         FeatureRequestTypeEnum type,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
-            content = @Content(schema = @Schema(implementation = SearchFeatureRequestParameters.class)))
+                                                              content = @Content(schema = @Schema(implementation = SearchFeatureRequestParameters.class)))
         @Parameter(description = "Filter criterias for feature requests") @RequestBody
         SearchFeatureRequestParameters filters,
         @Parameter(description = "Sorting and page configuration")
@@ -98,34 +97,38 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
                                     HttpStatus.OK);
     }
 
-    @Operation(summary = "Delete feature requests by selection", description =
-        "Delete feature requests by selection. Synchronous process, so the number of request handled is limited. "
-        + "Information about number of requests handled is returned in the response.")
+    @Operation(summary = "Delete feature requests by selection",
+               description =
+                   "Delete feature requests by selection. Synchronous process, so the number of request handled is limited. "
+                   + "Information about number of requests handled is returned in the response.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Delete feature requests by selection") })
     @RequestMapping(method = RequestMethod.DELETE, path = DELETE_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete feature request by selection", role = DefaultRole.EXPLOIT)
     public ResponseEntity<RequestHandledResponse> deleteRequests(
         @Parameter(description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
-        @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+                                                              content = @Content(schema = @Schema(implementation = SearchFeatureRequestParameters.class)))
+        @Parameter(description = "Requests selection") @Valid @RequestBody SearchFeatureRequestParameters selection) {
         return new ResponseEntity<RequestHandledResponse>(featureRequestService.delete(type, selection), HttpStatus.OK);
     }
 
-    @Operation(summary = "Retry feature requests by selection", description =
-        "Retry feature requests by selection. Synchronous process, so the number of request handled is limited. "
-        + "Information about number of requests handled is returned in the response.\")")
+    @Operation(summary = "Retry feature requests by selection",
+               description =
+                   "Retry feature requests by selection. Synchronous process, so the number of request handled is limited. "
+                   + "Information about number of requests handled is returned in the response.\")")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retry feature requests by selection") })
     @RequestMapping(method = RequestMethod.POST, path = RETRY_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Retry feature requests", role = DefaultRole.EXPLOIT)
     public ResponseEntity<RequestHandledResponse> retryRequests(
         @Parameter(description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
-        @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+                                                              content = @Content(schema = @Schema(implementation = SearchFeatureRequestParameters.class)))
+        @Parameter(description = "Requests selection") @Valid @RequestBody SearchFeatureRequestParameters selection) {
         return new ResponseEntity<RequestHandledResponse>(featureRequestService.retry(type, selection), HttpStatus.OK);
     }
 
     /**
      * Format response with HATEOAS
-     *
-     * @param type
      */
     private RequestsPagedModel<EntityModel<FeatureRequestDTO>> toResources(RequestsPage<FeatureRequestDTO> requestsPage,
                                                                            FeatureRequestTypeEnum type) {
@@ -145,13 +148,13 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
                                     "deleteRequests",
                                     LinkRels.DELETE,
                                     MethodParamFactory.build(FeatureRequestTypeEnum.class, type),
-                                    MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+                                    MethodParamFactory.build(SearchFeatureRequestParameters.class));
             resourceService.addLink(pagedResource,
                                     this.getClass(),
                                     "retryRequests",
                                     LinkRelation.of("retry"),
                                     MethodParamFactory.build(FeatureRequestTypeEnum.class, type),
-                                    MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+                                    MethodParamFactory.build(SearchFeatureRequestParameters.class));
         }
 
         return pagedResource;
@@ -170,7 +173,7 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
                                     LinkRels.DELETE,
                                     MethodParamFactory.build(FeatureRequestTypeEnum.class,
                                                              FeatureRequestTypeEnum.valueOf(featureRequest.getType())),
-                                    MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+                                    MethodParamFactory.build(SearchFeatureRequestParameters.class));
             if (featureRequest.getStep() != FeatureRequestStep.LOCAL_DELAYED) {
                 resourceService.addLink(resource,
                                         this.getClass(),
@@ -178,7 +181,7 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
                                         LinkRelation.of("retry"),
                                         MethodParamFactory.build(FeatureRequestTypeEnum.class,
                                                                  FeatureRequestTypeEnum.valueOf(featureRequest.getType())),
-                                        MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+                                        MethodParamFactory.build(SearchFeatureRequestParameters.class));
             }
         }
     }

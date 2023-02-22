@@ -22,12 +22,14 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
-import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.dao.FeatureNotificationRequestSpecificationBuilder;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
@@ -313,27 +315,19 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     }
 
     @Override
-    public Page<FeatureNotificationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        return featureNotificationRequestRepository.findAll(FeatureNotificationRequestSpecification.searchAllByFilters(
-            selection,
-            page), page);
-    }
-
-    @Override
-    public Page<FeatureNotificationRequest> findRequests(SearchFeatureNotificationRequestParameters filters,
-                                                         Pageable page) {
+    public Page<FeatureNotificationRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page) {
         return featureNotificationRequestRepository.findAll(new FeatureNotificationRequestSpecificationBuilder().withParameters(
             filters).build(), page);
     }
 
     @Override
-    public RequestsInfo getInfo(SearchFeatureNotificationRequestParameters filters) {
+    public RequestsInfo getInfo(SearchFeatureRequestParameters filters) {
         if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
                                                                                               .getValues()
                                                                                               .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            filters.withStatesIncluded(List.of(RequestState.ERROR));
             return RequestsInfo.build(featureNotificationRequestRepository.count(new FeatureNotificationRequestSpecificationBuilder().withParameters(
                 filters).build()));
         }

@@ -22,10 +22,9 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureNotificationRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
@@ -42,15 +41,18 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Stephane Cortine
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class SearchFeatureNotificationServiceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -164,25 +166,22 @@ public class SearchFeatureNotificationServiceIT extends AbstractFeatureMultitena
     public void test_findRequests_with_state() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureNotificationRequestParameters searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withStatesIncluded(
-            Arrays.asList(RequestState.GRANTED));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED));
         // When
-        Page<FeatureNotificationRequest> oldResults = featureNotificationService.findRequests(
-            FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED),
-            pageable);
 
         Page<FeatureNotificationRequest> results = featureNotificationService.findRequests(
-            searchFeatureNotificationRequestParameters,
+            searchFeatureRequestParameters,
             pageable);
         // Then
-        assertEquals(2, oldResults.getNumberOfElements());
         assertEquals(2, results.getNumberOfElements());
 
         // Given
-        searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withStatesIncluded(
-            Arrays.asList(RequestState.SUCCESS, RequestState.GRANTED));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(Arrays.asList(
+            RequestState.SUCCESS,
+            RequestState.GRANTED));
         // When
-        results = featureNotificationService.findRequests(searchFeatureNotificationRequestParameters, pageable);
+        results = featureNotificationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(4, results.getNumberOfElements());
     }
@@ -191,64 +190,54 @@ public class SearchFeatureNotificationServiceIT extends AbstractFeatureMultitena
     public void test_findRequests_with_provider_id() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureNotificationRequestParameters searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList(PROVIDER_ID0));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(
+            List.of(PROVIDER_ID0));
         // When
-        Page<FeatureNotificationRequest> oldResults = featureNotificationService.findRequests(
-            FeatureRequestsSelectionDTO.build().withProviderId(PROVIDER_ID0),
-            pageable);
         Page<FeatureNotificationRequest> results = featureNotificationService.findRequests(
-            searchFeatureNotificationRequestParameters,
+            searchFeatureRequestParameters,
             pageable);
         // Then
-        assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
 
         // Given
-        searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of("provider"));
         // When
-        oldResults = featureNotificationService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                        .withProviderId("provider"),
-                                                             pageable);
-        results = featureNotificationService.findRequests(searchFeatureNotificationRequestParameters, pageable);
-        // Then
-        assertEquals(2, oldResults.getNumberOfElements());
-        assertEquals(2, results.getNumberOfElements());
-
-        // Given
-        searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList(PROVIDER_ID0, "provider_id1"));
-        // When
-        results = featureNotificationService.findRequests(searchFeatureNotificationRequestParameters, pageable);
-        // Then
-        assertEquals(1, results.getNumberOfElements());
-
-        // Given
-        searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList(PROVIDER_ID0, PROVIDER_ID2));
-        // When
-        results = featureNotificationService.findRequests(searchFeatureNotificationRequestParameters, pageable);
+        results = featureNotificationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(2, results.getNumberOfElements());
 
         // Given
-        searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("Provider_ID0"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            PROVIDER_ID0,
+            "provider_id1"));
         // When
-        oldResults = featureNotificationService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                        .withProviderId("Provider_ID0"),
-                                                             pageable);
-        results = featureNotificationService.findRequests(searchFeatureNotificationRequestParameters, pageable);
+        results = featureNotificationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
-        assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
 
         // Given
-        searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("Provider_ID0", "provIDer_iD2"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            PROVIDER_ID0,
+            PROVIDER_ID2));
         // When
-        results = featureNotificationService.findRequests(searchFeatureNotificationRequestParameters, pageable);
+        results = featureNotificationService.findRequests(searchFeatureRequestParameters, pageable);
+        // Then
+        assertEquals(2, results.getNumberOfElements());
+
+        // Given
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of(
+            "Provider_ID0"));
+        // When
+        results = featureNotificationService.findRequests(searchFeatureRequestParameters, pageable);
+        // Then
+        assertEquals(1, results.getNumberOfElements());
+
+        // Given
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            "Provider_ID0",
+            "provIDer_iD2"));
+        // When
+        results = featureNotificationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(2, results.getNumberOfElements());
     }
@@ -257,18 +246,14 @@ public class SearchFeatureNotificationServiceIT extends AbstractFeatureMultitena
     public void test_findRequests_with_session() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureNotificationRequestParameters searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withSession(
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withSession(
             SESSION_0);
         // When
-        Page<FeatureNotificationRequest> oldResults = featureNotificationService.findRequests(
-            FeatureRequestsSelectionDTO.build().withSession(SESSION_0),
+        Page<FeatureNotificationRequest> results = featureNotificationService.findRequests(
+            searchFeatureRequestParameters,
             pageable);
 
-        Page<FeatureNotificationRequest> results = featureNotificationService.findRequests(
-            searchFeatureNotificationRequestParameters,
-            pageable);
         // Then
-        assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
     }
 
@@ -276,18 +261,14 @@ public class SearchFeatureNotificationServiceIT extends AbstractFeatureMultitena
     public void test_findRequests_with_source() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureNotificationRequestParameters searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters().withSource(
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withSource(
             SESSION_OWNER_0);
         // When
-        Page<FeatureNotificationRequest> oldResults = featureNotificationService.findRequests(
-            FeatureRequestsSelectionDTO.build().withSource(SESSION_OWNER_0),
+        Page<FeatureNotificationRequest> results = featureNotificationService.findRequests(
+            searchFeatureRequestParameters,
             pageable);
 
-        Page<FeatureNotificationRequest> results = featureNotificationService.findRequests(
-            searchFeatureNotificationRequestParameters,
-            pageable);
         // Then
-        assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
     }
 

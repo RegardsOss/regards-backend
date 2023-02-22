@@ -18,18 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.framework.jpa.utils.CustomPostgresDialect;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 
 import java.sql.Timestamp;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Query generator to build SQL queries to run against OAISEntity repository on {@link fr.cnes.regards.modules.ingest.dto.aip.AIP} entities
@@ -46,127 +43,83 @@ public class AIPQueryGenerator {
     /**
      * Return an SQL query that retrieve all tags used by a set of entities
      */
-    public static NativeSelectQuery searchAipTagsUsingSQL(SearchFacetsAIPsParameters filters) {
+    public static NativeSelectQuery searchAipTagsUsingSQL(SearchAIPsParameters filters) {
         NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(tags)", FROM_AIP);
-
-        query = generatePredicates(query,
-                                   filters.getState(),
-                                   filters.getLastUpdate().getFrom(),
-                                   filters.getLastUpdate().getTo(),
-                                   filters.getSessionOwner(),
-                                   filters.getSession(),
-                                   filters.getProviderIds(),
-                                   filters.getAipIds(),
-                                   filters.getSelectionMode() == SearchSelectionMode.INCLUDE,
-                                   filters.getTags(),
-                                   filters.getCategories(),
-                                   filters.getStorages());
-
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
-        return query;
+        return generatePredicates(query, filters);
     }
 
     /**
      * Return an SQL query that retrieve all storages used by a set of entities
      */
-    public static NativeSelectQuery searchAipStoragesUsingSQL(SearchFacetsAIPsParameters filters) {
+    public static NativeSelectQuery searchAipStoragesUsingSQL(SearchAIPsParameters filters) {
         NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(storages)", FROM_AIP);
-
-        query = generatePredicates(query,
-                                   filters.getState(),
-                                   filters.getLastUpdate().getFrom(),
-                                   filters.getLastUpdate().getTo(),
-                                   filters.getSessionOwner(),
-                                   filters.getSession(),
-                                   filters.getProviderIds(),
-                                   filters.getAipIds(),
-                                   filters.getSelectionMode() == SearchSelectionMode.INCLUDE,
-                                   filters.getTags(),
-                                   filters.getCategories(),
-                                   filters.getStorages());
-
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
-        return query;
+        return generatePredicates(query, filters);
     }
 
     /**
      * Return an SQL query that retrieve all categories used by a set of entities
      */
-    public static NativeSelectQuery searchAipCategoriesUsingSQL(SearchFacetsAIPsParameters filters) {
+    public static NativeSelectQuery searchAipCategoriesUsingSQL(SearchAIPsParameters filters) {
         NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(categories)", FROM_AIP);
-
-        query = generatePredicates(query,
-                                   filters.getState(),
-                                   filters.getLastUpdate().getFrom(),
-                                   filters.getLastUpdate().getTo(),
-                                   filters.getSessionOwner(),
-                                   filters.getSession(),
-                                   filters.getProviderIds(),
-                                   filters.getAipIds(),
-                                   filters.getSelectionMode() == SearchSelectionMode.INCLUDE,
-                                   filters.getTags(),
-                                   filters.getCategories(),
-                                   filters.getStorages());
-
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
-        return query;
+        return generatePredicates(query, filters);
     }
 
-    private static NativeSelectQuery generatePredicates(NativeSelectQuery query,
-                                                        AIPState state,
-                                                        OffsetDateTime from,
-                                                        OffsetDateTime to,
-                                                        String sessionOwner,
-                                                        String session,
-                                                        Set<String> providerIds,
-                                                        List<String> aipIds,
-                                                        boolean areAipIdsInclude,
-                                                        List<String> tags,
-                                                        Set<String> categories,
-                                                        Set<String> storages) {
-        if (state != null) {
-            query.andPredicate("(state = :state)", "state", state.toString());
+    private static NativeSelectQuery generatePredicates(NativeSelectQuery query, SearchAIPsParameters filters) {
+        if (filters.getAipStates() != null) {
+            query.andListPredicate("(state in (",
+                                   "))",
+                                   "state",
+                                   filters.getAipStates().getValues().stream().map(AIPState::name).toList());
         }
-        if (from != null) {
-            Timestamp time = Timestamp.valueOf(from.minusNanos(1).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
+        if (filters.getLastUpdate() != null && filters.getLastUpdate().getAfter() != null) {
+            Timestamp time = Timestamp.valueOf(filters.getLastUpdate()
+                                                      .getAfter()
+                                                      .atZoneSameInstant(ZoneOffset.UTC)
+                                                      .toLocalDateTime());
             query.andPredicate("(last_update > :timeFrom)", "timeFrom", time);
         }
-        if (to != null) {
-            Timestamp time = Timestamp.valueOf(to.plusSeconds(1).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
+        if (filters.getLastUpdate() != null && filters.getLastUpdate().getBefore() != null) {
+            Timestamp time = Timestamp.valueOf(filters.getLastUpdate()
+                                                      .getBefore()
+                                                      .atZoneSameInstant(ZoneOffset.UTC)
+                                                      .toLocalDateTime());
             query.andPredicate("(last_update < :timeTo)", "timeTo", time);
         }
-        if (sessionOwner != null) {
-            query.andPredicate("(session_owner = :sessionOwner)", "sessionOwner", sessionOwner);
+        if (filters.getSessionOwner() != null) {
+            query.andPredicate("(session_owner = :sessionOwner)", "sessionOwner", filters.getSessionOwner());
         }
-        if (session != null) {
-            query.andPredicate("(session_name = :sessionName)", "sessionName", session);
+        if (filters.getSession() != null) {
+            query.andPredicate("(session_name = :sessionName)", "sessionName", filters.getSession());
         }
-        if ((aipIds != null) && !aipIds.isEmpty()) {
-            if (areAipIdsInclude) {
-                query.andListPredicate("(aip_id in (", "))", "aipId", aipIds);
+        if (filters.getAipIds() != null) {
+            if (filters.getAipIds().getMode() == ValuesRestrictionMode.INCLUDE) {
+                query.andListPredicate("(aip_id in (", "))", "aipId", filters.getAipIds().getValues());
             } else {
-                query.andListPredicate("(aip_id not in (", "))", "aipIdExcluded", aipIds);
+                query.andListPredicate("(aip_id not in (", "))", "aipIdExcluded", filters.getAipIds().getValues());
             }
         }
-        if ((providerIds != null) && !providerIds.isEmpty()) {
-            query.addOneOfStringLike("provider_id", providerIds);
+        if (filters.getProviderIds() != null) {
+            query.addOneOfString("provider_id", filters.getProviderIds());
         }
 
-        if ((tags != null) && !tags.isEmpty()) {
-            query = getDisjunctionPredicate("tags", query, Sets.newHashSet(tags));
+        if (filters.getTags() != null) {
+            query = getDisjunctionPredicate("tags", query, filters.getTags().getValues());
         }
-        if ((categories != null) && !categories.isEmpty()) {
-            query = getDisjunctionPredicate("categories", query, categories);
+        if (filters.getCategories() != null) {
+            query = getDisjunctionPredicate("categories", query, filters.getCategories().getValues());
         }
-        if ((storages != null) && !storages.isEmpty()) {
-            query = getDisjunctionPredicate("storages", query, storages);
+        if (filters.getStorages() != null) {
+            query = getDisjunctionPredicate("storages", query, filters.getStorages().getValues());
         }
         return query;
     }
 
     private static NativeSelectQuery getDisjunctionPredicate(String propertyName,
                                                              NativeSelectQuery query,
-                                                             Set<String> tags) {
+                                                             Collection<String> tags) {
         query.andListPredicate("(" + CustomPostgresDialect.JSONB_EXISTS_ANY + "(" + propertyName + ", array[",
                                "]))",
                                propertyName,

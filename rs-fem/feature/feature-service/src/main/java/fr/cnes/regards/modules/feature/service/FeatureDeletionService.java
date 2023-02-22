@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureDeletionRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -505,24 +505,19 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
     }
 
     @Override
-    public Page<FeatureDeletionRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        return deletionRepo.findAll(FeatureDeletionRequestSpecification.searchAllByFilters(selection, page), page);
-    }
-
-    @Override
-    public Page<FeatureDeletionRequest> findRequests(SearchFeatureDeletionRequestParameters filters, Pageable page) {
+    public Page<FeatureDeletionRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page) {
         return deletionRepo.findAll(new FeatureDeletionRequestSpecificationBuilder().withParameters(filters).build(),
                                     page);
     }
 
     @Override
-    public RequestsInfo getInfo(SearchFeatureDeletionRequestParameters filters) {
+    public RequestsInfo getInfo(SearchFeatureRequestParameters filters) {
         if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
                                                                                               .getValues()
                                                                                               .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            filters.withStatesIncluded(List.of(RequestState.ERROR));
             return RequestsInfo.build(deletionRepo.count(new FeatureDeletionRequestSpecificationBuilder().withParameters(
                 filters).build()));
         }

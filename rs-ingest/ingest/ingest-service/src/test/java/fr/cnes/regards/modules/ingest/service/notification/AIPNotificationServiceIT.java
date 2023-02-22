@@ -122,8 +122,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
 
         // --------------------------------- UPDATE REQUESTS -----------------------------------
         // Update all aips
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                           .withSession(SESSION),
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(SESSION),
                                                                        Lists.newArrayList("ADDED_TAG"),
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList(),
@@ -134,8 +133,9 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
 
         // --------------------------------- DELETION REQUESTS ---------------------------------
         // Delete all aips
-        oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
-                                                                              .withSession(SESSION));
+        OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
+        dto.withSession(SESSION);
+        oaisDeletionService.registerOAISDeletionCreator(dto);
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         assertDeletedAIPs(nbSIP);
         testRequestsSuccess(nbSIP);
@@ -161,8 +161,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
 
         // --------------------------------- UPDATE REQUESTS -----------------------------------
         // Create aip update requests
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                           .withSession(SESSION),
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(SESSION),
                                                                        Lists.newArrayList("ADDED_TAG"),
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList(),
@@ -179,8 +178,9 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
 
         // --------------------------------- DELETION REQUESTS ---------------------------------
         // Create aip deletion requests
-        oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
-                                                                              .withSession(SESSION));
+        OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
+        dto.withSession(SESSION);
+        oaisDeletionService.registerOAISDeletionCreator(dto);
         ingestServiceTest.waitDuring(FIVE_SECONDS * nbSIP);
         assertDeletedAIPs(nbSIP);
         // Simulate notification errors
@@ -209,7 +209,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
                             getRandomSessionOwner(),
                             getRandomCategories());
         }
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000L, SIPState.STORED);
     }
 
     /**
@@ -284,12 +284,10 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
                 break;
             }
             // check steps of different requests
-            if (abstractRequest instanceof IngestRequest) {
-                IngestRequest ingestRequest = (IngestRequest) abstractRequest;
+            if (abstractRequest instanceof IngestRequest ingestRequest) {
                 isWrongStateStep = !ingestRequest.getStep().equals(ingest_step);
             }
-            if (abstractRequest instanceof OAISDeletionRequest) {
-                OAISDeletionRequest deletionRequest = (OAISDeletionRequest) abstractRequest;
+            if (abstractRequest instanceof OAISDeletionRequest deletionRequest) {
                 isWrongStateStep = !deletionRequest.getStep().equals(deletion_step);
             }
             //update request

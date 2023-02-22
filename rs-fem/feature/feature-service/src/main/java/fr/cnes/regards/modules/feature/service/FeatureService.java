@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import fr.cnes.regards.modules.feature.dao.FeatureEntitySpecification;
 import fr.cnes.regards.modules.feature.dao.FeatureSimpleEntitySpecificationBuilder;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSimpleEntityRepository;
@@ -34,7 +33,6 @@ import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
@@ -74,25 +72,6 @@ public class FeatureService implements IFeatureService {
         this.featureWithDisseminationRepo = featureWithDisseminationRepo;
         this.authResolver = authResolver;
         this.jobInfoService = jobInfoService;
-    }
-
-    @Override
-    public Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable page) {
-        // Workaround to avoid in-memory pagination with specification
-        // 1. use simple entities with specification + pagination to get 1 page
-        // 2. fetch full entities for objects in this page
-        Page<FeatureSimpleEntity> simpleEntities = featureSimpleEntityRepository.findAll(FeatureEntitySpecification.searchAllByFilters(
-            selection,
-            page), page);
-        List<FeatureEntity> entities = featureWithDisseminationRepo.findByUrnIn(simpleEntities.stream()
-                                                                                              .map(FeatureSimpleEntity::getUrn)
-                                                                                              .collect(Collectors.toSet()),
-                                                                                simpleEntities.getSort());
-        List<FeatureEntityDto> elements = entities.stream()
-                                                  .map(entity -> initDataObjectFeature(entity,
-                                                                                       selection.getFilters().isFull()))
-                                                  .toList();
-        return new PageImpl<>(elements, page, simpleEntities.getTotalElements());
     }
 
     @Override
@@ -144,7 +123,7 @@ public class FeatureService implements IFeatureService {
     }
 
     @Override
-    public JobInfo scheduleNotificationsJob(FeaturesSelectionDTO selection) {
+    public JobInfo scheduleNotificationsJob(SearchFeatureSimpleEntityParameters selection) {
         // Schedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(PublishFeatureNotificationJob.SELECTION_PARAMETER, selection));
@@ -159,7 +138,7 @@ public class FeatureService implements IFeatureService {
     }
 
     @Override
-    public JobInfo scheduleDeletionJob(FeaturesSelectionDTO selection) {
+    public JobInfo scheduleDeletionJob(SearchFeatureSimpleEntityParameters selection) {
         // Schedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.SELECTION_PARAMETER, selection));

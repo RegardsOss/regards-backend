@@ -20,6 +20,9 @@ package fr.cnes.regards.modules.feature.domain.request;
 
 import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
+import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -29,7 +32,7 @@ import java.util.Collection;
 /**
  * @author Stephane Cortine
  */
-public class SearchFeatureRequestParameters {
+public class SearchFeatureRequestParameters implements AbstractSearchParameters {
 
     @Schema(description = "Filter on source")
     private String source;
@@ -40,8 +43,14 @@ public class SearchFeatureRequestParameters {
     @Schema(description = "Filter on provider id")
     private ValuesRestriction<String> providerIds;
 
+    @Schema(description = "Filter on request id")
+    private ValuesRestriction<Long> requestIds;
+
     @Schema(description = "Filter on request states", example = "GRANTED|DENIED|SUCCESS|ERROR")
     private ValuesRestriction<RequestState> states;
+
+    @Schema(description = "Filter on request step")
+    private ValuesRestriction<FeatureRequestStep> steps;
 
     @Schema(description = "Filter on range of date for last update")
     private DatesRangeRestriction lastUpdate = new DatesRangeRestriction();
@@ -81,12 +90,21 @@ public class SearchFeatureRequestParameters {
     }
 
     public SearchFeatureRequestParameters withProviderIdsIncluded(Collection<String> providerIds) {
+        this.setProviderIds(new ValuesRestriction<String>().withInclude(providerIds)
+                                                           .withIgnoreCase(true)
+                                                           .withMatchMode(ValuesRestrictionMatchMode.STARTS_WITH));
+        return this;
+    }
+
+    public SearchFeatureRequestParameters withProviderIdsIncludedStrict(Collection<String> providerIds) {
         this.setProviderIds(new ValuesRestriction<String>().withInclude(providerIds));
         return this;
     }
 
     public SearchFeatureRequestParameters withProviderIdsExcluded(Collection<String> providerIds) {
-        setProviderIds(new ValuesRestriction<String>().withExclude(providerIds));
+        setProviderIds(new ValuesRestriction<String>().withExclude(providerIds)
+                                                      .withIgnoreCase(true)
+                                                      .withMatchMode(ValuesRestrictionMatchMode.STARTS_WITH));
         return this;
     }
 
@@ -126,4 +144,34 @@ public class SearchFeatureRequestParameters {
         return this;
     }
 
+    public ValuesRestriction<FeatureRequestStep> getSteps() {
+        return steps;
+    }
+
+    public void setSteps(ValuesRestriction<FeatureRequestStep> steps) {
+        this.steps = steps;
+    }
+
+    public SearchFeatureRequestParameters withSteps(Collection<FeatureRequestStep> steps) {
+        this.steps = new ValuesRestriction<FeatureRequestStep>().withInclude(steps);
+        return this;
+    }
+
+    public ValuesRestriction<Long> getRequestIds() {
+        return requestIds;
+    }
+
+    public void setRequestIds(ValuesRestriction<Long> requestIds) {
+        this.requestIds = requestIds;
+    }
+
+    public SearchFeatureRequestParameters withIdsIncluded(Collection<Long> requestIds) {
+        this.requestIds = new ValuesRestriction<Long>().withInclude(requestIds);
+        return this;
+    }
+
+    public SearchFeatureRequestParameters withIdsExcluded(Collection<Long> requestIds) {
+        this.requestIds = new ValuesRestriction<Long>().withExclude(requestIds);
+        return this;
+    }
 }

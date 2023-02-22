@@ -24,8 +24,6 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
-import fr.cnes.regards.modules.feature.dto.SearchSelectionMode;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -40,7 +38,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -53,7 +51,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Kevin Marchois
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_data_object" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -117,18 +117,14 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
     public void test_findAll() {
         // Given
         Pageable page = PageRequest.of(0, 10);
-        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build().withModel(featureModelName);
-        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel(
+        SearchFeatureSimpleEntityParameters selection = new SearchFeatureSimpleEntityParameters().withModel(
             featureModelName);
         // When
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
-        Page<FeatureEntityDto> featureEntityDtos = featureService.findAll(filters, page);
         // Then
         assertEquals(2, results.getNumberOfElements());
-        assertEquals(2, featureEntityDtos.getNumberOfElements());
 
         verifyFeature(results);
-        verifyFeature(featureEntityDtos);
     }
 
     private void verifyFeature(Page<FeatureEntityDto> results) {
@@ -151,35 +147,29 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         // Given
         Pageable page = PageRequest.of(0, 10);
 
-        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build()
-                                                             .withId(firstFeature.getId())
-                                                             .withId(secondFeature.getId());
+        SearchFeatureSimpleEntityParameters selection = new SearchFeatureSimpleEntityParameters().withFeatureIdsIncluded(
+            List.of(firstFeature.getId(), secondFeature.getId()));
         // When
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
         // Then
         assertEquals(2, results.getNumberOfElements());
 
         // Given
-        selection = FeaturesSelectionDTO.build().withId(secondFeature.getId());
+        selection = new SearchFeatureSimpleEntityParameters().withFeatureIdsIncluded(List.of(secondFeature.getId()));
         // When
         results = featureService.findAll(selection, page);
         // Then
         assertEquals(1, results.getNumberOfElements());
 
         // Given
-        selection = FeaturesSelectionDTO.build()
-                                        .withSelectionMode(SearchSelectionMode.EXCLUDE)
-                                        .withId(firstFeature.getId())
-                                        .withId(secondFeature.getId());
+        selection = selection.withFeatureIdsExcluded(List.of(firstFeature.getId(), secondFeature.getId()));
         // When
         results = featureService.findAll(selection, page);
         // Then
         assertEquals(0, results.getNumberOfElements());
 
         // Given
-        selection = FeaturesSelectionDTO.build()
-                                        .withSelectionMode(SearchSelectionMode.EXCLUDE)
-                                        .withId(secondFeature.getId());
+        selection = new SearchFeatureSimpleEntityParameters().withFeatureIdsExcluded(List.of(secondFeature.getId()));
         // When
         results = featureService.findAll(selection, page);
         // Then
@@ -190,25 +180,18 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
     public void test_findAll_with_model() {
         // Given
         Pageable page = PageRequest.of(0, 10);
-
-        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build().withModel("unknown");
-        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel("unknown");
+        SearchFeatureSimpleEntityParameters selection = new SearchFeatureSimpleEntityParameters().withModel("unknown");
         // When
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
-        Page<FeatureEntityDto> featureEntityDtos = featureService.findAll(filters, page);
         // Then
         assertEquals(0, results.getNumberOfElements());
-        assertEquals(0, featureEntityDtos.getNumberOfElements());
 
         // Given
-        selection = FeaturesSelectionDTO.build().withModel(featureModelName);
-        filters = new SearchFeatureSimpleEntityParameters().withModel(featureModelName);
+        selection = new SearchFeatureSimpleEntityParameters().withModel(featureModelName);
         // When
         results = featureService.findAll(selection, page);
-        featureEntityDtos = featureService.findAll(filters, page);
         // Then
         assertEquals(2, results.getNumberOfElements());
-        assertEquals(2, featureEntityDtos.getNumberOfElements());
     }
 
     @Test
@@ -216,17 +199,12 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         // Given
         Pageable page = PageRequest.of(0, 10);
 
-        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build()
-                                                             .withModel(featureModelName)
-                                                             .withFrom(dateAfterCreatedFirstFeature);
-        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withLastUpdateBefore(
-            dateAfterCreatedFirstFeature).withModel(featureModelName);
+        SearchFeatureSimpleEntityParameters selection = new SearchFeatureSimpleEntityParameters().withModel(
+            featureModelName).withLastUpdateAfter(dateAfterCreatedFirstFeature);
         // When
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
-        Page<FeatureEntityDto> featureEntityDtos = featureService.findAll(filters, page);
         // When
         assertEquals(1, results.getNumberOfElements());
-        assertEquals(1, featureEntityDtos.getNumberOfElements());
     }
 
     @Test
@@ -234,45 +212,33 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         // Given
         Pageable page = PageRequest.of(0, 10);
 
-        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build().withProviderId("providerId1");
-        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withProviderIdsIncluded(
-            Arrays.asList("providerId1"));
+        SearchFeatureSimpleEntityParameters selection = new SearchFeatureSimpleEntityParameters().withProviderIdsIncluded(
+            List.of("providerId1"));
         // When
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
-        Page<FeatureEntityDto> featureEntityDtos = featureService.findAll(filters, page);
         // When
         assertEquals(1, results.getNumberOfElements());
-        assertEquals(1, featureEntityDtos.getNumberOfElements());
 
         // Given
-        selection = FeaturesSelectionDTO.build().withProviderId("Providerid1");
-        filters = new SearchFeatureSimpleEntityParameters().withProviderIdsIncluded(Arrays.asList("Providerid1"));
+        selection.withProviderIdsIncluded(List.of("Providerid1"));
         // When
         results = featureService.findAll(selection, page);
-        featureEntityDtos = featureService.findAll(filters, page);
         // When
         assertEquals(1, results.getNumberOfElements());
-        assertEquals(1, featureEntityDtos.getNumberOfElements());
 
         // Given
-        selection = FeaturesSelectionDTO.build().withProviderId("provider");
-        filters = new SearchFeatureSimpleEntityParameters().withProviderIdsIncluded(Arrays.asList("provider"));
+        selection.withProviderIdsIncluded(List.of("provider"));
         // When
         results = featureService.findAll(selection, page);
-        featureEntityDtos = featureService.findAll(filters, page);
         // When
         assertEquals(2, results.getNumberOfElements());
-        assertEquals(2, featureEntityDtos.getNumberOfElements());
 
         // Given
-        selection = FeaturesSelectionDTO.build().withProviderId("Id1");
-        filters = new SearchFeatureSimpleEntityParameters().withProviderIdsIncluded(Arrays.asList("Id1"));
+        selection.withProviderIdsIncluded(List.of("Id1"));
         // When
         results = featureService.findAll(selection, page);
-        featureEntityDtos = featureService.findAll(filters, page);
         // When
         assertEquals(0, results.getNumberOfElements());
-        assertEquals(0, featureEntityDtos.getNumberOfElements());
     }
 
     @Test
@@ -280,8 +246,8 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         // Given
         Pageable page = PageRequest.of(0, 10);
 
-        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build();
-        selection.getFilters().setDisseminationPending(Boolean.FALSE);
+        SearchFeatureSimpleEntityParameters selection = new SearchFeatureSimpleEntityParameters();
+        selection.withDisseminationPending(false);
         SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withDisseminationPending(
             Boolean.FALSE);
         // When

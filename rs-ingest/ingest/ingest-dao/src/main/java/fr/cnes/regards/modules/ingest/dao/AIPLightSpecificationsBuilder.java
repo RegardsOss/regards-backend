@@ -16,14 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dto.aip;
+package fr.cnes.regards.modules.ingest.dao;
+
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 
 /**
- * @author Léo Mieulet
+ * @author Stephane Cortine
  */
-public class SearchFacetsAIPsParameters extends AbstractSearchAIPsParameters<SearchFacetsAIPsParameters> {
+public class AIPLightSpecificationsBuilder extends AbstractAIPSpecificationBuilder<AIPEntityLight> {
 
-    public static SearchFacetsAIPsParameters build() {
-        return new SearchFacetsAIPsParameters();
-    }
 }

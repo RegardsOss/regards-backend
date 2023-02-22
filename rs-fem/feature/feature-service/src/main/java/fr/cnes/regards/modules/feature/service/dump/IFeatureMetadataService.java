@@ -23,8 +23,7 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureSaveMetadataRequestParameters;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import org.springframework.data.domain.Page;
@@ -88,43 +87,33 @@ public interface IFeatureMetadataService {
     /**
      * Find all {@link FeatureSaveMetadataRequest}s
      *
-     * @param selection {@link FeatureRequestsSelectionDTO}
-     * @param page
+     * @param filters {@link SearchFeatureRequestParameters}
      * @return {@link FeatureSaveMetadataRequest}s
      */
-    Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
-
-    /**
-     * Find all {@link FeatureSaveMetadataRequest}s
-     *
-     * @param filters {@link SearchFeatureSaveMetadataRequestParameters}
-     * @param page
-     * @return {@link FeatureSaveMetadataRequest}s
-     */
-    Page<FeatureSaveMetadataRequest> findRequests(SearchFeatureSaveMetadataRequestParameters filters, Pageable page);
+    Page<FeatureSaveMetadataRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page);
 
     /**
      * Delete requests associated to given search parameters
      * Number of requests deletable is limited as this method is synchonous. Number of handled requests is returned in response.
      *
-     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @param selection {@link SearchFeatureRequestParameters}
      */
-    RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse deleteRequests(SearchFeatureRequestParameters selection);
 
     /**
      * Find requests information
      *
-     * @param filters {@link SearchFeatureSaveMetadataRequestParameters}
+     * @param filters {@link SearchFeatureRequestParameters}
      * @return {@link RequestsInfo}
      */
-    RequestsInfo getInfo(SearchFeatureSaveMetadataRequestParameters filters);
+    RequestsInfo getInfo(SearchFeatureRequestParameters filters);
 
     /**
      * Retry requests associated to given search parameters
      * Number of requests deletable is limited as this method is synchonous. Number of handled requests is returned in response.
      *
-     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @param selection {@link SearchFeatureRequestParameters}
      */
-    RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse retryRequests(SearchFeatureRequestParameters selection);
 
 }

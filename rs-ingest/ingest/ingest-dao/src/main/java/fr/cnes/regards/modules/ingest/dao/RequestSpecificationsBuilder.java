@@ -18,25 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
-import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
 
 import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.DISCRIMINANT_ATTRIBUTE;
 import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
 
 /**
+ * Specification builder to search for {@link AbstractRequest}s with filters as  {@link SearchAbstractRequestParameters}
+ *
  * @author Stephane Cortine
+ * @author Sébastien Binda
  */
-public class AbstractRequestSpecificationsBuilder
+public class RequestSpecificationsBuilder
     extends AbstractSpecificationsBuilder<AbstractRequest, SearchAbstractRequestParameters> {
 
     @Override
@@ -51,26 +46,11 @@ public class AbstractRequestSpecificationsBuilder
 
             specifications.add(useValuesRestriction("providerId", parameters.getProviderIds()));
 
-            specifications.add(useValuesRestrictionRequestTypeEnum(DISCRIMINANT_ATTRIBUTE,
-                                                                   parameters.getRequestIpTypes()));
+            specifications.add(useValuesRestrictionEnumAsString(DISCRIMINANT_ATTRIBUTE,
+                                                                parameters.getRequestIpTypes()));
 
             specifications.add(useValuesRestriction(STATE_ATTRIBUTE, parameters.getRequestStates()));
         }
-    }
-
-    protected Specification<AbstractRequest> useValuesRestrictionRequestTypeEnum(String pathToField,
-                                                                                 @Nullable
-                                                                                 ValuesRestriction<RequestTypeEnum> valuesRestriction) {
-        if (valuesRestriction == null) {
-            return null;
-        }
-        Collection<String> values = valuesRestriction.getValues().stream().map(RequestTypeEnum::name).toList();
-        Assert.notEmpty(values, "Values must not be empty");
-
-        if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
-            return isIncluded(pathToField, values);
-        }
-        return isExcluded(pathToField, values);
     }
 
 }

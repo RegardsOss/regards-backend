@@ -63,10 +63,11 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Léo Mieulet
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job", "regards.amqp.enabled=true",
-        "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job",
+                                   "regards.amqp.enabled=true",
+                                   "regards.ingest.aip.update.bulk.delay=100000000",
+                                   "eureka.client.enabled=false" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
@@ -173,7 +174,7 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         }
 
         // Check init datas contains the storage to remove in this test
-        Page<AIPEntity> aips = aipService.findByFilters(SearchAIPsParameters.build(), PageRequest.of(0, 200));
+        Page<AIPEntity> aips = aipService.findByFilters(new SearchAIPsParameters(), PageRequest.of(0, 200));
         List<AIPEntity> aipsContent = aips.getContent();
         for (AIPEntity aip : aipsContent) {
             LOGGER.info("Intial AIP {}/{} tags : {}, categories : {}, storages : {}",
@@ -200,13 +201,11 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
     /**
      * Test to add/remove TAGS and categories to an existing list of AIPs.
-     *
-     * @throws ModuleException
-     * @throws InterruptedException
      */
     @Test
-    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_420"), @Requirement("REGARDS_DSL_STO_AIP_430"),
-        @Requirement("REGARDS_DSL_STO_AIP_210") })
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_420"),
+                    @Requirement("REGARDS_DSL_STO_AIP_430"),
+                    @Requirement("REGARDS_DSL_STO_AIP_210") })
     @Purpose("Check that specific informations can be updated in AIP properties")
     public void testUpdateJob() throws ModuleException, InterruptedException {
         storageClient.setBehavior(true, true);
@@ -215,10 +214,9 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         LOGGER.info("TAGS ADD : {}, REMOVE {}", TAG_2, TAG_3);
         LOGGER.info("CATEGORIES ADD : {}, REMOVE {}", CATEGORIES_2, CATEGORIES_0);
         LOGGER.info("STORAGES REMOVE : {}", STORAGE_3);
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                           .withSession(SESSION_0)
-                                                                                           .withSessionOwner(
-                                                                                               SESSION_OWNER_0),
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(SESSION_0)
+                                                                                                 .withSessionOwner(
+                                                                                                     SESSION_OWNER_0),
                                                                        TAG_2,
                                                                        TAG_3,
                                                                        CATEGORIES_2,
@@ -232,9 +230,8 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         // Wait job done
         waitJobDone(updateJob, JobStatus.SUCCEEDED, 5_000);
 
-        Page<AIPEntity> aips = aipService.findByFilters(SearchAIPsParameters.build()
-                                                                            .withSession(SESSION_0)
-                                                                            .withSessionOwner(SESSION_OWNER_0),
+        Page<AIPEntity> aips = aipService.findByFilters(new SearchAIPsParameters().withSession(SESSION_0)
+                                                                                  .withSessionOwner(SESSION_OWNER_0),
                                                         PageRequest.of(0, 200));
         Collection<AIPEntity> aipsContent = aips.getContent();
         for (AIPEntity aip : aipsContent) {
@@ -255,10 +252,10 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         storageClient.setBehavior(true, true);
         initData();
 
-        Page<AIPEntity> aips = aipService.findByFilters(SearchAIPsParameters.build()
-                                                                            .withSession(SESSION_0)
-                                                                            .withSessionOwner(SESSION_OWNER_0)
-                                                                            .withStorage(STORAGE_1),
+        Page<AIPEntity> aips = aipService.findByFilters(new SearchAIPsParameters().withSession(SESSION_0)
+                                                                                  .withSessionOwner(SESSION_OWNER_0)
+                                                                                  .withStoragesIncluded(List.of(
+                                                                                      STORAGE_1)),
                                                         PageRequest.of(0, 200));
         AIPEntity toUpdate = aips.getContent().get(0);
         String providerId = toUpdate.getProviderId();
@@ -300,7 +297,8 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         waitJobDone(updateJob, JobStatus.SUCCEEDED, 5_000);
 
         // Check that the new location is added to the AIP in DB.
-        aips = aipService.findByFilters(SearchAIPsParameters.build().withProviderId(providerId), PageRequest.of(0, 10));
+        aips = aipService.findByFilters(new SearchAIPsParameters().withProviderIdsIncluded(List.of(providerId)),
+                                        PageRequest.of(0, 10));
         AIPEntity updateAIP = aips.getContent().get(0);
         Assert.assertEquals("After adding the new location the data object should contains two locations",
                             2,

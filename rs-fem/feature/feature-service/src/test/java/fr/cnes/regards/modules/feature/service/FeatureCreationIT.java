@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCreationRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -58,14 +58,19 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -285,8 +290,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         this.featureCreationService.registerRequests(events);
         // When
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
-                                                                                         Arrays.asList(RequestState.GRANTED)),
+                                                                                     new SearchFeatureRequestParameters().withStatesIncluded(
+                                                                                         List.of(RequestState.GRANTED)),
                                                                                      PageRequest.of(0, 100));
         // Then
         Assert.assertEquals(nbValid, results.getContent().size());
@@ -295,23 +300,21 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
         // When
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
-                                                         Arrays.asList(RequestState.ERROR)),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                         RequestState.ERROR)),
                                                      PageRequest.of(0, 100));
         // Then
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
+        List<String> featureIds = List.of(events.get(0).getFeature().getId());
 
         // When
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
-                                                                                                     Arrays.asList(RequestState.GRANTED))
-                                                                                                 .withProviderIdsIncluded(
-                                                                                                     Arrays.asList(
-                                                                                                         events.get(0)
-                                                                                                               .getFeature()
-                                                                                                               .getId())),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                                                             RequestState.GRANTED))
+                                                                                         .withProviderIdsIncludedStrict(
+                                                                                             featureIds),
                                                      PageRequest.of(0, 100));
         // Then
         Assert.assertEquals(1, results.getContent().size());
@@ -320,17 +323,14 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
         // When
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
-                                                                                                     Arrays.asList(RequestState.GRANTED))
-                                                                                                 .withProviderIdsIncluded(
-                                                                                                     Arrays.asList(
-                                                                                                         events.get(0)
-                                                                                                               .getFeature()
-                                                                                                               .getId()))
-                                                                                                 .withLastUpdateAfter(
-                                                                                                     OffsetDateTime.now()
-                                                                                                                   .plusSeconds(
-                                                                                                                       5)),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                                                             RequestState.GRANTED))
+                                                                                         .withProviderIdsIncluded(
+                                                                                             featureIds)
+                                                                                         .withLastUpdateAfter(
+                                                                                             OffsetDateTime.now()
+                                                                                                           .plusSeconds(
+                                                                                                               5)),
                                                      PageRequest.of(0, 100));
         // Then
         Assert.assertEquals(0, results.getContent().size());
@@ -339,19 +339,15 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
         // When
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     new SearchFeatureCreationRequestParameters().withStatesIncluded(
-                                                                                                     Arrays.asList(RequestState.GRANTED))
-                                                                                                 .withProviderIdsIncluded(
-                                                                                                     Arrays.asList(
-                                                                                                         events.get(0)
-                                                                                                               .getFeature()
-                                                                                                               .getId()))
-                                                                                                 .withLastUpdateBefore(
-                                                                                                     OffsetDateTime.now()
-                                                                                                                   .plusSeconds(
-                                                                                                                       5))
-                                                                                                 .withLastUpdateAfter(
-                                                                                                     start),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                                                             RequestState.GRANTED))
+                                                                                         .withProviderIdsIncluded(
+                                                                                             featureIds)
+                                                                                         .withLastUpdateBefore(
+                                                                                             OffsetDateTime.now()
+                                                                                                           .plusSeconds(
+                                                                                                               5))
+                                                                                         .withLastUpdateAfter(start),
                                                      PageRequest.of(0, 100));
         // Then
         Assert.assertEquals(1, results.getContent().size());
@@ -368,14 +364,14 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         this.featureCreationService.registerRequests(events);
 
         // Simulate all requests to scheduled
-        this.featureCreationService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+        this.featureCreationService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, 1000))
                                    .forEach(r -> {
                                        r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
                                        this.featureCreationRequestRepo.save(r);
                                    });
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureCreationService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        RequestHandledResponse response = this.featureCreationService.deleteRequests(new SearchFeatureRequestParameters());
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state",
                             0,
@@ -384,8 +380,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
-        response = this.featureCreationService.deleteRequests(FeatureRequestsSelectionDTO.build()
-                                                                                         .withState(RequestState.GRANTED));
+        response = this.featureCreationService.deleteRequests(new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests",
                             0,
@@ -395,13 +391,13 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                             response.getTotalRequested());
 
         // Simulate all requests to error
-        this.featureCreationService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+        this.featureCreationService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, 1000))
                                    .forEach(r -> {
                                        r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
                                        this.featureCreationRequestRepo.save(r);
                                    });
 
-        response = this.featureCreationService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        response = this.featureCreationService.deleteRequests(new SearchFeatureRequestParameters());
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 20 requests deleted", 20, response.getTotalHandled());
         Assert.assertEquals("There should be 20 requests to delete", 20, response.getTotalRequested());
@@ -417,9 +413,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         this.featureCreationService.registerRequests(events);
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureCreationService.retryRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                               .withState(
-                                                                                                                   RequestState.ERROR));
+        RequestHandledResponse response = this.featureCreationService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.ERROR)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state",
                             0,
@@ -428,8 +423,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
-        response = this.featureCreationService.retryRequests(FeatureRequestsSelectionDTO.build()
-                                                                                        .withState(RequestState.GRANTED));
+        response = this.featureCreationService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 20 requests retryed as selection set on GRANTED Requests",
                             nbValid,

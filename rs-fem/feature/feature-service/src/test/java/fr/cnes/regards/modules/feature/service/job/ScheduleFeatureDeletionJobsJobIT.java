@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
@@ -40,9 +40,9 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Sébastien Binda
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job_test", "regards.amqp.enabled=true",
-        "regards.feature.deletion.notification.job.size=30" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job_test",
+                                   "regards.amqp.enabled=true",
+                                   "regards.feature.deletion.notification.job.size=30" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class ScheduleFeatureDeletionJobsJobIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -67,7 +67,7 @@ public class ScheduleFeatureDeletionJobsJobIT extends AbstractFeatureMultitenant
         initData(100);
 
         // Schedule global deletion job with feature filters that results to no feature
-        JobInfo job = featureService.scheduleDeletionJob(FeaturesSelectionDTO.build().withSource("unknown"));
+        JobInfo job = featureService.scheduleDeletionJob(new SearchFeatureSimpleEntityParameters().withSource("unknown"));
         if (job != null) {
             String tenant = runtimeTenantResolver.getTenant();
             jobService.runJob(job, tenant).get();
@@ -81,7 +81,7 @@ public class ScheduleFeatureDeletionJobsJobIT extends AbstractFeatureMultitenant
         Assert.assertEquals("No deletion request event should be sent", 0, listener.getNumberOfRequests());
 
         // Rerun schedule of deletion jobs for all features this time
-        job = featureService.scheduleDeletionJob(FeaturesSelectionDTO.build());
+        job = featureService.scheduleDeletionJob(new SearchFeatureSimpleEntityParameters());
         if (job != null) {
             String tenant = runtimeTenantResolver.getTenant();
             jobService.runJob(job, tenant).get();

@@ -28,11 +28,9 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
-import fr.cnes.regards.modules.feature.documentation.RequestsControllerDocumentationHelper;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
@@ -41,12 +39,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,7 +50,7 @@ import java.util.UUID;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_requests",
-    "spring.jpa.properties.hibernate.jdbc.batch_size=1024" })
+                                   "spring.jpa.properties.hibernate.jdbc.batch_size=1024" })
 @ActiveProfiles(value = { "noscheduler" })
 public class FeatureRequestControllerIT extends AbstractRegardsIT {
 
@@ -151,7 +147,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.addParameter("size", "10");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                           new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList("toto")),
+                           new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of("toto")),
                            requestBuilderCustomizer,
                            "Error retrying feature requests in creation",
                            FeatureRequestTypeEnum.CREATION);
@@ -165,7 +161,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.addParameter("size", "10");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                           new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList("feature1_10")),
+                           new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of("feature1_10")),
                            requestBuilderCustomizer,
                            "Error retrying feature requests in creation",
                            FeatureRequestTypeEnum.CREATION);
@@ -179,7 +175,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.addParameter("size", "1000");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
-                           new SearchFeatureRequestParameters().withStatesIncluded(Arrays.asList(RequestState.ERROR)),
+                           new SearchFeatureRequestParameters().withStatesIncluded(List.of(RequestState.ERROR)),
                            requestBuilderCustomizer,
                            "Error retrying feature requests in creation",
                            FeatureRequestTypeEnum.CREATION);
@@ -218,14 +214,6 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 30);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-
-        List<ParameterDescriptor> params = RequestsControllerDocumentationHelper.featureRequestSearchParametersDoc();
-        params.addAll(RequestsControllerDocumentationHelper.paginationDoc());
-
-        requestBuilderCustomizer.documentPathParameters(RequestsControllerDocumentationHelper.featureRequestTypeEnumDoc(
-                                    "type"))
-                                .documentRequestParameters(params)
-                                .documentResponseBody(RequestsControllerDocumentationHelper.featureRequestDTOResponseDoc());
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                            new SearchFeatureRequestParameters().withSource("source1").withSession("session2"),
@@ -315,7 +303,8 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                                         10);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withId(notDeletable.get(0).getId());
+        SearchFeatureRequestParameters selection = new SearchFeatureRequestParameters().withIdsIncluded(List.of(
+            notDeletable.get(0).getId()));
         performDefaultDelete(FeatureRequestController.ROOT_PATH + FeatureRequestController.DELETE_TYPE_PATH,
                              selection,
                              requestBuilderCustomizer,
@@ -325,11 +314,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
         Assert.assertTrue("Feature request should not be deleted",
                           featureRequestCreationRepo.findById(notDeletable.get(0).getId()).isPresent());
 
-        selection = FeatureRequestsSelectionDTO.build().withId(deletable.get(0).getId());
-        requestBuilderCustomizer.documentPathParameters(RequestsControllerDocumentationHelper.featureRequestTypeEnumDoc(
-                                    "type"))
-                                .documentRequestBody(RequestsControllerDocumentationHelper.featureRequestsSelectionDTODoc())
-                                .documentResponseBody(RequestsControllerDocumentationHelper.requestHandledResponseDoc());
+        selection = new SearchFeatureRequestParameters().withIdsIncluded(List.of(deletable.get(0).getId()));
         performDefaultDelete(FeatureRequestController.ROOT_PATH + FeatureRequestController.DELETE_TYPE_PATH,
                              selection,
                              requestBuilderCustomizer,
@@ -360,11 +345,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
                                                                         .expectValue("$.totalHandled", 10)
                                                                         .expectValue("$.totalRequested", 10);
-        requestBuilderCustomizer.documentPathParameters(RequestsControllerDocumentationHelper.featureRequestTypeEnumDoc(
-                                    "type"))
-                                .documentRequestBody(RequestsControllerDocumentationHelper.featureRequestsSelectionDTODoc())
-                                .documentResponseBody(RequestsControllerDocumentationHelper.requestHandledResponseDoc());
-        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withSource("retry_source");
+        SearchFeatureRequestParameters selection = new SearchFeatureRequestParameters().withSource("retry_source");
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.RETRY_TYPE_PATH,
                            selection,
                            requestBuilderCustomizer,

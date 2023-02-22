@@ -18,29 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCopyRequestParameters;
 
 /**
  * @author Stephane Cortine
  */
 public class FeatureCopyRequestSpecificationsBuilder
-    extends AbstractFeatureRequestSpecificationsBuilder<FeatureCopyRequest, SearchFeatureCopyRequestParameters> {
-
-    @Override
-    protected void addSpecificationsFromParameters() {
-        specifications.add(equalsWithFeatureEntity("sessionOwner", parameters.getSource()));
-
-        specifications.add(equalsWithFeatureEntity("session", parameters.getSession()));
-
-        specifications.add(useValuesRestrictionLikeWithFeatureEntity("providerId", parameters.getProviderIds()));
-
-        specifications.add(useValuesRestriction(AbstractRequest.COLUMN_STATE, parameters.getStates()));
-
-        specifications.add(after("registrationDate", parameters.getLastUpdate().getAfter()));
-        specifications.add(before("registrationDate", parameters.getLastUpdate().getBefore()));
-    }
+    extends AbstractFeatureRequestSpecificationsBuilder<FeatureCopyRequest> {
 
 }
 

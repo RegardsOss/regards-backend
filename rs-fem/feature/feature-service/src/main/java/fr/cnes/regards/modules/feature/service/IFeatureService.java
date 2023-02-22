@@ -22,8 +22,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,18 +37,7 @@ public interface IFeatureService {
      * Get a {@link Page} of {@link FeatureEntityDto} dto
      * The {@link Page} will be initialized from a list of {@link FeatureEntityDto}
      *
-     * @param selection {@link FeaturesSearchParameters} search filters
-     * @param pageable
-     * @return {@link Page} of {@link FeatureEntityDto}
-     */
-    Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable pageable);
-
-    /**
-     * Get a {@link Page} of {@link FeatureEntityDto} dto
-     * The {@link Page} will be initialized from a list of {@link FeatureEntityDto}
-     *
-     * @param filters  {@link SearchFeatureSimpleEntityParameters} search filters
-     * @param pageable
+     * @param filters {@link SearchFeatureSimpleEntityParameters} search filters
      * @return {@link Page} of {@link FeatureEntityDto}
      */
     Page<FeatureEntityDto> findAll(SearchFeatureSimpleEntityParameters filters, Pageable pageable);
@@ -66,14 +53,14 @@ public interface IFeatureService {
     /**
      * Creates a job to creates new notification requests for all features matching selection parameters
      *
-     * @param selection {@link FeaturesSelectionDTO}
+     * @param selection {@link SearchFeatureSimpleEntityParameters}
      */
-    JobInfo scheduleNotificationsJob(FeaturesSelectionDTO selection);
+    JobInfo scheduleNotificationsJob(SearchFeatureSimpleEntityParameters selection);
 
     /**
      * Creates a job to creates new deletion requests for all features matching selection parameters
      *
-     * @param selection {@link FeaturesSelectionDTO}
+     * @param selection {@link SearchFeatureSimpleEntityParameters}
      */
-    JobInfo scheduleDeletionJob(FeaturesSelectionDTO selection);
+    JobInfo scheduleDeletionJob(SearchFeatureSimpleEntityParameters selection);
 }

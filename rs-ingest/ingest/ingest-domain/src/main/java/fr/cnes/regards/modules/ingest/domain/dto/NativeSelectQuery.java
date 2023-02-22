@@ -20,7 +20,10 @@ package fr.cnes.regards.modules.ingest.domain.dto;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
+import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 
 import java.util.*;
 
@@ -87,6 +90,10 @@ public class NativeSelectQuery {
         predicates.add(predicate);
     }
 
+    /**
+     * Build predicates by adding include sql native query as predicateStart + (paramValues) + predicateStop.
+     * Where paramValues are compiled with param name to query.
+     */
     public void andListPredicate(String predicateStart,
                                  String predicateStop,
                                  String rootParamName,
@@ -102,34 +109,28 @@ public class NativeSelectQuery {
         predicates.add(predicateStart + String.join(" , ", preparedPredicates) + predicateStop);
     }
 
-    public void addOneOf(String predicateStart,
-                         String predicateStop,
-                         String rootParamName,
-                         Collection<String> paramValues) {
+    public void addOneOfString(String rootParamName, ValuesRestriction<String> values) {
         Set<String> internalPredicates = Sets.newHashSet();
         int i = 0;
-        for (String paramValue : paramValues) {
+        for (String paramValue : values.getValues()) {
+            String likeValue = AbstractSpecificationsBuilder.getLikeStringExpression(values.getMatchMode(), paramValue);
             String paramName = rootParamName + i;
-            internalPredicates.add(predicateStart + ":" + paramName + predicateStop);
-            this.params.put(paramName, paramValue);
-            i = i + 1;
-        }
-        String oneOf = Joiner.on(" OR ").join(internalPredicates);
-        predicates.add("(" + oneOf + ")");
-    }
-
-    public void addOneOfStringLike(String rootParamName, Collection<String> paramValues) {
-        Set<String> internalPredicates = Sets.newHashSet();
-        int i = 0;
-        for (String paramValue : paramValues) {
-            String paramName = rootParamName + i;
-            String operator = "=";
-            if (paramValue.startsWith(SpecificationUtils.LIKE_CHAR)
-                || paramValue.endsWith(SpecificationUtils.LIKE_CHAR)) {
-                operator = "like";
+            String operator;
+            if (values.getMatchMode() == ValuesRestrictionMatchMode.STRICT) {
+                if (values.getMode() == ValuesRestrictionMode.INCLUDE) {
+                    operator = "=";
+                } else {
+                    operator = "!=";
+                }
+            } else {
+                if (values.getMode() == ValuesRestrictionMode.INCLUDE) {
+                    operator = "like";
+                } else {
+                    operator = "not like";
+                }
             }
             internalPredicates.add("(" + rootParamName + " " + operator + " :" + paramName + ")");
-            this.params.put(paramName, paramValue);
+            this.params.put(paramName, likeValue);
             i = i + 1;
         }
         String oneOf = Joiner.on(" OR ").join(internalPredicates);

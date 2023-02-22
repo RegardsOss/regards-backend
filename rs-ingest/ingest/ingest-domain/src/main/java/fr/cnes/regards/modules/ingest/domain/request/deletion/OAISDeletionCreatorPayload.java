@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
-import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 
 /**
@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
  * @author Léo Mieulet
  * @author Sébastien Binda
  */
-public class OAISDeletionCreatorPayload extends AbstractSearchAIPsParameters<OAISDeletionCreatorPayload> {
+public class OAISDeletionCreatorPayload extends SearchAIPsParameters {
 
     /**
      * This boolean is sent to storage

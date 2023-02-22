@@ -25,8 +25,7 @@ import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
@@ -88,7 +87,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
 
     public static final String REQUEST_PARAM_STORAGES = "storages";
 
-    public static final String REQUEST_PARAM_AIP_IDS = "aipIds";
+    public static final String REQUEST_PARAM_AIP_IDS = "aipId";
 
     /**
      * Controller path to manage tags of multiple AIPs
@@ -147,9 +146,6 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     /**
      * Retrieve a page of AIPs metadata according to the given filters
      *
-     * @param filters
-     * @param pageable
-     * @param assembler
      * @return page of aip metadata respecting the constraints
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -158,8 +154,8 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     @ResourceAccess(description = "Endpoint to retrieve all AIPs matching criterias", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AIPEntityLight>>> searchAIPs(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
-            content = @Content(schema = @Schema(implementation = SearchAIPLightParameters.class)))
-        @Parameter(description = "Filter criterias for AIPs") @RequestBody SearchAIPLightParameters filters,
+                                                              content = @Content(schema = @Schema(implementation = SearchAIPsParameters.class)))
+        @Parameter(description = "Filter criterias for AIPs") @RequestBody SearchAIPsParameters filters,
         @Parameter(description = "Sorting and page configuration")
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<AIPEntityLight> assembler) {
@@ -171,12 +167,11 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     /**
      * Retrieve common tags according to the given filters
      *
-     * @param filters
      * @return tags
      */
     @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search tags used by aips", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<List<String>> retrieveAIPTags(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
+    public ResponseEntity<List<String>> retrieveAIPTags(@Valid @RequestBody SearchAIPsParameters filters) {
         List<String> aipTags = aipService.findTags(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
@@ -184,12 +179,11 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     /**
      * Retrieve common storage location (pluginBusinessId) according to the given filters
      *
-     * @param filters
      * @return storage location
      */
     @RequestMapping(value = STORAGE_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search tags used by aips", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<List<String>> retrieveAIPStorage(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
+    public ResponseEntity<List<String>> retrieveAIPStorage(@Valid @RequestBody SearchAIPsParameters filters) {
         List<String> aipTags = aipService.findStorages(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
@@ -197,24 +191,24 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     /**
      * Retrieve common categories according to the given filters
      *
-     * @param filters
      * @return categories
      */
     @RequestMapping(value = CATEGORIES_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search categories used by aips", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<List<String>> retrieveAIPCategories(@Valid @RequestBody SearchFacetsAIPsParameters filters) {
+    public ResponseEntity<List<String>> retrieveAIPCategories(@Valid @RequestBody SearchAIPsParameters filters) {
         List<String> aipTags = aipService.findCategories(filters);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
-    @RequestMapping(value = AIPStorageService.AIP_DOWNLOAD_PATH, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @RequestMapping(value = AIPStorageService.AIP_DOWNLOAD_PATH,
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResourceAccess(description = "Download AIP as JSON file", role = DefaultRole.PUBLIC)
     public void downloadAIP(@RequestParam(required = false, name = "origin") String origin,
                             @Valid @PathVariable(AIPStorageService.AIP_ID_PATH_PARAM) String aipId,
                             HttpServletResponse response) throws ModuleException, IOException {
 
-        LOGGER.debug("Downloading AIP file for entity \"{}\"", aipId.toString());
+        LOGGER.debug("Downloading AIP file for entity \"{}\"", aipId);
 
         try {
             aipService.downloadAIP(OaisUniformResourceName.fromString(aipId), response);

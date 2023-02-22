@@ -477,23 +477,18 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     }
 
     @Override
-    public Page<FeatureUpdateRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        return updateRepo.findAll(FeatureUpdateRequestSpecification.searchAllByFilters(selection, page), page);
-    }
-
-    @Override
-    public Page<FeatureUpdateRequest> findRequests(SearchFeatureUpdateRequestParameters filters, Pageable page) {
+    public Page<FeatureUpdateRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page) {
         return updateRepo.findAll(new FeatureUpdateRequestSpecificationBuilder().withParameters(filters).build(), page);
     }
 
     @Override
-    public RequestsInfo getInfo(SearchFeatureUpdateRequestParameters filters) {
+    public RequestsInfo getInfo(SearchFeatureRequestParameters filters) {
         if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
                                                                                               .getValues()
                                                                                               .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            filters.withStatesIncluded(List.of(RequestState.ERROR));
             return RequestsInfo.build(updateRepo.count(new FeatureUpdateRequestSpecificationBuilder().withParameters(
                 filters).build()));
         }

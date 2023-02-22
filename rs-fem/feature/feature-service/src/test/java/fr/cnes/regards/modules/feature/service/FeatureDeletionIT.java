@@ -27,10 +27,9 @@ import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureDeletionRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
@@ -53,7 +52,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -62,10 +64,12 @@ import static org.junit.Assert.*;
  * @author Kevin Marchois
  * @author Sébastien Binda
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_deletion", "regards.amqp.enabled=true",
-        "regards.feature.max.bulk.size=10" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties", })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_deletion",
+                                   "regards.amqp.enabled=true",
+                                   "regards.feature.max.bulk.size=10" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties", })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
@@ -86,8 +90,6 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
      * we will test that the {@link FeatureDeletionRequest}
      * are deleted and all FeatureEntity are deleted too
      * because they have not files
-     *
-     * @throws InterruptedException
      */
     @Test
     public void testDeletionWithoutFiles() throws InterruptedException {
@@ -131,8 +133,6 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
      * we will test that the {@link FeatureDeletionRequest} have their step to
      * REMOTE_STORAGE_DELETEION_REQUESTED and all FeatureEntity are still in database
      * because they have files
-     *
-     * @throws InterruptedException
      */
     @Test
     public void testDeletionWithFiles() throws InterruptedException {
@@ -203,55 +203,54 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         this.featureDeletionService.registerRequests(events);
 
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                                                     new SearchFeatureDeletionRequestParameters(),
+                                                                                     new SearchFeatureRequestParameters(),
                                                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureDeletionRequestParameters().withStatesIncluded(
-                                                         Arrays.asList(RequestState.ERROR)),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                         RequestState.ERROR)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureDeletionRequestParameters().withStatesIncluded(
-                                                                                                     Arrays.asList(RequestState.GRANTED))
-                                                                                                 .withLastUpdateAfter(
-                                                                                                     OffsetDateTime.now()
-                                                                                                                   .plusSeconds(
-                                                                                                                       5)),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                                                             RequestState.GRANTED))
+                                                                                         .withLastUpdateAfter(
+                                                                                             OffsetDateTime.now()
+                                                                                                           .plusSeconds(
+                                                                                                               5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureDeletionRequestParameters().withLastUpdateAfter(
-                                                                                                     start)
-                                                                                                 .withLastUpdateBefore(
-                                                                                                     OffsetDateTime.now()
-                                                                                                                   .plusSeconds(
-                                                                                                                       5)),
+                                                     new SearchFeatureRequestParameters().withLastUpdateAfter(start)
+                                                                                         .withLastUpdateBefore(
+                                                                                             OffsetDateTime.now()
+                                                                                                           .plusSeconds(
+                                                                                                               5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureDeletionRequestParameters().withProviderIdsIncluded(
-                                                         Arrays.asList("id1")),
+                                                     new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of(
+                                                         "id1")),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureDeletionRequestParameters().withProviderIdsIncluded(
-                                                         Arrays.asList("id2")),
+                                                     new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of(
+                                                         "id2")),
                                                      PageRequest.of(0, 100));
 
         Assert.assertEquals(1, results.getContent().size());
@@ -269,14 +268,14 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         this.featureDeletionService.registerRequests(events);
 
         // Simulate all requests to scheduled
-        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, nbValid * 2))
+        this.featureDeletionService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, nbValid * 2))
                                    .forEach(r -> {
                                        r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
                                        this.featureDeletionRequestRepo.save(r);
                                    });
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureDeletionService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        RequestHandledResponse response = this.featureDeletionService.deleteRequests(new SearchFeatureRequestParameters());
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests deleted as all request are processing",
                             0,
@@ -285,8 +284,8 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
-        response = this.featureDeletionService.deleteRequests(FeatureRequestsSelectionDTO.build()
-                                                                                         .withState(RequestState.GRANTED));
+        response = this.featureDeletionService.deleteRequests(new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests",
                             0,
@@ -296,13 +295,13 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                             response.getTotalRequested());
 
         // Simulate all requests to scheduled
-        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, nbValid * 2))
+        this.featureDeletionService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, nbValid * 2))
                                    .forEach(r -> {
                                        r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
                                        this.featureDeletionRequestRepo.save(r);
                                    });
 
-        response = this.featureDeletionService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        response = this.featureDeletionService.deleteRequests(new SearchFeatureRequestParameters());
         LOGGER.info(response.getMessage());
         Assert.assertEquals("invalid number of granted delete requests", nbValid, response.getTotalHandled());
         Assert.assertEquals("invalid number of granted delete requests", nbValid, response.getTotalRequested());
@@ -319,9 +318,8 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         this.featureDeletionService.registerRequests(events);
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureDeletionService.retryRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                               .withState(
-                                                                                                                   RequestState.ERROR));
+        RequestHandledResponse response = this.featureDeletionService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.ERROR)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state",
                             0,
@@ -330,8 +328,8 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
-        response = this.featureDeletionService.retryRequests(FeatureRequestsSelectionDTO.build()
-                                                                                        .withState(RequestState.GRANTED));
+        response = this.featureDeletionService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("invalid number of GRANTED Requests", nbValid, response.getTotalHandled());
         Assert.assertEquals("invalid number GRANTED Requests", nbValid, response.getTotalRequested());
@@ -387,7 +385,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         createRequestWithError();
 
         // Retry
-        featureDeletionService.retryRequests(new FeatureRequestsSelectionDTO());
+        featureDeletionService.retryRequests(new SearchFeatureRequestParameters());
         mockNotificationSuccess();
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 
@@ -429,7 +427,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         createRequestWithError();
 
         // Retry
-        featureDeletionService.deleteRequests(new FeatureRequestsSelectionDTO());
+        featureDeletionService.deleteRequests(new SearchFeatureRequestParameters());
         mockNotificationSuccess();
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 

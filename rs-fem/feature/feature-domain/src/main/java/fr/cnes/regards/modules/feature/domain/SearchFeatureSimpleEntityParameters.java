@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.feature.domain;
 
 import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -29,7 +31,10 @@ import java.util.Collection;
 /**
  * @author Stephane Cortine
  */
-public class SearchFeatureSimpleEntityParameters implements AbstractSearchParameters<FeatureSimpleEntity> {
+public class SearchFeatureSimpleEntityParameters implements AbstractSearchParameters {
+
+    @Schema(description = "Filter on feature id")
+    private ValuesRestriction<Long> featureIds;
 
     @Schema(description = "Filter on model")
     private String model;
@@ -71,12 +76,16 @@ public class SearchFeatureSimpleEntityParameters implements AbstractSearchParame
     }
 
     public SearchFeatureSimpleEntityParameters withProviderIdsIncluded(Collection<String> providerIds) {
-        this.providerIds = new ValuesRestriction<String>().withInclude(providerIds);
+        this.providerIds = new ValuesRestriction<String>().withInclude(providerIds)
+                                                          .withMatchMode(ValuesRestrictionMatchMode.STARTS_WITH)
+                                                          .withIgnoreCase(true);
         return this;
     }
 
     public SearchFeatureSimpleEntityParameters withProviderIdsExcluded(Collection<String> providerIds) {
-        this.providerIds = new ValuesRestriction<String>().withExclude(providerIds);
+        this.providerIds = new ValuesRestriction<String>().withExclude(providerIds)
+                                                          .withMatchMode(ValuesRestrictionMatchMode.STARTS_WITH)
+                                                          .withIgnoreCase(true);
         return this;
     }
 
@@ -137,6 +146,24 @@ public class SearchFeatureSimpleEntityParameters implements AbstractSearchParame
 
     public SearchFeatureSimpleEntityParameters withDisseminationPending(Boolean disseminationPending) {
         setDisseminationPending(disseminationPending);
+        return this;
+    }
+
+    public ValuesRestriction<Long> getFeatureIds() {
+        return featureIds;
+    }
+
+    public void setFeatureIds(ValuesRestriction<Long> featureIds) {
+        this.featureIds = featureIds;
+    }
+
+    public SearchFeatureSimpleEntityParameters withFeatureIdsIncluded(Collection<Long> featureIds) {
+        this.featureIds = new ValuesRestriction<>(featureIds, ValuesRestrictionMode.INCLUDE);
+        return this;
+    }
+
+    public SearchFeatureSimpleEntityParameters withFeatureIdsExcluded(Collection<Long> featureIds) {
+        this.featureIds = new ValuesRestriction<>(featureIds, ValuesRestrictionMode.EXCLUDE);
         return this;
     }
 }

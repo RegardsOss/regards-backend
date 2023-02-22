@@ -28,7 +28,6 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,8 +49,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 /**
  * End point to get {@link DataObjectFeature} contain data of the last created/modified {@link FeatureEntity}
@@ -84,13 +81,13 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
      * filters
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get features", description = "Return a page of features matching criterias.")
+    @Operation(summary = "Get features", description = "Return a page of features matching criteria.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All features were retrieved.") })
-    @ResourceAccess(description = "Endpoint to retrieve features matching criterias", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Endpoint to retrieve features matching criteria", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> searchFeatures(
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
-            content = @Content(schema = @Schema(implementation = SearchFeatureSimpleEntityParameters.class)))
-        @Parameter(description = "Filter criterias for features") @RequestBody
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
+                                                              content = @Content(schema = @Schema(implementation = SearchFeatureSimpleEntityParameters.class)))
+        @Parameter(description = "Filter criteria for features") @RequestBody
         SearchFeatureSimpleEntityParameters filters,
         @Parameter(description = "Sorting and page configuration")
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -111,36 +108,36 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
 
     /**
      * Creates job to send notify notification for each feature matching given search parameters
-     *
-     * @param selection
-     * @return
      */
     @Operation(summary = "Notify features according to search parameters",
-        description = "Notify features according to search parameters")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "Notify features according to search parameters") })
+               description = "Notify features according to search parameters")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Notify features according to search parameters") })
     @RequestMapping(method = RequestMethod.POST, path = NOTIFY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Notify features according to search parameters", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> notifyFeatures(
-        @Parameter(description = "Features selection filters") @Valid @RequestBody FeaturesSelectionDTO selection) {
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
+                                                              content = @Content(schema = @Schema(implementation = SearchFeatureSimpleEntityParameters.class)))
+        @Parameter(description = "Filter criteria for features") @RequestBody
+        SearchFeatureSimpleEntityParameters selection) {
         featureService.scheduleNotificationsJob(selection);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
     /**
      * Creates job to send deletion notification for each feature matching given search parameters
-     *
-     * @param selection
-     * @return
      */
     @Operation(summary = "Delete features according to search parameters",
-        description = "Delete features according to search parameters")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "Delete features according to search parameters") })
+               description = "Delete features according to search parameters")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Delete features according to search parameters") })
     @RequestMapping(method = RequestMethod.DELETE, path = DELETE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete features according to search parameters", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteFeatures(
-        @Parameter(description = "Features selection filters") @Valid @RequestBody FeaturesSelectionDTO selection) {
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
+                                                              content = @Content(schema = @Schema(implementation = SearchFeatureSimpleEntityParameters.class)))
+        @Parameter(description = "Filter criteria for features") @RequestBody
+        SearchFeatureSimpleEntityParameters selection) {
         featureService.scheduleDeletionJob(selection);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
@@ -164,12 +161,12 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
                                 this.getClass(),
                                 "notifyFeatures",
                                 LinkRelation.of("notify"),
-                                MethodParamFactory.build(FeaturesSelectionDTO.class));
+                                MethodParamFactory.build(SearchFeatureSimpleEntityParameters.class));
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "deleteFeatures",
                                 LinkRelation.of("delete"),
-                                MethodParamFactory.build(FeaturesSelectionDTO.class));
+                                MethodParamFactory.build(SearchFeatureSimpleEntityParameters.class));
         return resource;
     }
 }

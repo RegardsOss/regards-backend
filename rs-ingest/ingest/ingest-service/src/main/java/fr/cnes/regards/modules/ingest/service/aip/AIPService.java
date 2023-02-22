@@ -37,11 +37,8 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorReq
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
-import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
@@ -141,8 +138,14 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AIPEntity> findByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable) {
-        return aipRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable), pageable);
+    public Page<AIPEntity> findByFilters(SearchAIPsParameters filters, Pageable pageable) {
+        long start = System.currentTimeMillis();
+
+        Page<AIPEntity> response = aipRepository.findAll(new AIPSpecificationsBuilder().withParameters(filters).build(),
+                                                         pageable);
+
+        LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
+        return response;
     }
 
     @Override
@@ -183,48 +186,42 @@ public class AIPService implements IAIPService {
             // But in case it is REPLACE...
             if (versioningMode == VersioningMode.REPLACE) {
                 sessionNotifier.incrementProductReplace(aipEntity);
+                OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
                 if (aipEntity.isLast()) {
                     // we are the last aip so we need to delete the old latest
-                    oaisDeletionRequestService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(
-                                                                                                     SessionDeletionMode.BY_STATE)
-                                                                                                 .withAipId(dbLatest.getAipId())
-                                                                                                 .withSelectionMode(
-                                                                                                     SearchSelectionMode.INCLUDE));
+                    dto.withAipIdsIncluded(List.of(dbLatest.getAipId()));
                 } else {
                     //we are not the last aip but we have been added at the same time than the latest, so we need to be removed
-                    oaisDeletionRequestService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(
-                                                                                                     SessionDeletionMode.BY_STATE)
-                                                                                                 .withAipId(aipEntity.getAipId())
-                                                                                                 .withSelectionMode(
-                                                                                                     SearchSelectionMode.INCLUDE));
+                    dto.withAipIdsIncluded(List.of(aipEntity.getAipId()));
                 }
+                oaisDeletionRequestService.registerOAISDeletionCreator(dto);
             }
         }
     }
 
     @Override
-    public Page<AIPEntityLight> findLightByFilters(SearchAIPLightParameters filters, Pageable pageable) {
+    public Page<AIPEntityLight> findLightByFilters(SearchAIPsParameters filters, Pageable pageable) {
         long start = System.currentTimeMillis();
 
-        Page<AIPEntityLight> response = aipLigthRepository.findAll(new AIPSpecificationsBuilder().withParameters(filters)
-                                                                                                 .build(), pageable);
+        Page<AIPEntityLight> response = aipLigthRepository.findAll(new AIPLightSpecificationsBuilder().withParameters(
+            filters).build(), pageable);
 
         LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
         return response;
     }
 
     @Override
-    public List<String> findTags(SearchFacetsAIPsParameters filters) {
+    public List<String> findTags(SearchAIPsParameters filters) {
         return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipTagsUsingSQL(filters));
     }
 
     @Override
-    public List<String> findStorages(SearchFacetsAIPsParameters filters) {
+    public List<String> findStorages(SearchAIPsParameters filters) {
         return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipStoragesUsingSQL(filters));
     }
 
     @Override
-    public List<String> findCategories(SearchFacetsAIPsParameters filters) {
+    public List<String> findCategories(SearchAIPsParameters filters) {
         return customAIPRepository.getDistinct(AIPQueryGenerator.searchAipCategoriesUsingSQL(filters));
     }
 

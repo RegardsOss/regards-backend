@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ingest.dto.request;
 import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -33,7 +32,10 @@ import java.util.Collection;
  *
  * @author Stephane Cortine
  */
-public class SearchAbstractRequestParameters implements AbstractSearchParameters<AbstractRequest> {
+public class SearchAbstractRequestParameters implements AbstractSearchParameters {
+
+    @Schema(description = "Filter on request id")
+    private ValuesRestriction<Long> requestIds;
 
     @Schema(description = "Filter on provider id")
     private ValuesRestriction<String> providerIds;
@@ -48,11 +50,11 @@ public class SearchAbstractRequestParameters implements AbstractSearchParameters
     private DatesRangeRestriction creationDate = new DatesRangeRestriction();
 
     @Schema(description = "List of internal request states",
-        example = "TO_SCHEDULE|CREATED|WAITING_VERSIONING_MODE|BLOCKED|RUNNING|ERROR|ABORTED|IGNORED")
+            example = "TO_SCHEDULE|CREATED|WAITING_VERSIONING_MODE|BLOCKED|RUNNING|ERROR|ABORTED|IGNORED")
     private ValuesRestriction<InternalRequestState> requestStates;
 
     @Schema(description = "List of request type",
-        example = "INGEST|UPDATE|AIP_UPDATES_CREATOR|AIP_SAVE_METADATA|AIP_POST_PROCESS|OAIS_DELETION|ABORTED|OAIS_DELETION_CREATOR")
+            example = "INGEST|UPDATE|AIP_UPDATES_CREATOR|AIP_SAVE_METADATA|AIP_POST_PROCESS|OAIS_DELETION|ABORTED|OAIS_DELETION_CREATOR")
     private ValuesRestriction<RequestTypeEnum> requestIpTypes;
 
     public ValuesRestriction<String> getProviderIds() {
@@ -152,4 +154,23 @@ public class SearchAbstractRequestParameters implements AbstractSearchParameters
         this.requestIpTypes = new ValuesRestriction<RequestTypeEnum>().withExclude(requestTypes);
         return this;
     }
+
+    public ValuesRestriction<Long> getRequestIds() {
+        return requestIds;
+    }
+
+    public void setRequestIds(ValuesRestriction<Long> requestIds) {
+        this.requestIds = requestIds;
+    }
+
+    public SearchAbstractRequestParameters withRequestIdsIncluded(Collection<Long> requestIds) {
+        this.requestIds = new ValuesRestriction<Long>().withInclude(requestIds);
+        return this;
+    }
+
+    public SearchAbstractRequestParameters withRequestIdsExcluded(Collection<Long> requestIds) {
+        this.requestIds = new ValuesRestriction<Long>().withExclude(requestIds);
+        return this;
+    }
+
 }

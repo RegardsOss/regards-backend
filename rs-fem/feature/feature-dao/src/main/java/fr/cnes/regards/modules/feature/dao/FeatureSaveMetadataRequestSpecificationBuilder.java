@@ -18,28 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureSaveMetadataRequestParameters;
 
 /**
  * @author Stephane Cortine
  */
-public class FeatureSaveMetadataRequestSpecificationBuilder extends
-    AbstractFeatureRequestSpecificationsBuilder<FeatureSaveMetadataRequest, SearchFeatureSaveMetadataRequestParameters> {
-
-    @Override
-    protected void addSpecificationsFromParameters() {
-        specifications.add(equalsWithFeatureEntity("sessionOwner", parameters.getSource()));
-
-        specifications.add(equalsWithFeatureEntity("session", parameters.getSession()));
-
-        specifications.add(useValuesRestrictionLikeWithFeatureEntity("providerId", parameters.getProviderIds()));
-
-        specifications.add(useValuesRestriction(AbstractRequest.COLUMN_STATE, parameters.getStates()));
-
-        specifications.add(after("registrationDate", parameters.getLastUpdate().getAfter()));
-        specifications.add(before("registrationDate", parameters.getLastUpdate().getBefore()));
-    }
+public class FeatureSaveMetadataRequestSpecificationBuilder
+    extends AbstractFeatureRequestSpecificationsBuilder<FeatureSaveMetadataRequest> {
 
 }

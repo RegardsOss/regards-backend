@@ -138,8 +138,8 @@ public class RequestService implements IRequestService {
 
     @Override
     public Page<AbstractRequest> findRequests(SearchAbstractRequestParameters filters, Pageable pageable) {
-        return abstractRequestRepository.findAll(new AbstractRequestSpecificationsBuilder().withParameters(filters)
-                                                                                           .build(), pageable);
+        return abstractRequestRepository.findAll(new RequestSpecificationsBuilder().withParameters(filters).build(),
+                                                 pageable);
     }
 
     @Override

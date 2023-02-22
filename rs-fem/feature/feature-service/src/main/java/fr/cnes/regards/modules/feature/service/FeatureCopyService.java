@@ -26,11 +26,14 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.dao.FeatureCopyRequestSpecificationsBuilder;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureCopyRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCopyRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
@@ -124,7 +127,7 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureCopyRequest.class.getName());
         validator.validate(item, errors);
         if (errors.hasErrors()) {
-            LOGGER.debug("Error during founded FeatureCopyRequest validation {}", errors.toString());
+            LOGGER.debug("Error during founded FeatureCopyRequest validation {}", errors);
             requestInfo.addDeniedRequest(item.getUrn(), ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
             publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY,
@@ -273,25 +276,19 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
     }
 
     @Override
-    public Page<FeatureCopyRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        return featureCopyRequestRepo.findAll(FeatureCopyRequestSpecification.searchAllByFilters(selection, page),
-                                              page);
-    }
-
-    @Override
-    public Page<FeatureCopyRequest> findRequests(SearchFeatureCopyRequestParameters filters, Pageable page) {
+    public Page<FeatureCopyRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page) {
         return featureCopyRequestRepo.findAll(new FeatureCopyRequestSpecificationsBuilder().withParameters(filters)
                                                                                            .build(), page);
     }
 
     @Override
-    public RequestsInfo getInfo(SearchFeatureCopyRequestParameters filters) {
+    public RequestsInfo getInfo(SearchFeatureRequestParameters filters) {
         if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
                                                                                               .getValues()
                                                                                               .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            filters.withStatesIncluded(List.of(RequestState.ERROR));
             return RequestsInfo.build(featureCopyRequestRepo.count(new FeatureCopyRequestSpecificationsBuilder().withParameters(
                 filters).build()));
         }

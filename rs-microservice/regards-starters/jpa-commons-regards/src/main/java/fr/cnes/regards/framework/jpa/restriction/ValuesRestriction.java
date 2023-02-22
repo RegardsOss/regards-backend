@@ -42,6 +42,13 @@ public class ValuesRestriction<T> {
     @Schema(description = "Restriction mode to use")
     private ValuesRestrictionMode mode;
 
+    @Schema(description = "Match mode to use, can be STRICT|STARTS_WITH|CONTAINS|ENDS_WITH (default STRICT)")
+    private ValuesRestrictionMatchMode matchMode = ValuesRestrictionMatchMode.STRICT;
+
+    @Schema(description = "Only available for String resitrctions. Allow if true, to search values ignoring case. "
+                          + "Default false")
+    private boolean ignoreCase = false;
+
     public ValuesRestriction() {
     }
 
@@ -50,9 +57,37 @@ public class ValuesRestriction<T> {
         this.mode = mode;
     }
 
+    public ValuesRestriction(Collection<T> values,
+                             ValuesRestrictionMode mode,
+                             ValuesRestrictionMatchMode matchMode,
+                             boolean ignoreCase) {
+        this.values = values;
+        this.mode = mode;
+        this.matchMode = matchMode;
+        this.ignoreCase = ignoreCase;
+    }
+
     public ValuesRestriction<T> withInclude(Collection<T> values) {
         this.values = values;
         this.mode = ValuesRestrictionMode.INCLUDE;
+        return this;
+    }
+
+    public ValuesRestrictionMatchMode getMatchMode() {
+        return matchMode;
+    }
+
+    public ValuesRestriction<T> withMatchMode(ValuesRestrictionMatchMode matchMode) {
+        this.matchMode = matchMode;
+        return this;
+    }
+
+    public boolean isIgnoreCase() {
+        return ignoreCase;
+    }
+
+    public ValuesRestriction<T> withIgnoreCase(boolean ignoreCase) {
+        this.ignoreCase = ignoreCase;
         return this;
     }
 

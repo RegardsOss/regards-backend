@@ -26,8 +26,8 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepPrope
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Test;
@@ -47,9 +47,11 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -127,7 +129,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         createRequestsWithOneFileError(requestCount);
 
         // Retry request in error
-        featureCreationService.retryRequests(new FeatureRequestsSelectionDTO());
+        featureCreationService.retryRequests(new SearchFeatureRequestParameters());
         featureCreationService.scheduleRequests();
         TimeUnit.SECONDS.sleep(5);
         mockStorageHelper.mockFeatureCreationStorageSuccess(Optional.of(1));
@@ -174,7 +176,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         createRequestsWithOneFileError(requestCount);
 
         // Delete request in error
-        featureCreationService.deleteRequests(new FeatureRequestsSelectionDTO());
+        featureCreationService.deleteRequests(new SearchFeatureRequestParameters());
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
@@ -217,7 +219,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         createOneRequestsWithNotificationError();
 
         // Retry request in error
-        featureCreationService.retryRequests(new FeatureRequestsSelectionDTO());
+        featureCreationService.retryRequests(new SearchFeatureRequestParameters());
         featureCreationService.scheduleRequests();
         TimeUnit.SECONDS.sleep(5);
         mockNotificationSuccess();
@@ -257,7 +259,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         createOneRequestsWithNotificationError();
 
         // Delete request in error
-        featureCreationService.deleteRequests(new FeatureRequestsSelectionDTO());
+        featureCreationService.deleteRequests(new SearchFeatureRequestParameters());
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step

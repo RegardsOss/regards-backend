@@ -106,13 +106,14 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
         String SESSION_0 = OffsetDateTime.now().toString();
 
         for (int i = 0; i < 1000; i = i + 1) {
-            AIPUpdatesCreatorRequest someRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(
-                SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
-                TAG_2,
-                TAG_3,
-                CATEGORIES_2,
-                CATEGORIES_0,
-                Lists.newArrayList(STORAGE_3)));
+            AIPUpdatesCreatorRequest someRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(
+                                                                                                                   SESSION_0).withSessionOwner(SESSION_OWNER_0),
+                                                                                                               TAG_2,
+                                                                                                               TAG_3,
+                                                                                                               CATEGORIES_2,
+                                                                                                               CATEGORIES_0,
+                                                                                                               Lists.newArrayList(
+                                                                                                                   STORAGE_3)));
             aipUpdatesCreatorRepository.save(someRequest);
         }
 
@@ -224,7 +225,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Multiple values allowed. Allowed values : "
-                                                                 + queryTypeValues.toString())));
+                                                                 + queryTypeValues)));
 
         params.add(constrainedFields.withPath("state", "state", "State")
                                     .type(JSON_STRING_TYPE)
@@ -233,7 +234,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Multiple values allowed. Allowed values : "
-                                                                 + stateValues.toString())));
+                                                                 + stateValues)));
 
         params.add(constrainedFields.withPath("stateExcluded", "stateExcluded", "State excluded (ignored)")
                                     .type(JSON_STRING_TYPE)
@@ -242,7 +243,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Multiple values allowed. Allowed values : "
-                                                                 + stateValues.toString())));
+                                                                 + stateValues)));
 
         params.add(constrainedFields.withPath("creationDate.from", "from", "ISO Date time filtering on creation date")
                                     .optional()
@@ -319,13 +320,13 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
 
         fields.add(constrainedFields.withPath(prefix + "state",
                                               "state",
-                                              "Request state. Allowed values : " + stateValues.toString())
+                                              "Request state. Allowed values : " + stateValues)
                                     .type(JSON_STRING_TYPE)
                                     .optional());
 
         fields.add(constrainedFields.withPath(prefix + "dtype",
                                               "dtype",
-                                              "Request type. Allowed values : " + queryTypeValues.toString())
+                                              "Request type. Allowed values : " + queryTypeValues)
                                     .type(JSON_STRING_TYPE)
                                     .optional());
 

@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.feature.dao;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
-import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
-import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
 
@@ -38,8 +37,24 @@ import java.util.Set;
  *
  * @author Stephane Cortine
  */
-public abstract class AbstractFeatureRequestSpecificationsBuilder<T, R extends AbstractSearchParameters<T>>
-    extends AbstractSpecificationsBuilder<T, R> {
+public abstract class AbstractFeatureRequestSpecificationsBuilder<T>
+    extends AbstractSpecificationsBuilder<T, SearchFeatureRequestParameters> {
+
+    protected boolean searchInFeatureEntity = true;
+
+    @Override
+    protected void addSpecificationsFromParameters() {
+        specifications.add(useValuesRestriction("state", parameters.getStates()));
+        specifications.add(after("registrationDate", parameters.getLastUpdate().getAfter()));
+        specifications.add(before("registrationDate", parameters.getLastUpdate().getBefore()));
+        specifications.add(useValuesRestriction("step", parameters.getSteps()));
+
+        if (this.searchInFeatureEntity) {
+            specifications.add(equalsWithFeatureEntity("sessionOwner", parameters.getSource()));
+            specifications.add(equalsWithFeatureEntity("session", parameters.getSession()));
+            specifications.add(useValuesRestrictionLikeWithFeatureEntity("providerId", parameters.getProviderIds()));
+        }
+    }
 
     protected Specification<T> equalsWithFeatureEntity(String pathToField, @Nullable String value) {
         return (root, query, criteriaBuilder) -> {
@@ -47,109 +62,33 @@ public abstract class AbstractFeatureRequestSpecificationsBuilder<T, R extends A
                 return null;
             }
             Root<FeatureEntity> fr = query.from(FeatureEntity.class);
-
             Set<Predicate> predicates = Sets.newHashSet();
             predicates.add(criteriaBuilder.equal(fr.get("urn"), root.get("urn")));
             predicates.add(criteriaBuilder.equal(fr.get(pathToField), value));
 
-            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));//criteriaBuilder.equal(getPath(root, pathToField), value);
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
 
-    protected Specification<T> useValuesRestrictionLike(String pathToField,
-                                                        @Nullable ValuesRestriction<String> valuesRestriction) {
-        if (valuesRestriction == null) {
-            return null;
-        }
-        Collection<String> values = valuesRestriction.getValues();
-        Assert.notEmpty(values, "Values must not be empty");
-
-        if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
-            return isIncludedString(pathToField, values);
-        }
-        return isExcludedString(pathToField, values);
-    }
-
-    protected Specification<T> isIncludedString(String pathToField, Collection<String> values) {
-        Assert.notNull(values, "Values must not be null");
-        Assert.notEmpty(values, "Values must not be empty");
-
-        return (root, query, criteriaBuilder) -> {
-            Set<Predicate> predicates = Sets.newHashSet();
-            for (String value : values) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(pathToField)),
-                                                    value.toLowerCase() + "%"));
-            }
-            return criteriaBuilder.or(predicates.toArray(new Predicate[predicates.size()]));
-        };
-    }
-
-    protected Specification<T> isExcludedString(String pathToField, Collection<String> values) {
-        Assert.notNull(values, "Values must not be null");
-        Assert.notEmpty(values, "Values must not be empty");
-
-        return (root, query, criteriaBuilder) -> {
-            Set<Predicate> predicates = Sets.newHashSet();
-            for (String value : values) {
-                predicates.add(criteriaBuilder.notLike(criteriaBuilder.lower(root.get(pathToField)),
-                                                       value.toLowerCase() + "%"));
-            }
-            return criteriaBuilder.or(predicates.toArray(new Predicate[predicates.size()]));
-        };
-    }
-
+    /**
+     * Add restriction from the given valuesrestriction to a joined {@link FeatureEntity} elements by urn
+     */
     protected Specification<T> useValuesRestrictionLikeWithFeatureEntity(String pathToField,
                                                                          @Nullable
-                                                                         ValuesRestriction<String> valuesRestriction) {
+                                                                         ValuesRestriction<?> valuesRestriction) {
         if (valuesRestriction == null) {
             return null;
         }
-        Collection<String> values = valuesRestriction.getValues();
-        Assert.notEmpty(values, "Values must not be empty");
-
-        if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
-            return isIncludedStringWithFeatureEntity(pathToField, values);
-        }
-        return isExcludedStringWithFeatureEntity(pathToField, values);
-    }
-
-    protected Specification<T> isIncludedStringWithFeatureEntity(String pathToField, Collection<String> values) {
-        Assert.notNull(values, "Values must not be null");
+        Collection<?> values = valuesRestriction.getValues();
         Assert.notEmpty(values, "Values must not be empty");
 
         return (root, query, criteriaBuilder) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             Root<FeatureEntity> fr = query.from(FeatureEntity.class);
             predicates.add(criteriaBuilder.equal(fr.get("urn"), root.get("urn")));
-
-            Set<Predicate> likePredicates = Sets.newHashSet();
-            for (String value : values) {
-                likePredicates.add(criteriaBuilder.like(criteriaBuilder.lower(fr.get(pathToField)),
-                                                        value.toLowerCase() + "%"));
-            }
-            predicates.add(criteriaBuilder.or(likePredicates.toArray(new Predicate[likePredicates.size()])));
-
+            predicates.add(createValuesRestrictionPredicate(fr, criteriaBuilder, pathToField, valuesRestriction));
             return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
 
-    protected Specification<T> isExcludedStringWithFeatureEntity(String pathToField, Collection<String> values) {
-        Assert.notNull(values, "Values must not be null");
-        Assert.notEmpty(values, "Values must not be empty");
-
-        return (root, query, criteriaBuilder) -> {
-            Set<Predicate> predicates = Sets.newHashSet();
-            Root<FeatureEntity> fr = query.from(FeatureEntity.class);
-            predicates.add(criteriaBuilder.equal(fr.get("urn"), root.get("urn")));
-
-            Set<Predicate> notLikePredicates = Sets.newHashSet();
-            for (String value : values) {
-                notLikePredicates.add(criteriaBuilder.notLike(criteriaBuilder.lower(fr.get(pathToField)),
-                                                              value.toLowerCase() + "%"));
-            }
-            predicates.add(criteriaBuilder.or(notLikePredicates.toArray(new Predicate[notLikePredicates.size()])));
-
-            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-        };
-    }
 }

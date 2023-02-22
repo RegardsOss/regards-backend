@@ -19,9 +19,8 @@
 package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureDeletionRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
@@ -59,7 +58,6 @@ public interface IFeatureDeletionService extends IAbstractFeatureService<Feature
     /**
      * Register {@link FeatureDeletionRequest} from a {@link FeatureDeletionCollection}
      *
-     * @param collection
      * @return {@link RequestInfo} contain {@link FeatureUniformResourceName} of granted/denied features
      */
     RequestInfo<FeatureUniformResourceName> registerRequests(@Valid FeatureDeletionCollection collection);
@@ -67,25 +65,15 @@ public interface IFeatureDeletionService extends IAbstractFeatureService<Feature
     /**
      * Find all {@link FeatureDeletionRequest}s
      *
-     * @param page
      * @return {@link FeatureDeletionRequest}s
      */
-    Page<FeatureDeletionRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
-
-    /**
-     * Find all {@link FeatureDeletionRequest}s
-     *
-     * @param filters
-     * @param page
-     * @return {@link FeatureDeletionRequest}s
-     */
-    Page<FeatureDeletionRequest> findRequests(SearchFeatureDeletionRequestParameters filters, Pageable page);
+    Page<FeatureDeletionRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page);
 
     /**
      * Find requests information
      *
-     * @param filters {@link SearchFeatureDeletionRequestParameters}
+     * @param filters {@link SearchFeatureRequestParameters}
      * @return {@link RequestsInfo}
      */
-    RequestsInfo getInfo(SearchFeatureDeletionRequestParameters filters);
+    RequestsInfo getInfo(SearchFeatureRequestParameters filters);
 }

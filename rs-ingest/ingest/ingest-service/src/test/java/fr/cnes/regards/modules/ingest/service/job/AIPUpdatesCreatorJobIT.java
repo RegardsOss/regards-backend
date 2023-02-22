@@ -53,10 +53,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job", "regards.amqp.enabled=true",
-        "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-        "regards.ingest.request.schedule.delay=100000000" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job",
+                                   "regards.amqp.enabled=true",
+                                   "regards.ingest.aip.update.bulk.delay=100000000",
+                                   "eureka.client.enabled=false",
+                                   "regards.ingest.request.schedule.delay=100000000" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
 
@@ -148,7 +150,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
      *
      * @param expectedTasks expected count of task in db
      * @param timeout       in ms
-     * @throws InterruptedException
      */
     public void waitForTaskCreated(long expectedTasks, long timeout) {
         try {
@@ -165,10 +166,9 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
     public void testScanJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                           .withSession(SESSION_0)
-                                                                                           .withSessionOwner(
-                                                                                               SESSION_OWNER_0),
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(SESSION_0)
+                                                                                                 .withSessionOwner(
+                                                                                                     SESSION_OWNER_0),
                                                                        TAG_2,
                                                                        TAG_1,
                                                                        CATEGORIES_2,
@@ -185,10 +185,9 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
         initData();
         generateFakeRunningTasks();
 
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                           .withSession(SESSION_0)
-                                                                                           .withSessionOwner(
-                                                                                               SESSION_OWNER_0),
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(SESSION_0)
+                                                                                                 .withSessionOwner(
+                                                                                                     SESSION_OWNER_0),
                                                                        TAG_2,
                                                                        TAG_1,
                                                                        CATEGORIES_2,

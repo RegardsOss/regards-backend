@@ -23,10 +23,9 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCreationRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
@@ -45,6 +44,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,9 +52,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author Stephane Cortine
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -171,26 +173,23 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_state() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureCreationRequestParameters searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withStatesIncluded(
-            Arrays.asList(RequestState.GRANTED));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED));
         // When
-        Page<FeatureCreationRequest> oldResults = featureCreationService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withState(
-                                                                                                                     RequestState.GRANTED),
-                                                                                      pageable);
-        Page<FeatureCreationRequest> results = featureCreationService.findRequests(
-            searchFeatureCreationRequestParameters,
-            pageable);
+        Page<FeatureCreationRequest> oldResults = featureCreationService.findRequests(new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED)), pageable);
+        Page<FeatureCreationRequest> results = featureCreationService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
         assertEquals(2, oldResults.getNumberOfElements());
         assertEquals(2, results.getNumberOfElements());
 
         // Given
-        searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withStatesIncluded(Arrays.asList(
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(Arrays.asList(
             RequestState.SUCCESS,
             RequestState.GRANTED));
         // When
-        results = featureCreationService.findRequests(searchFeatureCreationRequestParameters, pageable);
+        results = featureCreationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(4, results.getNumberOfElements());
     }
@@ -199,16 +198,13 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_source() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureCreationRequestParameters searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withSource(
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withSource(
             "session_owner0");
         // When
-        Page<FeatureCreationRequest> oldResults = featureCreationService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withSource(
-                                                                                                                     "session_owner0"),
-                                                                                      pageable);
-        Page<FeatureCreationRequest> results = featureCreationService.findRequests(
-            searchFeatureCreationRequestParameters,
-            pageable);
+        Page<FeatureCreationRequest> oldResults = featureCreationService.findRequests(new SearchFeatureRequestParameters().withSource(
+            "session_owner0"), pageable);
+        Page<FeatureCreationRequest> results = featureCreationService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
         assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
@@ -218,16 +214,13 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_session() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureCreationRequestParameters searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withSession(
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withSession(
             "session0");
         // When
-        Page<FeatureCreationRequest> oldResults = featureCreationService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withSession(
-                                                                                                                     "session0"),
-                                                                                      pageable);
-        Page<FeatureCreationRequest> results = featureCreationService.findRequests(
-            searchFeatureCreationRequestParameters,
-            pageable);
+        Page<FeatureCreationRequest> oldResults = featureCreationService.findRequests(new SearchFeatureRequestParameters().withSession(
+            "session0"), pageable);
+        Page<FeatureCreationRequest> results = featureCreationService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
         assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
@@ -237,47 +230,34 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_provider_id() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureCreationRequestParameters searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider_id1"));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(
+            List.of("provider_id1"));
         // When
-        Page<FeatureCreationRequest> oldResults = featureCreationService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withProviderId(
-                                                                                                                     "provider_id1"),
-                                                                                      pageable);
-        Page<FeatureCreationRequest> results = featureCreationService.findRequests(
-            searchFeatureCreationRequestParameters,
-            pageable);
+        Page<FeatureCreationRequest> results = featureCreationService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
-        assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
 
         // Given
-        searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of("provider"));
         // When
-        oldResults = featureCreationService.findRequests(FeatureRequestsSelectionDTO.build().withProviderId("provider"),
-                                                         pageable);
-        results = featureCreationService.findRequests(searchFeatureCreationRequestParameters, pageable);
+        results = featureCreationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
-        assertEquals(5, oldResults.getNumberOfElements());
         assertEquals(5, results.getNumberOfElements());
 
         // Given
-        searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("id0"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of("id0"));
         // When
-        oldResults = featureCreationService.findRequests(FeatureRequestsSelectionDTO.build().withProviderId("id0"),
-                                                         pageable);
-        results = featureCreationService.findRequests(searchFeatureCreationRequestParameters, pageable);
+        results = featureCreationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
-        assertEquals(0, oldResults.getNumberOfElements());
         assertEquals(0, results.getNumberOfElements());
 
         // Given
-        searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("Provider_id0", "provider_Id1"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            "Provider_id0",
+            "provider_Id1"));
         // When
-        results = featureCreationService.findRequests(searchFeatureCreationRequestParameters, pageable);
+        results = featureCreationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(2, results.getNumberOfElements());
     }
@@ -288,20 +268,12 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
         OffsetDateTime begin = OffsetDateTime.of(2022, 10, 9, 14, 30, 30, 0, ZoneOffset.UTC);
         OffsetDateTime end = OffsetDateTime.of(2022, 12, 9, 14, 30, 30, 0, ZoneOffset.UTC);
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureCreationRequestParameters searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withLastUpdateBefore(
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withLastUpdateBefore(
             end).withLastUpdateAfter(begin);
         // When
-        Page<FeatureCreationRequest> oldResults = featureCreationService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withStart(
-                                                                                                                     begin)
-                                                                                                                 .withEnd(
-                                                                                                                     end),
-                                                                                      pageable);
-        Page<FeatureCreationRequest> results = featureCreationService.findRequests(
-            searchFeatureCreationRequestParameters,
-            pageable);
+        Page<FeatureCreationRequest> results = featureCreationService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
-        assertEquals(5, oldResults.getNumberOfElements());
         assertEquals(5, results.getNumberOfElements());
     }
 
@@ -312,59 +284,41 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
         OffsetDateTime end = OffsetDateTime.of(2022, 12, 9, 14, 30, 30, 0, ZoneOffset.UTC);
 
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureCreationRequestParameters searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withSource(
-                                                                                                                                        "session_owner0")
-                                                                                                                                    .withSession(
-                                                                                                                                        "session0")
-                                                                                                                                    .withProviderIdsIncluded(
-                                                                                                                                        Arrays.asList(
-                                                                                                                                            "provider_id0"))
-                                                                                                                                    .withStatesIncluded(
-                                                                                                                                        Arrays.asList(
-                                                                                                                                            RequestState.GRANTED))
-                                                                                                                                    .withLastUpdateBefore(
-                                                                                                                                        end)
-                                                                                                                                    .withLastUpdateAfter(
-                                                                                                                                        begin);
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withSource(
+                                                                                                                "session_owner0")
+                                                                                                            .withSession(
+                                                                                                                "session0")
+                                                                                                            .withProviderIdsIncluded(
+                                                                                                                List.of(
+                                                                                                                    "provider_id0"))
+                                                                                                            .withStatesIncluded(
+                                                                                                                List.of(
+                                                                                                                    RequestState.GRANTED))
+                                                                                                            .withLastUpdateBefore(
+                                                                                                                end)
+                                                                                                            .withLastUpdateAfter(
+                                                                                                                begin);
         // When
-        Page<FeatureCreationRequest> oldResults = featureCreationService.findRequests(FeatureRequestsSelectionDTO.build()
-
-                                                                                                                 .withSource(
-                                                                                                                     "session_owner0")
-                                                                                                                 .withSession(
-                                                                                                                     "session0")
-                                                                                                                 .withProviderId(
-                                                                                                                     "provider_id0")
-                                                                                                                 .withState(
-                                                                                                                     RequestState.GRANTED)
-                                                                                                                 .withStart(
-                                                                                                                     begin)
-                                                                                                                 .withEnd(
-                                                                                                                     end),
-                                                                                      pageable);
-        Page<FeatureCreationRequest> results = featureCreationService.findRequests(
-            searchFeatureCreationRequestParameters,
-            pageable);
+        Page<FeatureCreationRequest> results = featureCreationService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
-        assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
     }
 
     @Test
     public void test_getInfo_with_state() {
         // Given
-        SearchFeatureCreationRequestParameters searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withStatesIncluded(
-            Arrays.asList(RequestState.GRANTED));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED));
         // When
-        RequestsInfo results = featureCreationService.getInfo(searchFeatureCreationRequestParameters);
+        RequestsInfo results = featureCreationService.getInfo(searchFeatureRequestParameters);
         // Then
         assertEquals(0, results.getNbErrors());
 
         // Given
-        searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters().withStatesIncluded(Arrays.asList(
-            RequestState.ERROR));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(List.of(RequestState.ERROR));
         // When
-        results = featureCreationService.getInfo(searchFeatureCreationRequestParameters);
+        results = featureCreationService.getInfo(searchFeatureRequestParameters);
         // Then
         assertEquals(1, results.getNbErrors());
     }

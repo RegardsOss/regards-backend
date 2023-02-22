@@ -4,7 +4,7 @@ import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.amqp.event.IRequestValidation;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
@@ -29,19 +29,19 @@ public interface IAbstractFeatureService<R extends AbstractFeatureRequest>
      * Delete requests associated to given search parameters.
      * Number of requests deletable is limited as this method is synchronous. Number of handled requests is returned in response.
      *
-     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @param selection {@link SearchFeatureRequestParameters}
      * @return {@link RequestHandledResponse}
      */
-    RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse deleteRequests(SearchFeatureRequestParameters selection);
 
     /**
      * Retry requests associated to given search parameters
      * Number of requests retryable is limited as this method is synchronous. Number of handled requests is returned in response.
      *
-     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @param selection {@link SearchFeatureRequestParameters}
      * @return {@link RequestHandledResponse}
      */
-    RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse retryRequests(SearchFeatureRequestParameters selection);
 
     Map<FeatureUniformResourceName, ILightFeatureEntity> getSessionInfoByUrn(Collection<FeatureUniformResourceName> uniformResourceNames);
 

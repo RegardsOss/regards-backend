@@ -33,9 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
@@ -70,16 +68,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
 
 /**
  * {@link AIPEntity} REST API testing
  *
  * @author Léo Mieulet
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=aip_controller_it", "regards.amqp.enabled=true",
-        "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_controller_it",
+                                   "regards.amqp.enabled=true",
+                                   "regards.aips.save-metadata.bulk.delay=100",
+                                   "regards.ingest.aip.delete.bulk.delay=100" })
 @ContextConfiguration(classes = { AIPControllerIT.Config.class })
 @ActiveProfiles(value = { "default", "test", "testAmqp", "StorageClientMock" }, inheritProfiles = false)
 public class AIPControllerIT extends AbstractRegardsTransactionalIT {
@@ -157,8 +159,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_110"), @Requirement("REGARDS_DSL_STO_AIP_115"),
-        @Requirement("REGARDS_DSL_STO_AIP_120"), @Requirement("REGARDS_DSL_STO_AIP_560") })
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_110"),
+                    @Requirement("REGARDS_DSL_STO_AIP_115"),
+                    @Requirement("REGARDS_DSL_STO_AIP_120"),
+                    @Requirement("REGARDS_DSL_STO_AIP_560") })
     @Purpose("Check that ingested AIPs are retrievable")
     public void searchAIPs() {
 
@@ -175,7 +179,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Add response body documentation
         requestBuilderCustomizer.documentResponseBody(documentResultingAIPEntity());
 
-        SearchAIPLightParameters body = new SearchAIPLightParameters().withCategoriesIncluded(Arrays.asList("CAT 1"));
+        SearchAIPsParameters body = new SearchAIPsParameters().withCategoriesIncluded(List.of("CAT 1"));
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH,
                            body,
@@ -190,8 +194,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_150"), @Requirement("REGARDS_DSL_STO_AIP_160"),
-        @Requirement("REGARDS_DSL_STO_AIP_050") })
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_150"),
+                    @Requirement("REGARDS_DSL_STO_AIP_160"),
+                    @Requirement("REGARDS_DSL_STO_AIP_050") })
     @Purpose("Retrieve AIPs thanks a providerId")
     public void testRetrieveAIPVersionHistory() {
         // Create AIP
@@ -214,7 +219,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.expectIsNotEmpty(
             "$.content[0].content.aip.properties.pdi.provenanceInformation.history");
 
-        SearchAIPLightParameters body = new SearchAIPLightParameters().withProviderIdsIncluded(Arrays.asList(
+        SearchAIPsParameters body = new SearchAIPsParameters().withProviderIdsIncluded(List.of(
             "testRetrieveAIPVersionHistory"));
 
         // Add request parameters documentation
@@ -249,9 +254,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         fields.add(new ConstrainedFields(List.class).withPath("[]", "List of tags").type(JSON_ARRAY_TYPE));
         requestBuilderCustomizer.documentResponseBody(fields);
 
-        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build()
-                                                                    .withSessionOwner(sessionOwner)
-                                                                    .withSession(session);
+        SearchAIPsParameters body = new SearchAIPsParameters().withSessionOwner(sessionOwner).withSession(session);
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.TAG_SEARCH_PATH,
                            body,
@@ -280,9 +283,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         fields.add(new ConstrainedFields(List.class).withPath("[]", "List of categories").type(JSON_ARRAY_TYPE));
         requestBuilderCustomizer.documentResponseBody(fields);
 
-        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build()
-                                                                    .withSessionOwner(sessionOwner)
-                                                                    .withSession(session);
+        SearchAIPsParameters body = new SearchAIPsParameters().withSessionOwner(sessionOwner).withSession(session);
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.CATEGORIES_SEARCH_PATH,
                            body,
@@ -312,9 +313,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                     .type(JSON_ARRAY_TYPE));
         requestBuilderCustomizer.documentResponseBody(fields);
 
-        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build()
-                                                                    .withSessionOwner(sessionOwner)
-                                                                    .withSession(session);
+        SearchAIPsParameters body = new SearchAIPsParameters().withSessionOwner(sessionOwner).withSession(session);
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.STORAGE_SEARCH_PATH,
                            body,
@@ -337,14 +336,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(documentUpdateAIPRequestParameters());
 
-        AIPUpdateParametersDto body = AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                       .withSessionOwner(sessionOwner)
-                                                                                       .withSession(session),
-                                                                   null,
-                                                                   null,
-                                                                   null,
-                                                                   Lists.newArrayList("CAT 1"),
-                                                                   null);
+        AIPUpdateParametersDto body = AIPUpdateParametersDto.build(new SearchAIPsParameters().withSessionOwner(
+            sessionOwner).withSession(session), null, null, null, Lists.newArrayList("CAT 1"), null);
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.AIP_UPDATE_PATH,
                            body,
@@ -367,10 +360,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(documentDeleteAIPRequestParameters());
 
-        OAISDeletionPayloadDto body = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
-                                                            .withSessionOwner(sessionOwner)
-                                                            .withSession(session)
-                                                            .withCategory("CAT 1");
+        OAISDeletionPayloadDto body = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY);
+        body.withSessionOwner(sessionOwner).withSession(session).withCategoriesIncluded(List.of("CAT 1"));
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.OAIS_DELETE_PATH,
                            body,
@@ -392,7 +383,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                          .value("Optional. Allowed values : " + joiner.toString())));
+                                                          .value("Optional. Allowed values : " + joiner)));
 
         params.addAll(getSearchBodyDescriptors(""));
         return params;
@@ -480,7 +471,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Multiple values allowed. Allowed values : "
-                                                                 + aipJoiner.toString())));
+                                                                 + aipJoiner)));
 
         params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_FROM,
                                               AIPController.REQUEST_PARAM_FROM,
@@ -600,8 +591,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                          .value("Optional. Allowed values : "
-                                                                 + selectionModeJoiner.toString())));
+                                                          .value("Optional. Allowed values : " + selectionModeJoiner)));
 
         return params;
     }
@@ -617,10 +607,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         for (AIPState state : AIPState.values()) {
             joiner.add(state.name());
         }
-        fields.add(constrainedFields.withPath(prefix + "state",
-                                              "state",
-                                              "State",
-                                              "Allowed values : " + joiner.toString()).type(JSON_STRING_TYPE));
+        fields.add(constrainedFields.withPath(prefix + "state", "state", "State", "Allowed values : " + joiner)
+                                    .type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "providerId", "providerId", "Provider id")
                                     .type(JSON_STRING_TYPE));

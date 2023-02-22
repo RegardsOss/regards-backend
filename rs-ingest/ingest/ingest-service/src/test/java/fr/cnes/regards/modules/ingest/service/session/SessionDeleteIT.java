@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDe
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
 import fr.cnes.regards.framework.modules.session.commons.service.delete.ISessionDeleteService;
 import fr.cnes.regards.framework.modules.session.commons.service.delete.ISourceDeleteService;
-import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
+import fr.cnes.regards.modules.ingest.dao.AIPSpecificationsBuilder;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
@@ -47,8 +47,9 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_session_delete_it",
-    "regards.amqp.enabled=true", "regards.ingest.aip.delete.bulk.delay=100" },
-    locations = { "classpath:application-test.properties" })
+                                   "regards.amqp.enabled=true",
+                                   "regards.ingest.aip.delete.bulk.delay=100" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp", "StorageClientMock" })
 public class SessionDeleteIT extends IngestMultitenantServiceIT {
 
@@ -90,18 +91,15 @@ public class SessionDeleteIT extends IngestMultitenantServiceIT {
         ingestServiceTest.waitAllRequestsFinished(wait);
 
         // test aips linked to SOURCE 1 are not present
-        Page<AIPEntity> aipsDeleted = aipRepository.findAll(AIPEntitySpecification.searchAll(SearchAIPsParameters.build()
-                                                                                                                 .withSessionOwner(
-                                                                                                                     SOURCE_1),
-                                                                                             PageRequest.of(0, 10)),
+        SearchAIPsParameters filters = new SearchAIPsParameters().withSessionOwner(SOURCE_1);
+        Page<AIPEntity> aipsDeleted = aipRepository.findAll(new AIPSpecificationsBuilder().withParameters(filters)
+                                                                                          .build(),
                                                             PageRequest.of(0, 10));
         Assert.assertEquals("AIPs should have been deleted", 0, aipsDeleted.getContent().size());
 
         // test aips linked to SOURCE 2 are present
-        Page<AIPEntity> aips = aipRepository.findAll(AIPEntitySpecification.searchAll(SearchAIPsParameters.build()
-                                                                                                          .withSessionOwner(
-                                                                                                              SOURCE_2),
-                                                                                      PageRequest.of(0, 10)),
+        filters = new SearchAIPsParameters().withSessionOwner(SOURCE_2);
+        Page<AIPEntity> aips = aipRepository.findAll(new AIPSpecificationsBuilder().withParameters(filters).build(),
                                                      PageRequest.of(0, 10));
         Assert.assertNotEquals("AIPs should have been present", 0, aips.getContent().size());
     }
@@ -119,32 +117,22 @@ public class SessionDeleteIT extends IngestMultitenantServiceIT {
         ingestServiceTest.waitAllRequestsFinished(wait);
 
         // test aips linked to SESSION 1 of SOURCE 1 are not present
-        Page<AIPEntity> aipsDeleted = aipRepository.findAll(AIPEntitySpecification.searchAll(SearchAIPsParameters.build()
-                                                                                                                 .withSessionOwner(
-                                                                                                                     SOURCE_1)
-                                                                                                                 .withSession(
-                                                                                                                     SESSION_1),
-                                                                                             PageRequest.of(0, 10)),
+
+        SearchAIPsParameters filters = new SearchAIPsParameters().withSessionOwner(SOURCE_1).withSession(SESSION_1);
+        Page<AIPEntity> aipsDeleted = aipRepository.findAll(new AIPSpecificationsBuilder().withParameters(filters)
+                                                                                          .build(),
                                                             PageRequest.of(0, 10));
         Assert.assertEquals(0, aipsDeleted.getContent().size());
 
         // test aips linked to SESSION 2 SOURCE 1 are present
-        Page<AIPEntity> aips1 = aipRepository.findAll(AIPEntitySpecification.searchAll(SearchAIPsParameters.build()
-                                                                                                           .withSessionOwner(
-                                                                                                               SOURCE_1)
-                                                                                                           .withSession(
-                                                                                                               SESSION_2),
-                                                                                       PageRequest.of(0, 10)),
+        filters = new SearchAIPsParameters().withSessionOwner(SOURCE_1).withSession(SESSION_2);
+        Page<AIPEntity> aips1 = aipRepository.findAll(new AIPSpecificationsBuilder().withParameters(filters).build(),
                                                       PageRequest.of(0, 10));
         Assert.assertNotEquals("AIPs should have been present", 0, aips1.getContent().size());
 
         // test aips linked to SESSION 1 SOURCE 2 are present
-        Page<AIPEntity> aips2 = aipRepository.findAll(AIPEntitySpecification.searchAll(SearchAIPsParameters.build()
-                                                                                                           .withSessionOwner(
-                                                                                                               SOURCE_2)
-                                                                                                           .withSession(
-                                                                                                               SESSION_1),
-                                                                                       PageRequest.of(0, 10)),
+        filters = new SearchAIPsParameters().withSessionOwner(SOURCE_2).withSession(SESSION_1);
+        Page<AIPEntity> aips2 = aipRepository.findAll(new AIPSpecificationsBuilder().withParameters(filters).build(),
                                                       PageRequest.of(0, 10));
         Assert.assertNotEquals("AIPs should have been present", 0, aips2.getContent().size());
 

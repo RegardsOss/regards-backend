@@ -22,10 +22,9 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureSaveMetadataRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
@@ -44,15 +43,18 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Stephane Cortine
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -170,25 +172,20 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_state() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureSaveMetadataRequestParameters SearchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters().withStatesIncluded(
-            Arrays.asList(RequestState.GRANTED));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED));
         // When
-        Page<FeatureSaveMetadataRequest> oldResults = featureMetadataSrv.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withState(
-                                                                                                                     RequestState.GRANTED),
-                                                                                      pageable);
-        Page<FeatureSaveMetadataRequest> results = featureMetadataSrv.findRequests(
-            SearchFeatureSaveMetadataRequestParameters,
-            pageable);
+        Page<FeatureSaveMetadataRequest> results = featureMetadataSrv.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
-        assertEquals(2, oldResults.getNumberOfElements());
         assertEquals(2, results.getNumberOfElements());
 
         // Given
-        SearchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters().withStatesIncluded(
-            Arrays.asList(RequestState.SUCCESS, RequestState.GRANTED));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(Arrays.asList(
+            RequestState.SUCCESS,
+            RequestState.GRANTED));
         // When
-        results = featureMetadataSrv.findRequests(SearchFeatureSaveMetadataRequestParameters, pageable);
+        results = featureMetadataSrv.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(4, results.getNumberOfElements());
     }
@@ -197,52 +194,45 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_provider_id() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureSaveMetadataRequestParameters SearchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider_id0"));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(
+            List.of("provider_id0"));
         // When
-        Page<FeatureSaveMetadataRequest> oldResults = featureMetadataSrv.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withProviderId(
-                                                                                                                     "provider_id0"),
-                                                                                      pageable);
-        Page<FeatureSaveMetadataRequest> results = featureMetadataSrv.findRequests(
-            SearchFeatureSaveMetadataRequestParameters,
-            pageable);
-        // Then
-        assertEquals(1, oldResults.getNumberOfElements());
-        assertEquals(1, results.getNumberOfElements());
-
-        // Given
-        SearchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider"));
-        // When
-        oldResults = featureMetadataSrv.findRequests(FeatureRequestsSelectionDTO.build().withProviderId("provider"),
-                                                     pageable);
-        results = featureMetadataSrv.findRequests(SearchFeatureSaveMetadataRequestParameters, pageable);
-        // Then
-        assertEquals(2, oldResults.getNumberOfElements());
-        assertEquals(2, results.getNumberOfElements());
-
-        // Given
-        SearchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider_id0", "provider_id1"));
-        // When
-        results = featureMetadataSrv.findRequests(SearchFeatureSaveMetadataRequestParameters, pageable);
+        Page<FeatureSaveMetadataRequest> results = featureMetadataSrv.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
         assertEquals(1, results.getNumberOfElements());
 
         // Given
-        SearchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider_id0", "provider_id2"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of("provider"));
         // When
-        results = featureMetadataSrv.findRequests(SearchFeatureSaveMetadataRequestParameters, pageable);
+        results = featureMetadataSrv.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(2, results.getNumberOfElements());
 
         // Given
-        SearchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("Provider_ID0", "provIDer_iD2"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            "provider_id0",
+            "provider_id1"));
         // When
-        results = featureMetadataSrv.findRequests(SearchFeatureSaveMetadataRequestParameters, pageable);
+        results = featureMetadataSrv.findRequests(searchFeatureRequestParameters, pageable);
+        // Then
+        assertEquals(1, results.getNumberOfElements());
+
+        // Given
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            "provider_id0",
+            "provider_id2"));
+        // When
+        results = featureMetadataSrv.findRequests(searchFeatureRequestParameters, pageable);
+        // Then
+        assertEquals(2, results.getNumberOfElements());
+
+        // Given
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            "Provider_ID0",
+            "provIDer_iD2"));
+        // When
+        results = featureMetadataSrv.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(2, results.getNumberOfElements());
     }
@@ -251,18 +241,12 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_session() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureSaveMetadataRequestParameters SearchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters().withSession(
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withSession(
             "session0");
         // When
-        Page<FeatureSaveMetadataRequest> oldResults = featureMetadataSrv.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withSession(
-                                                                                                                     "session0"),
-                                                                                      pageable);
-        Page<FeatureSaveMetadataRequest> results = featureMetadataSrv.findRequests(
-            SearchFeatureSaveMetadataRequestParameters,
-            pageable);
+        Page<FeatureSaveMetadataRequest> results = featureMetadataSrv.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
-        assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
     }
 
@@ -270,18 +254,12 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_source() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureSaveMetadataRequestParameters SearchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters().withSource(
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withSource(
             SESSION_OWNER_0);
         // When
-        Page<FeatureSaveMetadataRequest> oldResults = featureMetadataSrv.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withSource(
-                                                                                                                     SESSION_OWNER_0),
-                                                                                      pageable);
-        Page<FeatureSaveMetadataRequest> results = featureMetadataSrv.findRequests(
-            SearchFeatureSaveMetadataRequestParameters,
-            pageable);
+        Page<FeatureSaveMetadataRequest> results = featureMetadataSrv.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
-        assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
     }
 

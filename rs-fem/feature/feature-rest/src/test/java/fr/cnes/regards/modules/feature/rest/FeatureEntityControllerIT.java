@@ -24,12 +24,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
-import fr.cnes.regards.modules.feature.documentation.FeatureEntityControllerDocumentationHelper;
-import fr.cnes.regards.modules.feature.documentation.RequestsControllerDocumentationHelper;
 import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
 import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
@@ -38,22 +35,20 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Sébastien Binda
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature", "regards.amqp.enabled=true",
-        "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature",
+                                   "regards.amqp.enabled=true",
+                                   "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
+                                   "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @ContextConfiguration(classes = { AbstractMultitenantServiceIT.ScanningConfiguration.class })
 public class FeatureEntityControllerIT extends AbstractFeatureIT {
@@ -71,8 +66,6 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        requestBuilderCustomizer.documentResponseBody(FeatureEntityControllerDocumentationHelper.featureEntityDTOResponseDoc(
-            Optional.empty()));
         performDefaultGet(FeatureEntityController.PATH_DATA_FEATURE_OBJECT + FeatureEntityController.URN_PATH,
                           requestBuilderCustomizer,
                           "Error retrieving features",
@@ -98,8 +91,6 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
                                                                         .expectToHaveSize("$.disseminationsInfo", 2)
                                                                         .skipDocumentation();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        requestBuilderCustomizer.documentResponseBody(FeatureEntityControllerDocumentationHelper.featureEntityDTOResponseDoc(
-            Optional.empty()));
         performDefaultGet(FeatureEntityController.PATH_DATA_FEATURE_OBJECT + FeatureEntityController.URN_PATH,
                           requestBuilderCustomizer,
                           "Error retrieving features",
@@ -148,14 +139,9 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
                                                .expectToHaveSize("$.content", 1);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
 
-        List<ParameterDescriptor> params = FeatureEntityControllerDocumentationHelper.featuresSearchParametersDoc();
-        params.addAll(RequestsControllerDocumentationHelper.paginationDoc());
-        requestBuilderCustomizer.documentRequestParameters(params);
-        requestBuilderCustomizer.documentResponseBody(FeatureEntityControllerDocumentationHelper.featureEntityDTOPageResponseDoc());
-
         filters = new SearchFeatureSimpleEntityParameters().withSource("source1")
                                                            .withModel("FEATURE01")
-                                                           .withProviderIdsIncluded(Arrays.asList("feature_1_5"));
+                                                           .withProviderIdsIncluded(List.of("feature_1_5"));
         performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT,
                            filters,
                            requestBuilderCustomizer,
@@ -210,7 +196,7 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         filters = new SearchFeatureSimpleEntityParameters().withSource("source1")
                                                            .withSession("session2")
                                                            .withModel("FEATURE01")
-                                                           .withProviderIdsIncluded(Arrays.asList("feature_1_5"));
+                                                           .withProviderIdsIncluded(List.of("feature_1_5"));
         performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT,
                            filters,
                            requestBuilderCustomizer,
@@ -222,9 +208,8 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         createFeatures("feature", 10, "source1", "session1");
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        requestBuilderCustomizer.documentRequestBody(FeatureEntityControllerDocumentationHelper.featureSelectionDTODoc());
         performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT + FeatureEntityController.NOTIFY_PATH,
-                           FeaturesSelectionDTO.build(),
+                           new SearchFeatureSimpleEntityParameters(),
                            requestBuilderCustomizer,
                            "Error during feature notification request");
         Assert.assertEquals(Long.valueOf(1),
@@ -240,9 +225,8 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         createFeatures("feature", 10, "source1", "session1");
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        requestBuilderCustomizer.documentRequestBody(FeatureEntityControllerDocumentationHelper.featureSelectionDTODoc());
         performDefaultDelete(FeatureEntityController.PATH_DATA_FEATURE_OBJECT + FeatureEntityController.DELETE_PATH,
-                             FeaturesSelectionDTO.build(),
+                             new SearchFeatureSimpleEntityParameters(),
                              requestBuilderCustomizer,
                              "Error during feature deltion request");
         Assert.assertEquals(Long.valueOf(1),

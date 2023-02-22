@@ -123,7 +123,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
         sip4.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:"
-                                                         + UUID.randomUUID().toString()
+                                                         + UUID.randomUUID()
                                                          + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
@@ -167,15 +167,14 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
         aips = aipRepository.findAll();
 
         // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
-        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(
-            SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)));
+        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(
+            SESSION_0).withSessionOwner(SESSION_OWNER_0)));
         updateCreatorRequest.setState(InternalRequestState.ERROR);
         aipUpdatesCreatorRepository.save(updateCreatorRequest);
 
         List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aips.get(0),
-                                                                      AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                                                       .withSession(
-                                                                                                                           SESSION_0))
+                                                                      AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(
+                                                                                                SESSION_0))
                                                                                             .withAddTags(Lists.newArrayList(
                                                                                                 "SOME TAG")),
                                                                       true);

@@ -64,7 +64,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -76,10 +79,12 @@ import static org.junit.Assert.assertFalse;
  * @author kevin
  * @author Sébastien Binda
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_update", "regards.amqp.enabled=true",
-        "regards.feature.metrics.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_update",
+                                   "regards.amqp.enabled=true",
+                                   "regards.feature.metrics.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
@@ -177,7 +182,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         mockNotificationSuccess();
         List<FeatureEntity> features = featureRepo.findAll();
         Assert.assertNotNull(features);
-        Assert.assertTrue(features.size() == nbFeatures);
+        assertEquals(features.size(), nbFeatures);
         Assert.assertEquals(0L, featureCreationRequestRepo.count());
 
         // Now create an update request on this feature to add referenced files
@@ -205,7 +210,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         RequestInfo<FeatureUniformResourceName> info = featureUpdateService.registerRequests(updates);
         Assert.assertEquals(nbFeatures, info.getGranted().size());
         Assert.assertEquals(0L, info.getDenied().size());
-        Thread.sleep((properties.getDelayBeforeProcessing() + 1) * 1000);
+        Thread.sleep((properties.getDelayBeforeProcessing() + 1) * 1000L);
         Assert.assertEquals(nbFeatures, featureUpdateService.scheduleRequests());
 
         // As files needs to be updated, the step of the request remains REMOTE STORAGE REQUESTS still response from
@@ -262,8 +267,6 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
      * fur2 is already scheduled and fur3 is on the same {@link Feature} that fur2
      * fur4 has a {@link FeatureDeletionRequest} scheduled with the same {@link Feature}
      * When we will call the scheduler it will schedule fur1 only
-     *
-     * @throws InterruptedException
      */
     @Test
     public void testSchedulerSteps() throws InterruptedException {
@@ -339,7 +342,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         fur4 = super.featureUpdateRequestRepo.save(fur4);
 
         // Simulate featue deletion request running
-        Page<FeatureDeletionRequest> deletionRequests = featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(),
+        Page<FeatureDeletionRequest> deletionRequests = featureDeletionService.findRequests(new SearchFeatureRequestParameters(),
                                                                                             PageRequest.of(0, 10));
         Assert.assertEquals("There should be one deletion request", 1L, deletionRequests.getTotalElements());
         FeatureDeletionRequest dr = deletionRequests.getContent().get(0);
@@ -375,8 +378,6 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
      * Test priority level for feature update we will schedule properties.getMaxBulkSize() {@link FeatureUpdateRequestEvent}
      * with priority set to average plus properties.getMaxBulkSize() /2 {@link FeatureUpdateRequestEvent} with {@link PriorityLevel}
      * to average
-     *
-     * @throws InterruptedException
      */
     @Test
     public void testFeaturePriority() throws InterruptedException {
@@ -464,10 +465,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // Create features
         prepareCreationTestData(false, nbValid, true, true, false);
         /*RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                                                     FeatureRequestsSelectionDTO.build(),
+                                                                                     new SearchFeatureRequestParameters(),
                                                                                      PageRequest.of(0, 100));*/
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                                                     new SearchFeatureUpdateRequestParameters(),
+                                                                                     new SearchFeatureRequestParameters(),
                                                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
@@ -481,57 +482,56 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         this.featureUpdateService.registerRequests(prepareUpdateRequests(urns));
 
         /*results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     FeatureRequestsSelectionDTO.build(),
+                                                     new SearchFeatureRequestParameters(),
                                                      PageRequest.of(0, 100));*/
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     new SearchFeatureUpdateRequestParameters(),
+                                                     new SearchFeatureRequestParameters(),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         /*results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR),
+                                                     new SearchFeatureRequestParameters().withState(RequestState.ERROR),
                                                      PageRequest.of(0, 100));*/
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     new SearchFeatureUpdateRequestParameters().withStatesIncluded(
-                                                         Arrays.asList(RequestState.ERROR)),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                         RequestState.ERROR)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         /*results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     FeatureRequestsSelectionDTO.build()
+                                                     new SearchFeatureRequestParameters()
                                                                                 .withState(RequestState.GRANTED)
                                                                                 .withStart(OffsetDateTime.now()
                                                                                                          .plusSeconds(5)),
                                                      PageRequest.of(0, 100));*/
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     new SearchFeatureUpdateRequestParameters().withStatesIncluded(
-                                                                                                   Arrays.asList(RequestState.GRANTED))
-                                                                                               .withLastUpdateAfter(
-                                                                                                   OffsetDateTime.now()
-                                                                                                                 .plusSeconds(
-                                                                                                                     5)),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                                                             RequestState.GRANTED))
+                                                                                         .withLastUpdateAfter(
+                                                                                             OffsetDateTime.now()
+                                                                                                           .plusSeconds(
+                                                                                                               5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         /*results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     FeatureRequestsSelectionDTO.build()
+                                                     new SearchFeatureRequestParameters()
                                                                                 .withStart(start)
                                                                                 .withEnd(OffsetDateTime.now()
                                                                                                        .plusSeconds(5)),
                                                      PageRequest.of(0, 100));*/
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     new SearchFeatureUpdateRequestParameters().withLastUpdateAfter(
-                                                                                                   start)
-                                                                                               .withLastUpdateBefore(
-                                                                                                   OffsetDateTime.now()
-                                                                                                                 .plusSeconds(
-                                                                                                                     5)),
+                                                     new SearchFeatureRequestParameters().withLastUpdateAfter(start)
+                                                                                         .withLastUpdateBefore(
+                                                                                             OffsetDateTime.now()
+                                                                                                           .plusSeconds(
+                                                                                                               5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
@@ -554,14 +554,14 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         Assert.assertFalse(results.getGranted().isEmpty());
 
         // Simulate all requests to scheduled
-        this.featureUpdateService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+        this.featureUpdateService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, 1000))
                                  .forEach(r -> {
                                      r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
                                      this.featureUpdateRequestRepo.save(r);
                                  });
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureUpdateService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        RequestHandledResponse response = this.featureUpdateService.deleteRequests(new SearchFeatureRequestParameters());
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state",
                             0,
@@ -570,8 +570,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
-        response = this.featureUpdateService.deleteRequests(FeatureRequestsSelectionDTO.build()
-                                                                                       .withState(RequestState.GRANTED));
+        response = this.featureUpdateService.deleteRequests(new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+            RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests",
                             0,
@@ -581,13 +581,13 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                             response.getTotalRequested());
 
         // Simulate all requests to scheduled
-        this.featureUpdateService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+        this.featureUpdateService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, 1000))
                                  .forEach(r -> {
                                      r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
                                      this.featureUpdateRequestRepo.save(r);
                                  });
 
-        response = this.featureUpdateService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        response = this.featureUpdateService.deleteRequests(new SearchFeatureRequestParameters());
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 20 requests deleted", 20, response.getTotalHandled());
         Assert.assertEquals("There should be 20 requests to delete", 20, response.getTotalRequested());
@@ -610,9 +610,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         Assert.assertFalse(results.getGranted().isEmpty());
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureUpdateService.retryRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                             .withState(
-                                                                                                                 RequestState.ERROR));
+        RequestHandledResponse response = this.featureUpdateService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.ERROR)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state",
                             0,
@@ -621,8 +620,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
-        response = this.featureUpdateService.retryRequests(FeatureRequestsSelectionDTO.build()
-                                                                                      .withState(RequestState.GRANTED));
+        response = this.featureUpdateService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+            RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 20 requests retryed as selection set on GRANTED Requests",
                             nbValid,
@@ -713,7 +712,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
         createOneWithError();
 
-        featureUpdateService.retryRequests(new FeatureRequestsSelectionDTO());
+        featureUpdateService.retryRequests(new SearchFeatureRequestParameters());
         mockNotificationSuccess();
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 
@@ -754,7 +753,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
         createOneWithError();
 
-        featureUpdateService.deleteRequests(new FeatureRequestsSelectionDTO());
+        featureUpdateService.deleteRequests(new SearchFeatureRequestParameters());
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 
         // Compute Session step

@@ -18,28 +18,23 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCreationRequestParameters;
 
 /**
  * @author Stephane Cortine
  */
-public class FeatureCreationRequestSpecificationsBuilder extends
-    AbstractFeatureRequestSpecificationsBuilder<FeatureCreationRequest, SearchFeatureCreationRequestParameters> {
+public class FeatureCreationRequestSpecificationsBuilder
+    extends AbstractFeatureRequestSpecificationsBuilder<FeatureCreationRequest> {
+
+    public FeatureCreationRequestSpecificationsBuilder() {
+        this.searchInFeatureEntity = false;
+    }
 
     @Override
     protected void addSpecificationsFromParameters() {
+        specifications.add(useValuesRestriction("providerId", parameters.getProviderIds()));
         specifications.add(equals("metadata.sessionOwner", parameters.getSource()));
-
         specifications.add(equals("metadata.session", parameters.getSession()));
-
-        specifications.add(useValuesRestrictionLike("providerId", parameters.getProviderIds()));
-
-        specifications.add(useValuesRestriction(AbstractRequest.COLUMN_STATE, parameters.getStates()));
-
-        specifications.add(after("registrationDate", parameters.getLastUpdate().getAfter()));
-        specifications.add(before("registrationDate", parameters.getLastUpdate().getBefore()));
+        super.addSpecificationsFromParameters();
     }
-
 }

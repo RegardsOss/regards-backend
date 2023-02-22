@@ -41,7 +41,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -164,36 +163,17 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
      */
     public boolean hasValidParameters(OAISDeletionCreatorPayload oaisDeletionCreatorPayload) {
 
-        boolean isValid = false;
+        boolean isValid = true;
 
-        switch (oaisDeletionCreatorPayload.getSelectionMode()) {
-            case EXCLUDE:
-                isValid = true;
-                break;
-            case INCLUDE:
-                isValid = hasValidIncludeParameters(oaisDeletionCreatorPayload);
-                break;
-            default:
-                break;
+        if (oaisDeletionCreatorPayload.getAipIds() != null) {
+            switch (oaisDeletionCreatorPayload.getAipIds().getMode()) {
+                case EXCLUDE -> isValid = true;
+                case INCLUDE -> isValid = !oaisDeletionCreatorPayload.getAipIds().getValues().isEmpty();
+                default -> isValid = false;
+            }
         }
 
         return isValid;
-    }
-
-    @java.lang.SuppressWarnings("squid:S1067") // Skip max conditional operators : more readable like that
-    private boolean hasValidIncludeParameters(OAISDeletionCreatorPayload oaisDeletionCreatorPayload) {
-        return oaisDeletionCreatorPayload.getState() != null
-               || oaisDeletionCreatorPayload.getIpType() != null
-               || oaisDeletionCreatorPayload.getLastUpdate().getFrom() != null
-               || oaisDeletionCreatorPayload.getLastUpdate().getTo() != null
-               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getProviderIds())
-               || oaisDeletionCreatorPayload.getSessionOwner() != null
-               || oaisDeletionCreatorPayload.getSession() != null
-               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getStorages())
-               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getCategories())
-               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getTags())
-               || oaisDeletionCreatorPayload.getLast() != null
-               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getAipIds());
     }
 
 }

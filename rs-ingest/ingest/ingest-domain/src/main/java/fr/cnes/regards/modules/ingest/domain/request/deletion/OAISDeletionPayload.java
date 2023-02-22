@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 
 import javax.validation.constraints.NotNull;
@@ -30,7 +30,7 @@ import javax.validation.constraints.NotNull;
  *
  * @author Sébastien Binda
  */
-public class OAISDeletionPayload extends AbstractSearchAIPsParameters<OAISDeletionPayload> {
+public class OAISDeletionPayload extends SearchAIPsParameters {
 
     @NotNull(message = IngestValidationMessages.MISSING_SESSION_DELETION_MODE)
     private SessionDeletionMode deletionMode;

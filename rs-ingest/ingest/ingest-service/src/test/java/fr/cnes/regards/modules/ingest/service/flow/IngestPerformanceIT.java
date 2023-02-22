@@ -195,7 +195,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         // 4. Ask for product 1000 deletion
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY);
         for (int i = 0; i < nbDeleted; i++) {
-            dto.withProviderId(PROVIDER_PREFIX + i);
+            dto.withProviderIdsIncluded(List.of(PROVIDER_PREFIX + i));
         }
         deletionService.registerOAISDeletionCreator(dto);
         // 5. Send two times the same deletion request
@@ -238,10 +238,8 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", nbStored, System.currentTimeMillis() - start);
 
         // 3. Ask for product updates
-        AIPUpdateParametersDto updateDto = AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                            .withCategories(CATEGORIES.get(
-                                                                                                0)))
-                                                                 .withAddCategories(Lists.newArrayList("new_cat"));
+        AIPUpdateParametersDto updateDto = AIPUpdateParametersDto.build(new SearchAIPsParameters().withCategoriesIncluded(
+            List.of(CATEGORIES.get(0)))).withAddCategories(Lists.newArrayList("new_cat"));
         aipService.registerUpdatesCreator(updateDto);
         // 4. Ask for same product updates
         aipService.registerUpdatesCreator(updateDto);
@@ -309,7 +307,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         // 6. Ask for product deletion
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
         for (int i = 0; i < nbDeleted; i++) {
-            dto.withProviderId(PROVIDER_PREFIX + i);
+            dto.withProviderIdsIncluded(List.of(PROVIDER_PREFIX + i));
         }
         deletionService.registerOAISDeletionCreator(dto);
         LOGGER.info("===============> Deletion sents !!");
@@ -324,10 +322,8 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         LOGGER.info("===============> Ingestion sents !!");
 
         // 8. Ask for products update
-        AIPUpdateParametersDto updateDto = AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                            .withCategories(CATEGORIES.get(
-                                                                                                0)))
-                                                                 .withAddCategories(Lists.newArrayList("new_cat"));
+        AIPUpdateParametersDto updateDto = AIPUpdateParametersDto.build(new SearchAIPsParameters().withCategoriesIncluded(
+            List.of(CATEGORIES.get(0)))).withAddCategories(Lists.newArrayList("new_cat"));
         aipService.registerUpdatesCreator(updateDto);
         LOGGER.info("===============> Update sents !!");
 

@@ -25,9 +25,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,54 +75,43 @@ public interface IAIPService {
 
     /**
      * Calculate checksum of an AIP as it will be written when AIP file is downloaded
-     *
-     * @param aip
-     * @throws NoSuchAlgorithmException
-     * @throws IOException
      */
     String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
 
     /**
      * Retrieve all {@link AIPEntity}s matching filters.
      *
-     * @param filters
-     * @param pageable
      * @return page of AIPs
      */
-    Page<AIPEntity> findByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable);
+    Page<AIPEntity> findByFilters(SearchAIPsParameters filters, Pageable pageable);
 
     /**
      * Retrieve all {@link AIPEntityLight}s matching filters.
      *
-     * @param filters
-     * @param pageable
      * @return page of light AIPs
      */
-    Page<AIPEntityLight> findLightByFilters(SearchAIPLightParameters filters, Pageable pageable);
+    Page<AIPEntityLight> findLightByFilters(SearchAIPsParameters filters, Pageable pageable);
 
     /**
      * Retrieve all tags used by a set of AIPS matching provided filters
      *
-     * @param filters
      * @return list of tags
      */
-    List<String> findTags(SearchFacetsAIPsParameters filters);
+    List<String> findTags(SearchAIPsParameters filters);
 
     /**
      * Retrieve all storages used by a set of AIPS matching provided filters
      *
-     * @param filters
      * @return list of storage business id
      */
-    List<String> findStorages(SearchFacetsAIPsParameters filters);
+    List<String> findStorages(SearchAIPsParameters filters);
 
     /**
      * Retrieve all storages used by a set of AIPS matching provided filters
      *
-     * @param filters
      * @return list of storage business id
      */
-    List<String> findCategories(SearchFacetsAIPsParameters filters);
+    List<String> findCategories(SearchAIPsParameters filters);
 
     /**
      * Search for a {@link AIPEntity} by its ipId
@@ -133,8 +120,6 @@ public interface IAIPService {
 
     /**
      * Retrieve a set of aip using a sip id
-     *
-     * @param sipId
      */
     Set<AIPEntity> findBySipId(String sipId);
 
@@ -142,8 +127,6 @@ public interface IAIPService {
 
     /**
      * Retrieve {@link AIPEntity}s from given aip ids
-     *
-     * @param aipIds
      */
     Collection<AIPEntity> findByAipIds(Collection<String> aipIds);
 

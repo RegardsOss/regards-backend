@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.feature.service.job;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
@@ -38,8 +38,8 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Sébastien Binda
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=notif_job_test", "regards.amqp.enabled=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notif_job_test",
+                                   "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class PublishFeatureNotificationJobIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -58,14 +58,15 @@ public class PublishFeatureNotificationJobIT extends AbstractFeatureMultitenantS
         NotificationEventListener listener = new NotificationEventListener();
         subscriber.subscribeTo(FeatureNotificationRequestEvent.class, listener);
         // Run Job and wait for end
-        JobInfo job = featureService.scheduleNotificationsJob(FeaturesSelectionDTO.build().withSource("unknown"));
+        JobInfo job = featureService.scheduleNotificationsJob(new SearchFeatureSimpleEntityParameters().withSource(
+            "unknown"));
         if (job != null) {
             String tenant = runtimeTenantResolver.getTenant();
             jobService.runJob(job, tenant).get();
         }
         Assert.assertEquals(0L, listener.getNumberOfRequests());
         // Run Job and wait for end
-        job = featureService.scheduleNotificationsJob(FeaturesSelectionDTO.build());
+        job = featureService.scheduleNotificationsJob(new SearchFeatureSimpleEntityParameters());
         if (job != null) {
             String tenant = runtimeTenantResolver.getTenant();
             jobService.runJob(job, tenant).get();

@@ -18,12 +18,10 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
@@ -44,12 +42,11 @@ public interface IFeatureRequestService {
      *
      * @param type    {@link FeatureRequestTypeEnum}
      * @param filters {@link SearchFeatureRequestParameters}
-     * @param page
      * @return {@link FeatureRequestDTO}s
      */
-    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
-                                                   SearchFeatureRequestParameters filters,
-                                                   Pageable page);
+    RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
+                                            SearchFeatureRequestParameters filters,
+                                            Pageable page);
 
     /**
      * Set the status STORAGE_OK to all {@link FeatureEntity} references by
@@ -78,34 +75,21 @@ public interface IFeatureRequestService {
     /**
      * Set the status STORAGE_ERROR to the {@link FeatureEntity} references by
      * group id in the list send in parameter
-     *
-     * @param groupId
      */
     void handleDeletionError(Collection<RequestResultInfoDTO> errorRequests);
 
-    /**
-     * Delete requests with given selection
-     *
-     * @param selection {@link FeatureRequestsSelectionDTO}
-     * @return {@link RequestHandledResponse}
-     * @throws EntityOperationForbiddenException
-     */
-    public RequestHandledResponse delete(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse delete(FeatureRequestTypeEnum type, SearchFeatureRequestParameters selection);
 
     /**
      * Retry requests with given selection
      *
      * @param selection {@link FeatureRequestsSelectionDTO}
      * @return {@link RequestHandledResponse}
-     * @throws EntityOperationForbiddenException
      */
-    public RequestHandledResponse retry(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse retry(FeatureRequestTypeEnum type, SearchFeatureRequestParameters selection);
 
     /**
      * Update status of given requests
-     *
-     * @param requestIds
-     * @param status
      */
-    public void updateRequestsStatus(Set<Long> requestIds, RequestState status);
+    void updateRequestsStatus(Set<Long> requestIds, RequestState status);
 }

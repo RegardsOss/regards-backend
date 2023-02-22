@@ -23,10 +23,9 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.IFeatureCopyRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCopyRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
@@ -44,15 +43,18 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Stephane Cortine
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureCopyServiceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -172,18 +174,11 @@ public class FeatureCopyServiceIT extends AbstractFeatureMultitenantServiceIT {
     public void test_findRequests_with_state() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureCopyRequestParameters searchFeatureCopyRequestParameters = new SearchFeatureCopyRequestParameters().withStatesIncluded(
-            Arrays.asList(RequestState.GRANTED));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED));
         // When
-        Page<FeatureCopyRequest> oldResults = featureCopyService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                         .withState(
-                                                                                                             RequestState.GRANTED),
-                                                                              pageable);
-
-        Page<FeatureCopyRequest> results = featureCopyService.findRequests(searchFeatureCopyRequestParameters,
-                                                                           pageable);
+        Page<FeatureCopyRequest> results = featureCopyService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
-        assertEquals(2, oldResults.getNumberOfElements());
         assertEquals(2, results.getNumberOfElements());
     }
 
@@ -191,36 +186,26 @@ public class FeatureCopyServiceIT extends AbstractFeatureMultitenantServiceIT {
     public void test_findRequests_with_provider_id() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureCopyRequestParameters searchFeatureCopyRequestParameters = new SearchFeatureCopyRequestParameters().withProviderIdsIncluded(
-            Arrays.asList(PROVIDER_ID0));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(
+            List.of(PROVIDER_ID0));
         // When
-        Page<FeatureCopyRequest> oldResults = featureCopyService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                         .withProviderId(
-                                                                                                             PROVIDER_ID0),
-                                                                              pageable);
-        Page<FeatureCopyRequest> results = featureCopyService.findRequests(searchFeatureCopyRequestParameters,
-                                                                           pageable);
+        Page<FeatureCopyRequest> results = featureCopyService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
-        assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
 
         // Given
-        searchFeatureCopyRequestParameters = new SearchFeatureCopyRequestParameters().withProviderIdsIncluded(Arrays.asList(
-            "provider"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of("provider"));
         // When
-        oldResults = featureCopyService.findRequests(FeatureRequestsSelectionDTO.build().withProviderId("provider"),
-                                                     pageable);
-        results = featureCopyService.findRequests(searchFeatureCopyRequestParameters, pageable);
+        results = featureCopyService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
-        assertEquals(2, oldResults.getNumberOfElements());
         assertEquals(2, results.getNumberOfElements());
 
         // Given
-        searchFeatureCopyRequestParameters = new SearchFeatureCopyRequestParameters().withProviderIdsIncluded(Arrays.asList(
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
             PROVIDER_ID0,
             "provider_id1"));
         // When
-        results = featureCopyService.findRequests(searchFeatureCopyRequestParameters, pageable);
+        results = featureCopyService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(1, results.getNumberOfElements());
     }

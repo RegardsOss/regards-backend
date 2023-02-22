@@ -62,8 +62,10 @@ import java.util.*;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_service_schedule_it",
-    "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.ingest.maxBulkSize=100" },
-    locations = { "classpath:application-test.properties" })
+                                   "regards.amqp.enabled=true",
+                                   "eureka.client.enabled=false",
+                                   "regards.ingest.maxBulkSize=100" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
 
@@ -96,7 +98,7 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
 
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
         sip4.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:"
-                                                         + UUID.randomUUID().toString()
+                                                         + UUID.randomUUID()
                                                          + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
@@ -161,9 +163,8 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
 
     private List<AIPUpdateRequest> createUpdateRequest(List<AIPEntity> aips) {
         List<AIPUpdateRequest> updateRequests = AIPUpdateRequest.build(aips.get(0),
-                                                                       AIPUpdateParametersDto.build(SearchAIPsParameters.build()
-                                                                                                                        .withSession(
-                                                                                                                            SESSION_0))
+                                                                       AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(
+                                                                                                 SESSION_0))
                                                                                              .withAddTags(Lists.newArrayList(
                                                                                                  "SOME TAG")),
                                                                        false);
@@ -176,8 +177,8 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
     }
 
     private AIPUpdatesCreatorRequest createAIPUpdatesCreatorRequest() {
-        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(
-            SearchAIPsParameters.build().withSession(SESSION_0)));
+        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(
+            SESSION_0)));
         return (AIPUpdatesCreatorRequest) requestService.scheduleRequest(updateCreatorRequest);
     }
 

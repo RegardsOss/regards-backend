@@ -25,8 +25,8 @@ import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -41,10 +41,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.validation.Errors;
 
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -105,7 +102,7 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     }
 
     @Override
-    public RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse deleteRequests(SearchFeatureRequestParameters selection) {
         long nbHandled = 0;
         long total = 0;
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
@@ -114,11 +111,7 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         int cpt = 0;
         boolean stop = false;
         // Delete only deletable requests
-        for (FeatureRequestStep step : FeatureRequestStep.values()) {
-            if (!step.isProcessing()) {
-                selection.withStep(step);
-            }
-        }
+        selection.withSteps(Arrays.stream(FeatureRequestStep.values()).filter(step -> !step.isProcessing()).toList());
         do {
             requestsPage = findRequests(selection, page);
             if (total == 0) {
@@ -152,13 +145,11 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
 
     /**
      * Specific action to do after deletion of a list of requests.
-     *
-     * @param requests
      */
     protected abstract void postRequestDeleted(Collection<R> requests);
 
     @Override
-    public RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse retryRequests(SearchFeatureRequestParameters selection) {
         long nbHandled = 0;
         long total = 0;
         String message;
@@ -166,11 +157,7 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         Page<R> requestsPage;
         boolean stop = false;
         // Delete only deletable requests
-        for (FeatureRequestStep step : FeatureRequestStep.values()) {
-            if (!step.isProcessing()) {
-                selection.withStep(step);
-            }
-        }
+        selection.withSteps(Arrays.stream(FeatureRequestStep.values()).filter(step -> !step.isProcessing()).toList());
         do {
             requestsPage = findRequests(selection, page);
             if (total == 0) {
@@ -228,7 +215,7 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         request.addError(String.format("Error during file storage : %s", errorCause));
     }
 
-    protected abstract Page<R> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+    public abstract Page<R> findRequests(SearchFeatureRequestParameters filters, Pageable page);
 
     protected abstract IAbstractFeatureRequestRepository<R> getRequestsRepository();
 

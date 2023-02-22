@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureNotificationRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
@@ -56,7 +56,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -68,9 +67,11 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Kevin Marchois
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_notif", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_notif",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServiceIT {
@@ -185,7 +186,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         prepareCreationTestData(false, nbValid, true, true, false);
 
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                                                     new SearchFeatureNotificationRequestParameters(),
+                                                                                     new SearchFeatureRequestParameters(),
                                                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
@@ -199,37 +200,36 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     new SearchFeatureNotificationRequestParameters(),
+                                                     new SearchFeatureRequestParameters(),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     new SearchFeatureNotificationRequestParameters().withStatesIncluded(
-                                                         Arrays.asList(RequestState.ERROR)),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                         RequestState.ERROR)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     new SearchFeatureNotificationRequestParameters().withStatesIncluded(
-                                                                                                         Arrays.asList(RequestState.GRANTED))
-                                                                                                     .withLastUpdateAfter(
-                                                                                                         OffsetDateTime.now()
-                                                                                                                       .plusSeconds(
-                                                                                                                           5)),
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                                                             RequestState.GRANTED))
+                                                                                         .withLastUpdateAfter(
+                                                                                             OffsetDateTime.now()
+                                                                                                           .plusSeconds(
+                                                                                                               5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     new SearchFeatureNotificationRequestParameters().withLastUpdateBefore(
-                                                                                                         OffsetDateTime.now().plusSeconds(5))
-                                                                                                     .withLastUpdateAfter(
-                                                                                                         start),
+                                                     new SearchFeatureRequestParameters().withLastUpdateBefore(
+                                                                                             OffsetDateTime.now().plusSeconds(5))
+                                                                                         .withLastUpdateAfter(start),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
@@ -253,9 +253,8 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         // Try delete all requests.
         RequestHandledResponse response = this.featureRequestService.delete(FeatureRequestTypeEnum.NOTIFICATION,
-                                                                            FeatureRequestsSelectionDTO.build()
-                                                                                                       .withState(
-                                                                                                           RequestState.ERROR));
+                                                                            new SearchFeatureRequestParameters().withStatesIncluded(
+                                                                                List.of(RequestState.ERROR)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state",
                             0,
@@ -265,8 +264,8 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
                             response.getTotalRequested());
 
         response = this.featureRequestService.delete(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestsSelectionDTO.build()
-                                                                                .withState(RequestState.GRANTED));
+                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                         RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests",
                             nbValid,
@@ -294,9 +293,8 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         // Try delete all requests.
         RequestHandledResponse response = this.featureRequestService.retry(FeatureRequestTypeEnum.NOTIFICATION,
-                                                                           FeatureRequestsSelectionDTO.build()
-                                                                                                      .withState(
-                                                                                                          RequestState.ERROR));
+                                                                           new SearchFeatureRequestParameters().withStatesIncluded(
+                                                                               List.of(RequestState.ERROR)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state",
                             0,
@@ -306,8 +304,8 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
                             response.getTotalRequested());
 
         response = this.featureRequestService.retry(FeatureRequestTypeEnum.NOTIFICATION,
-                                                    FeatureRequestsSelectionDTO.build()
-                                                                               .withState(RequestState.GRANTED));
+                                                    new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                        RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests",
                             nbValid,
@@ -366,7 +364,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         createOneRequestWithError();
 
         // Retry
-        featureNotificationService.retryRequests(new FeatureRequestsSelectionDTO());
+        featureNotificationService.retryRequests(new SearchFeatureRequestParameters());
         mockNotificationSuccess();
         waitRequest(notificationRequestRepo, 0, 20000);
 
@@ -408,7 +406,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         createOneRequestWithError();
 
         // Delete
-        featureNotificationService.deleteRequests(new FeatureRequestsSelectionDTO());
+        featureNotificationService.deleteRequests(new SearchFeatureRequestParameters());
         waitRequest(notificationRequestRepo, 0, 20000);
 
         // Compute Session step

@@ -18,18 +18,9 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
-import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.util.CollectionUtils;
-
-import javax.persistence.criteria.Predicate;
-import java.util.Collection;
-import java.util.Set;
 
 /**
  * @author Stephane Cortine
@@ -40,62 +31,18 @@ public class FeatureSimpleEntitySpecificationBuilder
     @Override
     protected void addSpecificationsFromParameters() {
         if (parameters != null) {
+            specifications.add(useValuesRestriction("id", parameters.getFeatureIds()));
+            specifications.add(useValuesRestriction("providerId", parameters.getProviderIds()));
+
             specifications.add(equals("model", parameters.getModel()));
 
             specifications.add(equals("sessionOwner", parameters.getSource()));
             specifications.add(equals("session", parameters.getSession()));
 
-            specifications.add(useValuesRestrictionLike("providerId", parameters.getProviderIds()));
-
             specifications.add(after("lastUpdate", parameters.getLastUpdate().getAfter()));
             specifications.add(before("lastUpdate", parameters.getLastUpdate().getBefore()));
 
             specifications.add(equals("disseminationPending", parameters.getDisseminationPending()));
-        }
-    }
-
-    protected Specification<FeatureSimpleEntity> useValuesRestrictionLike(String pathToField,
-                                                                          ValuesRestriction<String> valuesRestriction) {
-        if (valuesRestriction == null) {
-            return null;
-        }
-        Collection<String> values = valuesRestriction.getValues();
-        if (CollectionUtils.isEmpty(values)) {
-            return null;
-        }
-        if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
-            return isIncludedString(pathToField, values);
-        }
-        return isExcludedString(pathToField, values);
-    }
-
-    protected Specification<FeatureSimpleEntity> isIncludedString(String pathToField, Collection<String> values) {
-        if (values == null || values.isEmpty()) {
-            return null;
-        } else {
-            return (root, query, criteriaBuilder) -> {
-                Set<Predicate> predicates = Sets.newHashSet();
-                for (String value : values) {
-                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("providerId")),
-                                                        value.toLowerCase() + "%"));
-                }
-                return criteriaBuilder.or(predicates.toArray(new Predicate[predicates.size()]));
-            };
-        }
-    }
-
-    protected Specification<FeatureSimpleEntity> isExcludedString(String pathToField, Collection<String> values) {
-        if (values == null || values.isEmpty()) {
-            return null;
-        } else {
-            return (root, query, criteriaBuilder) -> {
-                Set<Predicate> predicates = Sets.newHashSet();
-                for (String value : values) {
-                    predicates.add(criteriaBuilder.notLike(criteriaBuilder.lower(root.get("providerId")),
-                                                           value.toLowerCase() + "%"));
-                }
-                return criteriaBuilder.or(predicates.toArray(new Predicate[predicates.size()]));
-            };
         }
     }
 }

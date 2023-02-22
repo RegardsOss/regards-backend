@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -106,49 +105,36 @@ public class FeatureRequestService implements IFeatureRequestService {
         RequestsInfo info = RequestsInfo.build(0L);
         switch (type) {
             case COPY:
-                SearchFeatureCopyRequestParameters searchFeatureCopyRequestParameters = new SearchFeatureCopyRequestParameters(
-                    filters);
-                results = featureCopyService.findRequests(searchFeatureCopyRequestParameters, page)
-                                            .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureCopyService.getInfo(searchFeatureCopyRequestParameters);
+                results = featureCopyService.findRequests(filters, page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                info = featureCopyService.getInfo(filters);
                 break;
             case CREATION:
-                SearchFeatureCreationRequestParameters searchFeatureCreationRequestParameters = new SearchFeatureCreationRequestParameters(
-                    filters);
-                results = featureCreationService.findRequests(searchFeatureCreationRequestParameters, page)
+                results = featureCreationService.findRequests(filters, page)
                                                 .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureCreationService.getInfo(searchFeatureCreationRequestParameters);
+                info = featureCreationService.getInfo(filters);
                 break;
             case DELETION:
-                SearchFeatureDeletionRequestParameters searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters(
-                    filters);
-                results = featureDeletionService.findRequests(searchFeatureDeletionRequestParameters, page)
+                results = featureDeletionService.findRequests(filters, page)
                                                 .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureDeletionService.getInfo(searchFeatureDeletionRequestParameters);
+                info = featureDeletionService.getInfo(filters);
                 break;
             case NOTIFICATION:
-                SearchFeatureNotificationRequestParameters searchFeatureNotificationRequestParameters = new SearchFeatureNotificationRequestParameters(
-                    filters);
-                results = featureNotificationService.findRequests(searchFeatureNotificationRequestParameters, page)
+                results = featureNotificationService.findRequests(filters, page)
                                                     .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureNotificationService.getInfo(searchFeatureNotificationRequestParameters);
+                info = featureNotificationService.getInfo(filters);
                 break;
             case SAVE_METADATA:
-                SearchFeatureSaveMetadataRequestParameters searchFeatureSaveMetadataRequestParameters = new SearchFeatureSaveMetadataRequestParameters(
-                    filters);
-                results = featureMetadataService.findRequests(searchFeatureSaveMetadataRequestParameters, page)
+                results = featureMetadataService.findRequests(filters, page)
                                                 .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureMetadataService.getInfo(searchFeatureSaveMetadataRequestParameters);
+                info = featureMetadataService.getInfo(filters);
                 break;
             case UPDATE:
-                SearchFeatureUpdateRequestParameters searchFeatureUpdateRequestParameters = new SearchFeatureUpdateRequestParameters(
-                    filters);
-                results = featureUpdateService.findRequests(searchFeatureUpdateRequestParameters, page)
+                results = featureUpdateService.findRequests(filters, page)
                                               .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureUpdateService.getInfo(searchFeatureUpdateRequestParameters);
+                info = featureUpdateService.getInfo(filters);
                 break;
             default:
-                LOGGER.error("Not available type {} for Feature Requests", type.toString());
+                LOGGER.error("Not available type {} for Feature Requests", type);
                 break;
         }
         addProviderIdsToRequests(results);
@@ -157,7 +143,7 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
-    public RequestHandledResponse delete(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse delete(FeatureRequestTypeEnum type, SearchFeatureRequestParameters selection) {
         switch (type) {
             case COPY:
                 return featureCopyService.deleteRequests(selection);
@@ -172,14 +158,14 @@ public class FeatureRequestService implements IFeatureRequestService {
             case UPDATE:
                 return featureUpdateService.deleteRequests(selection);
             default:
-                String message = String.format("Not available type %s for Feature Requests", type.toString());
+                String message = String.format("Not available type %s for Feature Requests", type);
                 LOGGER.error(message);
                 return RequestHandledResponse.build(0, 0, message);
         }
     }
 
     @Override
-    public RequestHandledResponse retry(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse retry(FeatureRequestTypeEnum type, SearchFeatureRequestParameters selection) {
         switch (type) {
             case COPY:
                 return featureCopyService.retryRequests(selection);
@@ -194,7 +180,7 @@ public class FeatureRequestService implements IFeatureRequestService {
             case UPDATE:
                 return featureUpdateService.retryRequests(selection);
             default:
-                String message = String.format("Not available type %s for Feature Requests", type.toString());
+                String message = String.format("Not available type %s for Feature Requests", type);
                 LOGGER.error(message);
                 return RequestHandledResponse.build(0, 0, message);
         }

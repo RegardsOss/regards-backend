@@ -46,7 +46,8 @@ public class SourceDeleteService implements ISourceDeleteService {
     public void deleteSource(String source) {
         LOGGER.info("Event received to program the deletion of source {}", source);
         // Run a SourceDeletionJob
-        deletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
-                                                                          .withSessionOwner(source));
+        OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY);
+        dto.withSessionOwner(source);
+        deletionService.registerOAISDeletionCreator(dto);
     }
 }

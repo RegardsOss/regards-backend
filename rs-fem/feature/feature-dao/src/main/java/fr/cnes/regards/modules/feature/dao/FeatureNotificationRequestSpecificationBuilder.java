@@ -18,28 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureNotificationRequestParameters;
 
 /**
  * @author Stephane Cortine
  */
-public class FeatureNotificationRequestSpecificationBuilder extends
-    AbstractFeatureRequestSpecificationsBuilder<FeatureNotificationRequest, SearchFeatureNotificationRequestParameters> {
-
-    @Override
-    protected void addSpecificationsFromParameters() {
-        specifications.add(equalsWithFeatureEntity("sessionOwner", parameters.getSource()));
-
-        specifications.add(equalsWithFeatureEntity("session", parameters.getSession()));
-
-        specifications.add(useValuesRestrictionLikeWithFeatureEntity("providerId", parameters.getProviderIds()));
-
-        specifications.add(useValuesRestriction(AbstractRequest.COLUMN_STATE, parameters.getStates()));
-
-        specifications.add(after("registrationDate", parameters.getLastUpdate().getAfter()));
-        specifications.add(before("registrationDate", parameters.getLastUpdate().getBefore()));
-    }
+public class FeatureNotificationRequestSpecificationBuilder
+    extends AbstractFeatureRequestSpecificationsBuilder<FeatureNotificationRequest> {
 
 }

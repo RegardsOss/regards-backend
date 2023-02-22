@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.feature.dao.FeatureSaveMetadataRequestSpecification;
 import fr.cnes.regards.modules.feature.dao.FeatureSaveMetadataRequestSpecificationBuilder;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
@@ -34,9 +33,8 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureSaveMetadataRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
@@ -56,7 +54,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,15 +81,15 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     @Value("${regards.feature.dump.zip-limit:1000}")
     private int zipLimit;
 
-    private IFeatureSaveMetadataRequestRepository featureSaveMetadataRepository;
+    private final IFeatureSaveMetadataRequestRepository featureSaveMetadataRepository;
 
-    private IFeatureEntityRepository featureRepository;
+    private final IFeatureEntityRepository featureRepository;
 
-    private DumpService dumpService;
+    private final DumpService dumpService;
 
-    private IFeatureMetadataService self;
+    private final IFeatureMetadataService self;
 
-    private INotificationClient notificationClient;
+    private final INotificationClient notificationClient;
 
     public FeatureMetadataService(IFeatureSaveMetadataRequestRepository featureSaveMetadataRepository,
                                   IFeatureEntityRepository featureRepository,
@@ -211,47 +208,37 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     }
 
     @Override
-    public Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        return featureSaveMetadataRepository.findAll(FeatureSaveMetadataRequestSpecification.searchAllByFilters(
-            selection,
-            page), page);
-    }
-
-    @Override
-    public Page<FeatureSaveMetadataRequest> findRequests(SearchFeatureSaveMetadataRequestParameters filters,
-                                                         Pageable page) {
+    public Page<FeatureSaveMetadataRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page) {
         return featureSaveMetadataRepository.findAll(new FeatureSaveMetadataRequestSpecificationBuilder().withParameters(
             filters).build(), page);
     }
 
     @Override
-    public RequestsInfo getInfo(SearchFeatureSaveMetadataRequestParameters filters) {
+    public RequestsInfo getInfo(SearchFeatureRequestParameters filters) {
         if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
                                                                                               .getValues()
                                                                                               .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            filters.withStatesIncluded(List.of(RequestState.ERROR));
             return RequestsInfo.build(featureSaveMetadataRepository.count(new FeatureSaveMetadataRequestSpecificationBuilder().withParameters(
                 filters).build()));
         }
     }
 
     @Override
-    public RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse deleteRequests(SearchFeatureRequestParameters selection) {
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<FeatureSaveMetadataRequest> requestsPage;
         long nbHandled = 0;
         long total = 0;
         String message;
-        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null) && (selection.getFilters()
-                                                                                                         .getState()
-                                                                                                != RequestState.ERROR)) {
-            message = String.format("Requests in state %s are not deletable", selection.getFilters().getState());
+        if (!isSelectionStateOnlyError(selection)) {
+            message = "Only ERROR requests can be deleted";
         } else {
             boolean stop = false;
             // Delete only error requests
-            selection.getFilters().setState(RequestState.ERROR);
+            selection.withStatesIncluded(List.of(RequestState.ERROR));
             do {
                 requestsPage = findRequests(selection, page);
                 if (total == 0) {
@@ -276,20 +263,18 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     }
 
     @Override
-    public RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse retryRequests(SearchFeatureRequestParameters selection) {
         long nbHandled = 0;
         long total = 0;
         String message;
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<FeatureSaveMetadataRequest> requestsPage;
-        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null) && (selection.getFilters()
-                                                                                                         .getState()
-                                                                                                != RequestState.ERROR)) {
-            message = String.format("Requests in state %s are not retryable", selection.getFilters().getState());
+        if (!isSelectionStateOnlyError(selection)) {
+            message = "Only ERROR requests are retryable";
         } else {
             boolean stop = false;
             // Retry only error requests
-            selection.getFilters().setState(RequestState.ERROR);
+            selection.withStatesIncluded(List.of(RequestState.ERROR));
             do {
                 requestsPage = findRequests(selection, page);
                 if (total == 0) {
@@ -315,6 +300,13 @@ public class FeatureMetadataService implements IFeatureMetadataService {
             }
         }
         return RequestHandledResponse.build(total, nbHandled, message);
+    }
+
+    private boolean isSelectionStateOnlyError(SearchFeatureRequestParameters selection) {
+        return selection == null
+               || selection.getStates() == null
+               || selection.getStates().getValues() == null
+               || selection.getStates().getValues().contains(RequestState.ERROR);
     }
 
     private FeatureSaveMetadataRequest updateForRetry(FeatureSaveMetadataRequest request) {

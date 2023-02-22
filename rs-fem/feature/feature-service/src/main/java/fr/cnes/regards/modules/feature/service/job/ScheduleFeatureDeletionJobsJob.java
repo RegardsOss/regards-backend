@@ -25,8 +25,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +49,7 @@ public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
 
     public static final String OWNER_PARAMETER = "owner";
 
-    private FeaturesSelectionDTO selection;
+    private SearchFeatureSimpleEntityParameters selection;
 
     private String owner;
 
@@ -101,7 +101,7 @@ public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
     }
 
     /**
-     * @param ids
+     * Schedule {@link PublishFeatureDeletionEventsJob} with the given request ids as parameter
      */
     private JobInfo schedulePageDeletion(Set<String> ids) {
         Set<JobParameter> jobParameters = Sets.newHashSet();

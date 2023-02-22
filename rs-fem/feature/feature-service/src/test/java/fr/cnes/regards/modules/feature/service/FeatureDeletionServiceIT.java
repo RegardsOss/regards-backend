@@ -22,10 +22,9 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureDeletionRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
@@ -42,15 +41,18 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Stephane Cortine
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureDeletionServiceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -164,26 +166,20 @@ public class FeatureDeletionServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_state() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureDeletionRequestParameters searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters().withStatesIncluded(
-            Arrays.asList(RequestState.GRANTED));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(
+            List.of(RequestState.GRANTED));
         // When
-        Page<FeatureDeletionRequest> oldResults = featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withState(
-                                                                                                                     RequestState.GRANTED),
-                                                                                      pageable);
-        Page<FeatureDeletionRequest> results = featureDeletionService.findRequests(
-            searchFeatureDeletionRequestParameters,
-            pageable);
+        Page<FeatureDeletionRequest> results = featureDeletionService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
-        assertEquals(2, oldResults.getNumberOfElements());
         assertEquals(2, results.getNumberOfElements());
 
         // Given
-        searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters().withStatesIncluded(Arrays.asList(
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(Arrays.asList(
             RequestState.SUCCESS,
             RequestState.GRANTED));
         // When
-        results = featureDeletionService.findRequests(searchFeatureDeletionRequestParameters, pageable);
+        results = featureDeletionService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(4, results.getNumberOfElements());
     }
@@ -192,52 +188,45 @@ public class FeatureDeletionServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_provider_id() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureDeletionRequestParameters searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider_id0"));
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(
+            List.of("provider_id0"));
         // When
-        Page<FeatureDeletionRequest> oldResults = featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withProviderId(
-                                                                                                                     "provider_id0"),
-                                                                                      pageable);
-        Page<FeatureDeletionRequest> results = featureDeletionService.findRequests(
-            searchFeatureDeletionRequestParameters,
-            pageable);
-        // Then
-        assertEquals(1, oldResults.getNumberOfElements());
-        assertEquals(1, results.getNumberOfElements());
-
-        // Given
-        searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider"));
-        // When
-        oldResults = featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build().withProviderId("provider"),
-                                                         pageable);
-        results = featureDeletionService.findRequests(searchFeatureDeletionRequestParameters, pageable);
-        // Then
-        assertEquals(2, oldResults.getNumberOfElements());
-        assertEquals(2, results.getNumberOfElements());
-
-        // Given
-        searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider_id0", "provider_id1"));
-        // When
-        results = featureDeletionService.findRequests(searchFeatureDeletionRequestParameters, pageable);
+        Page<FeatureDeletionRequest> results = featureDeletionService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
         assertEquals(1, results.getNumberOfElements());
 
         // Given
-        searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("provider_id0", "provider_id2"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of("provider"));
         // When
-        results = featureDeletionService.findRequests(searchFeatureDeletionRequestParameters, pageable);
+        results = featureDeletionService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(2, results.getNumberOfElements());
 
         // Given
-        searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters().withProviderIdsIncluded(
-            Arrays.asList("Provider_ID0", "provIDer_iD2"));
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            "provider_id0",
+            "provider_id1"));
         // When
-        results = featureDeletionService.findRequests(searchFeatureDeletionRequestParameters, pageable);
+        results = featureDeletionService.findRequests(searchFeatureRequestParameters, pageable);
+        // Then
+        assertEquals(1, results.getNumberOfElements());
+
+        // Given
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            "provider_id0",
+            "provider_id2"));
+        // When
+        results = featureDeletionService.findRequests(searchFeatureRequestParameters, pageable);
+        // Then
+        assertEquals(2, results.getNumberOfElements());
+
+        // Given
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withProviderIdsIncluded(Arrays.asList(
+            "Provider_ID0",
+            "provIDer_iD2"));
+        // When
+        results = featureDeletionService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(2, results.getNumberOfElements());
     }
@@ -246,16 +235,13 @@ public class FeatureDeletionServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_session() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureDeletionRequestParameters searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters().withSession(
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withSession(
             "session0");
         // When
-        Page<FeatureDeletionRequest> oldResults = featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withSession(
-                                                                                                                     "session0"),
-                                                                                      pageable);
-        Page<FeatureDeletionRequest> results = featureDeletionService.findRequests(
-            searchFeatureDeletionRequestParameters,
-            pageable);
+        Page<FeatureDeletionRequest> oldResults = featureDeletionService.findRequests(new SearchFeatureRequestParameters().withSession(
+            "session0"), pageable);
+        Page<FeatureDeletionRequest> results = featureDeletionService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
         assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());
@@ -265,16 +251,13 @@ public class FeatureDeletionServiceIT extends AbstractFeatureMultitenantServiceI
     public void test_findRequests_with_source() {
         // Given
         Pageable pageable = PageRequest.of(0, 100);
-        SearchFeatureDeletionRequestParameters searchFeatureDeletionRequestParameters = new SearchFeatureDeletionRequestParameters().withSource(
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withSource(
             SESSION_OWNER_0);
         // When
-        Page<FeatureDeletionRequest> oldResults = featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build()
-                                                                                                                 .withSource(
-                                                                                                                     SESSION_OWNER_0),
-                                                                                      pageable);
-        Page<FeatureDeletionRequest> results = featureDeletionService.findRequests(
-            searchFeatureDeletionRequestParameters,
-            pageable);
+        Page<FeatureDeletionRequest> oldResults = featureDeletionService.findRequests(new SearchFeatureRequestParameters().withSource(
+            SESSION_OWNER_0), pageable);
+        Page<FeatureDeletionRequest> results = featureDeletionService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
         // Then
         assertEquals(1, oldResults.getNumberOfElements());
         assertEquals(1, results.getNumberOfElements());

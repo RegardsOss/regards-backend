@@ -2,10 +2,9 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureCreationRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
@@ -61,27 +60,17 @@ public interface IFeatureCreationService extends IAbstractFeatureService<Feature
     /**
      * Find all {@link FeatureCreationRequest}s
      *
-     * @param selection {@link FeatureRequestsSelectionDTO}
-     * @param page
+     * @param filters {@link SearchFeatureRequestParameters}
      * @return {@link FeatureCreationRequest}s
      */
-    Page<FeatureCreationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
-
-    /**
-     * Find all {@link FeatureCreationRequest}s
-     *
-     * @param filters {@link SearchFeatureCreationRequestParameters}
-     * @param page
-     * @return {@link FeatureCreationRequest}s
-     */
-    Page<FeatureCreationRequest> findRequests(SearchFeatureCreationRequestParameters filters, Pageable page);
+    Page<FeatureCreationRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page);
 
     /**
      * Find requests information
      *
-     * @param filters {@link SearchFeatureCreationRequestParameters}
+     * @param filters {@link SearchFeatureRequestParameters}
      * @return {@link RequestsInfo}
      */
-    RequestsInfo getInfo(SearchFeatureCreationRequestParameters filters);
+    RequestsInfo getInfo(SearchFeatureRequestParameters filters);
 
 }

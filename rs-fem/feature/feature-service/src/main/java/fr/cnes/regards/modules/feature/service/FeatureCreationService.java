@@ -32,7 +32,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.dao.FeatureCreationRequestSpecificationsBuilder;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
@@ -342,9 +345,6 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     /**
      * Creates a {@link FeatureUpdateRequestEvent} from a {@link FeatureCreationRequestEvent}. Useful to update an already existing feature
      * when a creationEvent is received with a given urn and updateIfExists option enabled.
-     *
-     * @param creationEvent
-     * @return
      */
     private FeatureUpdateRequestEvent buidUpdateEventFromCreationEvent(FeatureCreationRequestEvent creationEvent) {
         FeatureUpdateRequestEvent updateEvent = new FeatureUpdateRequestEvent();
@@ -556,7 +556,6 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
      *
      * @param featureCreationRequest from we will create the {@link FeatureEntity}
      * @param previousVersion        previous urn for the last version
-     * @param featureCreationJob
      * @return initialized feature entity
      */
     private FeatureEntity initFeatureEntity(FeatureCreationRequest featureCreationRequest,
@@ -680,25 +679,19 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     }
 
     @Override
-    public Page<FeatureCreationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        return featureCreationRequestRepo.findAll(FeatureCreationRequestSpecification.searchAllByFilters(selection,
-                                                                                                         page), page);
-    }
-
-    @Override
-    public Page<FeatureCreationRequest> findRequests(SearchFeatureCreationRequestParameters filters, Pageable page) {
+    public Page<FeatureCreationRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page) {
         return featureCreationRequestRepo.findAll(new FeatureCreationRequestSpecificationsBuilder().withParameters(
             filters).build(), page);
     }
 
     @Override
-    public RequestsInfo getInfo(SearchFeatureCreationRequestParameters filters) {
+    public RequestsInfo getInfo(SearchFeatureRequestParameters filters) {
         if (filters.getStates() != null && filters.getStates().getValues() != null && !filters.getStates()
                                                                                               .getValues()
                                                                                               .contains(RequestState.ERROR)) {
             return RequestsInfo.build(0L);
         } else {
-            filters.withStatesIncluded(Arrays.asList(RequestState.ERROR));
+            filters.withStatesIncluded(List.of(RequestState.ERROR));
             return RequestsInfo.build(featureCreationRequestRepo.count(new FeatureCreationRequestSpecificationsBuilder().withParameters(
                 filters).build()));
         }
