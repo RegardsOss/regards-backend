@@ -56,6 +56,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -153,7 +154,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
                                                         null,
                                                         StorageMetadata.build(STORAGE_0));
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 2000);
 
         List<AIPEntity> aips = aipRepository.findAll();
 
@@ -188,6 +189,29 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         oaisDeletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionRequestRepository.save(oaisDeletionRequest);
         LOGGER.info("=========================> END INIT DATA FOR TESTS <=====================");
+    }
+
+    @Test
+    public void test_search_requests_by_id() {
+
+        // GIVEN
+        initData();
+        List<IngestRequest> requests = ingestRequestRepository.findAll();
+        SearchAbstractRequestParameters searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIdsIncluded(
+            List.of(requests.get(0).getId()));
+        SearchAbstractRequestParameters parametersExcludeId = new SearchAbstractRequestParameters().withRequestIdsExcluded(
+            List.of(requests.get(0).getId())).withRequestIpTypesIncluded(List.of(RequestTypeEnum.INGEST));
+
+        // WHEN
+        Page<RequestDto> requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters,
+                                                                      Pageable.ofSize(10));
+        Page<RequestDto> requestDtosWithExclude = requestService.findRequestDtos(parametersExcludeId,
+                                                                                 Pageable.ofSize(10));
+
+        // THEN
+        Assert.assertEquals(1L, requestDtos.getTotalElements());
+        Assert.assertEquals(requests.size() - 1, requestDtosWithExclude.getTotalElements());
+
     }
 
     @Test
@@ -231,9 +255,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         requests = requestService.findRequestDtos(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.OAIS_DELETION_CREATOR)).withRequestStatesIncluded(Set.of(InternalRequestState.ERROR)), pr);
         searchAbstractRequestParameters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(List.of(
-                                                                                   RequestTypeEnum.OAIS_DELETION_CREATOR))
-                                                                               .withRequestStatesIncluded(List.of(
-                                                                                   InternalRequestState.ERROR));
+            RequestTypeEnum.OAIS_DELETION_CREATOR)).withRequestStatesIncluded(List.of(InternalRequestState.ERROR));
         requestDtos = requestService.findRequestDtos(searchAbstractRequestParameters, pr);
         LOGGER.info("=========================> END SEARCH OAIS DELETION CREATOR IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
@@ -265,9 +287,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         SIPEntity sip4 = new SIPEntity();
 
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
-        sip4.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:"
-                                                         + UUID.randomUUID()
-                                                         + ":V1"));
+        sip4.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID() + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));

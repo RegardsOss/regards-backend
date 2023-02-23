@@ -44,6 +44,8 @@ public class RequestSpecificationsBuilder
 
             specifications.add(equals("session", parameters.getSession()));
 
+            specifications.add(useValuesRestriction("id", parameters.getRequestIds()));
+
             specifications.add(useValuesRestriction("providerId", parameters.getProviderIds()));
 
             specifications.add(useValuesRestrictionEnumAsString(DISCRIMINANT_ATTRIBUTE,
