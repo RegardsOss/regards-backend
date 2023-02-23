@@ -287,6 +287,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             return forTypeWithNullValue(attributeType, name);
         }
 
+        return buildProperty(attributeType, name, value);
+    }
+
+    private static IProperty<?> buildProperty(PropertyType attributeType, String name, Object value) {
         switch (attributeType) {
             case BOOLEAN:
                 return buildBoolean(name, toBooleanValue(value));
@@ -315,7 +319,6 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             case LONG_INTERVAL:
                 return buildLongInterval(name, (Range<Long>) value);
             case STRING:
-                return buildString(name, toStringValue(value));
             case JSON:
                 return buildString(name, toStringValue(value));
             case STRING_ARRAY:

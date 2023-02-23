@@ -63,7 +63,7 @@ public class LongRangeObjectValidator extends AbstractLongRangeValidator {
 
     @Override
     protected boolean isLong(Class clazz) {
-        return Long.class.isAssignableFrom(clazz) || Long.class.isAssignableFrom(clazz);
+        return Long.class.isAssignableFrom(clazz);
     }
 
     @Override
