@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionStatus;
 import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionRequestHelper;
 import fr.cnes.regards.modules.model.client.IModelClient;
@@ -117,11 +118,16 @@ public class SubmissionSessionItemizedServiceIT extends AbstractRegardsIT {
         result.andExpect(jsonPath("$.content.length()", is(5)))
               .andExpect(jsonPath("$.metadata.totalElements", is(13)))
               .andExpect(jsonPath("$.globalStatus", is(SessionStatus.ERROR.toString())))
-              .andExpect(jsonPath("$.content[0].content.status", is("DONE")))
-              .andExpect(jsonPath("$.content[1].content.status", is("DONE")))
-              .andExpect(jsonPath("$.content[2].content.status", is("DONE")))
-              .andExpect(jsonPath("$.content[3].content.status", is("DONE")))
-              .andExpect(jsonPath("$.content[4].content.status", is("DONE")));
+              .andExpect(jsonPath("$.content[0].content.responseStatus",
+                                  is(SubmissionResponseStatus.SUCCESS.toString())))
+              .andExpect(jsonPath("$.content[1].content.responseStatus",
+                                  is(SubmissionResponseStatus.SUCCESS.toString())))
+              .andExpect(jsonPath("$.content[2].content.responseStatus",
+                                  is(SubmissionResponseStatus.SUCCESS.toString())))
+              .andExpect(jsonPath("$.content[3].content.responseStatus",
+                                  is(SubmissionResponseStatus.SUCCESS.toString())))
+              .andExpect(jsonPath("$.content[4].content.responseStatus",
+                                  is(SubmissionResponseStatus.SUCCESS.toString())));
     }
 
     @Test

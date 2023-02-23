@@ -232,7 +232,7 @@ public class SubmissionCreateServiceTest {
         Assertions.assertThat(dtoResponses.stream()
                                           .map(SubmissionResponseDto::getResponseStatus)
                                           .collect(Collectors.toSet()))
-                  .isEqualTo(Set.of(SubmissionResponseStatus.ERROR));
+                  .isEqualTo(Set.of(SubmissionResponseStatus.DENIED));
         // check no worker requests have been sent
         Mockito.verifyNoInteractions(publisher);
     }

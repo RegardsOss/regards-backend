@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.SubmissionRequestMapper;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
-import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -67,9 +67,9 @@ public class SubmissionReadService {
      * @param correlationId the correlation id
      * @return the request status info
      */
-    public Optional<SubmissionRequestInfoDto> retrieveRequestStatusInfo(String correlationId) {
+    public Optional<SubmissionResponseDto> retrieveSubmissionResponse(String correlationId) {
         return submissionRequestRepository.findSubmissionRequestByCorrelationId(correlationId)
-                                          .map(submissionRequestMapper::convertToSubmissionRequestInfoDto);
+                                          .map(submissionRequestMapper::convertToSubmissionResponseDto);
     }
 
     public Page<SubmittedSearchResponseDto> retrieveSubmittedRequestsByCriteria(SearchSubmissionRequestParameters searchCriterion,
@@ -80,21 +80,6 @@ public class SubmissionReadService {
         return new PageImpl<>(submissionPage.stream()
                                             .map(submissionRequestMapper::convertToSubmittedSearchResponseDto)
                                             .toList(), submissionPage.getPageable(), submissionPage.getTotalElements());
-    }
-
-    /**
-     * Retrieve the submitted product, when existing, using provided correlation id.
-     *
-     * @return the submitted product
-     */
-    public Optional<SubmissionRequestDto> findSubmissionRequestByCorrelationId(String correlationId) {
-
-        Optional<SubmissionRequest> submissionRequest = submissionRequestRepository.findSubmissionRequestByCorrelationId(
-            correlationId);
-        if (submissionRequest.isPresent()) {
-            return Optional.of(submissionRequest.get().getSubmittedProduct().getProduct());
-        }
-        return Optional.empty();
     }
 
     /**

@@ -111,8 +111,8 @@ public final class SubmissionResponseDtoUtils {
                                          null);
     }
 
-    public static SubmissionResponseDto buildErrorResponseDto(SubmissionRequestDto requestDto,
-                                                              LtaSettingsException exception) {
+    public static SubmissionResponseDto buildInvalidRequestResponseDto(SubmissionRequestDto requestDto,
+                                                                       LtaSettingsException exception) {
         String productId = requestDto.getId();
         String correlationId = requestDto.getCorrelationId();
         LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and id \"{}\" was rejected.",
@@ -120,7 +120,7 @@ public final class SubmissionResponseDtoUtils {
                      productId,
                      exception);
         return new SubmissionResponseDto(correlationId,
-                                         SubmissionResponseStatus.ERROR,
+                                         SubmissionResponseStatus.DENIED,
                                          productId,
                                          null,
                                          requestDto.getSession(),

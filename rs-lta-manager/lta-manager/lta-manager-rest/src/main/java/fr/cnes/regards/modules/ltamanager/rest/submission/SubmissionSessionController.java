@@ -23,10 +23,10 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionInfoGlobalDTO;
 import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionInfoPageDto;
-import fr.cnes.regards.modules.ltamanager.service.session.SessionInfoItemized;
+import fr.cnes.regards.modules.ltamanager.service.session.SubmissionSessionPage;
 import fr.cnes.regards.modules.ltamanager.service.session.SubmissionSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,7 +46,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Session controller")
 @RestController
 @RequestMapping(SubmissionSessionController.SESSION_ROOT_PATH)
-public class SubmissionSessionController implements IResourceController<SubmissionRequestInfoDto> {
+public class SubmissionSessionController implements IResourceController<SubmissionResponseDto> {
 
     public static final String SESSION_ROOT_PATH = "/sessions";
 
@@ -65,7 +65,7 @@ public class SubmissionSessionController implements IResourceController<Submissi
 
     @Operation(summary = "Calculate global state of a session")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns session successfully"),
-        @ApiResponse(responseCode = "404", description = "Cannot find session for the user.") })
+                            @ApiResponse(responseCode = "404", description = "Cannot find session for the user.") })
     @GetMapping(path = SESSION_INFO_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to get session details", role = DefaultRole.EXPLOIT)
@@ -76,28 +76,28 @@ public class SubmissionSessionController implements IResourceController<Submissi
 
     @Operation(summary = "Calculate itemized state of a session")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns session successfully"),
-        @ApiResponse(responseCode = "404", description = "Cannot find session for the user.") })
+                            @ApiResponse(responseCode = "404", description = "Cannot find session for the user.") })
     @GetMapping(path = SESSION_ITEMIZED_INFO_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to get session details", role = DefaultRole.EXPLOIT)
     public ResponseEntity<SessionInfoPageDto> getSessionDetails(@PathVariable String session,
                                                                 Pageable pageable,
                                                                 @Parameter(hidden = true)
-                                                                PagedResourcesAssembler<SubmissionRequestInfoDto> assembler)
+                                                                PagedResourcesAssembler<SubmissionResponseDto> assembler)
         throws EntityNotFoundException {
-        SessionInfoItemized dto = sessionService.getItemizedSessionInfo(session, pageable);
+        SubmissionSessionPage dto = sessionService.getSubmissionSessionPage(session, pageable);
         return ResponseEntity.ok(toStatusPagedResources(dto, assembler));
     }
 
-    public SessionInfoPageDto toStatusPagedResources(SessionInfoItemized page,
-                                                     PagedResourcesAssembler<SubmissionRequestInfoDto> assembler) {
+    public SessionInfoPageDto toStatusPagedResources(SubmissionSessionPage page,
+                                                     PagedResourcesAssembler<SubmissionResponseDto> assembler) {
         // to get pagination links, and have status :
         // we need to construct a PageModel custom (SessionInfoPageDto), which have a status attribute.
         return new SessionInfoPageDto<>(page.getGlobalStatus(), assembler.toModel(page));
     }
 
     @Override
-    public EntityModel<SubmissionRequestInfoDto> toResource(SubmissionRequestInfoDto element, Object... extras) {
+    public EntityModel<SubmissionResponseDto> toResource(SubmissionResponseDto element, Object... extras) {
         return resourceService.toResource(element);
     }
 }

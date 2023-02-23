@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ltamanager.rest.submission;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
@@ -33,6 +32,7 @@ import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionInfo;
 import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionRequestHelper;
 import fr.cnes.regards.modules.model.client.IModelClient;
@@ -116,12 +116,10 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         response.andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId",
                                                           equalTo(submissionRequest.getCorrelationId())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content.id",
-                                                          equalTo(submissionRequest.getId().intValue())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content.status",
-                                                          equalTo(submissionRequest.getStatus().toString())))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.content.statusDate",
-                                                          equalTo(OffsetDateTimeAdapter.format(submissionRequest.getStatusDate()))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content.productId",
+                                                          equalTo(submissionRequest.getProduct().getId())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content.responseStatus",
+                                                          equalTo(SubmissionResponseStatus.ERROR.toString())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.session", equalTo(submissionRequest.getSession())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.message",
                                                           equalTo(submissionRequest.getMessage())));

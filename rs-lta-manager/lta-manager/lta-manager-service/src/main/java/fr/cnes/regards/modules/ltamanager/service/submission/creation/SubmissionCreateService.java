@@ -128,7 +128,7 @@ public class SubmissionCreateService {
                                                                              currentDateTime);
                 submissionRequestsToSave.add(submissionRequest);
             } catch (LtaSettingsException e) {
-                responses.add(SubmissionResponseDtoUtils.buildErrorResponseDto(requestDto, e));
+                responses.add(SubmissionResponseDtoUtils.buildInvalidRequestResponseDto(requestDto, e));
             }
         }
         // 2) Handle submission requests in success

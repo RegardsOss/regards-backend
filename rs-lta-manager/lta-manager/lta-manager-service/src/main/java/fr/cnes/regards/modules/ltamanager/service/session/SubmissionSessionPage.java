@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.session;
 
-import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionStatus;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -30,14 +30,15 @@ import java.util.List;
  *
  * @author Thomas GUILLOU
  **/
-public class SessionInfoItemized extends PageImpl<SubmissionRequestInfoDto> {
+public class SubmissionSessionPage extends PageImpl<SubmissionResponseDto> {
 
-    private SessionStatus globalStatus;
+    private final SessionStatus globalStatus;
 
-    public <T> SessionInfoItemized(SessionStatus sessionStatus,
-                                   List<SubmissionRequestInfoDto> resources,
-                                   Page<T> pageRequests) {
-        super(resources, pageRequests.getPageable(), pageRequests.getTotalElements());
+    public SubmissionSessionPage(SessionStatus sessionStatus,
+                                 List<SubmissionResponseDto> resources,
+                                 Long totalElements,
+                                 Pageable page) {
+        super(resources, page, totalElements);
         this.globalStatus = sessionStatus;
     }
 

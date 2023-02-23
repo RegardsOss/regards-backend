@@ -38,20 +38,20 @@ public class SubmissionResponseDtoEvent extends SubmissionResponseDto implements
 
     public SubmissionResponseDtoEvent(String correlationId,
                                       SubmissionResponseStatus responseStatus,
-                                      @Nullable String id,
+                                      @Nullable String productId,
                                       @Nullable OffsetDateTime expires,
                                       @Nullable String session,
                                       @Nullable String message) {
-        super(correlationId, responseStatus, id, expires, session, message);
+        super(correlationId, responseStatus, productId, expires, session, message);
     }
 
     public SubmissionResponseDtoEvent(SubmissionResponseDto responseDto) {
         this(responseDto.getCorrelationId(),
-              responseDto.getResponseStatus(),
-              responseDto.getId(),
-              responseDto.getExpires(),
-              responseDto.getSession(),
-              responseDto.getMessage());
+             responseDto.getResponseStatus(),
+             responseDto.getProductId(),
+             responseDto.getExpires(),
+             responseDto.getSession(),
+             responseDto.getMessage());
     }
 
 }

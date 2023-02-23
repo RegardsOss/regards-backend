@@ -19,7 +19,8 @@
 package fr.cnes.regards.modules.ltamanager.domain.submission.mapping;
 
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
-import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
 import org.mapstruct.Mapper;
 
@@ -37,15 +38,19 @@ public interface SubmissionRequestMapper {
     SubmittedSearchResponseDto convertToSubmittedSearchResponseDto(SubmissionRequest submissionRequest);
 
     /**
-     * Map between {@link SubmissionRequest} and {@link SubmissionRequestInfoDto}
+     * Map between {@link SubmissionRequest} and {@link SubmissionResponseDto}
      */
-    default SubmissionRequestInfoDto convertToSubmissionRequestInfoDto(SubmissionRequest submissionRequest) {
-        return new SubmissionRequestInfoDto(submissionRequest.getId(),
-                                            submissionRequest.getCorrelationId(),
-                                            submissionRequest.getProduct().getId(),
-                                            submissionRequest.getStatus(),
-                                            submissionRequest.getStatusDate(),
-                                            submissionRequest.getSession(),
-                                            submissionRequest.getMessage());
+    default SubmissionResponseDto convertToSubmissionResponseDto(SubmissionRequest submissionRequest) {
+        SubmissionResponseStatus status = switch (submissionRequest.getStatus()) {
+            case DONE -> SubmissionResponseStatus.SUCCESS;
+            case GENERATED, VALIDATED, GENERATION_PENDING, INGESTION_PENDING -> SubmissionResponseStatus.GRANTED;
+            default -> SubmissionResponseStatus.ERROR;
+        };
+        return new SubmissionResponseDto(submissionRequest.getCorrelationId(),
+                                         status,
+                                         submissionRequest.getProduct().getId(),
+                                         submissionRequest.getExpiryDate(),
+                                         submissionRequest.getSession(),
+                                         submissionRequest.getMessage());
     }
 }

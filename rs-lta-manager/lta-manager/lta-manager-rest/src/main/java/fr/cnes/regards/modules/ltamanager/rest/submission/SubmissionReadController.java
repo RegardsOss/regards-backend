@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
-import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
 import fr.cnes.regards.modules.ltamanager.service.session.SubmissionSessionService;
 import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
@@ -77,20 +77,25 @@ public class SubmissionReadController extends AbstractSubmissionController
         this.sessionService = sessionService;
     }
 
-    @Operation(summary = "Check a submission request status.")
+    @Operation(summary = "Retrieve submission request status.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns submission response status."),
-        @ApiResponse(responseCode = "403", description = "The endpoint is not accessible for the user.",
-            useReturnTypeSchema = true, content = { @Content(mediaType = "application/html") }),
-        @ApiResponse(responseCode = "404", description = "Associated submission request was not found.",
-            useReturnTypeSchema = true, content = { @Content(mediaType = "application/json") }) })
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }),
+                            @ApiResponse(responseCode = "404",
+                                         description = "Associated submission request was not found.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/json") }) })
     @GetMapping(path = REQUEST_INFO_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to check the progress of a submission request.", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<SubmissionRequestInfoDto>> checkSubmissionRequestStatus(
-        @Parameter(description = "Identifier of the submission request to check.") @PathVariable String correlationId) {
-        Optional<SubmissionRequestInfoDto> requestStatusInfo = readService.retrieveRequestStatusInfo(correlationId);
-        if (requestStatusInfo.isPresent()) {
-            return ResponseEntity.ok(EntityModel.of(requestStatusInfo.get()));
+    @ResourceAccess(description = "Endpoint to retrieve the current status of a submission request.",
+                    role = DefaultRole.EXPLOIT)
+    public ResponseEntity<EntityModel<SubmissionResponseDto>> getSubmissionRequestStatus(
+        @Parameter(description = "Identifier of the submission request.") @PathVariable String correlationId) {
+        Optional<SubmissionResponseDto> submissionResponseDto = readService.retrieveSubmissionResponse(correlationId);
+        if (submissionResponseDto.isPresent()) {
+            return ResponseEntity.ok(EntityModel.of(submissionResponseDto.get()));
         }
 
         LOGGER.warn("Submission request with id {} was not found in the database", correlationId);
@@ -98,17 +103,19 @@ public class SubmissionReadController extends AbstractSubmissionController
     }
 
     @Operation(summary = "Search for submission requests with criteria")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns submitted requests found.",
-        content = { @Content(mediaType = "application/json") }),
-        @ApiResponse(responseCode = "403", description = "The endpoint is not accessible for the user.",
-            content = { @Content(mediaType = "application/html") }) })
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Returns submitted requests found.",
+                                         content = { @Content(mediaType = "application/json") }),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         content = { @Content(mediaType = "application/html") }) })
     @PostMapping(path = SEARCH_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to search for submission requests.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<SubmittedSearchResponseDto>>> findSubmittedRequests(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterion.",
-            content = @Content(schema = @Schema(implementation = SearchSubmissionRequestParameters.class))) @RequestBody
-        @Valid SearchSubmissionRequestParameters searchCriterion,
+                                                              content = @Content(schema = @Schema(implementation = SearchSubmissionRequestParameters.class)))
+        @RequestBody @Valid SearchSubmissionRequestParameters searchCriterion,
         @PageableDefault(sort = { "submissionStatus_statusDate", "correlationId" }, direction = Sort.Direction.DESC)
         Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<SubmittedSearchResponseDto> assembler) {

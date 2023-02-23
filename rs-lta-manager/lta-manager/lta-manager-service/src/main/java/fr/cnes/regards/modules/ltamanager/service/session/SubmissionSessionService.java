@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.SubmissionRequestMapper;
-import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionInfoGlobalDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -66,16 +66,20 @@ public class SubmissionSessionService {
         if (states.isEmpty()) {
             throw new EntityNotFoundException(session, SubmissionRequest.class);
         }
-        return createSessionInfoGlbal(states);
+        return createSessionInfoGlobal(states);
     }
 
-    private static SessionInfoGlobalDTO createSessionInfoGlbal(List<String> states) {
+    private static SessionInfoGlobalDTO createSessionInfoGlobal(List<String> states) {
         SessionInfoGlobalDTO sessionInfo = new SessionInfoGlobalDTO();
         sessionInfo.setStatus(SessionInfoUtils.getSessionStatusFromStrings(states));
         return sessionInfo;
     }
 
-    public SessionInfoItemized getItemizedSessionInfo(String session, Pageable pageRequest)
+    /**
+     * Search for {@link SubmissionRequest} associated to the given session and return a
+     * {@link SubmissionSessionPage} containing global information of the session and a page of {@link SubmissionResponseDto}
+     */
+    public SubmissionSessionPage getSubmissionSessionPage(String session, Pageable pageRequest)
         throws EntityNotFoundException {
         String owner = authenticationResolver.getUser();
         // Need to get all states without pagination, to have global status of session
@@ -83,16 +87,15 @@ public class SubmissionSessionService {
         if (states.isEmpty()) {
             throw new EntityNotFoundException(session, SubmissionRequest.class);
         }
-        Page<SubmissionRequest> pageRequests = submissionRequestRepository.findBySessionAndOwner(session,
-                                                                                                 owner,
-                                                                                                 pageRequest);
-        return createSessionInfoItemized(pageRequests, states);
-    }
-
-    private SessionInfoItemized createSessionInfoItemized(Page<SubmissionRequest> pageRequests, List<String> states) {
-        List<SubmissionRequestInfoDto> resources = pageRequests.map(submissionRequestMapper::convertToSubmissionRequestInfoDto)
-                                                               .toList();
-        return new SessionInfoItemized(SessionInfoUtils.getSessionStatusFromStrings(states), resources, pageRequests);
+        Page<SubmissionRequest> submissionRequestPage = submissionRequestRepository.findBySessionAndOwner(session,
+                                                                                                          owner,
+                                                                                                          pageRequest);
+        List<SubmissionResponseDto> submissionResponsesDto = submissionRequestPage.map(submissionRequestMapper::convertToSubmissionResponseDto)
+                                                                                  .toList();
+        return new SubmissionSessionPage(SessionInfoUtils.getSessionStatusFromStrings(states),
+                                         submissionResponsesDto,
+                                         submissionRequestPage.getTotalElements(),
+                                         submissionRequestPage.getPageable());
     }
 
 }
