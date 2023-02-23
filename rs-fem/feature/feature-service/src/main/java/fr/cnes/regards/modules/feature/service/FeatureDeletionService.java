@@ -439,12 +439,18 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             FeatureFileAttributes attribute = file.getAttributes();
             for (FeatureFileLocation location : file.getLocations()) {
                 // Create a storage request for each location of the file
-                storageRequests.add(FileDeletionRequestDTO.build(attribute.getChecksum(),
-                                                                 location.getStorage(),
-                                                                 feature.getFeature().getUrn().toString(),
-                                                                 feature.getSessionOwner(),
-                                                                 feature.getSession(),
-                                                                 false));
+                if (location.getStorage() != null) {
+                    storageRequests.add(FileDeletionRequestDTO.build(attribute.getChecksum(),
+                                                                     location.getStorage(),
+                                                                     feature.getFeature().getUrn().toString(),
+                                                                     feature.getSessionOwner(),
+                                                                     feature.getSession(),
+                                                                     false));
+                } else {
+                    LOGGER.warn("Location is null for file url=[{}], which means this feature file location has never "
+                                + "been saved", location.getUrl());
+
+                }
             }
         }
         // If multiple group is returned we only save the first one.
