@@ -22,14 +22,13 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.dao.submission.SubmissionRequestSpecificationBuilder;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.SubmissionRequestMapper;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -55,9 +54,6 @@ public class SubmissionReadService {
 
     /**
      * Constructor
-     *
-     * @param requestRepository
-     * @param submissionRequestMapper
      */
     public SubmissionReadService(ISubmissionRequestRepository requestRepository,
                                  SubmissionRequestMapper submissionRequestMapper) {
@@ -78,8 +74,9 @@ public class SubmissionReadService {
 
     public Page<SubmittedSearchResponseDto> retrieveSubmittedRequestsByCriteria(SearchSubmissionRequestParameters searchCriterion,
                                                                                 Pageable page) {
+
         Page<SubmissionRequest> submissionPage = submissionRequestRepository.findAll(new SubmissionRequestSpecificationBuilder().withParameters(
-            searchCriterion).build(), page);
+            searchCriterion).build(), handlePaginationEmbeddedAttributes(page));
         return new PageImpl<>(submissionPage.stream()
                                             .map(submissionRequestMapper::convertToSubmittedSearchResponseDto)
                                             .toList(), submissionPage.getPageable(), submissionPage.getTotalElements());
@@ -88,7 +85,6 @@ public class SubmissionReadService {
     /**
      * Retrieve the submitted product, when existing, using provided correlation id.
      *
-     * @param correlationId
      * @return the submitted product
      */
     public Optional<SubmissionRequestDto> findSubmissionRequestByCorrelationId(String correlationId) {
@@ -99,6 +95,39 @@ public class SubmissionReadService {
             return Optional.of(submissionRequest.get().getSubmittedProduct().getProduct());
         }
         return Optional.empty();
+    }
+
+    /**
+     * Perform transformation in Sort object to transform attributes from dto {@link SubmissionRequestDto}
+     * to entity {@link SubmissionRequest}
+     */
+    private Pageable handlePaginationEmbeddedAttributes(Pageable page) {
+        Pageable newPage = page;
+        if (page != null && page.getSort() != null) {
+            Sort newSort = Sort.by(page.getSort()
+                                       .stream()
+                                       .map(this::mapDtoAttributeSortOrderToEntitySortOrder)
+                                       .toList());
+            newPage = PageRequest.of(page.getPageNumber(), page.getPageSize(), newSort);
+        }
+        return newPage;
+    }
+
+    /**
+     * Map a Sort.Order from a dto {@link SubmissionRequestDto} to a new Sort.Order with the associated entity
+     * {@link SubmissionRequest} attribute
+     */
+    private Sort.Order mapDtoAttributeSortOrderToEntitySortOrder(Sort.Order dtoAttributeSortOrder) {
+        String dtoAttributeName = dtoAttributeSortOrder.getProperty();
+        if (SubmissionStatus.STATUS_FIELD_NAMES.contains(dtoAttributeName)) {
+            return dtoAttributeSortOrder.withProperty(String.format("%s.%s",
+                                                                    SubmissionRequest.SUBMISSION_STATUS_FIELD_NAME,
+                                                                    dtoAttributeName));
+        } else if (dtoAttributeName.equals(SubmissionRequestDto.DATATYPE_FILED_NAME)) {
+            return dtoAttributeSortOrder.withProperty(SubmissionRequest.DATATYPE_FILED_NAME);
+        } else {
+            return dtoAttributeSortOrder;
+        }
     }
 
 }

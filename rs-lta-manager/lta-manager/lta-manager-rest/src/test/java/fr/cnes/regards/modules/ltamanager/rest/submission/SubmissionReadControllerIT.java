@@ -29,7 +29,9 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
+import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionInfo;
 import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionRequestHelper;
@@ -282,7 +284,9 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         ResultActions response = performDefaultPost(AbstractSubmissionController.ROOT_PATH
                                                     + SubmissionReadController.SEARCH_MAPPING,
                                                     searchCriterionWithAllCriterion,
-                                                    customizer().expectStatusOk(),
+                                                    customizer().expectStatusOk()
+                                                                .addParameter("sort",
+                                                                              SubmissionStatus.STATUS_DATE_FIELD_NAME),
                                                     "Error creating request dto");
         // THEN
         response.andExpect(MockMvcResultMatchers.jsonPath("$.metadata").exists())
@@ -311,7 +315,9 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
                                                     + "?page=0&size=20&sort=submissionStatus_statusDate,"
                                                     + "DESC&sort=submissionStatus_creationDate,DESC",
                                                     searchCriterionWithNoCriterion,
-                                                    customizer().expectStatusOk(),
+                                                    customizer().expectStatusOk()
+                                                                .addParameter("sort",
+                                                                              SubmissionRequestDto.DATATYPE_FILED_NAME),
                                                     "Error creating request dto");
         // THEN
         response.andExpect(MockMvcResultMatchers.jsonPath("$.metadata").exists())

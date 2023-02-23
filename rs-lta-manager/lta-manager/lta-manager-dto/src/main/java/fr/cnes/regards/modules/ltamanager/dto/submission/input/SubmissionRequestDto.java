@@ -40,10 +40,12 @@ import java.util.Objects;
  **/
 public class SubmissionRequestDto {
 
+    public final static String DATATYPE_FILED_NAME = "product.datatype";
+
     @NotBlank(message = "correlationId is required to track this request.")
     @Size(max = 255, message = "correlationId length is limited to 255 characters.")
     @Schema(description = "Identifier to track this request during the entire workflow. It must be unique.",
-        maxLength = 255)
+            maxLength = 255)
     private final String correlationId;
 
     @NotBlank(message = "id is required.")
@@ -81,7 +83,7 @@ public class SubmissionRequestDto {
     @Nullable
     @Size(max = 255, message = "storePath length is limited to 255 characters.")
     @Pattern(regexp = "^[\\w\\/\\-_:]*$",
-        message = "storePath must only contain alphanumeric characters and the following characters [/-_:].")
+             message = "storePath must only contain alphanumeric characters and the following characters [/-_:].")
     @Schema(description = "Path to store the product. If null, the storePath will be built from the lta-manager "
                           + "configuration.", nullable = true)
     private String storePath;
@@ -98,9 +100,17 @@ public class SubmissionRequestDto {
     // owner is set after the construction of the request
     private String owner;
 
-    @ConstructorProperties(
-        { "correlationId", "id", "datatype", "geometry", "files", "tags", "originUrn", "properties", "storePath",
-            "session", "replaceMode" })
+    @ConstructorProperties({ "correlationId",
+                             "id",
+                             "datatype",
+                             "geometry",
+                             "files",
+                             "tags",
+                             "originUrn",
+                             "properties",
+                             "storePath",
+                             "session",
+                             "replaceMode" })
     public SubmissionRequestDto(String correlationId,
                                 String id,
                                 String datatype,

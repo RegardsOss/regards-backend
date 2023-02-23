@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -36,6 +37,19 @@ import java.util.Objects;
  **/
 @Embeddable
 public class SubmissionStatus {
+
+    public static String CREATION_DATE_FIELD_NAME = "creationDate";
+
+    public static String STATUS_DATE_FIELD_NAME = "statusDate";
+
+    public static String EXPIRY_DATE_FIELD_NAME = "expiryDate";
+
+    public static String STATUS_FIELD_NAME = "status";
+
+    public static List<String> STATUS_FIELD_NAMES = List.of(STATUS_FIELD_NAME,
+                                                            EXPIRY_DATE_FIELD_NAME,
+                                                            STATUS_DATE_FIELD_NAME,
+                                                            CREATION_DATE_FIELD_NAME);
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)

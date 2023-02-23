@@ -43,6 +43,10 @@ import java.util.Objects;
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class SubmissionRequest {
 
+    public final static String SUBMISSION_STATUS_FIELD_NAME = "submissionStatus";
+
+    public final static String DATATYPE_FILED_NAME = "submittedProduct.datatype";
+
     @Id
     @SequenceGenerator(name = "submissionRequestSequence", initialValue = 1, sequenceName = "seq_submission_request")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "submissionRequestSequence")
