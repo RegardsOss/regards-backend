@@ -32,6 +32,10 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -92,16 +96,17 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
     /**
      * Retrieve model attribute associations for a given entity type (optional)
      *
-     * @param type
      * @return the model attribute associations
      */
-    @ResourceAccess(
-        description = "Endpoint allowing to retrieve all links between models and attribute for a given type of entity")
+    @ResourceAccess(description = "Endpoint enabling retrieval of all links between models and attribute for a given type of entity",
+                    role = DefaultRole.ADMIN)
     @RequestMapping(path = ASSOCS_MAPPING, method = RequestMethod.GET)
+    @Operation(summary = "Models and attrs links by type",
+               description = "Endpoint enabling retrieval of all links between models and attribute for a given type of entity")
     public ResponseEntity<Collection<ModelAttrAssoc>> getModelAttrAssocsFor(
-        @RequestParam(name = "type", required = false) EntityType type) {
-        Collection<ModelAttrAssoc> assocs = modelAttrAssocService.getModelAttrAssocsFor(type);
-        return ResponseEntity.ok(assocs);
+        @Parameter(description = "Filter using entity type") @RequestParam(name = "type", required = false)
+        EntityType type) {
+        return ResponseEntity.ok(modelAttrAssocService.getModelAttrAssocsFor(type));
     }
 
     /**
@@ -109,9 +114,13 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
      *
      * @return mappings between attribute type, plugin configurations and metadata
      */
-    @ResourceAccess(
-        description = "endpoint allowing to retrieve which plugin configuration can be used for which attribute type with which possible metadata")
+    @ResourceAccess(description = "Endpoint enabling retrieval, for every attribute type, compatible plugin "
+                                  + "configurations and plugin metadata", role = DefaultRole.ADMIN)
     @RequestMapping(path = COMPUTATION_TYPE_MAPPING, method = RequestMethod.GET)
+    @Operation(summary = "Available plugin conf by attr type",
+               description = "Endpoint enabling retrieval, for every attribute type, compatible plugin "
+                             + "configurations and plugin metadata")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<List<EntityModel<TypeMetadataResourceConfMapping>>> getMappingForComputedAttribute() {
         return ResponseEntity.ok(HateoasUtils.wrapList(transformToTypeMetadataResourceConfMapping(modelAttrAssocService.retrievePossibleMappingsForComputed())));
     }
@@ -130,9 +139,14 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
      * @param modelName {@link Model} identifier
      * @return list of linked {@link ModelAttrAssoc}
      */
-    @ResourceAccess(description = "List all model attributes", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "List all model attribute associations", role = DefaultRole.PUBLIC)
     @RequestMapping(path = TYPE_MAPPING, method = RequestMethod.GET)
-    public ResponseEntity<List<EntityModel<ModelAttrAssoc>>> getModelAttrAssocs(@PathVariable String modelName) {
+    @Operation(summary = "Get model attr assocs",
+               description = "Return all model attribute associations matching provided criteria.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "The list of model attribute associations.") })
+    public ResponseEntity<List<EntityModel<ModelAttrAssoc>>> getModelAttrAssocs(
+        @Parameter(description = "Filter using model name") @PathVariable String modelName) {
         return ResponseEntity.ok(toResources(modelAttrAssocService.getModelAttrAssocs(modelName), modelName));
     }
 
@@ -148,27 +162,32 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
      */
     @ResourceAccess(description = "Bind an attribute to a model", role = DefaultRole.ADMIN)
     @RequestMapping(path = TYPE_MAPPING, method = RequestMethod.POST)
-    public ResponseEntity<EntityModel<ModelAttrAssoc>> bindAttributeToModel(@PathVariable String modelName,
-                                                                            @Valid @RequestBody
-                                                                            ModelAttrAssoc pModelAttribute)
-        throws ModuleException {
+    @Operation(summary = "Bind attr to model", description = "Bind an attribute to a model.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "The new attribute model association.") })
+    public ResponseEntity<EntityModel<ModelAttrAssoc>> bindAttributeToModel(
+        @Parameter(description = "Filter using model name") @PathVariable String modelName,
+        @Parameter(description = "Model attribute association to save") @Valid @RequestBody
+        ModelAttrAssoc pModelAttribute) throws ModuleException {
         return ResponseEntity.ok(toResource(modelAttrAssocService.bindAttributeToModel(modelName, pModelAttribute),
                                             modelName));
     }
 
     /**
-     * Retrieve a {@link ModelAttrAssoc} linked to a {@link Model} id
+     * Retrieve a {@link ModelAttrAssoc} linked to a {@link Model} name
      *
      * @param modelName   model name
      * @param attributeId attribute id
      * @return linked model attribute
      * @throws ModuleException if attribute cannot be retrieved
      */
-    @ResourceAccess(description = "Get a model attribute", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Get a model attribute association", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.GET, value = TYPE_MAPPING + "/{attributeId}")
-    public ResponseEntity<EntityModel<ModelAttrAssoc>> getModelAttrAssoc(@PathVariable String modelName,
-                                                                         @PathVariable Long attributeId)
-        throws ModuleException {
+    @Operation(summary = "Get model attr assoc",
+               description = "Return a model attribute association matching criteria.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A model attribute association.") })
+    public ResponseEntity<EntityModel<ModelAttrAssoc>> getModelAttrAssoc(
+        @Parameter(description = "Filter using model name") @PathVariable String modelName,
+        @Parameter(description = "Filter using attribute id") @PathVariable Long attributeId) throws ModuleException {
         return ResponseEntity.ok(toResource(modelAttrAssocService.getModelAttrAssoc(modelName, attributeId),
                                             modelName));
     }
@@ -184,11 +203,15 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
      */
     @ResourceAccess(description = "Update a model attribute", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.PUT, value = TYPE_MAPPING + "/{attributeId}")
-    public ResponseEntity<EntityModel<ModelAttrAssoc>> updateModelAttrAssoc(@PathVariable String modelName,
-                                                                            @PathVariable Long attributeId,
-                                                                            @Valid @RequestBody
-                                                                            ModelAttrAssoc pModelAttribute)
-        throws ModuleException {
+    @Operation(summary = "Update model attr assoc",
+               description = "Update a model attribute association matching provided model name and attribute id.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "The updated model attribute association.") })
+    public ResponseEntity<EntityModel<ModelAttrAssoc>> updateModelAttrAssoc(
+        @Parameter(description = "Filter using model name") @PathVariable String modelName,
+        @Parameter(description = "Filter using attribute id") @PathVariable Long attributeId,
+        @Parameter(description = "Model attribute association to save") @Valid @RequestBody
+        ModelAttrAssoc pModelAttribute) throws ModuleException {
         return ResponseEntity.ok(toResource(modelAttrAssocService.updateModelAttribute(modelName,
                                                                                        attributeId,
                                                                                        pModelAttribute), modelName));
@@ -206,8 +229,12 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
      */
     @ResourceAccess(description = "Unbind an attribute from a model", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.DELETE, value = TYPE_MAPPING + "/{attributeId}")
-    public ResponseEntity<Void> unbindAttributeFromModel(@PathVariable String modelName, @PathVariable Long attributeId)
-        throws ModuleException {
+    @Operation(summary = "Unbind attribute", description = "Unbind an attribute from a model.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "The model attribute association has been removed.") })
+    public ResponseEntity<Void> unbindAttributeFromModel(
+        @Parameter(description = "Model that loose one attribute") @PathVariable String modelName,
+        @Parameter(description = "Attribute id to unbind") @PathVariable Long attributeId) throws ModuleException {
         modelAttrAssocService.unbindAttributeFromModel(modelName, attributeId);
         return ResponseEntity.noContent().build();
     }
@@ -224,9 +251,13 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
      */
     @ResourceAccess(description = "Bind fragment attributes to a model", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST, value = TYPE_MAPPING + FRAGMENT_BIND_MAPPING)
-    public ResponseEntity<List<EntityModel<ModelAttrAssoc>>> bindNSAttributeToModel(@PathVariable String modelName,
-                                                                                    @Valid @RequestBody
-                                                                                    Fragment fragment)
+    @Operation(summary = "Bind fragment", description = "Bind fragment attributes to a model.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "The list of model attribute associations created by the bind "
+                                                       + "between the model and the fragment.") })
+    public ResponseEntity<List<EntityModel<ModelAttrAssoc>>> bindNSAttributeToModel(
+        @Parameter(description = "Model receiving the fragment") @PathVariable String modelName,
+        @Parameter(description = "Fragment to add to the model") @Valid @RequestBody Fragment fragment)
         throws ModuleException {
         return ResponseEntity.ok(toResources(modelAttrAssocService.bindNSAttributeToModel(modelName, fragment),
                                              modelName));
@@ -241,12 +272,14 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
      * @param modelName  model name
      * @param fragmentId fragment identifier
      * @return linked model attributes
-     * @throws ModuleException if binding cannot be done
      */
     @ResourceAccess(description = "Unbind fragment attributes from a model", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.DELETE, value = TYPE_MAPPING + FRAGMENT_UNBIND_MAPPING)
-    public ResponseEntity<Void> unbindNSAttributeFromModel(@PathVariable String modelName,
-                                                           @PathVariable Long fragmentId) throws ModuleException {
+    @Operation(summary = "Unbind fragment", description = "Unbind fragment attributes from a model.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Fragment is not binded to the model.") })
+    public ResponseEntity<Void> unbindNSAttributeFromModel(
+        @Parameter(description = "Filter using model name") @PathVariable String modelName,
+        @Parameter(description = "Fragment id to unbind") @PathVariable Long fragmentId) {
         modelAttrAssocService.unbindNSAttributeToModel(modelName, fragmentId);
         return ResponseEntity.noContent().build();
     }
@@ -307,8 +340,6 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
 
         /**
          * Constructor initializing the attributes from the parameter
-         *
-         * @param mapping
          */
         public TypeMetadataResourceConfMapping(TypeMetadataConfMapping mapping) {
             this.attrType = mapping.getAttrType();
@@ -325,8 +356,6 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
 
         /**
          * Set the attribute type
-         *
-         * @param attrType
          */
         public void setAttrType(PropertyType attrType) {
             this.attrType = attrType;
@@ -341,8 +370,6 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
 
         /**
          * Set the plugin configurations wrapped into {@link EntityModel}
-         *
-         * @param pluginConfigurations
          */
         public void setPluginConfigurations(Collection<EntityModel<PluginConfiguration>> pluginConfigurations) {
             this.pluginConfigurations = pluginConfigurations;
@@ -357,8 +384,6 @@ public class ModelAttrAssocController implements IResourceController<ModelAttrAs
 
         /**
          * Set the plugin metadata wrapped into {@link EntityModel}
-         *
-         * @param pluginMetaDatas
          */
         public void setPluginMetaDatas(Collection<EntityModel<PluginMetaData>> pluginMetaDatas) {
             this.pluginMetaDatas = pluginMetaDatas;
