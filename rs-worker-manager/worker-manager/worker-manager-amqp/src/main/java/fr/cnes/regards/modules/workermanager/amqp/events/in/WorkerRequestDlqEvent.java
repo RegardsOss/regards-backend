@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.workermanager.amqp.events.out.WorkerRequestEvent;
  * which is already a DLQ. Is this param is set to true, interface with workers is broken as spring cloud stream
  * does not create a DLQ on the DLQ queues.
  *
- * @autor Sébastien Binda
+ * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON, declareDlq = false)
 public class WorkerRequestDlqEvent extends WorkerRequestEvent {

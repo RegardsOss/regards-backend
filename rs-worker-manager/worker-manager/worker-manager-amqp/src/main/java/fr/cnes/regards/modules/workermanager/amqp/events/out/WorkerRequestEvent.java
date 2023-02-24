@@ -28,10 +28,11 @@ import javax.validation.constraints.NotNull;
  * Empty POJO to handle worker requests sent by manager with undefined body.
  * We use this class to declare the DLQ and during tests
  *
- * @autor Sébastien Binda
+ * @author Sébastien Binda
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON,
-    routingKey = WorkerRequestEvent.DLQ_ROOTING_KEY)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE,
+       converter = JsonMessageConverter.GSON,
+       routingKey = WorkerRequestEvent.DLQ_ROOTING_KEY)
 public class WorkerRequestEvent implements ISubscribable, IMessagePropertiesAware {
 
     public final static String DLQ_ROOTING_KEY = "regards.worker.manager.request.dlq";

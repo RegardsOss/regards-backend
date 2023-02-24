@@ -72,92 +72,92 @@
             <artifactId>crawler-service</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.dam</groupId>
-          <artifactId>dam-accessrights-client</artifactId>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-accessrights-client</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.dam</groupId>
-          <artifactId>dam-client</artifactId>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-client</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.dam</groupId>
-          <artifactId>dam-dao</artifactId>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-dao</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.dam</groupId>
-          <artifactId>dam-domain</artifactId>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-domain</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.dam</groupId>
-          <artifactId>dam-service</artifactId>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-service</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.dam</groupId>
-          <artifactId>dam-rest</artifactId>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-rest</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.indexer</groupId>
-          <artifactId>indexer-dao</artifactId>
+            <groupId>fr.cnes.regards.modules.indexer</groupId>
+            <artifactId>indexer-dao</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.indexer</groupId>
-          <artifactId>indexer-domain</artifactId>
+            <groupId>fr.cnes.regards.modules.indexer</groupId>
+            <artifactId>indexer-domain</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.indexer</groupId>
-          <artifactId>indexer-rest</artifactId>
+            <groupId>fr.cnes.regards.modules.indexer</groupId>
+            <artifactId>indexer-rest</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.indexer</groupId>
-          <artifactId>indexer-service</artifactId>
+            <groupId>fr.cnes.regards.modules.indexer</groupId>
+            <artifactId>indexer-service</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.model</groupId>
-          <artifactId>model-client</artifactId>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-client</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.model</groupId>
-          <artifactId>model-dao</artifactId>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-dao</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.model</groupId>
-          <artifactId>model-domain</artifactId>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-domain</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.model</groupId>
-          <artifactId>model-dto</artifactId>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-dto</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.model</groupId>
-          <artifactId>model-gson</artifactId>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-gson</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.model</groupId>
-          <artifactId>model-gson-helper</artifactId>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-gson-helper</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.model</groupId>
-          <artifactId>model-rest</artifactId>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-rest</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.model</groupId>
-          <artifactId>model-service</artifactId>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-service</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.model</groupId>
-          <artifactId>model-validation</artifactId>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-validation</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.opensearch</groupId>
-          <artifactId>opensearch-domain</artifactId>
+            <groupId>fr.cnes.regards.modules.opensearch</groupId>
+            <artifactId>opensearch-domain</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.opensearch</groupId>
-          <artifactId>opensearch-rest</artifactId>
+            <groupId>fr.cnes.regards.modules.opensearch</groupId>
+            <artifactId>opensearch-rest</artifactId>
         </dependency>
         <dependency>
-          <groupId>fr.cnes.regards.modules.opensearch</groupId>
-          <artifactId>opensearch-service</artifactId>
+            <groupId>fr.cnes.regards.modules.opensearch</groupId>
+            <artifactId>opensearch-service</artifactId>
         </dependency>
     </dependencies>
 </project>

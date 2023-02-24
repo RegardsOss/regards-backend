@@ -59,7 +59,7 @@
             <groupId>fr.cnes.regards.modules.acquisition</groupId>
             <artifactId>acquisition-dao</artifactId>
         </dependency>
-       <dependency>
+        <dependency>
             <groupId>fr.cnes.regards.modules.acquisition</groupId>
             <artifactId>acquisition-domain</artifactId>
         </dependency>
