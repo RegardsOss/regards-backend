@@ -215,6 +215,7 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
                 LOGGER.error(errorMessage);
                 request.addError(errorMessage);
                 request.setState(RequestState.ERROR);
+                request.setStep(FeatureRequestStep.LOCAL_ERROR);
             }
             featureCopyJob.advanceCompletion();
         }
@@ -259,6 +260,7 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
         } else {
             String errorMessage = String.format("No file found for checksum %s", request.getUrn().toString());
             request.setState(RequestState.ERROR);
+            request.setStep(FeatureRequestStep.LOCAL_ERROR);
             request.addError(errorMessage);
             LOGGER.error(errorMessage);
         }

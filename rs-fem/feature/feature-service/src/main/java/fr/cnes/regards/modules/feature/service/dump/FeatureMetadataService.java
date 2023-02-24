@@ -197,6 +197,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
                                   DefaultRole.ADMIN);
         metadataRequest.addError(errorMessage);
         metadataRequest.setState(RequestState.ERROR);
+        metadataRequest.setStep(FeatureRequestStep.LOCAL_ERROR);
         featureSaveMetadataRepository.save(metadataRequest);
         // no need to clean up workspace as job service is doing so
     }

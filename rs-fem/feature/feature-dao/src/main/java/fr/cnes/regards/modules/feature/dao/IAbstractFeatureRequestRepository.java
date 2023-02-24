@@ -68,17 +68,6 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
      * @param ids          id of {@link AbstractFeatureRequest} to update
      */
     @Modifying
-    @Query("update AbstractFeatureRequest afr set afr.state = :newState where afr.id in :ids ")
-    void updateState(@Param("newState") RequestState requestState, @Param("ids") Set<Long> ids);
-
-    /**
-     * Update {@link AbstractFeatureRequest} state. <b>WARNING: this method acts on {@link AbstractFeatureRequest}
-     * so, for example, even using a {@link IFeatureCopyRequestRepository} you can update a {@link fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest}</b>
-     *
-     * @param requestState new {@link FeatureRequestStep}
-     * @param ids          id of {@link AbstractFeatureRequest} to update
-     */
-    @Modifying
     @Query("update AbstractFeatureRequest afr set afr.state = :newState, afr.step = :newStep where afr.id in :ids ")
     void updateStateAndStep(@Param("newState") RequestState requestState,
                             @Param("newStep") FeatureRequestStep requestStep,

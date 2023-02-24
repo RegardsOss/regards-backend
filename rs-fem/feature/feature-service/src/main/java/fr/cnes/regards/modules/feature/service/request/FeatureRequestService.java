@@ -187,8 +187,8 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
-    public void updateRequestsStatus(Set<Long> requestIds, RequestState status) {
-        this.abstractFeatureRequestRepo.updateState(status, requestIds);
+    public void updateRequestStateAndStep(Set<Long> requestIds, RequestState status, FeatureRequestStep requestStep) {
+        this.abstractFeatureRequestRepo.updateStateAndStep(status, requestStep, requestIds);
     }
 
     @Override

@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import org.slf4j.Logger;
@@ -91,10 +92,11 @@ public class FeatureJobFailedEventHandler implements IHandler<JobEvent>, Applica
 
                 }.getType();
                 Set<Long> requestIds = job.getParametersAsMap().get(AbstractFeatureJob.IDS_PARAMETER).getValue(type);
-                LOGGER.error("Job {} failed detected. Updating associated {} requests to ERROR status",
-                             job.getId().toString(),
-                             requestIds.size());
-                featureRequestService.updateRequestsStatus(requestIds, RequestState.ERROR);
+                LOGGER.error("Job {} failed detected. Updating associated {} requests to ERROR status and LOCAL_ERROR"
+                             + " step", job.getId().toString(), requestIds.size());
+                featureRequestService.updateRequestStateAndStep(requestIds,
+                                                                RequestState.ERROR,
+                                                                FeatureRequestStep.LOCAL_ERROR);
             }
         }
     }

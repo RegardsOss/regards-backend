@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
@@ -78,6 +79,9 @@ public interface IFeatureRequestService {
      */
     void handleDeletionError(Collection<RequestResultInfoDTO> errorRequests);
 
+    /**
+     * Delete requests with given selection
+     */
     RequestHandledResponse delete(FeatureRequestTypeEnum type, SearchFeatureRequestParameters selection);
 
     /**
@@ -89,7 +93,7 @@ public interface IFeatureRequestService {
     RequestHandledResponse retry(FeatureRequestTypeEnum type, SearchFeatureRequestParameters selection);
 
     /**
-     * Update status of given requests
+     * Update status and request step of given requests
      */
-    void updateRequestsStatus(Set<Long> requestIds, RequestState status);
+    public void updateRequestStateAndStep(Set<Long> requestIds, RequestState status, FeatureRequestStep requestStep);
 }

@@ -299,9 +299,11 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                         RequestState.ERROR));
         }
         onError(error);
-        Set<Long> ids = error.stream().map(AbstractFeatureRequest::getId).collect(Collectors.toSet());
-        abstractFeatureRequestRepo.updateStep(errorStep, ids);
-        abstractFeatureRequestRepo.updateState(RequestState.ERROR, ids);
+        abstractFeatureRequestRepo.updateStateAndStep(RequestState.ERROR,
+                                                      errorStep,
+                                                      error.stream()
+                                                           .map(AbstractFeatureRequest::getId)
+                                                           .collect(Collectors.toSet()));
     }
 
     @Override
