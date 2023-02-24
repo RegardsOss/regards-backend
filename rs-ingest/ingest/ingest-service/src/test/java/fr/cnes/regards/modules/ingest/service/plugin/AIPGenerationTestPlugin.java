@@ -38,9 +38,14 @@ import java.util.Optional;
  *
  * @author Sébastien Binda
  */
-@Plugin(author = "REGARDS Team", description = "Test plugin for AIP generation", id = "TestAIPGenerator",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Test plugin for AIP generation",
+        id = "TestAIPGenerator",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class AIPGenerationTestPlugin implements IAipGeneration {
 
     @Autowired

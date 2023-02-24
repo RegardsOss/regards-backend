@@ -18,7 +18,5 @@
  */
 /**
  * Public contract
- *
- * @author Marc Sordi
  */
 package fr.cnes.regards.modules.dam.service.datasources;

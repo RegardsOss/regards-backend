@@ -90,15 +90,12 @@ public class ToponymsController {
     /**
      * Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.
      *
-     * @param partialLabel
-     * @param locale
      * @return {@link ToponymDTO}s
      */
     @GetMapping(value = ToponymsRestConfiguration.SEARCH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(
-        description = "Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.",
-        role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.",
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
                                                                 @RequestParam(required = false) String locale)
         throws HttpClientErrorException, HttpServerErrorException {

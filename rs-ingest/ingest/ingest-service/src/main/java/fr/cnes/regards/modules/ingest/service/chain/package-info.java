@@ -18,7 +18,5 @@
  */
 /**
  * This package manages ingest processing chain
- *
- * @author Marc Sordi
  */
 package fr.cnes.regards.modules.ingest.service.chain;

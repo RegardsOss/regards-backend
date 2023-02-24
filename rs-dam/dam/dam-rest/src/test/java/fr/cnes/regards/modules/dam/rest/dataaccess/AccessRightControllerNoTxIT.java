@@ -29,7 +29,7 @@ import org.springframework.test.context.TestPropertySource;
  * @author Léo Mieulet
  */
 @TestPropertySource(locations = "classpath:test.properties",
-    properties = { "spring.jpa.properties.hibernate.default_schema=projectdbdelete" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=projectdbdelete" })
 public class AccessRightControllerNoTxIT extends AbstractAccessRightControllerIT {
 
     @Test

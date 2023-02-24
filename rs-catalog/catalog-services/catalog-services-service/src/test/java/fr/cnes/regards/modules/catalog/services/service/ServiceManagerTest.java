@@ -125,7 +125,7 @@ public class ServiceManagerTest {
     private ILinkPluginsDatasetsService linkPluginsDatasetsService;
 
     /**
-     * @throws java.lang.Exception
+     *
      */
     @Before
     public void setUp() throws Exception {
@@ -138,8 +138,6 @@ public class ServiceManagerTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.catalog.services.service.ServiceManager#retrieveServices(List, List)}.
-     *
-     * @throws EntityNotFoundException
      */
     @Test(expected = PluginUtilsRuntimeException.class)
     public final void testRetrieveServices_shouldThrowPluginUtilsRuntimeException() throws EntityNotFoundException {

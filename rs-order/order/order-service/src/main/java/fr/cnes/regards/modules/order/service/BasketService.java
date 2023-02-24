@@ -71,7 +71,8 @@ import java.util.stream.Stream;
  * @author Sébastien Binda
  */
 @Service
-@MultitenantTransactional(noRollbackFor = {EmptySelectionException.class, TooManyItemsSelectedInBasketException.class})
+@MultitenantTransactional(noRollbackFor = { EmptySelectionException.class,
+                                            TooManyItemsSelectedInBasketException.class })
 public class BasketService implements IBasketService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasketService.class);

@@ -53,7 +53,7 @@ import java.util.Set;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "noscheduler" })
 public class StorageLocationConfigurationServiceIT extends AbstractMultitenantServiceIT {
 

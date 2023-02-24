@@ -70,12 +70,11 @@ public class MonitoringController implements IResourceController<AcquisitionProc
      */
     @GetMapping
     @Operation(summary = "Get acquisition processing chain monitors",
-        description = "Return a page of acquisition processing chain monitors")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "All acquisition processing chain monitors were retrieved.") })
-    @ResourceAccess(
-        description = "Endpoint to retrieve all acquisition processing chain monitors for acquisition processing chain summaries(mode, running and label)",
-        role = DefaultRole.EXPLOIT)
+               description = "Return a page of acquisition processing chain monitors")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "All acquisition processing chain monitors were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all acquisition processing chain monitors for acquisition processing chain summaries(mode, running and label)",
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AcquisitionProcessingChainMonitor>>> search(
         @RequestParam(name = "mode", required = false) AcquisitionProcessingChainMode mode,
         @RequestParam(name = "running", required = false) Boolean running,

@@ -17,6 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * @author Christophe Mertz
+ *
  */
 package fr.cnes.regards.microservices.access;

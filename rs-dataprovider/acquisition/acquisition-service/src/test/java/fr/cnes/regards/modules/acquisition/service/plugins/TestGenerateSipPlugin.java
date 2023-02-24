@@ -41,9 +41,14 @@ import java.util.*;
  *
  * @author Christophe Mertz
  */
-@Plugin(id = "TestGenerateSipPlugin", version = "1.0.0-SNAPSHOT", description = "TestGenerateSipPlugin",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "TestGenerateSipPlugin",
+        version = "1.0.0-SNAPSHOT",
+        description = "TestGenerateSipPlugin",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements ISipGenerationPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestGenerateSipPlugin.class);

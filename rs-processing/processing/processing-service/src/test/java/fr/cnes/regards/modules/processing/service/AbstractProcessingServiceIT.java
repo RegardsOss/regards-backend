@@ -19,8 +19,6 @@
 
 /**
  * TODO: AbstractServiceTest description
- *
- * @author gandrieu
  */
 package fr.cnes.regards.modules.processing.service;
 

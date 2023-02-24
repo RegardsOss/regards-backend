@@ -26,8 +26,9 @@ import javax.persistence.*;
  * @author Léo Mieulet
  */
 @Entity
-@Table(name = "t_local_storage", uniqueConstraints = @UniqueConstraint(columnNames = { "entity_id", "file_checksum" },
-    name = "uk_t_local_storage_document_file_checksum"))
+@Table(name = "t_local_storage",
+       uniqueConstraints = @UniqueConstraint(columnNames = { "entity_id", "file_checksum" },
+                                             name = "uk_t_local_storage_document_file_checksum"))
 @SequenceGenerator(name = "localStorageSequence", initialValue = 1, sequenceName = "documentLS_Sequence")
 public class LocalFile {
 
@@ -42,8 +43,10 @@ public class LocalFile {
      * Related document
      */
     @ManyToOne
-    @JoinColumn(name = "entity_id", foreignKey = @ForeignKey(name = "fk_ls_entity_id"), nullable = false,
-        updatable = false)
+    @JoinColumn(name = "entity_id",
+                foreignKey = @ForeignKey(name = "fk_ls_entity_id"),
+                nullable = false,
+                updatable = false)
     private AbstractEntity<?> entity;
 
     /**

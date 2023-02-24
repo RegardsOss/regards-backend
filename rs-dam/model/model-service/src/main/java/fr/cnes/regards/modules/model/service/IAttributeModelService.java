@@ -45,7 +45,6 @@ public interface IAttributeModelService {
      * Add an attribute in a {@link Transactional} context
      *
      * @param pAttributeModel {@link AttributeModel} to add
-     * @param duringImport
      * @return {@link AttributeModel}
      * @throws ModuleException if error occurs!
      */
@@ -80,7 +79,6 @@ public interface IAttributeModelService {
     /**
      * Check if attribute not already linked to any entity.
      *
-     * @param attributeId
      * @return {@link Boolean}
      */
     boolean isDeletable(Long attributeId);
@@ -97,7 +95,6 @@ public interface IAttributeModelService {
     /**
      * Find attributes by fragment id
      *
-     * @param pFragmentId
      * @return attribute which fragment id is the given one
      */
     List<AttributeModel> findByFragmentId(Long pFragmentId);
@@ -105,7 +102,6 @@ public interface IAttributeModelService {
     /**
      * Find attributes by fragment name
      *
-     * @param pFragmentName
      * @return attribute which fragment name is the given one
      */
     List<AttributeModel> findByFragmentName(String pFragmentName);
@@ -117,7 +113,6 @@ public interface IAttributeModelService {
     /**
      * Determines whether a fragment can be created without conflicting name with any existing attribute
      *
-     * @param fragmentName
      * @return {@link Boolean}
      */
     boolean isFragmentCreatable(String fragmentName);

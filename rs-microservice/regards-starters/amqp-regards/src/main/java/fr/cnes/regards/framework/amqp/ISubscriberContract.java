@@ -74,7 +74,6 @@ public interface ISubscriberContract {
      * @param receiver     event {@link IHandler}
      * @param queueName    Name of the queue to listen for
      * @param exchangeName Name of the exchange to create and to bind to the newly subscribe queue.
-     * @param purgeQueue
      */
     <E extends ISubscribable> void subscribeTo(Class<E> eventType,
                                                IHandler<E> receiver,
@@ -110,8 +109,6 @@ public interface ISubscriberContract {
 
     /**
      * Purge all queues based on registered handlers
-     *
-     * @param tenant
      */
     void purgeAllQueues(String tenant);
 

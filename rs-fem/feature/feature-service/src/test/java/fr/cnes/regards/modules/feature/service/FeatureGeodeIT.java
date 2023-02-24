@@ -47,10 +47,13 @@ import java.util.UUID;
  * @author Marc SORDI
  * @author Sébastien Binda
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode", "regards.amqp.enabled=true",
-        "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode",
+                                   "regards.amqp.enabled=true",
+                                   "spring.task.scheduling.pool.size=2",
+                                   "regards.feature.metrics.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp" })
 // Clean all context (schedulers)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)

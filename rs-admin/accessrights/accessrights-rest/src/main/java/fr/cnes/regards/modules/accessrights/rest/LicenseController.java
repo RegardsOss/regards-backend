@@ -71,11 +71,10 @@ public class LicenseController implements IResourceController<LicenseDTO> {
      * Retrieve if the current user has accepted the license of the given project, represented by its name.
      *
      * @return if the current user has accepted the license of the project
-     * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve if the current user has accepted the license of the project",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<LicenseDTO>> retrieveLicense() throws ModuleException {
         LicenseDTO licenseDto = licenseService.retrieveLicenseState();
         return new ResponseEntity<>(toResource(licenseDto), HttpStatus.OK);
@@ -85,7 +84,6 @@ public class LicenseController implements IResourceController<LicenseDTO> {
      * Accept the license for the current user for the given project, represented by its name
      *
      * @return the license state
-     * @throws EntityException
      */
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Allow current user to accept the license of the project", role = DefaultRole.PUBLIC)
@@ -100,9 +98,8 @@ public class LicenseController implements IResourceController<LicenseDTO> {
      * @return Void
      */
     @RequestMapping(method = RequestMethod.PUT, path = PATH_RESET)
-    @ResourceAccess(
-        description = "Allow admins to invalidate the license of the project for all the users of the project",
-        role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Allow admins to invalidate the license of the project for all the users of the project",
+                    role = DefaultRole.ADMIN)
     public ResponseEntity<Void> resetLicense() {
         licenseService.resetLicence();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

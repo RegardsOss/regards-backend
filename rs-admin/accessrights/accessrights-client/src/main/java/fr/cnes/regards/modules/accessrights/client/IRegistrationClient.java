@@ -47,8 +47,9 @@ public interface IRegistrationClient {
      * @param pAccessRequest A Dto containing all information for creating a new project user
      * @return the passed Dto
      */
-    @PostMapping(value = ROOT_PATH + ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ROOT_PATH + ROOT_PATH,
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<AccessRequestDto>> requestAccess(@Valid @RequestBody AccessRequestDto pAccessRequest);
 
     /**
@@ -57,8 +58,9 @@ public interface IRegistrationClient {
      * @param pAccessRequest A Dto containing all information for creating a new project user
      * @return the passed Dto
      */
-    @PostMapping(value = ROOT_PATH + "/external", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ROOT_PATH + "/external",
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<AccessRequestDto>> requestExternalAccess(@Valid @RequestBody
                                                                         AccessRequestDto pAccessRequest);
 
@@ -68,8 +70,9 @@ public interface IRegistrationClient {
      * @param token the token
      * @return void
      */
-    @GetMapping(value = ROOT_PATH + "/verifyEmail/{token}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_PATH + "/verifyEmail/{token}",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> verifyEmail(@PathVariable("token") final String token);
 
     /**
@@ -78,8 +81,9 @@ public interface IRegistrationClient {
      * @param pAccessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping(value = ROOT_PATH + "/{access_id}/accept", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = ROOT_PATH + "/{access_id}/accept",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId);
 
     /**
@@ -88,8 +92,9 @@ public interface IRegistrationClient {
      * @param pAccessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping(value = ROOT_PATH + "/{access_id}/deny", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = ROOT_PATH + "/{access_id}/deny",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId);
 
     /**
@@ -98,8 +103,9 @@ public interface IRegistrationClient {
      * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping(value = ROOT_PATH + "/{access_id}/active", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = ROOT_PATH + "/{access_id}/active",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> activeAccess(@PathVariable("access_id") Long accessId);
 
     /**
@@ -108,8 +114,9 @@ public interface IRegistrationClient {
      * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping(value = ROOT_PATH + "/{access_id}/inactive", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = ROOT_PATH + "/{access_id}/inactive",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") Long accessId);
 
     /**
@@ -118,8 +125,9 @@ public interface IRegistrationClient {
      * @param pAccessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @DeleteMapping(value = ROOT_PATH + "/{access_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = ROOT_PATH + "/{access_id}",
+                   consumes = MediaType.APPLICATION_JSON_VALUE,
+                   produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId);
 
 }

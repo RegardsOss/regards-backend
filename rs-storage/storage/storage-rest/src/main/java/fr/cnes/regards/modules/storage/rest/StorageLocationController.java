@@ -145,7 +145,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     @PostMapping(path = RUN_PERIODIC_ACTION_PATH)
     @ResourceAccess(description = "Force rung of periodic tasks on storage locations",
-        role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> runPeriodicTasks() {
         storageLocationService.runPeriodicTasks();
         return new ResponseEntity<>(HttpStatus.OK);
@@ -172,14 +172,13 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * End-point to retrieve all known storage locations
      *
      * @return {@link StorageLocationDTO}s
-     * @throws ModuleException
      */
     @GetMapping
     @Operation(summary = "Get known storage locations", description = "Return a list of known storage locations")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "All known storage locations were retrieved.") })
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "All known storage locations were retrieved.") })
     @ResourceAccess(description = "Endpoint to retrieve list of all known storage locations.",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() throws ModuleException {
         List<StorageLocationDTO> storageLocations = new ArrayList<>(storageLocationService.getAllLocations());
         storageLocations.add(cacheService.toStorageLocation());
@@ -193,7 +192,6 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * End-point to retrieve a Storage location by its name
      *
      * @param storageName storage location name
-     * @throws ModuleException
      */
     @GetMapping(path = ID_PATH)
     @ResourceAccess(description = "Retrieve a storage location by its name", role = DefaultRole.EXPLOIT)
@@ -207,7 +205,6 @@ public class StorageLocationController implements IResourceController<StorageLoc
      *
      * @param storageName storage location name to delete
      * @return Void
-     * @throws ModuleException
      */
     @DeleteMapping(path = ID_PATH)
     @ResourceAccess(description = "Delete storage location", role = DefaultRole.ADMIN)
@@ -221,7 +218,6 @@ public class StorageLocationController implements IResourceController<StorageLoc
      *
      * @param storageName storage location name to delete
      * @return Void
-     * @throws ModuleException
      */
     @DeleteMapping(path = ID_PATH + REQUESTS_PATH)
     @ResourceAccess(description = "Delete storage requests", role = DefaultRole.ADMIN)
@@ -238,7 +234,6 @@ public class StorageLocationController implements IResourceController<StorageLoc
      *
      * @param storageName storage location name
      * @param forceDelete If true, files are unreferenced even if the physical files cannot be deleted.
-     * @throws ModuleException
      */
     @DeleteMapping(path = ID_PATH + FILES)
     @ResourceAccess(description = "Delete all files of the storage location", role = DefaultRole.PROJECT_ADMIN)
@@ -263,11 +258,10 @@ public class StorageLocationController implements IResourceController<StorageLoc
      *
      * @param parameters copy parameters
      * @return Void
-     * @throws ModuleException
      */
     @PostMapping(path = FILES + COPY)
     @ResourceAccess(description = "Copy files for a given path of a storage location to an other one",
-        role = DefaultRole.ADMIN)
+                    role = DefaultRole.ADMIN)
     public ResponseEntity<Void> copyFiles(@Valid @RequestBody CopyFilesParametersDTO parameters)
         throws ModuleException {
         // assert parameters are not null
@@ -301,12 +295,10 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @param storageName storage location name
      * @param type        {@link FileRequestType} to retry
      * @return Void
-     * @throws ModuleException
      */
     @GetMapping(path = ID_PATH + FILES + RETRY)
-    @ResourceAccess(
-        description = "Retry all files requests in error state for the given storage location and the given request type",
-        role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Retry all files requests in error state for the given storage location and the given request type",
+                    role = DefaultRole.ADMIN)
     public ResponseEntity<Void> retryErrors(@PathVariable(name = "id") String storageName,
                                             @PathVariable(name = "type") FileRequestType type) throws ModuleException {
         storageLocationService.retryErrors(storageName, type);
@@ -322,7 +314,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @GetMapping(path = RETRY_SESSION)
     @ResourceAccess(description = "Retry all files requests in error state for a given source and session",
-        role = DefaultRole.ADMIN)
+                    role = DefaultRole.ADMIN)
     public ResponseEntity<Void> retryErrorsBySourceAndSession(@PathVariable(name = "source") String source,
                                                               @PathVariable(name = "session") String session) {
         storageLocationService.retryErrorsBySourceAndSession(source, session);
@@ -333,9 +325,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * End-point to increase the priority of a storage location. Priority is used to select a storage location during file retrieving if files are
      * stored on multiple locations.
      *
-     * @param storageName
      * @return Void
-     * @throws EntityNotFoundException
      */
     @PutMapping(path = UP_PATH)
     @ResourceAccess(description = "Increase a storage location priority", role = DefaultRole.ADMIN)
@@ -349,9 +339,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * End-point to decrease the priority of a storage location. Priority is used to select a storage location during file retrieving if files are
      * stored on multiple locations.
      *
-     * @param storageName
      * @return Void
-     * @throws EntityNotFoundException
      */
     @PutMapping(path = DOWN_PATH)
     @ResourceAccess(description = "Decrease a storage location priority", role = DefaultRole.ADMIN)

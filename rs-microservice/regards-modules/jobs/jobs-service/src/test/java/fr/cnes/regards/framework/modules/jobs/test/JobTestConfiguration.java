@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableAutoConfiguration
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
-    ignoreResourceNotFound = true)
+                ignoreResourceNotFound = true)
 @EnableAsync
 @EnableScheduling
 public class JobTestConfiguration {

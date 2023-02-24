@@ -27,8 +27,14 @@ import org.junit.Assert;
  *
  * @author Marc Sordi
  */
-@Plugin(author = "REGARDS Team", description = "Plugin with string", id = "FreePluginWithString", version = "1.0.0",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Plugin with string",
+        id = "FreePluginWithString",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class FreePluginWithString implements IFreePlugin {
 
     public static final String FIELD_NAME_STRING = "sfield";

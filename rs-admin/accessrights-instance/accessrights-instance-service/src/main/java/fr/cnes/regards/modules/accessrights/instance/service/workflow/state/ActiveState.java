@@ -40,12 +40,7 @@ import org.springframework.stereotype.Component;
 public class ActiveState extends AbstractDeletableState {
 
     /**
-     * @param projectUsersClient
-     * @param accountRepository
-     * @param tenantService
-     * @param runtimeTenantResolver
-     * @param passwordResetService
-     * @param accountUnlockTokenService
+     *
      */
     public ActiveState(IProjectUsersClient projectUsersClient,
                        IAccountRepository accountRepository,

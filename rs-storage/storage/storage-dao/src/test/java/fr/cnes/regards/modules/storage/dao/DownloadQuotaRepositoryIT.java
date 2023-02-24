@@ -40,8 +40,8 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_gauge_dao",
-    //        "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///GaugeRepositoryIT",
-    //        "regards.jpa.multitenant.tenants[0].tenant=PROJECT"
+                                   //        "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///GaugeRepositoryIT",
+                                   //        "regards.jpa.multitenant.tenants[0].tenant=PROJECT"
 })
 @ContextConfiguration(classes = { DefaultDaoTestConfiguration.class, StorageDaoConfiguration.class })
 public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceIT {

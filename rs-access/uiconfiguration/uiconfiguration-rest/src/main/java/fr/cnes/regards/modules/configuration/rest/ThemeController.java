@@ -70,9 +70,7 @@ public class ThemeController implements IResourceController<Theme> {
     /**
      * Entry point to retrieve a themes for a given application id {@link Theme}.
      *
-     * @param themeId
      * @return {@link UILayout}
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -85,8 +83,6 @@ public class ThemeController implements IResourceController<Theme> {
     /**
      * Entry point to retrieve all themes
      *
-     * @param pageable
-     * @param assembler
      * @return {@link Theme}
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -102,7 +98,6 @@ public class ThemeController implements IResourceController<Theme> {
     /**
      * Entry point to save a new theme
      *
-     * @param theme
      * @return {@link Theme}
      */
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -115,10 +110,7 @@ public class ThemeController implements IResourceController<Theme> {
     /**
      * Entry point to save a new ihm theme.
      *
-     * @param themeId
-     * @param theme
      * @return {@link Theme}
-     * @throws EntityException
      */
     @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -134,12 +126,11 @@ public class ThemeController implements IResourceController<Theme> {
     /**
      * Entry point to delete an ihm theme.
      *
-     * @param themeId
      * @return {@link Theme}
-     * @throws EntityNotFoundException
      */
-    @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.DELETE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = THEME_ID_MAPPING,
+                    method = RequestMethod.DELETE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a theme", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Void>> deleteTheme(@PathVariable("themeId") Long themeId)

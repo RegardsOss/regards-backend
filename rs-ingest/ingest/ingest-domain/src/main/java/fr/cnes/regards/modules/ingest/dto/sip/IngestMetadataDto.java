@@ -97,12 +97,11 @@ public class IngestMetadataDto {
     /**
      * Build ingest metadata
      *
-     * @param sessionOwner   Owner of the session
-     * @param session        session
-     * @param ingestChain    ingest processing chain name
-     * @param versioningMode
-     * @param model          the model to be used for DescriptiveInformation validation
-     * @param storages       storage metadata
+     * @param sessionOwner Owner of the session
+     * @param session      session
+     * @param ingestChain  ingest processing chain name
+     * @param model        the model to be used for DescriptiveInformation validation
+     * @param storages     storage metadata
      */
     public static IngestMetadataDto build(String sessionOwner,
                                           String session,

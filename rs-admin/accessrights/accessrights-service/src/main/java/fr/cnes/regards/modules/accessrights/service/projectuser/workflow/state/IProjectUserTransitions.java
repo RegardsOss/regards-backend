@@ -46,7 +46,6 @@ public interface IProjectUserTransitions {
     /**
      * After the user has clicked on the link in the email he received, pass his project user from status WAITING_EMAIL_VERIFICATION to ACCESS_GRANTED.
      *
-     * @param emailVerificationToken
      * @throws EntityException <br>
      *                         {@link EntityTransitionForbiddenException} when the project user is not in status WAITING_EMAIL_VERIFICATION<br>
      *                         {@link EntityNotFoundException} Thrown when no access settings could be found<br>
@@ -81,7 +80,6 @@ public interface IProjectUserTransitions {
      * Passes an ACCESS_DENIED project user to the status ACCESS_GRANTED.
      *
      * @param projectUser the project user
-     * @throws EntityException
      * @throws EntityTransitionForbiddenException when the project user is not in status ACCESS_DENIED
      */
     void grantAccess(final ProjectUser projectUser) throws EntityException;

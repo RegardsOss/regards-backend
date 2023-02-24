@@ -23,9 +23,11 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_cct", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_cct",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureConcurrentIT extends AbstractFeatureMultitenantServiceIT {
 

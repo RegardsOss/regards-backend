@@ -34,11 +34,6 @@ public abstract class AbstractRunnableCompression implements ICompression {
      * compression
      *
      * @return CompressManager
-     * @parameter fileList : Liste des fichiers a compresser
-     * @parameter compressedFile : Nom du fichier archive sans extension
-     * @parameter rootDirectory : Répertoire root des fichiers a archiver
-     * @parameter flatArchive : Archivage a plat ou non
-     * @parameter charset : Type d'encodage
      */
     @Override
     public CompressManager compress(List<File> fileList,
@@ -58,11 +53,6 @@ public abstract class AbstractRunnableCompression implements ICompression {
      * Méthode permettant de lancer la compression de manière synchrone ou asychrone.
      *
      * @return CompressManager
-     * @parameter fileList : Liste des fichiers a compresser
-     * @parameter compressedFile : Nom du fichier archive sans extension
-     * @parameter rootDirectory : Répertoire root des fichiers a archiver
-     * @parameter flatArchive : Archivage a plat ou non
-     * @parameter charset : Type d'encodage
      */
     @Override
     public CompressManager compress(List<File> fileList,
@@ -82,11 +72,6 @@ public abstract class AbstractRunnableCompression implements ICompression {
      * Methode permettant de lancer la compression de manière asynchrone dans un thread.
      *
      * @return CompressManager
-     * @parameter fileList : Liste des fichiers a compresser
-     * @parameter compressedFile : Nom du fichier archive sans extension
-     * @parameter rootDirectory : Répertoire root des fichiers a archiver
-     * @parameter flatArchive : Archivage a plat ou non
-     * @parameter charset : Type d'encodage
      */
     private CompressManager runThreadCompress(List<File> fileList,
                                               File compressedFile,
@@ -108,13 +93,6 @@ public abstract class AbstractRunnableCompression implements ICompression {
 
     /**
      * Méthode permettant de lancer la compression de manière synchrone
-     *
-     * @parameter fileList : Liste des fichiers a compresser
-     * @parameter compressedFile : Nom du fichier archive sans extension
-     * @parameter rootDirectory : Répertoire root des fichiers a archiver
-     * @parameter flatArchive : Archivage a plat ou non
-     * @parameter charset : Type d'encodage
-     * @parameter compressManager : Gestionnaire de compression
      */
     public void compress(List<File> fileList,
                          File compressedFile,

@@ -43,7 +43,7 @@ import java.util.Set;
  * @author Christophe Mertz
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=connection_plugin_it" },
-    locations = { "classpath:dataaccess.properties" })
+                    locations = { "classpath:dataaccess.properties" })
 public class DBConnectionServiceIT extends AbstractMultitenantServiceIT {
 
     /**

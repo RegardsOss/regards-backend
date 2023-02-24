@@ -46,8 +46,6 @@ public interface IOrderJobService {
     /**
      * Manage user order jobs ie look if restriction on user concurrent jobs count permits new ones to be added and add
      * them if it is the case
-     *
-     * @param user
      */
     void manageUserOrderStorageFilesJobInfos(String user);
 }

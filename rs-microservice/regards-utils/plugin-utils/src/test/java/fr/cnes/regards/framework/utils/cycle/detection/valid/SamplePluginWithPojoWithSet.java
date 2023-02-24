@@ -32,9 +32,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", id = "SamplePluginWithPojoWithSet", version = "0.0.1",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(description = "Sample plugin test",
+        id = "SamplePluginWithPojoWithSet",
+        version = "0.0.1",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class SamplePluginWithPojoWithSet implements ISamplePlugin {
 
     public static final String FIELD_NAME_SUFFIX = "suffix";

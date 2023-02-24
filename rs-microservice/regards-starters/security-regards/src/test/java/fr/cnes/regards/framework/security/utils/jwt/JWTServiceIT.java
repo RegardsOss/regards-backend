@@ -74,8 +74,6 @@ public class JWTServiceIT {
 
     /**
      * Test JWT generation without group
-     *
-     * @throw IOException
      */
     @Test
     public void generateJWT() throws IOException {
@@ -103,8 +101,6 @@ public class JWTServiceIT {
 
     /**
      * Test JWT generation and retrieve all claims
-     *
-     * @throws IOException
      */
     @Test
     public void getClaims() throws IOException {

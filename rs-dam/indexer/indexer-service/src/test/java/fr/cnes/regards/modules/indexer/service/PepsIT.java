@@ -190,8 +190,11 @@ public class PepsIT {
         searchKey.setSearchIndex(TENANT);
 
         if (right < 180) {
-            double[][] bboxPolygon = new double[][] { { left, bottom }, { right, bottom }, { right, top },
-                { left, top }, { left, bottom } };
+            double[][] bboxPolygon = new double[][] { { left, bottom },
+                                                      { right, bottom },
+                                                      { right, top },
+                                                      { left, top },
+                                                      { left, bottom } };
             ICriterion bboxCrit = ICriterion.intersectsBbox(left, bottom, right, top);
             // ES execution
             long start = System.currentTimeMillis();
@@ -213,10 +216,16 @@ public class PepsIT {
                                              durationPeps,
                                              durationEs));
         } else { // left > 180 must cut bbox because Elasticsearch doesn't want a longitude > 180
-            double[][] leftBboxPolygon = new double[][] { { left, bottom }, { 180, bottom }, { 180, top },
-                { left, top }, { left, bottom } };
-            double[][] rightBboxPolygon = new double[][] { { -180, bottom }, { 360 - right, bottom },
-                { 360 - right, top }, { -180, top }, { -180, bottom } };
+            double[][] leftBboxPolygon = new double[][] { { left, bottom },
+                                                          { 180, bottom },
+                                                          { 180, top },
+                                                          { left, top },
+                                                          { left, bottom } };
+            double[][] rightBboxPolygon = new double[][] { { -180, bottom },
+                                                           { 360 - right, bottom },
+                                                           { 360 - right, top },
+                                                           { -180, top },
+                                                           { -180, bottom } };
             ICriterion bboxCrit = ICriterion.intersectsBbox(left, bottom, right, top);
             // ES execution
             long start = System.currentTimeMillis();

@@ -35,9 +35,14 @@ import java.util.Optional;
  *
  * @author Marc Sordi
  */
-@Plugin(author = "REGARDS Team", description = "Default single AIP generation", id = "DefaultSingleAIPGeneration",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Default single AIP generation",
+        id = "DefaultSingleAIPGeneration",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class DefaultSingleAIPGeneration implements IAipGeneration {
 
     @Override

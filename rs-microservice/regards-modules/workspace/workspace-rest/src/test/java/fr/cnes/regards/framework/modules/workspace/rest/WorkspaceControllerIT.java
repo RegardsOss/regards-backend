@@ -7,9 +7,9 @@ import org.springframework.test.context.TestPropertySource;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@TestPropertySource(
-    properties = { "regards.workspace.occupation.threshold=1", "regards.cipher.key-location=src/test/resources/testKey",
-        "regards.cipher.iv=1234567812345678" })
+@TestPropertySource(properties = { "regards.workspace.occupation.threshold=1",
+                                   "regards.cipher.key-location=src/test/resources/testKey",
+                                   "regards.cipher.iv=1234567812345678" })
 public class WorkspaceControllerIT extends AbstractRegardsIT {
 
     @Test

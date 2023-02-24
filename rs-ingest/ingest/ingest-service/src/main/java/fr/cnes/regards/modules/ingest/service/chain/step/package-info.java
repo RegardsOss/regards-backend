@@ -18,7 +18,5 @@
  */
 /**
  * This package groups all processing chain steps
- *
- * @author Marc Sordi
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;

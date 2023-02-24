@@ -57,8 +57,9 @@ import org.springframework.web.client.RestTemplate;
  */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
-@EnableConfigurationProperties(
-    { RabbitProperties.class, AmqpManagementProperties.class, AmqpMicroserviceProperties.class })
+@EnableConfigurationProperties({ RabbitProperties.class,
+                                 AmqpManagementProperties.class,
+                                 AmqpMicroserviceProperties.class })
 @AutoConfigureAfter(name = { "fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration" })
 @EnableTransactionManagement
 public class AmqpAutoConfiguration {

@@ -28,32 +28,22 @@ public enum PropertyType {
     /**
      * Possible attribute type
      */
-    STRING,
-    JSON,
-    INTEGER,
-    DOUBLE,
-    DATE_ISO8601,
-    URL,
-    BOOLEAN,
-    STRING_ARRAY {
+    STRING, JSON, INTEGER, DOUBLE, DATE_ISO8601, URL, BOOLEAN, STRING_ARRAY {
         @Override
         public boolean isArray() {
             return true;
         }
-    },
-    INTEGER_ARRAY {
+    }, INTEGER_ARRAY {
         @Override
         public boolean isArray() {
             return true;
         }
-    },
-    DOUBLE_ARRAY {
+    }, DOUBLE_ARRAY {
         @Override
         public boolean isArray() {
             return true;
         }
-    },
-    DATE_ARRAY {
+    }, DATE_ARRAY {
         @Override
         public boolean isArray() {
             return true;
@@ -64,33 +54,27 @@ public enum PropertyType {
         public boolean isInterval() {
             return true;
         }
-    },
-    DOUBLE_INTERVAL {
+    }, DOUBLE_INTERVAL {
         @Override
         public boolean isInterval() {
             return true;
         }
-    },
-    DATE_INTERVAL {
+    }, DATE_INTERVAL {
         @Override
         public boolean isInterval() {
             return true;
         }
-    },
-    LONG,
-    LONG_INTERVAL {
+    }, LONG, LONG_INTERVAL {
         @Override
         public boolean isInterval() {
             return true;
         }
-    },
-    LONG_ARRAY {
+    }, LONG_ARRAY {
         @Override
         public boolean isArray() {
             return true;
         }
-    },
-    OBJECT;
+    }, OBJECT;
 
     /**
      * Tell whether or not specified type correspond to an interval

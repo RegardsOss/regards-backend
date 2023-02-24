@@ -60,8 +60,9 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
  * @author gandrieu
  */
 @Configuration
-@EnableR2dbcRepositories(basePackageClasses = { IBatchEntityRepository.class, IExecutionEntityRepository.class,
-    IOutputFileEntityRepository.class })
+@EnableR2dbcRepositories(basePackageClasses = { IBatchEntityRepository.class,
+                                                IExecutionEntityRepository.class,
+                                                IOutputFileEntityRepository.class })
 @EnableAutoConfiguration(exclude = { R2dbcMigrateAutoConfiguration.class })
 @EntityScan(basePackageClasses = { BatchEntity.class, ExecutionEntity.class })
 @ComponentScan(basePackageClasses = { BatchMapper.class, PBatchRepositoryImpl.class, PExecutionRepositoryImpl.class })

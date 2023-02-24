@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * Retrieve user and role according to security context.
- *
+ * <p>
  * When security is delegated to external component, we allow the control of data access authorizations using security context.
  *
  * @author Marc Sordi

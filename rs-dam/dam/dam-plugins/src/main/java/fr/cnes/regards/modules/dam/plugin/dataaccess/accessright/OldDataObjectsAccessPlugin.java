@@ -30,10 +30,14 @@ import java.time.OffsetDateTime;
  *
  * @author Sébastien Binda
  */
-@Plugin(id = "OldDataObjectsAccess", version = "4.0.0-SNAPSHOT",
-    description = "Allow access only to old data objects. Old data objects are thoses created at least X days ago. X is a parameter to configure.",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "OldDataObjectsAccess",
+        version = "4.0.0-SNAPSHOT",
+        description = "Allow access only to old data objects. Old data objects are thoses created at least X days ago. X is a parameter to configure.",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class OldDataObjectsAccessPlugin implements IDataObjectAccessFilterPlugin {
 
     public static final String NB_DAYS_PARAM = "numberOfDays";
@@ -43,9 +47,11 @@ public class OldDataObjectsAccessPlugin implements IDataObjectAccessFilterPlugin
     @PluginParameter(name = NB_DAYS_PARAM, label = "Number of days", optional = false)
     private long numberOfDays;
 
-    @PluginParameter(name = DATE_ATTR_PARAM, label = "Date attribute",
-        description = "It's the model's attribute's name with the fragment if there is. The model contains the date. In order to use an attribute from the meta of your datas, use the prefix \"feature.properties\" like \"feature.properties.DataStartDate\". Without this prefix you can access regards internal meta attributes like default selected date attribute \"creationDate\"",
-        defaultValue = "creationDate", optional = true)
+    @PluginParameter(name = DATE_ATTR_PARAM,
+                     label = "Date attribute",
+                     description = "It's the model's attribute's name with the fragment if there is. The model contains the date. In order to use an attribute from the meta of your datas, use the prefix \"feature.properties\" like \"feature.properties.DataStartDate\". Without this prefix you can access regards internal meta attributes like default selected date attribute \"creationDate\"",
+                     defaultValue = "creationDate",
+                     optional = true)
     private String dateAttribute;
 
     @Override

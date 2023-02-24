@@ -27,7 +27,6 @@ public interface ICustomAIPRepository {
     /**
      * Used to retrieve tags with a custom SQL query
      *
-     * @param filters
      * @return list of String
      */
     List<String> getDistinct(NativeSelectQuery filters);

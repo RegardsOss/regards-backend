@@ -28,16 +28,23 @@ import java.util.Map.Entry;
 /**
  * @author Marc Sordi
  */
-@Plugin(author = "REGARDS Team", description = "Plugin with String map parameters", id = "PluginWithPojoMap",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Plugin with String map parameters",
+        id = "PluginWithPojoMap",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class PluginWithPojoMap implements IPluginWithGenerics {
 
     // Attribute name
     public static final String PARAMETER_NAME = "param_infos";
 
-    @PluginParameter(name = PARAMETER_NAME, keylabel = "Key", label = "Information",
-        description = "Map of infos as POJO")
+    @PluginParameter(name = PARAMETER_NAME,
+                     keylabel = "Key",
+                     label = "Information",
+                     description = "Map of infos as POJO")
     private Map<String, Info> infos;
 
     @Override

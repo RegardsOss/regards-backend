@@ -107,8 +107,9 @@ public interface IPluginClient {
      * @param pPluginId a plugin identifier
      * @return a {@link List} of {@link PluginConfiguration}
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS,
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<EntityModel<PluginConfiguration>>> getPluginConfigurations(
         @PathVariable("pluginId") final String pPluginId);
@@ -132,8 +133,10 @@ public interface IPluginClient {
      * @param pPluginConfiguration a {@link PluginConfiguration}
      * @return the created {@link PluginConfiguration}
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.POST,
-        consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS,
+                    method = RequestMethod.POST,
+                    consumes = MediaType.APPLICATION_JSON_VALUE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<PluginConfiguration>> savePluginConfiguration(
         @Valid @RequestBody final PluginConfiguration pPluginConfiguration);
@@ -145,8 +148,9 @@ public interface IPluginClient {
      * @param pConfigId a plugin configuration identifier
      * @return the {@link PluginConfiguration} of the plugin
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID,
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<PluginConfiguration>> getPluginConfiguration(
         @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId);
@@ -170,8 +174,10 @@ public interface IPluginClient {
      * @param pPluginConfiguration a {@link PluginConfiguration}
      * @return the {@link PluginConfiguration} of the plugin.
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.PUT,
-        consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID,
+                    method = RequestMethod.PUT,
+                    consumes = MediaType.APPLICATION_JSON_VALUE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<PluginConfiguration>> updatePluginConfiguration(
         @PathVariable("pluginId") final String pPluginId,
@@ -185,8 +191,9 @@ public interface IPluginClient {
      * @param pConfigId a plugin configuration identifier
      * @return void
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.DELETE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID,
+                    method = RequestMethod.DELETE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") final String pPluginId,
                                                    @PathVariable("configId") final Long pConfigId);

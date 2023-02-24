@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
 
 /**
  * @author Marc Sordi
- * @See {@link AbstractScriptGeneratorIT}
  */
 public class NotificationSQLGeneratorIT extends AbstractScriptGeneratorIT {
 

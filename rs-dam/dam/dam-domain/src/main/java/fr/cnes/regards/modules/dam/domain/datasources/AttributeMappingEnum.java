@@ -22,6 +22,5 @@ package fr.cnes.regards.modules.dam.domain.datasources;
  * @author Léo Mieulet
  */
 public enum AttributeMappingEnum {
-    DYNAMIC,
-    STATIC;
+    DYNAMIC, STATIC;
 }

@@ -156,13 +156,13 @@ public class FileReferenceController {
      * @param checksum checksum of the file to download
      * @return {@link InputStreamResource}
      */
-    @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH, method = RequestMethod.GET,
-        produces = MediaType.ALL_VALUE)
+    @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH,
+                    method = RequestMethod.GET,
+                    produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<StreamingResponseBody> downloadFileWithToken(@PathVariable("checksum") String checksum,
-                                                                       @RequestParam(
-                                                                           name = FileDownloadService.TOKEN_PARAM,
-                                                                           required = true) String token,
+                                                                       @RequestParam(name = FileDownloadService.TOKEN_PARAM,
+                                                                                     required = true) String token,
                                                                        boolean isContentInline,
                                                                        HttpServletResponse response) {
         if (!downloadTokenService.checkToken(checksum, token)) {
@@ -290,7 +290,7 @@ public class FileReferenceController {
 
     @RequestMapping(method = RequestMethod.POST, path = LOCATIONS_PATH)
     @ResourceAccess(description = "Get file references with matching checksums on a storage",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(
         @PathVariable(name = "storage") final String storage, @RequestBody final Set<String> checksums) {
         Set<FileReferenceDTO> fileRefDtos = Sets.newHashSet();

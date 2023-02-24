@@ -136,27 +136,30 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
         return LOGGER;
     }
 
-    @Scheduled(
-        initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:"
+                                    + DEFAULT_INITIAL_DELAY
+                                    + "}",
+               fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleMatchingRequests() {
 
         schedule(NOTIFICATION_MATCHING, notificationMatchingTask, NOTIFICATION_MATCHING_LOCK);
 
     }
 
-    @Scheduled(
-        initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:"
+                                    + DEFAULT_INITIAL_DELAY
+                                    + "}",
+               fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleNotificationJobs() {
 
         schedule(NOTIFICATION_ACTIONS, notificationTask, NOTIFICATION_LOCK);
 
     }
 
-    @Scheduled(
-        initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:"
+                                    + DEFAULT_INITIAL_DELAY
+                                    + "}",
+               fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleNotificationRequestCheckCompleted() {
 
         schedule(NOTIFICATION_CHECK_COMPLETED, notificationCheckCompletedTask, NOTIFICATION_LOCK);

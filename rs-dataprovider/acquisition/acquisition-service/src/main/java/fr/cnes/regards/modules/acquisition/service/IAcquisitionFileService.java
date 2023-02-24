@@ -66,7 +66,6 @@ public interface IAcquisitionFileService {
      * Save or update given {@link AcquisitionFile}s
      *
      * @param files {@link AcquisitionFile}s
-     * @return
      */
     List<AcquisitionFile> save(Collection<AcquisitionFile> files);
 
@@ -78,7 +77,6 @@ public interface IAcquisitionFileService {
      * @param productId {@link Long} identifier of {@link Product}
      * @param chainId   {@link Long} identifier of {@link AcquisitionProcessingChain}
      * @param from      {@link OffsetDateTime}
-     * @param pageable
      * @return {@link AcquisitionFile}s
      */
     Page<AcquisitionFile> search(String filePath,

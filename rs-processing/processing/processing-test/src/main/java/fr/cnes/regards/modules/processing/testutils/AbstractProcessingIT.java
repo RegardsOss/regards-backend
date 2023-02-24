@@ -66,13 +66,15 @@ import java.util.Random;
  */
 @RunWith(SpringRunner.class)
 
-@SpringBootTest(classes = TestReactiveApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = { "spring.main.web-application-type=reactive", "spring.http.converters.preferred-json-mapper=gson" })
+@SpringBootTest(classes = TestReactiveApplication.class,
+                webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+                properties = { "spring.main.web-application-type=reactive",
+                               "spring.http.converters.preferred-json-mapper=gson" })
 
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 
 @ContextConfiguration(initializers = { AbstractProcessingIT.Initializer.class },
-    classes = { TestSpringConfiguration.class })
+                      classes = { TestSpringConfiguration.class })
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 

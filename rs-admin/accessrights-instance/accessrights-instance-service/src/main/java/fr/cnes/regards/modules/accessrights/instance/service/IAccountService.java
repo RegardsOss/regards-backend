@@ -42,7 +42,6 @@ public interface IAccountService {
      * Create an account.
      *
      * @param Account The {@link Account}
-     * @param project
      * @return The account
      */
     Account createAccount(Account Account, String project) throws EntityInvalidException;

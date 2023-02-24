@@ -28,9 +28,14 @@ import java.nio.file.Path;
 /**
  * @author Marc Sordi
  */
-@Plugin(id = "DefaultFileValidation", version = "1.0.0-SNAPSHOT", description = "Default validation plugin",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "DefaultFileValidation",
+        version = "1.0.0-SNAPSHOT",
+        description = "Default validation plugin",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class DefaultFileValidation implements IValidationPlugin {
 
     @Override

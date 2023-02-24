@@ -239,7 +239,7 @@ public class ModuleManagerController {
      */
     @GetMapping(value = READY_MAPPING)
     @ResourceAccess(description = "allows to known if the microservice is ready to work",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<ModuleReadinessReport<?>> isReady() {
         ModuleReadinessReport<Object> microserviceReadiness = new ModuleReadinessReport<>(Boolean.TRUE,
                                                                                           Lists.newArrayList(),
@@ -261,7 +261,7 @@ public class ModuleManagerController {
 
     @GetMapping(value = READY_ENABLED_MAPPING)
     @ResourceAccess(description = "Check if microservice modules ready feature is enabled",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> isReadyEnabled() {
         if ((managers != null) && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {

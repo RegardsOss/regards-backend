@@ -74,7 +74,7 @@ public class RequestPendingScheduler extends AbstractTaskScheduler {
     };
 
     @Scheduled(initialDelayString = "${regards.ingest.schedule.pending.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.ingest.schedule.pending.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.ingest.schedule.pending.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

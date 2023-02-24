@@ -52,11 +52,13 @@ public class IngestRequest extends AbstractRequest {
      * The {@link List} of AIPEntity created by this request
      */
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "ta_ingest_request_aip", joinColumns = @JoinColumn(name = "ingest_request_id"),
-        inverseJoinColumns = @JoinColumn(name = "aip_id"),
-        uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_request_aip_aip_id", columnNames = { "aip_id" }) },
-        foreignKey = @ForeignKey(name = "fk_ingest_request_aip_request_id"),
-        inverseForeignKey = @ForeignKey(name = "fk_ingest_request_aip_aip_id"))
+    @JoinTable(name = "ta_ingest_request_aip",
+               joinColumns = @JoinColumn(name = "ingest_request_id"),
+               inverseJoinColumns = @JoinColumn(name = "aip_id"),
+               uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_request_aip_aip_id",
+                                                       columnNames = { "aip_id" }) },
+               foreignKey = @ForeignKey(name = "fk_ingest_request_aip_request_id"),
+               inverseForeignKey = @ForeignKey(name = "fk_ingest_request_aip_aip_id"))
     private List<AIPEntity> aips;
 
     public static String generateRequestId() {

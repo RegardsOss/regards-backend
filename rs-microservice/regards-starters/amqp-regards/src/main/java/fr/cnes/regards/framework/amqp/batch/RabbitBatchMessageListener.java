@@ -184,8 +184,6 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
      * Return true if message cannot be handled by current handler.
      *
      * @param message Message to check
-     * @param tenant
-     * @param channel
      * @return boolean true if valid
      */
     private boolean handleInvalidMessageFromDLQ(BatchMessage message, String tenant, Channel channel) {
@@ -204,9 +202,6 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     /**
      * Check if message tenant is associated to a current active tenant.
      *
-     * @param message
-     * @param tenant
-     * @param channel
      * @return true if valid
      */
     private boolean handleInvalidMessageTentant(BatchMessage message, String tenant, Channel channel) {
@@ -223,9 +218,6 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     /**
      * Validate message with handler delegated function
      *
-     * @param message
-     * @param tenant
-     * @param channel
      * @return true if valid
      */
     private boolean validateMessage(BatchMessage message, String tenant, Channel channel) {
@@ -238,10 +230,6 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     /**
      * Concert {@link Message}s to {@link BatchMessage}s
-     *
-     * @param messages
-     * @param channel
-     * @return
      */
     private Multimap<String, BatchMessage> convertMessagesByTenant(List<Message> messages, Channel channel) {
         // Map of messages by tenant
@@ -274,7 +262,6 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
      * @param convertedMessages %essages to validate
      * @param tenant            Message tenant
      * @param channel           Amq channel
-     * @return
      */
     private List<BatchMessage> getValidMessages(Collection<BatchMessage> convertedMessages,
                                                 String tenant,

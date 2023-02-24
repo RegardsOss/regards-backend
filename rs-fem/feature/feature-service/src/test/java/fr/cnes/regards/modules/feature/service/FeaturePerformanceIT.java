@@ -53,9 +53,11 @@ import java.util.UUID;
  * @author Marc SORDI
  */
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit", "regards.amqp.enabled=true" },
-    locations = { "classpath:regards_local.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:regards_local.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 //Clean all context (schedulers)
 @Ignore("warning this test might not pass according to your setup for better perf test see FeatureGeodeIT")

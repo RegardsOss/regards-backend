@@ -41,8 +41,9 @@ public class AIPUpdateFileLocationTask extends AbstractAIPUpdateTask {
      * File list that were either added or removed from a storage location
      */
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-        value = "fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO") })
+    @Type(type = "jsonb",
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+                                    value = "fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO") })
     private List<RequestResultInfoDTO> fileLocationUpdates;
 
     public List<RequestResultInfoDTO> getFileLocationUpdates() {

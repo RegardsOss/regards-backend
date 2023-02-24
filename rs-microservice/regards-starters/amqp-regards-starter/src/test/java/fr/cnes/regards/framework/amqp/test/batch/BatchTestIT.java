@@ -55,8 +55,10 @@ import java.util.Optional;
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @TestPropertySource(properties = { "regards.amqp.management.mode=SINGLE",
-    "regards.tenants=" + BatchTestIT.PROJECT + ", " + BatchTestIT.PROJECT1, "regards.tenant=" + BatchTestIT.PROJECT,
-    "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" }, locations = "classpath:amqp.properties")
+                                   "regards.tenants=" + BatchTestIT.PROJECT + ", " + BatchTestIT.PROJECT1,
+                                   "regards.tenant=" + BatchTestIT.PROJECT,
+                                   "regards.amqp.internal.transaction=true",
+                                   "spring.jmx.enabled=false" }, locations = "classpath:amqp.properties")
 @ActiveProfiles("test")
 public class BatchTestIT {
 

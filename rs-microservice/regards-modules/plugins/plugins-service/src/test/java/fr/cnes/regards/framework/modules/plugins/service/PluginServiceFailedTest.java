@@ -195,8 +195,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = CannotInstanciatePluginException.class)
     public void getAPluginWithBadVersionConfiguration()
@@ -224,8 +223,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Error to get a plugin with a configuration that is not the most priority.
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = ModuleException.class)
     public void getFirstPluginTheMostPrioritaryError()
@@ -256,8 +254,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Error to get a plugin with a configuration that is not active.
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = NotAvailablePluginConfigurationException.class)
     @Requirement("REGARDS_DSL_CMP_PLG_100")

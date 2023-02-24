@@ -168,7 +168,6 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     /**
      * Set to false the defaultDynamicModule attribute of all modules for the given application id
      *
-     * @param applicationId
      * @since 1.0-SNAPSHOT
      */
     private void disableHomeForAllApplicationModules(final String applicationId) {

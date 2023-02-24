@@ -23,6 +23,7 @@ package fr.cnes.regards.modules.notifier.utils;
  *
  * @author Thibaud Michaudel
  **/
-public record SessionNameAndOwner(String sessionName, String sessionOwnerName) {
+public record SessionNameAndOwner(String sessionName,
+                                  String sessionOwnerName) {
 
 }

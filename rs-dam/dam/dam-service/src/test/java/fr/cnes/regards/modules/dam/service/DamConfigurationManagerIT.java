@@ -63,7 +63,7 @@ import java.util.Set;
  * @author Marc SORDI
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dam_configuration" },
-    locations = "classpath:es.properties")
+                    locations = "classpath:es.properties")
 public class DamConfigurationManagerIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DamConfigurationManagerIT.class);

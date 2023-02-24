@@ -38,7 +38,7 @@ public class PluginServiceDtoResourcesAssembler extends SimpleResourceAssemblerS
     private final IResourceService resourceService;
 
     /**
-     * @param resourceService
+     *
      */
     public PluginServiceDtoResourcesAssembler(IResourceService resourceService) {
         super();

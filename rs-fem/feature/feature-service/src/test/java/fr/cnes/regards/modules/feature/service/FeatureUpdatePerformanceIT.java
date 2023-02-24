@@ -24,12 +24,11 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_uperf", "regards.amqp.enabled=true",
-        "regards.feature.metrics.enabled=true"
-        //                        , "spring.jpa.show-sql=true"
-    },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_uperf",
+                                   "regards.amqp.enabled=true",
+                                   "regards.feature.metrics.enabled=true"
+                                   //                        , "spring.jpa.show-sql=true"
+}, locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -50,8 +49,6 @@ public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServic
      * {@link FeatureCreationRequest} and {@link FeatureEntity}are stored in
      * database then at the end of the job test if all
      * {@link FeatureCreationRequest} are deleted
-     *
-     * @throws InterruptedException
      */
     @Test
     public void createFeatures() throws InterruptedException {

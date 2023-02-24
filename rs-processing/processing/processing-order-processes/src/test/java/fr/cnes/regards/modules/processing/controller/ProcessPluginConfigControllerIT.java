@@ -264,68 +264,72 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
     public interface Client {
 
         @RequestMapping(method = RequestMethod.GET,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_SUFFIX,
+                        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+                        produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         List<EntityModel<ProcessPluginConfigurationRightsDTO>> findAll();
 
         @RequestMapping(method = RequestMethod.GET,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.METADATA_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.METADATA_SUFFIX,
+                        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+                        produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         List<PluginMetaData> listAllDetectedMetadata();
 
         @RequestMapping(method = RequestMethod.GET,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_SUFFIX,
+                        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+                        produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         EntityModel<ProcessPluginConfigurationRightsDTO> findByBusinessId(
             @PathVariable(ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId);
 
         @RequestMapping(method = RequestMethod.POST,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_SUFFIX,
+                        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+                        produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         EntityModel<ProcessPluginConfigurationRightsDTO> create(
             @RequestBody ProcessPluginConfigurationRightsDTO rightsDto);
 
         @RequestMapping(method = RequestMethod.PUT,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_SUFFIX,
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_SUFFIX,
+                        produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+                        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         EntityModel<ProcessPluginConfigurationRightsDTO> update(
             @PathVariable(ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
             @RequestBody ProcessPluginConfigurationRightsDTO rightsDto);
 
         @RequestMapping(method = RequestMethod.DELETE,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_SUFFIX,
+                        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+                        produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         EntityModel<ProcessPluginConfigurationRightsDTO> delete(
             @PathVariable(ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId);
 
         @RequestMapping(method = RequestMethod.GET,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.LINKDATASET_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH
+                               + ProcessingConstants.Path.LINKDATASET_SUFFIX,
+                        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+                        produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         Collection<ProcessLabelDTO> findProcessesByDataset(
             @PathVariable(ProcessingConstants.Path.Param.DATASET_PARAM) String dataset);
 
         @RequestMapping(method = RequestMethod.POST,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.BY_DATASETS_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH
+                               + ProcessingConstants.Path.BY_DATASETS_SUFFIX,
+                        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+                        produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         Map<String, Collection<ProcessLabelDTO>> findProcessesByDatasets(@RequestBody List<String> datasets);
 
         @RequestMapping(method = RequestMethod.PUT,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.LINKDATASET_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH
+                               + ProcessingConstants.Path.LINKDATASET_SUFFIX,
+                        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         void attachDatasetToProcesses(@RequestBody List<UUID> processBusinessIds,
                                       @PathVariable(ProcessingConstants.Path.Param.DATASET_PARAM) String dataset);
 
         @RequestMapping(method = RequestMethod.PUT,
-            path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_USERROLE_SUFFIX,
-            consumes = MediaType.ALL_VALUE)
+                        path = ProcessingConstants.Path.PROCESSPLUGIN_PATH
+                               + ProcessingConstants.Path.CONFIG_BID_USERROLE_SUFFIX,
+                        consumes = MediaType.ALL_VALUE)
         void attachRoleToProcess(
             @PathVariable(ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
             @RequestParam(ProcessingConstants.Path.Param.USER_ROLE_PARAM) String userRole);

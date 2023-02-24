@@ -41,7 +41,8 @@ import java.util.Map;
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sip_deserialization_it",
-    "eureka.client.enabled=false" }, locations = { "classpath:application-test.properties" })
+                                   "eureka.client.enabled=false" },
+                    locations = { "classpath:application-test.properties" })
 public class SIPDeserializationIT extends AbstractMultitenantServiceIT {
 
     @Autowired

@@ -56,8 +56,10 @@ public class SecurityVoterAutoConfiguration {
      * @return {@link ISystemAccessVoter}
      */
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "regards.security", name = "system.voter.enabled", havingValue = "true",
-        matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "regards.security",
+                           name = "system.voter.enabled",
+                           havingValue = "true",
+                           matchIfMissing = true)
     @Bean
     public ISystemAccessVoter systemAccessVoter() {
         return new SystemAccessVoter();
@@ -69,8 +71,10 @@ public class SecurityVoterAutoConfiguration {
      * @return {@link IInstanceAdminAccessVoter}
      */
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "regards.security", name = "instance.voter.enabled", havingValue = "true",
-        matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "regards.security",
+                           name = "instance.voter.enabled",
+                           havingValue = "true",
+                           matchIfMissing = true)
     @Bean
     public IInstanceAdminAccessVoter instanceAccessVoter() {
         return new InstanceAdminAccessVoter();
@@ -82,8 +86,10 @@ public class SecurityVoterAutoConfiguration {
      * @return {@link IInstancePublicAccessVoter}
      */
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "regards.security", name = "instance.voter.enabled", havingValue = "true",
-        matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "regards.security",
+                           name = "instance.voter.enabled",
+                           havingValue = "true",
+                           matchIfMissing = true)
     @Bean
     public IInstancePublicAccessVoter instancePublicAccessVoter() {
         return new InstancePublicAccessVoter(instanceTenantName);
@@ -95,8 +101,10 @@ public class SecurityVoterAutoConfiguration {
      * @return {@link IInstanceAdminAccessVoter}
      */
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "regards.security", name = "project.admin.voter.enabled", havingValue = "true",
-        matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "regards.security",
+                           name = "project.admin.voter.enabled",
+                           havingValue = "true",
+                           matchIfMissing = true)
     @Bean
     public IProjectAdminAccessVoter adminAccessVoter() {
         return new ProjectAdminAccessVoter();

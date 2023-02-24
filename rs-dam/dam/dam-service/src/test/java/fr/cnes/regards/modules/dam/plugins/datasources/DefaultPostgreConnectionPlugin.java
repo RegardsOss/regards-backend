@@ -12,9 +12,14 @@ import java.util.Map;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@Plugin(id = "test-db-connection", version = "TEST", description = "Test implementation should not be used",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "test-db-connection",
+        version = "TEST",
+        description = "Test implementation should not be used",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class DefaultPostgreConnectionPlugin implements IDBConnectionPlugin {
 
     @Override

@@ -26,7 +26,11 @@ import java.time.OffsetDateTime;
  * @author Iliana Ghazali
  * @author tguillou
  */
-public record SubmissionInfo(String owner, String session, String datatype, OffsetDateTime creationDate,
-                             OffsetDateTime statusDate, SubmissionRequestState state) {
+public record SubmissionInfo(String owner,
+                             String session,
+                             String datatype,
+                             OffsetDateTime creationDate,
+                             OffsetDateTime statusDate,
+                             SubmissionRequestState state) {
 
 }

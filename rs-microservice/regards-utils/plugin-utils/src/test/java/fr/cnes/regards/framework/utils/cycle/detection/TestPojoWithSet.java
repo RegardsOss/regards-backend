@@ -67,8 +67,9 @@ public class TestPojoWithSet {
         TestPojoWithSet other = (TestPojoWithSet) obj;
         if (childs == null) {
             return other.childs == null;
-        } else
+        } else {
             return childs.equals(other.childs);
+        }
     }
 
 }

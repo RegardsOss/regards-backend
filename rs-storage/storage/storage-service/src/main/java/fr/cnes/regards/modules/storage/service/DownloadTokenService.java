@@ -68,7 +68,6 @@ public class DownloadTokenService {
     /**
      * Generate a download token for the file associated to the given checksum
      *
-     * @param checksum
      * @return download token
      */
     public String createDownloadToken(String checksum) {
@@ -79,9 +78,6 @@ public class DownloadTokenService {
 
     /**
      * Check if given token is valid to download the file associated to the given checksum.
-     *
-     * @param checksum
-     * @param token
      */
     public boolean checkToken(String checksum, String token) {
         boolean accessGranted = downTokenRepo.existsByChecksumAndTokenAndExpirationDateAfter(checksum,
@@ -96,7 +92,6 @@ public class DownloadTokenService {
     /**
      * Generate a public download URL for the file associated to the given Checksum
      *
-     * @param checksum
      * @return download url
      * @throws ModuleException if the Eureka server is not reachable
      */

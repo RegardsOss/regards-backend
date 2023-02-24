@@ -42,8 +42,9 @@ import java.lang.annotation.Annotation;
  */
 @Configuration
 @Conditional(value = DisableInstanceCondition.class)
-@EnableJpaRepositories(basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "instanceEntityManagerFactory",
-    transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
+@EnableJpaRepositories(basePackages = DaoUtils.ROOT_PACKAGE,
+                       entityManagerFactoryRef = "instanceEntityManagerFactory",
+                       transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)

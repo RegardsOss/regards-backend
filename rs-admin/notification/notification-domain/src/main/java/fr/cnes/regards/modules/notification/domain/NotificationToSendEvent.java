@@ -18,8 +18,6 @@ public class NotificationToSendEvent extends ApplicationEvent {
 
     /**
      * Constructor setting the parameter as attribute
-     *
-     * @param notification
      */
     public NotificationToSendEvent(Notification notification) {
         super(notification);

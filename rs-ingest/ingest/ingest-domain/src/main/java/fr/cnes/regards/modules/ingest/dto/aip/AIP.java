@@ -75,8 +75,6 @@ public class AIP extends AbstractInformationPackage<OaisUniformResourceName> {
 
     /**
      * Set the sip id
-     *
-     * @param sipId
      */
     public void setSipId(String sipId) {
         this.sipId = sipId;

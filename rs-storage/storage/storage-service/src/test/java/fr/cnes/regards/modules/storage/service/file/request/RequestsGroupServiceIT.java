@@ -54,7 +54,7 @@ import java.util.UUID;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_groups_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class RequestsGroupServiceIT extends AbstractStorageIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestsGroupServiceIT.class);

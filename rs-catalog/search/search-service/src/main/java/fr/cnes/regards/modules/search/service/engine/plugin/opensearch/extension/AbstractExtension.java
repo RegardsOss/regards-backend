@@ -95,7 +95,6 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
      *
      * @param parameter {@link SearchParameter}
      * @return {@link ICriterion}
-     * @throws OpenSearchUnknownParameter
      */
     protected abstract ICriterion buildCriteria(SearchParameter parameter) throws ExtensionException;
 

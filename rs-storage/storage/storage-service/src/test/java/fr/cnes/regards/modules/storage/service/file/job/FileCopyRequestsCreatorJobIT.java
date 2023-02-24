@@ -47,7 +47,7 @@ import java.util.concurrent.ExecutionException;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_job_test" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class FileCopyRequestsCreatorJobIT extends AbstractStorageIT {
 
     @Autowired

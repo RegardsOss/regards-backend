@@ -44,8 +44,9 @@ public class FeatureStorageMedataEntity {
 
     @Valid
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = {
-        @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "fr.cnes.regards.modules.feature.dto.StorageMetadata") })
+    @Type(type = "jsonb",
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+                                    value = "fr.cnes.regards.modules.feature.dto.StorageMetadata") })
     private List<StorageMetadata> storages;
 
     public List<StorageMetadata> getStorages() {

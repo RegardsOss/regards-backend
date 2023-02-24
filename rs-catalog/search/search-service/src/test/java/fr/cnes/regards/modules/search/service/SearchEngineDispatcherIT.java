@@ -50,7 +50,8 @@ import java.util.UUID;
  * @author Sébastien Binda
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "regards.tenant=opensearch", "spring.jpa.properties.hibernate.default_schema=opensearch" })
+                    properties = { "regards.tenant=opensearch",
+                                   "spring.jpa.properties.hibernate.default_schema=opensearch" })
 @MultitenantTransactional
 public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
 

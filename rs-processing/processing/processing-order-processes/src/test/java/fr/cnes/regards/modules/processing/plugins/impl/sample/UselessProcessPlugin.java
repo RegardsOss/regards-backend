@@ -34,9 +34,14 @@ import io.vavr.collection.Seq;
 import io.vavr.control.Try;
 import reactor.core.publisher.Mono;
 
-@Plugin(id = "UselessProcessPlugin", version = "1.0.0-SNAPSHOT", description = "UselessProcessPlugin description",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "UselessProcessPlugin",
+        version = "1.0.0-SNAPSHOT",
+        description = "UselessProcessPlugin description",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class UselessProcessPlugin implements IProcessDefinition {
 
     private IResultSizeForecast sizeForecast = new AbsoluteResultSizeForecast(0);

@@ -37,9 +37,7 @@ public interface IUILayoutService {
     /**
      * Retrieve an application layout configuration by is applicationId
      *
-     * @param applicationId
      * @return Layout
-     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     UILayout retrieveLayout(String applicationId) throws EntityNotFoundException;
@@ -47,9 +45,7 @@ public interface IUILayoutService {
     /**
      * Save a new layout configuration
      *
-     * @param UILayout
      * @return Layout
-     * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
     UILayout saveLayout(UILayout UILayout) throws EntityException;
@@ -57,9 +53,7 @@ public interface IUILayoutService {
     /**
      * Save a new layout configuration
      *
-     * @param UILayout
      * @return Layout
-     * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
     UILayout updateLayout(UILayout UILayout) throws EntityException;

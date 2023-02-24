@@ -10,8 +10,14 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@Plugin(description = "Test sensitive plugin", id = "SensitivePlugin", version = "0.0.1", author = "REGARDS Dream Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(description = "Test sensitive plugin",
+        id = "SensitivePlugin",
+        version = "0.0.1",
+        author = "REGARDS Dream Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class SensitivePlugin implements ISamplePlugin {
 
     public static final String MESSAGE_PLUGIN_PARAM = "message";

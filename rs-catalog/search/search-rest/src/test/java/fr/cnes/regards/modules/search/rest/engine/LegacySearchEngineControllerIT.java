@@ -46,7 +46,7 @@ import java.util.List;
  * @author Marc Sordi
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "regards.tenant=legacy", "spring.jpa.properties.hibernate.default_schema=legacy" })
+                    properties = { "regards.tenant=legacy", "spring.jpa.properties.hibernate.default_schema=legacy" })
 @MultitenantTransactional
 public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 

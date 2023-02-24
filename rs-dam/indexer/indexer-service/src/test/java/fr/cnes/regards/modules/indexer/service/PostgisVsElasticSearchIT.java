@@ -280,8 +280,11 @@ public class PostgisVsElasticSearchIT {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setCrs(Crs.MARS_49900);
         searchKey.setSearchIndex(TENANT);
-        double[][][] polygon = new double[][][] {
-            { { -146.0, -78.0 }, { -146.0, -77.0 }, { -148.0, -77.0 }, { -148.0, -78.0 }, { -146.0, -78.0 } } };
+        double[][][] polygon = new double[][][] { { { -146.0, -78.0 },
+                                                    { -146.0, -77.0 },
+                                                    { -148.0, -77.0 },
+                                                    { -148.0, -78.0 },
+                                                    { -146.0, -78.0 } } };
         ICriterion polygonCrit = ICriterion.intersectsPolygon(polygon);
         List<Integer> esIds = new ArrayList<>();
         Page<DataObject> resultPage = repos.search(searchKey, 1000, polygonCrit);

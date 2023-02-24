@@ -80,8 +80,6 @@ public class DataObjectMetadata {
     private final Multimap<String, String> modelNames = HashMultimap.create();
 
     /**
-     * @param groupName
-     * @param datasetIpId
      * @param dataAccessGranted true if data access is granted for (group, dataset ip id)
      */
     public void addGroup(String groupName, String datasetIpId, boolean dataAccessGranted) {
@@ -95,8 +93,6 @@ public class DataObjectMetadata {
 
     /**
      * Remove given ipId from all values (groups multimap AND modelNames multimap)
-     *
-     * @param datasetIpId
      */
     public void removeDatasetIpId(String datasetIpId) {
         for (Iterator<DatasetAccessRight> i = groups.values().iterator(); i.hasNext(); ) {

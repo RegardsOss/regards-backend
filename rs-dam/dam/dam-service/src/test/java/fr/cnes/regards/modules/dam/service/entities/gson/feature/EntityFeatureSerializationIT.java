@@ -48,7 +48,7 @@ import java.util.List;
  * @author Marc Sordi
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature" },
-    locations = "classpath:es.properties")
+                    locations = "classpath:es.properties")
 @MultitenantTransactional
 public class EntityFeatureSerializationIT extends AbstractMultitenantServiceIT {
 

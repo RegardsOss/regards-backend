@@ -29,14 +29,14 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 public class JobParameterMissingException extends ModuleException {
 
     /**
-     * @param pErrorMessage
+     *
      */
     public JobParameterMissingException(String pErrorMessage) {
         super(pErrorMessage);
     }
 
     /**
-     * @param pCause
+     *
      */
     public JobParameterMissingException(Throwable pCause) {
         super(pCause);

@@ -62,7 +62,7 @@ import java.util.concurrent.ExecutionException;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_storage_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class FileStorageServiceRequestIT extends AbstractStorageIT {
 
     private static final String SESSION_OWNER_1 = "SOURCE 1";

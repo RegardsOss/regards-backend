@@ -88,10 +88,10 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
      */
     @Scheduled(initialDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.initial.delay:"
                                     + DEFAULT_INITIAL_DELAY
-                                    + "}", fixedDelayString =
-        "${regards.session.management.snapshot.process.scheduler.bulk.delay:"
-        + DEFAULT_SCHEDULING_DELAY
-        + "}")
+                                    + "}",
+               fixedDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.delay:"
+                                  + DEFAULT_SCHEDULING_DELAY
+                                  + "}")
     public void scheduleManagerSnapshot() {
         scheduleJob();
     }

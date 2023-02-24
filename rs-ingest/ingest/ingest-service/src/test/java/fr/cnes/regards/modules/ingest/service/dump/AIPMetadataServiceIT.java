@@ -56,8 +56,9 @@ import java.util.zip.ZipFile;
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_metadata_service_it",
-    "regards.amqp.enabled=true", "regards.aip.dump.zip-limit = 3" },
-    locations = { "classpath:application-test.properties" })
+                                   "regards.amqp.enabled=true",
+                                   "regards.aip.dump.zip-limit = 3" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
 

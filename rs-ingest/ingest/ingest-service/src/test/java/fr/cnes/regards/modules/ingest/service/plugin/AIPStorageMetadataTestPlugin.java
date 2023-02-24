@@ -30,9 +30,14 @@ import java.util.List;
 /**
  * @author Léo Mieulet
  */
-@Plugin(id = "AIPStorageMetadataTestPlugin", version = "1.0.0-SNAPSHOT", description = "Test plugin",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "AIPStorageMetadataTestPlugin",
+        version = "1.0.0-SNAPSHOT",
+        description = "Test plugin",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class AIPStorageMetadataTestPlugin implements IAIPStorageMetadataUpdate {
 
     @Autowired

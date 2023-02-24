@@ -42,7 +42,7 @@ public class LinkPluginsDatasetsEvent implements ISubscribable {
     }
 
     /**
-     * @param pLinkPluginsDatasets
+     *
      */
     public LinkPluginsDatasetsEvent(LinkPluginsDatasets pLinkPluginsDatasets) {
         super();

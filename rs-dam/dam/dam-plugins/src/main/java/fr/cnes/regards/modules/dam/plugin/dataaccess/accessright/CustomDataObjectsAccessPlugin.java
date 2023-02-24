@@ -33,10 +33,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author Sébastien Binda
  */
-@Plugin(id = "CustomDataObjectsAccessPlugin", version = "4.0.0-SNAPSHOT",
-    description = "Allow access to dataObjects matching the given opensearch lucene formated query.",
-    markdown = "CustomDataObjectsAccessPlugin.md", author = "REGARDS Team", contact = "regards@c-s.fr",
-    license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "CustomDataObjectsAccessPlugin",
+        version = "4.0.0-SNAPSHOT",
+        description = "Allow access to dataObjects matching the given opensearch lucene formated query.",
+        markdown = "CustomDataObjectsAccessPlugin.md",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class CustomDataObjectsAccessPlugin implements IDataObjectAccessFilterPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomDataObjectsAccessPlugin.class);

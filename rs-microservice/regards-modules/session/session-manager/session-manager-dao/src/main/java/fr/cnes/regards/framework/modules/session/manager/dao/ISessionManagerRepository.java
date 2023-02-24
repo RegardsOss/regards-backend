@@ -58,7 +58,6 @@ public interface ISessionManagerRepository extends JpaRepository<Session, Long>,
      *
      * @param name the session name, can be empty
      * @return a subset of all session names matching
-     * @author lmieulet
      */
     default Set<String> findAllSessionsNames(String name) {
         if ((name != null) && !name.isEmpty()) {

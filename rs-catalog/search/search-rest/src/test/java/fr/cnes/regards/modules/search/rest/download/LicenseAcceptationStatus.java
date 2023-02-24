@@ -19,8 +19,5 @@
 package fr.cnes.regards.modules.search.rest.download;
 
 public enum LicenseAcceptationStatus {
-    ACCEPTED,
-    FAILURE,
-    HTTP_ERROR,
-    NOT_CALLED
+    ACCEPTED, FAILURE, HTTP_ERROR, NOT_CALLED
 }

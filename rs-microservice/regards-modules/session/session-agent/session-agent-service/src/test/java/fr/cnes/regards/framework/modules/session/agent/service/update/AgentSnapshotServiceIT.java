@@ -45,7 +45,7 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_snapshot_service_it",
-    "regards.session.agent.step.requests.page.size=2" })
+                                   "regards.session.agent.step.requests.page.size=2" })
 @ActiveProfiles({ "noscheduler" })
 public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
 

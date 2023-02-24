@@ -76,7 +76,6 @@ public interface IModelAttrAssocRepository extends JpaRepository<ModelAttrAssoc,
     /**
      * Find all the model attribute association which model is one of the given, represented by their ids
      *
-     * @param pModelsIds
      * @return the model attribute assocations
      */
     @EntityGraph(attributePaths = { "attribute.properties" }, type = EntityGraph.EntityGraphType.LOAD)
@@ -85,7 +84,6 @@ public interface IModelAttrAssocRepository extends JpaRepository<ModelAttrAssoc,
     /**
      * Find all model attribute associations by attribute id
      *
-     * @param attrId
      * @return the model attribute associations
      */
     @EntityGraph(attributePaths = { "attribute.properties" }, type = EntityGraph.EntityGraphType.LOAD)

@@ -607,9 +607,6 @@ public class ProductService implements IProductService {
 
     /**
      * Notify each session started by scheduled products
-     *
-     * @param chain
-     * @param products
      */
     public void handleSipGenerationStart(AcquisitionProcessingChain chain, Collection<Product> products) {
         Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());

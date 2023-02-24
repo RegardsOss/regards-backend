@@ -53,7 +53,7 @@ import java.util.Objects;
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD,
-    hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
+                hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public class OrderDataFileServiceIT extends AbstractOrderServiceIT {
 
     private static final String URL = "http://frontend.com";

@@ -68,8 +68,9 @@ public class IngestMetadata {
     @Valid
     @NotNull(message = IngestValidationMessages.MISSING_STORAGE_METADATA)
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-        value = "fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata") })
+    @Type(type = "jsonb",
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+                                    value = "fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata") })
     private List<StorageMetadata> storages;
 
     @NotNull(message = IngestValidationMessages.MISSING_VERSIONING_MODE)

@@ -57,7 +57,7 @@ import java.util.*;
  */
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_storage_service" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
 
     private static String sessionOwner = "NAASA";

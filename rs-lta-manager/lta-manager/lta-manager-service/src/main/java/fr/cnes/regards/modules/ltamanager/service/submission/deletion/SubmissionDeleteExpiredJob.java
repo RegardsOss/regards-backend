@@ -43,7 +43,9 @@ public class SubmissionDeleteExpiredJob extends AbstractJob<Void> {
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
-        this.expiredDate = getValue(parameters, EXPIRED_DATE, new TypeToken<OffsetDateTime>() {}.getType());
+        this.expiredDate = getValue(parameters, EXPIRED_DATE, new TypeToken<OffsetDateTime>() {
+
+        }.getType());
     }
 
     @Override

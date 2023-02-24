@@ -67,18 +67,12 @@ public interface IStorageLocation {
     /**
      * Delete files included in the given working subset. Subset has been prepared by {@link #prepareForDeletion(Collection)}.
      * {@link IDeletionProgressManager} is used to inform process of files deletion success or error.
-     *
-     * @param workingSet
-     * @param progressManager
      */
     void delete(FileDeletionWorkingSubset workingSet, IDeletionProgressManager progressManager);
 
     /**
      * Store files included in the given working subset. Subset has been prepared by {@link #prepareForStorage(Collection)}.
      * {@link IStorageProgressManager} is used to inform process of files storage success or error.
-     *
-     * @param workingSet
-     * @param progressManager
      */
     void store(FileStorageWorkingSubset workingSet, IStorageProgressManager progressManager);
 
@@ -88,10 +82,6 @@ public interface IStorageLocation {
 
     /**
      * Allow service to validate that a file referenced on this storage location is valid.
-     *
-     * @param urlToValidate
-     * @param errors
-     * @return
      */
     boolean isValidUrl(String urlToValidate, Set<String> errors);
 

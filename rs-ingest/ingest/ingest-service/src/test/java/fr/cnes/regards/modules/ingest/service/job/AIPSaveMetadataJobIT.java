@@ -57,7 +57,8 @@ import java.util.concurrent.ExecutionException;
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_savemetadata_job_it",
-    "regards.amqp.enabled=true" }, locations = { "classpath:application-test.properties" })
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class AIPSaveMetadataJobIT extends IngestMultitenantServiceIT {
 

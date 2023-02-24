@@ -35,10 +35,8 @@ public interface IUIPluginConfigurationService {
     /**
      * Retrieve all plugin configurations
      *
-     * @param pluginType
      * @param isActive              Return only the active plugins ?. Pass null value to not filter.
      * @param isLinkedToAllEntities Return only the plugins linked to all entities?. Pass null value to not filter.
-     * @param pageable
      * @return Page of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
@@ -53,7 +51,6 @@ public interface IUIPluginConfigurationService {
      * @param plugin                {@link UIPluginDefinition}'s to search configurations.
      * @param isActive              Return only the active plugins ?. Pass null value to not filter.
      * @param isLinkedToAllEntities Return only the plugins linked to all entities?. Pass null value to not filter.
-     * @param pageable
      * @return Page of {@link UIPluginConfiguration}
      * @throws EntityException throw exception if pPlugin is not defined or not exists.
      * @since 1.0-SNAPSHOT
@@ -88,8 +85,7 @@ public interface IUIPluginConfigurationService {
      *
      * @param pluginConfiguration {@link UIPluginConfiguration} to update
      * @return {@link UIPluginConfiguration}
-     * @throws EntityException
-     * @throws throws          EntityException if pPluginConfiguration already exists
+     * @throws throws EntityException if pPluginConfiguration already exists
      * @since 1.0-SNAPSHOT
      */
     UIPluginConfiguration createPluginconfiguration(UIPluginConfiguration pluginConfiguration) throws EntityException;

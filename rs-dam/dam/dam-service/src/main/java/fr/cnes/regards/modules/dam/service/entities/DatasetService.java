@@ -146,8 +146,7 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
      * Control the DataSource associated to the {@link Dataset} in parameter if needed.</br>
      * If any DataSource is associated, sets the default DataSource.
      *
-     * @throws ModuleException                          if error occurs!
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException if error occurs!
      */
     private Dataset checkDataSource(Dataset dataset) throws ModuleException, NotAvailablePluginConfigurationException {
         if (dataset.getDataSource() != null) {

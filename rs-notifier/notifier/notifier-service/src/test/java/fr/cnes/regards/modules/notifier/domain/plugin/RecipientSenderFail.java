@@ -28,9 +28,14 @@ import java.util.Collection;
 /**
  * @author kevin
  */
-@Plugin(author = "REGARDS Team", description = "Fail recipient sender", id = RecipientSenderFail.PLUGIN_ID,
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Fail recipient sender",
+        id = RecipientSenderFail.PLUGIN_ID,
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class RecipientSenderFail extends AbstractRecipientSender<NotificationEvent10> {
 
     public static final String PLUGIN_ID = "fail";

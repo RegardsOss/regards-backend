@@ -87,8 +87,9 @@ public class Session {
     @Valid
     @NotNull
     @Column(name = "steps", columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-        value = "fr.cnes.regards.framework.modules.session.commons.domain.SessionStep") })
+    @Type(type = "jsonb",
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+                                    value = "fr.cnes.regards.framework.modules.session.commons.domain.SessionStep") })
     private Set<SessionStep> steps = new HashSet<>();
 
     @Embedded

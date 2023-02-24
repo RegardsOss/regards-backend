@@ -41,9 +41,14 @@ import org.springframework.web.client.HttpServerErrorException;
  *
  * @author Sébastien Binda
  */
-@Plugin(author = "CSSI", description = "Regards internal authentication plugin",
-    id = "RegardsInternalAuthenticationPlugin", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3",
-    owner = "CNES", url = "www.cnes.fr")
+@Plugin(author = "CSSI",
+        description = "Regards internal authentication plugin",
+        id = "RegardsInternalAuthenticationPlugin",
+        version = "1.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "www.cnes.fr")
 public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**

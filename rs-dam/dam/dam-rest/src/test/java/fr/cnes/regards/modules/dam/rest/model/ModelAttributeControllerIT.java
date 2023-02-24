@@ -71,7 +71,7 @@ import java.util.stream.Collectors;
  * @author Maxime Bouveron
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=models_rest" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=models_rest" })
 public class ModelAttributeControllerIT extends AbstractRegardsIT {
 
     /**

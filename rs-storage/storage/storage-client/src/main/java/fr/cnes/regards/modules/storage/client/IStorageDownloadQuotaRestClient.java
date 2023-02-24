@@ -43,40 +43,47 @@ public interface IStorageDownloadQuotaRestClient {
 
     String USER_EMAIL_PARAM = "user_email";
 
-    @GetMapping(path = PATH_USER_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PATH_USER_QUOTA,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(@PathVariable(USER_EMAIL_PARAM) String userEmail);
 
-    @PutMapping(path = PATH_USER_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = PATH_USER_QUOTA,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(@PathVariable(USER_EMAIL_PARAM) String userEmail,
                                                              @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits);
 
-    @GetMapping(path = PATH_QUOTA_LIST, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PATH_QUOTA_LIST,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(
         @RequestParam(value = USER_EMAIL_PARAM) String[] userEmails);
 
-    @GetMapping(path = PATH_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PATH_QUOTA,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits();
 
-    @GetMapping(path = PATH_CURRENT_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PATH_CURRENT_QUOTA,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<UserCurrentQuotas> getCurrentQuotas();
 
-    @GetMapping(path = PATH_USER_CURRENT_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PATH_USER_CURRENT_QUOTA,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail);
 
-    @PostMapping(path = PATH_CURRENT_QUOTA_LIST, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = PATH_CURRENT_QUOTA_LIST,
+                 produces = MediaType.APPLICATION_JSON_VALUE,
+                 consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails);
 }

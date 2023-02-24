@@ -45,8 +45,9 @@ public class RecipientError {
 
     @ManyToOne
     @NotNull(message = "Ntofication is required")
-    @JoinColumn(name = "notification_action_id", nullable = false,
-        foreignKey = @ForeignKey(name = "fk_notification_action_id"))
+    @JoinColumn(name = "notification_action_id",
+                nullable = false,
+                foreignKey = @ForeignKey(name = "fk_notification_action_id"))
     private NotificationRequest notification;
 
     @ManyToOne

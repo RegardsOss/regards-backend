@@ -177,8 +177,6 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
 
     /**
      * @param message as a Supplier so that the String is not built if not needed
-     * @param email
-     * @param tenant
      */
     @VisibleForTesting
     protected void report(Supplier<String> message, String email, String tenant) {

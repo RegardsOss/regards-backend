@@ -90,8 +90,8 @@ import java.util.List;
  * @author Marc Sordi
  */
 @SuppressWarnings("javadoc")
-@ContextConfiguration(
-    classes = { AbstractMultitenantServiceIT.ScanningConfiguration.class, AmqpTestConfiguration.class })
+@ContextConfiguration(classes = { AbstractMultitenantServiceIT.ScanningConfiguration.class,
+                                  AmqpTestConfiguration.class })
 public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());

@@ -84,8 +84,9 @@ public class UIPluginDefinition {
     @NotNull
     @Column(name = "application_mode", nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "t_ui_plugin_application_mode", joinColumns = @JoinColumn(name = "ui_plugin_id"),
-        foreignKey = @ForeignKey(name = "fk_ui_plugin_application_mode_ui_plugin_id"))
+    @CollectionTable(name = "t_ui_plugin_application_mode",
+                     joinColumns = @JoinColumn(name = "ui_plugin_id"),
+                     foreignKey = @ForeignKey(name = "fk_ui_plugin_application_mode_ui_plugin_id"))
     @Enumerated(EnumType.STRING)
     private Set<ServiceScope> applicationModes = new HashSet<>();
 
@@ -97,8 +98,9 @@ public class UIPluginDefinition {
     @NotNull
     @Column(name = "entity_type", nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "t_ui_plugin_entity_type", joinColumns = @JoinColumn(name = "ui_plugin_id"),
-        foreignKey = @ForeignKey(name = "fk_ui_plugin_entity_type_ui_plugin_id"))
+    @CollectionTable(name = "t_ui_plugin_entity_type",
+                     joinColumns = @JoinColumn(name = "ui_plugin_id"),
+                     foreignKey = @ForeignKey(name = "fk_ui_plugin_entity_type_ui_plugin_id"))
     @Enumerated(EnumType.STRING)
     private Set<EntityType> entityTypes = new HashSet<>();
 

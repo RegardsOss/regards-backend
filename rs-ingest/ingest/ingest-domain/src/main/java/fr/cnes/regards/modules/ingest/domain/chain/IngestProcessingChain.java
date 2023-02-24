@@ -37,12 +37,14 @@ import java.util.Optional;
  */
 @Entity
 @Table(name = "t_ingest_processing_chain",
-    uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_chain_name", columnNames = "name") })
+       uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_chain_name", columnNames = "name") })
 @NamedEntityGraph(name = "graph.ingest.processing.chain.complete",
-    attributeNodes = { @NamedAttributeNode(value = "preProcessingPlugin"),
-        @NamedAttributeNode(value = "validationPlugin"), @NamedAttributeNode(value = "generationPlugin"),
-        @NamedAttributeNode(value = "aipStorageMetadataPlugin"), @NamedAttributeNode(value = "tagPlugin"),
-        @NamedAttributeNode(value = "postProcessingPlugin") })
+                  attributeNodes = { @NamedAttributeNode(value = "preProcessingPlugin"),
+                                     @NamedAttributeNode(value = "validationPlugin"),
+                                     @NamedAttributeNode(value = "generationPlugin"),
+                                     @NamedAttributeNode(value = "aipStorageMetadataPlugin"),
+                                     @NamedAttributeNode(value = "tagPlugin"),
+                                     @NamedAttributeNode(value = "postProcessingPlugin") })
 public class IngestProcessingChain {
 
     public static final String DEFAULT_INGEST_CHAIN_LABEL = "DefaultProcessingChain";
@@ -59,7 +61,7 @@ public class IngestProcessingChain {
     @NotBlank(message = "Ingest processing chain name is required")
     @Size(min = 3, max = 50, message = "Processing chain name must be between 3 and 50 characters long")
     @Pattern(regexp = "[0-9a-zA-Z_]*",
-        message = "Processing chain name must only contain alphanumerical characters or underscore.")
+             message = "Processing chain name must only contain alphanumerical characters or underscore.")
     @Column(length = 50, nullable = false, updatable = false)
     private String name;
 
@@ -85,7 +87,7 @@ public class IngestProcessingChain {
 
     @ManyToOne
     @JoinColumn(name = "aip_storage_metadata_conf_id",
-        foreignKey = @ForeignKey(name = "fk_aip_storage_metadata_conf_id"))
+                foreignKey = @ForeignKey(name = "fk_aip_storage_metadata_conf_id"))
     private PluginConfiguration aipStorageMetadataPlugin;
 
     @ManyToOne

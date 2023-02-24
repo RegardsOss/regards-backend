@@ -60,8 +60,6 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     /**
      * Retrieve a page of {@link AIPEntity} matching the provided specification
      *
-     * @param aipEntitySpecification
-     * @param pageable
      * @return a page of {@link AIPEntity}
      */
     Page<AIPEntity> findAll(Specification<AIPEntity> aipEntitySpecification, Pageable pageable);
@@ -72,8 +70,6 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * Retrieve a list of aips thanks to their aipId
-     *
-     * @param aipIds
      */
     Set<AIPEntity> findByAipIdIn(Collection<String> aipIds);
 

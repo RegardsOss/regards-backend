@@ -36,9 +36,14 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author Marc Sordi
  */
-@Plugin(id = "DefaultSIPGeneration", version = "1.0.0-SNAPSHOT", description = "Generate SIP using product information",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "DefaultSIPGeneration",
+        version = "1.0.0-SNAPSHOT",
+        description = "Generate SIP using product information",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class DefaultSIPGeneration implements ISipGenerationPlugin {
 
     @Override

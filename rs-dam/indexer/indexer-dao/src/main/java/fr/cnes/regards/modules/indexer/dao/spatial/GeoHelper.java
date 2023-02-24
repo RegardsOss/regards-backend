@@ -730,8 +730,10 @@ public final class GeoHelper {
             double medianLatitude = rightBorderLat;
             rightCutPoint[1] = leftCutPoint[1] = medianLatitude;
             // Add rightCutPoint, (rightCutPoint longitude, 90°), (leftCutPoint longitude, 90°), leftCutPoint
-            double[][] arrayAroundPole = new double[][] { rightCutPoint, { rightCutPoint[0], 90.0 },
-                { leftCutPoint[0], 90.0 }, leftCutPoint };
+            double[][] arrayAroundPole = new double[][] { rightCutPoint,
+                                                          { rightCutPoint[0], 90.0 },
+                                                          { leftCutPoint[0], 90.0 },
+                                                          leftCutPoint };
             exteriorRing = ObjectArrays.concat(ObjectArrays.concat(Arrays.copyOfRange(exteriorRing, 0, idxMaxLon),
                                                                    arrayAroundPole,
                                                                    double[].class),
@@ -763,8 +765,10 @@ public final class GeoHelper {
             }
 
             // Add rightCutPoint, (rightCutPoint longitude, 90°), (leftCutPoint longitude, 90°), leftCutPoint
-            double[][] arrayAroundPole = new double[][] { rightCutPoint, { rightCutPoint[0], 90.0 },
-                { leftCutPoint[0], 90.0 }, leftCutPoint };
+            double[][] arrayAroundPole = new double[][] { rightCutPoint,
+                                                          { rightCutPoint[0], 90.0 },
+                                                          { leftCutPoint[0], 90.0 },
+                                                          leftCutPoint };
             exteriorRing = ObjectArrays.concat(ObjectArrays.concat(Arrays.copyOfRange(exteriorRing, 0, idxMaxLon + 1),
                                                                    arrayAroundPole,
                                                                    double[].class),

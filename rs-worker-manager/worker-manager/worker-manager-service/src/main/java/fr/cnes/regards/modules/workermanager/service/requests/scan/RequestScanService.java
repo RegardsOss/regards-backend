@@ -114,8 +114,6 @@ public class RequestScanService {
     /**
      * Check if requests with state {@link RequestStatus#NO_WORKER_AVAILABLE} and corresponding worker alive exists
      * If there is, run a {@link RequestScanTask} to handle them
-     *
-     * @throws Throwable
      */
     public void scanNoWorkerAvailableRequests() throws Throwable {
         List<WorkerConfig> workerConfigs = workerConfigRepo.findAll();
@@ -145,10 +143,6 @@ public class RequestScanService {
     /**
      * Open a transaction that updates one page of requests matching provided filters
      * and updates their state to the provided one, then submit them on a job
-     *
-     * @param filters
-     * @param newStatus
-     * @return
      */
     public void updateRequestsToStatusAndScheduleJob(SearchRequestParameters filters, RequestStatus newStatus)
         throws ModuleException {

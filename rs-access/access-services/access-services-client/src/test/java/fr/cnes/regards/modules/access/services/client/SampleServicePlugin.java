@@ -37,9 +37,14 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", id = "aSampleServicePlugin", version = "0.0.1",
-    author = "REGARDS Dream Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(description = "Sample plugin test",
+        id = "aSampleServicePlugin",
+        version = "0.0.1",
+        author = "REGARDS Dream Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class SampleServicePlugin implements ISampleServicePlugin {
 
@@ -76,8 +81,11 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "Response type", name = RESPONSE_TYPE_PARAMETER, defaultValue = RESPONSE_TYPE_JSON,
-        optional = false, label = "Response type")
+    @PluginParameter(description = "Response type",
+                     name = RESPONSE_TYPE_PARAMETER,
+                     defaultValue = RESPONSE_TYPE_JSON,
+                     optional = false,
+                     label = "Response type")
     private String responseType;
 
     /**

@@ -169,7 +169,6 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
      * @param repo           {@link JpaRepository} where we wait data
      * @param expectedNumber number of data waited
      * @param timeout        in seconds to throw exception
-     * @throws InterruptedException
      */
     public void waitDatabaseCreation(JpaRepository<?, ?> repo, int expectedNumber, int timeout)
         throws InterruptedException {
@@ -191,9 +190,6 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
     /**
      * Init 1 rule and RECIPIENTS_PER_RULE {@link Recipient}, one of the {@link Recipient} will fail
      * if the param fail is set to true
-     *
-     * @param fail
-     * @throws ModuleException
      */
     protected void initPlugins(boolean fail) throws ModuleException {
         // configuration of the rule plugin

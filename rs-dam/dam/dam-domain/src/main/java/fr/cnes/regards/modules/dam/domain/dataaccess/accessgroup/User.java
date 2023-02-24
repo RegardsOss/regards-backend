@@ -41,8 +41,6 @@ public class User {
 
     /**
      * Contructor setting the parameter as attribute
-     *
-     * @param pEmail
      */
     public User(String pEmail) {
         email = pEmail;
@@ -57,8 +55,6 @@ public class User {
 
     /**
      * Set the email
-     *
-     * @param pEmail
      */
     public void setEmail(String pEmail) {
         email = pEmail;

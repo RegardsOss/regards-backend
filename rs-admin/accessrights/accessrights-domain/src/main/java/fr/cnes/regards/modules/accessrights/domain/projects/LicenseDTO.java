@@ -42,9 +42,6 @@ public class LicenseDTO {
 
     /**
      * Constructor setting the parameters as attributes
-     *
-     * @param pAccepted
-     * @param pLicenceLink
      */
     public LicenseDTO(boolean pAccepted, String pLicenceLink) {
         super();
@@ -61,8 +58,6 @@ public class LicenseDTO {
 
     /**
      * Set whether the license is accepted or not
-     *
-     * @param pAccepted
      */
     public void setAccepted(boolean pAccepted) {
         accepted = pAccepted;
@@ -77,8 +72,6 @@ public class LicenseDTO {
 
     /**
      * Set the link to the license
-     *
-     * @param pLicenceLink
      */
     public void setLicenceLink(String pLicenceLink) {
         licenseLink = pLicenceLink == null ? "" : pLicenceLink;

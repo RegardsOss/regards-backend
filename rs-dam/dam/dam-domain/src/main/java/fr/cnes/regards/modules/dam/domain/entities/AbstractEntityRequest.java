@@ -24,8 +24,9 @@ import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "t_entity_request", indexes = { @Index(name = "idx_group_id", columnList = "group_id") },
-    uniqueConstraints = { @UniqueConstraint(name = "uk_group_id", columnNames = { "group_id" }) })
+@Table(name = "t_entity_request",
+       indexes = { @Index(name = "idx_group_id", columnList = "group_id") },
+       uniqueConstraints = { @UniqueConstraint(name = "uk_group_id", columnNames = { "group_id" }) })
 public class AbstractEntityRequest {
 
     /**

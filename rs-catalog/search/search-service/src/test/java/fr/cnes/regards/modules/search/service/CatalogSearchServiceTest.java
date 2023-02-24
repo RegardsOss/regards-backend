@@ -148,8 +148,6 @@ public class CatalogSearchServiceTest {
 
     /**
      * Test the main search method
-     *
-     * @throws OpenSearchUnknownParameter
      */
     @SuppressWarnings({ "unchecked", "deprecation" })
     @Test
@@ -192,8 +190,6 @@ public class CatalogSearchServiceTest {
 
     /**
      * Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.
-     *
-     * @throws OpenSearchUnknownParameter
      */
     @SuppressWarnings({ "unchecked", "deprecation" })
     @Test

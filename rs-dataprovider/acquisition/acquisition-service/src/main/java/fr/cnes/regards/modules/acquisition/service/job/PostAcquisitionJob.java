@@ -98,10 +98,6 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
 
     /**
      * Execute plugin post process action
-     *
-     * @param acqProcessingChain
-     * @param product
-     * @throws ModuleException
      */
     private void doPostProcess(AcquisitionProcessingChain acqProcessingChain, Product product) throws ModuleException {
         try {

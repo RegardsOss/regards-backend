@@ -27,8 +27,7 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.ISingleEntityServ
  *
  * @author Christophe Mertz
  */
-@PluginInterface(
-    description = "Sample Catalog Service Plugin. Used to test any possible service return values (json, xml, image, octet-stream")
+@PluginInterface(description = "Sample Catalog Service Plugin. Used to test any possible service return values (json, xml, image, octet-stream")
 public interface ISampleServicePlugin extends IEntitiesServicePlugin, ISingleEntityServicePlugin {
 
 }

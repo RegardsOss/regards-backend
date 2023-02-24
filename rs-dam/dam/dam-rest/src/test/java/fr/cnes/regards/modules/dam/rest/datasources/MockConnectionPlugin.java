@@ -32,8 +32,14 @@ import java.util.Map;
  *
  * @author Marc Sordi
  */
-@Plugin(id = "MockConnectionPlugin", author = "CSSI", contact = "CSSI", description = "MockConnectionPlugin",
-    version = "alpha", url = "none", owner = "CSSI", license = "GPLv3")
+@Plugin(id = "MockConnectionPlugin",
+        author = "CSSI",
+        contact = "CSSI",
+        description = "MockConnectionPlugin",
+        version = "alpha",
+        url = "none",
+        owner = "CSSI",
+        license = "GPLv3")
 public class MockConnectionPlugin implements IDBConnectionPlugin {
 
     @Override

@@ -49,16 +49,16 @@ public class CacheEvictScheduler {
     private WorkerCacheService workerCacheService;
 
     @Scheduled(initialDelayString = "${regards.workers.cache.evict.scheduling.initial.delay:"
-            + DEFAULT_INITIAL_DELAY
-            + "}",
-            fixedDelayString = "${regards.workers.cache.evict.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+                                    + DEFAULT_INITIAL_DELAY
+                                    + "}",
+               fixedDelayString = "${regards.workers.cache.evict.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void evict() {
         OffsetDateTime now = OffsetDateTime.now();
         if (workerCacheService.getCache() != null) {
             workerCacheService.getCache().asMap().forEach((workerType, entry) -> {
                 if (entry.getLastUpdateDate()
-                        .plusSeconds(workerCacheService.getExpireInCacheDuration())
-                        .isBefore(now)) {
+                         .plusSeconds(workerCacheService.getExpireInCacheDuration())
+                         .isBefore(now)) {
                     workerCacheService.getCache().invalidate(workerType);
                 }
             });

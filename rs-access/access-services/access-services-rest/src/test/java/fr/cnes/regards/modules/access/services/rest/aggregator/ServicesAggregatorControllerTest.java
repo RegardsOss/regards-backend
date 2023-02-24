@@ -63,7 +63,7 @@ public class ServicesAggregatorControllerTest {
     private IUIPluginConfigurationService uiPluginConfigurationService;
 
     /**
-     * @throws java.lang.Exception
+     *
      */
     @Before
     public void setUp() throws Exception {

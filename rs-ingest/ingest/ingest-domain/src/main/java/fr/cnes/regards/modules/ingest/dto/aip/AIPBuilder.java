@@ -53,8 +53,6 @@ public class AIPBuilder extends IPBuilder<AIP> {
 
     /**
      * Constructor used to initialize the builder from an AIP
-     *
-     * @param toBeUpdated
      */
     public AIPBuilder(AIP toBeUpdated) {
         super(toBeUpdated);

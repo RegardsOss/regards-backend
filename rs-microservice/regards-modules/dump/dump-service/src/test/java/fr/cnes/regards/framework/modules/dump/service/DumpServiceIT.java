@@ -49,10 +49,11 @@ import java.util.stream.Collectors;
 /**
  * @author Iliana Ghazali
  */
-@TestPropertySource(
-    properties = { "spring.application.name=rs-test", "spring.jpa.properties.hibernate.default_schema=dumpit",
-        "regards.json.dump.max.per.sub.zip=4", "regards.cipher.key-location=src/test/resources/testKey",
-        "regards.cipher.iv=1234567812345678" })
+@TestPropertySource(properties = { "spring.application.name=rs-test",
+                                   "spring.jpa.properties.hibernate.default_schema=dumpit",
+                                   "regards.json.dump.max.per.sub.zip=4",
+                                   "regards.cipher.key-location=src/test/resources/testKey",
+                                   "regards.cipher.iv=1234567812345678" })
 public class DumpServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired

@@ -101,13 +101,6 @@ public class RequestsGroupService {
 
     /**
      * Handle new request success for the given groupId.<br>
-     *
-     * @param groupId
-     * @param type
-     * @param checksum
-     * @param storage
-     * @param storePath
-     * @param fileRef
      */
     public void requestSuccess(String groupId,
                                FileRequestType type,
@@ -134,10 +127,6 @@ public class RequestsGroupService {
 
     /**
      * Send a bus message to inform that the given groupId is denied.
-     *
-     * @param groupId
-     * @param type
-     * @param denyCause
      */
     public void denied(String groupId, FileRequestType type, String denyCause) {
         LOGGER.error("[{} GROUP DENIED {}] - Group request denied. Cause : {}",
@@ -151,10 +140,7 @@ public class RequestsGroupService {
     /**
      * Save new granted request group and send a bus message to inform that the given groupId is granted.
      *
-     * @param groupId
-     * @param type
-     * @param nbRequestInGroup
-     * @param silent           True to avoid sending bus message about group granted. Used internally in storage microservice.
+     * @param silent True to avoid sending bus message about group granted. Used internally in storage microservice.
      */
     public void granted(String groupId,
                         FileRequestType type,
@@ -181,10 +167,6 @@ public class RequestsGroupService {
 
     /**
      * Save new granted request group and send a bus message to inform that the given groupId is granted.
-     *
-     * @param groupId
-     * @param type
-     * @param nbRequestInGroup
      */
     public void granted(String groupId, FileRequestType type, int nbRequestInGroup, OffsetDateTime expirationDate) {
         granted(groupId, type, nbRequestInGroup, false, expirationDate);
@@ -399,16 +381,6 @@ public class RequestsGroupService {
 
     /**
      * Handle result of a requests terminated.
-     *
-     * @param groupId
-     * @param type
-     * @param checksum
-     * @param storage
-     * @param storePath
-     * @param owners
-     * @param fileRef
-     * @param error
-     * @param errorCause
      */
     private void requestDone(String groupId,
                              FileRequestType type,

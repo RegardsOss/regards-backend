@@ -65,7 +65,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cdgroups" },
-    locations = "classpath:es.properties")
+                    locations = "classpath:es.properties")
 @MultitenantTransactional
 public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
 

@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.search.domain;
 /**
  * POJO to handle boundaries of an attribute.
  *
- * @param <T>
  * @author Sébastien Binda
  */
 public class PropertyBound<T> {

@@ -6,7 +6,5 @@ package fr.cnes.regards.modules.accessrights.domain.projects.events;
  * @author Sylvain VISSIERE-GUERINET
  */
 public enum ProjectUserAction {
-    CREATE,
-    DELETE,
-    UPDATE
+    CREATE, DELETE, UPDATE
 }

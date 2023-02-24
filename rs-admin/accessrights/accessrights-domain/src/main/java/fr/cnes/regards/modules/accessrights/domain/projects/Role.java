@@ -47,15 +47,19 @@ import java.util.Set;
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_role", indexes = { @Index(name = "idx_role_name", columnList = "name") },
-    uniqueConstraints = @UniqueConstraint(name = "uk_role_name", columnNames = { "name" }))
+@Table(name = "t_role",
+       indexes = { @Index(name = "idx_role_name", columnList = "name") },
+       uniqueConstraints = @UniqueConstraint(name = "uk_role_name", columnNames = { "name" }))
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "seq_role")
 @HasValidParent
-@NamedEntityGraphs(value = {
-    @NamedEntityGraph(name = "graph.role.permissions", attributeNodes = @NamedAttributeNode(value = "permissions")),
-    @NamedEntityGraph(name = "graph.role.parent", attributeNodes = { @NamedAttributeNode(value = "permissions"),
-        @NamedAttributeNode(value = "parentRole", subgraph = "parentGraph") }, subgraphs = {
-        @NamedSubgraph(name = "parentGraph", attributeNodes = { @NamedAttributeNode(value = "permissions") }) }) })
+@NamedEntityGraphs(value = { @NamedEntityGraph(name = "graph.role.permissions",
+                                               attributeNodes = @NamedAttributeNode(value = "permissions")),
+                             @NamedEntityGraph(name = "graph.role.parent",
+                                               attributeNodes = { @NamedAttributeNode(value = "permissions"),
+                                                                  @NamedAttributeNode(value = "parentRole",
+                                                                                      subgraph = "parentGraph") },
+                                               subgraphs = { @NamedSubgraph(name = "parentGraph",
+                                                                            attributeNodes = { @NamedAttributeNode(value = "permissions") }) }) })
 public class Role implements IIdentifiable<Long> {
 
     /**
@@ -88,10 +92,13 @@ public class Role implements IIdentifiable<Long> {
     @Valid
     @ManyToMany
     @OrderBy("resource")
-    @JoinTable(name = "ta_resource_role", joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "ID",
-        foreignKey = @ForeignKey(name = "fk_resource_role_role_id")),
-        inverseJoinColumns = @JoinColumn(name = "resource_id", referencedColumnName = "ID",
-            foreignKey = @ForeignKey(name = "fk_resource_role_resource_id")))
+    @JoinTable(name = "ta_resource_role",
+               joinColumns = @JoinColumn(name = "role_id",
+                                         referencedColumnName = "ID",
+                                         foreignKey = @ForeignKey(name = "fk_resource_role_role_id")),
+               inverseJoinColumns = @JoinColumn(name = "resource_id",
+                                                referencedColumnName = "ID",
+                                                foreignKey = @ForeignKey(name = "fk_resource_role_resource_id")))
     @GsonIgnore
     private Set<ResourcesAccess> permissions;
 
@@ -126,8 +133,6 @@ public class Role implements IIdentifiable<Long> {
 
     /**
      * Contructor setting the parameter as attribute
-     *
-     * @param name
      */
     public Role(String name) {
         this();

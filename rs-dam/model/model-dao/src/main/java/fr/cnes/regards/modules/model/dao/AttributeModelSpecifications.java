@@ -39,8 +39,6 @@ public final class AttributeModelSpecifications {
     /**
      * Filter on the given attributes
      *
-     * @param type
-     * @param fragmentName
      * @return {@link Specification}
      */
     public static Specification<AttributeModel> search(PropertyType type, String fragmentName, Set<String> modelNames) {

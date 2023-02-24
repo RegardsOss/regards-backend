@@ -73,8 +73,6 @@ public class RoleEventListener {
 
     /**
      * {@link Order} : Needs to be initialize before other bean to creates default roles for new tenant.
-     *
-     * @param event
      */
     @EventListener
     @Order(0)

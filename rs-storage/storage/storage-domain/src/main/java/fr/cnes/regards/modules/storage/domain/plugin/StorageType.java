@@ -25,8 +25,5 @@ package fr.cnes.regards.modules.storage.domain.plugin;
  */
 public enum StorageType {
 
-    NEARLINE,
-    ONLINE,
-    OFFLINE,
-    CACHE;
+    NEARLINE, ONLINE, OFFLINE, CACHE;
 }

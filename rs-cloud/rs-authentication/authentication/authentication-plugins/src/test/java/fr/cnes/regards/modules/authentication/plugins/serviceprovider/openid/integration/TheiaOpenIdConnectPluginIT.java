@@ -47,8 +47,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=theia_authentication_service_provider_tests", })
+@TestPropertySource(properties = {
+    "spring.jpa.properties.hibernate.default_schema=theia_authentication_service_provider_tests", })
 public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(TheiaOpenIdConnectPluginIT.class);

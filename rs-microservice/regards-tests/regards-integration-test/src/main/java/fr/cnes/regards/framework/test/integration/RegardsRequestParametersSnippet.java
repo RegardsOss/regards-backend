@@ -32,9 +32,7 @@ import java.util.Map;
 public class RegardsRequestParametersSnippet extends RequestParametersSnippet {
 
     /**
-     * @param descriptors
-     * @param attributes
-     * @param ignoreUndocumentedParameters
+     *
      */
     protected RegardsRequestParametersSnippet(List<ParameterDescriptor> descriptors,
                                               Map<String, Object> attributes,

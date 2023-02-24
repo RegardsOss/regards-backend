@@ -84,10 +84,10 @@ public class IngestProcessingChainController implements IResourceController<Inge
 
     @GetMapping
     @Operation(summary = "Get ingest processing chains", description = "Return a page of ingest processing chains")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "All ingest processing chains were retrieved.") })
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "All ingest processing chains were retrieved.") })
     @ResourceAccess(description = "Endpoint to retrieve all ingest processing chains, matching provided name when provided.",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<IngestProcessingChain>>> search(
         @RequestParam(name = "name", required = false) String name,
         @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
@@ -123,7 +123,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
     }
 
     @ResourceAccess(description = "Create a new ingestion processing chain importing JSON file",
-        role = DefaultRole.ADMIN)
+                    role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
     public ResponseEntity<EntityModel<IngestProcessingChain>> createByFile(@RequestParam("file") MultipartFile file)
         throws ModuleException {

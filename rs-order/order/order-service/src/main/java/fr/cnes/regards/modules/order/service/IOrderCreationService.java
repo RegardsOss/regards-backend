@@ -50,19 +50,12 @@ public interface IOrderCreationService {
     void completeOrderCreation(Basket basket, Long orderId, String role, int subOrderDuration, String tenant);
 
     /**
-     * @param dsTask
-     * @param bucketFiles
-     * @param order
+     *
      */
     void createExternalSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order);
 
     /**
-     * @param dsTask
-     * @param bucketFiles
-     * @param order
-     * @param role
-     * @param priority
-     * @return
+     *
      */
     UUID createStorageSubOrder(DatasetTask dsTask,
                                Set<OrderDataFile> bucketFiles,

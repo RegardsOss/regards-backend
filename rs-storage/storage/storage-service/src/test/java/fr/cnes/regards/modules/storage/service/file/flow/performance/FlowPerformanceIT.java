@@ -64,9 +64,9 @@ import java.util.*;
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(
-    properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_perf_tests" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.show-sql=false",
+                                   "spring.jpa.properties.hibernate.default_schema=storage_perf_tests" },
+                    locations = { "classpath:application-test.properties" })
 @Ignore("Performances tests")
 public class FlowPerformanceIT extends AbstractStorageIT {
 

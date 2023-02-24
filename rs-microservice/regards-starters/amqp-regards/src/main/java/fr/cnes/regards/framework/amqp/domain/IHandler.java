@@ -35,7 +35,6 @@ public interface IHandler<M> {
     Logger LOGGER = LoggerFactory.getLogger(IHandler.class);
 
     /**
-     * @param wrapper
      * @deprecated User {@link #handleAndLog(String, Object)} instead.
      */
     @Deprecated

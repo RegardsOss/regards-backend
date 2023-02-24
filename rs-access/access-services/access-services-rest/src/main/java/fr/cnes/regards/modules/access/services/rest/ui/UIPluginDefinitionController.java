@@ -75,12 +75,11 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     /**
      * Entry point to retrieve a plugins {@link UIPluginDefinition}.
      *
-     * @param pluginId
      * @return {@link UIPluginDefinition}
-     * @throws EntityNotFoundException
      */
-    @RequestMapping(value = REQUEST_MAPPING_PLUGIN_DEFINITION, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = REQUEST_MAPPING_PLUGIN_DEFINITION,
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.PUBLIC)
     public HttpEntity<EntityModel<UIPluginDefinition>> retrievePlugin(@PathVariable("pluginId") final Long pluginId)
@@ -92,11 +91,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     /**
      * Entry point to retrieve all UI plugins definitions
      *
-     * @param pageable
-     * @param type
-     * @param assembler
      * @return {@link UIPluginDefinition}
-     * @throws EntityInvalidException
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get UI Plugin definitions", description = "Return a page of UI Plugin definitions")
@@ -120,9 +115,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     /**
      * Entry point to save a new plugin
      *
-     * @param inPlugin
      * @return {@link UIPluginDefinition}
-     * @throws EntityInvalidException
      */
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -137,15 +130,11 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     /**
      * Entry point to save a new ihm plugin.
      *
-     * @param pluginId
-     * @param inPlugin
      * @return {@link UIPluginDefinition}
-     * @throws EntityException
-     * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
-    @RequestMapping(value = REQUEST_MAPPING_PLUGIN_DEFINITION, method = RequestMethod.PUT,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = REQUEST_MAPPING_PLUGIN_DEFINITION,
+                    method = RequestMethod.PUT,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update an IHM plugin", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<UIPluginDefinition>> updatePlugin(@PathVariable("pluginId") final Long pluginId,
@@ -164,14 +153,11 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     /**
      * Entry point to delete an ihm plugin.
      *
-     * @param pluginId
      * @return {@link UIPluginDefinition}
-     * @throws ModuleException
-     * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
-    @RequestMapping(value = REQUEST_MAPPING_PLUGIN_DEFINITION, method = RequestMethod.DELETE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = REQUEST_MAPPING_PLUGIN_DEFINITION,
+                    method = RequestMethod.DELETE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a plugin", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Void>> deletePlugin(@PathVariable("pluginId") final Long pluginId)

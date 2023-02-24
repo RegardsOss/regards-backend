@@ -44,7 +44,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
  * @author Marc Sordi
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=plugin_it",
-    "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
+                                   "regards.cipher.key-location=src/test/resources/testKey",
+                                   "regards.cipher.iv=1234567812345678" })
 public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String REF_INNER_PLUGIN = "@ref@";

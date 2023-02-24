@@ -29,8 +29,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", id = "aFakePlugin", version = "12345-6789-11", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(description = "Sample plugin test",
+        id = "aFakePlugin",
+        version = "12345-6789-11",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class FakePlugin implements ISamplePlugin {
 
     public static final String FIELD_NAME_SUFFIX = "suffix";

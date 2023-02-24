@@ -72,7 +72,7 @@ import java.util.StringJoiner;
  */
 @DirtiesContext
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=dam_datasets_test" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=dam_datasets_test" })
 @ContextConfiguration(classes = { DamRestConfiguration.class })
 public class DatasetControllerIT extends AbstractRegardsIT {
 

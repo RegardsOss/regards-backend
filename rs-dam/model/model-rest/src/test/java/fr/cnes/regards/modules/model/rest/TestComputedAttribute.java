@@ -27,9 +27,14 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@Plugin(description = "plugin there just for tests in model-rest", author = "REGARDS Team", contact = "regards@c-s.fr",
-    license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", id = "TestComputedAttribute",
-    version = "1.0.0")
+@Plugin(description = "plugin there just for tests in model-rest",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss",
+        id = "TestComputedAttribute",
+        version = "1.0.0")
 @ComputationPlugin(supportedType = PropertyType.STRING)
 public class TestComputedAttribute implements IComputedAttribute<Long, String> {
 

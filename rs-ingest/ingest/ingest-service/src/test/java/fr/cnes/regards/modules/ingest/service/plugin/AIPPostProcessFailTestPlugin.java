@@ -33,9 +33,14 @@ import java.util.Collection;
  * @author Iliana Ghazali
  */
 
-@Plugin(id = "PostProcessFailTestPlugin", version = "1.0.0-SNAPSHOT", description = "Test plugin",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "PostProcessFailTestPlugin",
+        version = "1.0.0-SNAPSHOT",
+        description = "Test plugin",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class AIPPostProcessFailTestPlugin implements ISipPostprocessing {
 
     @Override

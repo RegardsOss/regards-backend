@@ -69,7 +69,6 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
     /**
      * Find all model attribute associations by attribute
      *
-     * @param attr
      * @return the model attribute associations
      */
     Collection<ModelAttrAssoc> retrieveModelAttrAssocsByAttributeId(AttributeModel attr);
@@ -81,7 +80,6 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
     /**
      * Retrieve the computed attributes association to a model, represented by its id
      *
-     * @param pId
      * @return computed attributes association to the model
      */
     Set<ModelAttrAssoc> getComputedAttributes(Long pId);
@@ -89,7 +87,6 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
     /**
      * Find the model attribute associations for a given entity type(or all if none is given)
      *
-     * @param pType
      * @return model attribute associations for a given entity type(or all if none is given)
      */
     Collection<ModelAttrAssoc> getModelAttrAssocsFor(EntityType pType);
@@ -103,9 +100,7 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
      * Find page attribute which are associated to at least one of the models
      *
      * @param modelNames List of {@link Model}s names
-     * @param pageable
      * @return a page of attribute which are associated to at least one of the models
-     * @throws ModuleException
      */
     Page<AttributeModel> getAttributeModels(Set<String> modelNames, Pageable pageable);
 }

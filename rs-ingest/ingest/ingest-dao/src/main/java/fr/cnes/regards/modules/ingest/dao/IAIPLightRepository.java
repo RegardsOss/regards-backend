@@ -37,8 +37,6 @@ public interface IAIPLightRepository extends JpaRepository<AIPEntityLight, Long>
     /**
      * Retrieve a page of {@link AIPEntity} matching the provided specification
      *
-     * @param aipEntitySpecification
-     * @param pageable
      * @return a page of {@link AIPEntity}
      */
     Page<AIPEntityLight> findAll(Specification<AIPEntityLight> aipEntitySpecification, Pageable pageable);

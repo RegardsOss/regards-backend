@@ -86,7 +86,7 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the system",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccesses(
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<ResourcesAccess> assembler) throws ModuleException {

@@ -38,9 +38,14 @@ import java.nio.file.Path;
  *
  * @author Sébastien Binda
  */
-@Plugin(id = "ReadSIPFromFile", version = "1.0.0-SNAPSHOT",
-    description = "Read the SIP to generate from the file content.", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "ReadSIPFromFile",
+        version = "1.0.0-SNAPSHOT",
+        description = "Read the SIP to generate from the file content.",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class GeoJsonSIPGeneration implements ISipGenerationPlugin {
 
     @Autowired

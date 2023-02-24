@@ -701,8 +701,9 @@ public class PluginService implements IPluginService, InitializingBean {
      * @param dynamicParameters plugin parameters (including potential dynamic ones)
      * @return plugin instance
      */
-    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class,
-        PluginUtilsRuntimeException.class })
+    @Transactional(noRollbackFor = { EntityNotFoundException.class,
+                                     EntityNotEmptyException.class,
+                                     PluginUtilsRuntimeException.class })
     private <T> T instantiatePlugin(PluginConfiguration pluginConf,
                                     ConcurrentMap<String, Object> tenantPluginCache,
                                     IPluginParam... dynamicParameters)

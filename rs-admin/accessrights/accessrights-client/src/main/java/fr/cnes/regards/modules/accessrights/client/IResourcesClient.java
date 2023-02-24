@@ -48,8 +48,9 @@ public interface IResourcesClient {
      * @param pPagedResourcesAssembler page assembler
      * @return list of user resource accesses
      */
-    @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_TYPE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccesses(@RequestParam("page") int pPage,
                                                                                     @RequestParam("size") int pSize);
 
@@ -59,8 +60,9 @@ public interface IResourcesClient {
      * @param pResourceId resource id
      * @return {@link ResourcesAccess}
      */
-    @GetMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ResourcesAccess>> getResourceAccess(@PathVariable("resource_id") final Long pResourceId);
 
     /**
@@ -70,8 +72,9 @@ public interface IResourcesClient {
      * @param pResourceAccessToUpdate Resource access to update
      * @return updated ResourcesAccess
      */
-    @PutMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ResourcesAccess>> updateResourceAccess(
         @PathVariable("resource_id") final Long pResourceId,
         @Valid @RequestBody final ResourcesAccess pResourceAccessToUpdate);

@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_manager_settings" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class WorkerManagerSettingsIT extends AbstractMultitenantServiceIT {
 
     @Autowired

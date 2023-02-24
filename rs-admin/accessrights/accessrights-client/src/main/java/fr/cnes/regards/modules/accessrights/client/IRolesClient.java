@@ -69,8 +69,9 @@ public interface IRolesClient { // NOSONAR
      *
      * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
      */
-    @GetMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<Role>>> getAllRoles();
 
     /**
@@ -78,18 +79,19 @@ public interface IRolesClient { // NOSONAR
      *
      * @return list of borrowable roles for current authenticated user
      */
-    @GetMapping(path = ROOT_TYPE_MAPPING + BORROWABLE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING + BORROWABLE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<Role>>> getBorrowableRoles();
 
     /**
      * Define the endpoint for retrieving the list of roles that can access the specified resource.
      *
-     * @param pResourceId
      * @return list of borrowable roles for current authenticated user
      */
-    @GetMapping(path = ROOT_TYPE_MAPPING + ROLE_WITH_RESOURCE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING + ROLE_WITH_RESOURCE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<Role>>> getRolesAccesingResource(
         @PathVariable("resourceId") final Long pResourceId);
 
@@ -99,8 +101,9 @@ public interface IRolesClient { // NOSONAR
      * @param pNewRole The new {@link Role} values
      * @return The created {@link Role}
      */
-    @PostMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ROOT_TYPE_MAPPING,
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Role>> createRole(@RequestBody final Role pNewRole);
 
     /**
@@ -109,8 +112,9 @@ public interface IRolesClient { // NOSONAR
      * @param pRoleName The {@link Role}'s <code>name</code>
      * @return The {@link Role} wrapped in an {@link ResponseEntity}
      */
-    @GetMapping(path = ROOT_TYPE_MAPPING + ROLE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING + ROLE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName);
 
     /**
@@ -118,8 +122,9 @@ public interface IRolesClient { // NOSONAR
      *
      * @return the ascendants wrapped into a {@link ResponseEntity}
      */
-    @GetMapping(path = ROOT_TYPE_MAPPING + ROLE_DESCENDANTS, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING + ROLE_DESCENDANTS,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName);
 
     /**
@@ -129,8 +134,9 @@ public interface IRolesClient { // NOSONAR
      * @param pUpdatedRole The new {@link Role}
      * @return Updated {@link Role}
      */
-    @PutMapping(path = ROOT_TYPE_MAPPING + ROLE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_TYPE_MAPPING + ROLE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Role>> updateRole(@PathVariable("role_name") final String pRoleName,
                                                  @Valid @RequestBody final Role pUpdatedRole);
 
@@ -140,8 +146,9 @@ public interface IRolesClient { // NOSONAR
      * @param pRoleName The {@link Role}'s <code>name</code>
      * @return {@link Void} wrapped in an {@link ResponseEntity}
      */
-    @DeleteMapping(path = ROOT_TYPE_MAPPING + ROLE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_TYPE_MAPPING + ROLE_MAPPING,
+                   consumes = MediaType.APPLICATION_JSON_VALUE,
+                   produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> removeRole(@PathVariable("role_name") final String pRoleName);
 
     /**
@@ -151,8 +158,9 @@ public interface IRolesClient { // NOSONAR
      * @return true when the current role should have access to something requiring at least the provided role
      * @throws EntityNotFoundException if some role does not exists
      */
-    @GetMapping(path = ROOT_TYPE_MAPPING + SHOULD_ACCESS_TO_RESOURCE, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING + SHOULD_ACCESS_TO_RESOURCE,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Boolean> shouldAccessToResourceRequiring(@PathVariable("role_name") String roleName)
         throws EntityNotFoundException;
 }

@@ -66,7 +66,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Marc Sordi
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_cdpp_product",
-    "regards.session.agent.snapshot.process.scheduler.bulk.delay=15000", "regards.amqp.enabled=true" })
+                                   "regards.session.agent.snapshot.process.scheduler.bulk.delay=15000",
+                                   "regards.amqp.enabled=true" })
 @ActiveProfiles({ "testAmqp", "noscheduler", "disableDataProviderTask", "nomonitoring" })
 public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServiceIT {
 

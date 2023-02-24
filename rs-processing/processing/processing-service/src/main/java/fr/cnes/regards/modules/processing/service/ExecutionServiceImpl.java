@@ -89,7 +89,7 @@ public class ExecutionServiceImpl implements IExecutionService {
 
     @Scheduled(cron = "${regards.processing.executions.timedout.cleanup.cron:0 0 */6 * * *}"
         // every six hours by default
-    )
+        )
     @Override
     public void scheduledTimeoutNotify() {
         execRepo.getTimedOutExecutions().subscribe(this::notifyTimeout, t -> LOGGER.error(t.getMessage(), t));

@@ -40,7 +40,7 @@ import java.util.Set;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class IngestStorageListenerIT extends AbstractIngestRequestIT {
 
     @Autowired

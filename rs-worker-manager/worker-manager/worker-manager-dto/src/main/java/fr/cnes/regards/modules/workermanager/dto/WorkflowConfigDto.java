@@ -37,6 +37,7 @@ public class WorkflowConfigDto {
     @NotBlank(message = "workflowType is mandatory")
     @Size(max = 255, message = "workflowType is limited to 255 characters")
     private final String workflowType;
+
     /**
      * Ordered list of worker configurations to execute {@see WorkerConfig#workerType}
      */

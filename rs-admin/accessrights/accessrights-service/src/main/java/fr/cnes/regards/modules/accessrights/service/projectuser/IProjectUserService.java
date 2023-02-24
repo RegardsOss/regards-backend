@@ -91,7 +91,6 @@ public interface IProjectUserService {
      *
      * @param dto request
      * @return {@link ProjectUser}
-     * @throws EntityException
      */
     ProjectUser createProjectUser(AccessRequestDto dto) throws EntityException;
 
@@ -100,11 +99,6 @@ public interface IProjectUserService {
      * Create a new account if necessary.
      *
      * @param accessRequestDto user information
-     * @param isExternal
-     * @param userStatus
-     * @param accountStatus
-     * @return
-     * @throws EntityException
      */
     ProjectUser create(AccessRequestDto accessRequestDto,
                        boolean isExternal,
@@ -214,7 +208,6 @@ public interface IProjectUserService {
     void resetLicence();
 
     /**
-     * @param role
      * @return users which role is the given one
      */
     Collection<ProjectUser> retrieveUserByRole(Role role);

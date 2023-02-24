@@ -58,10 +58,6 @@ public interface IPublisherContract {
      * <li>The exchange is created</li>
      * <li>Event is published with UNICAST(routingKey=EventType) or BROADCAST</li>
      * </ul>
-     *
-     * @param event
-     * @param exchangeName
-     * @param queueName
      */
     void publish(ISubscribable event, String exchangeName, Optional<String> queueName);
 
@@ -83,10 +79,6 @@ public interface IPublisherContract {
      * <li>Event is published with routingKey=EventType</li>
      * <li>NOTE : The binding between exchange/queue with routing key need to be done by the subscriber</li>
      * </ul>
-     *
-     * @param events
-     * @param exchangeName
-     * @param queueName
      */
     void publish(List<? extends ISubscribable> events, String exchangeName, Optional<String> queueName);
 

@@ -33,15 +33,16 @@ import java.util.List;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
 @Table(name = "t_link_uiservice_dataset",
-    uniqueConstraints = @UniqueConstraint(name = "uk_link_uiservice_dataset_dataset_id", columnNames = "dataset_id"))
+       uniqueConstraints = @UniqueConstraint(name = "uk_link_uiservice_dataset_dataset_id", columnNames = "dataset_id"))
 public class LinkUIPluginsDatasets {
 
     /**
      * Id of the dataset which is concerned by this mapping
      */
     @Id
-    @SequenceGenerator(name = "ihmLinkUiPluginDatasetSequence", initialValue = 1,
-        sequenceName = "seq_ihm_uiplugin_dataset")
+    @SequenceGenerator(name = "ihmLinkUiPluginDatasetSequence",
+                       initialValue = 1,
+                       sequenceName = "seq_ihm_uiplugin_dataset")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmLinkUiPluginDatasetSequence")
     private Long linkId;
 
@@ -54,10 +55,11 @@ public class LinkUIPluginsDatasets {
      * FetchType.EAGER : It is the only usefull information of this POJO. There is no need of getting LinkUIPluginsDatasets without services.
      */
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "ta_link_dataset_uiservices", joinColumns = @JoinColumn(name = "dataset_id",
-        foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_dataset_id_service_configuration_id")),
-        inverseJoinColumns = @JoinColumn(name = "service_configuration_id",
-            foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_service_configuration_id_dataset_id")))
+    @JoinTable(name = "ta_link_dataset_uiservices",
+               joinColumns = @JoinColumn(name = "dataset_id",
+                                         foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_dataset_id_service_configuration_id")),
+               inverseJoinColumns = @JoinColumn(name = "service_configuration_id",
+                                                foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_service_configuration_id_dataset_id")))
     private List<UIPluginConfiguration> services;
 
     /**

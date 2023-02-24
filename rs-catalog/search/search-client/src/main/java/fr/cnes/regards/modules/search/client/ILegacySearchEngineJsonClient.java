@@ -50,24 +50,24 @@ public interface ILegacySearchEngineJsonClient {
     ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) MultiValueMap<String, String> allParams);
 
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> searchDataObjects(
         @RequestParam(required = false) MultiValueMap<String, String> allParams);
 
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> searchCollections(@RequestParam MultiValueMap<String, String> allParams);
 
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam MultiValueMap<String, String> allParams);
 
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATASETS_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> searchDatasets(@RequestParam MultiValueMap<String, String> allParams);
 
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.GET_DATAOBJECT_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> getDataobject(@Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn,
                                              @RequestHeader HttpHeaders headers);
 

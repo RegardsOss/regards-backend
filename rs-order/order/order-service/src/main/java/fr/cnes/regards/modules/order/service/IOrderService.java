@@ -52,7 +52,6 @@ public interface IOrderService {
     /**
      * Get {@link Order} by id
      *
-     * @param orderId
      * @return {@link Order}
      */
     Order getOrder(Long orderId);
@@ -80,7 +79,6 @@ public interface IOrderService {
      * Find all orders sorted by descending date.
      * Orders are simple loaded
      *
-     * @param pageRequest
      * @return {@link Order}s
      */
     Page<Order> findAll(Pageable pageRequest);
@@ -90,7 +88,6 @@ public interface IOrderService {
      * Orders are simple loaded
      *
      * @param user            user
-     * @param pageRequest
      * @param excludeStatuses statuses to exclude from the search
      * @return {@link Order}s
      */
@@ -98,18 +95,11 @@ public interface IOrderService {
 
     /**
      * Find all orders thanks to filters
-     *
-     * @param filters
-     * @param pageRequest
-     * @return
      */
     Page<Order> searchOrders(SearchRequestParameters filters, Pageable pageRequest);
 
     /**
      * Check if the given order is really paused
-     *
-     * @param orderId
-     * @return
      */
     boolean isPaused(Long orderId);
 
@@ -136,18 +126,12 @@ public interface IOrderService {
 
     /**
      * Pause an order (status is immediately updated but it's an async task)
-     *
-     * @param id
-     * @throws ModuleException
      */
     void pause(Long id) throws ModuleException;
 
     /**
      * Resume a paused order.
      * All associated jobs must be compatible with a PAUSED status (not running nor planned to be run)
-     *
-     * @param id
-     * @throws ModuleException
      */
     void resume(Long id) throws ModuleException;
 
@@ -155,47 +139,28 @@ public interface IOrderService {
      * Delete an order. Order must be PAUSED and effectiveley paused (ie all associated jobs must be compatible with a
      * PAUSED status (not running nor planned to be run))
      * Only associated data files are removed from database (stats are still available)
-     *
-     * @param id
-     * @throws ModuleException
      */
     void delete(Long id) throws ModuleException;
 
     /**
      * Restart an order, using the same basket to create a new one with the exact same parameters
      *
-     * @param oldOrderId
-     * @param label
-     * @param successUrl
      * @return {@link Order}
-     * @throws ModuleException
      */
     Order restart(long oldOrderId, String label, String successUrl) throws ModuleException;
 
     /**
      * Retry failed files in an order.
-     *
-     * @param orderId
-     * @throws ModuleException
      */
     void retryErrors(long orderId) throws ModuleException;
 
     /**
      * Remove completely an order. Current order must not be RUNNING,
-     *
-     * @param id
-     * @throws CannotRemoveOrderException
      */
     void remove(Long id) throws ModuleException;
 
     /**
      * Write all orders in CSV format
-     *
-     * @param writer
-     * @param status
-     * @param from
-     * @param to
-     * @throws IOException
      */
     void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
         throws IOException;

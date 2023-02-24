@@ -84,8 +84,6 @@ public class ProjectController implements IResourceController<Project> {
     /**
      * Retrieve projects list
      *
-     * @param pageable
-     * @param assembler
      * @return List of projects
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
@@ -100,8 +98,6 @@ public class ProjectController implements IResourceController<Project> {
     /**
      * Retrieve projects list
      *
-     * @param pageable
-     * @param assembler
      * @return List of projects
      */
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
@@ -143,9 +139,8 @@ public class ProjectController implements IResourceController<Project> {
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}/license/reset")
-    @ResourceAccess(
-        description = "Allow instance admin to invalidate the license of a project for all the users of the project",
-        role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Allow instance admin to invalidate the license of a project for all the users of the project",
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> resetLicense(@PathVariable("project_name") String projectName) {
         try {
             runtimeTenantResolver.forceTenant(projectName);

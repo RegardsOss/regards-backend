@@ -112,7 +112,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @RequestMapping(value = REQUEST_PLUGIN_DEFINITION, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin for a given PluginDefinition",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public HttpEntity<PagedModel<EntityModel<UIPluginConfiguration>>> retrievePluginConfigurationsByPlugin(
         @PathVariable("pluginId") final Long pPluginId,
         @RequestParam(value = "isActive", required = false) final Boolean isActive,
@@ -133,7 +133,6 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      *
      * @param pluginConfigurationId {@link UIPluginConfiguration} identifier
      * @return {@lunk PluginConfiguration}
-     * @throws EntityInvalidException
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.GET)
     @ResponseBody
@@ -148,9 +147,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      * Endpoint to update a {@link UIPluginConfiguration} by his identifier.
      *
      * @param pluginConfigurationId {@link UIPluginConfiguration} identifier
-     * @param pluginConfiguration
      * @return {@link UIPluginConfiguration} to update
-     * @throws EntityException
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.PUT)
     @ResponseBody
@@ -168,9 +165,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     /**
      * Endpoint to create a new {@link UIPluginConfiguration}.
      *
-     * @param pluginConfiguration
      * @return {@link UIPluginConfiguration}
-     * @throws EntityException
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.POST)
     @ResponseBody
@@ -186,7 +181,6 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      *
      * @param pluginConfigurationId {@link UIPluginConfiguration} identifier to delete
      * @return {@lunk PluginConfiguration}
-     * @throws EntityException
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.DELETE)
     @ResponseBody
@@ -224,7 +218,6 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     /**
      * Convert services to resources
      *
-     * @param element
      * @return {@link UIPluginConfiguration}
      */
     public EntityModel<UIPluginConfiguration> servicesToResource(final UIPluginConfiguration element) {

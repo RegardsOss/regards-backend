@@ -51,8 +51,9 @@ import java.util.Optional;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_lock_jobs_it",
-    "regards.session.manager.clean.session.limit.store=30",
-    "regards.session.management.snapshot.process" + ".scheduler.bulk.initial.delay=10000000" })
+                                   "regards.session.manager.clean.session.limit.store=30",
+                                   "regards.session.management.snapshot.process"
+                                   + ".scheduler.bulk.initial.delay=10000000" })
 @ActiveProfiles({ "testAMQP" })
 public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsIT {
 

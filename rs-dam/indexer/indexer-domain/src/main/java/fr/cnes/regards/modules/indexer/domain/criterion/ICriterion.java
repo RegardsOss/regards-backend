@@ -531,7 +531,6 @@ public interface ICriterion {
      * @param bbox String bbox as "left,bottom,right,top" (or "minX, minY, maxX, maxY" or "minLon, minLat, maxLon,
      *             maxLat"), blanks are accepted
      * @return {@link ICriterion}
-     * @throws InvalidGeometryException
      */
     static ICriterion intersectsBbox(String bbox) throws InvalidGeometryException {
         return new BoundaryBoxCriterion(bbox);

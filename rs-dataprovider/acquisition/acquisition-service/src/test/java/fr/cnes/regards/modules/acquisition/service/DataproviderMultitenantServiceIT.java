@@ -44,7 +44,7 @@ import org.springframework.test.annotation.DirtiesContext;
  * @author Iliana Ghazali
  **/
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS,
-    hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
+                hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public abstract class DataproviderMultitenantServiceIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataproviderMultitenantServiceIT.class);
@@ -141,8 +141,6 @@ public abstract class DataproviderMultitenantServiceIT extends AbstractMultitena
 
     /**
      * Custom test initialization to override
-     *
-     * @throws Exception
      */
     protected void doInit() throws Exception {
         // Override to init something
@@ -160,8 +158,6 @@ public abstract class DataproviderMultitenantServiceIT extends AbstractMultitena
 
     /**
      * Custom test cleaning to override
-     *
-     * @throws Exception
      */
     protected void doAfter() throws Exception {
         // Override to init something

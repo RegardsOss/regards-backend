@@ -35,10 +35,10 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "t_storage_location_conf",
-    uniqueConstraints = { @UniqueConstraint(name = "uk_storage_loc_name", columnNames = { "name" }),
-        @UniqueConstraint(name = "uk_storage_loc_conf_type_priority",
-            columnNames = { StorageLocationConfiguration.STORAGE_TYPE_COLUMN_NAME,
-                StorageLocationConfiguration.PRIORITY_COLUMN_NAME }) })
+       uniqueConstraints = { @UniqueConstraint(name = "uk_storage_loc_name", columnNames = { "name" }),
+                             @UniqueConstraint(name = "uk_storage_loc_conf_type_priority",
+                                               columnNames = { StorageLocationConfiguration.STORAGE_TYPE_COLUMN_NAME,
+                                                               StorageLocationConfiguration.PRIORITY_COLUMN_NAME }) })
 public class StorageLocationConfiguration implements Comparable<StorageLocationConfiguration> {
 
     public static final String STORAGE_TYPE_COLUMN_NAME = "storage_type";
@@ -48,8 +48,9 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     public static final long HIGHEST_PRIORITY = 0L;
 
     @Id
-    @SequenceGenerator(name = "storageLocationConfSequence", initialValue = 1,
-        sequenceName = "seq_storage_location_conf")
+    @SequenceGenerator(name = "storageLocationConfSequence",
+                       initialValue = 1,
+                       sequenceName = "seq_storage_location_conf")
     @GeneratedValue(generator = "storageLocationConfSequence", strategy = GenerationType.SEQUENCE)
     @ConfigIgnore
     private Long id;
@@ -59,8 +60,9 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     private String name;
 
     @OneToOne(optional = true)
-    @JoinColumn(nullable = true, name = "plugin_conf_id",
-        foreignKey = @ForeignKey(name = "fk_prioritized_storage_plugin_conf"))
+    @JoinColumn(nullable = true,
+                name = "plugin_conf_id",
+                foreignKey = @ForeignKey(name = "fk_prioritized_storage_plugin_conf"))
     private PluginConfiguration pluginConfiguration;
 
     @Enumerated(EnumType.STRING)

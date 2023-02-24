@@ -28,9 +28,14 @@ import org.springframework.validation.Errors;
  *
  * @author Christophe Mertz
  */
-@Plugin(author = "REGARDS Team", description = "Fake plugin for SIP validation", id = "FakeValidationTestPlugin",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Fake plugin for SIP validation",
+        id = "FakeValidationTestPlugin",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class FakeValidationTestPlugin implements ISipValidation {
 
     @Override

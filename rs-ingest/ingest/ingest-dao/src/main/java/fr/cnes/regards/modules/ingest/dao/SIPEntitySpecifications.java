@@ -52,12 +52,8 @@ public final class SIPEntitySpecifications {
      *
      * @param providerIds        list of providerId to keep or ignore (depends on areIdListInclusive)
      * @param sipIds             list of sipId to keep or ignore (depends on areIdListInclusive)
-     * @param sessionOwner
-     * @param session
-     * @param from
      * @param states             list of states
      * @param areIdListInclusive true when sipIds and providerIds should be include in the request, otherwise these
-     * @param page
      */
     public static Specification<SIPEntity> search(Set<String> providerIds,
                                                   Set<String> sipIds,

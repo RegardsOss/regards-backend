@@ -114,7 +114,7 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.storage.location.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.storage.location.schedule.delay:" + DEFAULT_DELAY + "}")
+               fixedDelayString = "${regards.storage.location.schedule.delay:" + DEFAULT_DELAY + "}")
     public void scheduleMonitorStorageLocations() {
         if (lightCalculationCount > fullCalculationRatio) {
             lightCalculationCount = 0;

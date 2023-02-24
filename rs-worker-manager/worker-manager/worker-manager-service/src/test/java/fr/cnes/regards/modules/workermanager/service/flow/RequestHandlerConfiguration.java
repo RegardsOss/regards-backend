@@ -43,7 +43,6 @@ public class RequestHandlerConfiguration {
                                                                         AVAILABLE_CONTENT_TYPE_2,
                                                                         AVAILABLE_CONTENT_TYPE_3);
 
-
     public final static String AVAILABLE_WORKER_TYPE_1 = "workerType1";
 
     public final static String AVAILABLE_WORKER_TYPE_2 = "workerType2";
@@ -51,7 +50,6 @@ public class RequestHandlerConfiguration {
     private final static List<String> AVAILABLE_WORKER_TYPES = List.of(AbstractWorkerManagerIT.DEFAULT_WORKER,
                                                                        AVAILABLE_WORKER_TYPE_1,
                                                                        AVAILABLE_WORKER_TYPE_2);
-
 
     @Bean
     @Primary

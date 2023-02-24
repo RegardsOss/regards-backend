@@ -54,10 +54,12 @@ import java.util.UUID;
  */
 @ActiveProfiles(value = { "default", "test", "testAmqp", "storageTest" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests", "regards.amqp.enabled=true",
-        "regards.storage.schedule.delay:1000", "regards.storage.location.schedule.delay:600000",
-        "regards.storage.reference.items.bulk.size:10" }, locations = { "classpath:application-local.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
+                                   "regards.amqp.enabled=true",
+                                   "regards.storage.schedule.delay:1000",
+                                   "regards.storage.location.schedule.delay:600000",
+                                   "regards.storage.reference.items.bulk.size:10" },
+                    locations = { "classpath:application-local.properties" })
 @Ignore("Performances tests")
 public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
 

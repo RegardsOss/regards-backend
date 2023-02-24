@@ -59,7 +59,7 @@ import java.util.concurrent.ExecutionException;
  */
 @ActiveProfiles({ "noscheduler", "nojobs" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class FileCopyRequestServiceIT extends AbstractStorageIT {
 
     private static final String SESSION_OWNER = "SOURCE 1";

@@ -16,16 +16,18 @@ public interface IGreetingsClient {
     /**
      * Rest resource /api/greeting/{name} Method GET
      */
-    @GetMapping(value = "/greeting", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/greeting",
+                consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+                produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public HttpEntity<Resource<Greeting>> greeting(String pName);
 
     /**
      * Rest resource /api/me/{name} Method GET
      */
-    @GetMapping(value = "/me", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/me",
+                consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+                produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public HttpEntity<Resource<Greeting>> me(String pName);
 

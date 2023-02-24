@@ -44,9 +44,9 @@ import static org.junit.Assert.assertNotEquals;
  * @author Marc SORDI
  * @author Sébastien Binda
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_duplication", "regards.amqp.enabled=true" },
-    locations = { "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_duplication",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
 

@@ -71,8 +71,6 @@ public class StorageFlowItem implements ISubscribable {
     /**
      * Build a storage request message for one file
      *
-     * @param file
-     * @param groupId
      * @return {@link StorageFlowItem}
      */
     public static StorageFlowItem build(FileStorageRequestDTO file, String groupId) {
@@ -85,8 +83,6 @@ public class StorageFlowItem implements ISubscribable {
     /**
      * Build a storage request message fr many files
      *
-     * @param files
-     * @param groupId
      * @return {@link StorageFlowItem}
      */
     public static StorageFlowItem build(Collection<FileStorageRequestDTO> files, String groupId) {

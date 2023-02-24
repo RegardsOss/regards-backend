@@ -37,9 +37,7 @@ public interface IAIPStorageService {
     /**
      * Store or reference AIPs Files with taking into account of retry action by user
      *
-     * @param request
      * @return file storage event group_id list
-     * @throws ModuleException
      */
     List<String> storeAIPFiles(IngestRequest request) throws ModuleException;
 
@@ -72,7 +70,6 @@ public interface IAIPStorageService {
     /**
      * Remove a list of storage id from the AIP and retrieve the list of events to send
      *
-     * @param aip
      * @param removedStorages list of storage metadata that will be removed from the AIP
      * @return the list of events to sent to storage, empty if nothing have been done
      */

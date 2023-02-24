@@ -35,12 +35,13 @@ import java.util.Set;
 @Entity
 @Table(name = "t_rule")
 @NamedEntityGraphs({ @NamedEntityGraph(name = "Rule.recipients", attributeNodes = @NamedAttributeNode("recipients")),
-    @NamedEntityGraph(name = "Rule.rulePlugin", attributeNodes = @NamedAttributeNode("rulePlugin")) })
+                     @NamedEntityGraph(name = "Rule.rulePlugin", attributeNodes = @NamedAttributeNode("rulePlugin")) })
 public class Rule {
 
     @OneToMany
-    @JoinTable(name = "ta_rule_recipients", joinColumns = @JoinColumn(name = "rule_id"),
-        inverseJoinColumns = @JoinColumn(name = "recipient_id"))
+    @JoinTable(name = "ta_rule_recipients",
+               joinColumns = @JoinColumn(name = "rule_id"),
+               inverseJoinColumns = @JoinColumn(name = "recipient_id"))
     private final Set<PluginConfiguration> recipients = new HashSet<PluginConfiguration>();
 
     @Id

@@ -107,9 +107,6 @@ public class AIPUpdateRequestService {
     /**
      * Generates  {@link AbstractRequest}s from list of {@link AIPEntity}s with same list of {@link AbstractAIPUpdateTask}s
      *
-     * @param aips
-     * @param updateTasks
-     * @param runningRequests
      * @return {@link AbstractRequest}s created
      */
     private List<AbstractRequest> createRequests(Collection<AIPEntity> aips,
@@ -133,8 +130,6 @@ public class AIPUpdateRequestService {
     /**
      * Search for {@link AIPUpdateRequest}s by request state
      *
-     * @param requestState
-     * @param page
      * @return matching {@link AIPUpdateRequest}s
      */
     @Transactional(readOnly = true)

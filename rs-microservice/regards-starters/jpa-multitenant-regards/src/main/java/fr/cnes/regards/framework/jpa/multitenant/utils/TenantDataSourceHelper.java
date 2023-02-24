@@ -49,7 +49,6 @@ public final class TenantDataSourceHelper {
      *
      * @param pDaoProperties    {@link MultitenantDaoProperties}
      * @param pTenantConnection tenant connection to create
-     * @param schemaIdentifier
      * @return a {@link DataSource}
      * @throws PropertyVetoException if parameter not supported
      * @throws SQLException          if connection fails

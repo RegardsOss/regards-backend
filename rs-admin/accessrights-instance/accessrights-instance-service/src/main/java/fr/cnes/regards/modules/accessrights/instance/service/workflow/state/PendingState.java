@@ -50,14 +50,7 @@ public class PendingState extends AbstractDeletableState {
     private final IAccountService accountService;
 
     /**
-     * @param projectUsersClient
-     * @param accountRepository
-     * @param tenantService
-     * @param runtimeTenantResolver
-     * @param passwordResetService
-     * @param accountUnlockTokenService
-     * @param eventPublisher
-     * @param accountService
+     *
      */
     public PendingState(IProjectUsersClient projectUsersClient,
                         IAccountRepository accountRepository,

@@ -47,9 +47,9 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.*;
 
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=session_notif", "eureka.client.enabled=false" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=session_notif",
+                                   "eureka.client.enabled=false" },
+                    locations = { "classpath:application-test.properties" })
 public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     @Autowired

@@ -65,9 +65,9 @@ import static org.mockito.ArgumentMatchers.any;
  */
 @ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true",
-        "regards.order.max.storage.files.jobs.per.user=2" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_test_it",
+                                   "regards.amqp.enabled=true",
+                                   "regards.order.max.storage.files.jobs.per.user=2" })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class OrderServiceTestIT extends AbstractOrderServiceIT {
 

@@ -35,7 +35,7 @@ import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageRest
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     @Override

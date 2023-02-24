@@ -35,8 +35,6 @@ interface ICrawlerService {
 
     /**
      * Once {@link #startWork()} has been called, wait for the crawler to no more be busy (it must have do something)
-     *
-     * @throws InterruptedException
      */
     void waitForEndOfWork() throws InterruptedException;
 

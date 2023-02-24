@@ -29,8 +29,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", id = "anErrorPluginInterface", version = "0.0.1", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(description = "Sample plugin test",
+        id = "anErrorPluginInterface",
+        version = "0.0.1",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class ErrorInterfacePlugin implements IComplexInterfacePlugin {
 
     public static final String FIELD_NAME = "aLong";

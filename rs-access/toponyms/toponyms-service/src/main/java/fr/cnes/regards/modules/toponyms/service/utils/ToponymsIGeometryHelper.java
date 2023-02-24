@@ -29,7 +29,6 @@ public class ToponymsIGeometryHelper {
     /**
      * Parse a {@link Geometry} to build a {@link IGeometry}
      *
-     * @param geometry
      * @param samplingMax Maximum number of points to retrieve for each polygon of a geometry
      * @return {@link IGeometry}
      */
@@ -74,7 +73,6 @@ public class ToponymsIGeometryHelper {
     /**
      * Parse a {@link org.geolatte.geom.Polygon} to build a {@link PolygonPositions}
      *
-     * @param polygon
      * @param samplingMax Maximum number of points to retrieve for each polygon of a geometry
      * @return {@link PolygonPositions}
      */

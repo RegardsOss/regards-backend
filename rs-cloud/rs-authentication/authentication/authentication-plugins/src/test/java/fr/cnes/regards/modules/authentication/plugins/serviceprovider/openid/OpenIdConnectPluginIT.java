@@ -49,8 +49,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=openid_authentication_service_provider_tests", })
+@TestPropertySource(properties = {
+    "spring.jpa.properties.hibernate.default_schema=openid_authentication_service_provider_tests", })
 public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
     public static final String ENDPOINT_FORMAT = "http://localhost:%s%s";

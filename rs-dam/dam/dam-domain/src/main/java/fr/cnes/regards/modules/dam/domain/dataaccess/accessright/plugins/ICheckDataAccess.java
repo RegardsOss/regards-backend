@@ -29,8 +29,7 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
  *
  * @author Sylvain Vissiere-Guerinet
  */
-@PluginInterface(
-    description = "plugin used to check if a data from a dataset is accessible, or not, for an access group or a user")
+@PluginInterface(description = "plugin used to check if a data from a dataset is accessible, or not, for an access group or a user")
 public interface ICheckDataAccess extends IIdentifiable<Long> {
 
     boolean isAccessible(DataFile pData);

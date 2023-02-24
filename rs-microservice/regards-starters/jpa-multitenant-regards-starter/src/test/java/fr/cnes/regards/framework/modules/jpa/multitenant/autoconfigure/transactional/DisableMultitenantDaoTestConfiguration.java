@@ -13,8 +13,10 @@ import org.springframework.context.annotation.PropertySource;
  * @author CS
  */
 @ComponentScan(basePackages = "fr.cnes.regards.framework.modules.jpa.multitenant",
-    excludeFilters = { @ComponentScan.Filter(value = DaoTestController.class, type = FilterType.ASSIGNABLE_TYPE),
-        @ComponentScan.Filter(value = DaoUserService.class, type = FilterType.ASSIGNABLE_TYPE) })
+               excludeFilters = { @ComponentScan.Filter(value = DaoTestController.class,
+                                                        type = FilterType.ASSIGNABLE_TYPE),
+                                  @ComponentScan.Filter(value = DaoUserService.class,
+                                                        type = FilterType.ASSIGNABLE_TYPE) })
 @PropertySource("classpath:disable-dao.properties")
 public class DisableMultitenantDaoTestConfiguration {
 

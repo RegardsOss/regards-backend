@@ -25,8 +25,14 @@ import fr.cnes.regards.modules.notifier.dto.NotificationEvent4;
 /**
  * @author kevin
  */
-@Plugin(author = "REGARDS Team", description = "Recipient sender 4", id = RecipientSender4.PLUGIN_ID, version = "1.0.0",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Recipient sender 4",
+        id = RecipientSender4.PLUGIN_ID,
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class RecipientSender4 extends AbstractRecipientSender<NotificationEvent4> {
 
     public static final String PLUGIN_ID = "RecipientSender4";

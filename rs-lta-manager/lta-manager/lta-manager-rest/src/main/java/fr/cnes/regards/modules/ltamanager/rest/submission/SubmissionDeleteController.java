@@ -55,21 +55,24 @@ public class SubmissionDeleteController extends AbstractSubmissionController {
     }
 
     @Operation(summary = "Asynchronously delete a selection of submission request.",
-        description = "Find and delete submission requests from criterias defined in request body.")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201", description =
-        "The SubmissionRequest deletion will be take in account. "
-        + "This not means deletion is already done, but will be scheduled in the near future."),
-        @ApiResponse(responseCode = "403", description = "The endpoint is not accessible for the user.",
-            content = { @Content(mediaType = "application/html") }),
-        @ApiResponse(responseCode = "422", description = "The submission request criteria dto syntax is incorrect.",
-            content = { @Content(mediaType = "application/json") }) })
+               description = "Find and delete submission requests from criterias defined in request body.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "201",
+                                         description = "The SubmissionRequest deletion will be take in account. "
+                                                       + "This not means deletion is already done, but will be scheduled in the near future."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         content = { @Content(mediaType = "application/html") }),
+                            @ApiResponse(responseCode = "422",
+                                         description = "The submission request criteria dto syntax is incorrect.",
+                                         content = { @Content(mediaType = "application/json") }) })
     @ResourceAccess(description = "Endpoint to delete submission requests that match the criterias in body.",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     @DeleteMapping
-    public ResponseEntity<String> deleteSubmissionRequests(
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterion.",
-            content = @Content(schema = @Schema(implementation = SearchSubmissionRequestParameters.class))) @RequestBody
-        @Valid SearchSubmissionRequestParameters searchCriterion) throws ModuleException {
+    public ResponseEntity<String> deleteSubmissionRequests(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+        description = "Set of search criterion.",
+        content = @Content(schema = @Schema(implementation = SearchSubmissionRequestParameters.class))) @RequestBody
+                                                           @Valid SearchSubmissionRequestParameters searchCriterion)
+        throws ModuleException {
         try {
             deleteService.scheduleRequestDeletionJob(searchCriterion);
         } catch (IllegalArgumentException e) {

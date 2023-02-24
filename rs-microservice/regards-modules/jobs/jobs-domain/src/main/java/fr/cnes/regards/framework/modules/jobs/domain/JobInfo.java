@@ -82,8 +82,9 @@ public class JobInfo {
      * Job parameters
      */
     @ElementCollection
-    @CollectionTable(name = "t_job_parameters", joinColumns = @JoinColumn(name = "job_id"),
-        foreignKey = @ForeignKey(name = "fk_job_param"))
+    @CollectionTable(name = "t_job_parameters",
+                     joinColumns = @JoinColumn(name = "job_id"),
+                     foreignKey = @ForeignKey(name = "fk_job_param"))
     private Set<JobParameter> parameters = new HashSet<>();
 
     /**

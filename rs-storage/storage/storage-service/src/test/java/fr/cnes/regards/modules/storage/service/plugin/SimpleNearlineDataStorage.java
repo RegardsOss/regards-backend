@@ -50,9 +50,14 @@ import java.util.regex.Pattern;
 /**
  * @author Binda sébastien
  */
-@Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
-    id = "SimpleNearlineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Plugin handling the storage on local file system",
+        id = "SimpleNearlineTest",
+        version = "1.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class SimpleNearlineDataStorage implements INearlineStorageLocation {
 
     /**
@@ -86,30 +91,33 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     /**
      * Base storage location url
      */
-    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url to use",
-        label = "Base storage location url")
+    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                     description = "Base storage location url to use",
+                     label = "Base storage location url")
     private String baseStorageLocationAsString;
 
-    @PluginParameter(name = HANDLE_STORAGE_ERROR_FILE_PATTERN, description = "Error file pattern",
-        label = "Error file pattern")
+    @PluginParameter(name = HANDLE_STORAGE_ERROR_FILE_PATTERN,
+                     description = "Error file pattern",
+                     label = "Error file pattern")
     private String errorFilePattern;
 
-    @PluginParameter(name = HANDLE_STORAGE_PENDING_FILE_PATTERN, description = "Pending file pattern",
-        label = "Error file pattern")
+    @PluginParameter(name = HANDLE_STORAGE_PENDING_FILE_PATTERN,
+                     description = "Pending file pattern",
+                     label = "Error file pattern")
     private String pendingFilePattern;
 
-    @PluginParameter(name = HANDLE_DELETE_ERROR_FILE_PATTERN, description = "Delete Error file pattern",
-        label = "Delete Error file pattern")
+    @PluginParameter(name = HANDLE_DELETE_ERROR_FILE_PATTERN,
+                     description = "Delete Error file pattern",
+                     label = "Delete Error file pattern")
     private String deleteErrorFilePattern;
 
-    @PluginParameter(name = HANDLE_RESTORATION_ERROR_FILE_PATTERN, description = "Restoration Error file pattern",
-        label = "Delete Error file pattern")
+    @PluginParameter(name = HANDLE_RESTORATION_ERROR_FILE_PATTERN,
+                     description = "Restoration Error file pattern",
+                     label = "Delete Error file pattern")
     private String restoErrorFilePattern;
 
     /**
      * Plugin init method
-     *
-     * @throws IOException
      */
     @PluginInit
     public void init() throws IOException {

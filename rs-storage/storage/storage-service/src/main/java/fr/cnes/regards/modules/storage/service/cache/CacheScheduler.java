@@ -70,7 +70,7 @@ public class CacheScheduler {
      * Default : scheduled to be run every hour.
      */
     @Scheduled(initialDelayString = "${regards.cache.cleanup.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.cache.cleanup.delay:" + DEFAULT_DELAY + "}")
+               fixedDelayString = "${regards.cache.cleanup.delay:" + DEFAULT_DELAY + "}")
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);

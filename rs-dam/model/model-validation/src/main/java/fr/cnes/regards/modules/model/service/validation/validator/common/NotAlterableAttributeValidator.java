@@ -50,10 +50,7 @@ public class NotAlterableAttributeValidator extends AbstractPropertyValidator {
     /**
      * Constructor
      *
-     * @param attributeKey
-     * @param attribute    {@link AttributeModel}
-     * @param oldValue
-     * @param newValue
+     * @param attribute {@link AttributeModel}
      */
     public NotAlterableAttributeValidator(String attributeKey,
                                           AttributeModel attribute,

@@ -27,11 +27,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "t_feature", indexes = { @Index(name = "idx_feature_last_update", columnList = "last_update"),
-    @Index(name = "idx_feature_urn", columnList = "urn"),
-    @Index(name = "idx_feature_session", columnList = "session_owner,session_name"),
-    @Index(name = "idx_feature_provider_id", columnList = "provider_id") },
-    uniqueConstraints = { @UniqueConstraint(name = "uk_feature_urn", columnNames = { "urn" }) })
+@Table(name = "t_feature",
+       indexes = { @Index(name = "idx_feature_last_update", columnList = "last_update"),
+                   @Index(name = "idx_feature_urn", columnList = "urn"),
+                   @Index(name = "idx_feature_session", columnList = "session_owner,session_name"),
+                   @Index(name = "idx_feature_provider_id", columnList = "provider_id") },
+       uniqueConstraints = { @UniqueConstraint(name = "uk_feature_urn", columnNames = { "urn" }) })
 public class FeatureEntity extends AbstractFeatureEntity {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

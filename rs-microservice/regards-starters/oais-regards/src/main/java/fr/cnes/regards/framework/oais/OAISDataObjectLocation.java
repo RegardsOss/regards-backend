@@ -48,7 +48,7 @@ public class OAISDataObjectLocation {
      */
     @NotNull(message = URL_REQUIRED)
     @Pattern(regexp = "\\b[a-zA-Z]+://?[-a-zA-Z0-9+&@#/%'?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%'=~_|]",
-        message = "URl should respect URL format from RFC 1738")
+             message = "URl should respect URL format from RFC 1738")
     private String url;
 
     /**

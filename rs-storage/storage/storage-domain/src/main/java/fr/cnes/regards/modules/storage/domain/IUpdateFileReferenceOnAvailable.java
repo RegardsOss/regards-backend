@@ -35,7 +35,6 @@ public interface IUpdateFileReferenceOnAvailable {
      * @param availableFileReference {@link FileReference} file reference restored
      * @param onlineFileLocation     {@link FileLocation} where the file available
      * @return {@link FileReference} updated file reference
-     * @throws ModuleException
      */
     FileReference update(FileReference availableFileReference, FileLocation onlineFileLocation) throws ModuleException;
 

@@ -75,7 +75,7 @@ import java.util.*;
  * @author Léo Mieulet
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "regards.tenant=swh", "spring.jpa.properties.hibernate.default_schema=swh" })
+                    properties = { "regards.tenant=swh", "spring.jpa.properties.hibernate.default_schema=swh" })
 public class SwhOpenSearchControllerIT extends AbstractEngineIT {
 
     public static final OffsetDateTime CREATION_DATE = OffsetDateTime.now();

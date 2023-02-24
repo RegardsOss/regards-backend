@@ -39,16 +39,14 @@ public class MissingResourceException extends RuntimeException {
     }
 
     /**
-     * @param pCause
-     * @param enableSuppression
-     * @param writableStackTrace
+     *
      */
     public MissingResourceException(Throwable pCause, boolean enableSuppression, boolean writableStackTrace) {
         super(MESSAGE, pCause, enableSuppression, writableStackTrace);
     }
 
     /**
-     * @param cause
+     *
      */
     public MissingResourceException(Throwable cause) {
         super(MESSAGE, cause);

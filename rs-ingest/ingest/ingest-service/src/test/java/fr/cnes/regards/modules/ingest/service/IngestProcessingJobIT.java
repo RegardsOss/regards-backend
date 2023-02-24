@@ -81,9 +81,9 @@ import java.util.Set;
  *
  * @author Sébastien Binda
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob", "eureka.client.enabled=false",
-        "regards.ingest.aip.delete.bulk.delay=100" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob",
+                                   "eureka.client.enabled=false",
+                                   "regards.ingest.aip.delete.bulk.delay=100" })
 public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")

@@ -17,14 +17,17 @@ import org.springframework.context.annotation.*;
  */
 @Profile("!indexer-service")
 @Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.modules.crawler.service", "fr.cnes.regards.modules.indexer",
-    "fr.cnes.regards.modules.dam", "fr.cnes.regards.modules.search",
-    "fr.cnes.regards.framework.modules.plugins.service" })
-@EnableAutoConfiguration(
-    exclude = { MethodAuthorizationServiceAutoConfiguration.class, MethodSecurityAutoConfiguration.class,
-        SecurityVoterAutoConfiguration.class, WebSecurityAutoConfiguration.class })
+@ComponentScan(basePackages = { "fr.cnes.regards.modules.crawler.service",
+                                "fr.cnes.regards.modules.indexer",
+                                "fr.cnes.regards.modules.dam",
+                                "fr.cnes.regards.modules.search",
+                                "fr.cnes.regards.framework.modules.plugins.service" })
+@EnableAutoConfiguration(exclude = { MethodAuthorizationServiceAutoConfiguration.class,
+                                     MethodSecurityAutoConfiguration.class,
+                                     SecurityVoterAutoConfiguration.class,
+                                     WebSecurityAutoConfiguration.class })
 @PropertySource(value = { "classpath:multitenant.properties", "classpath:multitenant_${user.name}.properties" },
-    ignoreResourceNotFound = true)
+                ignoreResourceNotFound = true)
 public class MultitenantConfiguration {
 
     @Bean

@@ -35,7 +35,7 @@ public class OnGrantAccessEvent extends ApplicationEvent {
     private final ProjectUser projectUser;
 
     /**
-     * @param pProjectUser
+     *
      */
     public OnGrantAccessEvent(ProjectUser pProjectUser) {
         super(pProjectUser);

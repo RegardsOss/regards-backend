@@ -68,13 +68,12 @@ public class AccessGroupController implements IResourceController<AccessGroup> {
     @GetMapping
     @Operation(summary = "Get groups of user", description = "Return a page of groups of user")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All groups of user were retrieved.") })
-    @ResourceAccess(description = "Endpoint to retrieve all groups of user",
-        role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Endpoint to retrieve all groups of user", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AccessGroup>>> retrieveAccessGroupsList(
         @RequestParam(name = "public", required = false) Boolean isPublic,
         @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<AccessGroup> assembler) {
-        
+
         return ResponseEntity.ok(toPagedResources(accessGroupService.retrieveAccessGroups(isPublic, pageable),
                                                   assembler));
     }

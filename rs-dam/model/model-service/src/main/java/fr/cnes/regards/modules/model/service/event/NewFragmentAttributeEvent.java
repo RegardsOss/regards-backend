@@ -14,8 +14,6 @@ public class NewFragmentAttributeEvent extends ApplicationEvent {
 
     /**
      * Constructor
-     *
-     * @param attributeAdded
      */
     public NewFragmentAttributeEvent(AttributeModel attributeAdded) {
         super(attributeAdded);

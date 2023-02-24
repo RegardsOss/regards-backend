@@ -59,7 +59,7 @@ import java.util.stream.IntStream;
  * @author tguillou
  */
 @TestPropertySource(locations = { "classpath:application-test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=submission_delete_controller_it" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=submission_delete_controller_it" })
 public class SubmissionDeleteControllerIT extends AbstractRegardsIT {
 
     private static final String DEFAULT_OWNER = "owner";

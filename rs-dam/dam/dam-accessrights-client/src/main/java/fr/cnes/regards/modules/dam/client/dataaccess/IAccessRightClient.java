@@ -59,8 +59,9 @@ public interface IAccessRightClient { // NOSONAR
      * @param datasetIpId dataset id which the access right should be applied to
      * @return the retrieved access rights
      */
-    @GetMapping(path = ROOT_PATH_ACCESS_RIGHTS, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH_ACCESS_RIGHTS,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<PagedModel<EntityModel<AccessRight>>> retrieveAccessRightsList(
         @RequestParam(name = "accessgroup", required = false) String groupName,
@@ -68,8 +69,9 @@ public interface IAccessRightClient { // NOSONAR
         @RequestParam("page") int page,
         @RequestParam("size") int size);
 
-    @GetMapping(path = ROOT_PATH_ACCESS_RIGHTS + PATH_ACCESS_RIGHT, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH_ACCESS_RIGHTS + PATH_ACCESS_RIGHT,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<AccessRight> retrieveAccessRight(@RequestParam(name = "accessgroup") String accessGroupName,
                                                     @RequestParam(name = "dataset")
@@ -80,8 +82,9 @@ public interface IAccessRightClient { // NOSONAR
      *
      * @return created access right
      */
-    @PostMapping(path = ROOT_PATH_ACCESS_RIGHTS, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_PATH_ACCESS_RIGHTS,
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<AccessRight>> createAccessRight(@Valid @RequestBody AccessRight accessRight);
 
@@ -90,8 +93,9 @@ public interface IAccessRightClient { // NOSONAR
      *
      * @return retrieved access right
      */
-    @GetMapping(path = ROOT_PATH_ACCESS_RIGHTS + PATH_ACCESS_RIGHTS_ID, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH_ACCESS_RIGHTS + PATH_ACCESS_RIGHTS_ID,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<AccessRight>> retrieveAccessRight(@Valid @PathVariable("accessright_id") Long id);
 
@@ -100,8 +104,9 @@ public interface IAccessRightClient { // NOSONAR
      *
      * @return updated access right
      */
-    @PutMapping(path = ROOT_PATH_ACCESS_RIGHTS + PATH_ACCESS_RIGHTS_ID, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH_ACCESS_RIGHTS + PATH_ACCESS_RIGHTS_ID,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<AccessRight>> updateAccessRight(@Valid @PathVariable("accessright_id") Long id,
                                                                @Valid AccessRight toBe);
@@ -109,13 +114,15 @@ public interface IAccessRightClient { // NOSONAR
     /**
      * Delete access right by its id
      */
-    @DeleteMapping(path = ROOT_PATH_ACCESS_RIGHTS + PATH_ACCESS_RIGHTS_ID, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_PATH_ACCESS_RIGHTS + PATH_ACCESS_RIGHTS_ID,
+                   consumes = MediaType.APPLICATION_JSON_VALUE,
+                   produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> deleteAccessRight(@Valid @PathVariable("accessright_id") Long id);
 
     @GetMapping(path = ROOT_PATH_ACCESS_RIGHTS + PATH_IS_DATASET_ACCESSIBLE,
-        consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Boolean> isUserAutorisedToAccessDataset(
         @RequestParam(name = "dataset") OaisUniformResourceName datasetIpId,

@@ -43,8 +43,9 @@ import static org.junit.Assert.*;
  * @author Kevin Marchois
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_listener_deletion",
-    "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
-    "spring.jpa.properties.hibernate.order_inserts=true" })
+                                   "regards.amqp.enabled=true",
+                                   "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
+                                   "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -65,8 +66,6 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
      * Test storage listener we will prepare data send {@linkFeatureDeletionReventEvent} and call handleDeletionSuccess
      * from {@link FeatureRequestService} to mock storage call back
      * Then we will test that all  {@linkFeatureDeletionRevent} are delete and all {@link FeatureEntity} too
-     *
-     * @throws InterruptedException
      */
     @Test
     public void testOnDeletionSuccess() throws InterruptedException {
@@ -93,8 +92,6 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
      * from {@link FeatureRequestService} to mock storage call back
      * Then we will test that all  {@linkFeatureDeletionRevent} and all {@link FeatureEntity} are still in database
      * and  {@linkFeatureDeletionRevent} have their {@link RequestState} to ERROR
-     *
-     * @throws InterruptedException
      */
     @Test
     public void testHandlerStorageError() throws InterruptedException {

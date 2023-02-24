@@ -26,9 +26,14 @@ import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 /**
  * @author Léo Mieulet
  */
-@Plugin(description = "Plugin init error plugin test", id = "PluginInitErrorPlugin", version = "0.0.1",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CS",
-    url = "https://github.com/RegardsOss")
+@Plugin(description = "Plugin init error plugin test",
+        id = "PluginInitErrorPlugin",
+        version = "0.0.1",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CS",
+        url = "https://github.com/RegardsOss")
 public class PluginInitErrorPlugin implements ISamplePlugin {
 
     /**

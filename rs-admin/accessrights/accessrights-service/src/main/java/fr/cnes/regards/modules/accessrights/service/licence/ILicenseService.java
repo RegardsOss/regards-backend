@@ -35,7 +35,6 @@ public interface ILicenseService {
      * Accept the license of the current project for the current user
      *
      * @return {@link LicenseDTO}
-     * @throws EntityException
      */
     LicenseDTO acceptLicense() throws ModuleException;
 

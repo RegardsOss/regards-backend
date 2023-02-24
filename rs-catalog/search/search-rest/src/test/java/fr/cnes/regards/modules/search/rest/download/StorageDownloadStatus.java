@@ -19,7 +19,5 @@
 package fr.cnes.regards.modules.search.rest.download;
 
 public enum StorageDownloadStatus {
-    NOMINAL,
-    FAILURE,
-    HTTP_ERROR
+    NOMINAL, FAILURE, HTTP_ERROR
 }

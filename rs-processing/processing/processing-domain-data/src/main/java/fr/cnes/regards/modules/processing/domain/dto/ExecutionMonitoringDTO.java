@@ -19,8 +19,6 @@
 
 /**
  * TODO: ExecutionMonitoringDTO description
- *
- * @author gandrieu
  */
 package fr.cnes.regards.modules.processing.domain.dto;
 

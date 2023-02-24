@@ -28,8 +28,14 @@ import java.util.List;
  *
  * @author sbinda
  */
-@Plugin(description = "Complex Plugin de test", id = "complexPlugin", version = "0.0.1", author = "REGARDS Dream Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(description = "Complex Plugin de test",
+        id = "complexPlugin",
+        version = "0.0.1",
+        author = "REGARDS Dream Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class TestPlugin implements ITestPlugin {
 
     public static final String FIELD_NAME_STRING_PARAM = "stringParam";

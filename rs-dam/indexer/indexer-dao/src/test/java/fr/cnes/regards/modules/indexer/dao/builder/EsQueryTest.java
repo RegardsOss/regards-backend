@@ -119,14 +119,53 @@ public class EsQueryTest {
             repository.createIndex(INDEX);
         }
 
-        final String[] STRINGS = { "Le", "petit", "chat", "est", "mort", "de", "sa", "belle", "mort",
-            "ou écrasé on sait pas trop" };
-        final String[] LOREM_IPSUM = { "Lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit",
-            "sed", "do", "eiusmod", "tempor", "incididunt", "ut", "labore", "et", "dolore", "magna", "aliqua", "Ut" };
+        final String[] STRINGS = { "Le",
+                                   "petit",
+                                   "chat",
+                                   "est",
+                                   "mort",
+                                   "de",
+                                   "sa",
+                                   "belle",
+                                   "mort",
+                                   "ou écrasé on sait pas trop" };
+        final String[] LOREM_IPSUM = { "Lorem",
+                                       "ipsum",
+                                       "dolor",
+                                       "sit",
+                                       "amet",
+                                       "consectetur",
+                                       "adipiscing",
+                                       "elit",
+                                       "sed",
+                                       "do",
+                                       "eiusmod",
+                                       "tempor",
+                                       "incididunt",
+                                       "ut",
+                                       "labore",
+                                       "et",
+                                       "dolore",
+                                       "magna",
+                                       "aliqua",
+                                       "Ut" };
         AtomicInteger ai = new AtomicInteger(1);
         final int[] INTS = IntStream.generate(() -> ai.getAndIncrement()).limit(20).toArray();
-        final double[] DOUBLES = { Math.PI, Math.E, Math.sqrt(2), 1.2, 2.3, 5.e24, -0.3e12, 1.54e-12, 1.0,
-            1.1234567891011121314, 0., 0., 0., 0., 0. };
+        final double[] DOUBLES = { Math.PI,
+                                   Math.E,
+                                   Math.sqrt(2),
+                                   1.2,
+                                   2.3,
+                                   5.e24,
+                                   -0.3e12,
+                                   1.54e-12,
+                                   1.0,
+                                   1.1234567891011121314,
+                                   0.,
+                                   0.,
+                                   0.,
+                                   0.,
+                                   0. };
         OffsetDateTime date = OffsetDateTime.of(2017, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
         AtomicInteger ai2 = new AtomicInteger(0);
         final OffsetDateTime[] DATES = Stream.generate(() -> date.plusDays(ai2.getAndIncrement()))
@@ -155,14 +194,53 @@ public class EsQueryTest {
         } else {
             repository.createIndex(INDEX2);
         }
-        final String[] STRINGS = { "Le", "petit", "chat", "est", "mort", "de", "sa", "belle", "mort",
-            "ou écrasé on sait pas trop" };
-        final String[] LOREM_IPSUM = { "Lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit",
-            "sed", "do", "eiusmod", "tempor", "incididunt", "ut", "labore", "et", "dolore", "magna", "aliqua", "Ut" };
+        final String[] STRINGS = { "Le",
+                                   "petit",
+                                   "chat",
+                                   "est",
+                                   "mort",
+                                   "de",
+                                   "sa",
+                                   "belle",
+                                   "mort",
+                                   "ou écrasé on sait pas trop" };
+        final String[] LOREM_IPSUM = { "Lorem",
+                                       "ipsum",
+                                       "dolor",
+                                       "sit",
+                                       "amet",
+                                       "consectetur",
+                                       "adipiscing",
+                                       "elit",
+                                       "sed",
+                                       "do",
+                                       "eiusmod",
+                                       "tempor",
+                                       "incididunt",
+                                       "ut",
+                                       "labore",
+                                       "et",
+                                       "dolore",
+                                       "magna",
+                                       "aliqua",
+                                       "Ut" };
         AtomicInteger ai = new AtomicInteger(1);
         final int[] INTS = IntStream.generate(() -> ai.getAndIncrement()).limit(20).toArray();
-        final double[] DOUBLES = { Math.PI, Math.E, Math.sqrt(2), 1.2, 2.3, 5.e24, -0.3e12, 1.54e-12, 1.0,
-            1.1234567891011121314, 0., 0., 0., 0., 0. };
+        final double[] DOUBLES = { Math.PI,
+                                   Math.E,
+                                   Math.sqrt(2),
+                                   1.2,
+                                   2.3,
+                                   5.e24,
+                                   -0.3e12,
+                                   1.54e-12,
+                                   1.0,
+                                   1.1234567891011121314,
+                                   0.,
+                                   0.,
+                                   0.,
+                                   0.,
+                                   0. };
         OffsetDateTime date = OffsetDateTime.of(2017, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
         AtomicInteger ai2 = new AtomicInteger(0);
         final OffsetDateTime[] DATES = Stream.generate(() -> date.plusDays(ai2.getAndIncrement()))

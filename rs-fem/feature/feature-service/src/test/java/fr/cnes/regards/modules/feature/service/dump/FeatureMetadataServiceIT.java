@@ -61,7 +61,8 @@ import java.util.zip.ZipFile;
  */
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_metadata_service_it",
-    "regards.amqp.enabled=true", "regards.feature.dump.zip-limit = 3" })
+                                   "regards.amqp.enabled=true",
+                                   "regards.feature.dump.zip-limit = 3" })
 @ActiveProfiles(value = { "noFemHandler", "noscheduler" })
 public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceIT {
 

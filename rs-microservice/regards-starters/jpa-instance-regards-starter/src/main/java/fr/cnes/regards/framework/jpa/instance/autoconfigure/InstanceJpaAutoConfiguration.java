@@ -47,10 +47,11 @@ import java.lang.annotation.Annotation;
  */
 @Configuration
 @Conditional(value = EnableInstanceCondition.class)
-@EnableJpaRepositories(
-    includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-    basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "instanceEntityManagerFactory",
-    transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
+@EnableJpaRepositories(includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class,
+                                                                type = FilterType.ANNOTATION) },
+                       basePackages = DaoUtils.ROOT_PACKAGE,
+                       entityManagerFactoryRef = "instanceEntityManagerFactory",
+                       transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)

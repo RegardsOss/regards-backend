@@ -90,10 +90,10 @@ public class SearchEngineConfigurationController implements IResourceController<
 
     @GetMapping
     @Operation(summary = "Get engine configurations", description = "Return a page of engine configurations")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "All engine configurations were retrieved.") })
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "All engine configurations were retrieved.") })
     @ResourceAccess(description = "Endpoint to retrieve all search engine configurations, matching provided engine type if provided",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<SearchEngineConfiguration>>> retrieveConfs(
         @RequestParam(value = ENGINE_TYPE, required = false) final String engineType,
         @PageableDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,

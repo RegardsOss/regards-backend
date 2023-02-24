@@ -239,8 +239,9 @@ public class PMonitoringControllerIT extends AbstractProcessingIT {
     @Headers({ "Accept: application/json", "Content-Type: application/json" })
     public interface Client {
 
-        @PostMapping(path = MONITORING_EXECUTIONS_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+        @PostMapping(path = MONITORING_EXECUTIONS_PATH,
+                     consumes = MediaType.APPLICATION_JSON_VALUE,
+                     produces = MediaType.APPLICATION_JSON_VALUE)
         PagedModel<EntityModel<ExecutionMonitoringDTO>> executions(@RequestParam(TENANT_PARAM) String tenant,
                                                                    @RequestBody SearchExecutionEntityParameters filters,
                                                                    @SpringQueryMap Pageable pageable);

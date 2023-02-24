@@ -61,10 +61,11 @@ import java.util.Set;
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
-@Table(name = "t_entity", indexes = { @Index(name = "idx_entity_ipId", columnList = "ipId") },
-    uniqueConstraints = @UniqueConstraint(name = "uk_entity_ipId", columnNames = { "ipId" }))
+@Table(name = "t_entity",
+       indexes = { @Index(name = "idx_entity_ipId", columnList = "ipId") },
+       uniqueConstraints = @UniqueConstraint(name = "uk_entity_ipId", columnNames = { "ipId" }))
 @NamedEntityGraph(name = "graph.full.abstract.entity",
-    attributeNodes = { @NamedAttributeNode(value = "tags"), @NamedAttributeNode(value = "groups") })
+                  attributeNodes = { @NamedAttributeNode(value = "tags"), @NamedAttributeNode(value = "groups") })
 @DiscriminatorColumn(name = "dtype", length = 10)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class AbstractEntity<F extends EntityFeature> implements IIndexable, IDocFiles, ILocalizable {
@@ -108,8 +109,10 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
      */
     @NotNull(message = "The Model must not be null")
     @ManyToOne
-    @JoinColumn(name = "model_id", foreignKey = @ForeignKey(name = "fk_entity_model_id"), nullable = false,
-        updatable = false)
+    @JoinColumn(name = "model_id",
+                foreignKey = @ForeignKey(name = "fk_entity_model_id"),
+                nullable = false,
+                updatable = false)
     protected Model model;
 
     /**
@@ -117,8 +120,9 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
      * meaning<br/>
      */
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "t_entity_tag", joinColumns = @JoinColumn(name = "entity_id"),
-        foreignKey = @ForeignKey(name = "fk_entity_tag_entity_id"))
+    @CollectionTable(name = "t_entity_tag",
+                     joinColumns = @JoinColumn(name = "entity_id"),
+                     foreignKey = @ForeignKey(name = "fk_entity_tag_entity_id"))
     @Column(name = "value", length = 200)
     protected Set<String> tags = new HashSet<>();
 
@@ -128,8 +132,9 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
      * to collections that tag the dataset and then added to collections that tag collections containing groups)
      */
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "t_entity_group", joinColumns = @JoinColumn(name = "entity_id"),
-        foreignKey = @ForeignKey(name = "fk_entity_group_entity_id"))
+    @CollectionTable(name = "t_entity_group",
+                     joinColumns = @JoinColumn(name = "entity_id"),
+                     foreignKey = @ForeignKey(name = "fk_entity_group_entity_id"))
     @Column(name = "name", length = 200)
     protected Set<String> groups = new HashSet<>();
 
@@ -211,8 +216,6 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
 
     /**
      * Set the feature id
-     *
-     * @param ipId
      */
     public void setIpId(UniformResourceName ipId) {
         this.ipId = ipId;
@@ -312,8 +315,6 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
 
     /**
      * Set the properties
-     *
-     * @param attributes
      */
     public void setProperties(Set<IProperty<?>> attributes) {
         Option.of(feature).peek(f -> f.setProperties(attributes));

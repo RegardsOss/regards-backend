@@ -46,8 +46,6 @@ public abstract class AbstractStorageInformation {
 
     /**
      * Add storage information read from the plugin parameter pluginIdStorageDirectoryMap
-     *
-     * @param sipBuilder
      */
     protected void addStorageInfomation(SIPBuilder sipBuilder) {
         if (stafStorageNode != null) {

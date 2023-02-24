@@ -18,6 +18,7 @@
  */
 
 package fr.cnes.regards.framework.s3.test;
+
 /**
  * Enum describing what information of a FileStorageRequest to use as filename in the S3 storage
  *

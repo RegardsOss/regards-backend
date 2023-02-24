@@ -127,8 +127,6 @@ public class FileReferenceEventHandler
 
     /**
      * Handle {@link FileReferenceEvent} for successfully stored file
-     *
-     * @param event
      */
     private void handleFileStored(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
@@ -153,8 +151,6 @@ public class FileReferenceEventHandler
 
     /**
      * Handle {@link FileReferenceEvent} for successfully stored file
-     *
-     * @param event
      */
     private void handleStoreError(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
@@ -168,8 +164,6 @@ public class FileReferenceEventHandler
 
     /**
      * Handle {@link FileReferenceEvent} for successfully restored file
-     *
-     * @param event
      */
     private void handleFileAvailable(FileReferenceEvent event) {
         // Execute file reference updates on availability if any defined
@@ -205,9 +199,6 @@ public class FileReferenceEventHandler
     /**
      * Update the given {@link FileReference} with the custom {@link IUpdateFileReferenceOnAvailable} action.
      *
-     * @param fileToUpdate
-     * @param fileToUpdateLocation
-     * @param updateAction
      * @return updated {@link FileReference}
      */
     private Optional<FileReference> updateFileReference(FileReference fileToUpdate,
@@ -247,8 +238,6 @@ public class FileReferenceEventHandler
 
     /**
      * Handle {@link FileReferenceEvent} for file restoration error
-     *
-     * @param event
      */
     private void handleFileNotAvailable(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);

@@ -59,7 +59,6 @@ public class IndexController {
      * Delete a DatasourceIngestion.
      *
      * @return void
-     * @throws ModuleException
      */
     @ResourceAccess(description = "Delete and recreate curent index.", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.DELETE)
@@ -72,7 +71,6 @@ public class IndexController {
      * Delete a DatasourceIngestion.
      *
      * @return void
-     * @throws ModuleException
      */
     @ResourceAccess(description = "Update all datasets indexed.", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = TYPE_MAPPING + UPDATE_DATASETS, method = RequestMethod.POST)
@@ -86,7 +84,6 @@ public class IndexController {
      * Delete a DatasourceIngestion.
      *
      * @return void
-     * @throws ModuleException
      */
     @ResourceAccess(description = "Update all collections indexed.", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = TYPE_MAPPING + UPDATE_COLLECTIONS, method = RequestMethod.POST)

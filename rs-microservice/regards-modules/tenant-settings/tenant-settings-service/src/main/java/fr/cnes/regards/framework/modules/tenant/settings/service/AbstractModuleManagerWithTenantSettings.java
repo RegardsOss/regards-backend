@@ -66,8 +66,6 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
 
     /**
      * Reset dynamic tenant settings
-     *
-     * @param errors
      */
     private void resetDynamicTenantSettingService(Set<String> errors) {
         for (DynamicTenantSetting dynamicTenantSetting : dynamicTenantSettingService.readAll()) {
@@ -81,8 +79,6 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
 
     /**
      * Export dynamic tenant settings
-     *
-     * @param configuration
      */
     private void exportDynamicTenantSettings(List<ModuleConfigurationItem<?>> configuration) {
         dynamicTenantSettingService.readAll()
@@ -91,9 +87,6 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
 
     /**
      * Import dynamic tenant settings
-     *
-     * @param dynamicTenantSettings
-     * @return
      */
     private Set<String> importDynamicTenantSettingsConfiguration(Set<DynamicTenantSetting> dynamicTenantSettings) {
         Set<String> errors = Sets.newHashSet();
@@ -125,7 +118,6 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
      * All {@link DynamicTenantSetting} have been already resetted when this method is called
      *
      * @param errors current errors set
-     * @return
      */
     protected Set<String> resetConfiguration(Set<String> errors) {
         return errors;

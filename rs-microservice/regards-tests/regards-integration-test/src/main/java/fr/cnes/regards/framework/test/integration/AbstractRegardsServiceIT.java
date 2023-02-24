@@ -65,8 +65,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@ContextConfiguration(
-    classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, AmqpTestConfiguration.class })
+@ContextConfiguration(classes = { DefaultTestFeignConfiguration.class,
+                                  AppDaoTestConfiguration.class,
+                                  AmqpTestConfiguration.class })
 @ActiveProfiles({ "default", "test", "noscheduler" })
 @TestPropertySource(properties = { "regards.cloud.enabled=false", "spring.flyway.enabled=false" })
 public abstract class AbstractRegardsServiceIT {

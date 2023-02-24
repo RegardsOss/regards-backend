@@ -39,7 +39,7 @@ public class Aggregate {
     private static final Logger LOGGER = LoggerFactory.getLogger(Aggregate.class);
 
     /**
-     * @param args
+     *
      */
     public static void main(String[] args) throws AggregationException, ReportException {
 

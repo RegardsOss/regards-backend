@@ -70,7 +70,9 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
         workerConfigOptional = workerConfigService.search(workerType1);
         Assert.assertTrue("should retrieve one config", workerConfigOptional.isPresent());
-        Assert.assertEquals("should retrieve updated conf", contentType2, workerConfigOptional.get().getContentTypeInputs());
+        Assert.assertEquals("should retrieve updated conf",
+                            contentType2,
+                            workerConfigOptional.get().getContentTypeInputs());
 
         workerConfigService.delete(workerConfigService.search(workerType1).get());
         Assert.assertEquals("should delete", 0, workerConfigService.searchAll().size());
@@ -82,15 +84,13 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
                             1,
                             workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto("workerInvalid",
                                                                                                         new HashSet<>(),
-                                                                                                        null)))
-                                               .size());
+                                                                                                        null))).size());
         Assert.assertEquals("should return an error when empty worker type",
                             1,
                             workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto("",
                                                                                                         Sets.newHashSet(
                                                                                                             "contentType"),
-                                                                                                        null)))
-                                               .size());
+                                                                                                        null))).size());
     }
 
     @Test
@@ -117,14 +117,12 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
                                                                                                         null),
                                                                                     new WorkerConfigDto(workerType2,
                                                                                                         contentTypes2,
-                                                                                                        null)))
-                                               .size());
+                                                                                                        null))).size());
         Assert.assertEquals("should return an error when importing conflicting content types",
                             1,
                             workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType3,
                                                                                                         contentTypes3,
-                                                                                                        null)))
-                                               .size());
+                                                                                                        null))).size());
 
         String contentType7 = "contentType6";
         String workerType4 = "workerType4";
@@ -137,7 +135,6 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
                             1,
                             workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType4,
                                                                                                         contentTypes7,
-                                                                                                        null)))
-                                               .size());
+                                                                                                        null))).size());
     }
 }

@@ -57,7 +57,7 @@ import java.util.concurrent.ExecutionException;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_reference_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class FileReferenceRequestServiceIT extends AbstractStorageIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestServiceIT.class);

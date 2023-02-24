@@ -37,9 +37,11 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 
-@EnableAutoConfiguration(
-    exclude = { R2dbcMigrateAutoConfiguration.class, WebMvcAutoConfiguration.class, FeignWebMvcConfiguration.class,
-        WebSecurityAutoConfiguration.class, MethodSecurityAutoConfiguration.class })
+@EnableAutoConfiguration(exclude = { R2dbcMigrateAutoConfiguration.class,
+                                     WebMvcAutoConfiguration.class,
+                                     FeignWebMvcConfiguration.class,
+                                     WebSecurityAutoConfiguration.class,
+                                     MethodSecurityAutoConfiguration.class })
 @EnableWebFluxSecurity
 @EnableJpaRepositories
 @EnableFeignClients

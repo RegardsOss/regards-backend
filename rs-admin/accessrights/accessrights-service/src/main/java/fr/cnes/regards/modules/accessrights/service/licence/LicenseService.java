@@ -80,7 +80,6 @@ public class LicenseService implements ILicenseService {
      * Retrieve the license state for the given project and the current user
      *
      * @return the license state
-     * @throws EntityNotFoundException
      */
     @Override
     public LicenseDTO retrieveLicenseState() throws ModuleException {

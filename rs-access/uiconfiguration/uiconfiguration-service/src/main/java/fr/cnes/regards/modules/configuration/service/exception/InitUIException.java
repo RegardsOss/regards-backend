@@ -39,16 +39,14 @@ public class InitUIException extends RuntimeException {
     }
 
     /**
-     * @param pCause
-     * @param pEnableSuppression
-     * @param pWritableStackTrace
+     *
      */
     public InitUIException(Throwable pCause, boolean pEnableSuppression, boolean pWritableStackTrace) {
         super(MESSAGE, pCause, pEnableSuppression, pWritableStackTrace);
     }
 
     /**
-     * @param pCause
+     *
      */
     public InitUIException(Throwable pCause) {
         super(MESSAGE, pCause);

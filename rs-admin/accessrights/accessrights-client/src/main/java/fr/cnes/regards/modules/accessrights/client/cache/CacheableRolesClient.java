@@ -45,7 +45,8 @@ public class CacheableRolesClient {
      * @throws EntityNotFoundException if some role does not exists
      */
     @Cacheable(cacheNames = RolesHierarchyKeyGenerator.CACHE_NAME,
-        keyGenerator = RolesHierarchyKeyGenerator.KEY_GENERATOR, sync = true)
+               keyGenerator = RolesHierarchyKeyGenerator.KEY_GENERATOR,
+               sync = true)
     public ResponseEntity<Boolean> shouldAccessToResourceRequiring(String roleName) throws EntityNotFoundException {
         return rolesClient.shouldAccessToResourceRequiring(roleName);
     }

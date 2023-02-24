@@ -17,6 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * @author Marc Sordi
+ *
  */
 package fr.cnes.regards.framework.gson.autoconfigure;

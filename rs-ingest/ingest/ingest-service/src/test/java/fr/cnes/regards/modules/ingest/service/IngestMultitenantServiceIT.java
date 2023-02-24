@@ -80,7 +80,7 @@ import static fr.cnes.regards.modules.ingest.service.TestData.*;
  * @author Marc SORDI
  */
 @TestPropertySource(properties = { "eureka.client.enabled=false" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServiceIT {
 
     protected static final long TWO_SECONDS = 2000;
@@ -158,8 +158,6 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
 
     /**
      * Custom test initialization to override
-     *
-     * @throws Exception
      */
     protected void doInit() throws Exception {
         // Override to init something
@@ -176,8 +174,6 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
 
     /**
      * Custom test cleaning to override
-     *
-     * @throws Exception
      */
     protected void doAfter() throws Exception {
         // Override to init something

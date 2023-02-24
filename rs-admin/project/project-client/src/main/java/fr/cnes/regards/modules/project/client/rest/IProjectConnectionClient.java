@@ -48,8 +48,9 @@ public interface IProjectConnectionClient {
      * @param pAssembler  assembler
      * @return all project connections
      */
-    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> getAllProjectConnections(
         @PathVariable("projectName") String projectName);
 
@@ -60,8 +61,9 @@ public interface IProjectConnectionClient {
      * @param connectionId connection identifier
      * @return a project connection
      */
-    @GetMapping(path = ROOT_PATH + "/{connectionId}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + "/{connectionId}",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ProjectConnection>> getProjectConnection(@PathVariable("projectName") String projectName,
                                                                         @PathVariable("connectionId")
                                                                         Long connectionId);
@@ -73,8 +75,9 @@ public interface IProjectConnectionClient {
      * @param pProjectConnection connection to create
      * @return the create project connection
      */
-    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_PATH,
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ProjectConnection>> createProjectConnection(
         @PathVariable("projectName") String projectName,
         @Valid @RequestBody final ProjectConnection pProjectConnection);
@@ -87,8 +90,9 @@ public interface IProjectConnectionClient {
      * @param pProjectConnection project connection
      * @return updated connection
      */
-    @PutMapping(path = ROOT_PATH + "/{connectionId}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH + "/{connectionId}",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ProjectConnection>> updateProjectConnection(
         @PathVariable("projectName") String projectName,
         @PathVariable("connectionId") Long connectionId,
@@ -101,8 +105,9 @@ public interface IProjectConnectionClient {
      * @param connectionId project connection identifier
      * @return {@link Void}
      */
-    @DeleteMapping(path = ROOT_PATH + "/{connectionId}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_PATH + "/{connectionId}",
+                   consumes = MediaType.APPLICATION_JSON_VALUE,
+                   produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> deleteProjectConnection(@PathVariable("projectName") String projectName,
                                                  @PathVariable("connectionId") Long connectionId);
 }

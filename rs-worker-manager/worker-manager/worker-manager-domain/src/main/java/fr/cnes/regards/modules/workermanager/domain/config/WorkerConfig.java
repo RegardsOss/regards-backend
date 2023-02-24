@@ -33,8 +33,9 @@ import java.util.Set;
  * @author Léo Mieulet
  */
 @Entity
-@Table(name = "t_worker_conf", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_worker_conf_worker_type", columnNames = { WorkerConfig.WORKER_TYPE_COLUMN_NAME }) })
+@Table(name = "t_worker_conf",
+       uniqueConstraints = { @UniqueConstraint(name = "uk_worker_conf_worker_type",
+                                               columnNames = { WorkerConfig.WORKER_TYPE_COLUMN_NAME }) })
 public class WorkerConfig {
 
     public static final String WORKER_TYPE_COLUMN_NAME = "worker_type";
@@ -50,10 +51,11 @@ public class WorkerConfig {
      */
     @ElementCollection(fetch = FetchType.EAGER)
     @Column(name = CONTENT_TYPE_IN_NAME)
-    @CollectionTable(name = TABLE_CONTENT_TYPE_NAME, joinColumns = @JoinColumn(name = "worker_conf_id",
-        foreignKey = @ForeignKey(name = "fk_worker_conf_content_type")),
-        uniqueConstraints = @UniqueConstraint(name = "uk_worker_conf_content_type",
-            columnNames = { CONTENT_TYPE_IN_NAME }))
+    @CollectionTable(name = TABLE_CONTENT_TYPE_NAME,
+                     joinColumns = @JoinColumn(name = "worker_conf_id",
+                                               foreignKey = @ForeignKey(name = "fk_worker_conf_content_type")),
+                     uniqueConstraints = @UniqueConstraint(name = "uk_worker_conf_content_type",
+                                                           columnNames = { CONTENT_TYPE_IN_NAME }))
     private final Set<String> contentTypeInputs = Sets.newHashSet();
 
     @Id

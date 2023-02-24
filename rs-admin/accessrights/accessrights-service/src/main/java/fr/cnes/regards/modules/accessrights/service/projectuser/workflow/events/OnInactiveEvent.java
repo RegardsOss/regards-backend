@@ -35,7 +35,7 @@ public class OnInactiveEvent extends ApplicationEvent {
     private final ProjectUser projectUser;
 
     /**
-     * @param pProjectUser
+     *
      */
     public OnInactiveEvent(ProjectUser pProjectUser) {
         super(pProjectUser);

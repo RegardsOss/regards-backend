@@ -66,9 +66,6 @@ public class AvailabilityFlowItem implements ISubscribable {
     /**
      * Build a availability request item.
      *
-     * @param checksums
-     * @param expirationDate
-     * @param groupId
      * @return {@link AvailabilityFlowItem}
      */
     public static AvailabilityFlowItem build(Collection<String> checksums,

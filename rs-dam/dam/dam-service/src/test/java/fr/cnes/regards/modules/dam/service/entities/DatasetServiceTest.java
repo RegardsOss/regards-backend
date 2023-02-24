@@ -109,8 +109,6 @@ public class DatasetServiceTest {
 
     /**
      * initialize the repo before each test
-     *
-     * @throws ModuleException
      */
     @SuppressWarnings({ "unchecked" })
     @Before
@@ -185,7 +183,7 @@ public class DatasetServiceTest {
     }
 
     /**
-     * @param modelAttrAssocs
+     *
      */
     private void setModelInPlace(List<ModelAttrAssoc> modelAttrAssocs) {
         modelOfObjects = modelAttrAssocs.get(0).getModel();
@@ -256,7 +254,7 @@ public class DatasetServiceTest {
     }
 
     /**
-     * @return
+     *
      */
     private ICriterion getValidClause() {
         // textAtt contains "testContains"

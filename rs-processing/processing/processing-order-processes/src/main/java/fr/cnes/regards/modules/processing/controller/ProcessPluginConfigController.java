@@ -118,7 +118,7 @@ public class ProcessPluginConfigController implements IResourceController<Proces
 
     @PutMapping(path = BID_SUFFIX)
     @ResourceAccess(description = "Update the given process with the given rights configuration",
-        role = DefaultRole.ADMIN)
+                    role = DefaultRole.ADMIN)
     public ResponseEntity<EntityModel<ProcessPluginConfigurationRightsDTO>> update(
         @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
         @RequestBody ProcessPluginConfigurationRightsDTO rightsDto) throws ModuleException {

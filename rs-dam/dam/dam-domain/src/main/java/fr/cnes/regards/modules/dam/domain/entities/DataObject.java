@@ -153,9 +153,8 @@ public class DataObject extends AbstractEntity<DataObjectFeature> {
     /**
      * Wrap a {@link DataObjectFeature} into a {@link DataObject} decorator
      *
-     * @param model    {@link Model}
-     * @param feature  {@link DataObjectFeature}
-     * @param internal
+     * @param model   {@link Model}
+     * @param feature {@link DataObjectFeature}
      * @return {@link DataObject}
      */
     public static DataObject wrap(Model model, DataObjectFeature feature, Boolean internal) {

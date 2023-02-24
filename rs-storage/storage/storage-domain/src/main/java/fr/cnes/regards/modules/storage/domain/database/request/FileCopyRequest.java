@@ -9,11 +9,12 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "t_file_copy_request",
-    indexes = { @Index(name = "idx_file_copy_request", columnList = "storage, checksum"),
-        @Index(name = "idx_file_copy_request_grp", columnList = "group_id"),
-        @Index(name = "idx_file_copy_request_cache_grp", columnList = "cache_group_id"),
-        @Index(name = "idx_file_copy_request_storage_grp", columnList = "storage_group_id") }, uniqueConstraints = {
-    @UniqueConstraint(name = "t_file_copy_request_checksum_storage", columnNames = { "checksum", "storage" }) })
+       indexes = { @Index(name = "idx_file_copy_request", columnList = "storage, checksum"),
+                   @Index(name = "idx_file_copy_request_grp", columnList = "group_id"),
+                   @Index(name = "idx_file_copy_request_cache_grp", columnList = "cache_group_id"),
+                   @Index(name = "idx_file_copy_request_storage_grp", columnList = "storage_group_id") },
+       uniqueConstraints = { @UniqueConstraint(name = "t_file_copy_request_checksum_storage",
+                                               columnNames = { "checksum", "storage" }) })
 public class FileCopyRequest {
 
     /**

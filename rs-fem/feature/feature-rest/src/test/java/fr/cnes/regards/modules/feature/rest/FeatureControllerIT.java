@@ -34,9 +34,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature", "regards.amqp.enabled=true",
-        "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature",
+                                   "regards.amqp.enabled=true",
+                                   "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
+                                   "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @ContextConfiguration(classes = { AbstractMultitenantServiceIT.ScanningConfiguration.class })
 public class FeatureControllerIT extends AbstractFeatureIT {

@@ -85,9 +85,6 @@ public class DateFacetSerializer implements JsonSerializer<DateFacet> {
 
         /**
          * Be careful, the range must be closed-opened => [ date1 TO date2 }
-         *
-         * @param entry
-         * @param attributeName
          */
         public AdaptedFacetValue(Entry<Range<OffsetDateTime>, Long> entry, String attributeName) {
             Range<OffsetDateTime> key = entry.getKey();

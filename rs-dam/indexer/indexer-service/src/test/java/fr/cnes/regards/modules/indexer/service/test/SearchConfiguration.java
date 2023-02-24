@@ -36,14 +36,16 @@ import org.springframework.context.annotation.PropertySource;
  * @author oroussel
  */
 @Configuration
-@ComponentScan(
-    basePackages = { "fr.cnes.regards.modules.indexer", "fr.cnes.regards.modules.dam", "fr.cnes.regards.modules.search",
-        "fr.cnes.regards.framework.modules.plugins.service" })
-@EnableAutoConfiguration(
-    exclude = { MethodAuthorizationServiceAutoConfiguration.class, MethodSecurityAutoConfiguration.class,
-        SecurityVoterAutoConfiguration.class, WebSecurityAutoConfiguration.class })
+@ComponentScan(basePackages = { "fr.cnes.regards.modules.indexer",
+                                "fr.cnes.regards.modules.dam",
+                                "fr.cnes.regards.modules.search",
+                                "fr.cnes.regards.framework.modules.plugins.service" })
+@EnableAutoConfiguration(exclude = { MethodAuthorizationServiceAutoConfiguration.class,
+                                     MethodSecurityAutoConfiguration.class,
+                                     SecurityVoterAutoConfiguration.class,
+                                     WebSecurityAutoConfiguration.class })
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
-    ignoreResourceNotFound = true)
+                ignoreResourceNotFound = true)
 public class SearchConfiguration {
 
     @Bean

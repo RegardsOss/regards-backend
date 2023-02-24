@@ -53,8 +53,9 @@ import java.util.UUID;
  * @author Marc SORDI
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_dao",
-    "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" },
-    locations = { "classpath:regards_perf.properties" })
+                                   "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
+                                   "spring.jpa.properties.hibernate.order_inserts=true" },
+                    locations = { "classpath:regards_perf.properties" })
 @ContextConfiguration(classes = FeatureDaoConfiguration.class)
 public class FeatureEntityIT extends AbstractDaoIT {
 

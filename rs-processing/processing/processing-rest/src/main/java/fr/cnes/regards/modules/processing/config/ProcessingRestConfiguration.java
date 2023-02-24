@@ -33,8 +33,9 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 @EnableWebFlux
-@ComponentScan(basePackageClasses = { PBatchReactiveController.class, PProcessReactiveController.class,
-    PMonitoringReactiveController.class })
+@ComponentScan(basePackageClasses = { PBatchReactiveController.class,
+                                      PProcessReactiveController.class,
+                                      PMonitoringReactiveController.class })
 public class ProcessingRestConfiguration {
 
 }

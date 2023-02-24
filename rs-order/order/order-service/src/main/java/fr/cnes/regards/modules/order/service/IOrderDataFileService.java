@@ -43,7 +43,6 @@ public interface IOrderDataFileService {
     /**
      * Simply save OrderDataFile in database, no more action is done. This method is to be used at sub-orders creation.
      *
-     * @param dataFiles
      * @return {@link OrderDataFile}s
      */
     Iterable<OrderDataFile> create(Iterable<OrderDataFile> dataFiles);
@@ -52,7 +51,6 @@ public interface IOrderDataFileService {
      * Save given OrderDataFile, search for associated files task, update its end state then update associated order
      * waiting for user flag
      *
-     * @param dataFile
      * @return {@link OrderDataFile}
      */
     OrderDataFile save(OrderDataFile dataFile);
@@ -61,7 +59,6 @@ public interface IOrderDataFileService {
      * Save given OrderDataFiles, search for associated files task, update them end state then update associated order
      * waiting for user flag
      *
-     * @param dataFiles
      * @return {@link OrderDataFile}s
      */
     Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles);
@@ -91,11 +88,7 @@ public interface IOrderDataFileService {
     /**
      * Copy asked file from storage to HttpServletResponse
      *
-     * @param dataFile
-     * @param asUser   Download file as the given user or empty to use security context user
-     * @param os
-     * @return
-     * @throws IOException
+     * @param asUser Download file as the given user or empty to use security context user
      */
     ResponseEntity<InputStreamResource> downloadFile(OrderDataFile dataFile, Optional<String> asUser);
 
@@ -112,8 +105,6 @@ public interface IOrderDataFileService {
 
     /**
      * Remove all data files from an order
-     *
-     * @param orderId
      */
     void removeAll(Long orderId);
 
@@ -121,9 +112,6 @@ public interface IOrderDataFileService {
 
     /**
      * Get a page of available files in a specific order
-     *
-     * @param order
-     * @param page
      */
     Page<OrderDataFileDTO> findAvailableFilesByOrder(Order order, Pageable page);
 

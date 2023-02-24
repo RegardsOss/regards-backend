@@ -75,9 +75,11 @@ public class SipBodyDeletetionScheduler extends AbstractTaskScheduler {
 
     @Scheduled(initialDelayString = "${regards.ingest.schedule.sip.auto-deletion.initial.delay:"
                                     + DEFAULT_DELAY_BEFORE_FIRST_EXECUTION_IN_HOURS
-                                    + "}", fixedDelayString = "${regards.ingest.schedule.sip.auto-deletion.delay:"
-                                                              + DEFAULT_DELAY_BETWEEN_EACH_EXEC_IN_HOURS
-                                                              + "}", timeUnit = TimeUnit.HOURS)
+                                    + "}",
+               fixedDelayString = "${regards.ingest.schedule.sip.auto-deletion.delay:"
+                                  + DEFAULT_DELAY_BETWEEN_EACH_EXEC_IN_HOURS
+                                  + "}",
+               timeUnit = TimeUnit.HOURS)
     public void scheduleSIPBodyDeletionJob() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

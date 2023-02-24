@@ -35,7 +35,7 @@ public class OnRefuseAccountEvent extends ApplicationEvent {
     private Account account;
 
     /**
-     * @param pAccount
+     *
      */
     public OnRefuseAccountEvent(Account pAccount) {
         super(pAccount);

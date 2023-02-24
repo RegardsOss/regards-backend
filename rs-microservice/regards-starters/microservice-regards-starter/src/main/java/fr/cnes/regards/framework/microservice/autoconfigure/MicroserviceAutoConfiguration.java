@@ -74,15 +74,19 @@ public class MicroserviceAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
-        matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "regards.microservices",
+                           name = "maintenance.enabled",
+                           havingValue = "true",
+                           matchIfMissing = true)
     public MaintenanceHealthIndicator maintenanceHealthIndicator(IRuntimeTenantResolver runtimeTenantResolver) {
         return new MaintenanceHealthIndicator(runtimeTenantResolver);
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
-        matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "regards.microservices",
+                           name = "maintenance.enabled",
+                           havingValue = "true",
+                           matchIfMissing = true)
     public ICustomWebSecurityFilterConfiguration maintenanceWebSecurity(IRuntimeTenantResolver runtimeTenantResolver) {
         return new MaintenanceWebSecurityConfiguration(runtimeTenantResolver);
     }

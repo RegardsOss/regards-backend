@@ -157,6 +157,6 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
      * @return entities corresponding to the provider id
      */
     @Query(value = "select * from {h-schema}t_entity where feature @> jsonb_build_object('providerId', ?1)",
-        nativeQuery = true)
+           nativeQuery = true)
     Set<T> findAllByProviderId(String providerId);
 }

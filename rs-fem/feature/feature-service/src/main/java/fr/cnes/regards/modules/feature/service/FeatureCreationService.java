@@ -543,7 +543,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                                            .map(FeatureUniformResourceName::toString)
                                            .collect(Collectors.toSet());
         if (!previousUrns.isEmpty()) {
-            Timestamp now = Timestamp.valueOf(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime());
+            Timestamp now = Timestamp.valueOf(OffsetDateTime.now()
+                                                            .withOffsetSameInstant(ZoneOffset.UTC)
+                                                            .toLocalDateTime());
             featureCreationRequestRepo.updateLastByUrnIn(false, now, previousUrns);
         }
 

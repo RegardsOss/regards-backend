@@ -40,8 +40,9 @@ public interface IDynamicTenantSettingClient {
 
     String UPDATE_PATH = "/{name}";
 
-    @PutMapping(path = ROOT_PATH + UPDATE_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH + UPDATE_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(@PathVariable(name = "name") String name,
                                                                 @RequestBody DynamicTenantSettingDto setting);
 

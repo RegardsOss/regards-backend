@@ -101,7 +101,8 @@ import static org.junit.Assert.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
-    "regards.storage.quota.report.tick=1", "regards.amqp.enabled=true" })
+                                   "regards.storage.quota.report.tick=1",
+                                   "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "default", "test" }, inheritProfiles = false)
 public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT implements IHandler<NotificationEvent> {
 

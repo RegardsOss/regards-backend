@@ -68,22 +68,24 @@ public class SubmissionCreateController extends AbstractSubmissionController
     }
 
     @Operation(summary = "Register a submission request.",
-        description = "Create and save a submission request from a submission request dto.")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201", description =
-        "The SubmissionRequest was successfully saved. Returns "
-        + "SubmissionResponseDto with the id of the request."),
-        @ApiResponse(responseCode = "403", description = "The endpoint is not accessible for the user.",
-            content = { @Content(mediaType = "application/html") }),
-        @ApiResponse(responseCode = "422", description = "The submission request dto syntax is incorrect.",
-            content = { @Content(mediaType = "application/json") }) })
+               description = "Create and save a submission request from a submission request dto.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "201",
+                                         description = "The SubmissionRequest was successfully saved. Returns "
+                                                       + "SubmissionResponseDto with the id of the request."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         content = { @Content(mediaType = "application/html") }),
+                            @ApiResponse(responseCode = "422",
+                                         description = "The submission request dto syntax is incorrect.",
+                                         content = { @Content(mediaType = "application/json") }) })
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to create and save a submission request from a submission request dto.",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<SubmissionResponseDto>> createSubmissionRequest(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Submission request dto to be processed.",
-            content = @Content(schema = @Schema(implementation = SubmissionRequestDto.class))) @RequestBody
-        @Valid SubmissionRequestDto submissionRequestDto) {
+                                                              content = @Content(schema = @Schema(implementation = SubmissionRequestDto.class)))
+        @RequestBody @Valid SubmissionRequestDto submissionRequestDto) {
         // init owner with the user who is sending the request
         submissionRequestDto.setOwner(StringUtils.truncate(authResolver.getUser(), 128));
         // create and save a submission request with the submission request dto
@@ -96,24 +98,26 @@ public class SubmissionCreateController extends AbstractSubmissionController
         }
     }
 
-    @Operation(summary = "Register a submission request with replacement if exists.", description =
-        "Create and save a submission request from a submission request dto. "
-        + "If the product already exists, it will be overridden")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201", description =
-        "The SubmissionRequest was successfully saved. Returns "
-        + "SubmissionResponseDto with the id of the request."),
-        @ApiResponse(responseCode = "403", description = "The endpoint is not accessible for the user.",
-            content = { @Content(mediaType = "application/html") }),
-        @ApiResponse(responseCode = "422", description = "The submission request dto syntax is incorrect.",
-            content = { @Content(mediaType = "application/json") }) })
+    @Operation(summary = "Register a submission request with replacement if exists.",
+               description = "Create and save a submission request from a submission request dto. "
+                             + "If the product already exists, it will be overridden")
+    @ApiResponses(value = { @ApiResponse(responseCode = "201",
+                                         description = "The SubmissionRequest was successfully saved. Returns "
+                                                       + "SubmissionResponseDto with the id of the request."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         content = { @Content(mediaType = "application/html") }),
+                            @ApiResponse(responseCode = "422",
+                                         description = "The submission request dto syntax is incorrect.",
+                                         content = { @Content(mediaType = "application/json") }) })
     @PostMapping(value = REPLACE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to create and save a submission request from a submission request dto.",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<SubmissionResponseDto>> createSubmissionRequestWithReplace(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Submission request dto to be processed.",
-            content = @Content(schema = @Schema(implementation = SubmissionRequestDto.class))) @RequestBody
-        @Valid SubmissionRequestDto submissionRequestDto) {
+                                                              content = @Content(schema = @Schema(implementation = SubmissionRequestDto.class)))
+        @RequestBody @Valid SubmissionRequestDto submissionRequestDto) {
         submissionRequestDto.setReplaceMode(true);
         return createSubmissionRequest(submissionRequestDto);
     }

@@ -68,9 +68,7 @@ public class ServicesAggregatorController {
     private final PluginServiceDtoResourcesAssembler assembler;
 
     /**
-     * @param catalogServicesClient
-     * @param uiPluginConfigurationService
-     * @param assembler
+     *
      */
     public ServicesAggregatorController(ICatalogServicesClient catalogServicesClient,
                                         IUIPluginConfigurationService uiPluginConfigurationService,
@@ -90,7 +88,7 @@ public class ServicesAggregatorController {
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(
         @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpIds,
         @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationModes) {

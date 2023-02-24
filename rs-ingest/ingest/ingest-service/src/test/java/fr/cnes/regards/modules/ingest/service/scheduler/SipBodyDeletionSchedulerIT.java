@@ -53,7 +53,7 @@ import java.util.stream.IntStream;
  * @author Thomas GUILLOU
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_test_sip_body_deletion" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "noscheduler", "nojobs" })
 public class SipBodyDeletionSchedulerIT extends IngestMultitenantServiceIT {
 

@@ -73,9 +73,9 @@ import java.util.stream.Collectors;
  */
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_tests", "regards.amqp.enabled=true",
-        "regards.storage.cache.path:target/cache" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_tests",
+                                   "regards.amqp.enabled=true",
+                                   "regards.storage.cache.path:target/cache" })
 public class StorageRestClientIT extends AbstractRegardsWebIT {
 
     @Value("${server.address}")

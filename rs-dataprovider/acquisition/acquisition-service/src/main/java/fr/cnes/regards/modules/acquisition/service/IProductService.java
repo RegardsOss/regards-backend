@@ -77,14 +77,11 @@ public interface IProductService {
 
     /**
      * Delete products
-     *
-     * @param chain
-     * @param session
      */
     void deleteBySession(AcquisitionProcessingChain chain, String session);
 
     /**
-     * @param chain
+     *
      */
     void deleteByProcessingChain(AcquisitionProcessingChain chain);
 
@@ -171,8 +168,6 @@ public interface IProductService {
 
     /**
      * Handle {@link SIPGenerationJob} success.
-     *
-     * @param jobInfo
      */
     void handleSipGenerationSuccess(JobInfo jobInfo);
 
@@ -183,8 +178,6 @@ public interface IProductService {
 
     /**
      * Handle canceled sip. Occurs when a SIP is deleted before completion.
-     *
-     * @param infos
      */
     void handleIngestedSIPDeleted(Collection<RequestInfo> infos);
 
@@ -210,7 +203,6 @@ public interface IProductService {
      * @param session           {@link String}
      * @param processingChainId {@likn Long} id of {@link AcquisitionProcessingChain}
      * @param from              {@link OffsetDateTime}
-     * @param pageable
      * @return {@link Product}s
      */
     Page<Product> search(List<ProductState> state,
@@ -281,10 +273,6 @@ public interface IProductService {
 
     /**
      * Save success and errors products in DB and submit success ones to ingest microservice for ingestion
-     *
-     * @param processingChain
-     * @param success
-     * @param errors
      */
     void handleGeneratedProducts(AcquisitionProcessingChain processingChain, Set<Product> success, Set<Product> errors);
 

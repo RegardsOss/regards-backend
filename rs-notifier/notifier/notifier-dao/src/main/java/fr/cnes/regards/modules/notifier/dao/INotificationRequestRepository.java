@@ -45,9 +45,12 @@ import java.util.stream.Collectors;
 public interface INotificationRequestRepository extends JpaRepository<NotificationRequest, Long> {
 
     @Override
-    @EntityGraph(
-        attributePaths = { "recipientsScheduled", "recipientsInError", "recipientsToSchedule", "successRecipients",
-            "rulesToMatch", "rulesToMatch.recipients" }, type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = { "recipientsScheduled",
+                                    "recipientsInError",
+                                    "recipientsToSchedule",
+                                    "successRecipients",
+                                    "rulesToMatch",
+                                    "rulesToMatch.recipients" }, type = EntityGraph.EntityGraphType.LOAD)
     List<NotificationRequest> findAllById(Iterable<Long> ids);
 
     default Page<NotificationRequest> findByState(NotificationState state, Pageable pageable) {
@@ -62,7 +65,7 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
     }
 
     @Query(value = "select nr.id as id from NotificationRequest nr where nr.state = :state",
-        countQuery = "select count(nr.id) from NotificationRequest nr where nr.state = :state")
+           countQuery = "select count(nr.id) from NotificationRequest nr where nr.state = :state")
     Page<NotifRequestId> findIdsPageByState(@Param("state") NotificationState state, Pageable pageable);
 
     /**
@@ -88,9 +91,8 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
         return new PageImpl<>(pageContent, pageable, ids.getTotalElements());
     }
 
-    @Query(
-        value = "select nr.id as id from NotificationRequest nr where nr.state = :state and :recipient member of nr.recipientsToSchedule",
-        countQuery = "select count(nr.id) from NotificationRequest nr where nr.state = :state and :recipient member of nr.recipientsToSchedule")
+    @Query(value = "select nr.id as id from NotificationRequest nr where nr.state = :state and :recipient member of nr.recipientsToSchedule",
+           countQuery = "select count(nr.id) from NotificationRequest nr where nr.state = :state and :recipient member of nr.recipientsToSchedule")
     Page<NotifRequestId> findIdsPageByStateAndRecipientsToScheduleContaining(@Param("state") NotificationState state,
                                                                              @Param("recipient")
                                                                              PluginConfiguration recipient,
@@ -111,9 +113,10 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
            + "and nr.rulesToMatch is empty")
     Page<NotificationRequest> findCompletedRequests(@Param("state") NotificationState[] state, Pageable pageable);
 
-    @EntityGraph(
-        attributePaths = { "recipientsScheduled", "recipientsInError", "recipientsToSchedule", "rulesToMatch" },
-        type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(attributePaths = { "recipientsScheduled",
+                                    "recipientsInError",
+                                    "recipientsToSchedule",
+                                    "rulesToMatch" }, type = EntityGraph.EntityGraphType.LOAD)
     Set<NotificationRequest> findAllByRequestIdIn(Set<String> requestsIds);
 
     @Modifying

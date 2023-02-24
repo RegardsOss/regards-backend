@@ -56,7 +56,7 @@ public class EntitySpecifications<E> {
                                              String.class,
                                              root.get(StaticProperties.FEATURE),
                                              cb.literal(StaticProperties.FEATURE_LABEL))));
-            
+
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

@@ -91,15 +91,11 @@ public @interface Event {
 
     /**
      * Allows to specify an autoDelete queue.
-     *
-     * @return
      */
     boolean autoDelete() default false;
 
     /**
      * Use to disable dlq creation
-     *
-     * @return
      */
     boolean declareDlq() default true;
 }

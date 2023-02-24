@@ -24,8 +24,7 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@PluginInterface(
-    description = "Plugin interface which are responsible for storing entities (Collection, Dataset, Document)")
+@PluginInterface(description = "Plugin interface which are responsible for storing entities (Collection, Dataset, Document)")
 public interface IStorageService {
 
     /**
@@ -40,15 +39,12 @@ public interface IStorageService {
 
     /**
      * Delete the aip associated to the given entity
-     *
-     * @param toDelete
      */
     void delete(AbstractEntity<?> toDelete);
 
     /**
      * Update the aip associated to the given entity
      *
-     * @param toUpdate
      * @param oldEntity old version of the entity to update
      * @return updated aip
      */

@@ -79,8 +79,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notification_service_it",
-    "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
-    "spring.jpa.properties.hibernate.order_inserts=true", "regards.notifier.max.bulk.size=20" })
+                                   "regards.amqp.enabled=true",
+                                   "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
+                                   "spring.jpa.properties.hibernate.order_inserts=true",
+                                   "regards.notifier.max.bulk.size=20" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class NotificationServiceIT extends AbstractNotificationMultitenantServiceIT {
 

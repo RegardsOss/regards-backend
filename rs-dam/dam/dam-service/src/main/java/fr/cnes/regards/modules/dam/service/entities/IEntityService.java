@@ -50,7 +50,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      *
      * @param ipId business id
      * @return entity without its relations (ie. groups, tags, ...) or null if entity doesn't exists
-     * @throws ModuleException
      */
     U load(UniformResourceName ipId) throws ModuleException;
 
@@ -59,7 +58,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      *
      * @param id Database id
      * @return entity without its relations (ie. groups, tags, ...) or null if entity doesn't exists
-     * @throws ModuleException
      */
     U load(Long id) throws ModuleException;
 
@@ -68,7 +66,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      *
      * @param ipId business id
      * @return entity with all its relations (ie. groups, tags, ...) or null if entity doesn't exists
-     * @throws ModuleException
      */
     U loadWithRelations(UniformResourceName ipId) throws ModuleException;
 
@@ -77,7 +74,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      *
      * @param ipIds business ids
      * @return entities with all its relations (ie. groups, tags, ...) or empty list
-     * @throws ModuleException
      */
     List<U> loadAllWithRelations(UniformResourceName... ipIds) throws ModuleException;
 
@@ -93,7 +89,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      * Check if model is loaded else load it then set it on entity.
      *
      * @param entity cocnerned entity
-     * @throws ModuleException
      */
     void checkAndOrSetModel(U entity) throws ModuleException;
 
@@ -102,7 +97,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      *
      * @param entityId     entity source id
      * @param toAssociates tags to be associated by source entity (may be entity URNs)
-     * @throws EntityNotFoundException
      */
     void associate(Long entityId, Set<String> toAssociates) throws ModuleException;
 
@@ -111,7 +105,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      *
      * @param entityId        entity source id
      * @param toBeDissociated tags to be dissociated from source entity (may be entity URNs)
-     * @throws EntityNotFoundException
      */
     void dissociate(Long entityId, Set<String> toBeDissociated) throws ModuleException;
 
@@ -120,7 +113,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      *
      * @param entity entity to create
      * @return updated entity from database
-     * @throws ModuleException
      */
     U create(U entity) throws ModuleException;
 
@@ -130,7 +122,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      * @param entityId id of entity to update
      * @param entity   "content" of entity to update
      * @return updated entity from database
-     * @throws ModuleException
      */
     U update(Long entityId, U entity) throws ModuleException;
 
@@ -140,7 +131,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      * @param entityUrn ipId of entity to update
      * @param entity    "content" of entity to update
      * @return updated entity from database
-     * @throws ModuleException
      */
     U update(UniformResourceName entityUrn, U entity) throws ModuleException;
 
@@ -158,7 +148,6 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      *
      * @param entity entity to update
      * @return updated entity from database
-     * @throws ModuleException
      */
     default U update(U entity) throws ModuleException {
         if (entity.getId() != null) {
@@ -171,22 +160,17 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
     /**
      * Delete entity identified by its id. A deleted entity is "logged" into "deleted_entity" table
      *
-     * @param pEntityId
      * @return <U>
-     * @throws ModuleException
      */
     U delete(Long pEntityId) throws ModuleException;
 
     /**
      * Attach files to given entity
      *
-     * @param urn             {@link OaisUniformResourceName}
-     * @param dataType        {@link DataType}
-     * @param attachments     {@link MultipartFile}
-     * @param refs
-     * @param fileUriTemplate
+     * @param urn         {@link OaisUniformResourceName}
+     * @param dataType    {@link DataType}
+     * @param attachments {@link MultipartFile}
      * @return {@link AbstractEntity}
-     * @throws ModuleException
      */
     AbstractEntity<?> attachFiles(UniformResourceName urn,
                                   DataType dataType,
@@ -197,10 +181,8 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
     /**
      * Retrieve a {@link DataFile} attached to the specified entity with the specified checksum
      *
-     * @param urn      {@link OaisUniformResourceName}
-     * @param checksum
+     * @param urn {@link OaisUniformResourceName}
      * @return {@link DataFile}
-     * @throws ModuleException
      */
     DataFile getFile(UniformResourceName urn, String checksum) throws ModuleException;
 
@@ -208,20 +190,16 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      * Write related file content to output stream.<br/>
      * {@link OutputStream} has to be flush after this method completes.
      *
-     * @param urn      {@link UniformResourceName}
-     * @param checksum
-     * @param output   {@link OutputStream}
-     * @throws ModuleException
+     * @param urn    {@link UniformResourceName}
+     * @param output {@link OutputStream}
      */
     void downloadFile(UniformResourceName urn, String checksum, OutputStream output) throws ModuleException;
 
     /**
      * Remove file
      *
-     * @param urn      {@link OaisUniformResourceName}
-     * @param checksum
+     * @param urn {@link OaisUniformResourceName}
      * @return {@link AbstractEntity}
-     * @throws ModuleException
      */
     AbstractEntity<?> removeFile(UniformResourceName urn, String checksum) throws ModuleException;
 
@@ -235,15 +213,11 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
 
     /**
      * Update stored file path for all matching {@link AbstractEntity} concerned by the succes of the store request
-     *
-     * @param requests
      */
     void storeSucces(Set<RequestInfo> requests);
 
     /**
      * Update store requests after a storage error
-     *
-     * @param requests
      */
     void storeError(Set<RequestInfo> requests);
 }

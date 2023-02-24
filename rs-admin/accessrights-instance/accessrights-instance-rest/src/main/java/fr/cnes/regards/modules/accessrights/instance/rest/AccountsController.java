@@ -208,7 +208,7 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PutMapping(ACCOUNT_ID_PATH)
     @ResourceAccess(description = "update the account account_id according to the body specified",
-        role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<EntityModel<Account>> updateAccount(@PathVariable("account_id") Long accountId,
                                                               @Valid @RequestBody Account updatedAccount)
         throws EntityException {
@@ -336,7 +336,7 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PutMapping(RESET_PASSWORD_PATH)
     @ResourceAccess(description = "Change the passsword of account account_email if provided token is valid",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> performResetPassword(@PathVariable("account_email") String accountEmail,
                                                      @Valid @RequestBody final PerformResetPasswordDto pDto)
         throws EntityException {
@@ -413,7 +413,7 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PutMapping(ACTIVE_ACCOUNT_PATH)
     @ResourceAccess(description = "Activates an account which has been previously deactivated",
-        role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> activeAccount(@PathVariable("account_email") String accountEmail)
         throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
@@ -478,7 +478,7 @@ public class AccountsController implements IResourceController<Account> {
 
     @PutMapping(UPDATE_ORIGIN_PATH)
     @ResourceAccess(description = "Update the origin of an account identified by email",
-        role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> updateOrigin(@PathVariable("account_email") String accountEmail,
                                              @PathVariable("origin") String origin) throws EntityException {
         accountService.updateOrigin(accountEmail, origin);

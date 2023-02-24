@@ -38,9 +38,9 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author Marc SORDI
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=checksum", "eureka.client.enabled=false" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=checksum",
+                                   "eureka.client.enabled=false" },
+                    locations = { "classpath:application-test.properties" })
 public class SIPChecksumIT extends AbstractMultitenantServiceIT {
 
     @Autowired

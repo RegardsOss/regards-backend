@@ -74,18 +74,20 @@ public class OrderDataFileAvailableController implements IResourceController<Ord
     }
 
     @Operation(summary = "Get files available in specific order",
-        description = "Return files corresponding to the orderId input, if exists and user has access to it")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "The order has been successfully retrieved."),
-            @ApiResponse(responseCode = "204",
-                description = "The order has been successfully retrieved, but no file is available."),
-            @ApiResponse(responseCode = "206",
-                description = "The order has been successfully retrieved, but is not finished",
-                content = { @Content(mediaType = "application/json") }),
-            @ApiResponse(responseCode = "404", description = "Order not found",
-                content = { @Content(mediaType = "application/json") }),
-            @ApiResponse(responseCode = "403", description = "Order is not accessible for the current user.",
-                content = { @Content(mediaType = "application/html") }), })
+               description = "Return files corresponding to the orderId input, if exists and user has access to it")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "The order has been successfully retrieved."),
+                            @ApiResponse(responseCode = "204",
+                                         description = "The order has been successfully retrieved, but no file is available."),
+                            @ApiResponse(responseCode = "206",
+                                         description = "The order has been successfully retrieved, but is not finished",
+                                         content = { @Content(mediaType = "application/json") }),
+                            @ApiResponse(responseCode = "404",
+                                         description = "Order not found",
+                                         content = { @Content(mediaType = "application/json") }),
+                            @ApiResponse(responseCode = "403",
+                                         description = "Order is not accessible for the current user.",
+                                         content = { @Content(mediaType = "application/html") }), })
     @ResourceAccess(description = "Retrieve specified order", role = DefaultRole.REGISTERED_USER)
     @GetMapping(path = OrderControllerEndpointConfiguration.FIND_AVAILABLE_FILES_BY_ORDER_PATH)
     public ResponseEntity<PagedModel<EntityModel<OrderDataFileDTO>>> getAvailableFilesOf(

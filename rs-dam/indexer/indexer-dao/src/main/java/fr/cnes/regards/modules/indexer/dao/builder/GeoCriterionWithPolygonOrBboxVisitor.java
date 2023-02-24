@@ -121,7 +121,7 @@ public class GeoCriterionWithPolygonOrBboxVisitor implements ICriterionVisitor<I
     @Override
     public ICriterion visitBoundaryBoxCriterion(BoundaryBoxCriterion criterion) {
         double[][] fromBbox = new double[][] { { criterion.getMinX(), criterion.getMinY() },
-            { criterion.getMaxX(), criterion.getMaxY() } };
+                                               { criterion.getMaxX(), criterion.getMaxY() } };
         double[][] toBbox = GeoHelper.transform(fromBbox, crs, Crs.WGS_84);
         // DON'T TOUCH THE F$%CKING LONGITUDES !!! (180 -> -180 which is very annoying for a cap Bbox and
         // longitudes are not impacted by projection transformations)

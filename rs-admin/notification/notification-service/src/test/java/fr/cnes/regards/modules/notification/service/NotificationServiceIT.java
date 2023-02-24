@@ -50,7 +50,8 @@ import java.util.List;
  */
 @ActiveProfiles({ "test", "nomail" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notif_tests",
-    "regards.accounts.root.user.login:test@test.fr", "purge.cron.expression=0 0 5 * * ?" })
+                                   "regards.accounts.root.user.login:test@test.fr",
+                                   "purge.cron.expression=0 0 5 * * ?" })
 public class NotificationServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired

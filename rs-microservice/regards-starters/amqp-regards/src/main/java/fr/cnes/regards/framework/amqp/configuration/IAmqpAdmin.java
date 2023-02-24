@@ -59,8 +59,6 @@ public interface IAmqpAdmin {
 
     /**
      * Return common unicast exchange name : regards.unicast
-     *
-     * @return
      */
     String getUnicastExchangeName();
 
@@ -90,11 +88,6 @@ public interface IAmqpAdmin {
      *  <li>{@link Target#ALL}/{@link Target#MICROSERVICE} : regards.unicast.tenant.EventType</li>
      *  <li>{@link Target#ONE_PER_MICROSERVICE_TYPE}/{@link Target#MICROSERVICE} : {@link IllegalArgumentException}</li>
      * </ul>
-     *
-     * @param tenant
-     * @param eventType
-     * @param target
-     * @return
      */
     String getUnicastQueueName(String tenant, Class<?> eventType, Target target);
 
@@ -104,10 +97,6 @@ public interface IAmqpAdmin {
      *   <li>{@link Target#ONE_PER_MICROSERVICE_TYPE} : regards.broadcast.microserviceType.handlerType</li>
      *   <li>{@link Target#ALL}/{@link Target#MICROSERVICE} : regards.broadcast.microserviceType.microserviceId.handlerType</li>
      * </ul>
-     *
-     * @param handlerType
-     * @param target
-     * @return
      */
     String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType, Target target);
 

@@ -48,7 +48,7 @@ import static org.mockito.Mockito.mock;
 @EnableAutoConfiguration
 @EnableScheduling
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
-    ignoreResourceNotFound = true)
+                ignoreResourceNotFound = true)
 public class ServiceConfiguration {
 
     @Bean

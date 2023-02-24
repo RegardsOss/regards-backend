@@ -233,7 +233,6 @@ public interface IPluginParam {
      * Build a plugin parameter referencing a nested plugin configuration with its business identifier
      *
      * @param name parameter name
-     * @key plugin business identifier
      */
     static NestedPluginParam plugin(String name, String identifier) {
         return new NestedPluginParam().with(name, identifier);

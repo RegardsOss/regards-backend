@@ -56,7 +56,7 @@ import java.util.concurrent.ExecutionException;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class FileCacheRequestServiceIT extends AbstractStorageIT {
 
     @Autowired

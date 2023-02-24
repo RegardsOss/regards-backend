@@ -44,8 +44,6 @@ public class ModuleRepositoryIT extends AbstractDaoTransactionalIT {
     /**
      * Common method to save a new module
      *
-     * @param pApplicationId
-     * @return
      * @since 1.0-SNAPSHOT
      */
     private Module addModule(final String pApplicationId) {

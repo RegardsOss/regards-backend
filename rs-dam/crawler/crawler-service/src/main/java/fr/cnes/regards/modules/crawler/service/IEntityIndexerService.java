@@ -45,7 +45,6 @@ public interface IEntityIndexerService {
      * @param ipId                          concerned entity id
      * @param updateDate                    current update date (usually now)
      * @param forceAssociatedEntitiesUpdate if true, force associated entities update (usually data objects for dataset)
-     * @throws ModuleException
      */
     default void updateEntityIntoEs(String tenant,
                                     UniformResourceName ipId,
@@ -59,7 +58,6 @@ public interface IEntityIndexerService {
      *
      * @param dataset concerned dataset
      * @param dsiId   {@link DatasourceIngestion} id. can be null (in this case, no notification is sent)
-     * @param tenant
      */
     void computeComputedAttributes(Dataset dataset, String dsiId, String tenant);
 
@@ -72,7 +70,6 @@ public interface IEntityIndexerService {
      * @param updateDate                    current update date (usually now)
      * @param forceAssociatedEntitiesUpdate if true, force associated entities update (usually data objects for dataset)
      * @param dsiId                         {@link DatasourceIngestion} id
-     * @throws ModuleException
      */
     void updateEntityIntoEs(String tenant,
                             UniformResourceName ipId,
@@ -84,10 +81,7 @@ public interface IEntityIndexerService {
     /**
      * Transactional method updating a set of datasets
      *
-     * @param tenant
-     * @param datasets
      * @param lastUpdateDate         Take into account only more recent lastUpdateDate than provided
-     * @param updateDate
      * @param forceDataObjectsUpdate true to force all associated data objects update
      * @param dsiId                  datasetIngestion id   @throws ModuleException
      */
@@ -100,32 +94,22 @@ public interface IEntityIndexerService {
 
     /**
      * Force update of all {@link Dataset}s
-     *
-     * @param tenant
-     * @param updateDate
-     * @throws ModuleException
      */
     void updateAllDatasets(String tenant, OffsetDateTime updateDate) throws ModuleException;
 
     /**
      * Force update of all {@link fr.cnes.regards.modules.dam.domain.entities.Collection}s
-     *
-     * @param tenant
-     * @param updateDate
-     * @throws ModuleException
      */
     void updateAllCollections(String tenant, OffsetDateTime updateDate) throws ModuleException;
 
     /**
      * Create given data objects into Elasticsearch
      *
-     * @param tenant                concerned tenant
-     * @param datasourceId          id of data source from where data objects come
-     * @param now                   update date (usually now)
-     * @param objects               objects to save
-     * @param datasourceIngestionId
+     * @param tenant       concerned tenant
+     * @param datasourceId id of data source from where data objects come
+     * @param now          update date (usually now)
+     * @param objects      objects to save
      * @return bulk save result
-     * @throws ModuleException
      */
     BulkSaveResult createDataObjects(String tenant,
                                      Long datasourceId,
@@ -136,13 +120,11 @@ public interface IEntityIndexerService {
     /**
      * Merge given data objects into Elasticsearch
      *
-     * @param tenant                concerned tenant
-     * @param datasourceId          id of data source from where data objects come
-     * @param now                   update date (usually now)
-     * @param objects               objects to save
-     * @param datasourceIngestionId
+     * @param tenant       concerned tenant
+     * @param datasourceId id of data source from where data objects come
+     * @param now          update date (usually now)
+     * @param objects      objects to save
      * @return bulk save result
-     * @throws ModuleException
      */
     BulkSaveResult mergeDataObjects(String tenant,
                                     Long datasourceId,
@@ -162,8 +144,9 @@ public interface IEntityIndexerService {
     /**
      * Delete given data objects by id from elasticsearch
      * and update related dataset computed attributes.
+     *
      * @param tenant concerned tenant
-     * @param ipIds id of data to delete
+     * @param ipIds  id of data to delete
      * @return URN of all concerned datasets
      */
     Set<UniformResourceName> deleteDataObjectsAndUpdate(String tenant, Set<String> ipIds);
@@ -171,8 +154,8 @@ public interface IEntityIndexerService {
     /**
      * Delete given data object from Elasticsearch
      *
-     * @param tenant concerned tenant
-     * @param datasourceId   id of datasource
+     * @param tenant       concerned tenant
+     * @param datasourceId id of datasource
      * @return number of deleted objects
      */
     long deleteDataObjectsFromDatasource(String tenant, Long datasourceId);
@@ -180,17 +163,13 @@ public interface IEntityIndexerService {
     /**
      * Create a notification for admin
      *
-     * @param tenant
-     * @param title   notification title
-     * @param message
-     * @param level   {@link NotificationLevel}
+     * @param title notification title
+     * @param level {@link NotificationLevel}
      */
     void createNotificationForAdmin(String tenant, String title, String message, NotificationLevel level);
 
     /**
      * Delete index and recreate entities
-     *
-     * @param tenant
      */
     void deleteIndexNRecreateEntities(String tenant) throws ModuleException;
 }

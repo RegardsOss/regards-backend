@@ -70,10 +70,7 @@ public class ModuleController implements IResourceController<Module> {
     /**
      * Entry point to retrieve a modules for a given application id {@link Module}.
      *
-     * @param applicationId
-     * @param moduleId
      * @return {@link UILayout}
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -90,11 +87,6 @@ public class ModuleController implements IResourceController<Module> {
      * Entry point to retrieve all modules for a given application id {@link Module}. Query parameter active
      * [true|false]
      *
-     * @param applicationId
-     * @param onlyActive
-     * @param type
-     * @param pageable
-     * @param assembler
      * @return {@link UILayout}
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -115,15 +107,12 @@ public class ModuleController implements IResourceController<Module> {
     /**
      * Entry point to save a new ihm module.
      *
-     * @param applicationId
-     * @param module
      * @return {@link Module}
-     * @throws EntityInvalidException
      */
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Module>> saveModule(@PathVariable("applicationId") String applicationId,
                                                       @Valid @RequestBody Module module) throws EntityInvalidException {
 
@@ -136,16 +125,12 @@ public class ModuleController implements IResourceController<Module> {
     /**
      * Entry point to save a new ihm module.
      *
-     * @param applicationId
-     * @param moduleId
-     * @param module
      * @return {@link Module}
-     * @throws EntityException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Module>> updateModule(@PathVariable("applicationId") String applicationId,
                                                         @PathVariable("moduleId") Long moduleId,
                                                         @Valid @RequestBody Module module) throws EntityException {
@@ -161,16 +146,14 @@ public class ModuleController implements IResourceController<Module> {
     /**
      * Entry point to delete an ihm module.
      *
-     * @param applicationId
-     * @param moduleId
      * @return {@link Module}
-     * @throws EntityNotFoundException
      */
-    @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.DELETE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = MODULE_ID_MAPPING,
+                    method = RequestMethod.DELETE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Void>> deleteModule(@PathVariable("applicationId") String applicationId,
                                                       @PathVariable("moduleId") Long moduleId)
         throws EntityNotFoundException {

@@ -291,8 +291,6 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Create a dataset model
-     *
-     * @throws ModuleException
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_MOD_010")

@@ -51,8 +51,8 @@ import java.util.Set;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = GsonAutoConfiguration.class)
-@TestPropertySource(
-    properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey" })
+@TestPropertySource(properties = { "regards.cipher.iv=1234567812345678",
+                                   "regards.cipher.keyLocation=src/test/resources/testKey" })
 @ActiveProfiles("test")
 public class SIPBuilderIT {
 

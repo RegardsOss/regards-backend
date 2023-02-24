@@ -54,7 +54,6 @@ public enum PluginComputationIdentifierEnum {
     /**
      * Parse a Computation plugin type by is id.
      *
-     * @param pluginId
      * @return {@link PluginComputationIdentifierEnum}
      */
     public static PluginComputationIdentifierEnum parse(String pluginId) {

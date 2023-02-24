@@ -77,7 +77,9 @@ public class TinyUrlTaskScheduler extends AbstractTaskScheduler {
     @Scheduled(initialDelayString = "${regards.framework.modules.tinyurl.scheduling.initial.delay:"
                                     + DEFAULT_INITIAL_DELAY
                                     + "}",
-        fixedDelayString = "${regards.framework.modules.tinyurl.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.framework.modules.tinyurl.scheduling.delay:"
+                                  + DEFAULT_SCHEDULING_DELAY
+                                  + "}")
     public void purgeTinyUrls() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

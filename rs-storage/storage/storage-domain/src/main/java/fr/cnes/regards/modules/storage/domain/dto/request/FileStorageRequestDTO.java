@@ -183,7 +183,6 @@ public class FileStorageRequestDTO {
     /**
      * Add optional type to current {@link FileStorageRequestDTO}
      *
-     * @param type
      * @return current {@link FileStorageRequestDTO}
      */
     public FileStorageRequestDTO withType(String type) {

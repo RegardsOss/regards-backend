@@ -18,7 +18,5 @@
  */
 /**
  * Restriction validator package
- *
- * @author Marc Sordi
  */
 package fr.cnes.regards.modules.model.service.validation.validator.iproperty.restriction;

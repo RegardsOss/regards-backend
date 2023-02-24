@@ -73,8 +73,8 @@ public class StepPropertyUpdateRequest {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({ @JoinColumn(name = "gen_step_id", referencedColumnName = "step_id"),
-        @JoinColumn(name = "gen_source", referencedColumnName = "source"),
-        @JoinColumn(name = "gen_session", referencedColumnName = "session") })
+                   @JoinColumn(name = "gen_source", referencedColumnName = "source"),
+                   @JoinColumn(name = "gen_session", referencedColumnName = "session") })
     private SessionStep sessionStep;
 
     @Column(name = "registration_date")

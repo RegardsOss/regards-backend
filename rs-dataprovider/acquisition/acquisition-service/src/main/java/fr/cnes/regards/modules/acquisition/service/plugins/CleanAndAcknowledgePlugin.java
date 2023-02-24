@@ -53,9 +53,14 @@ import java.util.List;
  * @author Christophe Mertz
  * @author Marc Sordi
  */
-@Plugin(id = "CleanAndAcknowledgePlugin", version = "1.0.0-SNAPSHOT",
-    description = "Optionally clean and/or create an acknowledgement for each product file", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "CleanAndAcknowledgePlugin",
+        version = "1.0.0-SNAPSHOT",
+        description = "Optionally clean and/or create an acknowledgement for each product file",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, IChainBlockingPlugin {
 
     public static final String CLEAN_FILE_PARAM = "cleanFile";
@@ -70,26 +75,34 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CleanAndAcknowledgePlugin.class);
 
-    @PluginParameter(name = CLEAN_FILE_PARAM, label = "Enable product files removal", defaultValue = "false",
-        optional = true)
+    @PluginParameter(name = CLEAN_FILE_PARAM,
+                     label = "Enable product files removal",
+                     defaultValue = "false",
+                     optional = true)
     public Boolean cleanFile;
 
     @PluginParameter(name = CREATE_ACK_PARAM,
-        label = "An acknowledgement of successful completion of SIP saved by the ingest microservice",
-        defaultValue = "false", optional = true)
+                     label = "An acknowledgement of successful completion of SIP saved by the ingest microservice",
+                     defaultValue = "false",
+                     optional = true)
     public Boolean createAck;
 
-    @PluginParameter(name = FOLDER_ACK_PARAM, label = "The sub folder where the acknowledgement is created",
-        defaultValue = "ack_regards", optional = true)
+    @PluginParameter(name = FOLDER_ACK_PARAM,
+                     label = "The sub folder where the acknowledgement is created",
+                     defaultValue = "ack_regards",
+                     optional = true)
     public String folderAck;
 
     @PluginParameter(name = EXTENSION_ACK_PARAM,
-        label = "The extension added to the data file to create the acknowledgement file", defaultValue = ".regards",
-        optional = true)
+                     label = "The extension added to the data file to create the acknowledgement file",
+                     defaultValue = ".regards",
+                     optional = true)
     public String extensionAck;
 
-    @PluginParameter(name = RECURSIVE_CHECK_PARAM, label = "Enable recursive permission check of scan folders",
-        defaultValue = "false", optional = true)
+    @PluginParameter(name = RECURSIVE_CHECK_PARAM,
+                     label = "Enable recursive permission check of scan folders",
+                     defaultValue = "false",
+                     optional = true)
     public Boolean recursiveCheck;
 
     private String className = this.getClass().getSimpleName();

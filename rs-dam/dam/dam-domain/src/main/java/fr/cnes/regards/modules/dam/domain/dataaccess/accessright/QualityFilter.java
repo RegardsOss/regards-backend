@@ -66,10 +66,6 @@ public class QualityFilter {
 
     /**
      * Constructor setting the parameters as attributes
-     *
-     * @param pMaxScore
-     * @param pMinScore
-     * @param pQualityLevel
      */
     public QualityFilter(int pMaxScore, int pMinScore, QualityLevel pQualityLevel) {
         super();
@@ -87,8 +83,6 @@ public class QualityFilter {
 
     /**
      * Set the max score
-     *
-     * @param pMaxScore
      */
     public void setMaxScore(int pMaxScore) {
         maxScore = pMaxScore;
@@ -103,8 +97,6 @@ public class QualityFilter {
 
     /**
      * Set the min score
-     *
-     * @param pMinScore
      */
     public void setMinScore(int pMinScore) {
         minScore = pMinScore;
@@ -119,8 +111,6 @@ public class QualityFilter {
 
     /**
      * Set the quality level
-     *
-     * @param pQualityLevel
      */
     public void setQualityLevel(QualityLevel pQualityLevel) {
         qualityLevel = pQualityLevel;

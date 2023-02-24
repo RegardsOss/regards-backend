@@ -219,9 +219,6 @@ public class DatasourceIngestion {
 
     /**
      * Set date history for next ingestion
-     *
-     * @param lastEntityDate
-     * @param penultimateLastEntityDate
      */
     public void setLastEntityDate(OffsetDateTime lastEntityDate, OffsetDateTime penultimateLastEntityDate) {
         // this last entity date becomes the previous last entity date of the next ingestion

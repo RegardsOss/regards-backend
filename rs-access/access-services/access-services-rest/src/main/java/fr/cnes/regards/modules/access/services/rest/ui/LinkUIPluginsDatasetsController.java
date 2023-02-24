@@ -56,7 +56,7 @@ public class LinkUIPluginsDatasetsController {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
     public ResponseEntity<EntityModel<LinkUIPluginsDatasets>> retrieveLink(
         @PathVariable("datasetId") final String datasetId) throws EntityNotFoundException {
@@ -67,7 +67,7 @@ public class LinkUIPluginsDatasetsController {
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "endpoint allowing to modify which plugins are to be applied to a given dataset",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
     public ResponseEntity<EntityModel<LinkUIPluginsDatasets>> updateLink(
         @PathVariable("datasetId") final String datasetId, @RequestBody final LinkUIPluginsDatasets updatedLink)

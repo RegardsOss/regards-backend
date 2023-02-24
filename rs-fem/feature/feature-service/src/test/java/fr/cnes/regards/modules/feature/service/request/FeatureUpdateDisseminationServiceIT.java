@@ -68,8 +68,12 @@ import static org.junit.Assert.*;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_dissemination_it",
-    "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+                                   "regards.amqp.enabled=true",
+                                   "spring.task.scheduling.pool.size=2",
+                                   "regards.feature.metrics.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultitenantServiceIT {
 

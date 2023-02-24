@@ -52,7 +52,6 @@ public interface ISearchEngineConfigurationService {
      *
      * @param conf {@link SearchEngineConfiguration} to update
      * @return {@link SearchEngineConfiguration} updated
-     * @throws ModuleException
      */
     SearchEngineConfiguration updateConf(SearchEngineConfiguration conf) throws ModuleException;
 
@@ -60,7 +59,6 @@ public interface ISearchEngineConfigurationService {
      * Delete the {@link SearchEngineConfiguration} associated to the given id
      *
      * @param confId if of the {@link SearchEngineConfiguration} to delete
-     * @throws ModuleException
      */
     void deleteConf(Long confId) throws ModuleException;
 
@@ -68,7 +66,6 @@ public interface ISearchEngineConfigurationService {
      * Retrieve all {@link SearchEngineConfiguration} matching the given engineType
      *
      * @param engineType engine type of the {@link SearchEngineConfiguration}s to search for
-     * @throws ModuleException
      */
     Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page) throws ModuleException;
 
@@ -77,7 +74,6 @@ public interface ISearchEngineConfigurationService {
      *
      * @param confId id of the {@link SearchEngineConfiguration} to retrieve
      * @return {@link SearchEngineConfiguration}
-     * @throws ModuleException
      */
     SearchEngineConfiguration retrieveConf(Long confId) throws ModuleException;
 
@@ -87,7 +83,6 @@ public interface ISearchEngineConfigurationService {
      * @param datasetUrn dataset associated to the conf
      * @param pluginId   Plugin identifier
      * @return {@link SearchEngineConfiguration}
-     * @throws ModuleException
      */
     SearchEngineConfiguration retrieveConf(Optional<UniformResourceName> datasetUrn, String pluginId)
         throws ModuleException;

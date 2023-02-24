@@ -29,8 +29,9 @@ import java.time.OffsetDateTime;
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_storage_location", indexes = { @Index(name = "idx_storage_location", columnList = "name") },
-    uniqueConstraints = { @UniqueConstraint(name = "uk_t_storage_location_name", columnNames = { "name" }) })
+@Table(name = "t_storage_location",
+       indexes = { @Index(name = "idx_storage_location", columnList = "name") },
+       uniqueConstraints = { @UniqueConstraint(name = "uk_t_storage_location_name", columnNames = { "name" }) })
 public class StorageLocation {
 
     /**

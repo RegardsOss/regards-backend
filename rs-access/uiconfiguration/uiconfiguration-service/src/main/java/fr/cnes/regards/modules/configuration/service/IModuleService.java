@@ -40,9 +40,7 @@ public interface IModuleService {
     /**
      * Retreive a module by is id.
      *
-     * @param moduleId
      * @return {@link Module}
-     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     Module retrieveModule(Long moduleId) throws EntityNotFoundException;
@@ -50,10 +48,8 @@ public interface IModuleService {
     /**
      * Retrieve all modules for the given application Id
      *
-     * @param applicationId
-     * @param active        search for active modules
-     * @param type          module type
-     * @param pPageable
+     * @param active search for active modules
+     * @param type   module type
      * @return Paged list of {@link Module}
      * @since 1.0-SNAPSHOT
      */
@@ -62,8 +58,6 @@ public interface IModuleService {
     /**
      * Retrieve all modules for the given application Id
      *
-     * @param applicationId
-     * @param pageable
      * @return Paged list of {@link Module}
      * @since 1.0-SNAPSHOT
      */
@@ -72,8 +66,6 @@ public interface IModuleService {
     /**
      * Retrieve all active modules for the given application Id
      *
-     * @param applicationId
-     * @param pageable
      * @return Paged list of {@link Module}
      * @since 1.0-SNAPSHOT
      */
@@ -84,7 +76,6 @@ public interface IModuleService {
      *
      * @param module {@link Module} to save
      * @return saved {@link Module}
-     * @throws EntityInvalidException
      * @since 1.0-SNAPSHOT
      */
     Module saveModule(Module module) throws EntityInvalidException;
@@ -94,7 +85,6 @@ public interface IModuleService {
      *
      * @param module {@link Module} to update
      * @return updated {@link Module}
-     * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
     Module updateModule(Module module) throws EntityException;
@@ -103,7 +93,6 @@ public interface IModuleService {
      * Delete a module
      *
      * @param moduleId Module id to delete
-     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     void deleteModule(Long moduleId) throws EntityNotFoundException;

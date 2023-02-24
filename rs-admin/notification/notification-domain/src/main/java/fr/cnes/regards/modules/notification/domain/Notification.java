@@ -69,8 +69,9 @@ public class Notification implements IIdentifiable<Long> {
      */
     @NotNull
     @ElementCollection
-    @CollectionTable(name = "ta_notification_role_name", joinColumns = @JoinColumn(name = "notification_id"),
-        foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role_name_notification_id"))
+    @CollectionTable(name = "ta_notification_role_name",
+                     joinColumns = @JoinColumn(name = "notification_id"),
+                     foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role_name_notification_id"))
     @Column(name = "role_name", length = 200)
     private Set<String> roleRecipients;
 
@@ -79,8 +80,9 @@ public class Notification implements IIdentifiable<Long> {
      */
     @NotNull
     @ElementCollection
-    @CollectionTable(name = "ta_notification_projectuser_email", joinColumns = @JoinColumn(name = "notification_id"),
-        foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
+    @CollectionTable(name = "ta_notification_projectuser_email",
+                     joinColumns = @JoinColumn(name = "notification_id"),
+                     foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
     @Column(name = "projectuser_email", length = 200)
     private Set<String> projectUserRecipients;
 

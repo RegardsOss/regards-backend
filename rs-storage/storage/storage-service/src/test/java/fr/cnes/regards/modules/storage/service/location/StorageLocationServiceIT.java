@@ -64,7 +64,7 @@ import java.util.*;
  */
 @ActiveProfiles({ "noscheduler", "nojobs" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class StorageLocationServiceIT extends AbstractStorageIT {
 
     @Autowired

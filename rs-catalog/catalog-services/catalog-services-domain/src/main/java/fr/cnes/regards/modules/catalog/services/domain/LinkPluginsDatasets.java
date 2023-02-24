@@ -36,7 +36,8 @@ import java.util.Set;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
 @Table(name = "t_link_service_dataset",
-    uniqueConstraints = @UniqueConstraint(columnNames = { "dataset_id" }, name = "uk_link_service_dataset_dataset_id"))
+       uniqueConstraints = @UniqueConstraint(columnNames = { "dataset_id" },
+                                             name = "uk_link_service_dataset_dataset_id"))
 public class LinkPluginsDatasets {
 
     @Id
@@ -55,10 +56,11 @@ public class LinkPluginsDatasets {
      * Ids of plugin configuration of type IService
      */
     @ManyToMany
-    @JoinTable(name = "ta_link_service_dataset_plugins", joinColumns = @JoinColumn(name = "dataset_id",
-        foreignKey = @ForeignKey(name = "fk_link_service_dataset_plugin")),
-        inverseJoinColumns = @JoinColumn(name = "service_configuration_id",
-            foreignKey = @ForeignKey(name = "fk_plugin_link_service_dataset")))
+    @JoinTable(name = "ta_link_service_dataset_plugins",
+               joinColumns = @JoinColumn(name = "dataset_id",
+                                         foreignKey = @ForeignKey(name = "fk_link_service_dataset_plugin")),
+               inverseJoinColumns = @JoinColumn(name = "service_configuration_id",
+                                                foreignKey = @ForeignKey(name = "fk_plugin_link_service_dataset")))
     private Set<PluginConfiguration> services;
 
     /**

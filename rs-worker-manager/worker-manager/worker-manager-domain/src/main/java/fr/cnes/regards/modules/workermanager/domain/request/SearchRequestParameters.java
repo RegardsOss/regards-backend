@@ -43,7 +43,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     private String session;
 
     @Schema(description = "Name of the Worker type matching the Request Content Type",
-        example = "WorkerAcceptingContentType1")
+            example = "WorkerAcceptingContentType1")
     private String dispatchedWorkerType;
 
     @Valid

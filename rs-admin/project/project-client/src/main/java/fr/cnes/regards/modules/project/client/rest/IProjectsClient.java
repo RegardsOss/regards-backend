@@ -48,8 +48,9 @@ public interface IProjectsClient {
      * @param pSize number of elements per page
      * @return List of projects
      */
-    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(@RequestParam("page") int pPage,
                                                                          @RequestParam("size") int pSize);
@@ -57,8 +58,9 @@ public interface IProjectsClient {
     /**
      * Same than {@link IProjectsClient#retrieveProjectList(int, int)} but only for public projects
      */
-    @GetMapping(path = ROOT_PATH + "/public", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + "/public",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(@RequestParam("page") int page,
                                                                                @RequestParam("size") int size);
@@ -69,8 +71,9 @@ public interface IProjectsClient {
      * @param pNewProject new Project to create
      * @return Created project
      */
-    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_PATH,
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<Project>> createProject(@Valid @RequestBody Project pNewProject);
 
@@ -80,8 +83,9 @@ public interface IProjectsClient {
      * @param pProjectName Project name
      * @return Project
      */
-    @GetMapping(path = ROOT_PATH + "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + "/{project_name}",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<Project>> retrieveProject(@PathVariable("project_name") String pProjectName);
 
@@ -92,8 +96,9 @@ public interface IProjectsClient {
      * @param pProjectToUpdate project to update
      * @return Updated Project
      */
-    @PutMapping(path = ROOT_PATH + "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH + "/{project_name}",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<Project>> updateProject(@PathVariable("project_name") String pProjectName,
                                                        @RequestBody Project pProjectToUpdate);
@@ -104,8 +109,9 @@ public interface IProjectsClient {
      * @param pProjectName Project name to delete
      * @return Void
      */
-    @DeleteMapping(path = ROOT_PATH + "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_PATH + "/{project_name}",
+                   consumes = MediaType.APPLICATION_JSON_VALUE,
+                   produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> deleteProject(@PathVariable("project_name") String pProjectName);
 }

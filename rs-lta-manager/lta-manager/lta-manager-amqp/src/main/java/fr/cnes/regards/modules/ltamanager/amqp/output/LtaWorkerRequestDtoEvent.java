@@ -59,7 +59,11 @@ public class LtaWorkerRequestDtoEvent extends LtaWorkerRequestDto implements ISu
         this.messageProperties = messageProperties;
     }
 
-    public void setWorkerHeaders(String contentType, String tenant, String correlationId, String owner, String session) {
+    public void setWorkerHeaders(String contentType,
+                                 String tenant,
+                                 String correlationId,
+                                 String owner,
+                                 String session) {
         setHeader(EventHeadersHelper.CONTENT_TYPE_HEADER, contentType);
         setHeader(EventHeadersHelper.TENANT_HEADER, tenant);
         setHeader(EventHeadersHelper.REQUEST_ID_HEADER, correlationId);

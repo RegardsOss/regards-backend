@@ -41,9 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author Iliana Ghazali
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_settings_service_it" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_settings_service_it" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "noscheduler" })
 public class IngestSettingsServiceIT extends AbstractMultitenantServiceIT {
 

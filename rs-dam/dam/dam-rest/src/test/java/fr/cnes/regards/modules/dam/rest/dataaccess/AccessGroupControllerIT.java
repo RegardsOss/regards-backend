@@ -45,7 +45,7 @@ import org.springframework.test.context.TestPropertySource;
  * @author Marc Sordi
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_rest" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_rest" })
 @ContextConfiguration(classes = { DamRestConfiguration.class })
 public class AccessGroupControllerIT extends AbstractRegardsIT {
 

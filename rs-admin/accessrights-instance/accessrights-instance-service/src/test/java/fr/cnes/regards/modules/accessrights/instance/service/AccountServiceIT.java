@@ -64,7 +64,7 @@ import java.util.Set;
  */
 @ContextConfiguration(classes = { AccountServiceIT.Config.class })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=accountservice",
-    "regards.microservice.type=instance" })
+                                   "regards.microservice.type=instance" })
 public class AccountServiceIT extends AbstractRegardsServiceIT {
 
     @Configuration

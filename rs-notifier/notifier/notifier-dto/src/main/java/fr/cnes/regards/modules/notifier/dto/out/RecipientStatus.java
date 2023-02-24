@@ -19,6 +19,5 @@
 package fr.cnes.regards.modules.notifier.dto.out;
 
 public enum RecipientStatus {
-    SUCCESS,
-    ERROR
+    SUCCESS, ERROR
 }

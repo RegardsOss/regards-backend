@@ -25,13 +25,17 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,aip_id,sip_id"),
-    @Index(name = "idx_search_aip", columnList = "session_owner,session_name,state,last_update"),
-    @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
-    @Index(name = "idx_aip_storage", columnList = "storages"), @Index(name = "idx_aip_tags", columnList = "tags"),
-    @Index(name = "idx_aip_categories", columnList = "categories"),
-    @Index(name = "idx_aip_sip_id", columnList = "sip_id"), @Index(name = "idx_aip_state", columnList = "state"),
-    @Index(name = "idx_aipid", columnList = "aip_id"), @Index(name = "idx_origin_urn", columnList = "origin_urn") })
+@Table(name = "t_aip",
+       indexes = { @Index(name = "idx_aip_id", columnList = "id,aip_id,sip_id"),
+                   @Index(name = "idx_search_aip", columnList = "session_owner,session_name,state,last_update"),
+                   @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
+                   @Index(name = "idx_aip_storage", columnList = "storages"),
+                   @Index(name = "idx_aip_tags", columnList = "tags"),
+                   @Index(name = "idx_aip_categories", columnList = "categories"),
+                   @Index(name = "idx_aip_sip_id", columnList = "sip_id"),
+                   @Index(name = "idx_aip_state", columnList = "state"),
+                   @Index(name = "idx_aipid", columnList = "aip_id"),
+                   @Index(name = "idx_origin_urn", columnList = "origin_urn") })
 
 // There cannot be any unique constraint on last because there will always be multiple value with false!!!!
 public class AIPEntity extends AbstractAIPEntity {

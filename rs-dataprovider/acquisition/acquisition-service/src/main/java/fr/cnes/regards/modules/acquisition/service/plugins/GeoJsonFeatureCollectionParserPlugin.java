@@ -57,10 +57,14 @@ import java.util.Optional;
  *
  * @author Sébastien Binda
  */
-@Plugin(id = "GeoJsonFeatureCollectionParserPlugin", version = "1.0.0-SNAPSHOT",
-    description = "Scan directory to detect geosjson files. Generate a file to acquire for each feature found in it.",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "GeoJsonFeatureCollectionParserPlugin",
+        version = "1.0.0-SNAPSHOT",
+        description = "Scan directory to detect geosjson files. Generate a file to acquire for each feature found in it.",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskScanning.class);
@@ -73,12 +77,14 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
     private Gson gson;
 
     @PluginParameter(name = FIELD_FEATURE_ID,
-        label = "Json path to access the identifier of each feature in the geojson file", optional = false)
+                     label = "Json path to access the identifier of each feature in the geojson file",
+                     optional = false)
     private String featureId;
 
     @PluginParameter(name = ALLOW_EMPTY_FEATURES,
-        label = "Generate features with no files (raw, thumbnail & description) associated.", optional = true,
-        defaultValue = "false")
+                     label = "Generate features with no files (raw, thumbnail & description) associated.",
+                     optional = true,
+                     defaultValue = "false")
     private boolean allowEmptyFeature;
 
     @Override

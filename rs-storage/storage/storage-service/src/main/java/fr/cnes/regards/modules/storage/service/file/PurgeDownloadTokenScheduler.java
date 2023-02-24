@@ -52,7 +52,7 @@ public class PurgeDownloadTokenScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Scheduled(fixedDelayString = "${regards.storage.purge.schedule.delay:" + DEFAULT_DELAY + "}",
-        initialDelayString = "${regards.storage.purge.schedule.delay:" + DEFAULT_INITIAL_DELAY + "}")
+               initialDelayString = "${regards.storage.purge.schedule.delay:" + DEFAULT_INITIAL_DELAY + "}")
     public void handleFileStorageRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);

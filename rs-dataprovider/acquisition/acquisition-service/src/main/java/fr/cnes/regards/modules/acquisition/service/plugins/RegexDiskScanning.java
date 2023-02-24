@@ -42,10 +42,14 @@ import java.util.regex.Pattern;
  *
  * @author Marc Sordi
  */
-@Plugin(id = "RegexDiskScanning", version = "1.0.0-SNAPSHOT",
-    description = "Scan directories to detect files filtering with a regular expression pattern",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "RegexDiskScanning",
+        version = "1.0.0-SNAPSHOT",
+        description = "Scan directories to detect files filtering with a regular expression pattern",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class RegexDiskScanning implements IScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RegexDiskScanning.class);

@@ -369,8 +369,7 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
                 expectedRequestStatus)).isTrue();
             // Check final workflow step
             assertThat(updatedRequests.stream()
-                                      .allMatch(request -> request.getStepNumber()
-                                                           == expectedStep)).as(String.format(
+                                      .allMatch(request -> request.getStepNumber() == expectedStep)).as(String.format(
                 "Expected all Requests to be in step %d",
                 expectedStep)).isTrue();
             // Check final body content

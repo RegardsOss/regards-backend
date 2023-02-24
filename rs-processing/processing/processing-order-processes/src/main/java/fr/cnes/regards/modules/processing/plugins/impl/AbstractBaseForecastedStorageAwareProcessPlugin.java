@@ -89,8 +89,10 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
     @Autowired
     private Gson gson;
 
-    @PluginParameter(label = "Retrieve features metadata", description = "Define if metadata are provided to process",
-        name = "addMetadata", defaultValue = "false")
+    @PluginParameter(label = "Retrieve features metadata",
+                     description = "Define if metadata are provided to process",
+                     name = "addMetadata",
+                     defaultValue = "false")
     protected boolean addMetadata = false;
 
     public IExecutable prepareWorkdir() {

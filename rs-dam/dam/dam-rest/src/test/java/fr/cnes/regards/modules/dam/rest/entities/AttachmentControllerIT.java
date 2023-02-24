@@ -64,7 +64,7 @@ import java.util.List;
  * @author Marc Sordi
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=attachment",
-    "regards.dam.local_storage.path=target/store" })
+                                   "regards.dam.local_storage.path=target/store" })
 @MultitenantTransactional
 public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 

@@ -6,10 +6,11 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "t_user_download_rate_gauge",
-    uniqueConstraints = @UniqueConstraint(name = UserDownloadRateEntity.UK_DOWNLOAD_RATE_GAUGE_INSTANCE_EMAIL,
-        columnNames = { "instance_id", "email" }))
-@SequenceGenerator(name = UserDownloadRateEntity.DOWNLOAD_RATE_SEQUENCE, initialValue = 1,
-    sequenceName = "seq_download_rate_gauge")
+       uniqueConstraints = @UniqueConstraint(name = UserDownloadRateEntity.UK_DOWNLOAD_RATE_GAUGE_INSTANCE_EMAIL,
+                                             columnNames = { "instance_id", "email" }))
+@SequenceGenerator(name = UserDownloadRateEntity.DOWNLOAD_RATE_SEQUENCE,
+                   initialValue = 1,
+                   sequenceName = "seq_download_rate_gauge")
 public class UserDownloadRateEntity {
 
     public static final String UK_DOWNLOAD_RATE_GAUGE_INSTANCE_EMAIL = "uk_download_rate_gauge_instance_email";

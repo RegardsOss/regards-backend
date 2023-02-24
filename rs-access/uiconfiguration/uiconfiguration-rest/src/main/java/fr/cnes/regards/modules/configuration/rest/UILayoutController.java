@@ -56,14 +56,12 @@ public class UILayoutController implements IResourceController<UILayout> {
     /**
      * Entry point to retrieve a {@link UILayout}
      *
-     * @param applicationId
      * @return {@link UILayout}
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public HttpEntity<EntityModel<UILayout>> retrieveUILayout(@PathVariable("applicationId") final String applicationId)
         throws EntityNotFoundException {
         final UILayout UILayout = UILayoutService.retrieveLayout(applicationId);
@@ -74,16 +72,12 @@ public class UILayoutController implements IResourceController<UILayout> {
     /**
      * Entry point to update {@link UILayout}
      *
-     * @param applicationId
-     * @param UILayout
      * @return updated {@link UILayout}
-     * @throws EntityException
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<UILayout>> updateUILayout(@PathVariable("applicationId") final String applicationId,
                                                             @Valid @RequestBody final UILayout UILayout)
         throws EntityException {

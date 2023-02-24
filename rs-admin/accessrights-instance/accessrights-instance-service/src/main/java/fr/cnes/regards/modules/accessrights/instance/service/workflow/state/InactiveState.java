@@ -47,12 +47,7 @@ public class InactiveState extends AbstractDeletableState {
     private final Long accountValidityDuration;
 
     /**
-     * @param projectUsersClient
-     * @param accountRepository
-     * @param tenantService
-     * @param runtimeTenantResolver
-     * @param passwordResetService
-     * @param accountUnlockTokenService
+     *
      */
     public InactiveState(IProjectUsersClient projectUsersClient,
                          IAccountRepository accountRepository,

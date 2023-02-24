@@ -36,8 +36,6 @@ public interface ISipPostprocessing {
 
     /**
      * Allows to make some action after SIP processing.
-     *
-     * @param aipEntities
      */
     PostProcessResult postprocess(Collection<AIPEntity> aipEntities) throws ModuleException;
 }

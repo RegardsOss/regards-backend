@@ -94,7 +94,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the given microservice",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
         @PathVariable("microservicename") String microserviceName,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -127,7 +127,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
      */
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLERS_MAPPING)
     @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<String>> retrieveMicroserviceControllers(
         @PathVariable("microservicename") String microserviceName) {
         final List<String> controllers = resourceService.retrieveMicroserviceControllers(microserviceName,
@@ -145,7 +145,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
      */
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLER_MAPPING)
     @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
-        role = DefaultRole.PROJECT_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
         @PathVariable("microservicename") String microserviceName,
         @PathVariable("controllername") String controllerName) {

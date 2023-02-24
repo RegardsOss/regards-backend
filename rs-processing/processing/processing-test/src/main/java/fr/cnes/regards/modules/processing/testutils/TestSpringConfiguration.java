@@ -99,15 +99,22 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
  * @author gandrieu
  */
 @Configuration
-@EnableAutoConfiguration(
-    exclude = { R2dbcMigrateAutoConfiguration.class, WebSecurityAutoConfiguration.class, WebMvcAutoConfiguration.class,
-        FeignWebMvcConfiguration.class, MethodSecurityAutoConfiguration.class, Oauth2AutoConfiguration.class, })
+@EnableAutoConfiguration(exclude = { R2dbcMigrateAutoConfiguration.class,
+                                     WebSecurityAutoConfiguration.class,
+                                     WebMvcAutoConfiguration.class,
+                                     FeignWebMvcConfiguration.class,
+                                     MethodSecurityAutoConfiguration.class,
+                                     Oauth2AutoConfiguration.class, })
 @EnableWebFlux
 @EnableWebFluxSecurity
 @EnableJpaRepositories
 @EnableFeignClients
-@Import({ MultitenantAutoConfiguration.class, MicroserviceAutoConfiguration.class, AmqpAutoConfiguration.class,
-    DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class, JacksonAutoConfiguration.class })
+@Import({ MultitenantAutoConfiguration.class,
+          MicroserviceAutoConfiguration.class,
+          AmqpAutoConfiguration.class,
+          DataSourcesAutoConfiguration.class,
+          MultitenantJpaAutoConfiguration.class,
+          JacksonAutoConfiguration.class })
 public class TestSpringConfiguration implements WebFluxConfigurer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestSpringConfiguration.class);

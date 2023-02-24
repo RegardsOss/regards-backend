@@ -70,7 +70,8 @@ public class CreateDatatypeService {
     private void checkUniqueCorrelationId(String correlationId) throws LtaSettingsException {
         if (requestRepository.existsByCorrelationId(correlationId)) {
             throw new LtaSettingsException(String.format("Request with id \"%s\" is already registered in "
-                                                         + "the database. Please provide a unique one.", correlationId));
+                                                         + "the database. Please provide a unique one.",
+                                                         correlationId));
         }
     }
 

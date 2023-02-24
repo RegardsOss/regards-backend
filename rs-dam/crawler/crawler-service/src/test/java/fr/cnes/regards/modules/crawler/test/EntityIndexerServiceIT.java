@@ -103,7 +103,8 @@ import java.util.stream.Collectors;
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @ActiveProfiles({ "indexer-service", "noscheduler" })
 @TestPropertySource(locations = { "classpath:test-indexer.properties" },
-    properties = { "regards.tenant=entity_indexer", "spring.jpa.properties.hibernate.default_schema=entity_indexer" })
+                    properties = { "regards.tenant=entity_indexer",
+                                   "spring.jpa.properties.hibernate.default_schema=entity_indexer" })
 public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     private static final String SESSION_OWNER = "SOURCE 1";
@@ -535,8 +536,6 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
      * Two goals:
      * -  test that if entities are tagged with ipId we can access them by looking for ipId or virtualId
      * -  test that if entities are tagged with virtualId we can access them by looking for ipId or virtualId
-     *
-     * @throws ModuleException
      */
     @Test
     public void testVirtualId() throws ModuleException {

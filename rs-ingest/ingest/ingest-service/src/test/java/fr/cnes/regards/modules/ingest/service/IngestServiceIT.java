@@ -65,9 +65,10 @@ import java.util.List;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=ingest", "eureka.client.enabled=false",
-        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest",
+                                   "eureka.client.enabled=false",
+                                   "regards.ingest.aip.delete.bulk.delay=100" },
+                    locations = { "classpath:application-test.properties" })
 public class IngestServiceIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")

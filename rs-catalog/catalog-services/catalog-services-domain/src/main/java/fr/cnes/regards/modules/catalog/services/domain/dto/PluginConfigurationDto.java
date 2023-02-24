@@ -47,8 +47,6 @@ public class PluginConfigurationDto extends PluginConfiguration {
     /**
      * For a {@link PluginConfiguration}, return its corresponding DTO, in which we have added fields <code>applicationModes</code>
      * and <code>entityTypes</code>
-     *
-     * @param pluginConfiguration
      */
     public PluginConfigurationDto(PluginConfiguration pluginConfiguration) {
         super(pluginConfiguration.getLabel(),

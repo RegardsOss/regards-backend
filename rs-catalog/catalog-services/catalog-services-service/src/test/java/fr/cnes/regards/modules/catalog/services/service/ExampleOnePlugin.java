@@ -32,8 +32,14 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import javax.servlet.http.HttpServletResponse;
 
-@Plugin(description = "Example many plugin.", id = "OneTestPlugin", version = "1.0.0", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(description = "Example many plugin.",
+        id = "OneTestPlugin",
+        version = "1.0.0",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE }, entityTypes = { EntityType.DATA })
 public class ExampleOnePlugin extends AbstractCatalogServicePlugin implements ISingleEntityServicePlugin {
 

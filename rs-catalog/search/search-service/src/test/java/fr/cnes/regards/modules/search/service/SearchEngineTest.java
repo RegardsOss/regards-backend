@@ -36,9 +36,14 @@ import java.util.List;
  *
  * @author Sébastien Binda
  */
-@Plugin(id = SearchEngineTest.ENGINE_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
-    description = "Test search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
-    version = "1.0.0")
+@Plugin(id = SearchEngineTest.ENGINE_ID,
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        description = "Test search engine",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss",
+        version = "1.0.0")
 public class SearchEngineTest implements ISearchEngine<Object, Object, Object, List<String>> {
 
     public static final String ENGINE_ID = "testengine";

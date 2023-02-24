@@ -24,8 +24,6 @@ public interface ICompression {
      * @param pCharset        indique le format d'encodage des caractères lors de la compression.
      * @return le fichier compressé avec l'extension
      * @throws CompressionException si l'un des paramètres est incorrect ou illisible
-     * @DM SIPNG-DM-0121-CN : Gestion du format d'encodage des caracteres lors de la compression et decompression des
-     * archives
      * @since 5.3
      */
     CompressManager compress(List<File> pFileList,
@@ -45,7 +43,6 @@ public interface ICompression {
      * @param pFlatArchive    indique si les fichiers sont ajoutes a plat dans le tar sans tenir compte de l'arborescence.
      * @return le fichier compressé avec l'extension
      * @throws CompressionException si l'un des paramètres est incorrect ou illisible
-     * @FA SIPNG-FA-0450-CN : ajout d'un parametre
      * @since 1.0
      */
     CompressManager compress(List<File> pFileList,
@@ -60,8 +57,6 @@ public interface ICompression {
      * @param pCompressedFile le fichier a decompresser
      * @param pOutputDir      le repertoire destination
      * @throws CompressionException si l'un des paramètres est incorrect ou illisible
-     * @DM SIPNG-DM-0121-CN : Gestion du format d'encodage des caracteres lors de la compression et decompression des
-     * archives
      * @since 5.3
      */
     void uncompress(File pCompressedFile, File pOutputDir, Charset pCharset) throws CompressionException;

@@ -105,7 +105,7 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     @RequestMapping(method = RequestMethod.PATCH)
     @ResourceAccess(description = "Patch several acquisition chains with new state and mode",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<EntityModel<AcquisitionProcessingChain>>> updateChainsStateAndMode(@Valid @RequestBody
                                                                                                   UpdateAcquisitionProcessingChains payload)
         throws ModuleException {
@@ -163,7 +163,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     @ResourceAccess(description = "Start a manual chain", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId,
                                                                                     @RequestParam(name = "session",
-                                                                                        required = false)
+                                                                                                  required = false)
                                                                                     Optional<String> session)
         throws ModuleException {
         return ResponseEntity.ok(toResource(processingService.startManualChain(chainId, session, false)));

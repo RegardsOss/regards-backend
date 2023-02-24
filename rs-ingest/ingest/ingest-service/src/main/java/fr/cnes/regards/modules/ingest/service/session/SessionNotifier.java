@@ -227,9 +227,7 @@ public class SessionNotifier {
     /**
      * Notify session that a product is deleted
      *
-     * @param sessionOwner
-     * @param session
-     * @param aips         {@link AIPEntity}s of the deleted product
+     * @param aips {@link AIPEntity}s of the deleted product
      */
     public void productDeleted(String sessionOwner, String session, Collection<AIPEntity> aips) {
         int nbStored = 0;

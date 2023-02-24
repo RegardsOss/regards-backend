@@ -35,15 +35,11 @@ public interface IPeriodicActionProgressManager {
 
     /**
      * Inform progress manager that a remaining pending action has been successfully for a given file url.
-     *
-     * @param pendingActionSucceedUrl
      */
     void storagePendingActionSucceed(String pendingActionSucceedUrl);
 
     /**
      * Inform progress manager that a remaining pending action has been terminated in error for a given file url.
-     *
-     * @param pendingActionErrorPath
      */
     void storagePendingActionError(Path pendingActionErrorPath);
 

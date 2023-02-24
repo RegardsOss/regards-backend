@@ -86,9 +86,6 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
     /**
      * This method returns zero or one AccessRight
      *
-     * @param accessGroup
-     * @param dataset
-     * @param pageable
      * @return {@link AccessRight}s by page
      */
     default Page<AccessRight> findAllByAccessGroupAndDataset(AccessGroup accessGroup,
@@ -107,8 +104,6 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
     /**
      * This methods return only zero or one AccessRight
      *
-     * @param accessGroup
-     * @param dataset
      * @return {@link AccessRight}
      */
     @EntityGraph(value = "graph.accessright.plugins", type = EntityGraph.EntityGraphType.LOAD)

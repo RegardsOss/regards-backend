@@ -62,8 +62,6 @@ public interface IResponseFormatter<R> {
      *
      * @param entity              {@link AbstractEntity}
      * @param paramConfigurations {@link ParameterConfiguration}s
-     * @param entityLinks
-     * @parma entityLinks {@link Link}s of the entity
      */
     void addEntity(AbstractEntity<EntityFeature> entity,
                    List<ParameterConfiguration> paramConfigurations,

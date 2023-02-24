@@ -84,10 +84,14 @@ import static com.google.common.base.Predicates.instanceOf;
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
 
-@Plugin(id = OpenIdConnectPlugin.ID, author = "REGARDS Team",
-    description = "Plugin handling the authentication via OpenId Service Provider",
-    version = OpenIdConnectPlugin.VERSION, contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(id = OpenIdConnectPlugin.ID,
+        author = "REGARDS Team",
+        description = "Plugin handling the authentication via OpenId Service Provider",
+        version = OpenIdConnectPlugin.VERSION,
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthenticationParams, OpenIdConnectToken> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenIdConnectPlugin.class);
@@ -118,45 +122,56 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
 
     public static final String OPENID_ALLOW_INSECURE = "OpenId_Allow_insecure";
 
-    @PluginParameter(name = OPENID_CLIENT_ID, label = "Client Id",
-        description = "The client id registered for this Service Provider in order to authenticate requests")
+    @PluginParameter(name = OPENID_CLIENT_ID,
+                     label = "Client Id",
+                     description = "The client id registered for this Service Provider in order to authenticate requests")
     private String clientId;
 
-    @PluginParameter(name = OPENID_CLIENT_SECRET, label = "Client Secret",
-        description = "The client secret registered for this Service Provider in order to authenticate requests",
-        sensitive = true, optional = true)
+    @PluginParameter(name = OPENID_CLIENT_SECRET,
+                     label = "Client Secret",
+                     description = "The client secret registered for this Service Provider in order to authenticate requests",
+                     sensitive = true,
+                     optional = true)
     private String clientSecret;
 
-    @PluginParameter(name = OPENID_TOKEN_ENDPOINT, label = "\"token\" endpoint URL",
-        description = "The Service Provider endpoint to authenticate and retrieve an Oauth2 token")
+    @PluginParameter(name = OPENID_TOKEN_ENDPOINT,
+                     label = "\"token\" endpoint URL",
+                     description = "The Service Provider endpoint to authenticate and retrieve an Oauth2 token")
     @URL
     private String tokenEndpoint;
 
-    @PluginParameter(name = OPENID_REDIRECT_URI, label = "Oauth2 redirect URI",
-        description = "The redirect URI configured with the Oauth2 server")
+    @PluginParameter(name = OPENID_REDIRECT_URI,
+                     label = "Oauth2 redirect URI",
+                     description = "The redirect URI configured with the Oauth2 server")
     private String redirectUri;
 
-    @PluginParameter(name = OPENID_USER_INFO_ENDPOINT, label = "\"user info\" endpoint URL",
-        description = "The Service Provider endpoint to retrieve info about the authenticated user")
+    @PluginParameter(name = OPENID_USER_INFO_ENDPOINT,
+                     label = "\"user info\" endpoint URL",
+                     description = "The Service Provider endpoint to retrieve info about the authenticated user")
     @URL
     private String userInfoEndpoint;
 
-    @PluginParameter(name = OPENID_USER_INFO_EMAIL_MAPPING, label = "Email mapping field",
-        description = "The name of the field containing the user email in the Service Provider user info response")
+    @PluginParameter(name = OPENID_USER_INFO_EMAIL_MAPPING,
+                     label = "Email mapping field",
+                     description = "The name of the field containing the user email in the Service Provider user info response")
     private String userInfoEmailMappingField;
 
-    @PluginParameter(name = OPENID_USER_INFO_FIRSTNAME_MAPPING, label = "Firstname mapping field",
-        description = "The name of the field containing the user firstname in the Service Provider user info response",
-        optional = true)
+    @PluginParameter(name = OPENID_USER_INFO_FIRSTNAME_MAPPING,
+                     label = "Firstname mapping field",
+                     description = "The name of the field containing the user firstname in the Service Provider user info response",
+                     optional = true)
     private String userInfoFirstnameMappingField;
 
-    @PluginParameter(name = OPENID_USER_INFO_LASTNAME_MAPPING, label = "Lastname mapping field",
-        description = "The name of the field containing the user lastname in the Service Provider user info response",
-        optional = true)
+    @PluginParameter(name = OPENID_USER_INFO_LASTNAME_MAPPING,
+                     label = "Lastname mapping field",
+                     description = "The name of the field containing the user lastname in the Service Provider user info response",
+                     optional = true)
     private String userInfoLastnameMappingField;
 
-    @PluginParameter(name = OPENID_REVOKE_ENDPOINT, label = "\"revoke\" endpoint URL",
-        description = "The Service Provider endpoint to deauthenticate", optional = true)
+    @PluginParameter(name = OPENID_REVOKE_ENDPOINT,
+                     label = "\"revoke\" endpoint URL",
+                     description = "The Service Provider endpoint to deauthenticate",
+                     optional = true)
     @URL
     private String revokeEndpoint;
 
@@ -185,8 +200,10 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     @Value("${http.proxy.noproxy:#{T(java.util.Collections).emptyList()}}")
     private List<String> noProxy;
 
-    @PluginParameter(name = OPENID_ALLOW_INSECURE, label = "Allow insecure SSL connection to openId server",
-        description = "Only use this insecure configuration for tests purpose.", defaultValue = "false")
+    @PluginParameter(name = OPENID_ALLOW_INSECURE,
+                     label = "Allow insecure SSL connection to openId server",
+                     description = "Only use this insecure configuration for tests purpose.",
+                     defaultValue = "false")
     private Boolean allowInsecure;
 
     private Feign feign;

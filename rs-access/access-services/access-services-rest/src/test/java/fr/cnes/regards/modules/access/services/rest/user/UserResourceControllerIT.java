@@ -34,7 +34,7 @@ import static fr.cnes.regards.modules.access.services.rest.user.mock.UserResourc
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String DUMMY_USER_LOGIN = UUID.randomUUID().toString();

@@ -67,10 +67,11 @@ import java.util.Set;
  * @author Sylvain Vissiere-Guerinet
  */
 @Configuration
-@EnableJpaRepositories(
-    excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-    basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
-    transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+@EnableJpaRepositories(excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class,
+                                                                type = FilterType.ANNOTATION) },
+                       basePackages = DaoUtils.ROOT_PACKAGE,
+                       entityManagerFactoryRef = "multitenantsEntityManagerFactory",
+                       transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
 @AutoConfigureAfter({ GsonAutoConfiguration.class, AmqpAutoConfiguration.class })

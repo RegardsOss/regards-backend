@@ -19,8 +19,6 @@
 
 /**
  * TODO: IResultSizeForecastRandomizer description
- *
- * @author gandrieu
  */
 package fr.cnes.regards.modules.processing.utils.random;
 

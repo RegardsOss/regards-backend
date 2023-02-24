@@ -84,7 +84,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all projects connections for a given project/tenant",
-        role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> getAllProjectConnections(
         @PathVariable String projectName,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -104,7 +104,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.GET, value = ProjectConnectionController.RESOURCE_ID_MAPPING)
     @ResourceAccess(description = "Retrieve a project connection of a given project/tenant",
-        role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<EntityModel<ProjectConnection>> getProjectConnection(@PathVariable String projectName,
                                                                                @PathVariable Long connectionId)
         throws ModuleException {

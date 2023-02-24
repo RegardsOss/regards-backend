@@ -24,7 +24,6 @@ public @interface RegardsTransactional {
      * @see Transactional#rollbackFor()
      * Defaults to ModuleException and runtimes
      */
-    @AliasFor(annotation = Transactional.class) Class<? extends Throwable>[] rollbackFor() default {
-        ModuleException.class };
+    @AliasFor(annotation = Transactional.class) Class<? extends Throwable>[] rollbackFor() default { ModuleException.class };
 
 }

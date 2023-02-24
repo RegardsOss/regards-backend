@@ -29,8 +29,7 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
  * @param <R> type of the attribute value
  * @author Sylvain Vissiere-Guerinet
  */
-@PluginInterface(
-    description = "Plugins of type IComputedAttribute are plugins allowing to calculate the value of an AttributeModel thanks to a ModelAttrAssoc")
+@PluginInterface(description = "Plugins of type IComputedAttribute are plugins allowing to calculate the value of an AttributeModel thanks to a ModelAttrAssoc")
 public interface IComputedAttribute<P, R> {
 
     /**
@@ -58,8 +57,6 @@ public interface IComputedAttribute<P, R> {
     /**
      * Allows to build the resulting attribute from the computation
      *
-     * @param pVisitor
-     * @param <U>
      * @return computed attribute
      */
     default <U> U accept(IComputedAttributeVisitor<U> pVisitor) {

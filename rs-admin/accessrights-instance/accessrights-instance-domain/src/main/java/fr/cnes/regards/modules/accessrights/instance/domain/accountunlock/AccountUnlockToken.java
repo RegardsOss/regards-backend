@@ -34,7 +34,8 @@ import java.time.LocalDateTime;
 @InstanceEntity
 @Entity
 @Table(name = "t_account_unlock_token",
-    uniqueConstraints = @UniqueConstraint(name = "uk_account_unlock_token_account_id", columnNames = { "account_id" }))
+       uniqueConstraints = @UniqueConstraint(name = "uk_account_unlock_token_account_id",
+                                             columnNames = { "account_id" }))
 public class AccountUnlockToken {
 
     /**

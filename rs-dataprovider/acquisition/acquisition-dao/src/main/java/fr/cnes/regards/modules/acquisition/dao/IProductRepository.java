@@ -102,7 +102,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * Find {@link Product} by state in transaction with pessimistic read lock
      *
      * @param sipState {@link ISipState}
-     * @param pageable
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
@@ -113,7 +112,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      *
      * @param processingChain {@link AcquisitionProcessingChain}
      * @param sipState        {@link ISipState}
-     * @param pageable
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
@@ -138,7 +136,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * Find {@link Product} by state
      *
      * @param sipState {@link ISipState}
-     * @param pageable
      * @return a set of products with the above properties
      */
     Page<Product> findBySipStateOrderByIdAsc(ISipState sipState, Pageable pageable);
@@ -152,7 +149,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
      *
      * @param processingChain {@link AcquisitionProcessingChain}
-     * @param productStates
      * @return number of matching {@link Product}
      */
     long countByProcessingChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates);
@@ -174,16 +170,14 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * @param productSipState {@link ISipState}s as string
      * @return long
      */
-    @Query(
-        value = "select count(distinct p.sip_gen_job_info_id) from  {h-schema}t_acquisition_product p where p.processing_chain_id=?1 and p.sip_state=?2",
-        nativeQuery = true)
+    @Query(value = "select count(distinct p.sip_gen_job_info_id) from  {h-schema}t_acquisition_product p where p.processing_chain_id=?1 and p.sip_state=?2",
+           nativeQuery = true)
     long countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(AcquisitionProcessingChain processingChain,
                                                                            String productSipState);
 
     boolean existsByProcessingChainAndSipState(AcquisitionProcessingChain processingChain, ISipState productSipState);
 
-    @Query(
-        value = "select distinct p.lastSIPGenerationJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
+    @Query(value = "select distinct p.lastSIPGenerationJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
     Set<JobInfo> findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
                                                                                     ISipState productSipState);
 

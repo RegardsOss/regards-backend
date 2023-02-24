@@ -18,6 +18,7 @@
  */
 
 package fr.cnes.regards.modules.model.service.validation.validator.object.restriction;
+
 import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
 import fr.cnes.regards.modules.model.service.validation.validator.common.restriction.AbstractEnumerationValidator;
 

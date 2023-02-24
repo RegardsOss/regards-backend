@@ -39,7 +39,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "t_access_group",
-    uniqueConstraints = @UniqueConstraint(name = "uk_access_group_name", columnNames = { "name" }))
+       uniqueConstraints = @UniqueConstraint(name = "uk_access_group_name", columnNames = { "name" }))
 public class AccessGroup implements IIdentifiable<Long> {
 
     public static final String NAME_REGEXP = "[a-zA-Z_][0-9a-zA-Z_]*";
@@ -55,16 +55,18 @@ public class AccessGroup implements IIdentifiable<Long> {
 
     @NotNull
     @Pattern(regexp = NAME_REGEXP, message = "Group name must conform to regular expression \"" + NAME_REGEXP + "\".")
-    @Size(min = NAME_MIN_SIZE, max = NAME_MAX_SIZE,
-        message = "Group name must be between " + NAME_MIN_SIZE + " and " + NAME_MAX_SIZE + " length.")
+    @Size(min = NAME_MIN_SIZE,
+          max = NAME_MAX_SIZE,
+          message = "Group name must be between " + NAME_MIN_SIZE + " and " + NAME_MAX_SIZE + " length.")
     @Column(length = NAME_MAX_SIZE, updatable = false)
     private String name;
 
     // Kept here for potential checks/rollbacks after 1.7.0 / PM76 since we don't remove the users table - No access to this property
     @GsonIgnore
     @ElementCollection
-    @CollectionTable(name = "ta_access_group_users", joinColumns = @JoinColumn(name = "access_group_id"),
-        foreignKey = @ForeignKey(name = "fk_access_group_users"))
+    @CollectionTable(name = "ta_access_group_users",
+                     joinColumns = @JoinColumn(name = "access_group_id"),
+                     foreignKey = @ForeignKey(name = "fk_access_group_users"))
     @Convert(converter = UserConverter.class)
     private Set<User> users = new HashSet<>();
 

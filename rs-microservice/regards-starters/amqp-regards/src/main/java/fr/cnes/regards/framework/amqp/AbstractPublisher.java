@@ -334,7 +334,6 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     /**
      * @param virtualHost virtual host for current tenant
-     * @param tenant
      * @param <T>         event to be published
      * @param priority    priority given to the event
      * @param channel     Channel configuration for exchange/queue/binding

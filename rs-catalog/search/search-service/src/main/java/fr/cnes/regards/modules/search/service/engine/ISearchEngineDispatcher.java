@@ -44,8 +44,6 @@ public interface ISearchEngineDispatcher {
 
     /**
      * Retrieve a search engine plugin instance for the given dataset and engine type.
-     *
-     * @throws ModuleException
      */
     ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
         throws ModuleException;

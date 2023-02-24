@@ -85,6 +85,7 @@ public interface IBasketService {
 
     /**
      * See {@link #addSelection(Long, BasketSelectionRequest)}
+     *
      * @param user requesting user
      * @param role user role
      */

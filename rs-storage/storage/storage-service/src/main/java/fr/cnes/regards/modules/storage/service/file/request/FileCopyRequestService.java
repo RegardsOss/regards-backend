@@ -116,8 +116,6 @@ public class FileCopyRequestService {
 
     /**
      * Initialize new copy requests from Flow items.
-     *
-     * @param items
      */
     public void copy(Collection<CopyFlowItem> items) {
         for (CopyFlowItem item : items) {
@@ -131,9 +129,6 @@ public class FileCopyRequestService {
 
     /**
      * Initialize new copy requests for a given group identifier
-     *
-     * @param requests
-     * @param groupId
      */
     public void copy(Collection<FileCopyRequestDTO> requests, String groupId) {
         for (FileCopyRequestDTO request : requests) {
@@ -317,8 +312,7 @@ public class FileCopyRequestService {
     /**
      * Handle copy request error.
      *
-     * @param request    {@link FileCopyRequest} error request.
-     * @param errorCause
+     * @param request {@link FileCopyRequest} error request.
      */
     public void handleError(FileCopyRequest request, String errorCause) {
         LOGGER.error("[COPY ERROR] Error copying file {} (checksum: {}) to {} storage location. Cause : {}",
@@ -348,8 +342,6 @@ public class FileCopyRequestService {
     /**
      * Search for a {@link FileCopyRequest} for the given checksum and given storage copy destination.
      *
-     * @param checksum
-     * @param storage
      * @return {@link FileCopyRequest} if any
      */
     @Transactional(readOnly = true)
@@ -360,7 +352,6 @@ public class FileCopyRequestService {
     /**
      * Search for a {@link FileCopyRequest} for the given checksum.
      *
-     * @param checksum
      * @return {@link FileCopyRequest} if any
      */
     @Transactional(readOnly = true)
@@ -371,7 +362,6 @@ public class FileCopyRequestService {
     /**
      * Search for a {@link FileCopyRequest} associated to the given {@link FileReferenceEvent}.
      *
-     * @param event
      * @return {@link FileCopyRequest} if any
      */
     public Optional<FileCopyRequest> search(FileReferenceEvent event) {
@@ -452,7 +442,7 @@ public class FileCopyRequestService {
     }
 
     /**
-     * @param storageLocationId
+     *
      */
     public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
         if (status.isPresent()) {
@@ -465,7 +455,6 @@ public class FileCopyRequestService {
     /**
      * Inform if for the given storage a deletion process is running
      *
-     * @param storage
      * @return boolean
      */
     public boolean isCopyRunning(String storage) {
@@ -485,15 +474,13 @@ public class FileCopyRequestService {
 
     /**
      * Check if a copy request exists for the given file reference
-     *
-     * @return
      */
     public boolean existsByChecksumAndStatusIn(String checksum, Collection<FileRequestStatus> status) {
         return copyRepository.existsByMetaInfoChecksumAndStatusIn(checksum, status);
     }
 
     /**
-     * @return
+     *
      */
     public boolean isFileCopyRunning(Collection<String> cheksums) {
         return copyRepository.existsByMetaInfoChecksumInAndStatusIn(cheksums, FileRequestStatus.RUNNING_STATUS);
@@ -501,8 +488,6 @@ public class FileCopyRequestService {
 
     /**
      * Retrieve expiration date for deletion request
-     *
-     * @return
      */
     public OffsetDateTime getRequestExpirationDate() {
         if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {

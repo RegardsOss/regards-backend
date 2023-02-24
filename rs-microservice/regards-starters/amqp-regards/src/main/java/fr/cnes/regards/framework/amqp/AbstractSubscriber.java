@@ -360,7 +360,6 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * Queue name is queueName if provided or is computed with {@link WorkerMode},  {@link Target}
      *
      * @param virtualHost virtual host
-     * @param tenant
      * @param channel     Channel configuration for exchange/queue/binding
      * @param purgeQueue  true to purge queue if already exists
      */

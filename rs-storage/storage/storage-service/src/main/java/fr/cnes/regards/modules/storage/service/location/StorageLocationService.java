@@ -383,7 +383,6 @@ public class StorageLocationService {
      * Files reference are not deleted, to do so, use {@link #deleteFiles(String, Boolean, String, String)}
      *
      * @param storageLocationName storage location id
-     * @throws ModuleException
      */
     public void delete(String storageLocationName) throws ModuleException {
         // Delete storage location plugin configuration
@@ -408,7 +407,6 @@ public class StorageLocationService {
      * @param forceDelete  remove reference if physical file deletion fails.
      * @param sessionOwner the user who has requested the deletion of files
      * @param session      tags the deletion files requests with a session name
-     * @throws ModuleException
      */
     public void deleteFiles(String storageName, Boolean forceDelete, String sessionOwner, String session)
         throws ModuleException {
@@ -437,10 +435,6 @@ public class StorageLocationService {
 
     /**
      * Retry all requests in error for the given storage location.
-     *
-     * @param storageName
-     * @param type
-     * @throws EntityOperationForbiddenException
      */
     public void retryErrors(String storageName, FileRequestType type) throws EntityOperationForbiddenException {
         switch (type) {
@@ -502,9 +496,6 @@ public class StorageLocationService {
 
     /**
      * Creates a new configuration for the given storage location.
-     *
-     * @param storageLocation
-     * @throws ModuleException
      */
     public StorageLocationDTO configureLocation(StorageLocationDTO storageLocation) throws ModuleException {
         Assert.notNull(storageLocation, "Storage location to configure can not be null");
@@ -530,9 +521,6 @@ public class StorageLocationService {
 
     /**
      * Update the configuration of the given storage location.
-     *
-     * @param storageLocation
-     * @throws ModuleException
      */
     public StorageLocationDTO updateLocationConfiguration(String storageName, StorageLocationDTO storageLocation)
         throws ModuleException {

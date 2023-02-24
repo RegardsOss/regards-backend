@@ -50,8 +50,6 @@ public class PreparationResponse<W, R> {
 
     /**
      * Add a generated subset
-     *
-     * @param subset
      */
     public void addPreparedSubset(W subset) {
         workingSubsets.add(subset);
@@ -59,9 +57,6 @@ public class PreparationResponse<W, R> {
 
     /**
      * Add a request to the list of not handled requests.
-     *
-     * @param request
-     * @param errorCause
      */
     public void addPreparationError(R request, String errorCause) {
         preparationErrors.put(request, errorCause);

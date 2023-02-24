@@ -37,7 +37,6 @@ public interface IRuleService {
     /**
      * Create or update a {@link Rule} from a {@link RuleDto}
      *
-     * @param toCreate
      * @return {@link RuleDto} from the created {@link Rule}
      * @throws ModuleException if during an update id is unknow
      */
@@ -45,14 +44,11 @@ public interface IRuleService {
 
     /**
      * Delete a {@link Rule} by its id.  <br/>
-     *
-     * @param id
-     * @throws ModuleException
      */
     void delete(String id) throws ModuleException;
 
     /**
-     * @param id
+     *
      */
     Optional<RuleDTO> getRule(String id);
 

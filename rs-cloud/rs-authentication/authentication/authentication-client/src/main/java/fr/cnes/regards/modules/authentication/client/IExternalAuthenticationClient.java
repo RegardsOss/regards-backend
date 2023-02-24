@@ -35,12 +35,14 @@ public interface IExternalAuthenticationClient {
 
     String ACCEPT_ACCOUNT_RELATIVE_PATH = "/verify";
 
-    @GetMapping(value = ROOT_PATH + ACCEPT_ACCOUNT_RELATIVE_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_PATH + ACCEPT_ACCOUNT_RELATIVE_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Authentication> verifyAndAuthenticate(@RequestParam String externalToken);
 
-    @GetMapping(value = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ServiceProviderDto>>> getServiceProviders();
 
 }

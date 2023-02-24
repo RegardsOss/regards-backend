@@ -9,8 +9,14 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-@Plugin(id = "FakeDatasourcePlugin", version = "beta", description = "For test only", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "FakeDatasourcePlugin",
+        version = "beta",
+        description = "For test only",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class FakeDatasourcePlugin implements IDataSourcePlugin {
 
     public static final String MODEL_PARAM = "model";

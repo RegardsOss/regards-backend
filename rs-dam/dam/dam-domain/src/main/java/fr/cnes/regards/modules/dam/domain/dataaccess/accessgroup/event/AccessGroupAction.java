@@ -22,6 +22,5 @@ package fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event;
  * @author Stephane Cortine
  **/
 public enum AccessGroupAction {
-    DELETE,
-    CREATE
+    DELETE, CREATE
 }

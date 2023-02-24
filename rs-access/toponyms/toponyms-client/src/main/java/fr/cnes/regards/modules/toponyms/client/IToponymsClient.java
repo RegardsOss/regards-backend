@@ -39,27 +39,32 @@ import java.util.List;
 public interface IToponymsClient {
 
     @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.SEARCH,
-        consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(name = "partialLabel") String partialLabel,
                                                          @RequestParam(name = "locale") String locale);
 
-    @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(@RequestParam(name = "page") int page,
                                                              @RequestParam(name = "size") int size);
 
     @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
-        consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
                                                 @RequestParam(name = "simplified", required = false)
                                                 Boolean simplified);
 
     @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
-        consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId);
 
-    @PostMapping(value = ToponymsRestConfiguration.ROOT_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ToponymsRestConfiguration.ROOT_MAPPING,
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson);
 
 }

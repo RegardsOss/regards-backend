@@ -80,9 +80,6 @@ public class AccessSettingsService extends AbstractSettingService {
 
     /**
      * {@link Order} : Initialization needs to be done after RoleService initialization from {@link fr.cnes.regards.modules.accessrights.service.role.RoleEventListener}
-     *
-     * @param event
-     * @throws EntityException
      */
     @EventListener
     @Order(10)

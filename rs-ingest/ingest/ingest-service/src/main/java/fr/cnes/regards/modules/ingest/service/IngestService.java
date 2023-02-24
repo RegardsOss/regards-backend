@@ -134,12 +134,10 @@ public class IngestService implements IIngestService {
     /**
      * Validate, save and publish a new request
      *
-     * @param requestId
      * @param sip             sip to manage
      * @param ingestMetadata  related ingest metadata
      * @param info            synchronous feedback
      * @param grantedRequests collection of granted requests to populate
-     * @return
      */
     private IngestRequest registerIngestRequest(String requestId,
                                                 SIP sip,
@@ -284,10 +282,6 @@ public class IngestService implements IIngestService {
 
     /**
      * Validate given SIP dataobjects to ensure storage location is configured for each needed {@link DataType} to store
-     *
-     * @param sip
-     * @param ingestMetadata
-     * @param errors
      */
     private void checkSipStorageLocations(SIP sip, IngestMetadata ingestMetadata, Errors errors) {
         Assert.notNull(errors, "Errors should not be null");

@@ -52,8 +52,9 @@ public interface IUserResourceClient {
      * @param pBorrowedRoleName The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
      * @return the {@link List} list of resources access
      */
-    @GetMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(
         @PathVariable("user_email") final String pUserLogin,
         @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName);
@@ -65,8 +66,9 @@ public interface IUserResourceClient {
      * @param pUpdatedUserAccessRights The {@link List} of {@link ResourcesAccess} to set
      * @return void
      */
-    @PutMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_TYPE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Update the list of specific user accesses", role = DefaultRole.PROJECT_ADMIN)
     ResponseEntity<Void> updateProjectUserResources(@PathVariable("user_email") final String pLogin,
                                                     @Valid @RequestBody
@@ -78,8 +80,9 @@ public interface IUserResourceClient {
      * @param pUserLogin user email
      * @return {@link Void}
      */
-    @DeleteMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_TYPE_MAPPING,
+                   consumes = MediaType.APPLICATION_JSON_VALUE,
+                   produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Remove all specific user accesses", role = DefaultRole.PROJECT_ADMIN)
     ResponseEntity<Void> removeProjectUserResources(@PathVariable("user_email") final String pUserLogin);
 }

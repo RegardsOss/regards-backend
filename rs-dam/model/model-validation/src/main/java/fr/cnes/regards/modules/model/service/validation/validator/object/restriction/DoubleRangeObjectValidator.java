@@ -18,6 +18,7 @@
  */
 
 package fr.cnes.regards.modules.model.service.validation.validator.object.restriction;
+
 import com.google.common.collect.Range;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
 import fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping;

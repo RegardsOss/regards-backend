@@ -50,7 +50,6 @@ public class AttributeCriterionBuilder {
      * @param operator       {@link ParameterOperator} to apply for the current attribute search
      * @param values         {@link String}s search values.
      * @return {@link ICriterion}
-     * @throws UnsupportedCriterionOperator
      */
     public static ICriterion build(AttributeModel attributeModel, ParameterOperator operator, List<String> values)
         throws UnsupportedCriterionOperator {
@@ -103,7 +102,6 @@ public class AttributeCriterionBuilder {
      * @param value     String representation of boolean parameter value
      * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
-     * @throws UnsupportedCriterionOperator
      */
     private static ICriterion buildBooleanCrit(AttributeModel attribute, String value, ParameterOperator operator)
         throws UnsupportedCriterionOperator {
@@ -128,7 +126,6 @@ public class AttributeCriterionBuilder {
      * @param value     String representation of date parameter value
      * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
-     * @throws OpenSearchUnknownParameter
      */
     private static ICriterion buildDateCrit(AttributeModel attribute, String value, ParameterOperator operator) {
         switch (operator) {
@@ -153,7 +150,6 @@ public class AttributeCriterionBuilder {
      * @param value     String representation of integer parameter value
      * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
-     * @throws OpenSearchUnknownParameter
      */
     private static ICriterion buildIngetegerCrit(AttributeModel attribute, String value, ParameterOperator operator) {
         // Important :
@@ -249,7 +245,6 @@ public class AttributeCriterionBuilder {
      * @param value     String representation of parameter value
      * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
-     * @throws UnsupportedCriterionOperator
      */
     private static ICriterion buildStringCrit(AttributeModel attribute, String value, ParameterOperator operator)
         throws UnsupportedCriterionOperator {
@@ -274,7 +269,6 @@ public class AttributeCriterionBuilder {
      * @param value     String representation of parameter value
      * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
-     * @throws UnsupportedCriterionOperator
      */
     private static ICriterion buildStringArrayCrit(AttributeModel attribute, String value, ParameterOperator operator)
         throws UnsupportedCriterionOperator {
@@ -311,7 +305,6 @@ public class AttributeCriterionBuilder {
      *
      * @param bboxs {@link String}s
      * @return {@link ICriterion}
-     * @throws InvalidGeometryException
      */
     public static ICriterion buildGeometryBbox(List<String> bboxs) throws InvalidGeometryException {
         List<ICriterion> criterion = new ArrayList<>();
@@ -329,7 +322,6 @@ public class AttributeCriterionBuilder {
      * @param latitude  {@link String}
      * @param radius    {@link String}
      * @return {@link ICriterion}
-     * @throws InvalidGeometryException
      */
     public static ICriterion buildGeometryCircle(List<String> longitude, List<String> latitude, List<String> radius)
         throws InvalidGeometryException {

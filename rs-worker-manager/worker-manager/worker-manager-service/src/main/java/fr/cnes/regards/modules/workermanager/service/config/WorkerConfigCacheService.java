@@ -59,9 +59,6 @@ public class WorkerConfigCacheService {
 
     /**
      * Get the worker type as an optional
-     *
-     * @param contentType
-     * @return
      */
     public Optional<String> getWorkerType(String contentType) {
         Map<String, String> workerConfigs = getWorkerConfigs();

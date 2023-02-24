@@ -26,7 +26,5 @@ public enum AnimalType {
     /**
      * Few animal types
      */
-    BIRD,
-    FISH,
-    MAMMAL
+    BIRD, FISH, MAMMAL
 }

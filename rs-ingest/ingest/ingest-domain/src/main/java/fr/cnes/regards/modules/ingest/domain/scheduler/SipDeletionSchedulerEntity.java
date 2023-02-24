@@ -33,8 +33,9 @@ import java.util.Objects;
 public class SipDeletionSchedulerEntity {
 
     @Id
-    @SequenceGenerator(name = "sipDeletionSchedulerSequence", sequenceName = "seq_sip_deletion_scheduler",
-        initialValue = 1)
+    @SequenceGenerator(name = "sipDeletionSchedulerSequence",
+                       sequenceName = "seq_sip_deletion_scheduler",
+                       initialValue = 1)
     @GeneratedValue(generator = "sipDeletionSchedulerSequence")
     private Long id;
 

@@ -81,10 +81,6 @@ public interface IEsRepository {
 
     /**
      * Add mappings for the given index
-     *
-     * @param index
-     * @param mappings
-     * @return
      */
     boolean putMappings(String index, Set<AttributeDescription> mappings);
 
@@ -565,9 +561,7 @@ public interface IEsRepository {
     void close();
 
     /**
-     * @param tenant
-     * @param datasourceId
-     * @return
+     *
      */
     long deleteByDatasource(String tenant, Long datasourceId);
 }

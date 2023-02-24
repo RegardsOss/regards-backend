@@ -93,11 +93,17 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 @EnableWebMvc
 @EnableJpaRepositories
 @EnableFeignClients(basePackageClasses = { IAccountsClient.class, IRolesClient.class, IStorageRestClient.class })
-@ContextConfiguration(
-    classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, AmqpTestConfiguration.class })
-@Import({ MultitenantAutoConfiguration.class, MicroserviceAutoConfiguration.class, AmqpAutoConfiguration.class,
-    DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class, JacksonAutoConfiguration.class,
-    FeignClientConfiguration.class, GsonAutoConfiguration.class, })
+@ContextConfiguration(classes = { DefaultTestFeignConfiguration.class,
+                                  AppDaoTestConfiguration.class,
+                                  AmqpTestConfiguration.class })
+@Import({ MultitenantAutoConfiguration.class,
+          MicroserviceAutoConfiguration.class,
+          AmqpAutoConfiguration.class,
+          DataSourcesAutoConfiguration.class,
+          MultitenantJpaAutoConfiguration.class,
+          JacksonAutoConfiguration.class,
+          FeignClientConfiguration.class,
+          GsonAutoConfiguration.class, })
 public class TestSpringConfiguration implements WebMvcConfigurer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestSpringConfiguration.class);
@@ -174,12 +180,7 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * @Bean public IRolesClient iRolesClient() {
-     * return Mockito.mock(IRolesClient.class);
-     * }
-     * @Bean public IStorageRestClient iStorageRestClient() {
-     * return Mockito.mock(IStorageRestClient.class);
-     * }
+     *
      */
 
     @Value("${regards.test.role:USER_ROLE}")

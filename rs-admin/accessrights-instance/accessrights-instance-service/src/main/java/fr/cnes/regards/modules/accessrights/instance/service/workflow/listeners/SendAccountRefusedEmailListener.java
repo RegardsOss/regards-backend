@@ -57,8 +57,7 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
     private final IEmailClient emailClient;
 
     /**
-     * @param pTemplateService
-     * @param pEmailClient
+     *
      */
     public SendAccountRefusedEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient) {
         super();

@@ -55,9 +55,8 @@ public interface ILegacySearchEngineClient {
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAll(@RequestHeader HttpHeaders headers,
                                                                              @RequestParam
                                                                              MultiValueMap<String, String> queryParams,
-                                                                             @RequestParam(
-                                                                                 name = SearchEngineMappings.SEARCH_REQUEST_PARSER,
-                                                                                 required = false)
+                                                                             @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER,
+                                                                                           required = false)
                                                                              String engineParserType,
                                                                              @RequestParam(SearchEngineMappings.PAGE)
                                                                              int page,
@@ -77,7 +76,7 @@ public interface ILegacySearchEngineClient {
      * Search on all collections
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllCollections(
         @RequestHeader HttpHeaders headers,
         @RequestParam MultiValueMap<String, String> queryParams,
@@ -89,7 +88,7 @@ public interface ILegacySearchEngineClient {
      * Search property values on all collections request
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_COLLECTIONS_PROPERTY_VALUES,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<String>> searchCollectionPropertyValues(
         @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName,
         @RequestHeader HttpHeaders headers,
@@ -100,7 +99,7 @@ public interface ILegacySearchEngineClient {
      * Get a collection from its URN
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.GET_COLLECTION_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<EntityFeature>> getCollection(@Valid @PathVariable(SearchEngineMappings.URN)
                                                              UniformResourceName urn,
                                                              @RequestHeader HttpHeaders headers);
@@ -111,26 +110,23 @@ public interface ILegacySearchEngineClient {
      * Search on all datasets
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATASETS_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllDatasets(@RequestHeader HttpHeaders headers,
                                                                                      @RequestParam
                                                                                      MultiValueMap<String, String> queryParams,
-                                                                                     @RequestParam(
-                                                                                         name = SearchEngineMappings.SEARCH_REQUEST_PARSER,
-                                                                                         required = false)
+                                                                                     @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER,
+                                                                                                   required = false)
                                                                                      String engineParserType,
-                                                                                     @RequestParam(
-                                                                                         SearchEngineMappings.PAGE)
+                                                                                     @RequestParam(SearchEngineMappings.PAGE)
                                                                                      int page,
-                                                                                     @RequestParam(
-                                                                                         SearchEngineMappings.SIZE)
+                                                                                     @RequestParam(SearchEngineMappings.SIZE)
                                                                                      int size);
 
     /**
      * Search property values on all datasets request
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATASETS_PROPERTY_VALUES,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<String>> searchDatasetPropertyValues(
         @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName,
         @RequestHeader HttpHeaders headers,
@@ -141,7 +137,7 @@ public interface ILegacySearchEngineClient {
      * Get a dataset from its URN
      */
     @GetMapping(value = ROOT_PATH + SearchEngineMappings.GET_DATASET_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<EntityFeature>> getDataset(@Valid @PathVariable(SearchEngineMappings.URN)
                                                           UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
@@ -151,7 +147,7 @@ public interface ILegacySearchEngineClient {
      * Search on all dataobjects
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllDataobjects(
         @RequestHeader HttpHeaders headers,
         @RequestParam MultiValueMap<String, String> queryParams,
@@ -163,7 +159,7 @@ public interface ILegacySearchEngineClient {
      * Search property values on all dataobjects request
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTY_VALUES,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<String>> searchDataobjectPropertyValues(
         @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName,
         @RequestHeader HttpHeaders headers,
@@ -174,7 +170,7 @@ public interface ILegacySearchEngineClient {
      * Get a dataobject from its URN
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.GET_DATAOBJECT_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<EntityFeature>> getDataobject(@Valid @PathVariable(SearchEngineMappings.URN)
                                                              UniformResourceName urn,
                                                              @RequestHeader HttpHeaders headers);
@@ -188,7 +184,7 @@ public interface ILegacySearchEngineClient {
      * conversion at the moment. It does not consider custom converter.
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchSingleDataset(
         @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn,
         @RequestHeader HttpHeaders headers,
@@ -201,7 +197,7 @@ public interface ILegacySearchEngineClient {
      * Search property values on dataobjects of a single dataset request
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<String>> searchDataobjectPropertyValuesOnDataset(
         @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn,
         @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName,
@@ -215,7 +211,7 @@ public interface ILegacySearchEngineClient {
      * Search dataobjects returning datasets
      */
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataobjectsReturnDatasets(
         @RequestHeader HttpHeaders headers,
         @RequestParam MultiValueMap<String, String> queryParams,

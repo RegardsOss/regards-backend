@@ -59,8 +59,9 @@ public interface IMicroserviceResourceClient {
      * @param pPagedResourcesAssembler page assembler
      * @return list of user resource accesses for given microservice
      */
-    @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_TYPE_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
         @PathVariable("microservicename") final String pMicroserviceName,
         @RequestParam("page") int pPage,
@@ -71,8 +72,9 @@ public interface IMicroserviceResourceClient {
      * @param pResourcesToRegister resource to register for the specified microservice
      * @return {@link Void}
      */
-    @PostMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ROOT_TYPE_MAPPING,
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> registerMicroserviceEndpoints(@PathVariable("microservicename") final String pMicroserviceName,
                                                        @RequestBody @Valid
                                                        final List<ResourceMapping> pResourcesToRegister);
@@ -83,8 +85,9 @@ public interface IMicroserviceResourceClient {
      * @param pMicroserviceName microservice
      * @return list of all controllers associated to the specified microservice
      */
-    @GetMapping(value = ROOT_TYPE_MAPPING + CONTROLLERS_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_TYPE_MAPPING + CONTROLLERS_MAPPING,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<String>> retrieveMicroserviceControllers(
         @PathVariable("microservicename") final String pMicroserviceName);
 
@@ -95,8 +98,9 @@ public interface IMicroserviceResourceClient {
      * @param pControllerName   controller
      * @return List of accessible resources for the specified microservice and controller
      */
-    @RequestMapping(value = ROOT_TYPE_MAPPING + CONTROLLER_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = ROOT_TYPE_MAPPING + CONTROLLER_MAPPING,
+                    consumes = MediaType.APPLICATION_JSON_VALUE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
         @PathVariable("microservicename") final String pMicroserviceName,
         @PathVariable("controllername") final String pControllerName);

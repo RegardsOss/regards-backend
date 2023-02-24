@@ -45,8 +45,9 @@ public class EnumerationRestriction extends AbstractRestriction {
      */
     @NotNull
     @ElementCollection(fetch = FetchType.EAGER) // Force loading all acceptable values
-    @JoinTable(name = "ta_enum_restr_accept_values", joinColumns = @JoinColumn(name = "restriction_id",
-        foreignKey = @ForeignKey(name = "fk_enum_restr_accept_values_restriction_id")))
+    @JoinTable(name = "ta_enum_restr_accept_values",
+               joinColumns = @JoinColumn(name = "restriction_id",
+                                         foreignKey = @ForeignKey(name = "fk_enum_restr_accept_values_restriction_id")))
     @Column(name = "value")
     private Set<String> acceptableValues;
 

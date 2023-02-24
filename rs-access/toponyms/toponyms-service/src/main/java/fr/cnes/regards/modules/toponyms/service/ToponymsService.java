@@ -112,8 +112,7 @@ public class ToponymsService {
     /**
      * Retrieve {@link Page} of {@link ToponymDTO}s
      *
-     * @param visible  visibility of the toponym
-     * @param pageable
+     * @param visible visibility of the toponym
      * @return {@link ToponymDTO}s
      */
     public Page<ToponymDTO> findAllByVisibility(String locale, boolean visible, Pageable pageable) {
@@ -166,10 +165,7 @@ public class ToponymsService {
      * Search for toponyms matching the label and the locale given.
      * Returned {@link ToponymDTO}s are geometry free.
      *
-     * @param partialLabel
-     * @param locale
-     * @param visible
-     * @param limit        maximum number of results to retrieve
+     * @param limit maximum number of results to retrieve
      * @return {@link ToponymDTO}s without geometry
      */
     public List<ToponymDTO> search(String partialLabel, String locale, boolean visible, int limit) {

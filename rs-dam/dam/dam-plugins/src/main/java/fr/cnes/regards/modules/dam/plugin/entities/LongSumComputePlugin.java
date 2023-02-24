@@ -40,20 +40,26 @@ import java.util.function.Consumer;
  *
  * @author Sylvain Vissiere-Guerinet
  */
-@Plugin(id = PluginComputationIdentifierEnum.LONG_SUM_COUNT_VALUE, version = "1.0.0",
-    description = "allows to compute the sum of LongAttribute according to a collection of data using the same LongAttribute name",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = PluginComputationIdentifierEnum.LONG_SUM_COUNT_VALUE,
+        version = "1.0.0",
+        description = "allows to compute the sum of LongAttribute according to a collection of data using the same LongAttribute name",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 @ComputationPlugin(supportedType = PropertyType.LONG)
 public class LongSumComputePlugin extends AbstractDataObjectComputePlugin<Long> {
 
-    @PluginParameter(name = PARAMETER_ATTRIBUTE_NAME, label = "Parameter attribute name",
-        description = "Name of parameter attribute used to compute result attribute.")
+    @PluginParameter(name = PARAMETER_ATTRIBUTE_NAME,
+                     label = "Parameter attribute name",
+                     description = "Name of parameter attribute used to compute result attribute.")
     private String parameterAttributeName;
 
-    @PluginParameter(name = PARAMETER_FRAGMENT_NAME, label = "Parameter fragment name",
-        description = "Name of parameter attribute fragment. If parameter attribute belongs to default fragment, leave this field empty.",
-        optional = true)
+    @PluginParameter(name = PARAMETER_FRAGMENT_NAME,
+                     label = "Parameter fragment name",
+                     description = "Name of parameter attribute fragment. If parameter attribute belongs to default fragment, leave this field empty.",
+                     optional = true)
     private String parameterAttributeFragmentName;
 
     /**

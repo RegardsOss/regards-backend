@@ -43,8 +43,14 @@ import java.util.UUID;
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@Plugin(id = "tata", description = "plugin for test", author = "REGARDS Team", contact = "regards@c-s.fr",
-    license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
+@Plugin(id = "tata",
+        description = "plugin for test",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss",
+        version = "1.0.0")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class TestService implements IService {
 

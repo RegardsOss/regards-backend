@@ -38,9 +38,9 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "t_file_storage_request",
-    indexes = { @Index(name = "idx_file_storage_request", columnList = "storage, checksum"),
-        @Index(name = "idx_file_storage_request_cs", columnList = "checksum"),
-        @Index(name = "idx_file_storage_request_storage", columnList = "storage") })
+       indexes = { @Index(name = "idx_file_storage_request", columnList = "storage, checksum"),
+                   @Index(name = "idx_file_storage_request_cs", columnList = "checksum"),
+                   @Index(name = "idx_file_storage_request_storage", columnList = "storage") })
 public class FileStorageRequest {
 
     public static final String FILE_STORAGE_REQUEST_NEED_A_OWNER = "File storage request need a owner !";
@@ -58,15 +58,16 @@ public class FileStorageRequest {
      */
     @Column(name = "group_id", nullable = false, length = 128)
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "ta_storage_request_group_ids", joinColumns = @JoinColumn(name = "file_storage_request_id",
-        foreignKey = @ForeignKey(name = "fk_ta_storage_request_group_ids_t_file_storage_request")))
+    @CollectionTable(name = "ta_storage_request_group_ids",
+                     joinColumns = @JoinColumn(name = "file_storage_request_id",
+                                               foreignKey = @ForeignKey(name = "fk_ta_storage_request_group_ids_t_file_storage_request")))
     private final Set<String> groupIds = Sets.newHashSet();
 
     @Column(name = "owner")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ta_file_storage_request_owners",
-        joinColumns = @JoinColumn(name = "file_storage_request_id",
-            foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_owners_t_file_storage_request")))
+                     joinColumns = @JoinColumn(name = "file_storage_request_id",
+                                               foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_owners_t_file_storage_request")))
     private final Set<String> owners = Sets.newHashSet();
 
     @Column(name = "origin_url", length = FileLocation.URL_MAX_LENGTH)
@@ -167,9 +168,6 @@ public class FileStorageRequest {
 
     /**
      * Update an existing request from a new received request.
-     *
-     * @param request
-     * @param groupId
      */
     public void update(FileStorageRequestDTO request, String groupId) {
         if (!this.owners.contains(request.getOwner())) {

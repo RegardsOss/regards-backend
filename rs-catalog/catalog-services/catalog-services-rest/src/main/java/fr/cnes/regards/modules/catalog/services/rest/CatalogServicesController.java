@@ -75,7 +75,7 @@ public class CatalogServicesController {
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all services applied to given dataset, augmented with meta information",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<PluginConfigurationDto>>> retrieveServices(
         @RequestParam(value = DATASET_IDS_QUERY_PARAM, required = false) final List<String> pDatasetIds,
         @RequestParam(value = SCOPES_QUERY_PARAM, required = false) final List<ServiceScope> pServiceScopes) {
@@ -88,7 +88,6 @@ public class CatalogServicesController {
      *
      * @param pluginConfigurationBusinessId the id of the {@link Dataset}
      * @return whatever is returned by the given service
-     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST, path = PATH_SERVICE_NAME, produces = MediaType.TEXT_PLAIN_VALUE)
     @ResourceAccess(description = "Apply a given plugin service", role = DefaultRole.PUBLIC)

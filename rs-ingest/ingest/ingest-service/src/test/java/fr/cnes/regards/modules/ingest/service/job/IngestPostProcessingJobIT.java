@@ -48,9 +48,9 @@ import java.util.Optional;
  * @author Sebastien Binda
  * @author Iliana Ghazali
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=post_process_job_it", "regards.amqp.enabled=true" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=post_process_job_it",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
 

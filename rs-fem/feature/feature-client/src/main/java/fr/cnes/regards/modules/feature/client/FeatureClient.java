@@ -48,8 +48,7 @@ public class FeatureClient {
     /**
      * Sends {@link FeatureUpdateRequestEvent} to fem manager to handle {@link Feature}s update.
      *
-     * @param features      {@link Feature}s to patch
-     * @param priorityLevel
+     * @param features {@link Feature}s to patch
      * @return update request identifiers
      */
     public List<String> updateFeatures(String updateOwner, List<Feature> features, PriorityLevel priorityLevel) {

@@ -112,8 +112,9 @@ public class FileDownloadController {
      * @param checksum checksum of the file to download
      * @return {@link Resource}
      */
-    @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH, method = RequestMethod.GET,
-        produces = MediaType.ALL_VALUE)
+    @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH,
+                    method = RequestMethod.GET,
+                    produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource> downloadFileWithToken(@PathVariable("checksum") String checksum,
                                                           @RequestParam(name = FileDownloadService.TOKEN_PARAM)

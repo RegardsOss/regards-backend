@@ -44,7 +44,7 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_service_it",
-    "regards.session-agent.limit.store.session-steps=30" })
+                                   "regards.session-agent.limit.store.session-steps=30" })
 @ActiveProfiles({ "noscheduler" })
 public class AgentCleanSessionStepServiceIT extends AbstractAgentServiceUtilsIT {
 

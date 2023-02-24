@@ -8,9 +8,7 @@ package fr.cnes.regards.modules.feature.dto;
  */
 public enum PriorityLevel {
 
-    HIGH(0),
-    NORMAL(1),
-    LOW(2);
+    HIGH(0), NORMAL(1), LOW(2);
 
     private int priority;
 

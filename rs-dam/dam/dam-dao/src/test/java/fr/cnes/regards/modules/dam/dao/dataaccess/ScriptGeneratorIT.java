@@ -23,7 +23,6 @@ import org.junit.Ignore;
 
 /**
  * @author Marc Sordi
- * @See {@link AbstractScriptGeneratorIT}
  */
 @Ignore
 public class ScriptGeneratorIT extends AbstractScriptGeneratorIT {

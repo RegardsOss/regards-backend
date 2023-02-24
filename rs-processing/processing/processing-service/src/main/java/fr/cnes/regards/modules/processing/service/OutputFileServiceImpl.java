@@ -57,7 +57,7 @@ public class OutputFileServiceImpl implements IOutputFileService {
     }
 
     @Scheduled(cron = "${regards.processing.outputfiles.cleanup.cron:0 0 */2 * * *}" // every two hours by default
-    )
+                                                                                     )
     @Override
     public void scheduledDeleteDownloadedFiles() {
         outFileRepo.save(outFileRepo.findByDownloadedIsTrueAndDeletedIsFalse()

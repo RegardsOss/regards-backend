@@ -110,8 +110,6 @@ public class MockStorageResponsesHelper {
     /**
      * Mock storage responses success for all creation request in database matching the given groupIds.
      * Including reference and storage requests.
-     *
-     * @param groupIds
      */
     public void mockFeatureCreationStorageSuccess(Collection<String> groupIds) {
         mockStorageResponses(featureCreationRequestRepo, Optional.empty(), groupIds, true);

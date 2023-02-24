@@ -32,7 +32,8 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "t_ui_layout",
-    uniqueConstraints = { @UniqueConstraint(name = "uk_ui_layout_application_id", columnNames = { "application_id" }) })
+       uniqueConstraints = { @UniqueConstraint(name = "uk_ui_layout_application_id",
+                                               columnNames = { "application_id" }) })
 public class UILayout {
 
     /**

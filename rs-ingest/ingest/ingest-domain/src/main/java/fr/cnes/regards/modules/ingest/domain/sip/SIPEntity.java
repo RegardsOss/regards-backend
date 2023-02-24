@@ -40,16 +40,17 @@ import java.util.UUID;
  * @author Marc Sordi
  */
 @Entity
-@Table(name = "t_sip", indexes = { @Index(name = "idx_sip_id", columnList = "provider_id,sipId,checksum"),
-    @Index(name = "idx_sip_state", columnList = "state"),
-    @Index(name = "idx_sip_providerId", columnList = "provider_id"),
-    @Index(name = "idx_sip_creation_date", columnList = "creation_date"),
-    @Index(name = "idx_sip_version", columnList = "version"),
-    @Index(name = "idx_sip_session_owner", columnList = "session_owner"),
-    @Index(name = "idx_sip_session", columnList = "session_name") },
-    // PostgreSQL manage both single indexes and multiple ones
-    uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
-        @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
+@Table(name = "t_sip",
+       indexes = { @Index(name = "idx_sip_id", columnList = "provider_id,sipId,checksum"),
+                   @Index(name = "idx_sip_state", columnList = "state"),
+                   @Index(name = "idx_sip_providerId", columnList = "provider_id"),
+                   @Index(name = "idx_sip_creation_date", columnList = "creation_date"),
+                   @Index(name = "idx_sip_version", columnList = "version"),
+                   @Index(name = "idx_sip_session_owner", columnList = "session_owner"),
+                   @Index(name = "idx_sip_session", columnList = "session_name") },
+       // PostgreSQL manage both single indexes and multiple ones
+       uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
+                             @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
 // There cannot be any unique constraint on last because there will always be multiple value with false!!!!
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class SIPEntity extends AbstractOAISEntity {
@@ -85,7 +86,7 @@ public class SIPEntity extends AbstractOAISEntity {
     @NotBlank(message = "Checksum is required")
     @Column(length = CHECKSUM_MAX_LENGTH)
     private String checksum;
-    
+
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
     private SIP sip;

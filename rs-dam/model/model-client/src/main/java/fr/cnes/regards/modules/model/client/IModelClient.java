@@ -53,5 +53,5 @@ public interface IModelClient {
         @RequestParam(value = "type", required = false) EntityType pType);
 
     @GetMapping(value = TYPE_MAPPING + MODEL_MAPPING)
-    ResponseEntity<EntityModel<Model>> getModel(@PathVariable(name="modelName") String model);
+    ResponseEntity<EntityModel<Model>> getModel(@PathVariable(name = "modelName") String model);
 }

@@ -19,8 +19,6 @@
 
 /**
  * TODO: BasketDatasetSelectionDescriptor description
- *
- * @author gandrieu
  */
 package fr.cnes.regards.modules.order.service.job;
 

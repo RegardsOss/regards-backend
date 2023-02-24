@@ -137,7 +137,7 @@ public class LtaSettingService extends AbstractSettingService {
         }
         return datatypeParameterMap;
     }
-    
+
 }
 
 

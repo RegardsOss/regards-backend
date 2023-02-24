@@ -34,7 +34,7 @@ import java.util.List;
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(locations = "classpath:test.properties",
-    properties = { "spring.jpa.properties.hibernate.default_schema=collectionitnotx" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=collectionitnotx" })
 @ContextConfiguration(classes = { DamRestConfiguration.class })
 public class CollectionControllerNoTxIT extends AbstractCollectionControllerIT {
 

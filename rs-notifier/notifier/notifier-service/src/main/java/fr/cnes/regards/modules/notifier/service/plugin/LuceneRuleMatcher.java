@@ -14,9 +14,14 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@Plugin(author = "REGARDS Team", description = "Lucene rule matcher", id = LuceneRuleMatcher.PLUGIN_ID,
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Lucene rule matcher",
+        id = LuceneRuleMatcher.PLUGIN_ID,
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class LuceneRuleMatcher implements IRuleMatcher {
 
     public static final String PAYLOAD_RULE_NAME = "payload_rule";

@@ -32,8 +32,7 @@ import java.util.SortedMap;
  * @author Christophe Mertz
  * @author Marc Sordi
  */
-@PluginInterface(
-    description = "Plugin to generate SIP with product and file metadata using legacy metadata generation toolbox")
+@PluginInterface(description = "Plugin to generate SIP with product and file metadata using legacy metadata generation toolbox")
 public interface ISIPGenerationPluginWithMetadataToolbox extends ISipGenerationPlugin {
 
     /**
@@ -41,7 +40,6 @@ public interface ISIPGenerationPluginWithMetadataToolbox extends ISipGenerationP
      *
      * @param acqFiles list of acquisition filoes
      * @return an ordered map of attribute
-     * @throws ModuleException
      */
     SortedMap<Integer, Attribute> createMetadataPlugin(Set<AcquisitionFile> acqFiles) throws ModuleException;
 }

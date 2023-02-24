@@ -72,7 +72,8 @@ import java.util.Random;
  * @author Marc Sordi
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "regards.tenant=departments", "spring.jpa.properties.hibernate.default_schema=departments" })
+                    properties = { "regards.tenant=departments",
+                                   "spring.jpa.properties.hibernate.default_schema=departments" })
 public class DepartmentSearchControllerIT extends AbstractEngineIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DepartmentSearchControllerIT.class);

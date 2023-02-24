@@ -41,7 +41,6 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
      * Find {@link UIPluginConfiguration} associated to all entities througth linkedToAllEntities parameter
      *
      * @param isLinkedToAllEntities [true|false]
-     * @param pageable
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
@@ -51,7 +50,6 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
      * Find all actives {@link UIPluginConfiguration}
      *
      * @param isActive [true|false]
-     * @param pageable
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
@@ -62,7 +60,6 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
      *
      * @param isActive              [true|false]
      * @param isLinkedToAllEntities [true|false]
-     * @param pageable
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
@@ -77,7 +74,6 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
      * @param pluginType            type
      * @param isActive              [true|false]
      * @param isLinkedToAllEntities [true|false]
-     * @param pageable
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
@@ -103,8 +99,7 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
     /**
      * Find all {@link UIPluginConfiguration} associated to the given {@link UIPluginDefinition}
      *
-     * @param plugin   {@link UIPluginDefinition}
-     * @param pageable
+     * @param plugin {@link UIPluginDefinition}
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */

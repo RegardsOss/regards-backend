@@ -41,10 +41,7 @@ public interface IAccessRightService {
      *
      * @param accessGroupName optional access group name
      * @param datasetIpId     optional dataset ipId
-     * @param pageable
      * @return page of {@link AccessRight}s
-     * @throws ModuleException
-     * @throws EntityNotFoundException
      */
     Page<AccessRight> retrieveAccessRights(String accessGroupName, UniformResourceName datasetIpId, Pageable pageable)
         throws ModuleException;
@@ -55,7 +52,6 @@ public interface IAccessRightService {
      * @param accessGroupName mandatory access group name
      * @param datasetIpId     mandatory dataset IPID
      * @return {@link AccessRight}
-     * @throws ModuleException
      */
     Optional<AccessRight> retrieveAccessRight(String accessGroupName, UniformResourceName datasetIpId)
         throws ModuleException;
@@ -63,7 +59,6 @@ public interface IAccessRightService {
     /**
      * Check if access group is still linked to at least one access right
      *
-     * @param accessGroup
      * @return boolean
      */
     boolean hasAccessRights(AccessGroup accessGroup);
@@ -73,7 +68,6 @@ public interface IAccessRightService {
      *
      * @param datasetIpId concerned datasetIpId, must not be null
      * @return a set of {@link DatasetMetadata}
-     * @throws ModuleException
      * @throws EntityNotFoundException if dataset doesn't exist
      */
     DatasetMetadata retrieveDatasetMetadata(UniformResourceName datasetIpId) throws ModuleException;

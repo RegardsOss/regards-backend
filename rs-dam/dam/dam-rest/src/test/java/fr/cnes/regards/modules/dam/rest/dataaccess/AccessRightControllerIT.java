@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
  * @author Léo Mieulet
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_rest" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_rest" })
 public class AccessRightControllerIT extends AbstractAccessRightControllerIT {
 
     @Test

@@ -39,7 +39,8 @@ import java.util.List;
 import java.util.UUID;
 
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "regards.tenant=complex_search", "spring.jpa.properties.hibernate.default_schema=complex_search" })
+                    properties = { "regards.tenant=complex_search",
+                                   "spring.jpa.properties.hibernate.default_schema=complex_search" })
 @MultitenantTransactional
 public class ComplexSearchControllerIT extends AbstractEngineIT {
 

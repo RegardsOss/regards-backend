@@ -362,9 +362,11 @@ public class SearchServiceIT {
         ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
                                                                     "POLYGON",
                                                                     StringMatchType.KEYWORD),
-                                              ICriterion.intersectsPolygon(new double[][][] {
-                                                  { { 0.3, 0.3 }, { 0.6, 0.3 }, { 0.6, 0.6 }, { 0.3, 0.6 },
-                                                      { 0.3, 0.3 } } }));
+                                              ICriterion.intersectsPolygon(new double[][][] { { { 0.3, 0.3 },
+                                                                                                { 0.6, 0.3 },
+                                                                                                { 0.6, 0.6 },
+                                                                                                { 0.3, 0.6 },
+                                                                                                { 0.3, 0.3 } } }));
         computePolygonTest("INNER POLYGON", criterion, 1);
     }
 
@@ -373,8 +375,11 @@ public class SearchServiceIT {
         ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
                                                                     "POLYGON",
                                                                     StringMatchType.KEYWORD),
-                                              ICriterion.intersectsPolygon(new double[][][] {
-                                                  { { 0., 0. }, { 1., 0. }, { 1., 1. }, { 0., 1. }, { 0., 0. } } }));
+                                              ICriterion.intersectsPolygon(new double[][][] { { { 0., 0. },
+                                                                                                { 1., 0. },
+                                                                                                { 1., 1. },
+                                                                                                { 0., 1. },
+                                                                                                { 0., 0. } } }));
         computePolygonTest("EQUAL POLYGON", criterion, 1);
     }
 
@@ -383,9 +388,11 @@ public class SearchServiceIT {
         ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
                                                                     "POLYGON",
                                                                     StringMatchType.KEYWORD),
-                                              ICriterion.intersectsPolygon(new double[][][] {
-                                                  { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 },
-                                                      { -0.3, -0.3 } } }));
+                                              ICriterion.intersectsPolygon(new double[][][] { { { -0.3, -0.3 },
+                                                                                                { 1.3, -0.3 },
+                                                                                                { 1.3, 1.3 },
+                                                                                                { -0.3, 1.3 },
+                                                                                                { -0.3, -0.3 } } }));
         computePolygonTest("CONTAINS POLYGON", criterion, 1);
     }
 
@@ -394,38 +401,52 @@ public class SearchServiceIT {
         ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
                                                                     "POLYGON",
                                                                     StringMatchType.KEYWORD),
-                                              ICriterion.intersectsPolygon(new double[][][] {
-                                                  { { 0.6, 0.6 }, { 1.3, 0.6 }, { 1.3, 1.3 }, { 0.6, 1.3 },
-                                                      { 0.6, 0.6 } } }));
+                                              ICriterion.intersectsPolygon(new double[][][] { { { 0.6, 0.6 },
+                                                                                                { 1.3, 0.6 },
+                                                                                                { 1.3, 1.3 },
+                                                                                                { 0.6, 1.3 },
+                                                                                                { 0.6, 0.6 } } }));
         computePolygonTest("INTERSECT POLYGON", criterion, 1);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorInto() {
-        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
-            { { 0.3, 0.3 }, { 0.6, 0.3 }, { 0.6, 0.6 }, { 0.3, 0.6 }, { 0.3, 0.3 } } });
+        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] { { { 0.3, 0.3 },
+                                                                                 { 0.6, 0.3 },
+                                                                                 { 0.6, 0.6 },
+                                                                                 { 0.3, 0.6 },
+                                                                                 { 0.3, 0.3 } } });
         // 4 * 4 points + 1 polygon
         computePolygonTest("INNER POLYGON", criterion, 17);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorEqual() {
-        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
-            { { 0., 0. }, { 1., 0. }, { 1., 1. }, { 0., 1. }, { 0., 0. } } });
+        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] { { { 0., 0. },
+                                                                                 { 1., 0. },
+                                                                                 { 1., 1. },
+                                                                                 { 0., 1. },
+                                                                                 { 0., 0. } } });
         computePolygonTest("EQUAL POLYGON", criterion, 122);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorContains() {
-        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
-            { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 }, { -0.3, -0.3 } } });
+        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] { { { -0.3, -0.3 },
+                                                                                 { 1.3, -0.3 },
+                                                                                 { 1.3, 1.3 },
+                                                                                 { -0.3, 1.3 },
+                                                                                 { -0.3, -0.3 } } });
         computePolygonTest("CONTAINS POLYGON", criterion, 197);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorIntersects() {
-        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
-            { { 0.6, 0.6 }, { 1.3, 0.6 }, { 1.3, 1.3 }, { 0.6, 1.3 }, { 0.6, 0.6 } } });
+        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] { { { 0.6, 0.6 },
+                                                                                 { 1.3, 0.6 },
+                                                                                 { 1.3, 1.3 },
+                                                                                 { 0.6, 1.3 },
+                                                                                 { 0.6, 0.6 } } });
         computePolygonTest("INTERSECT POLYGON", criterion, 65);
     }
 
@@ -434,18 +455,29 @@ public class SearchServiceIT {
         ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
                                                                     "POLYGON",
                                                                     StringMatchType.KEYWORD),
-                                              ICriterion.intersectsPolygon(new double[][][] {
-                                                  { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 },
-                                                      { -0.3, 1.1 }, { 1.1, 1.1 }, { 1.1, -0.1 }, { -0.3, -0.1 },
-                                                      { -0.3, -0.3 } } }));
+                                              ICriterion.intersectsPolygon(new double[][][] { { { -0.3, -0.3 },
+                                                                                                { 1.3, -0.3 },
+                                                                                                { 1.3, 1.3 },
+                                                                                                { -0.3, 1.3 },
+                                                                                                { -0.3, 1.1 },
+                                                                                                { 1.1, 1.1 },
+                                                                                                { 1.1, -0.1 },
+                                                                                                { -0.3, -0.1 },
+                                                                                                { -0.3, -0.3 } } }));
         computePolygonTest("CONCAVE BANANA POLYGON", criterion, 0);
     }
 
     @Test
     public void testConcaveSimplePolygonNearEquator() {
-        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
-            { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 }, { -0.3, 1.1 }, { 1.1, 1.1 }, { 1.1, -0.1 },
-                { -0.3, -0.1 }, { -0.3, -0.3 } } });
+        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] { { { -0.3, -0.3 },
+                                                                                 { 1.3, -0.3 },
+                                                                                 { 1.3, 1.3 },
+                                                                                 { -0.3, 1.3 },
+                                                                                 { -0.3, 1.1 },
+                                                                                 { 1.1, 1.1 },
+                                                                                 { 1.1, -0.1 },
+                                                                                 { -0.3, -0.1 },
+                                                                                 { -0.3, -0.3 } } });
         computePolygonTest("CONCAVE BANANA POLYGON", criterion, 75);
     }
 

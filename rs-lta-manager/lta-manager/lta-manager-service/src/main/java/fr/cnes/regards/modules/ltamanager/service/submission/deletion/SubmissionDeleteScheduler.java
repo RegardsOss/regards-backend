@@ -76,10 +76,11 @@ public class SubmissionDeleteScheduler extends AbstractTaskScheduler {
         this.lockingTaskExecutors = lockingTaskExecutors;
     }
 
-    @Scheduled(
-        initialDelayString = "${regards.ltamanager.schedule.deletion.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.ltamanager.schedule.deletion.delay:" + DEFAULT_SCHEDULING_DELAY + "}",
-        timeUnit = TimeUnit.MINUTES)
+    @Scheduled(initialDelayString = "${regards.ltamanager.schedule.deletion.initial.delay:"
+                                    + DEFAULT_INITIAL_DELAY
+                                    + "}",
+               fixedDelayString = "${regards.ltamanager.schedule.deletion.delay:" + DEFAULT_SCHEDULING_DELAY + "}",
+               timeUnit = TimeUnit.MINUTES)
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

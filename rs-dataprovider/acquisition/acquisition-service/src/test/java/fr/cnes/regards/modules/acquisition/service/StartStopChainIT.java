@@ -74,10 +74,10 @@ import static org.mockito.ArgumentMatchers.anyString;
  *
  * @author Marc SORDI
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=acq_start_stop", "regards.amqp.enabled=true" }
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_start_stop",
+                                   "regards.amqp.enabled=true" }
     // ,locations = { "classpath:application-local.properties" }
-)
+    )
 @ActiveProfiles({ "testAmqp", "nohandler" })
 public class StartStopChainIT extends DataproviderMultitenantServiceIT {
 

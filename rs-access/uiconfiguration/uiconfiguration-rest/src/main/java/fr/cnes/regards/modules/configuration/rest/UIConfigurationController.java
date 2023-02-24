@@ -42,14 +42,14 @@ public class UIConfigurationController implements IResourceController<Configurat
     /**
      * Entry point to retrieve a {@link UIConfiguration}
      *
-     * @param applicationId
      * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = APPLICATION_ID_PATH, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = APPLICATION_ID_PATH,
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve Configuration for the given applicationId",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public HttpEntity<EntityModel<ConfigurationDTO>> retrieveConfiguration(
         @PathVariable("applicationId") final String applicationId) {
         String conf;
@@ -66,11 +66,11 @@ public class UIConfigurationController implements IResourceController<Configurat
     /**
      * Entry point to add a {@link UIConfiguration}
      *
-     * @param applicationId
      * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = APPLICATION_ID_PATH, method = RequestMethod.POST,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = APPLICATION_ID_PATH,
+                    method = RequestMethod.POST,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a Configuration", role = DefaultRole.ADMIN)
     public HttpEntity<EntityModel<ConfigurationDTO>> addConfiguration(
@@ -84,11 +84,11 @@ public class UIConfigurationController implements IResourceController<Configurat
     /**
      * Entry point to update a {@link UIConfiguration}
      *
-     * @param applicationId
      * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = APPLICATION_ID_PATH, method = RequestMethod.PUT,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = APPLICATION_ID_PATH,
+                    method = RequestMethod.PUT,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update a Configuration", role = DefaultRole.ADMIN)
     public HttpEntity<EntityModel<ConfigurationDTO>> updateConfiguration(

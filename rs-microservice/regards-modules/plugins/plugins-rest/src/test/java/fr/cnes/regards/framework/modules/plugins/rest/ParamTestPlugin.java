@@ -29,9 +29,14 @@ import java.util.Map;
  *
  * @author Marc Sordi
  */
-@Plugin(author = "REGARDS Team", description = "Plugin for plugin parameter type testing", id = "ParamTestPlugin",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Plugin for plugin parameter type testing",
+        id = "ParamTestPlugin",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class ParamTestPlugin implements IParamTestPlugin {
 
     @PluginParameter(label = "Simple string", description = "Simple string description")
@@ -61,8 +66,9 @@ public class ParamTestPlugin implements IParamTestPlugin {
     @PluginParameter(label = "List of string", description = "List of string description")
     private List<String> sList;
 
-    @PluginParameter(keylabel = "ssMapKey", label = "Map string to string",
-        description = "Map string to string description")
+    @PluginParameter(keylabel = "ssMapKey",
+                     label = "Map string to string",
+                     description = "Map string to string description")
     private Map<String, String> ssMap;
 
     @PluginParameter(label = "Pojo containing string")
@@ -114,8 +120,10 @@ public class ParamTestPlugin implements IParamTestPlugin {
         @PluginParameter(label = "Pattern", description = "JAVA regular expression")
         private String pattern;
 
-        @PluginParameter(label = "Enabled", description = "Contraint may be enabled/disabled", optional = true,
-            defaultValue = "true")
+        @PluginParameter(label = "Enabled",
+                         description = "Contraint may be enabled/disabled",
+                         optional = true,
+                         defaultValue = "true")
         private boolean enabled;
 
         public String getPattern() {

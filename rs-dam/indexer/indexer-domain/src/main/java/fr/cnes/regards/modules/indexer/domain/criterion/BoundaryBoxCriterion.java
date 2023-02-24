@@ -47,9 +47,6 @@ public class BoundaryBoxCriterion implements ICriterion {
 
     /**
      * Creates BoundaryBoxCriterion from string format "left,bottom,right,top" where each field is a double.
-     *
-     * @param bbox
-     * @throws InvalidGeometryException
      */
     public BoundaryBoxCriterion(String bbox) throws InvalidGeometryException {
         String[] values = bbox.split(",");

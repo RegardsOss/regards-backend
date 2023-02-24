@@ -204,9 +204,6 @@ public class FeatureValidationService extends AbstractFeatureValidationService<F
 
     /**
      * Validate {@link FeatureFileLocation} of feature files
-     *
-     * @param loc
-     * @param errors
      */
     public void validateFileLocation(FeatureFileLocation loc, Errors errors) {
         try {

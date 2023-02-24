@@ -27,9 +27,14 @@ import org.junit.Assert;
  *
  * @author Marc Sordi
  */
-@Plugin(author = "REGARDS Team", description = "Plugin with boolean as primitive and object", id = "PluginWithBoolean",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Plugin with boolean as primitive and object",
+        id = "PluginWithBoolean",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class PluginWithBoolean implements IPluginWithGenerics {
 
     // Attribute names

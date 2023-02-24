@@ -468,8 +468,11 @@ public class AstroIT {
     @Test
     public void testPolygon() {
         // BBox (8h, 50°, 9h, 60°)
-        ICriterion crit = ICriterion.intersectsPolygon(new double[][][] {
-            { { 120.0, 50.0 }, { 135, 50.0 }, { 135.0, 60.0 }, { 120.0, 60.0 }, { 120.0, 50.0 } } });
+        ICriterion crit = ICriterion.intersectsPolygon(new double[][][] { { { 120.0, 50.0 },
+                                                                            { 135, 50.0 },
+                                                                            { 135.0, 60.0 },
+                                                                            { 120.0, 60.0 },
+                                                                            { 120.0, 50.0 } } });
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setCrs(Crs.ASTRO);
         searchKey.setSearchIndex(TENANT);
@@ -480,8 +483,11 @@ public class AstroIT {
         Assert.assertTrue(constNames.contains("Ursa Major"));
 
         // BBox (15h, 60°, 16h, 70°) (into Draco reaching limit with Ursa Minor)
-        crit = ICriterion.intersectsPolygon(new double[][][] {
-            { { -105, 60.0 }, { -105, 70.0 }, { -120.0, 70.0 }, { -120, 60.0 }, { -105, 60.0 } } });
+        crit = ICriterion.intersectsPolygon(new double[][][] { { { -105, 60.0 },
+                                                                 { -105, 70.0 },
+                                                                 { -120.0, 70.0 },
+                                                                 { -120, 60.0 },
+                                                                 { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         Assert.assertEquals(2, page.getTotalElements());
         constNames = page.getContent().stream().map(DataObject::getLabel).collect(Collectors.toList());
@@ -489,16 +495,22 @@ public class AstroIT {
         Assert.assertTrue(constNames.contains("Ursa Minor"));
 
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
-        crit = ICriterion.intersectsPolygon(new double[][][] {
-            { { -105, 60.0 }, { -105, 69.9 }, { -120.0, 69.9 }, { -120, 60.0 }, { -105, 60.0 } } });
+        crit = ICriterion.intersectsPolygon(new double[][][] { { { -105, 60.0 },
+                                                                 { -105, 69.9 },
+                                                                 { -120.0, 69.9 },
+                                                                 { -120, 60.0 },
+                                                                 { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         Assert.assertEquals(1, page.getTotalElements());
         constNames = page.getContent().stream().map(DataObject::getLabel).collect(Collectors.toList());
         Assert.assertTrue(constNames.contains("Draco"));
 
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
-        crit = ICriterion.intersectsPolygon(new double[][][] {
-            { { -105, 60.0 }, { -105, 69.99 }, { -120.0, 69.99 }, { -120, 60.0 }, { -105, 60.0 } } });
+        crit = ICriterion.intersectsPolygon(new double[][][] { { { -105, 60.0 },
+                                                                 { -105, 69.99 },
+                                                                 { -120.0, 69.99 },
+                                                                 { -120, 60.0 },
+                                                                 { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         if (page.getTotalElements() != 1) {
             double precision = 0.1;
@@ -509,8 +521,11 @@ public class AstroIT {
         }
 
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
-        crit = ICriterion.intersectsPolygon(new double[][][] {
-            { { -105, 60.0 }, { -105, 69.999 }, { -120.0, 69.999 }, { -120, 60.0 }, { -105, 60.0 } } });
+        crit = ICriterion.intersectsPolygon(new double[][][] { { { -105, 60.0 },
+                                                                 { -105, 69.999 },
+                                                                 { -120.0, 69.999 },
+                                                                 { -120, 60.0 },
+                                                                 { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         if (page.getTotalElements() != 1) {
             double precision = 0.01;
@@ -522,8 +537,11 @@ public class AstroIT {
 
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
         // Not ok with quadtree and tree_levels 20 (69.99984 is ok)
-        crit = ICriterion.intersectsPolygon(new double[][][] {
-            { { -105, 60.0 }, { -105, 69.9999 }, { -120.0, 69.9999 }, { -120, 60.0 }, { -105, 60.0 } } });
+        crit = ICriterion.intersectsPolygon(new double[][][] { { { -105, 60.0 },
+                                                                 { -105, 69.9999 },
+                                                                 { -120.0, 69.9999 },
+                                                                 { -120, 60.0 },
+                                                                 { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         if (page.getTotalElements() != 1) {
             double precision = 0.001;
@@ -535,8 +553,11 @@ public class AstroIT {
 
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
         // Ok with quadtree and tree_levels 21
-        crit = ICriterion.intersectsPolygon(new double[][][] {
-            { { -105, 60.0 }, { -105, 69.99993 }, { -120.0, 69.99993 }, { -120, 60.0 }, { -105, 60.0 } } });
+        crit = ICriterion.intersectsPolygon(new double[][][] { { { -105, 60.0 },
+                                                                 { -105, 69.99993 },
+                                                                 { -120.0, 69.99993 },
+                                                                 { -120, 60.0 },
+                                                                 { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         if (page.getTotalElements() != 1) {
             double precision = 0.0001;

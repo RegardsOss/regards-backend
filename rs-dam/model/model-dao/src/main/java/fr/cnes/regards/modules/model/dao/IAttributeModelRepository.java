@@ -58,7 +58,6 @@ public interface IAttributeModelRepository extends JpaRepositoryImplementation<A
     /**
      * Find attributes by name
      *
-     * @param fragmentName
      * @return attributes
      */
     Collection<AttributeModel> findByName(String fragmentName);

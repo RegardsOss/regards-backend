@@ -36,9 +36,11 @@ import java.util.Objects;
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_workermanager_request", indexes = { @Index(name = "idx_worker_request_id", columnList = "request_id"),
-    @Index(name = "idx_worker_request_content_type", columnList = "content_type") }, uniqueConstraints = {
-    @UniqueConstraint(name = "uk_t_workermanager_request_requestid", columnNames = { "request_id" }) })
+@Table(name = "t_workermanager_request",
+       indexes = { @Index(name = "idx_worker_request_id", columnList = "request_id"),
+                   @Index(name = "idx_worker_request_content_type", columnList = "content_type") },
+       uniqueConstraints = { @UniqueConstraint(name = "uk_t_workermanager_request_requestid",
+                                               columnNames = { "request_id" }) })
 public class Request {
 
     @Id

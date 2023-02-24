@@ -167,8 +167,6 @@ public class LockedStateTest {
 
     /**
      * Check that the system does unlock not locked accounts and feedbacks the caller.
-     *
-     * @throws EntityException
      */
     @Test(expected = EntityTransitionForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_450")
@@ -195,8 +193,6 @@ public class LockedStateTest {
 
     /**
      * Check that the system does not unlock a locked account if the wrong code is passed.
-     *
-     * @throws EntityException
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_450")
@@ -228,8 +224,6 @@ public class LockedStateTest {
 
     /**
      * Check that the system allows a user to unlock its account with a code.
-     *
-     * @throws EntityException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_450")

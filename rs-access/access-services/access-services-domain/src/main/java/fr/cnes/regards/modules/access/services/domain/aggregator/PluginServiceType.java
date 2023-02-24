@@ -24,6 +24,5 @@ package fr.cnes.regards.modules.access.services.domain.aggregator;
  * @author Xavier-Alexandre Brochard
  */
 public enum PluginServiceType {
-    UI,
-    CATALOG
+    UI, CATALOG
 }

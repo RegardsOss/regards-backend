@@ -45,8 +45,7 @@ import java.util.Optional;
  * @param <V> property values
  * @author Marc Sordi
  */
-@PluginInterface(
-    description = "Plugin to define a search engine. A Searh engine define the format of queries and format of response from a search request.")
+@PluginInterface(description = "Plugin to define a search engine. A Searh engine define the format of queries and format of response from a search request.")
 public interface ISearchEngine<R, E, T, V extends Collection<?>> {
 
     /**
@@ -167,8 +166,6 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * <li>{@link SearchContext} may contain a dataset URN so you have to consider it using {@link Optional#isPresent()}
      * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
      * </ol>
-     *
-     * @throws ModuleException
      */
     default ResponseEntity<List<EntityModel<? extends PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
         throws ModuleException {

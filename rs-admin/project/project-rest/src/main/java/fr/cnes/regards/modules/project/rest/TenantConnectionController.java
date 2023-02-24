@@ -95,7 +95,6 @@ public class TenantConnectionController {
      * @param microservice     target microservice
      * @param tenantConnection connection to update
      * @return updated connection
-     * @throws ModuleException
      */
     @ResourceAccess(description = "Update a project (i.e. tenant) connection state")
     @RequestMapping(method = RequestMethod.PUT)
@@ -110,7 +109,7 @@ public class TenantConnectionController {
     }
 
     @ResourceAccess(description = "List all enabled project (i.e. tenant) connections for a specified microservice",
-        role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable String microservice) {
         List<ProjectConnection> projectConnections = projectConnectionService.retrieveProjectConnections(microservice);

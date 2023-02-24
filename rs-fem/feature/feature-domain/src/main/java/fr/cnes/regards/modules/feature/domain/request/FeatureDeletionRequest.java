@@ -37,8 +37,9 @@ import java.util.Set;
 public class FeatureDeletionRequest extends AbstractFeatureRequest {
 
     @Id
-    @SequenceGenerator(name = "featureDeleteRequestSequence", initialValue = 1,
-        sequenceName = "seq_feature_deletion_request")
+    @SequenceGenerator(name = "featureDeleteRequestSequence",
+                       initialValue = 1,
+                       sequenceName = "seq_feature_deletion_request")
     @GeneratedValue(generator = "featureDeleteRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 

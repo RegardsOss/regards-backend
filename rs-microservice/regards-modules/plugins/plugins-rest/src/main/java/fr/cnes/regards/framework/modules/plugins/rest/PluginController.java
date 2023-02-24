@@ -141,9 +141,8 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @throws EntityInvalidException if problem occurs
      */
     @RequestMapping(value = PLUGINS, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(
-        description = "Get all the class annotaded with @Plugin or only the one that implemented an optional pluginType",
-        role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Get all the class annotaded with @Plugin or only the one that implemented an optional pluginType",
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<PluginMetaData>>> getPlugins(
         @RequestParam(value = "pluginType", required = false) String pluginType) throws EntityInvalidException {
         List<PluginMetaData> metadaData;
@@ -209,10 +208,11 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @param pluginId a plugin identifier
      * @return a {@link List} of {@link PluginConfiguration}
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS,
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get all the plugin configuration for a specific plugin id",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<PluginConfiguration>>> getPluginConfigurations(
         @PathVariable("pluginId") String pluginId) {
         return ResponseEntity.ok(toResources(pluginService.getPluginConfigurations(pluginId)));
@@ -229,11 +229,11 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @GetMapping(value = PLUGINS_CONFIGS, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get plugin configurations",
-        description = "Return a list of plugin configurations for a specific type")
+               description = "Return a list of plugin configurations for a specific type")
     @ApiResponses(value = { @ApiResponse(responseCode = "200",
-        description = "All plugin configurations for a specific type were retrieved.") })
+                                         description = "All plugin configurations for a specific type were retrieved.") })
     @ResourceAccess(description = "Endpoint to retrieve all plugin configurations for a specific type",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<PluginConfiguration>>> getPluginConfigurationsByType(
         @RequestParam(value = "pluginType", required = false) String pluginType) throws EntityNotFoundException {
 
@@ -261,8 +261,10 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @return the created {@link PluginConfiguration}
      * @throws ModuleException if problem occurs
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.POST,
-        consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS,
+                    method = RequestMethod.POST,
+                    consumes = MediaType.APPLICATION_JSON_VALUE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Create a plugin configuration")
     public ResponseEntity<EntityModel<PluginConfiguration>> savePluginConfiguration(@Valid @RequestBody
                                                                                     PluginConfiguration pluginConf)
@@ -284,8 +286,9 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @return the {@link PluginConfiguration} of the plugin
      * @throws ModuleException the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID,
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get a the plugin configuration of a specific plugin", role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<PluginConfiguration>> getPluginConfiguration(
         @PathVariable("pluginId") String pluginId, @PathVariable("configBusinessId") String configId)
@@ -318,8 +321,10 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @return the {@link PluginConfiguration} of the plugin.
      * @throws ModuleException the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.PUT,
-        consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID,
+                    method = RequestMethod.PUT,
+                    consumes = MediaType.APPLICATION_JSON_VALUE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Update a plugin configuration")
     public ResponseEntity<EntityModel<PluginConfiguration>> updatePluginConfiguration(
         @PathVariable("pluginId") String pluginId,
@@ -355,8 +360,9 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @return void response entity
      * @throws ModuleException the {@link PluginConfiguration} identified by the pConfigId parameter does not exists
      */
-    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.DELETE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID,
+                    method = RequestMethod.DELETE,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete a plugin configuration")
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") String pluginId,
                                                           @PathVariable("configBusinessId") String configBusinessId)

@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
 
     private static final String SESSION_OWNER_1 = "SOURCE 1";

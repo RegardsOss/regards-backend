@@ -39,10 +39,11 @@ import java.util.Optional;
 @InstanceEntity
 @Entity
 @SequenceGenerator(name = "projectConnectionSequence", initialValue = 1, sequenceName = "seq_project_connection")
-@Table(name = "t_project_connection", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_project_connection_project_microservice",
-        columnNames = { "project_id", "microservice" }),
-    @UniqueConstraint(name = "uk_t_project_connection_microservice_url", columnNames = { "microservice", "url" }) })
+@Table(name = "t_project_connection",
+       uniqueConstraints = { @UniqueConstraint(name = "uk_project_connection_project_microservice",
+                                               columnNames = { "project_id", "microservice" }),
+                             @UniqueConstraint(name = "uk_t_project_connection_microservice_url",
+                                               columnNames = { "microservice", "url" }) })
 public class ProjectConnection implements IIdentifiable<Long> {
 
     public static final int ERROR_MAX_LENGTH = 255;

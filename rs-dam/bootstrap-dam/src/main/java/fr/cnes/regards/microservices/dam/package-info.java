@@ -17,6 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * @author msordi
+ *
  */
 package fr.cnes.regards.microservices.dam;

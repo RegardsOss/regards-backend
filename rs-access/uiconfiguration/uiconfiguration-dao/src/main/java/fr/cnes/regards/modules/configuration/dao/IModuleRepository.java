@@ -39,8 +39,6 @@ public interface IModuleRepository extends JpaRepository<Module, Long>, JpaSpeci
     /**
      * Retrieve modules for the given application id.
      *
-     * @param applicationId
-     * @param pageable
      * @return Page of {@link Module}
      * @since 1.0-SNAPSHOT
      */
@@ -49,7 +47,6 @@ public interface IModuleRepository extends JpaRepository<Module, Long>, JpaSpeci
     /**
      * Retrieve all modules for the given application id
      *
-     * @param applicationId
      * @return List of {@link Module}
      * @since 1.0-SNAPSHOT
      */
@@ -58,7 +55,6 @@ public interface IModuleRepository extends JpaRepository<Module, Long>, JpaSpeci
     /**
      * Retrieve modules for the given application id without pagination
      *
-     * @param applicationId
      * @return {@link Module}s
      * @since 1.0-SNAPSHOT
      */
@@ -67,8 +63,6 @@ public interface IModuleRepository extends JpaRepository<Module, Long>, JpaSpeci
     /**
      * Retrieve modules for the given application id.
      *
-     * @param applicationId
-     * @param pageable
      * @return {@link Module}
      * @since 1.0-SNAPSHOT
      */

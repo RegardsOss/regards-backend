@@ -35,9 +35,9 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.Optional;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=ingestchain", "eureka.client.enabled=false" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestchain",
+                                   "eureka.client.enabled=false" },
+                    locations = { "classpath:application-test.properties" })
 public class IngestProcessingChainServiceIT extends IngestMultitenantServiceIT {
 
     @Autowired

@@ -110,7 +110,7 @@ public class BasketController implements IResourceController<BasketDto> {
      * @throws EmptyBasketException if no basket currently exists
      */
     @ResourceAccess(description = "Attach process description to dataset selection from basket",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.PUT, path = DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS)
     public ResponseEntity<EntityModel<BasketDto>> attachProcessDescriptionToDatasetSelection(
         @PathVariable("datasetSelectionId") Long dsSelectionId,
@@ -152,7 +152,7 @@ public class BasketController implements IResourceController<BasketDto> {
      * @throws EmptyBasketException if no basket currently exists
      */
     @ResourceAccess(description = "Remove dated item selection under dataset selection from basket",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.DELETE, value = DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE)
     public ResponseEntity<EntityModel<BasketDto>> removeDatedItemsSelection(
         @PathVariable("datasetSelectionId") Long dsSelectionId,

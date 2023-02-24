@@ -104,7 +104,7 @@ public class IRightsPluginConfigurationRepositoryIT extends AbstractProcessingIT
                                                                             UUID.fromString(confOne.getBusinessId()),
                                                                             "EXPLOIT",
                                                                             new String[] { targetDataset,
-                                                                                randomDataset() },
+                                                                                           randomDataset() },
                                                                             false);
         RightsPluginConfiguration persistedOne = rightsRepo.save(rightsOne);
 
@@ -114,7 +114,7 @@ public class IRightsPluginConfigurationRepositoryIT extends AbstractProcessingIT
                                                                             UUID.fromString(confTwo.getBusinessId()),
                                                                             "EXPLOIT",
                                                                             new String[] { randomDataset(),
-                                                                                randomDataset() },
+                                                                                           randomDataset() },
                                                                             true);
         RightsPluginConfiguration persistedTwo = rightsRepo.save(rightsTwo);
 
@@ -124,7 +124,7 @@ public class IRightsPluginConfigurationRepositoryIT extends AbstractProcessingIT
                                                                               UUID.fromString(confThree.getBusinessId()),
                                                                               "EXPLOIT",
                                                                               new String[] { randomDataset(),
-                                                                                  randomDataset() },
+                                                                                             randomDataset() },
                                                                               false);
         RightsPluginConfiguration persistedThree = rightsRepo.save(rightsThree);
 

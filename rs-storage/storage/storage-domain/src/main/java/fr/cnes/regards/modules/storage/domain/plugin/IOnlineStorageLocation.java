@@ -38,7 +38,6 @@ public interface IOnlineStorageLocation extends IStorageLocation {
      * Do retrieve action for the given {@link StorageDataFile}
      *
      * @param data StorageDataFile to retrieve
-     * @throws ModuleException
      */
     InputStream retrieve(FileReference fileReference) throws ModuleException, FileNotFoundException;
 

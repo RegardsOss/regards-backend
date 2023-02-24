@@ -32,9 +32,14 @@ import java.util.List;
  *
  * @author Christophe Mertz
  */
-@Plugin(author = "REGARDS Team", description = "Fake plugin for AIP generation", id = "FakeAIPGenerationTestPlugin",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Fake plugin for AIP generation",
+        id = "FakeAIPGenerationTestPlugin",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class FakeAIPGenerationTestPlugin implements IAipGeneration {
 
     @Override

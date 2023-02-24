@@ -46,7 +46,6 @@ public interface ICacheFileRepository extends JpaRepository<CacheFile, Long> {
     /**
      * Retrieve a {@link CacheFile} by his checksum
      *
-     * @param checksum
      * @return {@link Optional} {@link CacheFile}
      */
     Optional<CacheFile> findOneByChecksum(String checksum);

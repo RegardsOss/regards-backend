@@ -184,8 +184,6 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
 
     /**
      * Test if a good collection is created
-     *
-     * @throws Exception
      */
     @Test
     public void postCollection() throws Exception {

@@ -153,7 +153,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.feature.request.insert.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.feature.request.insert.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleInsertRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -171,7 +171,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.feature.request.update.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.feature.request.update.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -189,7 +189,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.feature.request.delete.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.feature.request.delete.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleDeleteRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -207,7 +207,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.feature.request.copy.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.feature.request.copy.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleCopyRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -225,7 +225,9 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.feature.request.notification.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.feature.request.notification.scheduling.delay:"
+                                  + DEFAULT_SCHEDULING_DELAY
+                                  + "}")
     public void scheduleNotificationRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

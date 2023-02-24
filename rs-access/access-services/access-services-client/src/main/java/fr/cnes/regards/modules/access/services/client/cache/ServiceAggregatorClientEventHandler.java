@@ -43,9 +43,7 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
     private final IServiceAggregatorKeyGenerator keyGenerator;
 
     /**
-     * @param subscriber
-     * @param runtimeTenantResolver
-     * @param serviceAggregatorClient
+     *
      */
     public ServiceAggregatorClientEventHandler(ISubscriber subscriber, IServiceAggregatorKeyGenerator keyGenerator) {
         super();

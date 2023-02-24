@@ -57,9 +57,8 @@ public class PMonitoringReactiveController {
     }
 
     @PostMapping
-    @ResourceAccess(
-        description = "List executions filtered by tenant/user/date/status depending on the given parameters",
-        role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "List executions filtered by tenant/user/date/status depending on the given parameters",
+                    role = DefaultRole.ADMIN)
     public Mono<PagedModel<EntityModel<ExecutionMonitoringDTO>>> executions(
         @RequestParam(name = TENANT_PARAM, required = true) String tenant,
         @RequestBody SearchExecutionEntityParameters filters,

@@ -53,8 +53,9 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
      *
      * @param checksum file to download
      */
-    @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + DOWNLOAD_PATH,
-        produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @RequestMapping(method = RequestMethod.GET,
+                    path = FILE_PATH + DOWNLOAD_PATH,
+                    produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     Response downloadFile(@PathVariable("checksum") String checksum,
                           @RequestParam(name = "isContentInline", required = false) Boolean isContentInline);
 
@@ -64,8 +65,9 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
     @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + EXPORT_PATH, produces = MediaType.ALL_VALUE)
     Response export();
 
-    @RequestMapping(method = RequestMethod.POST, path = FILE_PATH + LOCATIONS_PATH,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.POST,
+                    path = FILE_PATH + LOCATIONS_PATH,
+                    consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(
         @PathVariable(name = "storage") final String storage, @RequestBody final Set<String> checksums);
 }

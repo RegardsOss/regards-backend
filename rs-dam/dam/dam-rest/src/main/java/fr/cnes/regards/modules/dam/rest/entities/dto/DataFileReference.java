@@ -104,7 +104,6 @@ public class DataFileReference {
     /**
      * Transform DTO in data file
      *
-     * @param dataType
      * @return {@link DataFile}
      */
     public DataFile toDataFile(DataType dataType) {

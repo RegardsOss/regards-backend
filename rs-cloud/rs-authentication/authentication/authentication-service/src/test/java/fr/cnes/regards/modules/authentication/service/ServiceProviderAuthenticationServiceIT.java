@@ -34,8 +34,8 @@ import java.util.Set;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.spy;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=authentication_service_provider_tests", })
+@TestPropertySource(properties = {
+    "spring.jpa.properties.hibernate.default_schema=authentication_service_provider_tests", })
 public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTransactionalIT {
 
     @Autowired

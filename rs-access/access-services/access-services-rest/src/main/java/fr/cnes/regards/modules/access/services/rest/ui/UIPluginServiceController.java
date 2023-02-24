@@ -68,7 +68,7 @@ public class UIPluginServiceController implements IResourceController<UIPluginCo
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(role = DefaultRole.PUBLIC,
-        description = "Return all generic ui services plus those linked to passed dataset if any given")
+                    description = "Return all generic ui services plus those linked to passed dataset if any given")
     public ResponseEntity<List<EntityModel<UIPluginConfiguration>>> retrieveServices(
         @RequestParam(value = "dataset_id", required = false) final String datasetId) {
         final List<UIPluginConfiguration> services = service.retrieveActivePluginServices(datasetId, null);

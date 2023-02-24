@@ -877,9 +877,6 @@ public class FileStorageRequestService {
 
     /**
      * Creates notification for project administrators to inform action pending is remaining on stored files
-     *
-     * @param files
-     * @return
      */
     private String createStorageActionPendingNotification(Set<String> files) {
         final Map<String, Object> data = new HashMap<>();

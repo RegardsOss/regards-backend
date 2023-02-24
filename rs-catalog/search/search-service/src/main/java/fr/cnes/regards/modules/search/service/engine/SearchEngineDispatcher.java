@@ -171,8 +171,6 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     /**
      * Compute a {@link SearchRequest} to a {@link ICriterion}
-     *
-     * @throws ModuleException
      */
     @Override
     public ICriterion computeComplexCriterion(SearchRequest searchRequest) throws ModuleException {

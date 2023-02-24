@@ -48,8 +48,9 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformati
 
     public static final String CONFIGURATION_FILE = "configurationFile";
 
-    @PluginParameter(name = CONFIGURATION_FILE, label = "Name of the XML configuration file",
-        description = "SSALTO plugins configuration file names are <DATASET>_PluginConfiguration.xml like <DA_TC_JASON2_PluginConfiguration.xml>")
+    @PluginParameter(name = CONFIGURATION_FILE,
+                     label = "Name of the XML configuration file",
+                     description = "SSALTO plugins configuration file names are <DATASET>_PluginConfiguration.xml like <DA_TC_JASON2_PluginConfiguration.xml>")
     protected String configurationFile;
 
     @Override

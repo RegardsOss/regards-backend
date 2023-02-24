@@ -7,9 +7,11 @@ public class GeoTile {
     public final float[][][] coordinates;
 
     public GeoTile(GeoPoint from, GeoPoint to) {
-        this.coordinates = new float[][][] {
-            new float[][] { from.coordinates(), new float[] { from.lat, to.lon }, to.coordinates(),
-                new float[] { to.lat, from.lon }, from.coordinates() } };
+        this.coordinates = new float[][][] { new float[][] { from.coordinates(),
+                                                             new float[] { from.lat, to.lon },
+                                                             to.coordinates(),
+                                                             new float[] { to.lat, from.lon },
+                                                             from.coordinates() } };
     }
 
     public GeoPoint center() {

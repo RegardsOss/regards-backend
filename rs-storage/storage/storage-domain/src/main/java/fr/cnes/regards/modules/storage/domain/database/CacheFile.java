@@ -17,8 +17,9 @@ import java.util.Set;
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_cache_file", indexes = { @Index(name = "idx_cache_file_checksum", columnList = "checksum") },
-    uniqueConstraints = { @UniqueConstraint(name = "uk_cache_file_checksum", columnNames = "checksum") })
+@Table(name = "t_cache_file",
+       indexes = { @Index(name = "idx_cache_file_checksum", columnList = "checksum") },
+       uniqueConstraints = { @UniqueConstraint(name = "uk_cache_file_checksum", columnNames = "checksum") })
 public class CacheFile {
 
     /**
@@ -77,8 +78,9 @@ public class CacheFile {
      */
     @Column(name = "group_id", nullable = false, length = 128)
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "ta_cache_file_group_ids", joinColumns = @JoinColumn(name = "cache_file_id",
-        foreignKey = @ForeignKey(name = "fk_ta_cache_file_request_ids_t_file_cache")))
+    @CollectionTable(name = "ta_cache_file_group_ids",
+                     joinColumns = @JoinColumn(name = "cache_file_id",
+                                               foreignKey = @ForeignKey(name = "fk_ta_cache_file_request_ids_t_file_cache")))
     private final Set<String> groupIds = Sets.newHashSet();
 
     /**
@@ -90,10 +92,6 @@ public class CacheFile {
 
     /**
      * Constructor initializing the cache file from the parameters
-     *
-     * @param df
-     * @param expirationDate
-     * @param type
      */
     public CacheFile(String checksum,
                      Long fileSize,

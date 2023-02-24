@@ -34,9 +34,10 @@ import java.util.*;
 /**
  * @author Thibaud Michaudel
  **/
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=ingest", "eureka.client.enabled=false",
-        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest",
+                                   "eureka.client.enabled=false",
+                                   "regards.ingest.aip.delete.bulk.delay=100" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "noscheduler" })
 public class IngestValidationIT extends AbstractValidationIngestMultitenantServiceIT {
 

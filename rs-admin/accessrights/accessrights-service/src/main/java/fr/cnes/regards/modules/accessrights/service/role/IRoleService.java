@@ -59,9 +59,7 @@ public interface IRoleService {
     /**
      * retrieve a role by its Id
      *
-     * @param pRoleId
      * @return required role
-     * @throws EntityNotFoundException
      */
     Role retrieveRole(Long pRoleId) throws EntityNotFoundException;
 
@@ -90,7 +88,6 @@ public interface IRoleService {
      *
      * @param role new {@link @Role} to create
      * @return {@link Role} created
-     * @throws EntityException
      */
     Role createRole(Role role) throws EntityException;
 
@@ -212,10 +209,6 @@ public interface IRoleService {
 
     /**
      * Add given resources accesses to the role of given role id
-     *
-     * @param pRoleId
-     * @param pNewOnes
-     * @throws EntityException
      */
     void addResourceAccesses(Long pRoleId, ResourcesAccess... pNewOnes) throws EntityException;
 
@@ -229,7 +222,6 @@ public interface IRoleService {
     /**
      * Retrieve descendants of a role.
      *
-     * @param role
      * @return all descendants of "role" and "role" itself
      */
     Set<Role> getDescendants(Role role);
@@ -237,7 +229,6 @@ public interface IRoleService {
     /**
      * Retrieve ascendants(parent and uncles) and brotherhood of the given role
      *
-     * @param pRole
      * @return All ascendants of the given role
      */
     Set<Role> getAscendants(Role pRole);
@@ -245,7 +236,6 @@ public interface IRoleService {
     /**
      * Retrieve roles associated to ginve resource id
      *
-     * @param pResourceId
      * @return list of {@link Role}
      */
     Set<Role> retrieveRolesWithResource(Long pResourceId);

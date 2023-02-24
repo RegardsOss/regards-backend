@@ -56,10 +56,11 @@ import java.util.UUID;
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
-@Table(name = "t_plugin_configuration", indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
-    @Index(name = "idx_plugin_configuration_label", columnList = "label"),
-    @Index(name = "idx_plugin_configuration_bid", columnList = "bid") },
-    uniqueConstraints = @UniqueConstraint(name = "uk_plugin_bid", columnNames = { "bid" }))
+@Table(name = "t_plugin_configuration",
+       indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
+                   @Index(name = "idx_plugin_configuration_label", columnList = "label"),
+                   @Index(name = "idx_plugin_configuration_bid", columnList = "bid") },
+       uniqueConstraints = @UniqueConstraint(name = "uk_plugin_bid", columnNames = { "bid" }))
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
 
@@ -107,7 +108,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * A serialized {@link UUID} for business identifier
      */
     @Pattern(regexp = BID_REGEXP,
-        message = "Business identifier must conform to regular expression \"" + BID_REGEXP + "\".")
+             message = "Business identifier must conform to regular expression \"" + BID_REGEXP + "\".")
     @Column(name = "bid", length = 36, nullable = false, updatable = false)
     private String businessId;
 
@@ -137,8 +138,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @Valid
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-        value = "fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam") })
+    @Type(type = "jsonb",
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+                                    value = "fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam") })
     private Set<IPluginParam> parameters = Sets.newHashSet();
 
     /**

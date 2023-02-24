@@ -35,8 +35,9 @@ import java.time.OffsetDateTime;
 
 @Entity
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@Table(name = "t_tinyurl", indexes = { @Index(name = "idx_tinyurl_uuid", columnList = "uuid") },
-    uniqueConstraints = { @UniqueConstraint(name = "uk_tinyurl_uuid", columnNames = { "uuid" }) })
+@Table(name = "t_tinyurl",
+       indexes = { @Index(name = "idx_tinyurl_uuid", columnList = "uuid") },
+       uniqueConstraints = { @UniqueConstraint(name = "uk_tinyurl_uuid", columnNames = { "uuid" }) })
 public class TinyUrl {
 
     @Id

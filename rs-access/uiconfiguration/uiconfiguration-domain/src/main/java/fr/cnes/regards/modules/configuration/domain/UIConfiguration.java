@@ -13,8 +13,9 @@ import javax.validation.constraints.NotNull;
  * @author Kevin Marchois
  */
 @Entity
-@Table(name = "t_ui_configuration", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_ui_configuration_application_id", columnNames = { "application_id" }) })
+@Table(name = "t_ui_configuration",
+       uniqueConstraints = { @UniqueConstraint(name = "uk_ui_configuration_application_id",
+                                               columnNames = { "application_id" }) })
 public class UIConfiguration {
 
     /**

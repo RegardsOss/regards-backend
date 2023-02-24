@@ -45,7 +45,7 @@ import java.time.OffsetDateTime;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponym_controller_it",
-    "regards.toponyms.limit.save=2" })
+                                   "regards.toponyms.limit.save=2" })
 @RegardsTransactional
 public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
 

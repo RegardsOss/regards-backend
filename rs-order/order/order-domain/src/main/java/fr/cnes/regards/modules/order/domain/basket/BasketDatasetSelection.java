@@ -73,8 +73,9 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     private FileSelectionDescription fileSelectionDescription;
 
     @ElementCollection
-    @CollectionTable(name = "t_basket_ds_item", joinColumns = @JoinColumn(name = "basket_dataset_id"),
-        foreignKey = @ForeignKey(name = "fk_items_selection"))
+    @CollectionTable(name = "t_basket_ds_item",
+                     joinColumns = @JoinColumn(name = "basket_dataset_id"),
+                     foreignKey = @ForeignKey(name = "fk_items_selection"))
     @SortNatural
     private final SortedSet<BasketDatedItemsSelection> itemsSelections = new TreeSet<>();
 

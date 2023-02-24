@@ -18,6 +18,7 @@
  */
 
 package fr.cnes.regards.modules.ingest.service;
+
 import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;

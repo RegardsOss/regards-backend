@@ -34,8 +34,9 @@ public abstract class AbstractBaseForecastedProcessPlugin implements IProcessDef
     @PluginParameter(name = "sizeForecast", label = "Size forecast", description = ForecastParser.SIZE_DESCRIPTION)
     protected String sizeForecast;
 
-    @PluginParameter(name = "durationForecast", label = "Duration forecast",
-        description = ForecastParser.DURATION_DESCRIPTION)
+    @PluginParameter(name = "durationForecast",
+                     label = "Duration forecast",
+                     description = ForecastParser.DURATION_DESCRIPTION)
     protected String durationForecast;
 
     @Override

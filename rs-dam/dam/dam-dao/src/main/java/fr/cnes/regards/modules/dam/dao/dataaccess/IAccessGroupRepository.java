@@ -42,7 +42,6 @@ public interface IAccessGroupRepository extends JpaRepository<AccessGroup, Long>
     /**
      * find an access group by its name
      *
-     * @param pName
      * @return the access group or null if none found
      */
     AccessGroup findOneByName(String pName);
@@ -68,9 +67,8 @@ public interface IAccessGroupRepository extends JpaRepository<AccessGroup, Long>
         return new PageImpl<>(accessGroups, idPage.getPageable(), idPage.getTotalElements());
     }
 
-    @Query(
-        value = "SELECT ag.id FROM {h-schema}t_access_group ag LEFT JOIN {h-schema}ta_access_group_users agu on ag.id=agu.access_group_id WHERE ag.public=:isPublic",
-        nativeQuery = true)
+    @Query(value = "SELECT ag.id FROM {h-schema}t_access_group ag LEFT JOIN {h-schema}ta_access_group_users agu on ag.id=agu.access_group_id WHERE ag.public=:isPublic",
+           nativeQuery = true)
     Page<BigInteger> findIdPageByIsPublic(@Param("isPublic") Boolean isPublic, Pageable pageable);
 
     @Override

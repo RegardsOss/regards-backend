@@ -97,7 +97,6 @@ public class FileReferenceEventPublisher {
      *
      * @param fileRef {@link FileReference} deleted
      * @param message Optional message
-     * @param groupId
      */
     public void deletionSuccess(FileReference fileRef, String message, String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent FULLY_DELETED. {}", message);
@@ -116,7 +115,6 @@ public class FileReferenceEventPublisher {
      *
      * @param fileRef {@link FileReference} not deleted
      * @param message Optional error cause message
-     * @param groupId
      */
     public void deletionError(FileReference fileRef, String message, String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent DELETION_ERROR. {}", message);
@@ -134,9 +132,7 @@ public class FileReferenceEventPublisher {
      * Notify listeners for a {@link FileReference} deleted successfully for one owner.
      *
      * @param fileRef {@link FileReference} deleted for the given owner
-     * @param owner
      * @param message Optional message
-     * @param groupId
      */
     public void deletionForOwnerSuccess(FileReference fileRef, String owner, String message, String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent DELETED_FOR_OWNER. {}", message);
@@ -155,9 +151,8 @@ public class FileReferenceEventPublisher {
      * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
      *
-     * @param fileRef  {@link FileReference} deleted for the given owner
-     * @param message  Optional message
-     * @param groupIds
+     * @param fileRef {@link FileReference} deleted for the given owner
+     * @param message Optional message
      */
     public void storeSuccess(FileReference fileRef,
                              String message,
@@ -181,7 +176,6 @@ public class FileReferenceEventPublisher {
      *
      * @param fileRef {@link FileReference} deleted for the given owner
      * @param message Optional message
-     * @param groupId
      */
     public void storeSuccess(FileReference fileRef, String message, String groupId, Collection<String> owners) {
         storeSuccess(fileRef, message, Sets.newHashSet(groupId), owners);
@@ -196,7 +190,6 @@ public class FileReferenceEventPublisher {
      * @param owners   owners of the file in error
      * @param storage  target destination
      * @param message  Optional message
-     * @param groupIds
      */
     public void storeError(String checksum,
                            Collection<String> owners,
@@ -223,7 +216,6 @@ public class FileReferenceEventPublisher {
      * @param owners   owners of the file in error
      * @param storage  target destination
      * @param message  Optional message
-     * @param groupId
      */
     public void storeError(String checksum, Collection<String> owners, String storage, String message, String groupId) {
         storeError(checksum, owners, storage, message, Sets.newHashSet(groupId));

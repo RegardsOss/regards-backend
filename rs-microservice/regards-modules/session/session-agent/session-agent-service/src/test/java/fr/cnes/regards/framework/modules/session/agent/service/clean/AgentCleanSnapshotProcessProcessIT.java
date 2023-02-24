@@ -51,7 +51,8 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_process_it",
-    "regards.session.agent.clean.snapshot.process.limit.store=30", "spring.jpa.show-sql=false", })
+                                   "regards.session.agent.clean.snapshot.process.limit.store=30",
+                                   "spring.jpa.show-sql=false", })
 @ActiveProfiles({ "noscheduler" })
 public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtilsIT {
 
@@ -78,8 +79,7 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtil
     }
 
     @Test
-    @Purpose(
-        "Test deletion performance to avoid bad patterns in hibernate usage during deletion of big amount of rows.")
+    @Purpose("Test deletion performance to avoid bad patterns in hibernate usage during deletion of big amount of rows.")
     public void deletionPerformanceTest() {
         SessionStep step = new SessionStep("storage", "toto", "toto", StepTypeEnum.STORAGE, new StepState());
         step.setLastUpdateDate(OffsetDateTime.now());

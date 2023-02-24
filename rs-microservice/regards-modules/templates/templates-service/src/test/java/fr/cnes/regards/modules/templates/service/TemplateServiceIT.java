@@ -54,9 +54,11 @@ import java.util.*;
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(properties = { "spring.application.name=rs-admin", "regards.jpa.multitenant.enabled=false",
-    "regards.amqp.enabled=false", "regards.cipher.key-location=src/test/resources/testKey",
-    "regards.cipher.iv=1234567812345678" })
+@TestPropertySource(properties = { "spring.application.name=rs-admin",
+                                   "regards.jpa.multitenant.enabled=false",
+                                   "regards.amqp.enabled=false",
+                                   "regards.cipher.key-location=src/test/resources/testKey",
+                                   "regards.cipher.iv=1234567812345678" })
 @ContextConfiguration
 @ActiveProfiles("test")
 public class TemplateServiceIT {

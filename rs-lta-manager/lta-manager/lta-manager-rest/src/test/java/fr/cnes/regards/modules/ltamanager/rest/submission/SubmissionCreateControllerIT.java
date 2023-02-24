@@ -79,7 +79,7 @@ import static org.mockito.ArgumentMatchers.anyString;
  * Test for {@link SubmissionCreateController}
  */
 @TestPropertySource(locations = { "classpath:application-test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=submission_controller_it" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=submission_controller_it" })
 public class SubmissionCreateControllerIT extends AbstractRegardsIT {
 
     private static final String DATATYPE = "DatatypeTest";

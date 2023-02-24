@@ -32,7 +32,7 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "t_search_engine_conf",
-    uniqueConstraints = { @UniqueConstraint(columnNames = { "plugin_conf_id", "dataset_urn" }) })
+       uniqueConstraints = { @UniqueConstraint(columnNames = { "plugin_conf_id", "dataset_urn" }) })
 public class SearchEngineConfiguration {
 
     @Id

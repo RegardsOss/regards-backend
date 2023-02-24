@@ -47,8 +47,9 @@ import java.util.Optional;
  * @author msordi
  */
 @Entity
-@Table(name = "t_attribute_model", uniqueConstraints = @UniqueConstraint(name = "uk_attribute_model_name_fragment_id",
-    columnNames = { "name", "fragment_id" }))
+@Table(name = "t_attribute_model",
+       uniqueConstraints = @UniqueConstraint(name = "uk_attribute_model_name_fragment_id",
+                                             columnNames = { "name", "fragment_id" }))
 @SequenceGenerator(name = "attModelSequence", initialValue = 1, sequenceName = "seq_att_model")
 public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute> {
 
@@ -65,9 +66,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
      */
     @NotNull(message = "Name cannot be null")
     @Pattern(regexp = Model.NAME_REGEXP,
-        message = "Attribute name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
-    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE,
-        message = "Attribute name must be between " + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
+             message = "Attribute name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
+    @Size(min = Model.NAME_MIN_SIZE,
+          max = Model.NAME_MAX_SIZE,
+          message = "Attribute name must be between "
+                    + Model.NAME_MIN_SIZE
+                    + " and "
+                    + Model.NAME_MAX_SIZE
+                    + " length.")
     @Column(nullable = false, updatable = false, length = Model.NAME_MAX_SIZE)
     private String name;
 
@@ -108,8 +114,10 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
      * Optional fragment
      */
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "fragment_id", foreignKey = @ForeignKey(name = "fk_fragment_id"), nullable = false,
-        updatable = false)
+    @JoinColumn(name = "fragment_id",
+                foreignKey = @ForeignKey(name = "fk_fragment_id"),
+                nullable = false,
+                updatable = false)
     private Fragment fragment;
 
     /**
@@ -158,9 +166,10 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
      * Optional group for displaying purpose
      */
     @Pattern(regexp = Model.NAME_REGEXP,
-        message = "Group name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
-    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE,
-        message = "Group name must be between " + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
+             message = "Group name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
+    @Size(min = Model.NAME_MIN_SIZE,
+          max = Model.NAME_MAX_SIZE,
+          message = "Group name must be between " + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
     @Column(name = "group_name", length = Model.NAME_MAX_SIZE)
     private String group;
 
@@ -275,8 +284,6 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     /**
      * Set the label
-     *
-     * @param label
      */
     public void setLabel(String label) {
         this.label = label;
@@ -513,7 +520,6 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     /**
      * Construct a json path for the current attribute depending on given prefix namespace
      *
-     * @param namespace
      * @return json path
      */
     public String getJsonPathForNamespace(String namespace) {
@@ -613,7 +619,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     }
 
     /**
-     * @return
+     *
      */
     public RestrictionType getRestrictionType() {
         return Optional.ofNullable(restriction)

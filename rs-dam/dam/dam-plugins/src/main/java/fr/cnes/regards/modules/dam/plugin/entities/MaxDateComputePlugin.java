@@ -42,19 +42,25 @@ import java.util.function.Consumer;
  * @author Sylvain Vissiere-Guerinet
  */
 @Plugin(id = PluginComputationIdentifierEnum.MAX_DATE_VALUE,
-    description = "allows to compute the maximum of a DateAttribute according to a collection of data",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss", version = "1.0.0")
+        description = "allows to compute the maximum of a DateAttribute according to a collection of data",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss",
+        version = "1.0.0")
 @ComputationPlugin(supportedType = PropertyType.DATE_ISO8601)
 public class MaxDateComputePlugin extends AbstractDataObjectComputePlugin<OffsetDateTime> {
 
-    @PluginParameter(name = PARAMETER_ATTRIBUTE_NAME, label = "Parameter attribute name",
-        description = "Name of parameter attribute used to compute result attribute.")
+    @PluginParameter(name = PARAMETER_ATTRIBUTE_NAME,
+                     label = "Parameter attribute name",
+                     description = "Name of parameter attribute used to compute result attribute.")
     private String parameterAttributeName;
 
-    @PluginParameter(name = PARAMETER_FRAGMENT_NAME, label = "Parameter fragment name",
-        description = "Name of parameter attribute fragment. If parameter attribute belongs to default fragment, leave this field empty.",
-        optional = true)
+    @PluginParameter(name = PARAMETER_FRAGMENT_NAME,
+                     label = "Parameter fragment name",
+                     description = "Name of parameter attribute fragment. If parameter attribute belongs to default fragment, leave this field empty.",
+                     optional = true)
     private String parameterAttributeFragmentName;
 
     /**

@@ -31,7 +31,7 @@ import org.springframework.test.context.TestPropertySource;
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test

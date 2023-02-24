@@ -53,8 +53,7 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
     long countBySourceAndRegistrationDateBefore(String source, OffsetDateTime lastUpdate);
 
     @Modifying
-    @Query(
-        value = "delete from StepPropertyUpdateRequest r where r.sessionStep.stepId = ?1 and r.sessionStep.source = ?2 and r.sessionStep.session = ?3")
+    @Query(value = "delete from StepPropertyUpdateRequest r where r.sessionStep.stepId = ?1 and r.sessionStep.source = ?2 and r.sessionStep.session = ?3")
     void deleteBySessionStep(String stepId, String source, String session);
 
     List<StepPropertyUpdateRequest> findBySession(String session);

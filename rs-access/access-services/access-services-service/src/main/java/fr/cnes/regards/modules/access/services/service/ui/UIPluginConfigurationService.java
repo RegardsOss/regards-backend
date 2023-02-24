@@ -96,10 +96,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
     private final IAuthenticationResolver authResolver;
 
     /**
-     * @param pPluginRepository
-     * @param pLinkedUiPluginRespository
-     * @param pRepository
-     * @param pPublisher
+     *
      */
     public UIPluginConfigurationService(IUIPluginDefinitionRepository pluginRepository,
                                         ILinkUIPluginsDatasetsRepository linkedUiPluginRespository,
@@ -298,7 +295,6 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
     /**
      * Retrieve unqi services from given {@link LinkUIPluginsDatasets}s
      *
-     * @param links
      * @return {@link UIPluginConfiguration}s
      */
     private Set<UIPluginConfiguration> getCommonServicesFromLinks(List<LinkUIPluginsDatasets> links) {

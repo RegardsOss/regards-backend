@@ -17,6 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * @author Sylvain Vissiere-Guerinet
+ *
  */
 package fr.cnes.regards.framework.gson.annotation;

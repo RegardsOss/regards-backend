@@ -64,7 +64,7 @@ public class WorkerManagerResponseService {
                                                                      SubmissionRequestState.GENERATION_PENDING);
         List<String> requestsFound = requestRepository.findIdsByCorrelationIdInAndStatesIn(responseEvents.stream()
                                                                                                          .map(
-                                                                                                         WorkerManagerResponseService::getRequestIdHeader)
+                                                                                                             WorkerManagerResponseService::getRequestIdHeader)
                                                                                                          .filter(Objects::nonNull)
                                                                                                          .toList(),
                                                                                            allowedStatesToUpdate);

@@ -123,15 +123,12 @@ public class AttributeModelController implements IResourceController<AttributeMo
      *
      * @param type         filter by type
      * @param fragmentName filter by fragment
-     * @param modelNames
-     * @param noLink
      * @return list of {@link AttributeModel}
      */
     @GetMapping
     @Operation(summary = "Get attribute models", description = "Return a list of attribute models")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All attribute models were retrieved.") })
-    @ResourceAccess(description = "Endpoint to retrieve the list of attribute models",
-        role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Endpoint to retrieve the list of attribute models", role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<AttributeModel>>> getAttributes(
         @RequestParam(value = PARAM_TYPE, required = false) PropertyType type,
         @RequestParam(value = PARAM_FRAGMENT_NAME, required = false) String fragmentName,
@@ -220,7 +217,6 @@ public class AttributeModelController implements IResourceController<AttributeMo
      *
      * @param id attribute identifier
      * @return nothing
-     * @throws ModuleException
      */
     @ResourceAccess(description = "Delete an attribute", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.DELETE, value = ATTRIBUTE_MAPPING)

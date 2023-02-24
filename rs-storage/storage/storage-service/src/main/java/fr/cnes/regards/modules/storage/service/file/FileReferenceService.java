@@ -206,9 +206,6 @@ public class FileReferenceService {
 
     /**
      * Remove given owner form the given fileReference.
-     *
-     * @param fileReference
-     * @param owner
      */
     public void removeOwner(FileReference fileReference, String owner, String groupId) {
         String message;
@@ -233,8 +230,6 @@ public class FileReferenceService {
     /**
      * Search for all {@link FileReference}s associated to the given storage location.
      *
-     * @param storage
-     * @param pageable
      * @return {@link FileReference}s
      */
     @Transactional(readOnly = true)
@@ -249,8 +244,6 @@ public class FileReferenceService {
     /**
      * Search for all {@link FileReference}s associated to the given storage location.
      *
-     * @param storage
-     * @param pageable
      * @return {@link FileReference}s
      */
     @Transactional(readOnly = true)
@@ -269,8 +262,6 @@ public class FileReferenceService {
     /**
      * Search for all {@link FileReference}s with matching checksums on the given storage location.
      *
-     * @param storage
-     * @param checksums
      * @return {@link FileReference}s
      */
     @Transactional(readOnly = true)
@@ -286,7 +277,6 @@ public class FileReferenceService {
     /**
      * Search for all {@link FileReference}s associated to the given checksums.
      *
-     * @param checksums
      * @return {@link FileReference}s
      */
     @Transactional(readOnly = true)
@@ -307,7 +297,6 @@ public class FileReferenceService {
     /**
      * Search for all {@link FileReference}s.
      *
-     * @param pageable
      * @return {@link FileReference}s
      */
     @Transactional(readOnly = true)
@@ -319,7 +308,6 @@ public class FileReferenceService {
      * Search for all {@link FileReference}s matching the given criterion.
      *
      * @param spec criterion
-     * @param page
      * @return {@link FileReference}s
      */
     @Transactional(readOnly = true)
@@ -329,8 +317,6 @@ public class FileReferenceService {
 
     /**
      * Update the given fileReference
-     *
-     * @param updatedFile
      */
     public FileReference update(String checksum, String storage, FileReference updatedFile) {
         Assert.notNull(updatedFile, "File reference to update can not be null");
@@ -341,8 +327,7 @@ public class FileReferenceService {
     }
 
     /**
-     * @param id
-     * @param owner
+     *
      */
     public boolean addOwner(Long id, String owner) {
         if (!fileRefRepo.isOwnedBy(id, owner)) {
@@ -357,9 +342,7 @@ public class FileReferenceService {
     }
 
     /**
-     * @param storage
-     * @param pageable
-     * @return
+     *
      */
     public Page<FileReference> searchWithOwners(String storage, Pageable pageable) {
         return fileRefWithOwnersRepo.findAllByLocationStorage(storage, pageable);

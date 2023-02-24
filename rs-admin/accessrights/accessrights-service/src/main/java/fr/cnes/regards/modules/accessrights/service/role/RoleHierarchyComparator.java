@@ -41,12 +41,10 @@ public class RoleHierarchyComparator implements Comparator<Role> {
 
     /**
      * Create a comparator of role for the sorting by hierarchy, if same hierarchy sorting by name
-     *
-     * @param roleService
      */
     public RoleHierarchyComparator(IRoleService roleService) {
         Objects.requireNonNull(roleService, "Role service must not be Null");
-        
+
         this.roleService = roleService;
     }
 

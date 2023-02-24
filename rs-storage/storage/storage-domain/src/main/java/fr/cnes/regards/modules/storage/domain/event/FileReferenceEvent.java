@@ -69,12 +69,6 @@ public class FileReferenceEvent implements ISubscribable {
     /**
      * Build a file reference event with a file location.
      *
-     * @param checksum
-     * @param type
-     * @param owners
-     * @param message
-     * @param location
-     * @param groupIds
      * @return {@link FileReferenceEvent}
      */
     public static FileReferenceEvent build(String checksum,

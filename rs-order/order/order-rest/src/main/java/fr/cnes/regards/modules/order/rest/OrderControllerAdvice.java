@@ -58,9 +58,12 @@ public class OrderControllerAdvice {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
-    @ExceptionHandler(
-        { CannotPauseOrderException.class, CannotResumeOrderException.class, CannotRestartOrderException.class,
-            CannotRetryOrderException.class, CannotDeleteOrderException.class, CannotRemoveOrderException.class })
+    @ExceptionHandler({ CannotPauseOrderException.class,
+                        CannotResumeOrderException.class,
+                        CannotRestartOrderException.class,
+                        CannotRetryOrderException.class,
+                        CannotDeleteOrderException.class,
+                        CannotRemoveOrderException.class })
     public ResponseEntity<ServerErrorResponse> handleUnauthorizedOrderActionException(ModuleException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
     }

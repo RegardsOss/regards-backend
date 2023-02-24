@@ -18,7 +18,5 @@
  */
 /**
  * This package contains all possible restriction on attribute values.
- *
- * @author msordi
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;

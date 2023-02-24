@@ -345,7 +345,6 @@ public class EntityIndexerService implements IEntityIndexerService {
      *
      * @param tenant concerned tenant
      * @param ipId   dataset identifier
-     * @throws ModuleException
      */
     private void manageDatasetDelete(String tenant, String ipId, String dsiId) throws ModuleException {
         // Search all DataObjects tagging this Dataset (only DataObjects because all other entities are already managed
@@ -477,8 +476,6 @@ public class EntityIndexerService implements IEntityIndexerService {
 
     /**
      * Handle Access rights filter for the given dataset. An Access right filter is an accessRight with a {@link IDataObjectAccessFilterPlugin}.
-     *
-     * @throws ModuleException
      */
     private void manageDatasetUpdateFilteredAccessrights(String tenant,
                                                          Dataset dataset,
@@ -575,7 +572,6 @@ public class EntityIndexerService implements IEntityIndexerService {
      * @param executor                {@link ExecutorService}
      * @param saveDataObjectsCallable {@link SaveDataObjectsCallable} used to save data
      * @param dsiId                   {@link DatasourceIngestion} identifier
-     * @throws ModuleException
      */
     private void addOrUpdateDatasetDataObjectsAssoc(Dataset dataset,
                                                     OffsetDateTime lastUpdateDate,
@@ -622,7 +618,6 @@ public class EntityIndexerService implements IEntityIndexerService {
      * @param dsiId                   {@link DatasourceIngestion} identifier
      * @param groupName               Name of the group to associate to DATA entities.
      * @param groupSubsettingClause   {@link ICriterion} group subsetting clause. Caculate by {@link IDataObjectAccessFilterPlugin} plugin.
-     * @throws ModuleException
      */
     private void addOrUpdateDataObectGroupAssoc(Dataset dataset,
                                                 OffsetDateTime updateDate,
@@ -672,7 +667,6 @@ public class EntityIndexerService implements IEntityIndexerService {
      * @param executor                {@link ExecutorService}
      * @param saveDataObjectsCallable {@link SaveDataObjectsCallable} used to save data
      * @param dsiId                   {@link DatasourceIngestion} identifier
-     * @throws ModuleException
      */
     private void removeOldDatasetDataObjectsAssoc(Dataset dataset,
                                                   OffsetDateTime updateDate,
@@ -720,7 +714,6 @@ public class EntityIndexerService implements IEntityIndexerService {
      * @param executor                {@link ExecutorService}
      * @param saveDataObjectsCallable {@link SaveDataObjectsCallable} used to save data
      * @param dsiId                   {@link DatasourceIngestion} identifier
-     * @throws ModuleException
      */
     private void removeOldDataObjectsGroupAssoc(Dataset dataset,
                                                 OffsetDateTime updateDate,
@@ -957,10 +950,6 @@ public class EntityIndexerService implements IEntityIndexerService {
      * - a normalized version of the geometry in the same CRS
      * - a WGS 84 projected version of the normalized geometry
      * This normalization can produce errors if the geometry is not valid
-     *
-     * @param dataObject
-     * @param bulkSaveResult
-     * @param errorBuffer
      */
     private void normalizeAndReprojectGeometry(DataObject dataObject,
                                                BulkSaveResult bulkSaveResult,

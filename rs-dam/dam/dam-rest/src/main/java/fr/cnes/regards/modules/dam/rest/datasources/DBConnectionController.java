@@ -165,8 +165,7 @@ public class DBConnectionController implements IResourceController<PluginConfigu
      *
      * @param plgBusinessId {@link PluginConfiguration} identifier
      * @return a {@link Map} that contains the database's tables
-     * @throws ModuleException                          if problem occurs during retrieve the database's tables
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException if problem occurs during retrieve the database's tables
      */
     @ResourceAccess(description = "Get the tables of the database")
     @RequestMapping(method = RequestMethod.GET, value = "/{plgBusinessId}/tables")
@@ -183,8 +182,7 @@ public class DBConnectionController implements IResourceController<PluginConfigu
      * @param plgBusinessId {@link PluginConfiguration} identifier
      * @param tableName     a database table name
      * @return a {@link Map} that contains the columns of a table
-     * @throws ModuleException                          if problem occurs during retrieve the columns of a table
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException if problem occurs during retrieve the columns of a table
      */
     @ResourceAccess(description = "Get the columns of a specific table of the database")
     @RequestMapping(method = RequestMethod.GET, value = "/{plgBusinessId}/tables/{tableName}/columns")

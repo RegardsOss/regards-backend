@@ -40,7 +40,6 @@ public interface IOAISDeletionService {
     /**
      * Search a {@link OAISDeletionCreatorRequest} by is id.
      *
-     * @param requestId
      * @return {@link OAISDeletionCreatorRequest}
      */
     Optional<OAISDeletionCreatorRequest> searchCreator(Long requestId);
@@ -48,7 +47,6 @@ public interface IOAISDeletionService {
     /**
      * Search {@link OAISDeletionCreatorRequest}s by ids.
      *
-     * @param deleteRequestIds
      * @return {@link OAISDeletionCreatorRequest}
      */
     List<OAISDeletionRequest> searchRequests(List<Long> deleteRequestIds);

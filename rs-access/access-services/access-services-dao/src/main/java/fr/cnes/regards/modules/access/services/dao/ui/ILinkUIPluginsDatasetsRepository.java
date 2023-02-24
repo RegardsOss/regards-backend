@@ -40,7 +40,6 @@ public interface ILinkUIPluginsDatasetsRepository extends JpaRepository<LinkUIPl
     /**
      * Retrieve all links having the given configuration in their services list
      *
-     * @param pluginConfiguration
      * @return The query result wrapped in a {@link Stream}
      */
     Stream<LinkUIPluginsDatasets> findAllByServicesContaining(UIPluginConfiguration pluginConfiguration);

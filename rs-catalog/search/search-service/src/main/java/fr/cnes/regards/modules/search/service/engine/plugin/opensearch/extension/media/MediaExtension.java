@@ -81,7 +81,6 @@ public class MediaExtension extends AbstractExtension {
      * Convert a {@link DataFile} to a {@link GeoJsonLink}. Only for publicly available resource like QUICKLOOK and THUMBNAIL
      *
      * @param dataFile {@link DataFile}
-     * @param scope
      * @return {@link GeoJsonLink}
      */
     private static GeoJsonLink getGeoJsonLink(DataFile dataFile, String scope) {
@@ -235,7 +234,6 @@ public class MediaExtension extends AbstractExtension {
     /**
      * Generate ATOM {@link Link}s for the given medias.
      *
-     * @param medias
      * @return {@link Link}s
      */
     private Collection<Link> getAtomLinks(Multimap<DataType, DataFile> medias, String scope) {
@@ -267,7 +265,6 @@ public class MediaExtension extends AbstractExtension {
     /**
      * Build rome {@link Module} to generate media properties for entities into ATOM search response
      *
-     * @param medias
      * @return {@link Module}
      */
     private Module getAtomEntityResponseBuilder(Multimap<DataType, DataFile> medias, String scope) {

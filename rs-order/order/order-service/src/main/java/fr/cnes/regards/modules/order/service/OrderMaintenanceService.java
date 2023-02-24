@@ -192,8 +192,6 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     /**
      * Clean expired order (pause, wait for end of pause then delete it)
-     *
-     * @param order
      */
     private void handleExpiredOrder(Order order) {
         // Ask for all jobInfos abortion (don't call self.pause() because of status, order must stay EXPIRED)

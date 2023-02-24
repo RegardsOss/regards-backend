@@ -62,7 +62,7 @@ public class UIPluginConfigurationServiceTest {
     private IAuthenticationResolver authResolver;
 
     /**
-     * @throws java.lang.Exception
+     *
      */
     @Before
     public void setUp() throws Exception {
@@ -82,7 +82,7 @@ public class UIPluginConfigurationServiceTest {
     }
 
     /**
-     * @throws java.lang.Exception
+     *
      */
     @After
     public void tearDown() throws Exception {
@@ -91,8 +91,6 @@ public class UIPluginConfigurationServiceTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.access.services.service.ui.UIPluginConfigurationService#deletePluginconfiguration(fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration)}.
-     *
-     * @throws EntityException
      */
     @Test
     public final void testDeletePluginconfiguration_shouldRemoveAndSaveLink() throws EntityException {
@@ -122,8 +120,6 @@ public class UIPluginConfigurationServiceTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.access.services.service.ui.UIPluginConfigurationService#deletePluginconfiguration(fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration)}.
-     *
-     * @throws EntityException
      */
     @Test
     public final void testDeletePluginconfiguration_shouldRemoveAndDeleteLink() throws EntityException {

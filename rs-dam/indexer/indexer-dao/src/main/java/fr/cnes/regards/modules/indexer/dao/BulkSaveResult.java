@@ -61,7 +61,6 @@ public class BulkSaveResult {
     /**
      * add information needed to report document that could be indexed
      *
-     * @param docId
      * @param session      nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
      * @param sessionOwner nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
      */
@@ -93,8 +92,6 @@ public class BulkSaveResult {
     /**
      * add information needed to report document that could not be indexed
      *
-     * @param docId
-     * @param exception
      * @param session      nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
      * @param sessionOwner nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
      */

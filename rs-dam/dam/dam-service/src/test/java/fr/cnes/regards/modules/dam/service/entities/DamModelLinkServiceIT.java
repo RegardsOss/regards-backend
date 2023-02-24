@@ -47,7 +47,8 @@ import java.util.HashMap;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=entities",
-    "regards.dam.post.aip.entities.to.storage=false" }, locations = "classpath:es.properties")
+                                   "regards.dam.post.aip.entities.to.storage=false" },
+                    locations = "classpath:es.properties")
 @MultitenantTransactional
 public class DamModelLinkServiceIT extends AbstractMultitenantServiceIT {
 

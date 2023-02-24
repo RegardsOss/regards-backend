@@ -96,12 +96,10 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     /**
      * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
      * {@link DataType})
-     *
-     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST, value = ComplexSearchController.SUMMARY_MAPPING)
     @ResourceAccess(description = "Provide a summary for a given dataset from user current basket",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<DocFilesSummary> computeDatasetsSummary(
         @RequestBody ComplexSearchRequest complexSearchRequest) throws ModuleException {
         List<ICriterion> searchCriterions = Lists.newArrayList();
@@ -127,8 +125,6 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     /**
      * Compute a complex search
      * {@link DataType})
-     *
-     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Get features from a complex search", role = DefaultRole.PUBLIC)
@@ -149,7 +145,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
 
     @RequestMapping(method = RequestMethod.POST, value = ComplexSearchController.SEARCH_DATAOBJECTS_ATTRIBUTES)
     @ResourceAccess(description = "Get common model attributes associated to data objects results of the given request",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<AttributeModel>> searchDataobjectsAttributes(@RequestBody SearchRequest searchRequest,
                                                                            @RequestHeader HttpHeaders headers)
         throws SearchException, ModuleException {

@@ -27,8 +27,14 @@ import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Complex plugin test", id = "aComplexErrorPlugin", version = "0.0.1", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(description = "Complex plugin test",
+        id = "aComplexErrorPlugin",
+        version = "0.0.1",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class ComplexErrorPlugin implements ISamplePlugin {
 
     // Field name

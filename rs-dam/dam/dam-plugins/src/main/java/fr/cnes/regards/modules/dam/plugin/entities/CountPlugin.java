@@ -44,9 +44,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Sylvain Vissiere-Guerinet
  */
 @Plugin(id = PluginComputationIdentifierEnum.COUNT_VALUE,
-    description = "allows to compute the number of data of a Dataset", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
-    version = "1.0.0")
+        description = "allows to compute the number of data of a Dataset",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss",
+        version = "1.0.0")
 @ComputationPlugin(supportedType = PropertyType.LONG)
 public class CountPlugin implements IComputedAttribute<Dataset, Long> {
 
@@ -62,13 +66,18 @@ public class CountPlugin implements IComputedAttribute<Dataset, Long> {
     @Autowired
     private ProjectGeoSettings projectGeoSettings;
 
-    @PluginParameter(name = RESULT_ATTRIBUTE_NAME, label = "Result attribute name",
-        description = "Name of attribute to compute (ie result attribute).", unconfigurable = true)
+    @PluginParameter(name = RESULT_ATTRIBUTE_NAME,
+                     label = "Result attribute name",
+                     description = "Name of attribute to compute (ie result attribute).",
+                     unconfigurable = true)
     private String attributeToComputeName;
 
-    @PluginParameter(name = RESULT_FRAGMENT_NAME, label = "Result fragment name", description =
-        "Name of attribute to compute fragment. If computed attribute belongs to "
-        + "default fragment, this value can be set to null.", optional = true, unconfigurable = true)
+    @PluginParameter(name = RESULT_FRAGMENT_NAME,
+                     label = "Result fragment name",
+                     description = "Name of attribute to compute fragment. If computed attribute belongs to "
+                                   + "default fragment, this value can be set to null.",
+                     optional = true,
+                     unconfigurable = true)
     private String attributeToComputeFragmentName;
 
     private AttributeModel attributeToCompute;

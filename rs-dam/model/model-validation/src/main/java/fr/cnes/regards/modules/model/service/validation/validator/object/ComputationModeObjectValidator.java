@@ -18,6 +18,7 @@
  */
 
 package fr.cnes.regards.modules.model.service.validation.validator.object;
+
 import fr.cnes.regards.modules.model.domain.ComputationMode;
 import org.springframework.validation.Errors;
 
@@ -27,7 +28,7 @@ import org.springframework.validation.Errors;
  * @author Thibaud Michaudel
  **/
 public class ComputationModeObjectValidator extends AbstractObjectValidator {
-    
+
     private final ComputationMode computationMode;
 
     public ComputationModeObjectValidator(ComputationMode computationMode, String attributeKey) {

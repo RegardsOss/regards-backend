@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
  */
 @Entity
 @Table(name = "t_deleted_entity",
-    uniqueConstraints = @UniqueConstraint(name = "uk_deleted_entity_ipId", columnNames = { "ipId" }))
+       uniqueConstraints = @UniqueConstraint(name = "uk_deleted_entity_ipId", columnNames = { "ipId" }))
 public class DeletedEntity {
 
     /**

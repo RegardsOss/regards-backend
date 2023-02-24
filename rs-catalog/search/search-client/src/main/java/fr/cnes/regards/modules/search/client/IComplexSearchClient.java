@@ -52,16 +52,18 @@ public interface IComplexSearchClient {
      * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
      * {@link DataType})
      */
-    @PostMapping(path = ROOT_TYPE_MAPPING + SUMMARY_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_TYPE_MAPPING + SUMMARY_MAPPING,
+                 produces = MediaType.APPLICATION_JSON_VALUE,
+                 consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestBody ComplexSearchRequest complexSearchRequest);
 
     /**
      * Compute a complex search
      * {@link DataType})
      */
-    @PostMapping(path = ROOT_TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_TYPE_MAPPING,
+                 produces = MediaType.APPLICATION_JSON_VALUE,
+                 consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(
         @RequestBody ComplexSearchRequest complexSearchRequest);
 

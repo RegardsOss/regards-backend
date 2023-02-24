@@ -81,7 +81,7 @@ public class JobTaskScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.job.cleaner.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.job.cleaner.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.job.cleaner.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

@@ -18,7 +18,5 @@
  */
 /**
  * Utility class for managing jobs with multiple steps
- *
- * @author Marc Sordi
  */
 package fr.cnes.regards.framework.modules.jobs.domain.step;

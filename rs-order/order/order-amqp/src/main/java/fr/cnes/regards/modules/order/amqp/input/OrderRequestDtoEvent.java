@@ -38,6 +38,6 @@ public class OrderRequestDtoEvent extends OrderRequestDto implements ISubscribab
 
     public OrderRequestDtoEvent(List<String> queries, OrderRequestFilters filters, String correlationId, String user) {
         super(queries, filters, correlationId, user);
-        Assert.notNull(correlationId,  "correlationId is mandatory for OrderRequestDtoEvents");
+        Assert.notNull(correlationId, "correlationId is mandatory for OrderRequestDtoEvents");
     }
 }

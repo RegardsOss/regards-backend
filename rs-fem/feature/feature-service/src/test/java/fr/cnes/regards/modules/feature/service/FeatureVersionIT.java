@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.UUID;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version"
-    //        , "spring.jpa.show-sql=true"
+                                   //        , "spring.jpa.show-sql=true"
 })
 @ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureVersionIT extends AbstractFeatureMultitenantServiceIT {

@@ -145,7 +145,6 @@ public class RequestService {
     /**
      * Get worker exchange name by his workerType
      *
-     * @param workerType
      * @return exchange name
      */
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -155,8 +154,6 @@ public class RequestService {
 
     /**
      * Return name of the AMQP queue to listen for worker responses.
-     *
-     * @return
      */
     @Transactional(propagation = Propagation.SUPPORTS)
     public String getWorkerResponseQueueName() {
@@ -165,8 +162,6 @@ public class RequestService {
 
     /**
      * Return name of the AMQP queue to listen for worker request dlq.
-     *
-     * @return
      */
     @Transactional(propagation = Propagation.SUPPORTS)
     public String getWorkerRequestDlqName() {
@@ -175,8 +170,6 @@ public class RequestService {
 
     /**
      * Return name of the AMQP dead letter exchange.
-     *
-     * @return
      */
     @Transactional(propagation = Propagation.SUPPORTS)
     public String getWorkerRequestDlxName() {
@@ -186,7 +179,6 @@ public class RequestService {
     /**
      * Retrieve one {@link RequestDTO} by his requestId
      *
-     * @param requestId
      * @return RequestDTO
      */
     public Optional<RequestDTO> get(String requestId) {
@@ -354,8 +346,6 @@ public class RequestService {
                               .orElse(false);
     }
 
-
-
     private void dispatchRequests(Collection<Request> requests,
                                   SessionsRequestsInfo requestInfo,
                                   SessionsRequestsInfo newRequestsInfo,
@@ -417,7 +407,8 @@ public class RequestService {
         // For each worker response update matching request status
         events.forEach(workerResponseEvent -> {
             Optional<Request> oRequest = requests.stream()
-                                                 .filter(r -> workerResponseEvent.getRequestIdHeader().equals(r.getRequestId()))
+                                                 .filter(r -> workerResponseEvent.getRequestIdHeader()
+                                                                                 .equals(r.getRequestId()))
                                                  .findFirst();
 
             if (oRequest.isPresent()) {
@@ -460,7 +451,9 @@ public class RequestService {
         sessionService.notifySessions(requestInfo, newRequestInfo);
 
         // Delete succeeded requests. Success requests do not need to be persisted
-        requestRepository.deleteAllInBatch(requests.stream().filter(r -> r.getStatus().equals(RequestStatus.SUCCESS)).toList());
+        requestRepository.deleteAllInBatch(requests.stream()
+                                                   .filter(r -> r.getStatus().equals(RequestStatus.SUCCESS))
+                                                   .toList());
 
         return newRequestInfo;
     }
@@ -481,27 +474,28 @@ public class RequestService {
      */
     private void updateRequestWithNextStep(Request request, WorkerResponseEvent event, WorkflowConfig workflowConfig) {
         // check if workflow is finished
-        workflowService.getNextWorkflowStepIndex(workflowConfig, request.getStepNumber()).ifPresentOrElse((nextStepInd) -> {
-            byte[] content = event.getContent();
-            // dispatch to next workflow step only if content response is valid
-            if (content != null) {
-                request.setContent(event.getContent());
-                request.setStatus(RequestStatus.TO_DISPATCH);
-                request.setDispatchedWorkerType(null);
-                WorkflowStep nextStep = workflowConfig.getSteps().get(nextStepInd);
-                request.setStepNumber(nextStep.getStepNumber());
-                request.setStepWorkerType(nextStep.getWorkerType());
-            } else {
-                request.setStatus(RequestStatus.ERROR);
-                request.setError(String.format("""
-                                                   An error occurred at step %d of the workflow "%s". \
-                                                   The workerResponseEvent %s did not return any content while it is \
-                                                   required by the next worker. Workflow is therefore stopped at this step.""",
-                                               request.getStepNumber(),
-                                               workflowConfig.getWorkflowType(),
-                                               event.getRequestIdHeader()));
-            }
-        }, () -> request.setStatus(RequestStatus.SUCCESS));
+        workflowService.getNextWorkflowStepIndex(workflowConfig, request.getStepNumber())
+                       .ifPresentOrElse((nextStepInd) -> {
+                           byte[] content = event.getContent();
+                           // dispatch to next workflow step only if content response is valid
+                           if (content != null) {
+                               request.setContent(event.getContent());
+                               request.setStatus(RequestStatus.TO_DISPATCH);
+                               request.setDispatchedWorkerType(null);
+                               WorkflowStep nextStep = workflowConfig.getSteps().get(nextStepInd);
+                               request.setStepNumber(nextStep.getStepNumber());
+                               request.setStepWorkerType(nextStep.getWorkerType());
+                           } else {
+                               request.setStatus(RequestStatus.ERROR);
+                               request.setError(String.format("""
+                                                                  An error occurred at step %d of the workflow "%s". \
+                                                                  The workerResponseEvent %s did not return any content while it is \
+                                                                  required by the next worker. Workflow is therefore stopped at this step.""",
+                                                              request.getStepNumber(),
+                                                              workflowConfig.getWorkflowType(),
+                                                              event.getRequestIdHeader()));
+                           }
+                       }, () -> request.setStatus(RequestStatus.SUCCESS));
     }
 
     /**
@@ -681,7 +675,6 @@ public class RequestService {
      * Generates a {@link ResponseEvent} associated to the current status of the given {@link Request}
      *
      * @param request {@link Request}
-     * @return
      */
     private Optional<ResponseEvent> generateResponseFromRequest(Request request) {
         ResponseEvent event = null;
@@ -782,8 +775,6 @@ public class RequestService {
 
     /**
      * Schedule a job to retry all requests matching provided filters
-     *
-     * @param filters
      */
     public void scheduleRequestRetryJob(SearchRequestParameters filters) {
         runScanJob(filters, RequestStatus.TO_DISPATCH);
@@ -791,8 +782,6 @@ public class RequestService {
 
     /**
      * Schedule a job to delete all requests matching provided filters
-     *
-     * @param filters
      */
     public void scheduleRequestDeletionJob(SearchRequestParameters filters) {
         runScanJob(filters, RequestStatus.TO_DELETE);
@@ -820,7 +809,7 @@ public class RequestService {
      */
     public boolean hasRequestsMatchingStepWorkerTypeAndNoWorkerAvailable(String workerType) {
         long nbWaitingRequests = requestRepository.countByStepWorkerTypeAndStatus(workerType,
-                                                                                    RequestStatus.NO_WORKER_AVAILABLE);
+                                                                                  RequestStatus.NO_WORKER_AVAILABLE);
         return nbWaitingRequests > 0;
     }
 

@@ -40,8 +40,6 @@ public final class MultiSearchHelper {
     /**
      * This method return fields than can match value type.<br/>
      * At least attributes of type {@link PropertyType#STRING} is selected.
-     *
-     * @throws OpenSearchUnknownParameter
      */
     public static Set<AttributeModel> discoverFields(final IAttributeFinder finder, String value)
         throws OpenSearchUnknownParameter {

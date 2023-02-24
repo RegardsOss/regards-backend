@@ -93,10 +93,11 @@ public class Account implements IIdentifiable<Long> {
     private AccountStatus status;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "ta_account_project", joinColumns = @JoinColumn(name = "account_id"),
-        foreignKey = @ForeignKey(name = "fk_account_project__account_id"),
-        inverseJoinColumns = @JoinColumn(name = "project_id"),
-        inverseForeignKey = @ForeignKey(name = "fk_account_project__project_id"))
+    @JoinTable(name = "ta_account_project",
+               joinColumns = @JoinColumn(name = "account_id"),
+               foreignKey = @ForeignKey(name = "fk_account_project__account_id"),
+               inverseJoinColumns = @JoinColumn(name = "project_id"),
+               inverseForeignKey = @ForeignKey(name = "fk_account_project__project_id"))
     private Set<Project> projects;
 
     /**

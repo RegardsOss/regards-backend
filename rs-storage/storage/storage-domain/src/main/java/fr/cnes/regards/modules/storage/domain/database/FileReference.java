@@ -35,11 +35,13 @@ import java.util.Set;
  */
 @Entity
 @JsonFilter("owners")
-@Table(name = "t_file_reference", indexes = { @Index(name = "idx_file_reference_checksum", columnList = "checksum"),
-    @Index(name = "idx_file_reference_storage", columnList = "storage"),
-    @Index(name = "idx_file_reference_storage_checksum", columnList = "checksum, storage"),
-    @Index(name = "idx_file_reference_type", columnList = "type") }, uniqueConstraints = {
-    @UniqueConstraint(name = "uk_t_file_reference_checksum_storage", columnNames = { "checksum", "storage" }) })
+@Table(name = "t_file_reference",
+       indexes = { @Index(name = "idx_file_reference_checksum", columnList = "checksum"),
+                   @Index(name = "idx_file_reference_storage", columnList = "storage"),
+                   @Index(name = "idx_file_reference_storage_checksum", columnList = "checksum, storage"),
+                   @Index(name = "idx_file_reference_type", columnList = "type") },
+       uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_reference_checksum_storage",
+                                               columnNames = { "checksum", "storage" }) })
 @NamedEntityGraph(name = "graph.filereference.owners", attributeNodes = { @NamedAttributeNode(value = "owners") })
 public class FileReference {
 
@@ -156,7 +158,7 @@ public class FileReference {
     }
 
     /**
-     * @return
+     *
      */
     public Collection<String> getLazzyOwners() {
         return owners;

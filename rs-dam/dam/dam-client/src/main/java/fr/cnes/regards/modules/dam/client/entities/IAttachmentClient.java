@@ -15,8 +15,9 @@ public interface IAttachmentClient {
 
     String ATTACHMENT_MAPPING = "/{checksum}";
 
-    @RequestMapping(method = RequestMethod.GET, value = TYPE_MAPPING + ATTACHMENT_MAPPING,
-        produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @RequestMapping(method = RequestMethod.GET,
+                    value = TYPE_MAPPING + ATTACHMENT_MAPPING,
+                    produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     Response getFile(@PathVariable(name = "urn") String urn,
                      @PathVariable(name = "checksum") String checksum,
                      @RequestParam(name = "origin", required = false) String origin,

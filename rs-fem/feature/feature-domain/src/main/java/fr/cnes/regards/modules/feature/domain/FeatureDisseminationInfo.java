@@ -36,8 +36,9 @@ import java.time.OffsetDateTime;
 public class FeatureDisseminationInfo {
 
     @Id
-    @SequenceGenerator(name = "featureDisseminationInfoSequence", initialValue = 1,
-        sequenceName = "seq_feature_dissemination_info")
+    @SequenceGenerator(name = "featureDisseminationInfoSequence",
+                       initialValue = 1,
+                       sequenceName = "seq_feature_dissemination_info")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "featureDisseminationInfoSequence")
     protected Long id;
 
@@ -65,7 +66,6 @@ public class FeatureDisseminationInfo {
     }
 
     /**
-     * @param label
      * @param ackRequired when false, no acknowledge message will be received
      */
     public FeatureDisseminationInfo(String label, boolean ackRequired) {
@@ -78,8 +78,6 @@ public class FeatureDisseminationInfo {
      * Update the field ackDate using provided ackRequired
      * When true, the ackDate will be specified when the recipient notifies us
      * When false, we won't receive a acknowledgement
-     *
-     * @param ackRequired
      */
     public final void setAckDateByAckRequired(boolean ackRequired) {
         if (ackRequired) {

@@ -48,9 +48,14 @@ import java.util.Map;
  *
  * @author Marc Sordi
  */
-@Plugin(author = "REGARDS Team", description = "Default plugin for AIP tagging", id = "DefaultAIPTagging",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Default plugin for AIP tagging",
+        id = "DefaultAIPTagging",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class DefaultAIPTagging implements IAipTagging {
 
     public static final String FIELD_NAME_TAGS = "tags"; // Useful for testing
@@ -58,7 +63,8 @@ public class DefaultAIPTagging implements IAipTagging {
     public static final String FIELD_NAME_LINKS = "links"; // Useful for testing
 
     @PluginParameter(label = "Tags",
-        description = "List of tags useful to classify AIP for business purpose and harvesting", optional = true)
+                     description = "List of tags useful to classify AIP for business purpose and harvesting",
+                     optional = true)
     private List<String> tags;
 
     @PluginParameter(keylabel = "Link tag", label = "Link", description = "List of links", optional = true)

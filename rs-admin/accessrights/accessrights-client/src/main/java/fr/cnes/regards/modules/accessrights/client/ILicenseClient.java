@@ -44,15 +44,18 @@ public interface ILicenseClient {
      */
     String PATH_RESET = "/reset";
 
-    @GetMapping(path = ILicenseClient.PATH_LICENSE, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ILicenseClient.PATH_LICENSE,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<LicenseDTO>> retrieveLicense();
 
-    @PutMapping(path = ILicenseClient.PATH_LICENSE, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ILicenseClient.PATH_LICENSE,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<LicenseDTO>> acceptLicense();
 
-    @PutMapping(path = ILicenseClient.PATH_LICENSE + PATH_RESET, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ILicenseClient.PATH_LICENSE + PATH_RESET,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> resetLicense();
 }

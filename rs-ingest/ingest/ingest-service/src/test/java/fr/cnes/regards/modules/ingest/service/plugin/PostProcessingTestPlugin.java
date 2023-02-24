@@ -31,9 +31,14 @@ import java.util.Collection;
 /**
  * @author Marc SORDI
  */
-@Plugin(author = "REGARDS Team", description = "Test plugin for SIP postprocessing", id = "PostProcessingTestPlugin",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Test plugin for SIP postprocessing",
+        id = "PostProcessingTestPlugin",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class PostProcessingTestPlugin implements ISipPostprocessing {
 
     @Autowired

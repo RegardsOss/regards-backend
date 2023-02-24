@@ -54,7 +54,6 @@ import java.util.Map;
  * <p>
  *
  * @author Xavier-Alexandre Brochard
- * @DirtiesContext is mandatory, we have issue with context cleaning because of MockMvc
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)

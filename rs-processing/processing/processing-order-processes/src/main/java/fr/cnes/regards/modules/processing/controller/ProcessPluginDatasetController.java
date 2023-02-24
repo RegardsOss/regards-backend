@@ -54,7 +54,7 @@ public class ProcessPluginDatasetController {
 
     @GetMapping(path = LINKDATASET_SUFFIX)
     @ResourceAccess(description = "Find processes attached to any of the given dataset",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     public Collection<ProcessLabelDTO> findProcessesByDataset(@PathVariable(DATASET_PARAM) String dataset) {
         return rightsConfigService.getDatasetLinkedProcesses(dataset);
     }
@@ -72,7 +72,7 @@ public class ProcessPluginDatasetController {
 
     @PostMapping(path = BY_DATASETS_SUFFIX)
     @ResourceAccess(description = "Find processes attached to any of the given datasets",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     public Map<String, List<ProcessLabelDTO>> findProcessesByDatasets(@RequestBody List<String> datasets) {
         return rightsConfigService.findProcessesByDatasets(datasets)
                                   .getMap()

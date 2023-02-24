@@ -75,7 +75,7 @@ public class OAISDeletionJobScheduler extends AbstractTaskScheduler {
      * Bulk save queued items every second.
      */
     @Scheduled(initialDelayString = DEFAULT_INITIAL_DELAY,
-        fixedDelayString = "${regards.ingest.aip.delete.bulk.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.ingest.aip.delete.bulk.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     protected void scheduleOAISDeletionJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

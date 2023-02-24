@@ -53,10 +53,11 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=worker_manager_it", "regards.amqp.enabled=true",
-        "regards.workermanager.request.bulk.size=1000", "regards.amqp.enabled=true" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_manager_it",
+                                   "regards.amqp.enabled=true",
+                                   "regards.workermanager.request.bulk.size=1000",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:application-test.properties" })
 @ContextConfiguration(classes = { RequestHandlerConfiguration.class })
 public class RequestHandlerIT extends AbstractWorkerManagerIT {
 
@@ -182,7 +183,8 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         Assert.assertTrue("Error during worker conf import",
                           workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(
                               RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE_1,
-                              Sets.newHashSet(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0), null))).isEmpty());
+                              Sets.newHashSet(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0),
+                              null))).isEmpty());
 
         // Scan
         requestScanService.scanNoWorkerAvailableRequests();

@@ -100,8 +100,7 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
     /**
      * Dynamically register configured {@link AttributeModel} for a particular tenant
      *
-     * @param pTenant     tenant
-     * @param pAttributes
+     * @param pTenant tenant
      */
     public void registerAttributes(final String pTenant, final List<AttributeModel> pAttributes) {
         if (pAttributes != null) {

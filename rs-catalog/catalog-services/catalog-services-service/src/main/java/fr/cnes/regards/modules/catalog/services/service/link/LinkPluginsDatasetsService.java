@@ -67,10 +67,7 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService, 
     private final ILinkPluginsDatasetsRepository linkRepo;
 
     /**
-     * @param pRuntimeTenantResolver
-     * @param pSubscriber
-     * @param pPublisher
-     * @param pLinkRepo
+     *
      */
     public LinkPluginsDatasetsService(IRuntimeTenantResolver pRuntimeTenantResolver,
                                       ISubscriber pSubscriber,

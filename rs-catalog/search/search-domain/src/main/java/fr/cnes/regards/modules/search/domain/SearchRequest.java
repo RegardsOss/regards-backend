@@ -60,14 +60,14 @@ public class SearchRequest {
      * Additional entity ids to return with the search results.
      */
     @Size(max = SearchRequest.ID_LIMIT,
-        message = "Number of entity ids to include in one request must be between 0 and 1000")
+          message = "Number of entity ids to include in one request must be between 0 and 1000")
     private final Collection<String> entityIdsToInclude;
 
     /**
      * Entity ids to exclud from search results.
      */
     @Size(max = SearchRequest.ID_LIMIT,
-        message = "Number of entity ids to exclude in one request must be between 0 and 1000")
+          message = "Number of entity ids to exclude in one request must be between 0 and 1000")
     private final Collection<String> entityIdsToExclude;
 
     /**

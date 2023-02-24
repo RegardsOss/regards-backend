@@ -59,9 +59,9 @@ public class WorkerController implements IResourceController<WorkerTypeAlive> {
 
     @RequestMapping(path = TYPE_MAPPING, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve worker types with its number of alive instances",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     @Operation(summary = "Retrieve worker types",
-        description = "Retrieve worker types with its number of alive instances.")
+               description = "Retrieve worker types with its number of alive instances.")
     public ResponseEntity<List<WorkerTypeAlive>> retrieveWorkerList(
         @Parameter(description = "Filter Workers on Request Content Types they handle")
         @RequestParam(value = "contentTypes", required = false) List<String> contentTypes) {

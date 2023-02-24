@@ -308,7 +308,10 @@ class CrawlingCursorTest {
                       .orElse(null);
     }
 
-    private record DataObject(String identifier, String name, String provider, OffsetDateTime lastUpdateDate) {
+    private record DataObject(String identifier,
+                              String name,
+                              String provider,
+                              OffsetDateTime lastUpdateDate) {
 
     }
 

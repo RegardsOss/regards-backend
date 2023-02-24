@@ -38,7 +38,7 @@ import java.util.concurrent.ExecutionException;
  **/
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cancel_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class CancelRequestGroupIT extends AbstractStorageIT {
 
     @Autowired

@@ -135,7 +135,6 @@ public class DescriptionBuilder {
      * @param context        {@link SearchContext}
      * @param extensions     {@link IOpenSearchExtension} extensions to use
      * @param parameterConfs {@link ParameterConfiguration}s parameters configuration.
-     * @param dataset
      * @return {@link OpenSearchDescription}
      */
     public OpenSearchDescription build(SearchContext context,

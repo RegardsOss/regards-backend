@@ -18,7 +18,5 @@
  */
 /**
  * GSON type adapters
- *
- * @author Marc Sordi
  */
 package fr.cnes.regards.modules.model.domain.adapter;

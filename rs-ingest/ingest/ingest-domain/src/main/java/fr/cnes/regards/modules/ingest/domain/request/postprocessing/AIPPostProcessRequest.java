@@ -54,8 +54,9 @@ public class AIPPostProcessRequest extends AbstractRequest {
      * AIP to process
      */
     @ManyToOne
-    @JoinColumn(name = "aip_id", referencedColumnName = "id",
-        foreignKey = @ForeignKey(name = "fk_postprocessing_request_aip"))
+    @JoinColumn(name = "aip_id",
+                referencedColumnName = "id",
+                foreignKey = @ForeignKey(name = "fk_postprocessing_request_aip"))
     private AIPEntity aip;
 
     public static AIPPostProcessRequest build(AIPEntity aipToProcess, String postProcessingPluginBusinessId) {

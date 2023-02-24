@@ -18,6 +18,7 @@
  */
 
 package fr.cnes.regards.modules.model.service.validation.validator.object;
+
 import org.springframework.validation.Validator;
 
 /**

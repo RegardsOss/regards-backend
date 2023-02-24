@@ -41,9 +41,9 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "t_request",
-    indexes = { @Index(name = "idx_request_search", columnList = "session_owner,session_name,provider_id"),
-        @Index(name = "idx_request_aip_id", columnList = "aip_id"),
-        @Index(name = "idx_request_remote_step_group_ids", columnList = "remote_step_group_ids") })
+       indexes = { @Index(name = "idx_request_search", columnList = "session_owner,session_name,provider_id"),
+                   @Index(name = "idx_request_aip_id", columnList = "aip_id"),
+                   @Index(name = "idx_request_remote_step_group_ids", columnList = "remote_step_group_ids") })
 @DiscriminatorColumn(name = "dtype", length = AbstractRequest.MAX_TYPE_LENGTH)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })

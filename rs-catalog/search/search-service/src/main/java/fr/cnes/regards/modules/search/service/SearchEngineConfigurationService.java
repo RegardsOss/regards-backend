@@ -189,9 +189,6 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     /**
      * Check if a conf does already exists for the given engine and dataset
-     *
-     * @param conf
-     * @throws EntityInvalidException
      */
     private void checkConfAlreadyExists(SearchEngineConfiguration conf) throws EntityInvalidException {
         SearchEngineConfiguration foundConf = null;
@@ -220,7 +217,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Override
     public Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page) {
         Page<SearchEngineConfiguration> searchEngineConfigurations;
-        
+
         if (engineType.isPresent()) {
             searchEngineConfigurations = repository.findByConfigurationPluginId(engineType.get(), page);
         } else {

@@ -46,7 +46,6 @@ public class FilesJobParameter extends JobParameter {
     /**
      * Check if given JobParameter is compatible with FilesJobParameter ie same name
      *
-     * @param param
      * @return {@link Boolean}
      */
     public static boolean isCompatible(JobParameter param) {

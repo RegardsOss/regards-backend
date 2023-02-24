@@ -17,6 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * @author svissier
+ *
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;

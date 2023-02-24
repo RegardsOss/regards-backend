@@ -60,11 +60,15 @@ import static org.junit.Assert.assertTrue;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_listener_creation",
-    "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
-    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+                                   "regards.amqp.enabled=true",
+                                   "spring.task.scheduling.pool.size=2",
+                                   "regards.feature.metrics.enabled=true" },
+                    locations = { "classpath:regards_perf.properties",
+                                  "classpath:batch.properties",
+                                  "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS,
-    hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
+                hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired

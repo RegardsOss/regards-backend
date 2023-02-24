@@ -36,9 +36,10 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TransactionalTestConfiguration.class)
-@TestPropertySource(
-    properties = { "regards.amqp.management.mode=MULTI", "regards.tenants=PROJECT, PROJECT1", "regards.tenant=PROJECT",
-        "regards.amqp.internal.transaction=true" }, locations = "classpath:amqp.properties")
+@TestPropertySource(properties = { "regards.amqp.management.mode=MULTI",
+                                   "regards.tenants=PROJECT, PROJECT1",
+                                   "regards.tenant=PROJECT",
+                                   "regards.amqp.internal.transaction=true" }, locations = "classpath:amqp.properties")
 @ActiveProfiles("test")
 public class TransactionalTestIT {
 

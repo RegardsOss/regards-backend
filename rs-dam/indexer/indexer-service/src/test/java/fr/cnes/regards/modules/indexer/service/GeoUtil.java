@@ -43,7 +43,7 @@ public class GeoUtil {
 
     private static Point toWgs84(Point pointOnMars) throws TransformException {
         double[] lonLat = GeoHelper.transform(new double[] { pointOnMars.getCoordinates().getLongitude(),
-                                                  pointOnMars.getCoordinates().getLatitude() },
+                                                             pointOnMars.getCoordinates().getLatitude() },
                                               pointOnMars.getCrs().isPresent() ?
                                                   Crs.valueOf(pointOnMars.getCrs().get()) :
                                                   Crs.WGS_84,

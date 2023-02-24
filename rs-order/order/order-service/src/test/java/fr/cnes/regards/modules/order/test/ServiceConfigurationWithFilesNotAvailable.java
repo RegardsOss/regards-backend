@@ -44,7 +44,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAutoConfiguration
 @EnableScheduling
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
-    ignoreResourceNotFound = true)
+                ignoreResourceNotFound = true)
 public class ServiceConfigurationWithFilesNotAvailable {
 
     @Bean

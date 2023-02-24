@@ -47,8 +47,9 @@ public interface IEmailClient {
      *
      * @return A {@link List} of emails as {@link Email} wrapped in an {@link ResponseEntity}
      */
-    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<Email>> retrieveEmails();
 
     /**
@@ -56,8 +57,9 @@ public interface IEmailClient {
      *
      * @param pMessage The email in a simple representation.
      */
-    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_PATH,
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> sendEmail(SimpleMailMessage pMessage);
 
     /**
@@ -83,15 +85,17 @@ public interface IEmailClient {
      * @param pId The email id
      * @return The email as a {@link Email} wrapped in an {@link ResponseEntity}
      */
-    @GetMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + "/{mail_id}",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Email> retrieveEmail(Long pId);
 
     /**
      * Define the endpoint for re-sending an email
      */
-    @PutMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH + "/{mail_id}",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     void resendEmail(Long pId);
 
     /**
@@ -99,7 +103,8 @@ public interface IEmailClient {
      *
      * @param pId The email id
      */
-    @DeleteMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_PATH + "/{mail_id}",
+                   consumes = MediaType.APPLICATION_JSON_VALUE,
+                   produces = MediaType.APPLICATION_JSON_VALUE)
     void deleteEmail(Long pId);
 }

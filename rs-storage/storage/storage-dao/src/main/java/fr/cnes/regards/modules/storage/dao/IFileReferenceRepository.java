@@ -78,7 +78,7 @@ public interface IFileReferenceRepository
     void removeOwner(@Param("id") Long id, @Param("owner") String owner);
 
     @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id and owner=:owner)",
-        nativeQuery = true)
+           nativeQuery = true)
     boolean isOwnedBy(@Param("id") Long id, @Param("owner") String owner);
 
     Collection<String> findOwnersById(Long fileRefId);

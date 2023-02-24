@@ -302,8 +302,6 @@ public class IngestServiceIT {
 
     /**
      * Helper method that waits all requests have been processed
-     *
-     * @param timeout
      */
     public void waitAllRequestsFinished(long timeout) {
         long end = System.currentTimeMillis() + timeout;
@@ -355,9 +353,6 @@ public class IngestServiceIT {
 
     /**
      * Send the event to ingest a new SIP
-     *
-     * @param sip
-     * @param mtd
      */
     public void sendIngestRequestEvent(SIP sip, IngestMetadataDto mtd) {
         sendIngestRequestEvent(Sets.newHashSet(sip), mtd);

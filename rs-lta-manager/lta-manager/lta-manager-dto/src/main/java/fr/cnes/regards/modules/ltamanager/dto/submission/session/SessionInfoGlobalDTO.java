@@ -30,7 +30,7 @@ public class SessionInfoGlobalDTO {
     public SessionStatus getStatus() {
         return status;
     }
-    
+
     public void setStatus(SessionStatus status) {
         this.status = status;
     }

@@ -15,9 +15,14 @@ import java.util.List;
  *
  * @author Christophe Mertz
  */
-@Plugin(id = "FakeDataSourcePlugin", version = "2.0-SNAPSHOT", description = "FakeDataSourcePlugin",
-    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(id = "FakeDataSourcePlugin",
+        version = "2.0-SNAPSHOT",
+        description = "FakeDataSourcePlugin",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class FakeDataSourcePlugin implements IDataSourcePlugin {
 
     public static final String MODEL = "model";

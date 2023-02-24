@@ -54,7 +54,6 @@ public interface IServiceManager {
      * @param pluginConfigurationBusinessId Plugin configuration to run
      * @param pServicePluginParameters      Plugin parameters
      * @return the result of the service call wrapped in a resonse entity
-     * @throws ModuleException
      */
     ResponseEntity<StreamingResponseBody> apply(final String pluginConfigurationBusinessId,
                                                 final ServicePluginParameters pServicePluginParameters,

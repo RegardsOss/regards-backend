@@ -82,10 +82,10 @@ public class AgentSnapshotScheduler extends AbstractTaskScheduler {
      */
     @Scheduled(initialDelayString = "${regards.session.agent.snapshot.process.scheduler.bulk.initial.delay:"
                                     + DEFAULT_INITIAL_DELAY
-                                    + "}", fixedDelayString =
-        "${regards.session.agent.snapshot.process.scheduler.bulk.delay:"
-        + DEFAULT_SCHEDULING_DELAY
-        + "}")
+                                    + "}",
+               fixedDelayString = "${regards.session.agent.snapshot.process.scheduler.bulk.delay:"
+                                  + DEFAULT_SCHEDULING_DELAY
+                                  + "}")
     protected void scheduleAgentSnapshot() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

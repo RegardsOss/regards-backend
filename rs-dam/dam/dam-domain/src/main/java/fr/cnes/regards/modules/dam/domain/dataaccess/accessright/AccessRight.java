@@ -32,17 +32,23 @@ import javax.validation.constraints.NotNull;
  * @author Sylvain Vissiere-Guerinet
  */
 @Entity
-@Table(name = "t_access_right", uniqueConstraints = @UniqueConstraint(columnNames = { "access_group_id", "dataset_id" },
-    name = "uk_access_right_access_group_id_dataset_id"))
+@Table(name = "t_access_right",
+       uniqueConstraints = @UniqueConstraint(columnNames = { "access_group_id", "dataset_id" },
+                                             name = "uk_access_right_access_group_id_dataset_id"))
 @NamedEntityGraphs({ @NamedEntityGraph(name = "graph.accessright.dataset.and.accessgroup",
-    attributeNodes = { @NamedAttributeNode(value = "dataset", subgraph = "subgraph.dataset"),
-        @NamedAttributeNode(value = "accessGroup", subgraph = "subgraph.accessgroup"),
-        @NamedAttributeNode(value = "dataAccessPlugin") }, subgraphs = {
-    @NamedSubgraph(name = "subgraph.accessgroup", attributeNodes = { @NamedAttributeNode(value = "users") }),
-    @NamedSubgraph(name = "subgraph.dataset",
-        attributeNodes = { @NamedAttributeNode(value = "tags"), @NamedAttributeNode(value = "groups"),
-            @NamedAttributeNode(value = "model") }) }), @NamedEntityGraph(name = "graph.accessright.plugins",
-    attributeNodes = { @NamedAttributeNode(value = "dataAccessPlugin") }) })
+                                       attributeNodes = { @NamedAttributeNode(value = "dataset",
+                                                                              subgraph = "subgraph.dataset"),
+                                                          @NamedAttributeNode(value = "accessGroup",
+                                                                              subgraph = "subgraph.accessgroup"),
+                                                          @NamedAttributeNode(value = "dataAccessPlugin") },
+                                       subgraphs = { @NamedSubgraph(name = "subgraph.accessgroup",
+                                                                    attributeNodes = { @NamedAttributeNode(value = "users") }),
+                                                     @NamedSubgraph(name = "subgraph.dataset",
+                                                                    attributeNodes = { @NamedAttributeNode(value = "tags"),
+                                                                                       @NamedAttributeNode(value = "groups"),
+                                                                                       @NamedAttributeNode(value = "model") }) }),
+                     @NamedEntityGraph(name = "graph.accessright.plugins",
+                                       attributeNodes = { @NamedAttributeNode(value = "dataAccessPlugin") }) })
 public class AccessRight implements IIdentifiable<Long> {
 
     /**
@@ -88,8 +94,9 @@ public class AccessRight implements IIdentifiable<Long> {
      */
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dataset_id", foreignKey = @ForeignKey(name = "fk_access_right_access_dataset_id"),
-        updatable = false)
+    @JoinColumn(name = "dataset_id",
+                foreignKey = @ForeignKey(name = "fk_access_right_access_dataset_id"),
+                updatable = false)
     private Dataset dataset;
 
     /**
@@ -97,8 +104,9 @@ public class AccessRight implements IIdentifiable<Long> {
      */
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "access_group_id", foreignKey = @ForeignKey(name = "fk_access_right_access_group_id"),
-        updatable = false)
+    @JoinColumn(name = "access_group_id",
+                foreignKey = @ForeignKey(name = "fk_access_right_access_group_id"),
+                updatable = false)
     private AccessGroup accessGroup;
 
     /**

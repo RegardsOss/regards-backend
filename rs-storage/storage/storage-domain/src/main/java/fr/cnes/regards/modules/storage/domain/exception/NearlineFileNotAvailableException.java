@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 public class NearlineFileNotAvailableException extends ModuleException {
 
     /**
-     * @param message
+     *
      */
     public NearlineFileNotAvailableException(String message) {
         super(message);

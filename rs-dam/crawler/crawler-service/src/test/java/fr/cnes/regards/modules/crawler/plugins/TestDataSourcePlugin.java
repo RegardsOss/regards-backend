@@ -24,9 +24,14 @@ import java.util.List;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@Plugin(id = "TestDataSourcePlugin", version = "2.0-SNAPSHOT",
-    description = "Allows data extraction from a json file for tests", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "TestDataSourcePlugin",
+        version = "2.0-SNAPSHOT",
+        description = "Allows data extraction from a json file for tests",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class TestDataSourcePlugin implements IDataSourcePlugin {
 
     public static final String MODEL = "model";

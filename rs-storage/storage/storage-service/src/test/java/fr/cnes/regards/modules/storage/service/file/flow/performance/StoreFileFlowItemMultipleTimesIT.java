@@ -51,10 +51,13 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(
-    properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_flow_tests",
-        "regards.amqp.enabled=true", "regards.storage.schedule.initial.delay=100", "regards.storage.schedule.delay=50",
-        "regards.jobs.scan.delay=50" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.show-sql=false",
+                                   "spring.jpa.properties.hibernate.default_schema=storage_flow_tests",
+                                   "regards.amqp.enabled=true",
+                                   "regards.storage.schedule.initial.delay=100",
+                                   "regards.storage.schedule.delay=50",
+                                   "regards.jobs.scan.delay=50" },
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp" })
 @Ignore("Performances tests")
 public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageIT {

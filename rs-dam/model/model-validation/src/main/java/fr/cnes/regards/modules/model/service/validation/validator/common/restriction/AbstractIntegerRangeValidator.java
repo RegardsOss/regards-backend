@@ -18,6 +18,7 @@
  */
 
 package fr.cnes.regards.modules.model.service.validation.validator.common.restriction;
+
 import com.google.common.collect.Range;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.IntegerRangeRestriction;
 import fr.cnes.regards.modules.model.service.validation.validator.common.AbstractValidator;

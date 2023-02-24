@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.model.domain;
 /**
  * Visitor for ICalculationModel plugins
  *
- * @param <T>
  * @author Sylvain Vissiere-Guerinet
  */
 public interface IComputedAttributeVisitor<T> {

@@ -58,7 +58,7 @@ import static org.junit.Assert.assertTrue;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class FileDownloadServiceIT extends AbstractStorageIT {
 
     private static final String SESSION_OWNER = "SOURCE 1";

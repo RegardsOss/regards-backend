@@ -30,8 +30,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", id = "SampleBeanFactoryPlugin", version = "0.0.1", author = "REGARDS Team",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(description = "Sample plugin test",
+        id = "SampleBeanFactoryPlugin",
+        version = "0.0.1",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class SampleBeanFactoryPlugin implements ISamplePlugin {
 
     public static final String FIELD_NAME_SUFFIX = "suffix";

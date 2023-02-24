@@ -46,7 +46,6 @@ public class TenantJobParameter extends JobParameter {
     /**
      * Check if given JobParameter is compatible with UserJobParameter ie same name
      *
-     * @param param
      * @return {@link Boolean}
      */
     public static boolean isCompatible(JobParameter param) {

@@ -264,9 +264,6 @@ public class FileDeletionRequestService {
     /**
      * Schedule jobs for deletion requests by using a new transaction
      *
-     * @param storage
-     * @param deletionRequestPage
-     * @param requestStatus
      * @return scheduled {@link JobInfo}
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -458,9 +455,6 @@ public class FileDeletionRequestService {
 
     /**
      * Initialize new deletion requests for a given group identifier
-     *
-     * @param requests
-     * @param groupId
      */
     public void handle(Collection<FileDeletionRequestDTO> requests, String groupId) {
         Set<String> checksums = requests.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet());
@@ -473,10 +467,6 @@ public class FileDeletionRequestService {
     /**
      * Initialize new deletion requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
      * avoid requesting {@link IFileReferenceRepository} on each request.
-     *
-     * @param requests
-     * @param groupId
-     * @param existingOnes
      */
     public void handle(Collection<FileDeletionRequestDTO> requests,
                        String groupId,
@@ -561,8 +551,6 @@ public class FileDeletionRequestService {
 
     /**
      * Update a {@link FileDeletionRequest}
-     *
-     * @param fileDeletionRequest
      */
     public FileDeletionRequest updateFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to update cannot be null");
@@ -572,8 +560,6 @@ public class FileDeletionRequestService {
 
     /**
      * Update a list {@link FileDeletionRequest}s
-     *
-     * @param fileDeletionRequestList
      */
     public List<FileDeletionRequest> updateFileDeletionRequestList(List<FileDeletionRequest> fileDeletionRequestList) {
         fileDeletionRequestList.forEach(req -> {
@@ -663,8 +649,6 @@ public class FileDeletionRequestService {
 
     /**
      * Handle a {@link FileDeletionRequest} success.
-     *
-     * @param fileDeletionRequest
      */
     public void handleSuccess(FileDeletionRequest fileDeletionRequest) {
         FileReference deletedFileRef = fileDeletionRequest.getFileReference();
@@ -704,8 +688,6 @@ public class FileDeletionRequestService {
 
     /**
      * Delete all requests for the given storage identifier
-     *
-     * @param storageLocationId
      */
     public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
         if (status.isPresent()) {
@@ -717,8 +699,6 @@ public class FileDeletionRequestService {
 
     /**
      * Retrieve expiration date for deletion request
-     *
-     * @return
      */
     public OffsetDateTime getRequestExpirationDate() {
         if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {

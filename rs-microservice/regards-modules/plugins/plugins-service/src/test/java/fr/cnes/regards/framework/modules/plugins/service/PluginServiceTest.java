@@ -77,10 +77,6 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * This method is run before all tests
-     *
-     * @throws InvalidAlgorithmParameterException
-     * @throws InvalidKeyException
-     * @throws IOException
      */
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
@@ -449,8 +445,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get the first plugin of a specific type
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_120")
@@ -515,8 +510,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get twice a specific Plugin with the same PluginConfiguration
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test
     @Purpose("Load twice a plugin with the same configuration.")
@@ -554,8 +548,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get twice a specific Plugin with the same PluginConfiguration with a dynamic parameter
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test
     @Purpose("Load a plugin twice from a specific type with a configuration.")
@@ -600,8 +593,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get twice a specific Plugin with the same PluginConfiguration with a dynamic parameter the second time
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test
     @Purpose("Load a plugin twice from a specific type with a configuration.")
@@ -642,8 +634,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get the first plugin of a specific type with a specific parameter
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_120")
@@ -689,8 +680,7 @@ public class PluginServiceTest extends PluginServiceUtility {
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_120")
@@ -730,8 +720,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get the first plugin of a specific type with a dynamic parameter. Set a value for the dynamic parameter.
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_120")
@@ -776,8 +765,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Try to get a plugin of a specific type with a dynamic parameter BUT a bad version.
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = CannotInstanciatePluginException.class)
     public void getAPluginInstanceWithBadVersionConfiguration()
@@ -806,8 +794,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     /**
      * Get the first plugin with the configuration the most priority.
      *
-     * @throws ModuleException                          throw if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws ModuleException throw if an error occurs
      */
     @Test
     public void getFirstPluginInstanceTheMostPrioritary()

@@ -31,7 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public class SecureTestRuntimeTenantResolver extends SecureRuntimeTenantResolver {
 
     /**
-     * @param pInstanceTenantName
+     *
      */
     public SecureTestRuntimeTenantResolver(String pInstanceTenantName) {
         super(pInstanceTenantName);

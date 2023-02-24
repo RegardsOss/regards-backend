@@ -58,9 +58,6 @@ public interface ISIPService {
 
     /**
      * Delete the SIPEntity using its {@link SIPEntity#getSipId()}.
-     *
-     * @param sipId
-     * @param deleteIrrevocably
      */
     void processDeletion(String sipId, boolean deleteIrrevocably);
 

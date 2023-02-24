@@ -141,8 +141,9 @@ public class TestPojoParent {
         }
         if (values == null) {
             return other.values == null;
-        } else
+        } else {
             return values.equals(other.values);
+        }
     }
 
 }

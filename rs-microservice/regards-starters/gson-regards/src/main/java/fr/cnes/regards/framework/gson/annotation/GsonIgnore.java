@@ -19,8 +19,6 @@
 
 /**
  * Class GsonIgnore
- *
- * @author Christophe Mertz
  */
 package fr.cnes.regards.framework.gson.annotation;
 

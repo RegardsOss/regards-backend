@@ -30,7 +30,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @EnableAutoConfiguration
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
-    ignoreResourceNotFound = true)
+                ignoreResourceNotFound = true)
 @ComponentScan(basePackageClasses = TestJobInfoService.class)
 public class MultiJobServiceConfiguration {
 

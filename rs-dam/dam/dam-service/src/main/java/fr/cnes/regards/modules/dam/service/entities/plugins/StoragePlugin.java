@@ -47,9 +47,14 @@ import java.util.stream.Collectors;
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
  */
-@Plugin(description = "This plugin allows to POST AIP entities to storage unit", id = "StoragePlugin",
-    version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-    url = "https://github.com/RegardsOss")
+@Plugin(description = "This plugin allows to POST AIP entities to storage unit",
+        id = "StoragePlugin",
+        version = "1.0.0",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class StoragePlugin implements IStorageService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoragePlugin.class);

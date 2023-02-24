@@ -38,8 +38,9 @@ import java.util.Optional;
 public class FeatureUpdateDisseminationRequest {
 
     @Id
-    @SequenceGenerator(name = "featureUpdateDisseminationSequence", initialValue = 1,
-        sequenceName = "seq_feature_update_dissemination")
+    @SequenceGenerator(name = "featureUpdateDisseminationSequence",
+                       initialValue = 1,
+                       sequenceName = "seq_feature_update_dissemination")
     @GeneratedValue(generator = "featureUpdateDisseminationSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 

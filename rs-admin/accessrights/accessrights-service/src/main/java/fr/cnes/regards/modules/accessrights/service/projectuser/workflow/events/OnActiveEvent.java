@@ -35,7 +35,7 @@ public class OnActiveEvent extends ApplicationEvent {
     private final ProjectUser projectUser;
 
     /**
-     * @param pProjectUser
+     *
      */
     public OnActiveEvent(ProjectUser pProjectUser) {
         super(pProjectUser);

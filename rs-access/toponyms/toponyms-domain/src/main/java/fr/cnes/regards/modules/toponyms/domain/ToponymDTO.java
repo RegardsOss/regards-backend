@@ -74,14 +74,10 @@ public class ToponymDTO {
     /**
      * Creates a new {@link ToponymDTO}
      *
-     * @param businessId  unique identifier
-     * @param labelEn     English label
-     * @param labelFr     French label
-     * @param geometry
-     * @param copyright   owner
-     * @param description
-     * @param visible
-     * @return
+     * @param businessId unique identifier
+     * @param labelEn    English label
+     * @param labelFr    French label
+     * @param copyright  owner
      */
     public static ToponymDTO build(String businessId,
                                    String labelEn,

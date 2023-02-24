@@ -35,7 +35,7 @@ public interface ISourceManagerStepAggregationRepository extends JpaRepository<S
     @Modifying
     @Query(value = "delete from t_source_step_aggregation ssa where ssa.id in "
                    + "(select assoc.id from t_source_step_aggregation assoc left join t_source_manager s on assoc.source_name = s.name where s.nb_sessions = ?1)",
-        nativeQuery = true)
+           nativeQuery = true)
     void deleteBySourcesNbSessions(long nbSessions);
 
     default void deleteByEmptySources() {

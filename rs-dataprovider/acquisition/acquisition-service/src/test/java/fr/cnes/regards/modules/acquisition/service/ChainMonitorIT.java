@@ -54,9 +54,9 @@ import java.util.function.LongSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=acquisition_monitor", "regards.amqp.enabled=true" },
-    locations = { "classpath:application-monitor.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition_monitor",
+                                   "regards.amqp.enabled=true" },
+                    locations = { "classpath:application-monitor.properties" })
 @ActiveProfiles({ "testAmqp", "nohandler", "disableDataProviderTask", "noscheduler", "nojobs" })
 public class ChainMonitorIT extends DataproviderMultitenantServiceIT {
 

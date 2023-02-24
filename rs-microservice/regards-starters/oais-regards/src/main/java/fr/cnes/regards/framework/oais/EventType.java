@@ -6,9 +6,5 @@ package fr.cnes.regards.framework.oais;
  * @author Sylvain VISSIERE-GUERINET
  */
 public enum EventType {
-    SUBMISSION,
-    STORAGE,
-    STATUS_UPDATE,
-    DELETION,
-    UPDATE
+    SUBMISSION, STORAGE, STATUS_UPDATE, DELETION, UPDATE
 }

@@ -43,9 +43,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Iliana Ghazali
  */
 
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=feature_notification_settings_service_it",
-        "regards.amqp.enabled=true" })
+@TestPropertySource(properties = {
+    "spring.jpa.properties.hibernate.default_schema=feature_notification_settings_service_it",
+    "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultitenantServiceIT {
 

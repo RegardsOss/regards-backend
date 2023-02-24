@@ -69,8 +69,8 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
      */
     @GetMapping
     @Operation(summary = "Get crawler datasources", description = "Return a list of crawler datasources")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "All crawler datasources were retrieved.") })
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "All crawler datasources were retrieved.") })
     @ResourceAccess(description = "List all crawler datasources.")
     public ResponseEntity<List<EntityModel<DatasourceIngestion>>> getAllDatasourceIngestion() {
         return ResponseEntity.ok(toResources(crawlerService.getDatasourceIngestions()));

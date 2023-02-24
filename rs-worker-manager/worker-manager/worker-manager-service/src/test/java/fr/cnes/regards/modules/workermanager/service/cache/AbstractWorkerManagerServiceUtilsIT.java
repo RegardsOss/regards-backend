@@ -53,7 +53,7 @@ import java.util.List;
  * @author Léo Mieulet
  **/
 @TestPropertySource(properties = { "regards.amqp.enabled=false" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultitenantServiceIT {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorkerManagerServiceUtilsIT.class);
@@ -129,8 +129,6 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
 
     /**
      * Custom test initialization to override
-     *
-     * @throws Exception
      */
     protected void doInit() throws Exception {
         // Override to init something
@@ -147,8 +145,6 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
 
     /**
      * Custom test cleaning to override
-     *
-     * @throws Exception
      */
     protected void doAfter() throws Exception {
         // Override to init something

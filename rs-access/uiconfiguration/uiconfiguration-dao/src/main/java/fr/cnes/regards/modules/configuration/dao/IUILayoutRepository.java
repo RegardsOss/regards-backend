@@ -36,7 +36,6 @@ public interface IUILayoutRepository extends JpaRepository<UILayout, Long> {
     /**
      * Retrieve layout for the given application id.
      *
-     * @param pApplicationId
      * @return {@link UILayout}
      * @since 1.0-SNAPSHOT
      */

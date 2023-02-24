@@ -29,8 +29,6 @@ public class MultiDataBasesException extends Exception {
 
     /**
      * serialVersionUID field.
-     *
-     * @author CS
      */
     private static final long serialVersionUID = 7382111289929689769L;
 

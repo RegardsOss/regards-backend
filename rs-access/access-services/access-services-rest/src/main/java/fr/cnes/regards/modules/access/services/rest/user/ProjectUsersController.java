@@ -142,14 +142,14 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      */
     @PostMapping(SEARCH_USERS_PATH)
     @Operation(summary = "Get users of the project",
-        description = "Return a page of users of the project matching criterias.")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "All users of the project were retrieved.") })
+               description = "Return a page of users of the project matching criterias.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "All users of the project were retrieved.") })
     @ResourceAccess(description = "EndPoint to retrieve all users of the project matching criterias",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveProjectUserList(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
-            content = @Content(schema = @Schema(implementation = SearchProjectUserParameters.class)))
+                                                              content = @Content(schema = @Schema(implementation = SearchProjectUserParameters.class)))
         @Parameter(description = "Filter criterias for users of the project") @RequestBody
         SearchProjectUserParameters filters,
         @Parameter(description = "Sorting and page configuration")
@@ -211,7 +211,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      */
     @GetMapping("/myuser")
     @ResourceAccess(description = "retrieve the current authenticated project user and only display  metadata",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<ProjectUserReadDto>> retrieveCurrentProjectUser() throws ModuleException {
         return combineProjectUserThenQuotaCalls(projectUsersClient::retrieveCurrentProjectUser,
                                                 storageClient::getCurrentQuotas,
@@ -290,7 +290,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      */
     @PostMapping
     @ResourceAccess(description = "Create a user of project by bypassing registration process (Administrator feature)",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUserReadDto>> createUser(@Valid @RequestBody
                                                                       ProjectUserCreateDto projectUserCreateDto)
         throws ModuleException {
@@ -339,9 +339,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @return The {@link List} of {@link ProjectUserReadDto} wrapped in an {@link ResponseEntity}
      */
     @GetMapping(ROLES_ROLE_ID)
-    @ResourceAccess(
-        description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
-        role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
+                    role = DefaultRole.ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveRoleProjectUserList(
         @PathVariable("role_id") Long roleId,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -362,9 +361,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @return The {@link List} of {@link ProjectUserReadDto} wrapped in an {@link ResponseEntity}
      */
     @GetMapping("/roles")
-    @ResourceAccess(
-        description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
-        role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
+                    role = DefaultRole.ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveRoleProjectUsersList(
         @RequestParam("role_name") String role,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,

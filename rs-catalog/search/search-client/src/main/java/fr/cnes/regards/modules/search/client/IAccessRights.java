@@ -55,11 +55,13 @@ public interface IAccessRights {
 
     String ENTITY_HAS_ACCESS_MAPPING = URN_MAPPING + ACCESS_RIGHTS_MAPPING;
 
-    @GetMapping(path = ROOT_TYPE_MAPPING + ENTITY_HAS_ACCESS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING + ENTITY_HAS_ACCESS_MAPPING,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Boolean> hasAccess(@Valid @PathVariable("urn") UniformResourceName urn);
 
-    @PostMapping(path = ROOT_TYPE_MAPPING + HAS_ACCESS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_TYPE_MAPPING + HAS_ACCESS_MAPPING,
+                 produces = MediaType.APPLICATION_JSON_VALUE,
+                 consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody Collection<UniformResourceName> inUrns);
 }

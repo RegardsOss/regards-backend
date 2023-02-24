@@ -46,17 +46,21 @@ import java.util.stream.Collectors;
  */
 @Entity
 @Table(name = "t_acquisition_product",
-    indexes = { @Index(name = "idx_acq_processing_chain", columnList = "processing_chain_id"),
-        @Index(name = "idx_acq_product_name", columnList = "product_name"),
-        @Index(name = "idx_acq_product_sip_state", columnList = "sip_state"),
-        @Index(name = "idx_acq_product_state", columnList = "product_state") },
-    uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
-        @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
+       indexes = { @Index(name = "idx_acq_processing_chain", columnList = "processing_chain_id"),
+                   @Index(name = "idx_acq_product_name", columnList = "product_name"),
+                   @Index(name = "idx_acq_product_sip_state", columnList = "sip_state"),
+                   @Index(name = "idx_acq_product_state", columnList = "product_state") },
+       uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
+                             @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@NamedEntityGraph(name = "graph.product.complete", attributeNodes = { @NamedAttributeNode(value = "fileList"),
-    @NamedAttributeNode(value = "lastSIPGenerationJobInfo", subgraph = "graph.product.jobs"),
-    @NamedAttributeNode(value = "lastPostProductionJobInfo", subgraph = "graph.product.jobs") }, subgraphs = {
-    @NamedSubgraph(name = "graph.product.jobs", attributeNodes = { @NamedAttributeNode(value = "parameters") }) })
+@NamedEntityGraph(name = "graph.product.complete",
+                  attributeNodes = { @NamedAttributeNode(value = "fileList"),
+                                     @NamedAttributeNode(value = "lastSIPGenerationJobInfo",
+                                                         subgraph = "graph.product.jobs"),
+                                     @NamedAttributeNode(value = "lastPostProductionJobInfo",
+                                                         subgraph = "graph.product.jobs") },
+                  subgraphs = { @NamedSubgraph(name = "graph.product.jobs",
+                                               attributeNodes = { @NamedAttributeNode(value = "parameters") }) })
 public class Product {
 
     private static final String MISSING_SESSION_ERROR = "Session is required";
@@ -115,8 +119,9 @@ public class Product {
     @GsonIgnore
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "processing_chain_id", foreignKey = @ForeignKey(name = "fk_processing_chain_id"),
-        updatable = false)
+    @JoinColumn(name = "processing_chain_id",
+                foreignKey = @ForeignKey(name = "fk_processing_chain_id"),
+                updatable = false)
     private AcquisitionProcessingChain processingChain;
 
     @Column(columnDefinition = "jsonb", name = "json_sip")

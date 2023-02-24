@@ -33,9 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author Sébastien Binda
  */
-@Plugin(author = "REGARDS Team", description = "Test plugin for SIP preprocessing", id = "TestSIPPreprocessing",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Test plugin for SIP preprocessing",
+        id = "TestSIPPreprocessing",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class PreprocessingTestPlugin implements ISipPreprocessing {
 
     public static final String SIP_ID_TEST = "SIPID_001";

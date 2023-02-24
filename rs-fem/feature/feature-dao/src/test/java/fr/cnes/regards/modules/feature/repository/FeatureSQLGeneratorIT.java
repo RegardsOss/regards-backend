@@ -6,7 +6,7 @@ import org.springframework.test.context.TestPropertySource;
 
 //Use following line to launch FLYWAY on public schema (comment it to use HBM2DDL)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public",
-    "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
+                                   "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
 @Ignore
 public class FeatureSQLGeneratorIT extends AbstractScriptGeneratorIT {
 

@@ -52,7 +52,7 @@ import java.util.Optional;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponyms_service_it",
-    "regards.toponyms.expiration=30" })
+                                   "regards.toponyms.expiration=30" })
 @RegardsTransactional
 public class ToponymsServiceIT extends AbstractRegardsIT {
 

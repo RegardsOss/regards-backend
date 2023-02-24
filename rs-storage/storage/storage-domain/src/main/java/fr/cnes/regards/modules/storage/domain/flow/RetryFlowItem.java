@@ -67,7 +67,6 @@ public class RetryFlowItem implements ISubscribable {
     /**
      * Build a storage retry request for the request business identifier provided
      *
-     * @param groupId
      * @return {@link RetryFlowItem}
      */
     public static RetryFlowItem buildStorageRetry(String groupId) {
@@ -80,7 +79,6 @@ public class RetryFlowItem implements ISubscribable {
     /**
      * Build a storage retry request for all requests in error of provided owners.
      *
-     * @param owners
      * @return {@link RetryFlowItem}
      */
     public static RetryFlowItem buildStorageRetry(Collection<String> owners) {
@@ -93,7 +91,6 @@ public class RetryFlowItem implements ISubscribable {
     /**
      * Build an availability retry request for the given request business identifier
      *
-     * @param groupId
      * @return {@link RetryFlowItem}
      */
     public static RetryFlowItem buildAvailabilityRetry(String groupId) {

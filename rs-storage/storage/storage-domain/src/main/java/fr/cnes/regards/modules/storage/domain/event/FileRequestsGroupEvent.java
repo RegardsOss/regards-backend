@@ -80,9 +80,6 @@ public class FileRequestsGroupEvent implements ISubscribable {
     /**
      * Build a message event with the given state
      *
-     * @param groupId
-     * @param type
-     * @param state
      * @return {@link FileRequestsGroupEvent}
      */
     public static FileRequestsGroupEvent build(String groupId,
@@ -116,9 +113,6 @@ public class FileRequestsGroupEvent implements ISubscribable {
     /**
      * Build an error message event with the given {@link ErrorFile}s
      *
-     * @param groupId
-     * @param type
-     * @param errors
      * @return {@link FileRequestsGroupEvent}
      */
     public static FileRequestsGroupEvent buildError(String groupId,

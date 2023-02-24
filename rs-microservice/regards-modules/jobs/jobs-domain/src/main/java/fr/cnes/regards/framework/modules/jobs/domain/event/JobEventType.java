@@ -9,10 +9,7 @@ import java.util.List;
  */
 public enum JobEventType {
 
-    ABORTED,
-    FAILED,
-    RUNNING,
-    SUCCEEDED;
+    ABORTED, FAILED, RUNNING, SUCCEEDED;
 
     public static List<JobEventType> runnings() {
         return List.of(ABORTED, FAILED, SUCCEEDED);

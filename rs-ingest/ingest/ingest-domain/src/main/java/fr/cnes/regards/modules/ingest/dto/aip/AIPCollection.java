@@ -13,8 +13,6 @@ public class AIPCollection extends AbstractFeatureCollection<AIP> {
 
     /**
      * Constructor setting the aips as features
-     *
-     * @param aips
      */
     public AIPCollection(AIP... aips) {
         super();

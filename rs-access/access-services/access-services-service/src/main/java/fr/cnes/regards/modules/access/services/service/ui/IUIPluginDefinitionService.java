@@ -35,9 +35,7 @@ public interface IUIPluginDefinitionService {
     /**
      * Retreive a Plugin by is id.
      *
-     * @param pluginId
      * @return {@link UIPluginDefinition}
-     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     UIPluginDefinition retrievePlugin(Long pluginId) throws EntityNotFoundException;
@@ -45,7 +43,6 @@ public interface IUIPluginDefinitionService {
     /**
      * Retrieve all plugins
      *
-     * @param pageable
      * @return Paged list of {@link UIPluginDefinition}
      * @since 1.0-SNAPSHOT
      */
@@ -54,8 +51,6 @@ public interface IUIPluginDefinitionService {
     /**
      * Retrieve all plugins for the given type
      *
-     * @param type
-     * @param pageable
      * @return Paged list of {@link UIPluginDefinition}
      * @since 1.0-SNAPSHOT
      */
@@ -64,9 +59,7 @@ public interface IUIPluginDefinitionService {
     /**
      * Save a new plugin
      *
-     * @param plugin
      * @return saved {@link UIPluginDefinition}
-     * @throws EntityInvalidException
      * @since 1.0-SNAPSHOT
      */
     UIPluginDefinition savePlugin(UIPluginDefinition plugin) throws EntityInvalidException;
@@ -74,10 +67,7 @@ public interface IUIPluginDefinitionService {
     /**
      * Update a plugin
      *
-     * @param plugin
      * @return updated {@link UIPluginDefinition}
-     * @throws EntityNotFoundException
-     * @throws EntityInvalidException
      * @since 1.0-SNAPSHOT
      */
     UIPluginDefinition updatePlugin(UIPluginDefinition plugin) throws EntityNotFoundException, EntityInvalidException;
@@ -86,7 +76,6 @@ public interface IUIPluginDefinitionService {
      * Delete a plugin
      *
      * @param pluginId {@link UIPluginDefinition} id to delete
-     * @throws ModuleException
      * @since 1.0-SNAPSHOT
      */
     void deletePlugin(Long pluginId) throws ModuleException;
@@ -94,7 +83,6 @@ public interface IUIPluginDefinitionService {
     /**
      * Retrieve a plugin definition by its name
      *
-     * @param name
      * @return {@link UIPluginDefinition}
      */
     Optional<UIPluginDefinition> retrievePlugin(String name);

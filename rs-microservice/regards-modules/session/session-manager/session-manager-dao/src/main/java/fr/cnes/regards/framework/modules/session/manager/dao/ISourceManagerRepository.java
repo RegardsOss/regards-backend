@@ -62,7 +62,6 @@ public interface ISourceManagerRepository extends JpaRepository<Source, Long>, J
      *
      * @param name the source name, can be empty
      * @return a subset of all sources names matching
-     * @author lmieulet
      */
     default Set<String> findAllSourcesNames(String name) {
         if ((name != null) && !name.isEmpty()) {

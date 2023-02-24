@@ -54,7 +54,8 @@ import java.nio.file.Paths;
  */
 @RegardsTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_it",
-    "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+                                   "regards.aips.save-metadata.bulk.delay=100",
+                                   "regards.ingest.aip.delete.bulk.delay=100" })
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class IngestProcessingChainControllerIT extends AbstractRegardsTransactionalIT {
 

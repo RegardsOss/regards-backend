@@ -58,8 +58,6 @@ public interface IIngestClientListener {
 
     /**
      * Callback on request deleted
-     *
-     * @param deleted
      */
     void onDeleted(Set<RequestInfo> deleted);
 }

@@ -28,9 +28,14 @@ import org.springframework.validation.Errors;
  *
  * @author Marc Sordi
  */
-@Plugin(author = "REGARDS Team", description = "Default no effect SIP validation plugin", id = "DefaultSipValidation",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Default no effect SIP validation plugin",
+        id = "DefaultSipValidation",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class DefaultSipValidation implements ISipValidation {
 
     @Override

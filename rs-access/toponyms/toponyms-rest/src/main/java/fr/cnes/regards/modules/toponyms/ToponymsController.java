@@ -83,10 +83,7 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     /**
      * Endpoint to retrieve all toponyms with pagination. By default only visible toponyms are retrieved.
      *
-     * @param pageable
-     * @param assembler
      * @return {@link ToponymDTO}s
-     * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -107,10 +104,10 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      * @param businessId Unique identifier of toponym to search for
      * @param simplified True for simplified geometry (minimize size)
      * @return {@link ToponymDTO}
-     * @throws EntityNotFoundException
      */
-    @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID,
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
@@ -134,17 +131,14 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      * Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.
      * By default only visible toponyms are retrieved.
      *
-     * @param partialLabel
-     * @param locale
      * @return {@link ToponymDTO}s
-     * @throws EntityNotFoundException
      */
-    @RequestMapping(value = ToponymsRestConfiguration.SEARCH, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = ToponymsRestConfiguration.SEARCH,
+                    method = RequestMethod.GET,
+                    produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(
-        description = "Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.",
-        role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.",
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
                                                                 @RequestParam(required = false, defaultValue = "en")
                                                                 String locale) throws EntityNotFoundException {

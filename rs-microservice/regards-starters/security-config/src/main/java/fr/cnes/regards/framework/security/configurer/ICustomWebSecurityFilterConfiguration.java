@@ -35,10 +35,11 @@ public interface ICustomWebSecurityFilterConfiguration {
     /**
      * Configure HttpSecurity filters
      *
-     * @param http         HttpSecurity
+     * @param http             HttpSecurity
      * @param noSecurityRoutes list of routes the filter should avoid to filter
      * @throws CustomWebSecurityConfigurationException configuration exception
      */
-    void configure(final HttpSecurity http, Set<String> noSecurityRoutes) throws CustomWebSecurityConfigurationException;
+    void configure(final HttpSecurity http, Set<String> noSecurityRoutes)
+        throws CustomWebSecurityConfigurationException;
 
 }

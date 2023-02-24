@@ -46,7 +46,7 @@ import java.util.concurrent.ScheduledFuture;
  */
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dump_manager_it" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "noscheduler" })
 public class AIPDumpSchedulerIT extends IngestMultitenantServiceIT {
 

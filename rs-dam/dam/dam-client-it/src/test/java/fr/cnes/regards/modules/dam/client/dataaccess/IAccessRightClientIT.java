@@ -43,7 +43,7 @@ import org.springframework.test.context.TestPropertySource;
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(locations = "classpath:test.properties",
-    properties = { "spring.jpa.properties.hibernate.default_schema=dam_ar_client_it" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=dam_ar_client_it" })
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class IAccessRightClientIT extends AbstractRegardsWebIT {
 

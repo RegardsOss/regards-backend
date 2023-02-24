@@ -36,9 +36,10 @@ import java.util.TreeSet;
 @Entity
 @Table(name = "t_basket", uniqueConstraints = @UniqueConstraint(name = "uk_basket_owner", columnNames = "owner"))
 @NamedEntityGraph(name = "graph.basket",
-    attributeNodes = @NamedAttributeNode(value = "datasetSelections", subgraph = "graph.basket.datasetSelections"),
-    subgraphs = @NamedSubgraph(name = "graph.basket.datasetSelections",
-        attributeNodes = @NamedAttributeNode("itemsSelections")))
+                  attributeNodes = @NamedAttributeNode(value = "datasetSelections",
+                                                       subgraph = "graph.basket.datasetSelections"),
+                  subgraphs = @NamedSubgraph(name = "graph.basket.datasetSelections",
+                                             attributeNodes = @NamedAttributeNode("itemsSelections")))
 public class Basket implements IIdentifiable<Long> {
 
     @Id

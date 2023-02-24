@@ -147,7 +147,7 @@ public interface IProjectUserRepository
     Page<ProjectUser> findAll(Specification<ProjectUser> spec, Pageable pageable);
 
     @Query(nativeQuery = true,
-        value = "SELECT access_group, count(*) FROM {h-schema}ta_project_user_access_group GROUP BY access_group")
+           value = "SELECT access_group, count(*) FROM {h-schema}ta_project_user_access_group GROUP BY access_group")
     List<Object[]> getCountByAccessGroup();
 
     default Map<String, Long> getUserCountByAccessGroup() {

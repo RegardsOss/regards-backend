@@ -33,7 +33,8 @@ import java.time.LocalDateTime;
 @InstanceEntity
 @Entity
 @Table(name = "t_password_reset_token",
-    uniqueConstraints = @UniqueConstraint(name = "uk_password_reset_token_account_id", columnNames = { "account_id" }))
+       uniqueConstraints = @UniqueConstraint(name = "uk_password_reset_token_account_id",
+                                             columnNames = { "account_id" }))
 public class PasswordResetToken {
 
     /**
@@ -144,8 +145,6 @@ public class PasswordResetToken {
 
     /**
      * Refresh the expiry date
-     *
-     * @param pToken
      */
     public void updateToken(final String pToken) {
         this.token = pToken;

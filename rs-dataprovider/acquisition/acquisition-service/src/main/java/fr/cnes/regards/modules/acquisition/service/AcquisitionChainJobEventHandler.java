@@ -121,7 +121,7 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
         }
 
         /**
-         * @param jobEvent
+         *
          */
         private void handleJobSuccess(JobEvent jobEvent) {
             // Load job info

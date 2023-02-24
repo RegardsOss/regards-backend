@@ -219,12 +219,6 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     /**
      * Check if the given file is in the path to copy. If it is, calculate the relative destination path.
-     *
-     * @param fileUrl
-     * @param sourcePathToCopy
-     * @param destinationPath
-     * @throws MalformedURLException
-     * @throws ModuleException
      */
     public static Optional<Path> getDestinationFilePath(String fileUrl,
                                                         Optional<Path> sourceRootPath,

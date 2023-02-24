@@ -47,18 +47,26 @@ import java.util.stream.Stream;
  *
  * @author Marc Sordi
  */
-@Plugin(id = "GlobDiskStreamScanning", version = "1.0.0-SNAPSHOT",
-    description = "Scan directories to detect files filtering with a glob pattern by stream",
-    markdown = "GlobDiskStreamScanning.md", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
-    owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "GlobDiskStreamScanning",
+        version = "1.0.0-SNAPSHOT",
+        description = "Scan directories to detect files filtering with a glob pattern by stream",
+        markdown = "GlobDiskStreamScanning.md",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss")
 public class GlobDiskStreamScanning implements IFluxScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskStreamScanning.class);
 
     public static final String FIELD_GLOB = "glob";
 
-    @PluginParameter(name = FIELD_GLOB, label = "Glob pattern", markdown = "glob_pattern.md", defaultValue = "*",
-        optional = true)
+    @PluginParameter(name = FIELD_GLOB,
+                     label = "Glob pattern",
+                     markdown = "glob_pattern.md",
+                     defaultValue = "*",
+                     optional = true)
     private String glob;
 
     @Autowired

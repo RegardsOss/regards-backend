@@ -87,9 +87,15 @@ import java.util.stream.Collectors;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-@Plugin(id = OpenSearchEngine.ENGINE_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
-    description = "Native search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
-    version = "1.0.0", markdown = "OpensearchEngine.md")
+@Plugin(id = OpenSearchEngine.ENGINE_ID,
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        description = "Native search engine",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss",
+        version = "1.0.0",
+        markdown = "OpensearchEngine.md")
 public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescription, Object, List<String>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchEngine.class);
@@ -162,8 +168,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @PluginParameter(name = EARTH_OBSERVATION_EXTENSION_PARAMETER, label = "Open search Earth Observation extension")
     private EarthObservationExtension earthObservationExtension;
 
-    @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration", optional = true,
-        markdown = "OpensearchParameter.md")
+    @PluginParameter(name = PARAMETERS_CONFIGURATION,
+                     label = "Parameters configuration",
+                     optional = true,
+                     markdown = "OpensearchParameter.md")
     private List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
 
     @PluginInit

@@ -36,16 +36,14 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=worker_responses", "regards.amqp.enabled=true",
-        "regards.workermanager.worker.response.bulk.size=1000" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_responses",
+                                   "regards.amqp.enabled=true",
+                                   "regards.workermanager.worker.response.bulk.size=1000" },
+                    locations = { "classpath:application-test.properties" })
 public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
 
     /**
      * Check that requests are updated in database with RUNNING status after RUNNING response sent by worker
-     *
-     * @throws InterruptedException
      */
     @Test
     public void handleGrantedResponseFromWorker() throws InterruptedException {

@@ -129,8 +129,6 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
 
     /**
      * Custom test initialization to override
-     *
-     * @throws Exception
      */
     protected void doInit() throws Exception {
         // Override to init something
@@ -147,8 +145,6 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
 
     /**
      * Custom test cleaning to override
-     *
-     * @throws Exception
      */
     protected void doAfter() throws Exception {
         // Override to init something

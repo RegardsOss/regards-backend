@@ -52,7 +52,9 @@ import java.util.List;
  * @author Marc SORDI
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_store_flow_handler_it",
-    "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=4", "eureka.client.enabled=false" })
+                                   "regards.amqp.enabled=true",
+                                   "spring.task.scheduling.pool.size=4",
+                                   "eureka.client.enabled=false" })
 @ActiveProfiles({ "testAmqp", "StorageClientMock" })
 public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
 

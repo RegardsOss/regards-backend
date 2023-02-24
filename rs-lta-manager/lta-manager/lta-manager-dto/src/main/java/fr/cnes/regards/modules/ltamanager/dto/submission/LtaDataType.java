@@ -31,16 +31,7 @@ public enum LtaDataType {
     /**
      * Available data types
      */
-    ZIP,
-    RAWDATA,
-    QUICKLOOK_SD,
-    QUICKLOOK_MD,
-    QUICKLOOK_HD,
-    DOCUMENT,
-    THUMBNAIL,
-    OTHER,
-    AIP,
-    DESCRIPTION;
+    ZIP, RAWDATA, QUICKLOOK_SD, QUICKLOOK_MD, QUICKLOOK_HD, DOCUMENT, THUMBNAIL, OTHER, AIP, DESCRIPTION;
 
     @Override
     public String toString() {

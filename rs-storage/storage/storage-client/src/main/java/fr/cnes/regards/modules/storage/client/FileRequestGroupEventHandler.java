@@ -197,7 +197,7 @@ public class FileRequestGroupEventHandler
             listener.onCopyError(copyErrors);
         }
     }
-    
+
     private void fillSuccessOrErrorSet(FileRequestsGroupEvent event,
                                        Set<RequestInfo> successSet,
                                        Set<RequestInfo> errorSet) {

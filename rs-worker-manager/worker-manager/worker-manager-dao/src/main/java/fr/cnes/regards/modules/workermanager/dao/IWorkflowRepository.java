@@ -27,6 +27,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  *
  * @author Iliana Ghazali
  */
-public interface IWorkflowRepository extends JpaRepository<WorkflowConfig, String>, JpaSpecificationExecutor<WorkflowConfig> {
+public interface IWorkflowRepository
+    extends JpaRepository<WorkflowConfig, String>, JpaSpecificationExecutor<WorkflowConfig> {
 
 }

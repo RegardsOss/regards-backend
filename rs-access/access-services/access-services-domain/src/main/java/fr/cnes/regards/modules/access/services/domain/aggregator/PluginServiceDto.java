@@ -47,13 +47,6 @@ public final class PluginServiceDto {
 
     /**
      * Constructor. It is private in order to force the caller to use one of the 'from' builder methods
-     *
-     * @param configId
-     * @param label
-     * @param iconUrl
-     * @param applicationModes
-     * @param entityTypes
-     * @param type
      */
     private PluginServiceDto(String configId,
                              String label,
@@ -74,7 +67,6 @@ public final class PluginServiceDto {
     /**
      * Build a new instance from the given {@link PluginConfigurationDto}
      *
-     * @param pluginConfigurationDto
      * @return the new instance
      */
     public static final PluginServiceDto fromPluginConfigurationDto(PluginConfigurationDto pluginConfigurationDto) {
@@ -98,7 +90,6 @@ public final class PluginServiceDto {
     /**
      * Build a new instance from the given {@link UIPluginConfiguration}
      *
-     * @param uiPluginConfiguration
      * @return the new instance
      */
     public static final PluginServiceDto fromUIPluginConfiguration(UIPluginConfiguration uiPluginConfiguration) {

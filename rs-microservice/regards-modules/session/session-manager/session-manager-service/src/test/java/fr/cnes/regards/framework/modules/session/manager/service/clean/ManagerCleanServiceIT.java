@@ -51,7 +51,8 @@ import java.util.Set;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_clean_process_it",
-    "regards.session.manager.clean.session.limit.store=30", "spring.jpa.show-sql=false" })
+                                   "regards.session.manager.clean.session.limit.store=30",
+                                   "spring.jpa.show-sql=false" })
 @ActiveProfiles({ "noscheduler" })
 public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
 

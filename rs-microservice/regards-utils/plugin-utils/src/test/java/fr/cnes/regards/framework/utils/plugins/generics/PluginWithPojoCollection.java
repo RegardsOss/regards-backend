@@ -27,9 +27,14 @@ import java.util.Set;
 /**
  * @author Marc Sordi
  */
-@Plugin(author = "REGARDS Team", description = "Plugin with POJO collection parameter", id = "PluginWithPojoCollection",
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Plugin with POJO collection parameter",
+        id = "PluginWithPojoCollection",
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class PluginWithPojoCollection implements IPluginWithGenerics {
 
     // Field name

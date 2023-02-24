@@ -61,11 +61,10 @@ public class PMonitoringController implements IResourceController<ExecutionMonit
 
     @Autowired
     private PagedResourcesAssembler<ExecutionMonitoringDTO> assembler;
-    
+
     @PostMapping
-    @ResourceAccess(
-        description = "List executions filtered by tenant/user/date/status depending on the given parameters",
-        role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "List executions filtered by tenant/user/date/status depending on the given parameters",
+                    role = DefaultRole.ADMIN)
     public HttpEntity<PagedModel<EntityModel<ExecutionMonitoringDTO>>> executions(
         @RequestParam(name = TENANT_PARAM, required = true) String tenant,
         @RequestBody SearchExecutionEntityParameters filters,

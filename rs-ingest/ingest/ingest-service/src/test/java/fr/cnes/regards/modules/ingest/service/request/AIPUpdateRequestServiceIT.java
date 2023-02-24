@@ -40,7 +40,8 @@ import java.util.Set;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request",
-    "spring.jpa.show-sql=false" }, locations = { "classpath:application-test.properties" })
+                                   "spring.jpa.show-sql=false" },
+                    locations = { "classpath:application-test.properties" })
 public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
 
     @Autowired

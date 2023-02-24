@@ -92,12 +92,6 @@ public class FileDeletionRequestDTO {
     /**
      * Build a new file deletion request information
      *
-     * @param checksum
-     * @param storage
-     * @param owner
-     * @param sessionOwner
-     * @param session
-     * @param forceDelete
      * @return {@link FileDeletionRequestDTO}
      */
     public static FileDeletionRequestDTO build(String checksum,

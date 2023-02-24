@@ -36,8 +36,7 @@ public class PerformResetPasswordDto {
     private String newPassword;
 
     /**
-     * @param pToken
-     * @param pNewPassword
+     *
      */
     public PerformResetPasswordDto(final String pToken, final String pNewPassword) {
         super();

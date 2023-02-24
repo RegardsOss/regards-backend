@@ -45,9 +45,7 @@ public interface ILinkUIPluginsDatasetsService {
      * @param pDatasetId   the dataset id
      * @param pUpdatedLink the {@link LinkUIPluginsDatasets} to update
      * @return the updated {@link LinkUIPluginsDatasets}
-     * @throws EntityException
      * @throws EntityNotFoundException if the given dataset does not exist
-     * @throws EntityInvalidException
      */
     LinkUIPluginsDatasets updateLink(String pDatasetId, LinkUIPluginsDatasets pUpdatedLink) throws EntityException;
 

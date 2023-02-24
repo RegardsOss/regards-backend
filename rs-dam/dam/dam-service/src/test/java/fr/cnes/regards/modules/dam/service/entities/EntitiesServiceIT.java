@@ -47,7 +47,8 @@ import java.util.Set;
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=entities",
-    "regards.dam.post.aip.entities.to.storage=false" }, locations = "classpath:es.properties")
+                                   "regards.dam.post.aip.entities.to.storage=false" },
+                    locations = "classpath:es.properties")
 @MultitenantTransactional
 public class EntitiesServiceIT extends AbstractMultitenantServiceIT {
 

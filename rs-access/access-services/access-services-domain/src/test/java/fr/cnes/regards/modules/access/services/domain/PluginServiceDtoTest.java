@@ -108,8 +108,6 @@ public class PluginServiceDtoTest {
 
     /**
      * Check the values of the DTO
-     *
-     * @param pPluginServiceDto
      */
     private void checkDto(PluginServiceDto pPluginServiceDto) {
         Assert.assertEquals(LABEL, pPluginServiceDto.getLabel());

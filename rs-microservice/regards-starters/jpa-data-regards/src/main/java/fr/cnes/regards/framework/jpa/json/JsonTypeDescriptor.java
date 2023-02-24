@@ -56,10 +56,6 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
      * Must be set when declaring a jsonb field : <br/>
      * Its value corresponds to the target name class that will be retrieved using {@link Class#forName(String)}<br/>
      * <code>
-     *
-     * @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "{classname}") })
-     * </code>
-     * @author Marc Sordi
      */
     public static final String ARG_TYPE = "fr.cnes.regards.ParameterType.argType";
 
@@ -69,10 +65,6 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
      * Must be set when declaring a jsonb field, which is a map : <br/>
      * Its value corresponds to the target name class of the key that will be retrieved using {@link Class#forName(String)}<br/>
      * <code>
-     *
-     * @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.KEY_ARG_TYPE, value = "{classname}") })
-     * </code>
-     * @author Sylvain Vissiere-Guerinet
      */
     public static final String KEY_ARG_TYPE = "fr.cnes.regards.ParameterType.keyArgType";
 

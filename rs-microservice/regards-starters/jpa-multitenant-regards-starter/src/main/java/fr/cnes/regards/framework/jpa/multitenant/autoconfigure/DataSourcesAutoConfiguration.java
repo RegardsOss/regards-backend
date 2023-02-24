@@ -204,8 +204,7 @@ public class DataSourcesAutoConfiguration {
                                                                  ITenantConnectionResolver multitenantResolver,
                                                                  @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME)
                                                                  IDatasourceSchemaHelper datasourceSchemaHelper,
-                                                                 @Qualifier(
-                                                                     DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME)
+                                                                 @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME)
                                                                  Map<String, DataSource> dataSources,
                                                                  LockingTaskExecutors lockingTaskExecutors) {
         return new MultitenantJpaEventHandler(microserviceName,

@@ -143,7 +143,7 @@ public class SIPController implements IResourceController<SIPEntity> {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<PagedModel<EntityModel<SIPEntity>>> search(@RequestBody SearchSIPsParameters params,
                                                                      @PageableDefault(sort = "id",
-                                                                         direction = Sort.Direction.ASC)
+                                                                                      direction = Sort.Direction.ASC)
                                                                      Pageable pageable,
                                                                      PagedResourcesAssembler<SIPEntity> pAssembler) {
         Page<SIPEntity> sipEntities = sipService.search(params, pageable);

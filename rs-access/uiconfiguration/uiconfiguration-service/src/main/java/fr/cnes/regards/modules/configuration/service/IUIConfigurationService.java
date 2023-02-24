@@ -26,7 +26,6 @@ public interface IUIConfigurationService {
      * Add a configuration to the database if none exist
      *
      * @param configuration configuration to add
-     * @param applicationId
      * @return String representation of configuration
      */
     public String addConfiguration(String configuration, String applicationId);
@@ -35,7 +34,6 @@ public interface IUIConfigurationService {
      * Update the existing configuration
      *
      * @param configuration configuration to update
-     * @param applicationId
      * @return String representation of configuration
      * @throws EntityNotFoundException if we try to update a non existing configuration in database
      */

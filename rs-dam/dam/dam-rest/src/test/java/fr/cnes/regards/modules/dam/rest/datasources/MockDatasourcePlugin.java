@@ -32,8 +32,14 @@ import java.util.List;
  *
  * @author Marc Sordi
  */
-@Plugin(id = "MockDatasourcePlugin", author = "CSSI", contact = "CSSI", description = "MockDatasourcePlugin",
-    version = "alpha", url = "none", owner = "CSSI", license = "GPLv3")
+@Plugin(id = "MockDatasourcePlugin",
+        author = "CSSI",
+        contact = "CSSI",
+        description = "MockDatasourcePlugin",
+        version = "alpha",
+        url = "none",
+        owner = "CSSI",
+        license = "GPLv3")
 public class MockDatasourcePlugin implements IDBDataSourcePlugin {
 
     @Override

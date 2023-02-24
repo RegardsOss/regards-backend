@@ -46,11 +46,12 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "t_project_user",
-    uniqueConstraints = @UniqueConstraint(name = "uk_project_user_email", columnNames = { "email" }))
+       uniqueConstraints = @UniqueConstraint(name = "uk_project_user_email", columnNames = { "email" }))
 @EntityListeners(ProjectUserListener.class)
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "seq_project_user")
 @NamedEntityGraph(name = "graph.user.metadata",
-    attributeNodes = { @NamedAttributeNode(value = "metadata"), @NamedAttributeNode(value = "accessGroups") })
+                  attributeNodes = { @NamedAttributeNode(value = "metadata"),
+                                     @NamedAttributeNode(value = "accessGroups") })
 public class ProjectUser implements IIdentifiable<Long> {
 
     public static final String REGARDS_ORIGIN = "Regards";
@@ -96,8 +97,9 @@ public class ProjectUser implements IIdentifiable<Long> {
 
     @ElementCollection
     @Column(name = "access_group")
-    @CollectionTable(name = "ta_project_user_access_group", joinColumns = @JoinColumn(name = "project_user_id",
-        foreignKey = @ForeignKey(name = "fk_ta_project_user_access_group_t_project_user")))
+    @CollectionTable(name = "ta_project_user_access_group",
+                     joinColumns = @JoinColumn(name = "project_user_id",
+                                               foreignKey = @ForeignKey(name = "fk_ta_project_user_access_group_t_project_user")))
     private Set<String> accessGroups;
 
     @Column(name = "max_quota")

@@ -27,7 +27,6 @@ public interface ILocalStorageService {
      * @param attachments     the files to attach to the document
      * @param fileUriTemplate the file's uri template in order to generate each file's uri
      * @return the set of files
-     * @throws ModuleException
      */
     Collection<DataFile> attachFiles(AbstractEntity<?> entity,
                                      DataType dataType,
@@ -37,8 +36,6 @@ public interface ILocalStorageService {
     /**
      * @param entity   the entity which we are editing
      * @param dataFile the file we're removing
-     * @throws ModuleException
-     * @throws EntityNotFoundException
      */
     void removeFile(AbstractEntity<?> entity, DataFile dataFile) throws ModuleException;
 
@@ -53,9 +50,7 @@ public interface ILocalStorageService {
      * Write the file in the output stream.<br/>
      * {@link OutputStream} has to be flush after this method completes.
      *
-     * @param checksum
-     * @param output   {@link OutputStream}
-     * @throws ModuleException
+     * @param output {@link OutputStream}
      */
     void getFileContent(String checksum, OutputStream output) throws ModuleException;
 }

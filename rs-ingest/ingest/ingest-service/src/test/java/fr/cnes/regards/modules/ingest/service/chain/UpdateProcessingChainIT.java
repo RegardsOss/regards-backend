@@ -49,9 +49,11 @@ import java.util.Optional;
  */
 @RunWith(SpringRunner.class)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestu", "jwt.secret=123456789",
-    "regards.workspace=target/workspace", "eureka.client.enabled=false" },
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestu",
+                                   "jwt.secret=123456789",
+                                   "regards.workspace=target/workspace",
+                                   "eureka.client.enabled=false" },
+                    locations = { "classpath:application-test.properties" })
 @ContextConfiguration(classes = { UpdateProcessingChainIT.IngestConfiguration.class })
 public class UpdateProcessingChainIT extends AbstractDaoIT {
 

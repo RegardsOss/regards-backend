@@ -98,8 +98,6 @@ public class FileReferenceRequestService {
 
     /**
      * Initialize new reference requests from Flow items.
-     *
-     * @param list
      */
     public void reference(List<ReferenceFlowItem> list) {
         Set<FileReference> existingOnes = fileRefService.search(list.stream()
@@ -135,10 +133,6 @@ public class FileReferenceRequestService {
      * Initialize new reference requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
      * avoid requesting {@link IFileReferenceRepository} on each request.
      *
-     * @param requests
-     * @param groupId
-     * @param existingOnes
-     * @param existingDeletionRequests
      * @return referenced files
      */
     private Collection<FileReference> reference(Collection<FileReferenceRequestDTO> requests,
@@ -378,8 +372,6 @@ public class FileReferenceRequestService {
 
     /**
      * Retrieve expiration date for deletion request
-     *
-     * @return
      */
     public OffsetDateTime getRequestExpirationDate() {
         if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {

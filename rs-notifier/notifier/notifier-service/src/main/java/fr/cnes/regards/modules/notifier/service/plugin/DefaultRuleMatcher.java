@@ -31,9 +31,14 @@ import java.util.Map.Entry;
  *
  * @author Kevin Marchois
  */
-@Plugin(author = "REGARDS Team", description = "Default rule matcher", id = DefaultRuleMatcher.PLUGIN_ID,
-    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-    url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team",
+        description = "Default rule matcher",
+        id = DefaultRuleMatcher.PLUGIN_ID,
+        version = "1.0.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class DefaultRuleMatcher implements IRuleMatcher {
 
     public static final String PLUGIN_ID = "DefaultRuleMatcher";
@@ -62,8 +67,6 @@ public class DefaultRuleMatcher implements IRuleMatcher {
     /**
      * Browse a list of properties to find the one with the name of the class attribute 'attributeToSeek'
      * and the value 'attributeValueToSeek'
-     *
-     * @param jsonObject
      */
     private boolean handleProperties(JsonObject jsonObject) {
         if (jsonObject == null) {

@@ -55,8 +55,8 @@ import static org.mockito.Mockito.when;
  * @author Marc Sordi
  */
 @MultitenantTransactional
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=license", "regards.amqp.enabled=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=license",
+                                   "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class LicenseControllerIT extends AbstractRegardsTransactionalIT {
 

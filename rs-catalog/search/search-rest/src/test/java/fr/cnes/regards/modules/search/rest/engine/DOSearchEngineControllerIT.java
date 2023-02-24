@@ -50,7 +50,8 @@ import static org.mockito.ArgumentMatchers.any;
  * @author Marc Sordi
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "regards.tenant=dosearch", "spring.jpa.properties.hibernate.default_schema=dosearch" })
+                    properties = { "regards.tenant=dosearch",
+                                   "spring.jpa.properties.hibernate.default_schema=dosearch" })
 @MultitenantTransactional
 public class DOSearchEngineControllerIT extends AbstractEngineIT {
 

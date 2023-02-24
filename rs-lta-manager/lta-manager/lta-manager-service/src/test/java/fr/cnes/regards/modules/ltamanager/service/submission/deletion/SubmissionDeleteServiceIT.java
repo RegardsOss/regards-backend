@@ -58,8 +58,9 @@ import java.util.stream.IntStream;
  */
 @ActiveProfiles(value = { "nojobs" })
 @TestPropertySource(locations = { "classpath:application-test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=submission_delete_controller_it",
-        "regards.ltamanager.request.deletion.batch.size=" + SubmissionDeleteServiceIT.BATCH_SIZE })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=submission_delete_controller_it",
+                                   "regards.ltamanager.request.deletion.batch.size="
+                                   + SubmissionDeleteServiceIT.BATCH_SIZE })
 public class SubmissionDeleteServiceIT extends AbstractRegardsIT {
 
     private static final String DEFAULT_OWNER = "owner";

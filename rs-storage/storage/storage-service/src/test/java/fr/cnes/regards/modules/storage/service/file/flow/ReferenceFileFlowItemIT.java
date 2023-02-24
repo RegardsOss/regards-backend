@@ -55,7 +55,7 @@ import java.util.concurrent.ExecutionException;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 public class ReferenceFileFlowItemIT extends AbstractStorageIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFileFlowItemIT.class);
@@ -78,8 +78,6 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
     /**
      * Test request to reference a file already stored.
      * The file is not stored by the service as the origin storage and the destination storage are identical
-     *
-     * @throws InterruptedException
      */
     @Test
     public void addFileRefFlowItem() throws InterruptedException {
@@ -243,9 +241,6 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
     /**
      * Test request to reference a file already stored.
      * The file is not stored by the service as the origin storage and the destination storage are identical
-     *
-     * @throws ExecutionException
-     * @throws InterruptedException
      */
     @Test
     public void addFileRefFlowItemAlreadyExists() throws InterruptedException, ExecutionException {
@@ -345,9 +340,6 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
     /**
      * Test request to reference a file already stored.
      * The file is not stored by the service as the origin storage and the destination storage are identical
-     *
-     * @throws ExecutionException
-     * @throws InterruptedException
      */
     @Test
     public void addFileRefFlowItemWithSameChecksum() throws InterruptedException, ExecutionException {

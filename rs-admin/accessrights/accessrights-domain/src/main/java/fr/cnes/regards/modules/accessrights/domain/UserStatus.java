@@ -27,12 +27,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  */
 public enum UserStatus {
 
-    WAITING_ACCESS,
-    ACCESS_DENIED,
-    ACCESS_GRANTED,
-    ACCESS_INACTIVE,
-    WAITING_ACCOUNT_ACTIVE,
-    WAITING_EMAIL_VERIFICATION;
+    WAITING_ACCESS, ACCESS_DENIED, ACCESS_GRANTED, ACCESS_INACTIVE, WAITING_ACCOUNT_ACTIVE, WAITING_EMAIL_VERIFICATION;
 
     @Override
     public String toString() {

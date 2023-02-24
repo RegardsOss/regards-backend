@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 public class OpenSearchUnknownParameter extends ModuleException {
 
     /**
-     * @param pErrorMessage
+     *
      */
     public OpenSearchUnknownParameter(String pErrorMessage) {
         super(pErrorMessage);

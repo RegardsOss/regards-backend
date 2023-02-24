@@ -55,9 +55,9 @@ public class JWTSigningKeyResolver extends SigningKeyResolverAdapter {
         return switch (algorithm) {
             case HS256, HS384, HS512 -> getSecretKeyFromString(getKey(algorithm), algorithm);
             case RS256, RS384, RS512 -> getPublicKeyFromString(getKey(algorithm));
-            case ES256, ES384, ES512, PS256, PS384, PS512, NONE -> throw new UnsupportedOperationException(String.format(
-                "JWT signing algorithm not supported : %s",
-                algorithm.getValue()));
+            case ES256, ES384, ES512, PS256, PS384, PS512, NONE ->
+                throw new UnsupportedOperationException(String.format("JWT signing algorithm not supported : %s",
+                                                                      algorithm.getValue()));
         };
     }
 

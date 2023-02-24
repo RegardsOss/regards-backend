@@ -46,7 +46,6 @@ public class UserRoleJobParameter extends JobParameter {
     /**
      * Check if given JobParameter is compatible with UserRoleJobParameter ie same name
      *
-     * @param param
      * @return {@link Boolean}
      */
     public static boolean isCompatible(JobParameter param) {

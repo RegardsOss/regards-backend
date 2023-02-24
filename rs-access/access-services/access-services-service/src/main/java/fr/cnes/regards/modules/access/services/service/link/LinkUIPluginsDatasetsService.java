@@ -73,9 +73,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
     }
 
     /**
-     * @param pDatasetId
      * @return {@link LinkUIPluginsDatasets}
-     * @throws EntityNotFoundException
      */
     @Override
     public LinkUIPluginsDatasets retrieveLink(final String pDatasetId) throws EntityNotFoundException {
@@ -86,11 +84,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
     }
 
     /**
-     * @param pDatasetId
-     * @param pUpdatedLink
      * @return {@link LinkUIPluginsDatasets}
-     * @throws EntityNotFoundException
-     * @throws EntityInvalidException
      */
     @Override
     public LinkUIPluginsDatasets updateLink(final String pDatasetId, final LinkUIPluginsDatasets pUpdatedLink)
@@ -124,7 +118,6 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
     /**
      * Save a new link in db
      *
-     * @param pDatasetId
      * @return the created link
      */
     private LinkUIPluginsDatasets createLink(String pDatasetId) {
@@ -136,7 +129,6 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
     /**
      * Save a new link in db
      *
-     * @param pLinkUIPluginsDatasets
      * @return the created link
      */
     private LinkUIPluginsDatasets createLink(LinkUIPluginsDatasets pLinkUIPluginsDatasets) {

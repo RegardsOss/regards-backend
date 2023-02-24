@@ -35,7 +35,7 @@ public class OnDenyEvent extends ApplicationEvent {
     private final ProjectUser projectUser;
 
     /**
-     * @param pProjectUser
+     *
      */
     public OnDenyEvent(ProjectUser pProjectUser) {
         super(pProjectUser);

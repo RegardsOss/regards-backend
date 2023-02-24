@@ -55,9 +55,9 @@ import java.util.UUID;
  *
  * @author Marc SORDI
  */
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient", "regards.amqp.enabled=true",
-        "regards.aips.save-metadata.bulk.delay=100" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient",
+                                   "regards.amqp.enabled=true",
+                                   "regards.aips.save-metadata.bulk.delay=100" })
 @ContextConfiguration(classes = { IngestClientIT.IngestConfiguration.class })
 @ActiveProfiles(value = { "default", "test", "testAmqp", "StorageClientMock" }, inheritProfiles = false)
 public class IngestClientIT extends AbstractRegardsWebIT {

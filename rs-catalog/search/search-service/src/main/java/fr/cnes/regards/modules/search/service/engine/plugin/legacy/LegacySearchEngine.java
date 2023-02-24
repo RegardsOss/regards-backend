@@ -49,9 +49,14 @@ import java.util.stream.Collectors;
  *
  * @author Marc Sordi
  */
-@Plugin(id = LegacySearchEngine.PLUGIN_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
-    description = "Legacy search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
-    version = "1.0.0")
+@Plugin(id = LegacySearchEngine.PLUGIN_ID,
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        description = "Legacy search engine",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss",
+        version = "1.0.0")
 public class LegacySearchEngine implements
     ISearchEngine<FacettedPagedModel<EntityModel<EntityFeature>>, Void, EntityModel<EntityFeature>, List<String>> {
 

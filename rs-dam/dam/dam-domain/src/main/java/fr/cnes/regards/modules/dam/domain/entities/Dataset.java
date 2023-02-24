@@ -51,8 +51,10 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
      * plugin configuration).
      */
     @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name = "ds_plugin_conf_id", foreignKey = @ForeignKey(name = "fk_ds_plugin_conf_id"), nullable = true,
-        updatable = false)
+    @JoinColumn(name = "ds_plugin_conf_id",
+                foreignKey = @ForeignKey(name = "fk_ds_plugin_conf_id"),
+                nullable = true,
+                updatable = false)
     private PluginConfiguration plgConfDataSource;
 
     /**
@@ -127,8 +129,6 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
 
     /**
      * Set the subsetting clause
-     *
-     * @param subsettingClause
      */
     public void setSubsettingClause(ICriterion subsettingClause) {
         this.subsettingClause = subsettingClause;
@@ -155,8 +155,6 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
 
     /**
      * Set the data model
-     *
-     * @param dataModel
      */
     public void setDataModel(String dataModel) {
         this.dataModel = dataModel;

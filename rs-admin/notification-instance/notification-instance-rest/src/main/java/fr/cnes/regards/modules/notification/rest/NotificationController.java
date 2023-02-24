@@ -116,7 +116,7 @@ public class NotificationController implements IResourceController<Notification>
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of notifications for the logged user",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<PagedModel<EntityModel<INotificationWithoutMessage>>> retrieveNotifications(
         @RequestParam(name = "state", required = false) NotificationStatus state,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page,
@@ -183,7 +183,7 @@ public class NotificationController implements IResourceController<Notification>
      */
     @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "Define the endpoint for retrieving a notification",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") Long id)
         throws EntityNotFoundException {
         Notification notification = notificationService.retrieveNotification(id);
@@ -199,7 +199,7 @@ public class NotificationController implements IResourceController<Notification>
      */
     @RequestMapping(value = NOTIFICATION_READ_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Notification> setNotificationRead(@PathVariable("notification_id") Long id)
         throws EntityNotFoundException {
         Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.READ);
@@ -225,7 +225,7 @@ public class NotificationController implements IResourceController<Notification>
      */
     @RequestMapping(value = NOTIFICATION_UNREAD_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Notification> setNotificationUnRead(@PathVariable("notification_id") Long id)
         throws EntityNotFoundException {
         Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.UNREAD);

@@ -326,8 +326,6 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
 
     /**
      * Log content of current factory discToDelegateMap and subtypeToDelegateMap for the given tenant.
-     *
-     * @param tenant
      */
     private void logMapsForTenant(String tenant) {
         LOGGER.debug("###############################################");

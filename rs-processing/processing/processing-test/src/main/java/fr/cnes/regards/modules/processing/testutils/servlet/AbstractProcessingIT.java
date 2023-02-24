@@ -63,15 +63,18 @@ import java.util.Random;
  */
 @RunWith(SpringRunner.class)
 
-@SpringBootTest(classes = TestServletApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = { "spring.main.web-application-type=servlet", "spring.http.converters.preferred-json-mapper=gson",
-        "regards.security.system.voter.enabled=false", "regards.security.instance.voter.enabled=false",
-        "regards.security.project.admin.voter.enabled=false", })
+@SpringBootTest(classes = TestServletApplication.class,
+                webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+                properties = { "spring.main.web-application-type=servlet",
+                               "spring.http.converters.preferred-json-mapper=gson",
+                               "regards.security.system.voter.enabled=false",
+                               "regards.security.instance.voter.enabled=false",
+                               "regards.security.project.admin.voter.enabled=false", })
 
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 
 @ContextConfiguration(initializers = { AbstractProcessingIT.Initializer.class },
-    classes = { TestSpringConfiguration.class })
+                      classes = { TestSpringConfiguration.class })
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractProcessingIT implements InitializingBean {

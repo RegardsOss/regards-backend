@@ -94,8 +94,6 @@ public interface IDBConnectionService {
      *
      * @param connConfbusinessId identifier of DB connection plugin
      * @return a map of { table name, table }
-     * @throws ModuleException
-     * @throws NotAvailablePluginConfigurationException
      */
     Map<String, Table> getTables(String connConfbusinessId)
         throws ModuleException, NotAvailablePluginConfigurationException;
@@ -106,8 +104,6 @@ public interface IDBConnectionService {
      * @param connConfbusinessId identifier of DB connection plugin
      * @param tableName          table name whom columns belong to
      * @return a map of { column name, column }
-     * @throws ModuleException
-     * @throws NotAvailablePluginConfigurationException
      */
     Map<String, Column> getColumns(String connConfbusinessId, String tableName)
         throws ModuleException, NotAvailablePluginConfigurationException;

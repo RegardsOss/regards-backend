@@ -52,8 +52,6 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
     /**
      * Custom test initialization to override
-     *
-     * @throws Exception
      */
     protected void doInit() throws Exception {
         // Override to init something

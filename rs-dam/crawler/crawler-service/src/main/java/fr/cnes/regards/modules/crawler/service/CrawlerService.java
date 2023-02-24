@@ -65,7 +65,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 
-record CrawlingParameters(OffsetDateTime lastUpdateDate, String tenant, IDataSourcePlugin dsPlugin, Long datasourceId,
+record CrawlingParameters(OffsetDateTime lastUpdateDate,
+                          String tenant,
+                          IDataSourcePlugin dsPlugin,
+                          Long datasourceId,
                           OffsetDateTime ingestionStart) {
 
 }

@@ -82,11 +82,10 @@ public class DataSourceController implements IResourceController<DataSourceDTO> 
      */
     @GetMapping
     @Operation(summary = "Get IDataSourcePlugin plugin configurations",
-        description = "Return a list of plugin configurations of type IDataSourcePlugin")
+               description = "Return a list of plugin configurations of type IDataSourcePlugin")
     @ApiResponses(value = { @ApiResponse(responseCode = "200",
-        description = "All plugin configurations of type IDataSourcePlugin were retrieved.") })
-    @ResourceAccess(
-        description = "Endpoint to retrieve all IDataSourcePlugin plugin configurations")
+                                         description = "All plugin configurations of type IDataSourcePlugin were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all IDataSourcePlugin plugin configurations")
     public ResponseEntity<List<EntityModel<DataSourceDTO>>> getAllDataSources() {
         return ResponseEntity.ok(toResources(dataSourceService.getAllDataSources()));
     }
@@ -147,8 +146,7 @@ public class DataSourceController implements IResourceController<DataSourceDTO> 
      *
      * @param businessId {@link PluginConfiguration} identifier
      * @return nothing
-     * @throws AssociatedDatasetExistsException
-     * @throws ModuleException                  if {@link PluginConfiguration} cannot be deleted
+     * @throws ModuleException if {@link PluginConfiguration} cannot be deleted
      */
     @ResourceAccess(description = "Delete a plugin configuration of type IDataSourcePlugin")
     @RequestMapping(method = RequestMethod.DELETE, value = "/{businessId}")

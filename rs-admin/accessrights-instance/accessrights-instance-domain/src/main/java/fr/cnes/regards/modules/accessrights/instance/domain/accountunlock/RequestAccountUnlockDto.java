@@ -40,8 +40,7 @@ public class RequestAccountUnlockDto {
     private String requestLink;
 
     /**
-     * @param pOriginUrl
-     * @param pRequestLink
+     *
      */
     public RequestAccountUnlockDto(final String pOriginUrl, final String pRequestLink) {
         super();

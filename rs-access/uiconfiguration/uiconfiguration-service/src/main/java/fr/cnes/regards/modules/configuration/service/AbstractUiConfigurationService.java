@@ -88,7 +88,6 @@ public abstract class AbstractUiConfigurationService implements ApplicationListe
      * Read the default Layout configuration file as a string.
      *
      * @return {@link UILayout} as a string
-     * @throws IOException
      * @since 1.0-SNAPSHOT
      */
     protected String readDefaultFileResource(final Resource resource) throws IOException {

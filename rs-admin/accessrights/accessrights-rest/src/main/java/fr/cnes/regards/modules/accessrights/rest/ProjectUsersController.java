@@ -138,14 +138,14 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      */
     @PostMapping(SEARCH_USERS)
     @Operation(summary = "Get users of the project",
-        description = "Return a page of users of the project matching according criterias.")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "All users of the project were retrieved.") })
+               description = "Return a page of users of the project matching according criterias.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "All users of the project were retrieved.") })
     @ResourceAccess(description = "EndPoint to retrieve all users of the project according criterias",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
-            content = @Content(schema = @Schema(implementation = SearchProjectUserParameters.class)))
+                                                              content = @Content(schema = @Schema(implementation = SearchProjectUserParameters.class)))
         @Parameter(description = "Filter criterias for users of the project") @RequestBody
         SearchProjectUserParameters filters,
         @Parameter(description = "Sorting and page configuration")
@@ -191,7 +191,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      */
     @GetMapping(MY_USER)
     @ResourceAccess(description = "retrieve the current authenticated project user and only display  metadata",
-        role = DefaultRole.REGISTERED_USER)
+                    role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<ProjectUser>> retrieveCurrentProjectUser()
         throws EntityNotFoundException, EntityOperationForbiddenException {
         String curentUserEmail = authResolver.getUser();
@@ -282,7 +282,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      */
     @PostMapping
     @ResourceAccess(description = "Create a projectUser by bypassing registration process (Administrator feature)",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody AccessRequestDto dto)
         throws EntityException {
         ProjectUser userCreated = projectUserService.createProjectUser(dto);
@@ -324,9 +324,8 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @throws EntityNotFoundException Thrown when no {@link Role} with passed <code>id</code> could be found
      */
     @GetMapping(ROLES_ROLE_ID)
-    @ResourceAccess(
-        description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
-        role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
+                    role = DefaultRole.ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(
         @PathVariable("role_id") Long roleId,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -346,9 +345,8 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @throws EntityNotFoundException Thrown when no {@link Role} with passed <code>id</code> could be found
      */
     @GetMapping(ROLES)
-    @ResourceAccess(
-        description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
-        role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
+                    role = DefaultRole.ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(
         @RequestParam("role_name") String role,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -359,7 +357,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     @PostMapping(EMAIL_GROUPS)
     @ResourceAccess(description = "Link access groups to a project user identified by email",
-        role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> linkAccessGroups(@PathVariable("email") String email, @RequestBody List<String> groups)
         throws EntityNotFoundException {
         projectUserGroupService.linkAccessGroups(email, groups);
@@ -368,7 +366,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     @PutMapping(EMAIL_ORIGIN)
     @ResourceAccess(description = "Update the origin of a project user identified by email",
-        role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> updateOrigin(@PathVariable("email") String email, @PathVariable("origin") String origin)
         throws EntityNotFoundException {
         projectUserService.updateOrigin(email, origin);

@@ -44,7 +44,7 @@ import java.util.List;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "regards.amqp.enabled=false" },
-    locations = { "classpath:application-test.properties" })
+                    locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "noscheduler" })
 @ContextConfiguration(classes = { RequestHandlerConfiguration.class })
 public abstract class AbstractRequestJobIT extends AbstractMultitenantServiceWithJobIT {

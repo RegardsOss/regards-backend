@@ -35,8 +35,14 @@ import java.io.IOException;
  * @author Sébastien Binda
  * @since 1.0
  */
-@Plugin(author = "CS-SI", description = "LDAP authentication plugin", id = "LdapAuthenticationPlugin", version = "1.0",
-    contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "www.cnes.fr")
+@Plugin(author = "CS-SI",
+        description = "LDAP authentication plugin",
+        id = "LdapAuthenticationPlugin",
+        version = "1.0",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CNES",
+        url = "www.cnes.fr")
 public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
@@ -89,31 +95,39 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP DN
      */
-    @PluginParameter(name = PARAM_LDAP_CN, label = "LDAP Bind DN",
-        description = "Value exemple : ou=people,ou=commun,o=company")
+    @PluginParameter(name = PARAM_LDAP_CN,
+                     label = "LDAP Bind DN",
+                     description = "Value exemple : ou=people,ou=commun,o=company")
     private String ldapDN;
 
     /**
      * LDAP User login attribute.
      */
-    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE, label = "LDAP UID",
-        description = "LDAP User parameter containing user login. Default value is 'sAMAccountName'.", optional = true,
-        defaultValue = "sAMAccountName")
+    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE,
+                     label = "LDAP UID",
+                     description = "LDAP User parameter containing user login. Default value is 'sAMAccountName'.",
+                     optional = true,
+                     defaultValue = "sAMAccountName")
     private String ldapUserLoginAttribute;
 
     /**
      * LDAP Filter to find the User object
      */
-    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP Filter",
-        description = "LDAP Filter to find the user object. Default value is '(ObjectClass=person)'.", optional = true,
-        defaultValue = "(ObjectClass=person)")
+    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE,
+                     label = "LDAP Filter",
+                     description = "LDAP Filter to find the user object. Default value is '(ObjectClass=person)'.",
+                     optional = true,
+                     defaultValue = "(ObjectClass=person)")
     private String ldapSearchUserFilter;
 
     /**
      * LDAP email attribute label
      */
-    @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, label = "LDAP email attribute",
-        description = "LDAP parameter for user email. Default value is 'mail'.", optional = true, defaultValue = "mail")
+    @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE,
+                     label = "LDAP email attribute",
+                     description = "LDAP parameter for user email. Default value is 'mail'.",
+                     optional = true,
+                     defaultValue = "mail")
     private String ldapEmailAttribute;
 
     @Override

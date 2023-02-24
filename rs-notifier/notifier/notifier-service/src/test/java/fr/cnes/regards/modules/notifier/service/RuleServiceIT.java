@@ -32,8 +32,10 @@ import java.util.*;
 import static fr.cnes.regards.modules.notifier.service.PluginConfigurationTestBuilder.aPlugin;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=rules", "regards.amqp.enabled=false",
-    "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=rules",
+                                   "regards.amqp.enabled=false",
+                                   "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
+                                   "spring.jpa.properties.hibernate.order_inserts=true" })
 public class RuleServiceIT extends AbstractNotificationMultitenantServiceIT {
 
     private static final String RECIPIENT_1 = "recipient1";

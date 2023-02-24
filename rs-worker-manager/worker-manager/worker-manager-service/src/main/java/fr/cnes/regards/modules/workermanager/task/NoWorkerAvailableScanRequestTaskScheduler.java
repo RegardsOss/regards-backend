@@ -62,7 +62,9 @@ public class NoWorkerAvailableScanRequestTaskScheduler extends AbstractTaskSched
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.feature.request.reference.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.feature.request.reference.scheduling.delay:"
+                                  + DEFAULT_SCHEDULING_DELAY
+                                  + "}")
     public void scheduleScanNoWorkerAvailableRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

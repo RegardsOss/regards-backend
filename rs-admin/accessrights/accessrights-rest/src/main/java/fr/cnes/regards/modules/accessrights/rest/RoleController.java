@@ -124,7 +124,7 @@ public class RoleController implements IResourceController<Role> {
      */
     @RequestMapping(method = RequestMethod.GET, path = BORROWABLE_MAPPING)
     @ResourceAccess(description = "Retrieve the list of borrowable roles for the current user",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<Role>>> getBorrowableRoles() {
         return new ResponseEntity<>(toResources(roleService.retrieveBorrowableRoles()), HttpStatus.OK);
     }
@@ -132,12 +132,11 @@ public class RoleController implements IResourceController<Role> {
     /**
      * Define the endpoint for retrieving the list of roles that can access the specified resource.
      *
-     * @param resourceId
      * @return list of borrowable roles for current authenticated user
      */
     @RequestMapping(method = RequestMethod.GET, path = ROLE_WITH_RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve the list of roles associated to the given resource",
-        role = DefaultRole.EXPLOIT)
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<EntityModel<Role>>> getRolesAccesingResource(
         @PathVariable("resourceId") Long resourceId) {
         return new ResponseEntity<>(toResources(roleService.retrieveRolesWithResource(resourceId)), HttpStatus.OK);
@@ -173,7 +172,6 @@ public class RoleController implements IResourceController<Role> {
     /**
      * Define the endpoint for retrieving the descendnats {@link Role}s of passed role through its name
      *
-     * @param roleName
      * @return the ascendants wrapped into a {@link ResponseEntity}
      * @throws EntityNotFoundException if given role does not exists
      */
@@ -192,7 +190,7 @@ public class RoleController implements IResourceController<Role> {
      * @throws EntityNotFoundException if some role does not exists
      */
     @ResourceAccess(description = "Return true if the role provided is included by the current role",
-        role = DefaultRole.PUBLIC)
+                    role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = SHOULD_ACCESS_TO_RESOURCE)
     public ResponseEntity<Boolean> shouldAccessToResourceRequiring(@PathVariable("role_name") String roleName)
         throws EntityNotFoundException {

@@ -42,7 +42,7 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_clean_process_it",
-    "regards.session.manager.clean.snapshot.process.limit.store=30" })
+                                   "regards.session.manager.clean.snapshot.process.limit.store=30" })
 @ActiveProfiles({ "noscheduler" })
 public class ManagerCleanSnapshotProcessServiceIT extends AbstractManagerServiceUtilsIT {
 

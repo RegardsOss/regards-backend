@@ -44,8 +44,9 @@ public interface ITenantConnectionClient {
      * @param tenantConnection connection to register
      * @return registered connection
      */
-    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_PATH,
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<TenantConnection> addTenantConnection(@PathVariable("microservice") String microservice,
                                                          @Valid @RequestBody TenantConnection tenantConnection);
 
@@ -56,8 +57,9 @@ public interface ITenantConnectionClient {
      * @param tenantConnection connection to update
      * @return updated connection
      */
-    @PutMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<TenantConnection> updateState(@PathVariable("microservice") String microservice,
                                                  @Valid @RequestBody TenantConnection tenantConnection);
 
@@ -67,8 +69,9 @@ public interface ITenantConnectionClient {
      * @param microservice target microservice
      * @return list of connections
      */
-    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable("microservice") String microservice);
 
 }

@@ -42,9 +42,7 @@ public interface IThemeService {
     /**
      * Retreive a Theme by is id.
      *
-     * @param themeId
      * @return {@link Theme}
-     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     Theme retrieveTheme(Long themeId) throws EntityNotFoundException;
@@ -52,7 +50,6 @@ public interface IThemeService {
     /**
      * Retrieve all themes
      *
-     * @param pageable
      * @return Paged list of {@link Theme}
      * @since 1.0-SNAPSHOT
      */
@@ -72,7 +69,6 @@ public interface IThemeService {
      *
      * @param theme {@link Theme} to update
      * @return updated {@link Theme}
-     * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
     Theme updateTheme(Theme theme) throws EntityException;
@@ -81,7 +77,6 @@ public interface IThemeService {
      * Delete a theme
      *
      * @param themeId Theme id to delete
-     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
     void deleteTheme(Long themeId) throws EntityNotFoundException;

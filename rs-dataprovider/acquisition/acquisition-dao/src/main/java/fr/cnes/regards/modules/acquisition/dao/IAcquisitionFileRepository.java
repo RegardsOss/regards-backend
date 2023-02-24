@@ -83,7 +83,7 @@ public interface IAcquisitionFileRepository
     long countByFileInfo(AcquisitionFileInfo fileInfo);
 
     /**
-     * @param product
+     *
      */
     void deleteByProduct(Product product);
 

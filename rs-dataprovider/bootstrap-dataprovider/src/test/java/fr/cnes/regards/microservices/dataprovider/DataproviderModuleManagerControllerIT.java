@@ -62,8 +62,9 @@ import java.util.List;
  */
 @ActiveProfiles("disableDataProviderTask")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_module_manager_it",
-    "regards.jobs.completion.update.rate.ms=3600000", "spring.config.import=optional:configserver:",
-    "spring.autoconfigure.exclude=org.springframework.cloud.config.client.ConfigClientAutoConfiguration" })
+                                   "regards.jobs.completion.update.rate.ms=3600000",
+                                   "spring.config.import=optional:configserver:",
+                                   "spring.autoconfigure.exclude=org.springframework.cloud.config.client.ConfigClientAutoConfiguration" })
 
 public class DataproviderModuleManagerControllerIT extends AbstractRegardsIT {
 

@@ -57,22 +57,17 @@ public interface IAIPDeleteService {
     /**
      * Check if a deletion request is running or pending  for the given aip
      *
-     * @param aip
      * @return [TRUE|FALSE]
      */
     boolean deletionAlreadyPending(AIPEntity aip);
 
     /**
      * Send cancel request to storage microservice for given requests
-     *
-     * @param requests
      */
     void cancelStorageRequests(Collection<IngestRequest> requests);
 
     /**
      * Delete all given {@link AIPEntity}s
-     *
-     * @param aipIds
      */
     void deleteAll(Set<AIPEntity> aipIds);
 }

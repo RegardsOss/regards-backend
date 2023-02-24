@@ -73,9 +73,6 @@ public class GeometryCriterionBuilder {
     /**
      * Creates a circle geometry criterion from longitute, latitude and radius.
      *
-     * @param lonParam
-     * @param latParam
-     * @param radiusParam
      * @return {@link ICriterion}
      */
     public static ICriterion build(String lonParam, String latParam, String radiusParam)

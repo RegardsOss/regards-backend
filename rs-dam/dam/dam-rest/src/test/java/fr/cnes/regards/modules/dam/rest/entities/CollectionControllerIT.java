@@ -35,7 +35,7 @@ import java.time.OffsetDateTime;
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=dam_coll_test" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=dam_coll_test" })
 @ContextConfiguration(classes = { DamRestConfiguration.class })
 public class CollectionControllerIT extends AbstractCollectionControllerIT {
 

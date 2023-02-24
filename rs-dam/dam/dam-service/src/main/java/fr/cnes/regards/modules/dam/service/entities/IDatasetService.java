@@ -62,11 +62,8 @@ public interface IDatasetService extends IEntityService<Dataset> {
      * If pUrns is not null and not empty AND pModelName is null then the scope of datasets is restrained to all the
      * datasets represented by the given urns
      *
-     * @param pUrns      {@link UniformResourceName}s
-     * @param modelNames
-     * @param pPageable
+     * @param pUrns {@link UniformResourceName}s
      * @return {@link AttributeModel}s
-     * @throws ModuleException
      */
     Page<AttributeModel> getDataAttributeModels(Set<UniformResourceName> pUrns,
                                                 Set<String> modelNames,
@@ -75,11 +72,7 @@ public interface IDatasetService extends IEntityService<Dataset> {
     /**
      * Retrieve {@link AttributeModel}s associated to the given {@link Dataset}s or {@link Model}s given.
      *
-     * @param pUrns
-     * @param modelNames
-     * @param pPageable
      * @return {@link AttributeModel}s
-     * @throws ModuleException
      */
     Page<AttributeModel> getAttributeModels(Set<UniformResourceName> pUrns, Set<String> modelNames, Pageable pPageable)
         throws ModuleException;

@@ -224,11 +224,11 @@ public interface IAcquisitionProcessingService {
      * Register multiple files by creating multiple transactions by batch
      */
     long registerFiles(Iterator<Path> filePathsIt,
-                              AcquisitionFileInfo fileInfo,
-                              ScanDirectoryInfo scanDir,
-                              Optional<OffsetDateTime> scanningDate,
-                              String session,
-                              String sessionOwner) throws ModuleException;
+                       AcquisitionFileInfo fileInfo,
+                       ScanDirectoryInfo scanDir,
+                       Optional<OffsetDateTime> scanningDate,
+                       String session,
+                       String sessionOwner) throws ModuleException;
 
     /**
      * Register a new file in one transaction

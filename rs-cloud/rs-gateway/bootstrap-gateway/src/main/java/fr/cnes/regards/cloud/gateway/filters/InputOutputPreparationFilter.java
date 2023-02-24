@@ -147,8 +147,6 @@ public class InputOutputPreparationFilter implements GlobalFilter {
 
     /**
      * Propagate CORRELATION_ID header in list of headers of response from the request
-     *
-     * @param exchange
      */
     private void addCorrelationId(ServerWebExchange exchange) {
         String correlationId = exchange.getRequest().getHeaders().getFirst(CORRELATION_ID);

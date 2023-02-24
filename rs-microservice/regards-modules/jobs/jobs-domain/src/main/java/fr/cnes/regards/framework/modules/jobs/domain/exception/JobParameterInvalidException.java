@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 public class JobParameterInvalidException extends ModuleException {
 
     /**
-     * @param msg
+     *
      */
     public JobParameterInvalidException(String msg) {
         super(msg);

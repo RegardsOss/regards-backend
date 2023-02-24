@@ -34,8 +34,8 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_email_verification_token",
-    uniqueConstraints = @UniqueConstraint(name = "uk_email_verification_token_project_user_id",
-        columnNames = { "project_user_id" }))
+       uniqueConstraints = @UniqueConstraint(name = "uk_email_verification_token_project_user_id",
+                                             columnNames = { "project_user_id" }))
 public class EmailVerificationToken {
 
     /**
@@ -47,8 +47,9 @@ public class EmailVerificationToken {
      * Id
      */
     @Id
-    @SequenceGenerator(name = "EmailVerificationTokenSequenceGenerator", initialValue = 1,
-        sequenceName = "seq_email_verification_token")
+    @SequenceGenerator(name = "EmailVerificationTokenSequenceGenerator",
+                       initialValue = 1,
+                       sequenceName = "seq_email_verification_token")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "EmailVerificationTokenSequenceGenerator")
     private Long id;
 
@@ -62,8 +63,9 @@ public class EmailVerificationToken {
      * The link back to the {@link ProjectUser}
      */
     @OneToOne(optional = false)
-    @JoinColumn(updatable = false, name = "project_user_id",
-        foreignKey = @ForeignKey(name = "fk_email_verification_token"))
+    @JoinColumn(updatable = false,
+                name = "project_user_id",
+                foreignKey = @ForeignKey(name = "fk_email_verification_token"))
     private ProjectUser projectUser;
 
     /**

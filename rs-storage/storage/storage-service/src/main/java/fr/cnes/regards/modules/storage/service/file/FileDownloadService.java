@@ -176,7 +176,6 @@ public class FileDownloadService {
      * so that InputStream is not opened until it's needed.
      *
      * @param checksum of the file to download
-     * @return
      */
     private Try<Callable<DownloadableFile>> downloadCacheFile(String checksum) {
         return Option.ofOptional(cachedFileService.search(checksum)).toTry().map(cachedFileToDownload -> () -> {
@@ -206,11 +205,6 @@ public class FileDownloadService {
 
     /**
      * Download a file from an ONLINE storage location.
-     *
-     * @param fileToDownload
-     * @param storagePluginConf
-     * @return
-     * @throws ModuleException
      */
     @Transactional(readOnly = true)
     private InputStream downloadOnline(FileReference fileToDownload, StorageLocationConfiguration storagePluginConf)

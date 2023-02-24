@@ -78,9 +78,6 @@ public class CollectionController implements IResourceController<Collection> {
     /**
      * Entry point to retrieve {@link Collection}s
      *
-     * @param label
-     * @param pageable
-     * @param assembler
      * @return all {@link Collection}s
      */
     @GetMapping
@@ -101,7 +98,6 @@ public class CollectionController implements IResourceController<Collection> {
      *
      * @param id {@link Collection} id
      * @return {@link Collection} as a {@link EntityModel}
-     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET, value = COLLECTION_MAPPING)
     @ResourceAccess(description = "Retrieve a collection")
@@ -120,7 +116,6 @@ public class CollectionController implements IResourceController<Collection> {
      * @param result       for validation of entites' properties
      * @return update {@link Collection} as a {@link EntityModel}
      * @throws ModuleException if error occurs! @
-     * @throws IOException
      */
     @RequestMapping(method = RequestMethod.PUT, value = COLLECTION_MAPPING)
     @ResourceAccess(description = "Update a collection")
@@ -142,7 +137,6 @@ public class CollectionController implements IResourceController<Collection> {
      *
      * @param id {@link Collection} id
      * @return nothing
-     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.DELETE, value = COLLECTION_MAPPING)
     @ResourceAccess(description = "delete the collection of collection_id")
@@ -158,7 +152,6 @@ public class CollectionController implements IResourceController<Collection> {
      * @param result       validation errors
      * @return {@link Collection} as a {@link EntityModel}
      * @throws ModuleException if validation fails
-     * @throws IOException
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create a new collection according to what is passed as parameter")
