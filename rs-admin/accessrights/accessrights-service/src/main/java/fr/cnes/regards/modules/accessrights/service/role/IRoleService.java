@@ -180,14 +180,14 @@ public interface IRoleService {
     boolean existByName(String pName);
 
     /**
-     * Return true if the {@link Role} <code>pRole</code> is hierarchically inferior the the {@link Role}
-     * <code>pOther</code>.
+     * Return true if the {@link Role} <code>targetRole</code> is hierarchically inferior or equal to the {@link Role}
+     * <code>currentRole</code>.
      *
-     * @param pRole  The {@link Role} we want to compare
-     * @param pOther The reference {@link Role}
-     * @return True if the {@link Role} <code>pRole</code> is hierarchically inferior the the {@link Role}, else false
+     * @param targetRole  The {@link Role} we want to compare
+     * @param currentRole The reference {@link Role}
+     * @return True if the {@link Role} <code>targetRole</code> is hierarchically inferior the the {@link Role}, else false
      */
-    boolean isHierarchicallyInferior(Role pRole, Role pOther);
+    boolean isHierarchicallyInferiorOrEqual(Role targetRole, Role currentRole);
 
     /**
      * Retrieve the inherited roles of the given role. For exemple this method return PUBLIC, REGISTERED_USER for role

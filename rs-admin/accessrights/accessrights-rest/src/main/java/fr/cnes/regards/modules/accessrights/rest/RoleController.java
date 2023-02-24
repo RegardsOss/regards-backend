@@ -72,6 +72,8 @@ public class RoleController implements IResourceController<Role> {
 
     public static final String ROLE_DESCENDANTS = ROLE_MAPPING + "/descendants";
 
+    public static final String ROLE_ASCENDANTS = ROLE_MAPPING + "/ascendants";
+
     public static final String SHOULD_ACCESS_TO_RESOURCE = "/include" + ROLE_MAPPING;
 
     /**
@@ -170,16 +172,29 @@ public class RoleController implements IResourceController<Role> {
     }
 
     /**
-     * Define the endpoint for retrieving the descendnats {@link Role}s of passed role through its name
+     * Define the endpoint for retrieving the descendants {@link Role}s of passed role through its name
      *
      * @return the ascendants wrapped into a {@link ResponseEntity}
-     * @throws EntityNotFoundException if given role does not exists
+     * @throws EntityNotFoundException if given role does not exist
      */
-    @ResourceAccess(description = "Retrieve a role descendants", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Retrieve a role's descendants", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET, path = ROLE_DESCENDANTS)
     public ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName)
         throws EntityNotFoundException {
         return new ResponseEntity<>(roleService.getDescendants(roleService.retrieveRole(roleName)), HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint for retrieving the ascendants {@link Role}s of passed role through its name
+     *
+     * @return the ascendants wrapped into a {@link ResponseEntity}
+     * @throws EntityNotFoundException if given role does not exist
+     */
+    @ResourceAccess(description = "Retrieve a role's ascendants", role = DefaultRole.EXPLOIT)
+    @RequestMapping(method = RequestMethod.GET, path = ROLE_ASCENDANTS)
+    public ResponseEntity<Set<Role>> retrieveRoleAscendants(@PathVariable("role_name") String roleName)
+        throws EntityNotFoundException {
+        return new ResponseEntity<>(roleService.getAscendants(roleService.retrieveRole(roleName)), HttpStatus.OK);
     }
 
     /**

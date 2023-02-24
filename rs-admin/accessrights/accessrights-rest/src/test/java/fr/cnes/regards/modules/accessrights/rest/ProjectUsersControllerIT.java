@@ -205,7 +205,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically inferior role
-        Assert.assertTrue(roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(borrowedRole, roleAdmin));
         performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName,
                           customizer().expectStatusOk(),
                           ERROR_MESSAGE,
@@ -234,7 +234,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         final Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically superior role
-        Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
+        Assert.assertTrue(!roleService.isHierarchicallyInferiorOrEqual(borrowedRole, roleAdmin));
         performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName,
                           customizer().expect(MockMvcResultMatchers.status().isForbidden()),
                           ERROR_MESSAGE,

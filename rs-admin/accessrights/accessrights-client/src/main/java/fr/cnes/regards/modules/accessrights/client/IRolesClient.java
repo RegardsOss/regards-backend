@@ -52,6 +52,8 @@ public interface IRolesClient { // NOSONAR
 
     String ROLE_DESCENDANTS = ROLE_MAPPING + "/descendants";
 
+    String ROLE_ASCENDANTS = ROLE_MAPPING + "/ascendants";
+
     String SHOULD_ACCESS_TO_RESOURCE = "/include" + ROLE_MAPPING;
 
     /**
@@ -126,6 +128,16 @@ public interface IRolesClient { // NOSONAR
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName);
+
+    /**
+     * Define the endpoint for retrieving the ascendant {@link Role}s of passed role through its name
+     *
+     * @return the ascendants wrapped into a {@link ResponseEntity}
+     */
+    @GetMapping(path = ROOT_TYPE_MAPPING + ROLE_ASCENDANTS,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Set<Role>> retrieveRoleAscendants(@PathVariable("role_name") String roleName);
 
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.
