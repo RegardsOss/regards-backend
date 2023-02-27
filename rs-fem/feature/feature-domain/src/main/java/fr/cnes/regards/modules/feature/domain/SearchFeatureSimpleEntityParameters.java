@@ -52,7 +52,7 @@ public class SearchFeatureSimpleEntityParameters implements AbstractSearchParame
     private DatesRangeRestriction lastUpdate = new DatesRangeRestriction();
 
     @Schema(description = "Filter on dissemination pending", example = "TRUE|FALSE")
-    private Boolean disseminationPending = Boolean.FALSE;
+    private Boolean disseminationPending;
 
     public String getModel() {
         return model;
