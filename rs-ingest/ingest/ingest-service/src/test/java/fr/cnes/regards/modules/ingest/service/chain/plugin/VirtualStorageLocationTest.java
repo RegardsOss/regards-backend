@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.exception.PluginInitException;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -76,6 +77,44 @@ public class VirtualStorageLocationTest {
 
         // then
         assertEquals(onlyRealStorageLocations, resultingStorageMetadata);
+    }
+
+    @Test
+    public void retrieve_with_override_store_path_when_provided() throws ModuleException, PluginInitException {
+        // given
+        VirtualStorageLocation virtualStorageLocation = new FakeVirtualStorageLocationFactory().createValid();
+        String overrideStorePath = "/some/override/store/path";
+
+        // when
+        List<StorageMetadata> onlyVirtualStorage = StorageLocationMock.validRequestStorageLocations_OnlyVirtual();
+        onlyVirtualStorage.forEach(m -> m.setStorePath(overrideStorePath));
+        List<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(onlyVirtualStorage);
+
+        // then
+        resultingStorageMetadata.forEach(m -> assertEquals(m.getStorePath(), overrideStorePath));
+
+    }
+
+    @Test
+    public void retrieve_without_override_store_path_when_not_provided() throws ModuleException, PluginInitException {
+        // given
+        VirtualStorageLocation virtualStorageLocation = new FakeVirtualStorageLocationFactory().createValid();
+
+        // when
+        List<StorageMetadata> onlyVirtualStorage = StorageLocationMock.validRequestStorageLocations_OnlyVirtual();
+        List<StorageMetadata> resultingStorageMetadata = virtualStorageLocation.getStorageMetadata(onlyVirtualStorage);
+
+        // then
+        resultingStorageMetadata.forEach(m -> {
+            StorageMetadata realWithStorePath = StorageLocationMock.validateRealStorageLocationWithStorePath();
+            StorageMetadata realWithoutStorePath = StorageLocationMock.validateRealStorageLocationWithoutStorePath();
+            if (m.getPluginBusinessId().equals(realWithStorePath.getPluginBusinessId())) {
+                assertEquals(m.getStorePath(), realWithStorePath.getStorePath());
+            } else {
+                assertEquals(m.getStorePath(), realWithoutStorePath.getStorePath());
+            }
+        });
+
     }
 
     @Test

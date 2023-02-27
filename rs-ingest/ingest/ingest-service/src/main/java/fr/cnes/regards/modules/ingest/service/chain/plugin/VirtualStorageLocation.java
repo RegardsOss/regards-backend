@@ -183,7 +183,7 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
      */
     private List<StorageMetadata> getRealStorageLocations(String virtualStorageStorePath) {
         List<StorageMetadata> newRequestStorageMetadataList = Lists.newArrayList(realStorageLocations);
-        if (StringUtils.isBlank(virtualStorageStorePath)) {
+        if (!StringUtils.isBlank(virtualStorageStorePath)) {
             for (StorageMetadata storageMetadata : newRequestStorageMetadataList) {
                 storageMetadata.setStorePath(virtualStorageStorePath);
             }

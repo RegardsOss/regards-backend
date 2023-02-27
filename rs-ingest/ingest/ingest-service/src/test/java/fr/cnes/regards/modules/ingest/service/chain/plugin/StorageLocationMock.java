@@ -43,8 +43,16 @@ public class StorageLocationMock {
     // ------- Plugins configurations -------
 
     public static List<StorageMetadata> validRealStorageLocations() {
-        return Lists.newArrayList(StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1, "some/store/path", Set.of()),
-                                  StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2));
+        return Lists.newArrayList(validateRealStorageLocationWithStorePath(),
+                                  validateRealStorageLocationWithoutStorePath());
+    }
+
+    public static StorageMetadata validateRealStorageLocationWithStorePath() {
+        return StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_1, "some/store/path", Set.of());
+    }
+
+    public static StorageMetadata validateRealStorageLocationWithoutStorePath() {
+        return StorageMetadata.build(SOME_REAL_STORAGE_LOCATION_2);
     }
 
     public static List<StorageMetadata> storageLocationsOverrideByStoragePath(List<StorageMetadata> storageLocations,
