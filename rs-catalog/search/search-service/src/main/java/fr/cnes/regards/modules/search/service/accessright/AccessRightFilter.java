@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
@@ -32,8 +33,12 @@ import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCach
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +81,7 @@ public class AccessRightFilter implements IAccessRightFilter {
      *
      * @return true if current authenticated user is an admin
      */
-    private boolean isAdmin() {
+    private boolean isAdmin() throws AccessRightFilterException {
 
         // Retrieve current user from security context
         String userEmail = authResolver.getUser();
@@ -103,10 +108,21 @@ public class AccessRightFilter implements IAccessRightFilter {
         // FIXME add parent role in the JWT token CLAIMS
         try {
             FeignSecurityManager.asUser(userEmail, authResolver.getRole());
-            return projectUserClient.isAdmin(userEmail).getBody();
+            ResponseEntity<Boolean> result = projectUserClient.isAdmin(userEmail);
+            if (result != null && result.getStatusCode() == HttpStatus.OK) {
+                return ResponseEntityUtils.extractBodyOrThrow(result, this::createAccessRightException);
+            } else {
+                return false;
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            throw createAccessRightException();
         } finally {
             FeignSecurityManager.reset();
         }
+    }
+
+    private AccessRightFilterException createAccessRightException() {
+        return new AccessRightFilterException("Error retrieving information from admin microservice");
     }
 
     @Override
