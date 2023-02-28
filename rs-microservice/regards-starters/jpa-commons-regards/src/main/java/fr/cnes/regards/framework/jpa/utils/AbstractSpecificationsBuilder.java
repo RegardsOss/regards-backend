@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.persistence.criteria.*;
+import java.security.InvalidParameterException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -208,6 +209,13 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         if (valuesRestriction == null) {
             return null;
         }
+
+        if (valuesRestriction.getValues().isEmpty() && valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
+            throw new InvalidParameterException(String.format(
+                "Invalid search value restriction on %s. Forbidden empty list of values with include mode.",
+                pathToField));
+        }
+
         return (root, query, cb) -> createValuesRestrictionPredicate(root, cb, pathToField, valuesRestriction);
     }
 

@@ -37,6 +37,10 @@ import java.util.Objects;
  **/
 public final class SubmittedSearchResponseDto {
 
+    @NotBlank(message = "id is required")
+    @Schema(description = "Request identifier.")
+    private final Long id;
+
     @NotBlank(message = "correlationId is required")
     @Schema(description = "Identifier of the submission request.")
     private final String correlationId;
@@ -76,7 +80,8 @@ public final class SubmittedSearchResponseDto {
     @Nullable
     private final String message;
 
-    public SubmittedSearchResponseDto(String correlationId,
+    public SubmittedSearchResponseDto(Long id,
+                                      String correlationId,
                                       String owner,
                                       String session,
                                       SubmissionRequestState status,
@@ -86,6 +91,7 @@ public final class SubmittedSearchResponseDto {
                                       Path storePath,
                                       SubmissionRequestDto product,
                                       @Nullable String message) {
+        this.id = id;
         this.correlationId = correlationId;
         this.owner = owner;
         this.session = session;
@@ -148,18 +154,20 @@ public final class SubmittedSearchResponseDto {
             return false;
         }
         SubmittedSearchResponseDto that = (SubmittedSearchResponseDto) o;
-        return correlationId.equals(that.correlationId);
+        return id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(correlationId);
+        return Objects.hash(id);
     }
 
     @Override
     public String toString() {
         return "SubmittedSearchResponseDto{"
-               + "correlationId='"
+               + "id="
+               + id
+               + ", correlationId='"
                + correlationId
                + '\''
                + ", owner='"

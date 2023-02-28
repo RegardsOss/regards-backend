@@ -162,6 +162,8 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         response.andExpect(MockMvcResultMatchers.jsonPath("$.metadata").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", equalTo(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.id",
+                                                          equalTo(requests.get(3).getId().intValue())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].content.correlationId",
                                                           equalTo(requests.get(3).getCorrelationId())));
     }
