@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -173,6 +174,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 50);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("sort", "registrationDate,ASC");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                            new SearchFeatureRequestParameters().withStatesIncluded(List.of(RequestState.ERROR)),
@@ -187,6 +189,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 20);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("sort", "session,DESC");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                            new SearchFeatureRequestParameters().withLastUpdateAfter(date),
@@ -201,6 +204,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 0);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("sort", "state,ASC");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                            new SearchFeatureRequestParameters().withSource("source1").withSession("session1"),
@@ -214,6 +218,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .expectValue("$.info.nbErrors", 30);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("sort", FeatureRequestDTO.PROVIDER_ID_FIELD_NAME + ",ASC");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                            new SearchFeatureRequestParameters().withSource("source1").withSession("session2"),
@@ -230,6 +235,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("sort", FeatureRequestDTO.PROVIDER_ID_FIELD_NAME + ",ASC");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                            new SearchFeatureRequestParameters(),
@@ -245,6 +251,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("sort", FeatureRequestDTO.PROVIDER_ID_FIELD_NAME + ",ASC");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                            new SearchFeatureRequestParameters().withSource("source1").withSession("session2"),
@@ -261,6 +268,8 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                .skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("sort", FeatureRequestDTO.PROVIDER_ID_FIELD_NAME + ",ASC");
+        requestBuilderCustomizer.addParameter("sort", "source,DESC");
 
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                            new SearchFeatureRequestParameters(),

@@ -33,6 +33,15 @@ import java.util.Set;
 public class FeatureRequestDTO {
 
     /**
+     * Virtual attribute name cotaining containing request provider id if defined.
+     */
+    public static final String PROVIDER_ID_FIELD_NAME = "providerId";
+
+    public static final String SESSION_FIELD_NAME = "session";
+
+    public static final String SOURCE_FIELD_NAME = "source";
+
+    /**
      * Request identifier
      */
     @NotNull

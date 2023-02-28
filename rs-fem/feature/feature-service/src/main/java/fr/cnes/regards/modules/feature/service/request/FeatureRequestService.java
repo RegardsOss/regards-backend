@@ -40,9 +40,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -102,34 +100,36 @@ public class FeatureRequestService implements IFeatureRequestService {
                                                    SearchFeatureRequestParameters filters,
                                                    Pageable page) {
         Page<FeatureRequestDTO> results = new PageImpl<>(Lists.newArrayList(), page, 0L);
+        Pageable updatedPage = handlePaginationEmbeddedAttributes(page, type);
         RequestsInfo info = RequestsInfo.build(0L);
         switch (type) {
             case COPY:
-                results = featureCopyService.findRequests(filters, page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureCopyService.findRequests(filters, updatedPage)
+                                            .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureCopyService.getInfo(filters);
                 break;
             case CREATION:
-                results = featureCreationService.findRequests(filters, page)
+                results = featureCreationService.findRequests(filters, updatedPage)
                                                 .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureCreationService.getInfo(filters);
                 break;
             case DELETION:
-                results = featureDeletionService.findRequests(filters, page)
+                results = featureDeletionService.findRequests(filters, updatedPage)
                                                 .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureDeletionService.getInfo(filters);
                 break;
             case NOTIFICATION:
-                results = featureNotificationService.findRequests(filters, page)
+                results = featureNotificationService.findRequests(filters, updatedPage)
                                                     .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureNotificationService.getInfo(filters);
                 break;
             case SAVE_METADATA:
-                results = featureMetadataService.findRequests(filters, page)
+                results = featureMetadataService.findRequests(filters, updatedPage)
                                                 .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureMetadataService.getInfo(filters);
                 break;
             case UPDATE:
-                results = featureUpdateService.findRequests(filters, page)
+                results = featureUpdateService.findRequests(filters, updatedPage)
                                               .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureUpdateService.getInfo(filters);
                 break;
@@ -314,6 +314,52 @@ public class FeatureRequestService implements IFeatureRequestService {
                            .findFirst()
                            .ifPresent(i -> r.setProviderId(i.getProviderId()));
             });
+        }
+    }
+
+    /**
+     * Perform transformation in Sort object to transform attributes from dto {@link FeatureRequestDTO}
+     * to entity {@link AbstractRequest}
+     */
+    private Pageable handlePaginationEmbeddedAttributes(Pageable page, FeatureRequestTypeEnum type) {
+        Pageable newPage = page;
+        if (page != null && page.getSort() != null) {
+            Sort newSort = Sort.by(page.getSort()
+                                       .stream()
+                                       .map(s -> mapDtoAttributeSortOrderToEntitySortOrder(s, type))
+                                       .filter(s -> s != null)
+                                       .toList());
+            newPage = PageRequest.of(page.getPageNumber(), page.getPageSize(), newSort);
+        }
+        return newPage;
+    }
+
+    /**
+     * Map a Sort.Order from a dto {@link FeatureRequestDTO} to a new Sort.Order with the associated entity
+     * {@link AbstractRequest} attribute
+     */
+    private Sort.Order mapDtoAttributeSortOrderToEntitySortOrder(Sort.Order dtoAttributeSortOrder,
+                                                                 FeatureRequestTypeEnum type) {
+        String dtoAttributeName = dtoAttributeSortOrder.getProperty();
+        switch (dtoAttributeName) {
+            case FeatureRequestDTO.PROVIDER_ID_FIELD_NAME -> {
+                return AbstractRequest.getProviderIdProperty(type)
+                                      .map(property -> dtoAttributeSortOrder.withProperty(property))
+                                      .orElse(null);
+            }
+            case FeatureRequestDTO.SESSION_FIELD_NAME -> {
+                return AbstractRequest.getSessionProperty(type)
+                                      .map(property -> dtoAttributeSortOrder.withProperty(property))
+                                      .orElse(null);
+            }
+            case FeatureRequestDTO.SOURCE_FIELD_NAME -> {
+                return AbstractRequest.getSourceProperty(type)
+                                      .map(property -> dtoAttributeSortOrder.withProperty(property))
+                                      .orElse(null);
+            }
+            default -> {
+                return dtoAttributeSortOrder;
+            }
         }
     }
 

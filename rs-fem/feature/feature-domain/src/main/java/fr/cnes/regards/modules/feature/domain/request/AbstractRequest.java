@@ -32,6 +32,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -228,15 +229,16 @@ public abstract class AbstractRequest {
         dto.setStep(request.getStep());
         dto.setProcessing(request.getStep().isProcessing());
         dto.setErrors(request.getErrors());
-        if (request instanceof FeatureCreationRequest) {
-            FeatureCreationRequest fcr = (FeatureCreationRequest) request;
+        if (request instanceof FeatureCreationRequest fcr) {
             dto.setProviderId(fcr.getProviderId());
             dto.setType(FeatureRequestTypeEnum.CREATION.toString());
             dto.setSession(fcr.getMetadata().getSession());
             dto.setSource(fcr.getMetadata().getSessionOwner());
         }
-        if (request instanceof FeatureUpdateRequest) {
-            dto.setProviderId(((FeatureUpdateRequest) request).getProviderId());
+        if (request instanceof FeatureUpdateRequest updateRequest) {
+            dto.setProviderId(updateRequest.getProviderId());
+            dto.setSource(updateRequest.getSourceToNotify());
+            dto.setSession(updateRequest.getSessionToNotify());
             dto.setType(FeatureRequestTypeEnum.UPDATE.toString());
         }
         if (request instanceof FeatureSaveMetadataRequest) {
@@ -252,6 +254,54 @@ public abstract class AbstractRequest {
             dto.setType(FeatureRequestTypeEnum.COPY.toString());
         }
         return dto;
+    }
+
+    /**
+     * Return db entity property name for session depending on request type
+     */
+    public static Optional<String> getSessionProperty(FeatureRequestTypeEnum type) {
+        switch (type) {
+            case CREATION -> {
+                return Optional.of("metadata.sessionOwner");
+            }
+            case UPDATE -> {
+                return Optional.of("sourceToNotify");
+            }
+            default -> {
+                return Optional.empty();
+            }
+        }
+    }
+
+    /**
+     * Return db entity property name for source depending on request type
+     */
+    public static Optional<String> getSourceProperty(FeatureRequestTypeEnum type) {
+        switch (type) {
+            case CREATION -> {
+                return Optional.of("metadata.source");
+            }
+            case UPDATE -> {
+                return Optional.of("sourceToNotify");
+            }
+            default -> {
+                return Optional.empty();
+            }
+        }
+    }
+
+    /**
+     * Return db entity property name for providerId depending on request type
+     */
+    public static Optional<String> getProviderIdProperty(FeatureRequestTypeEnum type) {
+        switch (type) {
+            case CREATION, UPDATE -> {
+                return Optional.of("providerId");
+            }
+            default -> {
+                return Optional.empty();
+            }
+        }
     }
 
     public abstract Long getId();
