@@ -176,8 +176,8 @@ public class AIPDeleteService implements IAIPDeleteService {
                                            aipForSessionInfo.getSession(),
                                            aipsRelatedToSip);
             aipsRelatedToSip.forEach(entity -> entity.setState(AIPState.DELETED));
+            requestService.deleteAllByAip(aipsRelatedToSip);
             if (deleteIrrevocably) {
-                requestService.deleteAllByAip(aipsRelatedToSip);
                 // Delete them
                 aipRepository.deleteAll(aipsRelatedToSip);
             } else {

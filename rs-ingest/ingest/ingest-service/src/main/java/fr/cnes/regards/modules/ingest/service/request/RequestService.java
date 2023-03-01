@@ -180,7 +180,8 @@ public class RequestService implements IRequestService {
             ingestRequestRepository.deleteAll(requests);
         }
 
-        aipUpdateRequestRepository.deleteAll(aipUpdateRequestRepository.findAllByAipIdIn(aipIds));
+        aipUpdateRequestRepository.deleteAllByAipIdsIn(aipIds);
+        aipPostProcessRequestRepository.deleteAllByAipIdsIn(aipIds);
     }
 
     @Override

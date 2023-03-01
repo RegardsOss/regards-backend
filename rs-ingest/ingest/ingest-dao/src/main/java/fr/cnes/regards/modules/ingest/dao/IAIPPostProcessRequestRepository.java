@@ -21,9 +21,15 @@ package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 /**
  * JPA repository to access {@link AIPPostProcessRequest}
@@ -41,4 +47,9 @@ public interface IAIPPostProcessRequestRepository extends JpaRepository<AIPPostP
     // find requests by state
     Page<AIPPostProcessRequest> findAllByState(InternalRequestState step, Pageable page);
 
+    @Modifying
+    @Query(value = "delete from t_request where aip_id in :aipIds AND t_request.dtype = '"
+                   + RequestTypeConstant.AIP_POST_PROCESS_VALUE
+                   + "'", nativeQuery = true)
+    void deleteAllByAipIdsIn(@Param("aipIds") List<Long> aipIds);
 }

@@ -107,6 +107,9 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     protected IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
     @Autowired
+    protected IAIPPostProcessRequestRepository aipPostProcessRequestRepository;
+
+    @Autowired
     protected ISIPRepository sipRepository;
 
     @Autowired
@@ -287,7 +290,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
         // Wait for all requests to finish in case of no notification else delete requests
         if (!initDefaultNotificationSettings()) {
-            ingestServiceTest.waitAllRequestsFinished(nbSIP * 1000);
+            ingestServiceTest.waitAllRequestsFinished(nbSIP * 1000L);
         } else {
             ingestRequestRepository.deleteAll();
             Assert.assertEquals("All ingest requests should have been deleted", 0L, ingestRequestRepository.count());

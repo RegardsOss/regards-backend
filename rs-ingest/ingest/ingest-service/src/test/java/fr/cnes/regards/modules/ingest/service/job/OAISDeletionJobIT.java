@@ -29,11 +29,14 @@ import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
@@ -128,6 +131,17 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
         } while (true);
     }
 
+    public void assertAipCount(long expectedCount, long timeout) {
+        try {
+            Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                return aipRepository.count() == expectedCount;
+            });
+        } catch (ConditionTimeoutException e) {
+            Assert.fail("AIPs count is not expected one after timeout");
+        }
+    }
+
     public void assertDeletedAIPs(long nbAipDeletedExpected, long timeout) {
         try {
             Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
@@ -163,13 +177,26 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
         } else {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
+
+        // Simulate associated udapte and post process requests
+        aipRepository.findAll().forEach(aip -> {
+            AIPUpdateParametersDto params = AIPUpdateParametersDto.build(new SearchAIPsParameters());
+            params.setAddTags(List.of("newTag"));
+            List<AIPUpdateRequest> updateRequests = AIPUpdateRequest.build(aip, params, true);
+            updateRequests.forEach(ur -> ur.setState(InternalRequestState.ERROR));
+            aipUpdateRequestRepository.saveAll(updateRequests);
+
+            AIPPostProcessRequest postProcessRequest = AIPPostProcessRequest.build(aip, "toto");
+            postProcessRequest.setState(InternalRequestState.ERROR);
+            aipPostProcessRequestRepository.save(postProcessRequest);
+        });
     }
 
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_310"), @Requirement("REGARDS_DSL_STO_AIP_115") })
     @Purpose("Check deletion process for a list of SIPS. Check two deletion modes. Complete deletion or mark as "
              + "deleted")
-    public void testDeletionJobSucceed() throws InterruptedException {
+    public void testDeletionJobSucceed() {
         ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * 3);
         storageClient.setBehavior(true, true);
         initData();
@@ -198,12 +225,26 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
         dto = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY);
         dto.withSession(SESSION_1).withSessionOwner(SESSION_OWNER_1);
         oaisDeletionService.registerOAISDeletionCreator(dto);
-        assertDeletedAIPs(3, 30_000); // AIPs are deleted and not just marked deleted
+        long expectedRemainingAips = 4L;
+        assertAipCount(expectedRemainingAips, 30_000); // AIPs are deleted and not just marked deleted
 
         // check if requests are deleted in case of notification
         if (isToNotify) {
             mockNotificationSuccess(RequestTypeConstant.OAIS_DELETION_VALUE);
         }
+
+        // There should be only one AIP remaining in stored status
+        long remainingStoredAips = aipRepository.findAll()
+                                                .stream()
+                                                .filter(aip -> aip.getState() == AIPState.STORED)
+                                                .count();
+        Assert.assertEquals(1L, remainingStoredAips);
+
+        // Check update request deleted
+        Assert.assertEquals(remainingStoredAips, aipUpdateRequestRepository.count());
+
+        // check post process request deleted
+        Assert.assertEquals(remainingStoredAips, aipPostProcessRequestRepository.count());
 
     }
 

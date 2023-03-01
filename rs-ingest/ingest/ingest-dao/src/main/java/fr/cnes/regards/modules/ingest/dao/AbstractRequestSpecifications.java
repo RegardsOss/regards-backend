@@ -118,11 +118,6 @@ public final class AbstractRequestSpecifications {
                                                                               cb,
                                                                               sessionOwner,
                                                                               session),
-                                                                          AbstractRequestSpecifications.searchPostProcess(
-                                                                              root,
-                                                                              cb,
-                                                                              sessionOwner,
-                                                                              session),
                                                                           AbstractRequestSpecifications.searchAipUpdatesCreator(
                                                                               root,
                                                                               cb),

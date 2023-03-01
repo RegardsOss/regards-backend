@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -60,4 +61,10 @@ public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequ
                + "'", nativeQuery = true)
     List<AIPUpdateRequest> findAllAipDistinctByAipIdInAndState(@Param("ids") List<Long> aipIds,
                                                                @Param("state") String state);
+
+    @Modifying
+    @Query(value = "delete from t_request where aip_id in :aipIds AND t_request.dtype = '"
+                   + RequestTypeConstant.UPDATE_VALUE
+                   + "'", nativeQuery = true)
+    void deleteAllByAipIdsIn(@Param("aipIds") List<Long> aipIds);
 }
