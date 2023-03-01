@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
@@ -232,15 +232,15 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
     public void testDeleteJob() {
         initData();
         Assert.assertEquals("Something went wrong while creating requests", 5, abstractRequestRepository.count());
-        requestService.scheduleRequestDeletionJob(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+        requestService.scheduleRequestDeletionJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.AIP_UPDATES_CREATOR)));
         waitForRequestReach(5, 20_000);
 
-        requestService.scheduleRequestDeletionJob(new SearchAbstractRequestParameters().withSession(SESSION_0)
-                                                                                       .withSessionOwner(SESSION_OWNER_0));
+        requestService.scheduleRequestDeletionJob(new SearchRequestParameters().withSession(SESSION_0)
+                                                                               .withSessionOwner(SESSION_OWNER_0));
         waitForRequestReach(1, 10_000);
 
-        requestService.scheduleRequestDeletionJob(new SearchAbstractRequestParameters());
+        requestService.scheduleRequestDeletionJob(new SearchRequestParameters());
         waitForRequestReach(0, 10_000);
 
         List<IngestRequestEvent> events = getPublishedEvents(IngestRequestEvent.class);

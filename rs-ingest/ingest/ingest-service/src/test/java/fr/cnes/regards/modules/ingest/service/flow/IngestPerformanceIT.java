@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -349,8 +349,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         ingestServiceTest.waitForIngestRequest(1, 30_000, InternalRequestState.ERROR);
 
         // Remove request
-        SearchAbstractRequestParameters filters = new SearchAbstractRequestParameters().withProviderIdsIncluded(Set.of(
-            providerId));
+        SearchRequestParameters filters = new SearchRequestParameters().withProviderIdsIncluded(Set.of(providerId));
         requestService.scheduleRequestDeletionJob(filters);
 
         // Wait

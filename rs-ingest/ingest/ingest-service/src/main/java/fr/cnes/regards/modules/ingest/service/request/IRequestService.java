@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -59,14 +59,14 @@ public interface IRequestService {
      *
      * @return a page of entities
      */
-    Page<AbstractRequest> findRequests(SearchAbstractRequestParameters filters, Pageable pageable);
+    Page<AbstractRequest> findRequests(SearchRequestParameters filters, Pageable pageable);
 
     /**
      * Retrieve all requests matching provided criteria
      *
      * @return a page of DTO entities
      */
-    Page<RequestDto> findRequestDtos(SearchAbstractRequestParameters filters, Pageable pageable);
+    Page<RequestDto> findRequestDtos(SearchRequestParameters filters, Pageable pageable);
 
     /**
      * Delete all requests linked to provided aips
@@ -95,7 +95,7 @@ public interface IRequestService {
     /**
      * Check the given request is runnable or should  be delayed.
      */
-    public boolean shouldDelayRequest(AbstractRequest request);
+    boolean shouldDelayRequest(AbstractRequest request);
 
     /**
      * Abort every {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState#RUNNING}. <br>
@@ -112,7 +112,7 @@ public interface IRequestService {
      * @return next page to treat
      */
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
-    Page<AbstractRequest> abortCurrentRequestPage(SearchAbstractRequestParameters filters,
+    Page<AbstractRequest> abortCurrentRequestPage(SearchRequestParameters filters,
                                                   Pageable pageRequest,
                                                   Set<UUID> jobIdsAlreadyStopped);
 
@@ -134,12 +134,12 @@ public interface IRequestService {
     /**
      * Schedule a job to delete all requests matching provided filters
      */
-    void scheduleRequestDeletionJob(SearchAbstractRequestParameters filters);
+    void scheduleRequestDeletionJob(SearchRequestParameters filters);
 
     /**
      * Schedule a job to retry all requests matching provided filters from {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState} ERROR to CREATED
      */
-    void scheduleRequestRetryJob(SearchAbstractRequestParameters filters);
+    void scheduleRequestRetryJob(SearchRequestParameters filters);
 
     void switchRequestState(AbstractRequest request);
 
@@ -157,5 +157,5 @@ public interface IRequestService {
     /**
      * Retrieve {@link AbstractRequest}s associated to the given storage respones associated by groupId.
      */
-    public List<AbstractRequest> getRequests(Set<RequestInfo> requestInfos);
+    List<AbstractRequest> getRequests(Set<RequestInfo> requestInfos);
 }

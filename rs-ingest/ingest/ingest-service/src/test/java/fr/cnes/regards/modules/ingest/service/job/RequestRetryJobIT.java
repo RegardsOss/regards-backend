@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
@@ -208,8 +208,8 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
         long errorRequestCount;
         do {
             Pageable unpaged = Pageable.unpaged();
-            errorRequestCount = requestService.findRequests(new SearchAbstractRequestParameters().withRequestStatesIncluded(
-                Set.of(InternalRequestState.ERROR)), Pageable.unpaged()).getTotalElements();
+            errorRequestCount = requestService.findRequests(new SearchRequestParameters().withRequestStatesIncluded(Set.of(
+                InternalRequestState.ERROR)), Pageable.unpaged()).getTotalElements();
             LOGGER.info("{} UpdateRequest(s) existing in database", errorRequestCount);
             if (errorRequestCount == expectedTasks) {
                 break;
@@ -231,15 +231,15 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
     public void testRetryJob() {
         initData();
         Assert.assertEquals("Something went wrong while creating requests", 5, abstractRequestRepository.count());
-        requestService.scheduleRequestRetryJob(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+        requestService.scheduleRequestRetryJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.AIP_UPDATES_CREATOR)));
         waitForErrorRequestReach(5, 20_000);
 
-        requestService.scheduleRequestRetryJob(new SearchAbstractRequestParameters().withSession(SESSION_0)
-                                                                                    .withSessionOwner(SESSION_OWNER_0));
+        requestService.scheduleRequestRetryJob(new SearchRequestParameters().withSession(SESSION_0)
+                                                                            .withSessionOwner(SESSION_OWNER_0));
         waitForErrorRequestReach(1, 10_000 * 5);
 
-        requestService.scheduleRequestRetryJob(new SearchAbstractRequestParameters());
+        requestService.scheduleRequestRetryJob(new SearchRequestParameters());
         waitForErrorRequestReach(0, 10_000);
     }
 

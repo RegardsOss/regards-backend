@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class ChooseVersioningRequestParameters extends SearchAbstractRequestParameters {
+public class ChooseVersioningRequestParameters extends SearchRequestParameters {
 
     private VersioningMode newVersioningMode;
 

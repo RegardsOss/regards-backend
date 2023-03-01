@@ -364,37 +364,6 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
         clearRequest();
         // END ------- Test StorageDeletionRequest
 
-        // BEGIN ------- Test AIPPostProcessRequest
-        createOAISDeletionRequest(aips);
-        AIPPostProcessRequest aipPostProcessRequest = createPostProcessRequest(aips.get(0));
-        Assert.assertEquals("The request should be blocked",
-                            InternalRequestState.BLOCKED,
-                            aipPostProcessRequest.getState());
-
-        clearRequest();
-
-        createOAISDeletionCreatorRequest();
-        aipPostProcessRequest = createPostProcessRequest(aips.get(0));
-        Assert.assertEquals("The request should be blocked",
-                            InternalRequestState.BLOCKED,
-                            aipPostProcessRequest.getState());
-        clearRequest();
-
-        createUpdateRequest(aips);
-        aipPostProcessRequest = createPostProcessRequest(aips.get(0));
-        Assert.assertEquals("The request should be blocked",
-                            InternalRequestState.BLOCKED,
-                            aipPostProcessRequest.getState());
-        clearRequest();
-
-        createAIPUpdatesCreatorRequest();
-        aipPostProcessRequest = createPostProcessRequest(aips.get(0));
-        Assert.assertEquals("The request should be blocked",
-                            InternalRequestState.BLOCKED,
-                            aipPostProcessRequest.getState());
-        clearRequest();
-        // END ------- Test AIPPostProcessRequest
-
     }
 
     @Test

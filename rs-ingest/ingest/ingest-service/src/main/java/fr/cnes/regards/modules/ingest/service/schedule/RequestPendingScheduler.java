@@ -71,6 +71,7 @@ public class RequestPendingScheduler extends AbstractTaskScheduler {
         requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
         requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
         requestService.unblockRequests(RequestTypeEnum.UPDATE);
+        requestService.unblockRequests(RequestTypeEnum.AIP_POST_PROCESS);
     };
 
     @Scheduled(initialDelayString = "${regards.ingest.schedule.pending.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",

@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.test.IngestServiceIT;
 import org.junit.After;
@@ -123,7 +123,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.documentResponseBody(documentResultingRequest());
 
         performDefaultPost(RequestController.TYPE_MAPPING,
-                           new SearchAbstractRequestParameters(),
+                           new SearchRequestParameters(),
                            requestBuilderCustomizer,
                            "Should retrieve Request");
     }
@@ -177,7 +177,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void retryRequests() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        SearchAbstractRequestParameters body = new SearchAbstractRequestParameters();
+        SearchRequestParameters body = new SearchRequestParameters();
 
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(getSearchBodyDescriptors());
@@ -191,7 +191,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void deleteRequests() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        SearchAbstractRequestParameters body = new SearchAbstractRequestParameters();
+        SearchRequestParameters body = new SearchRequestParameters();
 
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(getSearchBodyDescriptors());
@@ -216,7 +216,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
             stateValues.add(state.name());
         }
 
-        ConstrainedFields constrainedFields = new ConstrainedFields(SearchAbstractRequestParameters.class);
+        ConstrainedFields constrainedFields = new ConstrainedFields(SearchRequestParameters.class);
 
         params.add(constrainedFields.withPath("requestType", "requestType", "Request type filter")
                                     .type(JSON_STRING_TYPE)

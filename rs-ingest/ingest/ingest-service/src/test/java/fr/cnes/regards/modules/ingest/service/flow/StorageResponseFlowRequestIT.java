@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
@@ -179,8 +179,9 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
         Assert.assertEquals(0,
-                            requestService.findRequestDtos(new SearchAbstractRequestParameters().withSessionOwner(
-                                                               "sessionOwner").withRequestIpTypesIncluded(Set.of(RequestTypeEnum.INGEST)),
+                            requestService.findRequestDtos(new SearchRequestParameters().withSessionOwner("sessionOwner")
+                                                                                        .withRequestIpTypesIncluded(Set.of(
+                                                                                            RequestTypeEnum.INGEST)),
                                                            Pageable.ofSize(10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
@@ -199,8 +200,9 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
         Assert.assertEquals(0,
-                            requestService.findRequestDtos(new SearchAbstractRequestParameters().withSessionOwner(
-                                                               "sessionOwner").withRequestIpTypesIncluded(Set.of(RequestTypeEnum.INGEST)),
+                            requestService.findRequestDtos(new SearchRequestParameters().withSessionOwner("sessionOwner")
+                                                                                        .withRequestIpTypesIncluded(Set.of(
+                                                                                            RequestTypeEnum.INGEST)),
                                                            Pageable.ofSize(10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());

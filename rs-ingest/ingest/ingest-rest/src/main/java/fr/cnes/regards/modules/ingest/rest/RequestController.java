@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -118,8 +118,8 @@ public class RequestController implements IResourceController<RequestDto> {
     @ResourceAccess(description = "Endpoint to retrieve all requests matching criteria", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<RequestDto>>> searchRequest(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
-                                                              content = @Content(schema = @Schema(implementation = SearchAbstractRequestParameters.class)))
-        @Parameter(description = "Filter criteria for requests") @RequestBody SearchAbstractRequestParameters filters,
+                                                              content = @Content(schema = @Schema(implementation = SearchRequestParameters.class)))
+        @Parameter(description = "Filter criteria for requests") @RequestBody SearchRequestParameters filters,
         @Parameter(description = "Sorting and page configuration")
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<RequestDto> assembler) {
@@ -137,9 +137,9 @@ public class RequestController implements IResourceController<RequestDto> {
                                                                                         "Set of search criteria to find requests"
                                                                                         + " to retry",
                                                                                     content = @Content(schema = @Schema(
-                                                                                        implementation = SearchAbstractRequestParameters.class)))
+                                                                                        implementation = SearchRequestParameters.class)))
                               @Parameter(description = "Filter criteria for requests") @Valid @RequestBody
-                              SearchAbstractRequestParameters filters) {
+                              SearchRequestParameters filters) {
         LOGGER.debug("Received request to retry requests");
         requestService.scheduleRequestRetryJob(filters);
     }
@@ -155,7 +155,7 @@ public class RequestController implements IResourceController<RequestDto> {
     public ResponseEntity<Object> chooseVersioningMode(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria to find requests"
                                                                             + " to update with new versioning mode",
-                                                              content = @Content(schema = @Schema(implementation = SearchAbstractRequestParameters.class)))
+                                                              content = @Content(schema = @Schema(implementation = SearchRequestParameters.class)))
         @Parameter(description = "Filter criteria for requests") @Valid @RequestBody
         ChooseVersioningRequestParameters filters) {
         if (filters.getNewVersioningMode() == VersioningMode.MANUAL) {
@@ -187,9 +187,9 @@ public class RequestController implements IResourceController<RequestDto> {
                                                                                  "Set of search criteria to find requests"
                                                                                  + " to delete",
                                                                              content = @Content(schema = @Schema(
-                                                                                 implementation = SearchAbstractRequestParameters.class)))
+                                                                                 implementation = SearchRequestParameters.class)))
                        @Parameter(description = "Search criteria for requests to delete") @Valid @RequestBody
-                       SearchAbstractRequestParameters filters) {
+                       SearchRequestParameters filters) {
         LOGGER.debug("Received request to delete OAIS entities");
         requestService.scheduleRequestDeletionJob(filters);
     }
@@ -204,7 +204,7 @@ public class RequestController implements IResourceController<RequestDto> {
                                     this.getClass(),
                                     "retryRequests",
                                     LinkRelation.of("RETRY"),
-                                    MethodParamFactory.build(SearchAbstractRequestParameters.class));
+                                    MethodParamFactory.build(SearchRequestParameters.class));
         }
         if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
                   .contains(element.getState())) {
@@ -212,7 +212,7 @@ public class RequestController implements IResourceController<RequestDto> {
                                     this.getClass(),
                                     "delete",
                                     LinkRels.DELETE,
-                                    MethodParamFactory.build(SearchAbstractRequestParameters.class));
+                                    MethodParamFactory.build(SearchRequestParameters.class));
         }
 
         return resource;

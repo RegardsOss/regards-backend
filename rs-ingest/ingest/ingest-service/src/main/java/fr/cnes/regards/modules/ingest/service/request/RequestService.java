@@ -137,13 +137,13 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public Page<AbstractRequest> findRequests(SearchAbstractRequestParameters filters, Pageable pageable) {
+    public Page<AbstractRequest> findRequests(SearchRequestParameters filters, Pageable pageable) {
         return abstractRequestRepository.findAll(new RequestSpecificationsBuilder().withParameters(filters).build(),
                                                  pageable);
     }
 
     @Override
-    public Page<RequestDto> findRequestDtos(SearchAbstractRequestParameters filters, Pageable pageable) {
+    public Page<RequestDto> findRequestDtos(SearchRequestParameters filters, Pageable pageable) {
         Page<AbstractRequest> requests = findRequests(filters, pageable);
 
         // Transform AbstractRequests to DTO
@@ -221,7 +221,7 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public void scheduleRequestDeletionJob(SearchAbstractRequestParameters filters) {
+    public void scheduleRequestDeletionJob(SearchRequestParameters filters) {
         Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA_JOB_PARAM_NAME,
                                                                            filters));
         // Schedule request deletion job
@@ -235,7 +235,7 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public void scheduleRequestRetryJob(SearchAbstractRequestParameters filters) {
+    public void scheduleRequestRetryJob(SearchRequestParameters filters) {
         Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestRetryJob.CRITERIA_JOB_PARAM_NAME,
                                                                            filters));
         // Schedule request retry job
@@ -253,7 +253,7 @@ public class RequestService implements IRequestService {
     @Async
     public void abortRequests(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
-        SearchAbstractRequestParameters filters = new SearchAbstractRequestParameters().withRequestStatesIncluded(Set.of(
+        SearchRequestParameters filters = new SearchRequestParameters().withRequestStatesIncluded(Set.of(
             InternalRequestState.RUNNING));
         Pageable pageRequest = PageRequest.of(0, 1000, Sort.Direction.ASC, "id");
         Page<AbstractRequest> requestsPage;
@@ -267,7 +267,7 @@ public class RequestService implements IRequestService {
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public Page<AbstractRequest> abortCurrentRequestPage(SearchAbstractRequestParameters filters,
+    public Page<AbstractRequest> abortCurrentRequestPage(SearchRequestParameters filters,
                                                          Pageable pageRequest,
                                                          Set<UUID> jobIdsAlreadyStopped) {
         Page<AbstractRequest> requestsPage;
@@ -298,8 +298,8 @@ public class RequestService implements IRequestService {
     @Override
     public void unblockRequests(RequestTypeEnum requestType) {
         // Build search filters
-        SearchAbstractRequestParameters searchFilters = new SearchAbstractRequestParameters().withRequestIpTypesIncluded(
-            Set.of(requestType)).withRequestStatesIncluded(Set.of(InternalRequestState.BLOCKED));
+        SearchRequestParameters searchFilters = new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
+            requestType)).withRequestStatesIncluded(Set.of(InternalRequestState.BLOCKED));
         // Retrieve PENDING requests
         Page<AbstractRequest> pageRequests = findRequests(searchFilters, PageRequest.of(0, 500));
         List<AbstractRequest> requests = pageRequests.getContent();
@@ -470,11 +470,9 @@ public class RequestService implements IRequestService {
                 }
                 break;
             case RequestTypeConstant.AIP_POST_PROCESS_VALUE:
-                spec = AbstractRequestSpecifications.searchRequestBlockingAIPPostProcess(sessionOwnerOp, sessionOp);
-                break;
+                // Post process actions cannot be blocked as AIP is used in read only mode.
             case RequestTypeConstant.INGEST_VALUE:
                 // Ingest cannot be blocked
-                return false;
             case RequestTypeConstant.AIP_SAVE_METADATA_VALUE:
                 // Save metadata cannot be blocked
                 return false;

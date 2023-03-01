@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
@@ -154,7 +154,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
-        requestService.scheduleRequestRetryJob(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+        requestService.scheduleRequestRetryJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.INGEST)));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
@@ -171,7 +171,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
-        requestService.scheduleRequestRetryJob(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+        requestService.scheduleRequestRetryJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.UPDATE)));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
@@ -186,7 +186,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
-        requestService.scheduleRequestRetryJob(new SearchAbstractRequestParameters().withRequestIpTypesIncluded(Set.of(
+        requestService.scheduleRequestRetryJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.OAIS_DELETION)));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);

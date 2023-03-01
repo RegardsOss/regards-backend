@@ -20,19 +20,19 @@ package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.dto.request.SearchAbstractRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 
 import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.DISCRIMINANT_ATTRIBUTE;
 import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
 
 /**
- * Specification builder to search for {@link AbstractRequest}s with filters as  {@link SearchAbstractRequestParameters}
+ * Specification builder to search for {@link AbstractRequest}s with filters as  {@link SearchRequestParameters}
  *
  * @author Stephane Cortine
  * @author Sébastien Binda
  */
 public class RequestSpecificationsBuilder
-    extends AbstractSpecificationsBuilder<AbstractRequest, SearchAbstractRequestParameters> {
+    extends AbstractSpecificationsBuilder<AbstractRequest, SearchRequestParameters> {
 
     @Override
     protected void addSpecificationsFromParameters() {
@@ -48,8 +48,7 @@ public class RequestSpecificationsBuilder
 
             specifications.add(useValuesRestriction("providerId", parameters.getProviderIds()));
 
-            specifications.add(useValuesRestrictionEnumAsString(DISCRIMINANT_ATTRIBUTE,
-                                                                parameters.getRequestIpTypes()));
+            specifications.add(useValuesRestrictionEnumAsString(DISCRIMINANT_ATTRIBUTE, parameters.getRequestTypes()));
 
             specifications.add(useValuesRestriction(STATE_ATTRIBUTE, parameters.getRequestStates()));
         }

@@ -32,7 +32,7 @@ import java.util.Collection;
  *
  * @author Stephane Cortine
  */
-public class SearchAbstractRequestParameters implements AbstractSearchParameters {
+public class SearchRequestParameters implements AbstractSearchParameters {
 
     @Schema(description = "Filter on request id")
     private ValuesRestriction<Long> requestIds;
@@ -55,7 +55,7 @@ public class SearchAbstractRequestParameters implements AbstractSearchParameters
 
     @Schema(description = "List of request type",
             example = "INGEST|UPDATE|AIP_UPDATES_CREATOR|AIP_SAVE_METADATA|AIP_POST_PROCESS|OAIS_DELETION|ABORTED|OAIS_DELETION_CREATOR")
-    private ValuesRestriction<RequestTypeEnum> requestIpTypes;
+    private ValuesRestriction<RequestTypeEnum> requestTypes;
 
     public ValuesRestriction<String> getProviderIds() {
         return providerIds;
@@ -65,12 +65,12 @@ public class SearchAbstractRequestParameters implements AbstractSearchParameters
         this.providerIds = providerIds;
     }
 
-    public SearchAbstractRequestParameters withProviderIdsIncluded(Collection<String> providerIds) {
+    public SearchRequestParameters withProviderIdsIncluded(Collection<String> providerIds) {
         this.providerIds = new ValuesRestriction<String>().withInclude(providerIds);
         return this;
     }
 
-    public SearchAbstractRequestParameters withProviderIdsExcluded(Collection<String> providerIds) {
+    public SearchRequestParameters withProviderIdsExcluded(Collection<String> providerIds) {
         this.providerIds = new ValuesRestriction<String>().withExclude(providerIds);
         return this;
     }
@@ -83,7 +83,7 @@ public class SearchAbstractRequestParameters implements AbstractSearchParameters
         this.sessionOwner = sessionOwner;
     }
 
-    public SearchAbstractRequestParameters withSessionOwner(String sessionOwner) {
+    public SearchRequestParameters withSessionOwner(String sessionOwner) {
         this.sessionOwner = sessionOwner;
         return this;
     }
@@ -96,7 +96,7 @@ public class SearchAbstractRequestParameters implements AbstractSearchParameters
         this.session = session;
     }
 
-    public SearchAbstractRequestParameters withSession(String session) {
+    public SearchRequestParameters withSession(String session) {
         this.session = session;
         return this;
     }
@@ -109,12 +109,12 @@ public class SearchAbstractRequestParameters implements AbstractSearchParameters
         this.creationDate = creationDate;
     }
 
-    public SearchAbstractRequestParameters withLastUpdateAfter(OffsetDateTime after) {
+    public SearchRequestParameters withLastUpdateAfter(OffsetDateTime after) {
         this.creationDate.setAfter(after);
         return this;
     }
 
-    public SearchAbstractRequestParameters withLastUpdateBefore(OffsetDateTime before) {
+    public SearchRequestParameters withLastUpdateBefore(OffsetDateTime before) {
         this.creationDate.setBefore(before);
         return this;
     }
@@ -127,31 +127,31 @@ public class SearchAbstractRequestParameters implements AbstractSearchParameters
         this.requestStates = requestStates;
     }
 
-    public SearchAbstractRequestParameters withRequestStatesIncluded(Collection<InternalRequestState> states) {
+    public SearchRequestParameters withRequestStatesIncluded(Collection<InternalRequestState> states) {
         this.requestStates = new ValuesRestriction<InternalRequestState>().withInclude(states);
         return this;
     }
 
-    public SearchAbstractRequestParameters withRequestStatesExcluded(Collection<InternalRequestState> states) {
+    public SearchRequestParameters withRequestStatesExcluded(Collection<InternalRequestState> states) {
         this.requestStates = new ValuesRestriction<InternalRequestState>().withExclude(states);
         return this;
     }
 
-    public ValuesRestriction<RequestTypeEnum> getRequestIpTypes() {
-        return requestIpTypes;
+    public ValuesRestriction<RequestTypeEnum> getRequestTypes() {
+        return requestTypes;
     }
 
-    public void setRequestIpTypes(ValuesRestriction<RequestTypeEnum> requestIpTypes) {
-        this.requestIpTypes = requestIpTypes;
+    public void setRequestTypes(ValuesRestriction<RequestTypeEnum> requestTypes) {
+        this.requestTypes = requestTypes;
     }
 
-    public SearchAbstractRequestParameters withRequestIpTypesIncluded(Collection<RequestTypeEnum> requestTypes) {
-        this.requestIpTypes = new ValuesRestriction<RequestTypeEnum>().withInclude(requestTypes);
+    public SearchRequestParameters withRequestIpTypesIncluded(Collection<RequestTypeEnum> requestTypes) {
+        this.requestTypes = new ValuesRestriction<RequestTypeEnum>().withInclude(requestTypes);
         return this;
     }
 
-    public SearchAbstractRequestParameters withRequestIpTypesExcluded(Collection<RequestTypeEnum> requestTypes) {
-        this.requestIpTypes = new ValuesRestriction<RequestTypeEnum>().withExclude(requestTypes);
+    public SearchRequestParameters withRequestIpTypesExcluded(Collection<RequestTypeEnum> requestTypes) {
+        this.requestTypes = new ValuesRestriction<RequestTypeEnum>().withExclude(requestTypes);
         return this;
     }
 
@@ -163,12 +163,12 @@ public class SearchAbstractRequestParameters implements AbstractSearchParameters
         this.requestIds = requestIds;
     }
 
-    public SearchAbstractRequestParameters withRequestIdsIncluded(Collection<Long> requestIds) {
+    public SearchRequestParameters withRequestIdsIncluded(Collection<Long> requestIds) {
         this.requestIds = new ValuesRestriction<Long>().withInclude(requestIds);
         return this;
     }
 
-    public SearchAbstractRequestParameters withRequestIdsExcluded(Collection<Long> requestIds) {
+    public SearchRequestParameters withRequestIdsExcluded(Collection<Long> requestIds) {
         this.requestIds = new ValuesRestriction<Long>().withExclude(requestIds);
         return this;
     }
