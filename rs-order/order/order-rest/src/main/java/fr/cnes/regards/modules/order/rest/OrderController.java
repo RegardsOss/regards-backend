@@ -214,7 +214,8 @@ public class OrderController implements IResourceController<OrderDto> {
                                          content = @Content(mediaType = "application/json")) })
     @ResponseBody
     @PostMapping(path = AUTO_ORDER_PATH)
-    @ResourceAccess(description = "Create order automatically from a OrderRequestDto", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Create order automatically from a OrderRequestDto",
+                    role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<OrderResponseDto>> createOrder(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "OrderRequestDto to create an order.",
                                                               content = @Content(schema = @Schema(implementation = OrderRequestDto.class)))
