@@ -77,9 +77,8 @@ public class IngestValidationService extends AbstractValidationService {
 
         // If properties isn't empty it means some properties are unexpected by the model
         toCheckProperties.forEach(propPath -> errors.reject("error.unexpected.property.message",
-                                                            String.format("%s isn't expected by the model %s",
-                                                                          propPath,
-                                                                          model)));
+                                                            String.format("Property %s provided isn't expected "
+                                                                          + "by the model %s", propPath, model)));
 
         return errors;
     }

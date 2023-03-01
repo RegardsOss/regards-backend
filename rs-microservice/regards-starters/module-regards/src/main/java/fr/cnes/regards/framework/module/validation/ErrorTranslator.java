@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.framework.module.validation;
 
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -41,24 +41,20 @@ public final class ErrorTranslator {
      * Build a set of error string from a not empty {@link Errors} object.
      */
     public static Set<String> getErrors(Errors errors) {
-        if (errors.hasErrors()) {
-            Set<String> err = new HashSet<>();
-            errors.getAllErrors().forEach(error -> {
-                if (error instanceof FieldError fieldError) {
-                    err.add(String.format("%s at %s: rejected value [%s].",
-                                          fieldError.getDefaultMessage(),
-                                          fieldError.getField(),
-                                          ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
-                } else if (error instanceof ObjectError) {
-                    err.add(error.getCode());
-                } else {
-                    err.add(error.getDefaultMessage());
-                }
-            });
-            return err;
-        } else {
-            throw new IllegalArgumentException("This method must be called only if at least one error exists");
-        }
+        Assert.isTrue(errors.hasErrors(), "This method must be called only if at least one error exists");
+        Set<String> err = new HashSet<>();
+        errors.getAllErrors().forEach(error -> {
+            if (error instanceof FieldError fieldError) {
+                err.add(String.format("[%s] %s at %s: rejected value [%s].",
+                                      fieldError.getCode(),
+                                      fieldError.getDefaultMessage(),
+                                      fieldError.getField(),
+                                      ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
+            } else {
+                err.add(String.format("[%s] %s", error.getCode(), error.getDefaultMessage()));
+            }
+        });
+        return err;
     }
 
     /**
