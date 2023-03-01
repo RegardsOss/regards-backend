@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerifi
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -52,6 +53,7 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
     }
 
     @Override
+    @Transactional(noRollbackFor = EntityNotFoundException.class)
     public ProjectUser getProjectUserByToken(final String pVerificationToken) throws EntityNotFoundException {
         return tokenRepository.findByToken(pVerificationToken)
                               .orElseThrow(() -> new EntityNotFoundException(pVerificationToken,
@@ -73,6 +75,7 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
     }
 
     @Override
+    @Transactional(noRollbackFor = EntityNotFoundException.class)
     public EmailVerificationToken findByToken(final String pEmailVerificationToken) throws EntityNotFoundException {
         return tokenRepository.findByToken(pEmailVerificationToken)
                               .orElseThrow(() -> new EntityNotFoundException(pEmailVerificationToken,
@@ -80,6 +83,7 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
     }
 
     @Override
+    @Transactional(noRollbackFor = EntityNotFoundException.class)
     public EmailVerificationToken findByProjectUser(final ProjectUser pProjectUser) throws EntityNotFoundException {
         return tokenRepository.findByProjectUser(pProjectUser)
                               .orElseThrow(() -> new EntityNotFoundException(pProjectUser.getEmail(),
@@ -93,6 +97,7 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
     }
 
     @Override
+    @Transactional(noRollbackFor = EntityNotFoundException.class)
     public void renewToken(ProjectUser pProjectUser) throws EntityNotFoundException {
         EmailVerificationToken token = tokenRepository.findByProjectUser(pProjectUser)
                                                       .orElseThrow(() -> new EntityNotFoundException(pProjectUser.getEmail(),
