@@ -82,7 +82,7 @@ public class OrderService implements IOrderService {
     private static final DateTimeFormatter ORDER_GENERATED_LABEL_DATE_FORMAT = DateTimeFormatter.ofPattern(
         "yyyy/MM/dd 'at' HH:mm:ss");
 
-    private IOrderService self;
+    private final IOrderService self;
 
     private final IOrderRepository orderRepository;
 
@@ -316,7 +316,7 @@ public class OrderService implements IOrderService {
                  .stream()
                  .flatMap(dsTask -> dsTask.getReliantTasks().stream())
                  .map(FilesTask::getJobInfo)
-                 .filter(jobInfo -> jobInfo.getStatus().getStatus() == JobStatus.ABORTED)
+                 .filter(jobInfo -> jobInfo != null && jobInfo.getStatus().getStatus() == JobStatus.ABORTED)
                  .forEach(jobInfo -> {
                      // Set log correlation id
                      CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
