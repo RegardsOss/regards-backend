@@ -67,7 +67,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -87,29 +86,29 @@ public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
-    private IPluginService pluginService;
+    private final IPluginService pluginService;
 
-    private IProductRepository productRepository;
+    private final IProductRepository productRepository;
 
-    private IAcquisitionProcessingChainRepository acqChainRepository;
+    private final IAcquisitionProcessingChainRepository acqChainRepository;
 
-    private IAuthenticationResolver authResolver;
+    private final IAuthenticationResolver authResolver;
 
-    private IJobInfoService jobInfoService;
+    private final IJobInfoService jobInfoService;
 
-    private IAcquisitionFileRepository acqFileRepository;
+    private final IAcquisitionFileRepository acqFileRepository;
 
-    private IIngestClient ingestClient;
+    private final IIngestClient ingestClient;
 
-    private IProductService self;
+    private final IProductService self;
 
-    private SessionNotifier sessionNotifier;
+    private final SessionNotifier sessionNotifier;
 
     @Value("${regards.acquisition.product.bulk.deletion.limit:100}")
     private Integer bulkDeletionLimit;
 
     /**
-     * All transactions only manage at most {@link #WORKING_UNIT} entities at a time
+     * All transactions only manage at most x entities at a time
      * in order to take care of the memory consumption and potential tenant starvation.
      */
     @Value("${regards.acquisition.batch.size:100}")
@@ -616,6 +615,8 @@ public class ProductService implements IProductService {
     }
 
     public void handleSipGenerationEnd(AcquisitionProcessingChain chain, Collection<Product> products) {
+        // Remove link to job_info when sip generation job ends to allow deletion of jobs done.
+        products.forEach(p -> p.setLastSIPGenerationJobInfo(null));
         Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
         for (String session : sessions) {
             sessionNotifier.notifyEndingChain(chain.getLabel(), session);
@@ -785,7 +786,10 @@ public class ProductService implements IProductService {
                                                                                               ProductSIPState.SCHEDULED,
                                                                                               pageable);
             for (Product product : products) {
-                if (!product.getLastSIPGenerationJobInfo().getStatus().getStatus().isFinished()) {
+                if (product.getLastSIPGenerationJobInfo() != null && !product.getLastSIPGenerationJobInfo()
+                                                                             .getStatus()
+                                                                             .getStatus()
+                                                                             .isFinished()) {
                     return false;
                 } else {
                     // Clean product state
@@ -840,17 +844,6 @@ public class ProductService implements IProductService {
             scheduleProductSIPGenerations(new HashSet<>(products.getContent()), processingChain);
         }
         return products.hasNext();
-    }
-
-    @Override
-    public void updateSipStates(AcquisitionProcessingChain processingChain, ISipState fromStatus, ISipState toStatus) {
-        productRepository.updateSipStates(fromStatus, toStatus, processingChain);
-    }
-
-    @Override
-    public void updateSipStatesByProductNameIn(ISipState state, Set<String> productNames) {
-        Assert.notNull(productNames, "Product names is required");
-        productRepository.updateSipStatesByProductNameIn(state, productNames);
     }
 
     @Override

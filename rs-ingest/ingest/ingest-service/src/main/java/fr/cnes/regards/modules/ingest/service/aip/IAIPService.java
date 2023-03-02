@@ -52,16 +52,16 @@ public interface IAIPService {
     List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
 
     /**
+     * Update last flag for specified entity
+     */
+    AIPEntity updateLastFlag(AIPEntity sip, boolean last);
+
+    /**
      * Save an AIPUpdatesCreatorRequest and try to schedule it in a job
      *
      * @param params the AIPUpdateParametersDto payload
      */
     void registerUpdatesCreator(AIPUpdateParametersDto params);
-
-    /**
-     * Update last flag for specified entity
-     */
-    AIPEntity updateLastFlag(AIPEntity sip, boolean last);
 
     /**
      * Save AIP

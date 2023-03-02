@@ -248,16 +248,6 @@ public interface IProductService {
     boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain, Optional<String> sessionToRetry);
 
     /**
-     * Change sip states by acquisition chain
-     */
-    void updateSipStates(AcquisitionProcessingChain processingChain, ISipState fromStatus, ISipState toStatus);
-
-    /**
-     * Update a list of products by their names
-     */
-    void updateSipStatesByProductNameIn(ISipState state, Set<String> productNames);
-
-    /**
      * Manage product state of updated products and schedule them for SIP generation as soon as possible
      *
      * @return Number of scheduled products
@@ -282,4 +272,5 @@ public interface IProductService {
      * @return bulk limit for acquisition process
      */
     Integer getBulkAcquisitionLimit();
+
 }

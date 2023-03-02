@@ -95,18 +95,7 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                          tenant,
                          jobEvent.getJobId());
             try {
-                switch (jobEvent.getJobEventType()) {
-                    case FAILED:
-                        handleJobFailure(jobEvent);
-                        break;
-                    case SUCCEEDED:
-                        handleJobSuccess(jobEvent);
-                        break;
-                    case ABORTED:
-                        //  If job is aborted, all products are set to SCHEDULED_INTERUPTED to be able to be restart later.
-                    default:
-                        break;
-                }
+                handleJobEnds(jobEvent);
             } catch (Exception e) {
                 LOGGER.error("Error occurs during job event handling", e);
                 StringWriter sw = new StringWriter();
@@ -120,31 +109,25 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
             }
         }
 
-        /**
-         *
-         */
-        private void handleJobSuccess(JobEvent jobEvent) {
+        private void handleJobEnds(JobEvent jobEvent) {
             // Load job info
             JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
             if (jobInfo != null) {
                 // First lets check which job failed. Then lets responsible service handle errors.
                 String jobClassName = jobInfo.getClassName();
-                if (SIPGenerationJob.class.getName().equals(jobClassName)) {
-                    productService.handleSipGenerationSuccess(jobInfo);
-                }
-            }
-        }
-
-        private void handleJobFailure(JobEvent jobEvent) {
-            // Load job info
-            JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-            if (jobInfo != null) {
-                // First lets check which job failed. Then lets responsible service handle errors.
-                String jobClassName = jobInfo.getClassName();
-                if (SIPGenerationJob.class.getName().equals(jobClassName)) {
-                    productService.handleSIPGenerationError(jobInfo);
-                } else if (ProductAcquisitionJob.class.getName().equals(jobClassName)) {
-                    acquisitionProcessingService.handleProductAcquisitionError(jobInfo);
+                switch (jobEvent.getJobEventType()) {
+                    case FAILED -> {
+                        if (SIPGenerationJob.class.getName().equals(jobClassName)) {
+                            productService.handleSIPGenerationError(jobInfo);
+                        } else if (ProductAcquisitionJob.class.getName().equals(jobClassName)) {
+                            acquisitionProcessingService.handleProductAcquisitionError(jobInfo);
+                        }
+                    }
+                    case SUCCEEDED -> {
+                        if (SIPGenerationJob.class.getName().equals(jobClassName)) {
+                            productService.handleSipGenerationSuccess(jobInfo);
+                        }
+                    }
                 }
             }
         }
