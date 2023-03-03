@@ -99,6 +99,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBContext;
@@ -323,7 +324,43 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // WHEN
         // expected status is 400 because searchClient.computeDatasetsSummary contains 0 files. This will result in a
         // EmptySelectionException.
-        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.BAD_REQUEST);
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        ResultActions actualResponse = performDefaultPost(OrderController.AUTO_ORDER_PATH,
+                                                          orderRequestDto,
+                                                          customizer,
+                                                          "order was not created from orderRequestDto!");
+
+        // THEN
+        // empty basket should be created
+        Assert.assertNotNull(basketRepository.findByOwner(getDefaultUserEmail()));
+
+        // expect rest response
+        actualResponse.andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.status",
+                                                                Matchers.equalTo(OrderRequestStatus.FAILED.toString())))
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.createdOrderId").doesNotExist())
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId").doesNotExist())
+                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.message").exists());
+    }
+
+    @Test
+    @Purpose("Tests that an order is not automatically created when an error occurred during the process.")
+    public void testInvalidRequestOrderAutoCreation() throws Exception {
+        // GIVEN
+        // Create order request
+        OrderRequestDto orderRequestDto = new OrderRequestDto(List.of("q:\"\""),
+                                                              new OrderRequestFilters(Set.of(DataTypeLight.QUICKLOOK),
+                                                                                      null),
+                                                              null,
+                                                              null);
+        // mock result of search with 0 files returned
+        Mockito.when(searchClient.computeDatasetsSummary(Mockito.any()))
+               .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+
+        // WHEN
+        // expected status is 400 because searchClient.computeDatasetsSummary contains 0 files. This will result in a
+        // EmptySelectionException.
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         ResultActions actualResponse = performDefaultPost(OrderController.AUTO_ORDER_PATH,
                                                           orderRequestDto,
                                                           customizer,

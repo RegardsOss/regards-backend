@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.domain.basket.*;
+import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
@@ -101,7 +102,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_100")
     public void test() throws EmptyBasketException, EmptySelectionException, EntityInvalidException,
-        TooManyItemsSelectedInBasketException {
+        TooManyItemsSelectedInBasketException, CatalogSearchException {
         Basket basket = basketService.findOrCreate(USER_EMAIL);
 
         Assert.assertNotNull(basketService.find(USER_EMAIL));
@@ -355,7 +356,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
             basketService.attachProcessing(basket,
                                            basket.getDatasetSelections().stream().findFirst().get().getId(),
                                            new ProcessDatasetDescription(processBusinessId, null));
-        } catch (TooManyItemsSelectedInBasketException e) {
+        } catch (TooManyItemsSelectedInBasketException | CatalogSearchException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail("No error is expected at this point.");
         }
@@ -372,7 +373,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
                 // assert the selection was correctly added
                 Assert.assertEquals("The selection was not correctly added", 2, basket.getDatasetSelections().size());
             }
-        } catch (TooManyItemsSelectedInBasketException e) {
+        } catch (TooManyItemsSelectedInBasketException | CatalogSearchException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }

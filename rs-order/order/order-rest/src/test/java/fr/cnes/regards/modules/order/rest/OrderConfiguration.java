@@ -71,12 +71,17 @@ public class OrderConfiguration {
     @Bean
     public IComplexSearchClient searchClient() {
         IComplexSearchClient searchClient = Mockito.mock(IComplexSearchClient.class);
-        DocFilesSummary summary = new DocFilesSummary();
-        summary.addDocumentsCount(0l);
-        summary.addFilesCount(0l);
-        summary.addFilesSize(0l);
-        Mockito.when(searchClient.computeDatasetsSummary(Mockito.any())).thenReturn(ResponseEntity.ok(summary));
+        resetMock(searchClient);
         return searchClient;
+    }
+
+    public static void resetMock(IComplexSearchClient complexSearchClient) {
+        DocFilesSummary summary = new DocFilesSummary();
+        summary.addDocumentsCount(0L);
+        summary.addFilesCount(0L);
+        summary.addFilesSize(0L);
+        Mockito.reset(complexSearchClient);
+        Mockito.when(complexSearchClient.computeDatasetsSummary(Mockito.any())).thenReturn(ResponseEntity.ok(summary));
     }
 
     @Bean

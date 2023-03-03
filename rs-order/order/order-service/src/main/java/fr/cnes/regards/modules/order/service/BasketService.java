@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.ResponseEntityUtils;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -32,6 +31,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.basket.*;
 import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
+import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
@@ -55,6 +55,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
@@ -122,13 +124,13 @@ public class BasketService implements IBasketService {
 
     @Override
     public Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest)
-        throws TooManyItemsSelectedInBasketException, EmptySelectionException {
+        throws TooManyItemsSelectedInBasketException, EmptySelectionException, CatalogSearchException {
         return addSelection(basketId, selectionRequest, authResolver.getUser(), authResolver.getRole());
     }
 
     @Override
     public Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest, String user, String role)
-        throws EmptySelectionException, TooManyItemsSelectedInBasketException {
+        throws EmptySelectionException, TooManyItemsSelectedInBasketException, CatalogSearchException {
         Basket basket = repos.findOneById(basketId);
         if (basket == null) {
             throw new EntityNotFoundException("Basket with id " + basketId + " doesn't exist");
@@ -139,11 +141,13 @@ public class BasketService implements IBasketService {
             // Retrieve summary for all datasets matching the search request from the new selection to add.
             ResponseEntity<DocFilesSummary> docFilesSummaryResponse = complexSearchClient.computeDatasetsSummary(
                 buildSearchRequest(selectionRequest, 0, 1));
+            if (docFilesSummaryResponse != null && docFilesSummaryResponse.getStatusCode() != HttpStatus.OK) {
+                throw new CatalogSearchException();
+            }
             DocFilesSummary summary = ResponseEntityUtils.extractBodyOrThrow(docFilesSummaryResponse,
-                                                                             () -> new RsRuntimeException(
-                                                                                 "An error occurred while computing datasets summary: summary is null"));
+                                                                             () -> new CatalogSearchException());
             // If global summary contains no files => EmptySelection
-            if (summary.getFilesCount() == 0l) {
+            if (summary.getFilesCount() == 0L) {
                 throw new EmptySelectionException();
             }
             // Create a map to find more easiely a basket dataset selection from dataset IpId
@@ -158,7 +162,7 @@ public class BasketService implements IBasketService {
                 // Or, if no one exists yet, create a new one.
                 String datasetIpId = entry.getKey();
                 DocFilesSubSummary subSummary = entry.getValue();
-                if (subSummary.getFilesCount() == 0l) {
+                if (subSummary.getFilesCount() == 0L) {
                     // No results for the current dataset.
                     continue;
                 }
@@ -198,6 +202,9 @@ public class BasketService implements IBasketService {
                 // Update DatasetSelection (summary)
                 computeSummaryAndUpdateDatasetSelection(datasetSelection);
             }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new CatalogSearchException();
         } finally {
             FeignSecurityManager.reset();
         }
@@ -234,8 +241,12 @@ public class BasketService implements IBasketService {
                     // must delete dsSelection (no more dated items selections => no more datasetSelection)
                     j.remove();
                 }
-                computeSummaryAndUpdateDatasetSelection(dsSelection);
-                repos.save(basket);
+                try {
+                    computeSummaryAndUpdateDatasetSelection(dsSelection);
+                    repos.save(basket);
+                } catch (CatalogSearchException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
                 break;
             }
         }
@@ -407,24 +418,33 @@ public class BasketService implements IBasketService {
      * (Re-)compute summary on a dataset selection.
      * (Re-) run search on given dataset with all combined items requests.
      */
-    private void computeSummaryAndUpdateDatasetSelection(BasketDatasetSelection datasetSelection) {
-        ResponseEntity<DocFilesSummary> docFilesSummaryResponseEntity = complexSearchClient.computeDatasetsSummary(
-            buildSearchRequest(datasetSelection, 0, 1));
-        DocFilesSummary curDsSelectionSummary = ResponseEntityUtils.extractBodyOrThrow(docFilesSummaryResponseEntity,
-                                                                                       () -> new RsRuntimeException(
-                                                                                           "An error occurred while compute datasets summary"));
-        // Take into account only asked datasetIpId (sub-)summary
-        DocFilesSubSummary curDsSelectionSubSummary = curDsSelectionSummary.getSubSummariesMap()
-                                                                           .get(datasetSelection.getDatasetIpid());
-        // Occurs only in tests
-        if (curDsSelectionSubSummary == null) {
-            datasetSelection.setObjectsCount(0);
-        } else {
-            datasetSelection.setObjectsCount((int) curDsSelectionSubSummary.getDocumentsCount());
-            curDsSelectionSubSummary.getFileTypesSummaryMap().forEach((fileType, fs) -> {
-                datasetSelection.setFileTypeCount(fileType, fs.getFilesCount());
-                datasetSelection.setFileTypeSize(fileType, fs.getFilesSize());
-            });
+    private void computeSummaryAndUpdateDatasetSelection(BasketDatasetSelection datasetSelection)
+        throws CatalogSearchException {
+        try {
+            ResponseEntity<DocFilesSummary> docFilesSummaryResponseEntity = complexSearchClient.computeDatasetsSummary(
+                buildSearchRequest(datasetSelection, 0, 1));
+            if (docFilesSummaryResponseEntity != null
+                && docFilesSummaryResponseEntity.getStatusCode() != HttpStatus.OK) {
+                throw new CatalogSearchException();
+            }
+            DocFilesSummary curDsSelectionSummary = ResponseEntityUtils.extractBodyOrThrow(docFilesSummaryResponseEntity,
+                                                                                           () -> new CatalogSearchException());
+            // Take into account only asked datasetIpId (sub-)summary
+            DocFilesSubSummary curDsSelectionSubSummary = curDsSelectionSummary.getSubSummariesMap()
+                                                                               .get(datasetSelection.getDatasetIpid());
+            // Occurs only in tests
+            if (curDsSelectionSubSummary == null) {
+                datasetSelection.setObjectsCount(0);
+            } else {
+                datasetSelection.setObjectsCount((int) curDsSelectionSubSummary.getDocumentsCount());
+                curDsSelectionSubSummary.getFileTypesSummaryMap().forEach((fileType, fs) -> {
+                    datasetSelection.setFileTypeCount(fileType, fs.getFilesCount());
+                    datasetSelection.setFileTypeSize(fileType, fs.getFilesSize());
+                });
+            }
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new CatalogSearchException();
         }
     }
 

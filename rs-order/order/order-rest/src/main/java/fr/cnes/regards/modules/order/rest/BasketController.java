@@ -24,12 +24,12 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.dto.BasketDto;
 import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
+import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
@@ -37,14 +37,12 @@ import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
@@ -73,15 +71,20 @@ public class BasketController implements IResourceController<BasketDto> {
     public static final String ORDER_BASKET = "/order/basket";
 
     public static final String DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS = "/dataset/{datasetSelectionId}/updateFileFilters";
+    
+    private final IResourceService resourceService;
 
-    @Autowired
-    private IResourceService resourceService;
+    private final IBasketService basketService;
 
-    @Autowired
-    private IBasketService basketService;
+    private final IAuthenticationResolver authResolver;
 
-    @Autowired
-    private IAuthenticationResolver authResolver;
+    public BasketController(IResourceService resourceService,
+                            IBasketService basketService,
+                            IAuthenticationResolver authResolver) {
+        this.resourceService = resourceService;
+        this.basketService = basketService;
+        this.authResolver = authResolver;
+    }
 
     /**
      * Add a selection to the basket
@@ -93,12 +96,10 @@ public class BasketController implements IResourceController<BasketDto> {
     @RequestMapping(method = RequestMethod.POST, value = SELECTION)
     public ResponseEntity<EntityModel<BasketDto>> addSelection(@Valid @RequestBody
                                                                BasketSelectionRequest basketSelectionRequest)
-        throws EmptySelectionException, TooManyItemsSelectedInBasketException {
-        String user = authResolver.getUser();
-        Basket basket = basketService.findOrCreate(user);
+        throws TooManyItemsSelectedInBasketException, EmptySelectionException, CatalogSearchException {
+        Basket basket = basketService.findOrCreate(authResolver.getUser());
         basket = basketService.addSelection(basket.getId(), basketSelectionRequest);
-        BasketDto dto = BasketDto.makeBasketDto(basket);
-        return ResponseEntity.ok(toResource(dto));
+        return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(basket)));
     }
 
     /**
@@ -122,8 +123,7 @@ public class BasketController implements IResourceController<BasketDto> {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
         Basket modified = basketService.attachProcessing(basket, dsSelectionId, description);
-        BasketDto dto = BasketDto.makeBasketDto(modified);
-        return ResponseEntity.ok(toResource(dto));
+        return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(modified)));
     }
 
     /**
@@ -157,17 +157,12 @@ public class BasketController implements IResourceController<BasketDto> {
     public ResponseEntity<EntityModel<BasketDto>> removeDatedItemsSelection(
         @PathVariable("datasetSelectionId") Long dsSelectionId,
         @PathVariable("itemsSelectionDate") String itemsSelectionDateStr) throws EmptyBasketException {
-        try {
-            OffsetDateTime itemsSelectionDate = OffsetDateTimeAdapter.parse(URLDecoder.decode(itemsSelectionDateStr,
-                                                                                              Charset.defaultCharset()
-                                                                                                     .toString()));
-            Basket basket = basketService.find(authResolver.getUser());
-            basket = basketService.removeDatedItemsSelection(basket, dsSelectionId, itemsSelectionDate);
-            BasketDto dto = BasketDto.makeBasketDto(basket);
-            return ResponseEntity.ok(toResource(dto));
-        } catch (UnsupportedEncodingException e) {
-            throw new RsRuntimeException(e);
-        }
+        OffsetDateTime itemsSelectionDate = OffsetDateTimeAdapter.parse(URLDecoder.decode(itemsSelectionDateStr,
+                                                                                          Charset.defaultCharset()));
+        Basket basket = basketService.find(authResolver.getUser());
+        basket = basketService.removeDatedItemsSelection(basket, dsSelectionId, itemsSelectionDate);
+        BasketDto dto = BasketDto.makeBasketDto(basket);
+        return ResponseEntity.ok(toResource(dto));
     }
 
     /**

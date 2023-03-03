@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.rest.mock.ProcessingClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import io.vavr.collection.HashMap;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +58,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
@@ -91,6 +93,9 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    @Autowired
+    private IComplexSearchClient complexSearchClient;
+
     @MockBean
     private IProjectUsersClient projectUsersClient;
 
@@ -120,6 +125,8 @@ public class BasketControllerIT extends AbstractRegardsIT {
         authResolver = Mockito.spy(authResolver);
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
+
+        OrderConfiguration.resetMock(complexSearchClient);
     }
 
     @Test
@@ -154,7 +161,21 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION,
                            request,
-                           customizer().expectStatusNoContent(),
+                           customizer().expectStatus(HttpStatus.NO_CONTENT),
+                           "error");
+    }
+
+    @Test
+    public void testInvalidQuerySelection() {
+        // Test POST without argument : order should be created with RUNNING status
+        BasketSelectionRequest request = new BasketSelectionRequest();
+        request.setEngineType("legacy");
+        Mockito.when(complexSearchClient.computeDatasetsSummary(Mockito.any()))
+               .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION,
+                           request,
+                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY),
                            "error");
     }
 
@@ -189,7 +210,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION,
                            request,
-                           customizer().expectStatusNoContent(),
+                           customizer().expectStatus(HttpStatus.NO_CONTENT),
                            "error");
     }
 

@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IDatasetTaskRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
@@ -170,6 +171,9 @@ public class OrderServiceIT {
     @Autowired
     private ThreadPoolTaskExecutor pool;
 
+    @Autowired
+    private IDatasetTaskRepository datasetTaskRepository;
+
     @MockBean
     private IProjectUsersClient projectUsersClient;
 
@@ -200,6 +204,7 @@ public class OrderServiceIT {
 
     public void clean() {
         basketRepos.deleteAll();
+        datasetTaskRepository.deleteAll();
         orderRepos.deleteAll();
         dataFileRepos.deleteAll();
         jobInfoRepos.deleteAll();

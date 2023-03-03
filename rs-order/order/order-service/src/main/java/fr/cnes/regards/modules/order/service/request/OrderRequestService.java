@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
@@ -72,7 +73,7 @@ public class OrderRequestService {
             try {
                 Order createdOrder = autoOrderCompletionService.generateOrder(orderRequest, role);
                 responses.add(buildSuccessResponse(orderRequest, createdOrder.getId()));
-            } catch (OrderRequestServiceException e) {
+            } catch (OrderRequestServiceException | CatalogSearchException e) {
                 LOGGER.error("Request with correlationId {} has failed. Cause:", orderRequest.getCorrelationId(), e);
                 responses.add(buildErrorResponse(orderRequest,
                                                  String.format(ERROR_RESPONSE_FORMAT,

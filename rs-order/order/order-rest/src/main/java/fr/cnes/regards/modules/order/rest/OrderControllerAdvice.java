@@ -53,6 +53,11 @@ public class OrderControllerAdvice {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
+    @ExceptionHandler(CatalogSearchException.class)
+    public ResponseEntity<ServerErrorResponse> handleCatalogSearchExceptionBasketException(CatalogSearchException e) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ServerErrorResponse(e.getMessage(), e));
+    }
+
     @ExceptionHandler(NotYetAvailableException.class)
     public ResponseEntity<ServerErrorResponse> handleNotYetAvailableException(NotYetAvailableException e) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ServerErrorResponse(e.getMessage(), e));

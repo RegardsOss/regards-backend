@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
+import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
@@ -87,7 +88,8 @@ public class AutoOrderCompletionService {
      * @return {@link Order} created in case of success
      * @throws OrderRequestServiceException if the order could not be created
      */
-    public Order generateOrder(OrderRequestDto orderRequestDto, String role) throws OrderRequestServiceException {
+    public Order generateOrder(OrderRequestDto orderRequestDto, String role)
+        throws OrderRequestServiceException, CatalogSearchException {
         try {
             Basket basket = createBasketFromRequest(orderRequestDto, role);
             return orderService.createOrder(basket,
@@ -117,7 +119,7 @@ public class AutoOrderCompletionService {
      * @throws EmptySelectionException               if the opensearch queries did not return any data
      */
     private Basket createBasketFromRequest(OrderRequestDto orderRequestDto, String role)
-        throws TooManyItemsSelectedInBasketException, EmptySelectionException {
+        throws TooManyItemsSelectedInBasketException, EmptySelectionException, CatalogSearchException {
         // create basket
         Basket basket = basketService.findOrCreate(orderRequestDto.getUser());
         // add opensearch query parameters

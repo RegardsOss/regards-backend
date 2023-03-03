@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
@@ -73,7 +74,8 @@ public class OrderRequestServiceTest {
     private OrderRequestService orderRequestService;
 
     @Before
-    public void init() throws EntityInvalidException, TooManyItemsSelectedInBasketException, EmptySelectionException {
+    public void init() throws EntityInvalidException, TooManyItemsSelectedInBasketException, EmptySelectionException,
+        CatalogSearchException {
         AutoOrderCompletionService autoOrderCompletionService = new AutoOrderCompletionService(basketService,
                                                                                                orderService,
                                                                                                orderSettings);
@@ -104,7 +106,8 @@ public class OrderRequestServiceTest {
 
     @Test
     @Purpose("Test if failure responses are sent following an invalid order creation.")
-    public void send_orderRequests_fail() throws TooManyItemsSelectedInBasketException, EmptySelectionException {
+    public void send_orderRequests_fail()
+        throws TooManyItemsSelectedInBasketException, EmptySelectionException, CatalogSearchException {
         // GIVEN
         int nbReq = 2;
         List<OrderRequestDto> orderRequests = createValidOrderRequests(nbReq);

@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRestartOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.service.commons.AbstractOrderServiceIT;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
@@ -409,7 +410,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void test_dataFilesFiltersRAWDATA() throws InterruptedException, ModuleException {
+    public void test_dataFilesFiltersRAWDATA() throws InterruptedException, ModuleException, CatalogSearchException {
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
         basketRepository.save(basket);
@@ -435,7 +436,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void test_dataFilesNoFilter() throws InterruptedException, ModuleException {
+    public void test_dataFilesNoFilter() throws InterruptedException, ModuleException, CatalogSearchException {
         // GIVEN
         tenantResolver.forceTenant(getDefaultTenant());
 
@@ -476,7 +477,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void test_dataFilesNameFilter() throws InterruptedException, ModuleException {
+    public void test_dataFilesNameFilter() throws InterruptedException, ModuleException, CatalogSearchException {
         // GIVEN
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
@@ -502,7 +503,8 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void test_dataFilesFiltersWithNoResults() throws InterruptedException, ModuleException {
+    public void test_dataFilesFiltersWithNoResults()
+        throws InterruptedException, ModuleException, CatalogSearchException {
         // GIVEN
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");

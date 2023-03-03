@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
+import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
@@ -81,7 +82,7 @@ public interface IBasketService {
      * @throws TooManyItemsSelectedInBasketException if the number of items selected is greater than the limit
      */
     Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest)
-        throws EmptySelectionException, TooManyItemsSelectedInBasketException;
+        throws EmptySelectionException, TooManyItemsSelectedInBasketException, CatalogSearchException;
 
     /**
      * See {@link #addSelection(Long, BasketSelectionRequest)}
@@ -90,7 +91,7 @@ public interface IBasketService {
      * @param role user role
      */
     Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest, String user, String role)
-        throws EmptySelectionException, TooManyItemsSelectedInBasketException;
+        throws EmptySelectionException, TooManyItemsSelectedInBasketException, CatalogSearchException;
 
     /**
      * Remove specified dataset selection from basket

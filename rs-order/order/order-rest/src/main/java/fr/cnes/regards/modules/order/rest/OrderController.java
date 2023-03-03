@@ -227,7 +227,7 @@ public class OrderController implements IResourceController<OrderDto> {
                                                                                        authResolver.getRole());
         HttpStatus status = orderResponseDto.getStatus() == OrderRequestStatus.GRANTED ?
             HttpStatus.OK :
-            HttpStatus.BAD_REQUEST;
+            HttpStatus.UNPROCESSABLE_ENTITY;
         return new ResponseEntity<>(EntityModel.of(orderResponseDto), status);
     }
 
