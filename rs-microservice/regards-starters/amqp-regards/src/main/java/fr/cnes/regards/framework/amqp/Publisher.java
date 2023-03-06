@@ -48,12 +48,13 @@ public class Publisher extends AbstractPublisher implements IPublisher {
      */
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public Publisher(IRabbitVirtualHostAdmin pVirtualHostAdmin,
+    public Publisher(String applicationId,
+                     IRabbitVirtualHostAdmin pVirtualHostAdmin,
                      RabbitTemplate rabbitTemplate,
                      RabbitAdmin rabbitAdmin,
                      IAmqpAdmin amqpAdmin,
                      IRuntimeTenantResolver pThreadTenantResolver) {
-        super(rabbitTemplate, rabbitAdmin, amqpAdmin, pVirtualHostAdmin);
+        super(rabbitTemplate, rabbitAdmin, amqpAdmin, pVirtualHostAdmin, applicationId);
         this.threadTenantResolver = pThreadTenantResolver;
     }
 

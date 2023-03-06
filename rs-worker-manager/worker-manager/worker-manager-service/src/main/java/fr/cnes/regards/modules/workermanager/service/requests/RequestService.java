@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.workermanager.service.requests;
 import com.google.common.collect.*;
 import com.rabbitmq.client.LongString;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -353,14 +354,14 @@ public class RequestService {
         // Publish requests to corresponding workers
         for (String workerType : toDispatchRequests.keySet()) {
             Collection<Request> requestsByWorkerType = toDispatchRequests.get(workerType);
-            List<Message> events = requestsByWorkerType.stream()
-                                                       .map(request -> RawMessageBuilder.build(runtimeTenantResolver.getTenant(),
-                                                                                               request.getContentType(),
-                                                                                               request.getSource(),
-                                                                                               request.getSession(),
-                                                                                               request.getRequestId(),
-                                                                                               request.getContent()))
-                                                       .collect(Collectors.toList());
+            List<IEvent> events = requestsByWorkerType.stream()
+                                                      .map(request -> RawMessageBuilder.build(runtimeTenantResolver.getTenant(),
+                                                                                              request.getContentType(),
+                                                                                              request.getSource(),
+                                                                                              request.getSession(),
+                                                                                              request.getRequestId(),
+                                                                                              request.getContent()))
+                                                      .collect(Collectors.toList());
 
             // Send events to the worker queue
             String exchangeName = getExchangeName(workerType);
@@ -668,7 +669,7 @@ public class RequestService {
                                   .map(this::generateResponseFromRequest)
                                   .filter(Optional::isPresent)
                                   .map(Optional::get)
-                                  .collect(Collectors.toList()), 0);
+                                  .collect(Collectors.toList()));
     }
 
     /**

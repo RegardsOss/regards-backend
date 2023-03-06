@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.amqp.client;
 
 import com.google.gson.annotations.Expose;
+import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import org.springframework.amqp.core.MessageProperties;
 
@@ -29,7 +30,7 @@ import java.util.HashMap;
  *
  * @author Marc SORDI
  */
-public class MessageWithHeaders<K, V> extends HashMap<K, V> implements IMessagePropertiesAware {
+public class MessageWithHeaders<K, V> extends HashMap<K, V> implements IMessagePropertiesAware, IEvent {
 
     private static final long serialVersionUID = 1L;
 

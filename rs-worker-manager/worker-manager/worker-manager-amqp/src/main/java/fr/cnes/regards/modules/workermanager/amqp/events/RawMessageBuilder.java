@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.workermanager.amqp.events;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.amqp.RawMessageEvent;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 
@@ -42,12 +43,12 @@ public final class RawMessageBuilder {
      * @param payload     Request body
      * @return Message
      */
-    public static Message build(String tenant,
-                                String contentType,
-                                String source,
-                                String session,
-                                String requestId,
-                                byte[] payload) {
+    public static RawMessageEvent build(String tenant,
+                                        String contentType,
+                                        String source,
+                                        String session,
+                                        String requestId,
+                                        byte[] payload) {
         MessageProperties properties = new MessageProperties();
         properties.setHeader(EventHeadersHelper.TENANT_HEADER, tenant);
         properties.setHeader(EventHeadersHelper.CONTENT_TYPE_HEADER, contentType);
@@ -55,7 +56,7 @@ public final class RawMessageBuilder {
         properties.setHeader(EventHeadersHelper.SESSION_HEADER, session);
         properties.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
         properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-        return new Message(payload, properties);
+        return new RawMessageEvent(payload, properties);
     }
 
     /**

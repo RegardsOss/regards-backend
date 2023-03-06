@@ -31,11 +31,12 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
  */
 public class InstancePublisher extends AbstractPublisher implements IInstancePublisher {
 
-    public InstancePublisher(RabbitTemplate rabbitTemplate,
+    public InstancePublisher(String applicationId,
+                             RabbitTemplate rabbitTemplate,
                              RabbitAdmin rabbitAdmin,
                              IAmqpAdmin amqpAdmin,
                              IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        super(rabbitTemplate, rabbitAdmin, amqpAdmin, pRabbitVirtualHostAdmin);
+        super(rabbitTemplate, rabbitAdmin, amqpAdmin, pRabbitVirtualHostAdmin, applicationId);
     }
 
     @Override

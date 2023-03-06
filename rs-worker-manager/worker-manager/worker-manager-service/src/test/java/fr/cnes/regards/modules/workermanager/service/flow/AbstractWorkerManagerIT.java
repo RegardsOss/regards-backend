@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
@@ -45,7 +46,6 @@ import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.StandardCharsets;
@@ -170,7 +170,7 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
         publisher.publish(events, requestService.getWorkerResponseQueueName(), Optional.empty());
     }
 
-    protected Message createEvent(Optional<String> contentType) {
+    protected IEvent createEvent(Optional<String> contentType) {
         return RawMessageBuilder.build(getDefaultTenant(),
                                        contentType.orElse(null),
                                        DEFAULT_SOURCE,
@@ -241,7 +241,7 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
         }
     }
 
-    protected void broadcastMessage(Message message, Optional<String> routingKey) {
+    protected void broadcastMessage(IEvent message, Optional<String> routingKey) {
         publisher.broadcast(amqpAdmin.getBroadcastExchangeName(RequestEvent.class.getTypeName(),
                                                                Target.ONE_PER_MICROSERVICE_TYPE),
                             Optional.empty(),
@@ -252,7 +252,7 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
                             new HashMap<>());
     }
 
-    protected void broadcastMessages(List<Message> messages, Optional<String> routingKey) {
+    protected void broadcastMessages(List<IEvent> messages, Optional<String> routingKey) {
         publisher.broadcastAll(amqpAdmin.getBroadcastExchangeName(RequestEvent.class.getTypeName(),
                                                                   Target.ONE_PER_MICROSERVICE_TYPE),
                                Optional.empty(),

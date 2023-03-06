@@ -23,6 +23,6 @@ package fr.cnes.regards.framework.amqp.event;
  *
  * @author Marc Sordi
  */
-public interface IPollable {
+public interface IPollable extends IEvent {
 
 }

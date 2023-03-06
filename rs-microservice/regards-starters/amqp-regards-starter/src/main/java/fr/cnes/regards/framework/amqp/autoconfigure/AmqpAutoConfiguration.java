@@ -88,6 +88,9 @@ public class AmqpAutoConfiguration {
     @Value("${spring.application.name}")
     private String microserviceName;
 
+    @Value("${regards.instance.name:REGARDS}")
+    private String applicationId;
+
     @Bean
     @ConditionalOnMissingBean(IRabbitVirtualHostAdmin.class)
     public IRabbitVirtualHostAdmin rabbitVirtualHostAdmin(ITenantResolver pTenantResolver,
@@ -164,23 +167,25 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public IPublisher publisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+    public IPublisher publisher(IRabbitVirtualHostAdmin rabbitVirtualHostAdmin,
                                 RabbitAdmin rabbitAdmin,
                                 IAmqpAdmin amqpAdmin,
-                                IRuntimeTenantResolver pThreadTenantResolver,
+                                IRuntimeTenantResolver threadTenantResolver,
                                 RabbitTemplate rabbitTemplate) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
-            return new Publisher(pRabbitVirtualHostAdmin,
+            return new Publisher(applicationId,
+                                 rabbitVirtualHostAdmin,
                                  rabbitTemplate,
                                  rabbitAdmin,
                                  amqpAdmin,
-                                 pThreadTenantResolver);
+                                 threadTenantResolver);
         } else {
-            return new SingleVhostPublisher(rabbitTemplate,
+            return new SingleVhostPublisher(applicationId,
+                                            rabbitTemplate,
                                             rabbitAdmin,
                                             amqpAdmin,
-                                            pRabbitVirtualHostAdmin,
-                                            pThreadTenantResolver);
+                                            rabbitVirtualHostAdmin,
+                                            threadTenantResolver);
         }
     }
 
@@ -235,7 +240,7 @@ public class AmqpAutoConfiguration {
                                                 IAmqpAdmin amqpAdmin,
                                                 IRuntimeTenantResolver pThreadTenantResolver,
                                                 RabbitTemplate rabbitTemplate) {
-        return new InstancePublisher(rabbitTemplate, rabbitAdmin, amqpAdmin, pRabbitVirtualHostAdmin);
+        return new InstancePublisher(applicationId, rabbitTemplate, rabbitAdmin, amqpAdmin, pRabbitVirtualHostAdmin);
     }
 
     @Bean

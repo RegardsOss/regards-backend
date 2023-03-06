@@ -36,12 +36,13 @@ public class SingleVhostPublisher extends AbstractPublisher implements IPublishe
 
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public SingleVhostPublisher(RabbitTemplate rabbitTemplate,
+    public SingleVhostPublisher(String applicationId,
+                                RabbitTemplate rabbitTemplate,
                                 RabbitAdmin rabbitAdmin,
                                 IAmqpAdmin amqpAdmin,
                                 IRabbitVirtualHostAdmin rabbitVirtualHostAdmin,
                                 IRuntimeTenantResolver threadTenantResolver) {
-        super(rabbitTemplate, rabbitAdmin, amqpAdmin, rabbitVirtualHostAdmin);
+        super(rabbitTemplate, rabbitAdmin, amqpAdmin, rabbitVirtualHostAdmin, applicationId);
         this.threadTenantResolver = threadTenantResolver;
     }
 

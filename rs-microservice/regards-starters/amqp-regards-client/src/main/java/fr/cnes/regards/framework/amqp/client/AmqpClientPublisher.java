@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.amqp.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.framework.random.Generator;
 import fr.cnes.regards.framework.random.GeneratorBuilder;
 import fr.cnes.regards.framework.random.function.IPropertyGetter;
@@ -50,7 +51,7 @@ public class AmqpClientPublisher {
 
     private final static Integer BATCH_SIZE = 1000;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AmqpClientApplication.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AmqpClientApplication.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -116,7 +117,7 @@ public class AmqpClientPublisher {
             remaining = remaining - batchSize;
             // Generate batch
             List<Map<String, Object>> messages = randomGenerator.generate(batchSize);
-            List<Object> oMessages = new ArrayList<>();
+            List<IEvent> oMessages = new ArrayList<>();
             messages.forEach(m -> oMessages.add(manageHeaders(m)));
             // Broadcast
             publisher.broadcastAll(exchangeName, queueName, routingKey, dlk, priority, oMessages, headers);
@@ -169,7 +170,7 @@ public class AmqpClientPublisher {
             LOGGER.info("Loading JSON from {}", jsonPath);
             // Load JSON message
             Map<String, Object> readMessage = mapper.readValue(jsonPath.toFile(), Map.class);
-            Object message = manageHeaders(readMessage);
+            IEvent message = manageHeaders(readMessage);
             // Broadcast
             publisher.broadcast(exchangeName, queueName, routingKey, dlk, priority, message, headers);
         } catch (IOException e) {
@@ -179,18 +180,15 @@ public class AmqpClientPublisher {
         }
     }
 
-    private Object manageHeaders(Map<String, Object> message) {
-        Object oHeaders = message.remove(HEADERS_NS);
-        if ((oHeaders == null) || !Map.class.isAssignableFrom(oHeaders.getClass())) {
-            return message;
-        }
-
-        // Else prepare a message with headers
+    private IEvent manageHeaders(Map<String, Object> message) {
         MessageWithHeaders<String, Object> mwh = new MessageWithHeaders<String, Object>();
+        Object oHeaders = message.remove(HEADERS_NS);
         mwh.putAll(message);
-        // Propagate headers
-        Map<String, Object> headers = (Map<String, Object>) oHeaders;
-        headers.forEach((k, v) -> mwh.setHeader(k, v));
+        if ((oHeaders != null) && Map.class.isAssignableFrom(oHeaders.getClass())) {
+            // Else prepare a message with propagated headers
+            Map<String, Object> headers = (Map<String, Object>) oHeaders;
+            headers.forEach((k, v) -> mwh.setHeader(k, v));
+        }
         return mwh;
     }
 }

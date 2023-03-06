@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import org.springframework.amqp.core.Message;
@@ -140,13 +141,13 @@ public interface IPublisherContract {
     /**
      * Broadcast message to specified exchange optionally creating a binded queue.
      */
-    void broadcast(String exchangeName,
-                   Optional<String> queueName,
-                   Optional<String> routingKey,
-                   Optional<String> dlk,
-                   int priority,
-                   Object message,
-                   Map<String, Object> headers);
+    <T extends IEvent> void broadcast(String exchangeName,
+                                      Optional<String> queueName,
+                                      Optional<String> routingKey,
+                                      Optional<String> dlk,
+                                      int priority,
+                                      T message,
+                                      Map<String, Object> headers);
 
     /**
      * Broadcast message to specified exchange optionally creating a binded queue.
@@ -156,7 +157,7 @@ public interface IPublisherContract {
                       Optional<String> routingKey,
                       Optional<String> dlk,
                       int priority,
-                      Collection<?> messages,
+                      Collection<? extends IEvent> messages,
                       Map<String, Object> headers);
 
     /**

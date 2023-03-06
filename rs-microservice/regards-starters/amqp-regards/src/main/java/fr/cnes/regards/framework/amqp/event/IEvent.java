@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,11 +18,20 @@
  */
 package fr.cnes.regards.framework.amqp.event;
 
+import java.util.Optional;
+
 /**
- * Qualify an event you can subscribe to.
+ * Default Interface for amqp message to send.
  *
- * @author Marc Sordi
- */
-public interface ISubscribable extends IEvent {
+ * @author Sébastien Binda
+ **/
+public interface IEvent {
+
+    /**
+     * Define the default amqp property correlation_id when sending message to rabbitmq exchange.
+     */
+    default Optional<String> getMessageCorrelationId() {
+        return Optional.empty();
+    }
 
 }

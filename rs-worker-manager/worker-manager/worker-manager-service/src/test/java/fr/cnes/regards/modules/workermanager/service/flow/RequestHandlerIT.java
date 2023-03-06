@@ -20,6 +20,7 @@
 package fr.cnes.regards.modules.workermanager.service.flow;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -49,7 +50,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
@@ -80,7 +84,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
     @Before
     public void init() throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME, Arrays.asList(CONTENT_TYPE_TO_SKIP));
+        tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME, List.of(CONTENT_TYPE_TO_SKIP));
         workerConfigRepo.deleteAll();
     }
 
@@ -115,12 +119,12 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
 
     @Test
     public void handleMissingRequestHeaders() {
-        Message event = RawMessageBuilder.build(getDefaultTenant(),
-                                                null,
-                                                null,
-                                                null,
-                                                UUID.randomUUID().toString(),
-                                                BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
+        IEvent event = RawMessageBuilder.build(getDefaultTenant(),
+                                               null,
+                                               null,
+                                               null,
+                                               UUID.randomUUID().toString(),
+                                               BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
         broadcastMessage(event, Optional.empty());
         waitForResponses(1, 5, TimeUnit.SECONDS);
         Assert.assertEquals("There should be no requests created", 0L, requestRepository.count());
@@ -298,8 +302,8 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
 
     @Test
     public void handleRequestAlreadyExists() {
-        Message message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0));
-        String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
+        IEvent message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0));
+        String requestId = ((Message) message).getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
         Request request = new Request();
         request.setStatus(RequestStatus.NO_WORKER_AVAILABLE);
         request.setRequestId(requestId);
@@ -347,8 +351,8 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
 
     @Test
     public void handleValidRequest() {
-        Message message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0));
-        String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
+        IEvent message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0));
+        String requestId = ((Message) message).getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
         broadcastMessage(message, Optional.empty());
 
         waitForResponses(1, 5, TimeUnit.SECONDS);
@@ -384,7 +388,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
 
     @Test
     public void handleValidAndInvalidRequest() {
-        List<Message> events = new ArrayList<>();
+        List<IEvent> events = new ArrayList<>();
         events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0)));
         events.add(createEvent(Optional.empty()));
         events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0)));
@@ -442,7 +446,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
 
     @Test
     public void perfTest() {
-        List<Message> events = new ArrayList<>();
+        List<IEvent> events = new ArrayList<>();
         LOGGER.info("Start to send events");
         for (int i = 0; i < 1_000; i++) {
             events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0)));

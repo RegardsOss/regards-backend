@@ -26,6 +26,8 @@ import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 
+import java.util.Optional;
+
 /**
  * See {@link OrderRequestDto}
  *
@@ -50,4 +52,8 @@ public class OrderResponseDtoEvent extends OrderResponseDto implements ISubscrib
               orderResponse.getDownloadLink());
     }
 
+    @Override
+    public Optional<String> getMessageCorrelationId() {
+        return Optional.ofNullable(this.getCorrelationId());
+    }
 }

@@ -29,6 +29,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -39,6 +40,8 @@ import java.util.concurrent.ConcurrentMap;
  * @author Marc Sordi
  */
 public abstract class AbstractPublisher implements IPublisherContract {
+
+    public static final int DEFAULT_PRIORITY = 1;
 
     /**
      * Class logger
@@ -67,6 +70,8 @@ public abstract class AbstractPublisher implements IPublisherContract {
      */
     private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
+    private final String applicationId;
+
     /**
      * Map tracing already published events to avoid redeclaring all AMQP elements.
      * Routing key can be different from one tenant to another, so for simplicity we decided to declare so declare thing once per tenant.
@@ -78,11 +83,13 @@ public abstract class AbstractPublisher implements IPublisherContract {
     public AbstractPublisher(RabbitTemplate rabbitTemplate,
                              RabbitAdmin rabbitAdmin,
                              IAmqpAdmin amqpAdmin,
-                             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
+                             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+                             String applicationId) {
         this.rabbitTemplate = rabbitTemplate;
         this.rabbitAdmin = rabbitAdmin;
         this.amqpAdmin = amqpAdmin;
         this.rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
+        this.applicationId = applicationId;
     }
 
     @Override
@@ -111,7 +118,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     @Override
     public void publish(ISubscribable event) {
-        publish(event, 0);
+        publish(event, DEFAULT_PRIORITY);
     }
 
     @Override
@@ -138,7 +145,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
         Class<? extends ISubscribable> eventClass = event.getClass();
         AmqpChannel channel = AmqpChannel.build(eventClass).exchange(exchangeName);
         queueName.ifPresent(qn -> channel.queue(qn));
-        publish(event, 0, channel, false);
+        publish(event, DEFAULT_PRIORITY, channel, false);
     }
 
     @Override
@@ -149,12 +156,12 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     @Override
     public void publish(IPollable event) {
-        publish(event, 0, false);
+        publish(event, DEFAULT_PRIORITY, false);
     }
 
     @Override
     public void publish(IPollable event, boolean purgeQueue) {
-        publish(event, 0, purgeQueue);
+        publish(event, DEFAULT_PRIORITY, purgeQueue);
     }
 
     @Override
@@ -196,13 +203,13 @@ public abstract class AbstractPublisher implements IPublisherContract {
     }
 
     @Override
-    public void broadcast(String exchangeName,
-                          Optional<String> queueName,
-                          Optional<String> routingKey,
-                          Optional<String> dlk,
-                          int priority,
-                          Object message,
-                          Map<String, Object> headers) {
+    public <T extends IEvent> void broadcast(String exchangeName,
+                                             Optional<String> queueName,
+                                             Optional<String> routingKey,
+                                             Optional<String> dlk,
+                                             int priority,
+                                             T message,
+                                             Map<String, Object> headers) {
 
         LOGGER.debug("Broadcasting object {} to exchange {} with priority {}. Binded queue : {}.",
                      message.getClass(),
@@ -294,7 +301,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
                              Optional<String> routingKey,
                              Optional<String> dlk,
                              int priority,
-                             Collection<?> messages,
+                             Collection<? extends IEvent> messages,
                              Map<String, Object> headers) {
         messages.forEach(message -> broadcast(exchangeName, queueName, routingKey, dlk, priority, message, headers));
     }
@@ -306,7 +313,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param channel    queue and exchange configuration to publish to
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
-    protected <T> void publish(T event, int priority, AmqpChannel channel, boolean purgeQueue) {
+    protected <T extends IEvent> void publish(T event, int priority, AmqpChannel channel, boolean purgeQueue) {
         LOGGER.debug("Publishing event {} (Target : {}, WorkerMode : {} )",
                      event.getClass(),
                      channel.getTarget(),
@@ -339,12 +346,12 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param channel     Channel configuration for exchange/queue/binding
      * @param purgeQueue  true to purge queue if already exists. Useful in tests.
      */
-    protected final <T> void publish(String virtualHost,
-                                     String tenant,
-                                     T event,
-                                     int priority,
-                                     AmqpChannel channel,
-                                     boolean purgeQueue) {
+    protected final <T extends IEvent> void publish(String virtualHost,
+                                                    String tenant,
+                                                    T event,
+                                                    int priority,
+                                                    AmqpChannel channel,
+                                                    boolean purgeQueue) {
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
@@ -426,12 +433,12 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param priority     the event priority
      * @param headers      additional headers
      */
-    private final <T> void publishMessageByTenant(String tenant,
-                                                  String exchangeName,
-                                                  String routingKey,
-                                                  T event,
-                                                  int priority,
-                                                  Map<String, Object> headers) {
+    private final <T extends IEvent> void publishMessageByTenant(String tenant,
+                                                                 String exchangeName,
+                                                                 String routingKey,
+                                                                 T event,
+                                                                 int priority,
+                                                                 Map<String, Object> headers) {
 
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, event, message -> {
@@ -456,6 +463,10 @@ public abstract class AbstractPublisher implements IPublisherContract {
             }
 
             messageProperties.setPriority(priority);
+            messageProperties.setTimestamp(Date.from(Instant.now()));
+            messageProperties.setAppId(this.applicationId);
+            messageProperties.setReceivedRoutingKey(routingKey);
+            event.getMessageCorrelationId().ifPresent(messageProperties::setCorrelationId);
             return new Message(message.getBody(), messageProperties);
         });
     }

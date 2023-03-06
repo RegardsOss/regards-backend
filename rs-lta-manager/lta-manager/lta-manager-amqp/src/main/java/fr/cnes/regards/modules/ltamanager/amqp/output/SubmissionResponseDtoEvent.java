@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRespon
 
 import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 /**
  * See {@link SubmissionResponseDto}
@@ -54,4 +55,8 @@ public class SubmissionResponseDtoEvent extends SubmissionResponseDto implements
              responseDto.getMessage());
     }
 
+    @Override
+    public Optional<String> getMessageCorrelationId() {
+        return Optional.ofNullable(this.getCorrelationId());
+    }
 }
