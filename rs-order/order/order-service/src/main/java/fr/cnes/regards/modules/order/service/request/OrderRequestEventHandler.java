@@ -18,13 +18,18 @@
  */
 package fr.cnes.regards.modules.order.service.request;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
@@ -32,15 +37,21 @@ import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This handler creates {@link CreateOrderJob} from the receiving of {@link OrderRequestDtoEvent}s
@@ -60,6 +71,16 @@ public class OrderRequestEventHandler
 
     private final IPublisher publisher;
 
+    private final IProjectUsersClient projectUsersClient;
+
+    /**
+     * Cache to indicates if a given user login (email) is a valid REGARDS user or not.
+     */
+    private final Cache<String, Boolean> regardsUsers = Caffeine.newBuilder()
+                                                                .expireAfterWrite(5, TimeUnit.MINUTES)
+                                                                .maximumSize(100)
+                                                                .build();
+
     /**
      * Bulk size limit to handle messages
      */
@@ -69,12 +90,14 @@ public class OrderRequestEventHandler
                                     ISubscriber subscriber,
                                     JobInfoService jobInfoService,
                                     Validator validator,
-                                    IPublisher publisher) {
+                                    IPublisher publisher,
+                                    IProjectUsersClient projectUsersClient) {
         this.bulkSize = bulkSize;
         this.subscriber = subscriber;
         this.jobInfoService = jobInfoService;
         this.validator = validator;
         this.publisher = publisher;
+        this.projectUsersClient = projectUsersClient;
     }
 
     @Override
@@ -131,13 +154,39 @@ public class OrderRequestEventHandler
      */
     public List<OrderRequestDtoEvent> denyInvalidMessages(List<OrderRequestDtoEvent> events) {
         List<OrderRequestDtoEvent> validEvents = new ArrayList<>();
-        events.forEach(e -> {
+        events.forEach(event -> {
             Errors errors = new MapBindingResult(new HashMap<>(), OrderRequestDtoEvent.class.getName());
-            validator.validate(e, errors);
-            if (errors.hasErrors()) {
-                publisher.publish(buildDeniedResponse(e, errors));
+            // Validate request
+            validator.validate(event, errors);
+
+            // With amqp api, user is mandatory and must be an existing user.
+            //
+            if (event.getUser() == null) {
+                errors.rejectValue("user", "INVALID_CONTENT", "User should be present");
             } else {
-                validEvents.add(e);
+                Boolean isValidUser = regardsUsers.get(event.getUser(), email -> {
+                    FeignSecurityManager.asSystem();
+                    try {
+                        ResponseEntity<EntityModel<ProjectUser>> response = projectUsersClient.retrieveProjectUserByEmail(
+                            event.getUser());
+                        return response != null && response.getStatusCode() == HttpStatus.OK;
+                    } catch (HttpClientErrorException | HttpServerErrorException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        return false;
+                    } finally {
+                        FeignSecurityManager.reset();
+                    }
+                });
+                if (!isValidUser) {
+                    errors.rejectValue("user", "FORBIDDEN", "Unknown user : " + event.getUser());
+                }
+
+            }
+
+            if (errors.hasErrors()) {
+                publisher.publish(buildDeniedResponse(event, errors));
+            } else {
+                validEvents.add(event);
             }
         });
         return validEvents;

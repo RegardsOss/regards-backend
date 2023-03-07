@@ -42,6 +42,8 @@ public class OrderRequestTestUtils {
 
     public static final String TEST_USER_ORDER = "testUserOrderRequest";
 
+    public static final String TEST_USER_UNKNOWN_ORDER = "unknownUser";
+
     public static final DefaultRole TEST_USER_ROLE = DefaultRole.EXPLOIT;
 
     public static final List<String> SEARCH_QUERIES = List.of("type:Feature");

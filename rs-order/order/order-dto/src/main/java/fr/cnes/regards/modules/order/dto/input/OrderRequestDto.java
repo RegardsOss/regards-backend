@@ -54,7 +54,8 @@ public class OrderRequestDto {
     private final String correlationId;
 
     /**
-     * Ordering user login name
+     * Ordering user login name.
+     * Note : Mandatory in AMQP API but null with REST interface.
      */
     @Size(message = "user must not exceed 128 characters.", max = 128)
     @Nullable

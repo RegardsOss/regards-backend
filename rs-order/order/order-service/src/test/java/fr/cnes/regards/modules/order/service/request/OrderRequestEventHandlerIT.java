@@ -72,7 +72,6 @@ import java.util.concurrent.CountDownLatch;
 import static fr.cnes.regards.modules.order.service.request.OrderRequestTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 
 /**
  * Test for {@link OrderRequestEventHandler}. <br/>
@@ -224,6 +223,58 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
     }
 
     @Test
+    public void create_order_invalid_user() throws InterruptedException {
+
+        // --- GIVEN ---
+        List<OrderRequestDtoEvent> validOrderRequests = createValidOrderRequestEvents(1);
+        validOrderRequests.forEach(e -> e.setUser(TEST_USER_UNKNOWN_ORDER));
+
+        // --- WHEN ---
+        publisher.publish(validOrderRequests);
+        Mockito.verify(requestHandler, Mockito.timeout(100000)).handleBatch(any());
+        Thread.sleep(1_000);
+
+        // THEN
+        ArgumentCaptor<OrderResponseDtoEvent> responseCaptor = ArgumentCaptor.forClass(OrderResponseDtoEvent.class);
+        Mockito.verify(publisher, Mockito.times(2)).publish(responseCaptor.capture());
+        checkOrderRequestResponsesEvents(List.of(responseCaptor.getAllValues().get(1)),
+                                         1,
+                                         OrderRequestStatus.DENIED,
+                                         String.format("Error detected on field \"user\". Cause: \"Unknown user : "
+                                                       + "%s\".", TEST_USER_UNKNOWN_ORDER),
+                                         null);
+
+        // check no mail was sent
+        Mockito.verifyNoInteractions(emailClient);
+
+    }
+
+    @Test
+    public void create_order_no_user() throws InterruptedException {
+
+        // --- GIVEN ---
+        List<OrderRequestDtoEvent> validOrderRequests = createValidOrderRequestEvents(1);
+        validOrderRequests.forEach(e -> e.setUser(null));
+
+        // --- WHEN ---
+        publisher.publish(validOrderRequests);
+        Mockito.verify(requestHandler, Mockito.timeout(100000)).handleBatch(any());
+        Thread.sleep(2_000);
+
+        // THEN
+        ArgumentCaptor<OrderResponseDtoEvent> responseCaptor = ArgumentCaptor.forClass(OrderResponseDtoEvent.class);
+        Mockito.verify(publisher, Mockito.times(2)).publish(responseCaptor.capture());
+        checkOrderRequestResponsesEvents(List.of(responseCaptor.getAllValues().get(1)),
+                                         1,
+                                         OrderRequestStatus.DENIED,
+                                         "Error detected on field \"user\". Cause: \"User should be present\".",
+                                         null);
+
+        // check no mail was sent
+        Mockito.verifyNoInteractions(emailClient);
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     public void create_order_invalid_requests() {
         // --- GIVEN ---
@@ -251,7 +302,9 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
     private void mockServices() {
         Mockito.when(authenticationResolver.getUser()).thenReturn(TEST_USER_ORDER);
         Mockito.when(authenticationResolver.getRole()).thenReturn(TEST_USER_ROLE.toString());
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(anyString()))
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(TEST_USER_UNKNOWN_ORDER))
+               .thenReturn(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(TEST_USER_ORDER))
                .thenReturn(ResponseEntity.ok()
                                          .body(EntityModel.of(new ProjectUser("test@test.fr",
                                                                               new Role(DefaultRole.EXPLOIT.toString()),
