@@ -55,6 +55,10 @@ public final class Beans {
             return pO1.equals(pO2);
         }
         // Find all properties
+        return areEqualAllProperties(pO1, pO2, gettersToForget);
+    }
+
+    private static boolean areEqualAllProperties(Object pO1, Object pO2, String[] gettersToForget) {
         try {
             BeanInfo info1 = Introspector.getBeanInfo(pO1.getClass(), Object.class);
             if ((info1.getMethodDescriptors() == null) || (info1.getMethodDescriptors().length == 0)) {

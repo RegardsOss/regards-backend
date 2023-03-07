@@ -45,7 +45,7 @@ import static io.swagger.v3.core.util.RefUtils.constructRef;
  *
  * TODO : Replace use of Gson by Jackson to be compliant with default swagger lib
  */
-//@SuppressWarnings("all") not a Regards code
+@SuppressWarnings("all") // not change possible because REGARDS override io.swagger.v3.core.jackson.ModelResolver
 public class ModelResolverCustom extends AbstractModelConverter implements ModelConverter {
 
     Logger LOGGER = LoggerFactory.getLogger(ModelResolverCustom.class);
@@ -958,7 +958,7 @@ public class ModelResolverCustom extends AbstractModelConverter implements Model
                                                  .filter(m -> m.getAnnotation(JsonValue.class).value())
                                                  .findFirst();
 
-        @SuppressWarnings("unchecked") Class<Enum<?>> enumClass = (Class<Enum<?>>) propClass;
+        Class<Enum<?>> enumClass = (Class<Enum<?>>) propClass;
 
         Enum<?>[] enumConstants = enumClass.getEnumConstants();
         if (enumConstants != null) {
