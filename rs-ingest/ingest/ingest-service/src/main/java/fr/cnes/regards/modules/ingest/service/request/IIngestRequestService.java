@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -56,7 +56,7 @@ public interface IIngestRequestService {
      *
      * @return true when the job type is managed by this service
      */
-    boolean handleJobCrash(JobEvent jobEvent);
+    boolean handleJobCrash(JobInfo jobInfo);
 
     /**
      * Load a collection of requests

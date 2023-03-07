@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
@@ -57,6 +58,11 @@ public interface IOAISDeletionService {
      * @param request to register as deletion request
      */
     void registerOAISDeletionCreator(OAISDeletionPayloadDto request);
+
+    /**
+     * Handle job crash associated to a {@link OAISDeletionCreatorRequest}
+     */
+    boolean handleJobCrash(JobInfo jobInfo);
 
     /**
      * Handle file deletion error

@@ -20,9 +20,12 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +54,12 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
     @Autowired
     private IIngestRequestService ingestRequestService;
 
+    @Autowired
+    private IOAISDeletionService oaisDeletionService;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
@@ -69,10 +78,12 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
         for (JobEvent jobEvent : jobEvents) {
             if (jobEvent.getJobEventType() == JobEventType.FAILED
                 || jobEvent.getJobEventType() == JobEventType.ABORTED) {
+                JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
                 // Keep in mind a single request that fail does not mean the job will have the FAILED state
                 // we receive here events when the job raises an exception on boot / end (issue with params, plugin init ...)
                 // so all requests are dead
-                boolean isHandled = ingestRequestService.handleJobCrash(jobEvent);
+                boolean isHandled = ingestRequestService.handleJobCrash(jobInfo) || oaisDeletionService.handleJobCrash(
+                    jobInfo);
                 if (isHandled) {
                     nbJobError++;
                 }

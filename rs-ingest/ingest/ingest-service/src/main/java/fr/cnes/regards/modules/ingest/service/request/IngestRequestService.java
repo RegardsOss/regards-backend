@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -169,9 +168,7 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public boolean handleJobCrash(JobEvent jobEvent) {
-
-        JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
+    public boolean handleJobCrash(JobInfo jobInfo) {
         boolean isIngestProcessingJob = IngestProcessingJob.class.getName().equals(jobInfo.getClassName());
         if (isIngestProcessingJob) {
 
@@ -186,8 +183,8 @@ public class IngestRequestService implements IIngestRequestService {
                 requests.forEach(r -> handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace()));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
-                                               jobEvent.getJobId(),
-                                               jobEvent.getJobEventType());
+                                               jobInfo.getId(),
+                                               jobInfo.getStatus().getStatus());
                 LOGGER.error(message, e);
                 notificationClient.notify(message, "Ingest job failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
             }

@@ -20,7 +20,12 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.IJob;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -35,6 +40,7 @@ import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPDeleteService;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
+import fr.cnes.regards.modules.ingest.service.job.OAISDeletionsCreatorJob;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
@@ -44,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -103,6 +110,29 @@ public class OAISDeletionService implements IOAISDeletionService {
         if (deletionRequest.getState() != InternalRequestState.BLOCKED) {
             requestService.scheduleJob(deletionRequest);
         }
+    }
+
+    @Override
+    public boolean handleJobCrash(JobInfo jobInfo) {
+        if (OAISDeletionsCreatorJob.class.getName().equals(jobInfo.getClassName())) {
+            try {
+                Type type = new TypeToken<Long>() {
+
+                }.getType();
+                Long requestId = IJob.getValue(jobInfo.getParametersAsMap(), OAISDeletionsCreatorJob.REQUEST_ID, type);
+                Optional<OAISDeletionCreatorRequest> request = creatorRepository.findById(requestId);
+                request.ifPresent(r -> {
+                    r.setState(InternalRequestState.ERROR);
+                    r.setErrors(Set.of(jobInfo.getStatus().getStackTrace()));
+                });
+            } catch (JobParameterMissingException | JobParameterInvalidException e) {
+                LOGGER.error(String.format("OAISDeletionsCreatorJob request job with id \"%s\" fails with status \"%s\"",
+                                           jobInfo.getId(),
+                                           jobInfo.getStatus().getStatus()), e);
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
