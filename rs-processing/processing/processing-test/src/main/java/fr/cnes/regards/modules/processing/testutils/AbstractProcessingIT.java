@@ -209,37 +209,13 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                 if (onLocal) {
                     Try.run(() -> {
                         LOGGER.info("################## Creating DB for tenant {}", DEFAULT_PROJECT_TENANT);
-                        Container.ExecResult result = postgreSQLContainer.execInContainer(CREATE_DB,
-                                                                                          "-U",
-                                                                                          pgsqlUser,
-                                                                                          DEFAULT_PROJECT_TENANT);
-                        LOGGER.info(LOGGER_MSG,
-                                    DEFAULT_PROJECT_TENANT,
-                                    result.getExitCode(),
-                                    result.getStdout(),
-                                    result.getStderr());
+                        createDb(pgsqlUser, DEFAULT_PROJECT_TENANT);
 
                         LOGGER.info("################## Creating DB for tenant {}", TENANT_PROJECTA);
-                        Container.ExecResult resultA = postgreSQLContainer.execInContainer(CREATE_DB,
-                                                                                           "-U",
-                                                                                           pgsqlUser,
-                                                                                           TENANT_PROJECTA);
-                        LOGGER.info(LOGGER_MSG,
-                                    TENANT_PROJECTA,
-                                    resultA.getExitCode(),
-                                    resultA.getStdout(),
-                                    resultA.getStderr());
+                        createDb(pgsqlUser, TENANT_PROJECTA);
 
                         LOGGER.info("################## Creating DB for tenant " + TENANT_PROJECTB);
-                        Container.ExecResult resultB = postgreSQLContainer.execInContainer(CREATE_DB,
-                                                                                           "-U",
-                                                                                           pgsqlUser,
-                                                                                           TENANT_PROJECTB);
-                        LOGGER.info(LOGGER_MSG,
-                                    TENANT_PROJECTB,
-                                    resultB.getExitCode(),
-                                    resultB.getStdout(),
-                                    resultB.getStderr());
+                        createDb(pgsqlUser, TENANT_PROJECTB);
 
                         LOGGER.info("################## Creating DB for r2dbc");
                         Container.ExecResult r2dbc = postgreSQLContainer.execInContainer(CREATE_DB,
@@ -291,90 +267,120 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                 int rabbitPort = onCi ? 5672 : rabbitMQContainer.getMappedPort(5672);
                 int rabbitManagementPort = onCi ? 15672 : rabbitMQContainer.getMappedPort(15672);
 
-                TestPropertyValues.of("regards.jpa.multitenant.enabled=true",
-                                      "regards.jpa.multitenant.embedded=false",
-                                      "regards.amqp.enabled=true",
-
-                                      "debug=true",
-                                      //"spring.main.allow-bean-definition-overriding=true",
-
-                                      "regards.test.role=USER_ROLE",
-                                      "regards.test.user=user@regards.fr",
-                                      "regards.test.tenant=" + TENANT_PROJECTA,
-
-                                      "regards.processing.sharedStorage.basePath=" + sharedStorage.toFile()
-                                                                                                  .getAbsolutePath(),
-                                      "regards.processing.executionWorkdir.basePath=" + execWorkdir.toFile()
-                                                                                                   .getAbsolutePath(),
-
-                                      "regards.cipher.keyLocation=" + keyPath.toFile().getAbsolutePath(),
-                                      "regards.cipher.iv=1234567812345678",
-
-                                      "regards.tenant=" + DEFAULT_PROJECT_TENANT,
-                                      "regards.tenants=" + TENANT_PROJECTA + "," + TENANT_PROJECTB,
-                                      "regards.test.tenant=" + DEFAULT_PROJECT_TENANT,
-
-                                      "spring.jpa.properties.hibernate.default_schema=" + R2DBCDB_NAME,
-
-                                      "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://"
-                                      + pgHost
-                                      + ":"
-                                      + pgPort
-                                      + "/"
-                                      + DEFAULT_PROJECT_TENANT,
-                                      "regards.jpa.multitenant.tenants[0].tenant=" + DEFAULT_PROJECT_TENANT,
-                                      "regards.jpa.multitenant.tenants[0].driverClassName=org.postgresql.Driver",
-                                      "regards.jpa.multitenant.tenants[0].userName=" + pgsqlUser,
-                                      "regards.jpa.multitenant.tenants[0].password=" + pgsqlSecret,
-
-                                      "regards.jpa.multitenant.tenants[1].url=jdbc:postgresql://"
-                                      + pgHost
-                                      + ":"
-                                      + pgPort
-                                      + "/"
-                                      + TENANT_PROJECTA,
-                                      "regards.jpa.multitenant.tenants[1].tenant=" + TENANT_PROJECTA,
-                                      "regards.jpa.multitenant.tenants[1].driverClassName=org.postgresql.Driver",
-                                      "regards.jpa.multitenant.tenants[1].userName=" + pgsqlUser,
-                                      "regards.jpa.multitenant.tenants[1].password=" + pgsqlSecret,
-
-                                      "regards.jpa.multitenant.tenants[2].url=jdbc:postgresql://"
-                                      + pgHost
-                                      + ":"
-                                      + pgPort
-                                      + "/"
-                                      + TENANT_PROJECTB,
-                                      "regards.jpa.multitenant.tenants[2].tenant=" + TENANT_PROJECTB,
-                                      "regards.jpa.multitenant.tenants[2].driverClassName=org.postgresql.Driver",
-                                      "regards.jpa.multitenant.tenants[2].userName=" + pgsqlUser,
-                                      "regards.jpa.multitenant.tenants[2].password=" + pgsqlSecret,
-
-                                      "regards.processing.r2dbc.host=" + pgHost,
-                                      "regards.processing.r2dbc.port=" + pgPort,
-                                      "regards.processing.r2dbc.username=" + pgsqlUser,
-                                      "regards.processing.r2dbc.password=" + pgsqlSecret,
-                                      "regards.processing.r2dbc.dbname=" + R2DBCDB_NAME,
-                                      "regards.processing.r2dbc.schema=public",
-
-                                      "spring.rabbitmq.host=" + rabbitHost,
-                                      "spring.rabbitmq.port=" + rabbitPort,
-                                      "spring.rabbitmq.username=guest",
-                                      "spring.rabbitmq.password=guest",
-                                      "regards.amqp.management.host=" + rabbitHost,
-                                      "regards.amqp.management.port=" + rabbitManagementPort,
-                                      "regards.amqp.microservice.typeIdentifier=rs-procesing",
-                                      "regards.amqp.microservice.instanceIdentifier=rs-processing-"
-                                      + new Random().nextInt(100_000_000),
-
-                                      "jwt.secret=!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!",
-                                      "cloud.config.address=localhost",
-                                      "cloud.config.port=9031",
-                                      "cloud.config.searchLocations=classpath:/regards",
-                                      "cloud.registry.host=localhost",
-                                      "cloud.registry.port=9032").applyTo(applicationContext);
+                testPropertyValues(applicationContext,
+                                   pgsqlUser,
+                                   pgsqlSecret,
+                                   keyPath,
+                                   sharedStorage,
+                                   execWorkdir,
+                                   pgHost,
+                                   pgPort,
+                                   rabbitHost,
+                                   rabbitPort,
+                                   rabbitManagementPort);
             } catch (IOException e) {
                 throw new RuntimeException(e);
+
             }
+        }
+
+        private static void testPropertyValues(ConfigurableApplicationContext applicationContext,
+                                               String pgsqlUser,
+                                               String pgsqlSecret,
+                                               Path keyPath,
+                                               Path sharedStorage,
+                                               Path execWorkdir,
+                                               String pgHost,
+                                               int pgPort,
+                                               String rabbitHost,
+                                               int rabbitPort,
+                                               int rabbitManagementPort) {
+            TestPropertyValues.of("regards.jpa.multitenant.enabled=true",
+                                  "regards.jpa.multitenant.embedded=false",
+                                  "regards.amqp.enabled=true",
+
+                                  "debug=true",
+                                  //"spring.main.allow-bean-definition-overriding=true",
+
+                                  "regards.test.role=USER_ROLE",
+                                  "regards.test.user=user@regards.fr",
+                                  "regards.test.tenant=" + TENANT_PROJECTA,
+
+                                  "regards.processing.sharedStorage.basePath=" + sharedStorage.toFile()
+                                                                                              .getAbsolutePath(),
+                                  "regards.processing.executionWorkdir.basePath=" + execWorkdir.toFile()
+                                                                                               .getAbsolutePath(),
+
+                                  "regards.cipher.keyLocation=" + keyPath.toFile().getAbsolutePath(),
+                                  "regards.cipher.iv=1234567812345678",
+
+                                  "regards.tenant=" + DEFAULT_PROJECT_TENANT,
+                                  "regards.tenants=" + TENANT_PROJECTA + "," + TENANT_PROJECTB,
+                                  "regards.test.tenant=" + DEFAULT_PROJECT_TENANT,
+
+                                  "spring.jpa.properties.hibernate.default_schema=" + R2DBCDB_NAME,
+
+                                  "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://"
+                                  + pgHost
+                                  + ":"
+                                  + pgPort
+                                  + "/"
+                                  + DEFAULT_PROJECT_TENANT,
+                                  "regards.jpa.multitenant.tenants[0].tenant=" + DEFAULT_PROJECT_TENANT,
+                                  "regards.jpa.multitenant.tenants[0].driverClassName=org.postgresql.Driver",
+                                  "regards.jpa.multitenant.tenants[0].userName=" + pgsqlUser,
+                                  "regards.jpa.multitenant.tenants[0].password=" + pgsqlSecret,
+
+                                  "regards.jpa.multitenant.tenants[1].url=jdbc:postgresql://"
+                                  + pgHost
+                                  + ":"
+                                  + pgPort
+                                  + "/"
+                                  + TENANT_PROJECTA,
+                                  "regards.jpa.multitenant.tenants[1].tenant=" + TENANT_PROJECTA,
+                                  "regards.jpa.multitenant.tenants[1].driverClassName=org.postgresql.Driver",
+                                  "regards.jpa.multitenant.tenants[1].userName=" + pgsqlUser,
+                                  "regards.jpa.multitenant.tenants[1].password=" + pgsqlSecret,
+
+                                  "regards.jpa.multitenant.tenants[2].url=jdbc:postgresql://"
+                                  + pgHost
+                                  + ":"
+                                  + pgPort
+                                  + "/"
+                                  + TENANT_PROJECTB,
+                                  "regards.jpa.multitenant.tenants[2].tenant=" + TENANT_PROJECTB,
+                                  "regards.jpa.multitenant.tenants[2].driverClassName=org.postgresql.Driver",
+                                  "regards.jpa.multitenant.tenants[2].userName=" + pgsqlUser,
+                                  "regards.jpa.multitenant.tenants[2].password=" + pgsqlSecret,
+
+                                  "regards.processing.r2dbc.host=" + pgHost,
+                                  "regards.processing.r2dbc.port=" + pgPort,
+                                  "regards.processing.r2dbc.username=" + pgsqlUser,
+                                  "regards.processing.r2dbc.password=" + pgsqlSecret,
+                                  "regards.processing.r2dbc.dbname=" + R2DBCDB_NAME,
+                                  "regards.processing.r2dbc.schema=public",
+
+                                  "spring.rabbitmq.host=" + rabbitHost,
+                                  "spring.rabbitmq.port=" + rabbitPort,
+                                  "spring.rabbitmq.username=guest",
+                                  "spring.rabbitmq.password=guest",
+                                  "regards.amqp.management.host=" + rabbitHost,
+                                  "regards.amqp.management.port=" + rabbitManagementPort,
+                                  "regards.amqp.microservice.typeIdentifier=rs-procesing",
+                                  "regards.amqp.microservice.instanceIdentifier=rs-processing-" + new Random().nextInt(
+                                      100_000_000),
+
+                                  "jwt.secret=!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!",
+                                  "cloud.config.address=localhost",
+                                  "cloud.config.port=9031",
+                                  "cloud.config.searchLocations=classpath:/regards",
+                                  "cloud.registry.host=localhost",
+                                  "cloud.registry.port=9032").applyTo(applicationContext);
+        }
+
+        private void createDb(String pgsqlUser, String name) throws IOException, InterruptedException {
+            Container.ExecResult result = postgreSQLContainer.execInContainer(CREATE_DB, "-U", pgsqlUser, name);
+            LOGGER.info(LOGGER_MSG, name, result.getExitCode(), result.getStdout(), result.getStderr());
         }
     }
 
