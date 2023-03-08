@@ -147,4 +147,5 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
 
     Page<OrderDataFile> findByStateAndOrderId(FileState state, Long orderId, Pageable page);
 
+    boolean existsByStateAndOrderId(FileState available, Long orderId);
 }

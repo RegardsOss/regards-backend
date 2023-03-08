@@ -59,22 +59,22 @@ public class OrderControllerLinksIT extends OrderControllerIT {
     @Test
     public void testHateoasLinks_Done() throws URISyntaxException, InterruptedException {
         Long id = createOrderAs(OrderStatus.DONE);
-        checkAdminLinks(id, "restart", "delete");
-        checkUserLinks(id, "restart", "delete");
+        checkAdminLinks(id, "restart", "delete", "download");
+        checkUserLinks(id, "restart", "delete", "download");
     }
 
     @Test
     public void testHateoasLinks_DoneWithWarning() throws URISyntaxException, InterruptedException {
         Long id = createOrderAs(OrderStatus.DONE_WITH_WARNING);
-        checkAdminLinks(id, "restart", "retry", "delete");
-        checkUserLinks(id, "restart", "retry", "delete");
+        checkAdminLinks(id, "restart", "retry", "delete", "download");
+        checkUserLinks(id, "restart", "retry", "delete", "download");
     }
 
     @Test
     public void testHateoasLinks_Failed() throws URISyntaxException, InterruptedException {
         Long id = createOrderAs(OrderStatus.FAILED);
-        checkAdminLinks(id, "restart", "retry", "delete");
-        checkUserLinks(id, "restart", "retry", "delete");
+        checkAdminLinks(id, "restart", "retry", "delete", "download");
+        checkUserLinks(id, "restart", "retry", "delete", "download");
     }
 
     @Test

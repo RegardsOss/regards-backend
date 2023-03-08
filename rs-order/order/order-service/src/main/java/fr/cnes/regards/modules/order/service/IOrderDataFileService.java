@@ -27,7 +27,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -99,7 +98,6 @@ public interface IOrderDataFileService {
      * THIS METHOD DON'T UPDATE ANYTHING INTO DATABASE (it concerns Orders so it is the responsibility of OrderService,
      *
      * @return updated orders
-     * @see IOrderService#updateTenantOrdersComputations )
      */
     Set<Order> updateCurrentOrdersComputedValues();
 
@@ -114,5 +112,11 @@ public interface IOrderDataFileService {
      * Get a page of available files in a specific order
      */
     Page<OrderDataFileDTO> findAvailableFilesByOrder(Order order, Pageable page);
+
+    /**
+     * Does order have {@link OrderDataFile} in {@link fr.cnes.regards.modules.order.domain.FileState#AVAILABLE}
+     * status
+     */
+    boolean hasAvailableFiles(Long orderId);
 
 }

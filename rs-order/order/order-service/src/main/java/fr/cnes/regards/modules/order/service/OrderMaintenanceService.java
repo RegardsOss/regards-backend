@@ -58,7 +58,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     private static final int ORDER_JOB_PAUSED_MAX_RETRY = 10;
 
-    private IOrderMaintenanceService self;
+    private final IOrderMaintenanceService self;
 
     private final IOrderService orderService;
 
@@ -117,7 +117,11 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
                     order.setStatus(OrderStatus.DONE_WITH_WARNING);
                 }
             });
-            finishedOrders.forEach(order -> order.setAvailableFilesCount(0));
+            finishedOrders.forEach(order -> {
+                if (!orderDataFileService.hasAvailableFiles(order.getId())) {
+                    order.setAvailableFilesCount(0);
+                }
+            });
             orderRepository.saveAll(finishedOrders);
         }
     }

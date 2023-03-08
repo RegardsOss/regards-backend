@@ -79,21 +79,21 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     private final Set<String> noProxyHosts = Sets.newHashSet();
 
-    private IOrderDataFileRepository orderDataFileRepository;
+    private final IOrderDataFileRepository orderDataFileRepository;
 
-    private IOrderJobService orderJobService;
+    private final IOrderJobService orderJobService;
 
-    private IOrderDataFileService self;
+    private final IOrderDataFileService self;
 
-    private IFilesTasksRepository filesTasksRepository;
+    private final IFilesTasksRepository filesTasksRepository;
 
-    private IOrderRepository orderRepository;
+    private final IOrderRepository orderRepository;
 
-    private IStorageRestClient storageClient;
+    private final IStorageRestClient storageClient;
 
-    private IAuthenticationResolver authResolver;
+    private final IAuthenticationResolver authResolver;
 
-    private IProcessingEventSender processingEventSender;
+    private final IProcessingEventSender processingEventSender;
 
     private final IPublisher publisher;
 
@@ -284,6 +284,11 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         return new PageImpl<>(availableByOrderId.stream().map(OrderDataFileDTO::fromOrderDataFile).toList(),
                               availableByOrderId.getPageable(),
                               availableByOrderId.getTotalElements());
+    }
+
+    @Override
+    public boolean hasAvailableFiles(Long orderId) {
+        return orderDataFileRepository.existsByStateAndOrderId(FileState.AVAILABLE, orderId);
     }
 
     /**
