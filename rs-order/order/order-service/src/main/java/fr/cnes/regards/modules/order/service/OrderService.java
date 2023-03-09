@@ -58,7 +58,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -485,49 +484,51 @@ public class OrderService implements IOrderService {
             message = "USER_NOT_ALLOWED_TO_MANAGE_ORDER";
         } else {
             switch (action) {
-                case PAUSE:
-                    if (!Arrays.asList(OrderStatus.PENDING, OrderStatus.RUNNING).contains(order.getStatus())) {
+                case PAUSE -> {
+                    if (!order.getStatus().isOneOfStatuses(OrderStatus.PENDING, OrderStatus.RUNNING)) {
                         message = "ORDER_MUST_BE_PENDING_OR_RUNNING";
                     }
-                    break;
-                case RESUME:
+                }
+                case RESUME -> {
                     if (!isPaused(order.getId())) {
                         message = "ORDER_MUST_BE_PAUSED";
                     }
-                    break;
-                case DELETE:
-                    if (!Arrays.asList(OrderStatus.DONE,
-                                       OrderStatus.DONE_WITH_WARNING,
-                                       OrderStatus.PAUSED,
-                                       OrderStatus.FAILED).contains(order.getStatus())) {
-                        message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_PAUSED_OR_FAILED";
+                }
+                case DELETE -> {
+                    if (!order.getStatus()
+                              .isOneOfStatuses(OrderStatus.DONE,
+                                               OrderStatus.DONE_WITH_WARNING,
+                                               OrderStatus.PAUSED,
+                                               OrderStatus.EXPIRED,
+                                               OrderStatus.FAILED)) {
+                        message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_PAUSED_OR_FAILED_OR_EXPIRED";
                     }
-                    break;
-                case REMOVE:
+                }
+                case REMOVE -> {
                     if (!orderHelperService.isAdmin()) {
                         message = "USER_NOT_ALLOWED_TO_MANAGE_ORDER";
                     } else if (!OrderStatus.DELETED.equals(order.getStatus())) {
                         message = "ORDER_MUST_BE_DELETED";
                     }
-                    break;
-                case RESTART:
-                    if (!Arrays.asList(OrderStatus.DONE, OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED)
-                               .contains(order.getStatus())) {
+                }
+                case RESTART -> {
+                    if (!order.getStatus()
+                              .isOneOfStatuses(OrderStatus.DONE, OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED)) {
                         message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_FAILED";
                     }
-                    break;
-                case RETRY:
-                    if (!Arrays.asList(OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED).contains(order.getStatus())) {
+                }
+                case RETRY -> {
+                    if (!order.getStatus().isOneOfStatuses(OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED)) {
                         message = "ORDER_MUST_BE_DONE_WITH_WARNING_OR_FAILED";
                     } else if (hasProcessing(order)) {
                         message = "ORDER_HAS_PROCESSING";
                     }
-                    break;
-                case DOWNLOAD:
+                }
+                case DOWNLOAD -> {
                     if (OrderStatus.DELETED.equals(order.getStatus()) || order.getAvailableFilesCount() == 0) {
                         message = "ORDER_MUST_HAVE_AVAILABLE_FILES";
                     }
-                    break;
+                }
             }
         }
         return message;
