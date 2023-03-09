@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
+import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
 import fr.cnes.regards.modules.indexer.dao.deser.JsoniterDeserializeIIndexableStrategy;
@@ -72,6 +73,10 @@ public class EsAggsTest {
         try {
             gson = new GsonBuilder().registerTypeAdapter(Multimap.class, new MultimapAdapter()).create();
             repository = new EsRepository(gson,
+                                          new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
+                                          new AggregationBuilderFacetTypeVisitor(10, 1),
+                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE),
+                                          new SingleRuntimeTenantResolver("test"),
                                           Collections.emptyList(),
                                           propMap.get("regards.elasticsearch.host"),
                                           Integer.parseInt(propMap.get("regards.elasticsearch.http.port")),
@@ -79,9 +84,8 @@ public class EsAggsTest {
                                           null,
                                           null,
                                           0,
-                                          new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
-                                          new AggregationBuilderFacetTypeVisitor(10, 1),
-                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
+                                          15000,
+                                          1200000);
         } catch (NoNodeAvailableException e) {
             LOGGER.error("NO NODE AVAILABLE");
             repositoryOK = false;

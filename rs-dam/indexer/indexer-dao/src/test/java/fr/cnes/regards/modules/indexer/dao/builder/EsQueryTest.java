@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
+import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 import fr.cnes.regards.modules.indexer.dao.EsRepository;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
@@ -81,6 +82,10 @@ public class EsQueryTest {
             gson = new GsonBuilder().registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
                                     .create();
             repository = new EsRepository(gson,
+                                          new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
+                                          new AggregationBuilderFacetTypeVisitor(100, 5),
+                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE),
+                                          new SingleRuntimeTenantResolver("test"),
                                           Collections.emptyList(),
                                           "172.26.47.52",
                                           9200,
@@ -88,9 +93,8 @@ public class EsQueryTest {
                                           null,
                                           null,
                                           0,
-                                          new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
-                                          new AggregationBuilderFacetTypeVisitor(100, 5),
-                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
+                                          15000,
+                                          1200000);
 
             // This test is not intended to be executed on integration serveur but better locally to test
             // functionnalities during development phase

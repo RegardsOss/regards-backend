@@ -140,7 +140,6 @@ import org.elasticsearch.xcontent.XContentType;
 import org.hipparchus.util.FastMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
@@ -283,7 +282,6 @@ public class EsRepository implements IEsRepository {
     /**
      * AggregationBuilder visitor used for Elasticsearch search requests with facets
      */
-    @Autowired
     private final AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor;
 
     /**
@@ -296,19 +294,11 @@ public class EsRepository implements IEsRepository {
      */
     private final Gson gson;
 
-    @Autowired
     private final AttrDescToJsonMapping toMapping;
 
     private final JsonDeserializeStrategy<IIndexable> deserializeHitsStrategy;
 
-    @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
-    @Value("${regards.elasticsearch.search.request.timeout:15000}")
-    private int searchRequestTimeout;
-
-    @Value("${regards.elasticsearch.index.request.timeout:1200000}")
-    private int indexRequestTimeout;
 
     private RequestOptions searchOptions;
 
@@ -335,7 +325,11 @@ public class EsRepository implements IEsRepository {
 
     private DefaultScrollClearResponseActionListener scrollClearListener = new DefaultScrollClearResponseActionListener();
 
-    public EsRepository(@Autowired Gson gson,
+    public EsRepository(Gson gson,
+                        JsonDeserializeStrategy<IIndexable> deserStrategy,
+                        AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor,
+                        AttrDescToJsonMapping toMapping,
+                        IRuntimeTenantResolver tenantResolver,
                         @Value("${regards.elasticsearch.hosts:#{T(java.util.Collections).emptyList()}}")
                         List<String> esHosts,
                         @Value("${regards.elasticsearch.host:}") String esHost,
@@ -344,12 +338,13 @@ public class EsRepository implements IEsRepository {
                         @Value("${regards.elasticsearch.http.username:}") String username,
                         @Value("${regards.elasticsearch.http.password:}") String password,
                         @Value("${regards.elasticsearch.http.buffer.limit:104857600}") int elasticClientBufferLimit,
-                        @Autowired JsonDeserializeStrategy<IIndexable> deserStrategy,
-                        AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor,
-                        AttrDescToJsonMapping toMapping) {
-        this.toMapping = toMapping;
+                        @Value("${regards.elasticsearch.search.request.timeout:15000}") int searchRequestTimeout,
+                        @Value("${regards.elasticsearch.index.request.timeout:1200000}") int indexRequestTimeout) {
         this.gson = gson;
+        this.deserializeHitsStrategy = deserStrategy;
         this.aggBuilderFacetTypeVisitor = aggBuilderFacetTypeVisitor;
+        this.toMapping = toMapping;
+        this.tenantResolver = tenantResolver;
 
         // Connection properties
         List<String> httpHosts = esHosts;
@@ -398,8 +393,6 @@ public class EsRepository implements IEsRepository {
         } catch (IOException | RuntimeException e) {
             throw new NoNodeAvailableException("Error while pinging Elasticsearch (" + connectionInfoMessage + ")", e);
         }
-
-        this.deserializeHitsStrategy = deserStrategy;
     }
 
     /**

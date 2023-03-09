@@ -15,6 +15,7 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
+import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
@@ -409,6 +410,10 @@ public class EsRepositoryIT {
                                     .create();
 
             repository = new EsRepository(gson,
+                                          new GsonDeserializeIIndexableStrategy(gson),
+                                          new AggregationBuilderFacetTypeVisitor(10, 1),
+                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE),
+                                          new SingleRuntimeTenantResolver("test"),
                                           Collections.emptyList(),
                                           elasticHost,
                                           elasticPort,
@@ -416,9 +421,8 @@ public class EsRepositoryIT {
                                           null,
                                           null,
                                           0,
-                                          new GsonDeserializeIIndexableStrategy(gson),
-                                          new AggregationBuilderFacetTypeVisitor(10, 1),
-                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
+                                          15000,
+                                          1200000);
         } catch (NoNodeAvailableException e) {
             repositoryOK = false;
         }
