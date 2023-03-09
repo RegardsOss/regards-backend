@@ -278,9 +278,13 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
     }
 
     private boolean fileAlreadyInZip(OrderDataFile dataFile, List<OrderDataFile> downloadedFiles) {
-        return downloadedFiles.stream()
-                              .anyMatch(f -> f.getChecksum().equals(dataFile.getChecksum()) && f.getFilename()
-                                                                                                .equals(dataFile.getFilename()));
+        return downloadedFiles.stream().anyMatch(f -> {
+            if (f.getChecksum() != null) {
+                return f.getChecksum().equals(dataFile.getChecksum()) && f.getFilename().equals(dataFile.getFilename());
+            } else {
+                return f.getFilename().equals(dataFile.getFilename());
+            }
+        });
     }
 
     protected boolean downloadDataFileToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles,

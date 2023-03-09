@@ -44,13 +44,13 @@ import java.util.zip.ZipFile;
  **/
 public class OrderDownloadServiceTest {
 
-    private IOrderDataFileService dataFileService = Mockito.mock(IOrderDataFileService.class);
+    private final IOrderDataFileService dataFileService = Mockito.mock(IOrderDataFileService.class);
 
-    private IOrderJobService orderJobService = Mockito.mock(IOrderJobService.class);
+    private final IOrderJobService orderJobService = Mockito.mock(IOrderJobService.class);
 
-    private IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+    private final IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
 
-    private IProcessingEventSender processingEventSender = Mockito.mock(IProcessingEventSender.class);
+    private final IProcessingEventSender processingEventSender = Mockito.mock(IProcessingEventSender.class);
 
     private OrderDownloadService service;
 
@@ -82,7 +82,7 @@ public class OrderDownloadServiceTest {
 
         // THEN
         Assert.assertTrue(files.stream().allMatch(f -> f.getState() == FileState.DOWNLOADED));
-        try (ZipFile zipFile = new ZipFile("target/test.zip");) {
+        try (ZipFile zipFile = new ZipFile("target/test.zip")) {
             Assert.assertEquals(files.size(), zipFile.stream().count());
         }
 
@@ -96,12 +96,14 @@ public class OrderDownloadServiceTest {
         // - FILE 2 | file1_ql_md.txt | checksum=1234
         // - FILE 3 | file1_ql_md.txt | checksum=1234
         // - FILE 4 | file1_ql_md.txt | checksum=12345
-        // - FILE 4 | file1_ql_hd.txt | checksum=1234
+        // - FILE 5 | file1_ql_hd.txt | checksum=1234
+        // - FILE 6 | file1_ql_hd.txt | checksum null simulate external file
         List<OrderDataFile> files = List.of(initFile("1", "file1_ql_sd.txt", "123"),
                                             initFile("2", "file1_ql_md.txt", "1234"),
                                             initFile("3", "file1_ql_md.txt", "1234"),
                                             initFile("4", "file1_ql_md.txt", "12345"),
-                                            initFile("5", "file1_ql_hd.txt", "1234"));
+                                            initFile("5", "file1_ql_hd.txt", "1234"),
+                                            initFile("6", "file1_ql_hd.txt", null));
 
         // WHEN
         try (FileOutputStream os = new FileOutputStream("target/test.zip")) {
@@ -112,7 +114,7 @@ public class OrderDownloadServiceTest {
         // We expect to have FILE1, FILE2, FILE4 and FILE5 in zip. FILE3 is the same as FILE2 (filename and checksum) so
         // it is not in the result zip.
         Assert.assertTrue(files.stream().allMatch(f -> f.getState() == FileState.DOWNLOADED));
-        try (ZipFile zipFile = new ZipFile("target/test.zip");) {
+        try (ZipFile zipFile = new ZipFile("target/test.zip")) {
             Assert.assertEquals(files.size() - 1, zipFile.stream().count());
         }
 
