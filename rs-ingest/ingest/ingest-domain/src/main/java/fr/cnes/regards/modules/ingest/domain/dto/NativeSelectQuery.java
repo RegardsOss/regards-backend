@@ -24,6 +24,8 @@ import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
@@ -81,8 +83,10 @@ public class NativeSelectQuery {
     }
 
     public void andPredicate(String predicate, String paramName, String paramValue) {
-        params.put(paramName, paramValue);
-        predicates.add(predicate);
+        if (!StringUtils.isBlank(paramValue)) {
+            params.put(paramName, paramValue);
+            predicates.add(predicate);
+        }
     }
 
     public void andPredicate(String predicate, String paramName, Date date) {
@@ -98,43 +102,53 @@ public class NativeSelectQuery {
                                  String predicateStop,
                                  String rootParamName,
                                  Collection<String> paramValues) {
-        Set<String> preparedPredicates = Sets.newHashSet();
-        int i = 0;
-        for (String paramValue : paramValues) {
-            String paramName = rootParamName + i;
-            preparedPredicates.add(":" + paramName);
-            this.params.put(paramName, paramValue);
-            i = i + 1;
+        if (!CollectionUtils.isEmpty(paramValues)) {
+            Set<String> preparedPredicates = Sets.newHashSet();
+            int i = 0;
+            for (String paramValue : paramValues) {
+                String paramName = rootParamName + i;
+                preparedPredicates.add(":" + paramName);
+                this.params.put(paramName, paramValue);
+                i = i + 1;
+            }
+            predicates.add(predicateStart + String.join(" , ", preparedPredicates) + predicateStop);
         }
-        predicates.add(predicateStart + String.join(" , ", preparedPredicates) + predicateStop);
     }
 
     public void addOneOfString(String rootParamName, ValuesRestriction<String> values) {
-        Set<String> internalPredicates = Sets.newHashSet();
-        int i = 0;
-        for (String paramValue : values.getValues()) {
-            String likeValue = AbstractSpecificationsBuilder.getLikeStringExpression(values.getMatchMode(), paramValue);
-            String paramName = rootParamName + i;
-            String operator;
-            if (values.getMatchMode() == ValuesRestrictionMatchMode.STRICT) {
-                if (values.getMode() == ValuesRestrictionMode.INCLUDE) {
-                    operator = "=";
+        if (values != null && !CollectionUtils.isEmpty(values.getValues())) {
+            Set<String> internalPredicates = Sets.newHashSet();
+            int i = 0;
+            for (String paramValue : values.getValues()) {
+                String likeValue = AbstractSpecificationsBuilder.getLikeStringExpression(values.getMatchMode(),
+                                                                                         paramValue,
+                                                                                         values.isIgnoreCase());
+                String paramName = rootParamName + i;
+                String operator;
+                if (values.getMatchMode() == ValuesRestrictionMatchMode.STRICT) {
+                    if (values.getMode() == ValuesRestrictionMode.INCLUDE) {
+                        operator = "=";
+                    } else {
+                        operator = "!=";
+                    }
                 } else {
-                    operator = "!=";
+                    if (values.getMode() == ValuesRestrictionMode.INCLUDE) {
+                        operator = "like";
+                    } else {
+                        operator = "not like";
+                    }
                 }
-            } else {
-                if (values.getMode() == ValuesRestrictionMode.INCLUDE) {
-                    operator = "like";
+                if (values.isIgnoreCase()) {
+                    internalPredicates.add("(" + "LOWER(" + rootParamName + ") " + operator + " :" + paramName + ")");
                 } else {
-                    operator = "not like";
+                    internalPredicates.add("(" + rootParamName + " " + operator + " :" + paramName + ")");
                 }
+                this.params.put(paramName, likeValue);
+                i = i + 1;
             }
-            internalPredicates.add("(" + rootParamName + " " + operator + " :" + paramName + ")");
-            this.params.put(paramName, likeValue);
-            i = i + 1;
+            String oneOf = Joiner.on(" OR ").join(internalPredicates);
+            predicates.add("(" + oneOf + ")");
         }
-        String oneOf = Joiner.on(" OR ").join(internalPredicates);
-        predicates.add("(" + oneOf + ")");
     }
 
     /**

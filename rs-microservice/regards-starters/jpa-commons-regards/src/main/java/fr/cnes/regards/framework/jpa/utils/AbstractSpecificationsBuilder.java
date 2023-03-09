@@ -299,11 +299,9 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         Expression expr = getPath(root, pathToField);
         // If given value is a string calculate value and expression with matchMode and ignore case option
         if (value instanceof String sValue) {
+            lValue = getLikeStringExpression(matchMode, sValue, ignoreCase);
             if (ignoreCase) {
-                lValue = getLikeStringExpression(matchMode, sValue).toLowerCase();
                 expr = cb.lower(expr);
-            } else {
-                lValue = getLikeStringExpression(matchMode, sValue);
             }
         }
         if (matchMode == ValuesRestrictionMatchMode.STRICT) {
@@ -322,19 +320,22 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
      *     <li>%value for ends with</li>
      * </ul>
      */
-    public static String getLikeStringExpression(ValuesRestrictionMatchMode matchMode, String value) {
+    public static String getLikeStringExpression(ValuesRestrictionMatchMode matchMode,
+                                                 String value,
+                                                 boolean ignoreCase) {
+        String ignoreCaseValue = ignoreCase ? value.toLowerCase() : value;
         switch (matchMode) {
             case CONTAINS -> {
-                return ("%" + value + "%");
+                return ("%" + ignoreCaseValue + "%");
             }
             case STARTS_WITH -> {
-                return (value + "%");
+                return (ignoreCaseValue + "%");
             }
             case ENDS_WITH -> {
-                return ("%" + value);
+                return ("%" + ignoreCaseValue);
             }
             default -> {
-                return value;
+                return ignoreCaseValue;
             }
         }
     }

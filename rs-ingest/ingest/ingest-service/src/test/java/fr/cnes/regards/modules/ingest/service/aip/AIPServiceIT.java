@@ -319,6 +319,20 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         results = aipService.findTags(filters);
         Assert.assertEquals(0, results.size());
 
+        // Test ignoreCase
+        filters = new SearchAIPsParameters().withProviderIdsIncludedLike(List.of("ProVider 1"),
+                                                                         ValuesRestrictionMatchMode.CONTAINS,
+                                                                         true);
+        results = aipService.findTags(filters);
+        Assert.assertEquals(2, results.size());
+
+        filters = new SearchAIPsParameters().withAipIdsExcluded(List.of())
+                                            .withProviderIdsIncludedLike(List.of("ProVider 1"),
+                                                                         ValuesRestrictionMatchMode.CONTAINS,
+                                                                         false);
+        results = aipService.findTags(filters);
+        Assert.assertEquals(0, results.size());
+
         // Test with session
         filters = new SearchAIPsParameters().withSession(SESSION_0)
                                             .withSessionOwner(SESSION_OWNER_0)
