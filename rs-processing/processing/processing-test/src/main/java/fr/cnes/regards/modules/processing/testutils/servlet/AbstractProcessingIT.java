@@ -225,6 +225,26 @@ public abstract class AbstractProcessingIT implements InitializingBean {
             int rabbitPort = onCi ? 5672 : rabbitMQContainer.getMappedPort(5672);
             int rabbitManagementPort = onCi ? 15672 : rabbitMQContainer.getMappedPort(15672);
 
+            testPropertyValues(applicationContext,
+                               keyPath,
+                               sharedStorage,
+                               execWorkdir,
+                               pgHost,
+                               pgPort,
+                               rabbitHost,
+                               rabbitPort,
+                               rabbitManagementPort);
+        }
+
+        private void testPropertyValues(ConfigurableApplicationContext applicationContext,
+                                        Path keyPath,
+                                        Path sharedStorage,
+                                        Path execWorkdir,
+                                        String pgHost,
+                                        int pgPort,
+                                        String rabbitHost,
+                                        int rabbitPort,
+                                        int rabbitManagementPort) {
             TestPropertyValues.of("regards.microservices.maintenance.enabled=false",
 
                                   "regards.jpa.multitenant.enabled=true",
