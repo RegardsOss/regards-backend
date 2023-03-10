@@ -35,8 +35,7 @@ public class OrderRequestFilters {
     /**
      * File types to order
      */
-    @NotEmpty(message = "There should be at least one datatype to order. DataType can be RAWDATA, THUMBAIL or "
-                        + "QUICKLOOK")
+    @NotEmpty(message = "There should be at least one datatype to order. DataType can be RAWDATA or QUICKLOOK")
     private final Set<DataTypeLight> dataTypes;
 
     /**
