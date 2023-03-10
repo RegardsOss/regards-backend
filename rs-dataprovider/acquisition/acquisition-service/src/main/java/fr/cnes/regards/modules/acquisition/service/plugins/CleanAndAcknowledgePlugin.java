@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
@@ -105,7 +106,7 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
                      optional = true)
     public Boolean recursiveCheck;
 
-    private String className = this.getClass().getSimpleName();
+    private final String className = this.getClass().getSimpleName();
 
     @Autowired
     private INotificationClient notificationClient;
@@ -159,25 +160,52 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
      * @return number of ack that could not be created
      */
     private int createAck(AcquisitionFile acqFile) {
-
-        try {
-            // Create acknowledgement directory (if necessary)
-            Path ackDirPath = acqFile.getFilePath().getParent().resolve(folderAck);
-            Files.createDirectories(ackDirPath);
-
-            // Create acknowledgement
-            Path ackFilePath = ackDirPath.resolve(acqFile.getFilePath().getFileName() + extensionAck);
-            Files.createFile(ackFilePath);
-            Files.setLastModifiedTime(ackFilePath, FileTime.from(OffsetDateTime.now().toInstant()));
-            return 0;
-        } catch (IOException e) {
-            // Skipping silently
-            String msg = String.format("Cannot create acknowledgement for  file \"%s\" because %s",
-                                       acqFile.getFilePath().toString(),
-                                       e.getClass().getSimpleName());
-            LOGGER.warn(msg, e);
-            return 1;
+        Path ackDirPath = acqFile.getFilePath().getParent().resolve(folderAck);
+        Path ackFilePath = ackDirPath.resolve(acqFile.getFilePath().getFileName() + extensionAck);
+        int errorCount = 1;
+        if (createAckFileWithRetries(ackFilePath)) {
+            try {
+                // Update last modified date of the ack file in case of the ack already exists.
+                Files.setLastModifiedTime(ackFilePath, FileTime.from(OffsetDateTime.now().toInstant()));
+                errorCount = 0;
+            } catch (IOException e) {
+                LOGGER.error("Error updating last modification date of newly created/updated ack file", e);
+            }
         }
+        return errorCount;
+    }
+
+    /**
+     * Creates the given Ack file by creating parent directory if missing and retrying given number of time in case
+     * of IO error.
+     */
+    private boolean createAckFileWithRetries(Path ackFilePath) {
+        boolean success = true;
+        int loopCount = 0;
+        do {
+            try {
+                if (loopCount > 0) {
+                    // Hack to handle possible nfs write error of file on disk, retry ack write with time delay
+                    // between each try.
+                    Thread.sleep(loopCount * 5_000L);
+                }
+                // Create acknowledgement directory (if necessary)
+                Files.createDirectories(ackFilePath.getParent());
+                // Create acknowledgement
+                Files.createFile(ackFilePath);
+            } catch (FileAlreadyExistsException e) {
+                LOGGER.warn(e.getMessage(), e);
+            } catch (IOException | InterruptedException e) {
+                String msg = String.format("%sCannot create acknowledgement for  file \"%s\" because %s",
+                                           loopCount > 0 ? "[Retry] " : "",
+                                           ackFilePath,
+                                           e.getClass().getSimpleName());
+                LOGGER.warn(msg, e);
+                success = false;
+            }
+            loopCount++;
+        } while (!success && loopCount <= 3);
+        return success;
     }
 
     @Override
