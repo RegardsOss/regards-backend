@@ -357,8 +357,9 @@ public class PluginService implements IPluginService, InitializingBean {
             IPluginParam oldParam = oldConf.getParameter(paramMeta.getName());
             if ((newParam != null) && newParam.hasValue()) {
                 // Check if parameter is sensitive and value changed. If it does, encrypt the new value
-                if (Boolean.TRUE.equals(paramMeta.isSensible()) && !Objects.equals(newParam.getValue(),
-                                                                                   oldParam.getValue())) {
+                if (Boolean.TRUE.equals(paramMeta.isSensible()) && (oldParam == null
+                                                                    || !Objects.equals(newParam.getValue(),
+                                                                                       oldParam.getValue()))) {
                     manageSensibleParameter(newParam);
                 }
             }
