@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
@@ -42,6 +43,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeTypeUtils;
+
+import java.time.OffsetDateTime;
 
 @Component
 @MultitenantTransactional
@@ -126,7 +129,13 @@ public class UserAccountManagerImpl implements IUserAccountManager {
             HttpStatus status = response.getStatusCode();
             switch (status) {
                 case OK:
-                    return Try.success(response.getBody().getContent());
+                    ProjectUser user = ResponseEntityUtils.extractContentOrNull(response);
+                    if (user != null) {
+                        user.setLastConnection(OffsetDateTime.now());
+                        return Try.of(() -> usersClient.updateProjectUser(user.getId(), user).getBody().getContent());
+                    } else {
+                        return Try.failure(new RuntimeException("Invalid user info response from admin service"));
+                    }
                 case NOT_FOUND:
                     AccessRequestDto accessRequestDto = new AccessRequestDto().setEmail(userInfo.getEmail())
                                                                               .setFirstName(userInfo.getFirstname())
@@ -138,7 +147,8 @@ public class UserAccountManagerImpl implements IUserAccountManager {
                                                                                                        UserVisibility.READABLE))
                                                                                                    .toJavaList())
                                                                               .setOrigin(serviceProviderName);
-                    return Try.of(() -> usersClient.createUser(accessRequestDto).getBody().getContent());
+                    return Try.of(() -> ResponseEntityUtils.extractContentOrThrow(usersClient.createUser(
+                        accessRequestDto), () -> new RuntimeException("Error creating new user")));
                 default:
                     return Try.failure(new RuntimeException(String.format(
                         "Failed to retrieve existing or to create new project user. Returned status code is %s.",
