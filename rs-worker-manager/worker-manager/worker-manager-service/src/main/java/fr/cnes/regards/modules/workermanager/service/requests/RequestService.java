@@ -54,6 +54,7 @@ import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManag
 import fr.cnes.regards.modules.workermanager.service.requests.job.ScanRequestJob;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionsRequestsInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -89,7 +90,8 @@ public class RequestService {
 
     private static final String DELAYED_MESSAGE = "Your request has been delayed as no worker is currently matching content type <%s>.";
 
-    private static final String INVALID_MESSAGE = "Your request is not valid as its body has been invalidated by the matching worker <%s>.";
+    private static final String INVALID_MESSAGE = "Your request is not valid (invalidated by the"
+                                                  + " matching worker <%s>). %s";
 
     private static final String SUCCESS_MESSAGE = "Your request has been successfully handled by the <%s> worker.";
 
@@ -679,6 +681,7 @@ public class RequestService {
      */
     private Optional<ResponseEvent> generateResponseFromRequest(Request request) {
         ResponseEvent event = null;
+        String errorMessage = StringUtils.defaultString(request.getError(), "");
         switch (request.getStatus()) {
             case RUNNING:
                 // Do not inform clients for worker running process
@@ -701,7 +704,9 @@ public class RequestService {
                                             request.getRequestId(),
                                             getRequestTypeForSds(),
                                             request.getSource())
-                                     .withMessage(String.format(INVALID_MESSAGE, request.getDispatchedWorkerType()));
+                                     .withMessage(String.format(INVALID_MESSAGE,
+                                                                request.getDispatchedWorkerType(),
+                                                                errorMessage));
                 break;
             case SUCCESS:
                 event = ResponseEvent.build(ResponseStatus.SUCCESS,
@@ -717,7 +722,7 @@ public class RequestService {
                                             request.getSource())
                                      .withMessage(String.format(ERROR_MESSAGE,
                                                                 request.getDispatchedWorkerType(),
-                                                                request.getError()));
+                                                                errorMessage));
                 break;
             case TO_DISPATCH:
             case TO_DELETE:
