@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.ltamanager.dto.submission.output;
 
+import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
@@ -33,6 +36,8 @@ import java.util.Objects;
  * @author Iliana Ghazali
  **/
 public class SubmissionResponseDto {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SubmissionResponseDto.class);
 
     @NotBlank(message = "correlationId is required")
     @Schema(description = "Identifier to track the request through the workflow.")
@@ -72,6 +77,22 @@ public class SubmissionResponseDto {
         this.correlationId = correlationId;
         this.expires = expires;
         this.session = session;
+    }
+
+    public static SubmissionResponseDto buildDeniedSubmissionResponseDto(SubmissionRequestDto requestDto,
+                                                                         String message) {
+        String productId = requestDto.getId();
+        String correlationId = requestDto.getCorrelationId();
+        LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and productId \"{}\" was rejected (cause: {}).",
+                     correlationId,
+                     productId,
+                     message);
+        return new SubmissionResponseDto(correlationId,
+                                         SubmissionResponseStatus.DENIED,
+                                         productId,
+                                         null,
+                                         requestDto.getSession(),
+                                         message);
     }
 
     public String getCorrelationId() {
@@ -161,4 +182,5 @@ public class SubmissionResponseDto {
                + '\''
                + '}';
     }
+
 }

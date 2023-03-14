@@ -126,7 +126,7 @@ public class SubmissionCreateService {
                                                                                       currentDateTime,
                                                                                       requestExpiresInHour));
             } catch (LtaSettingsException e) {
-                responses.add(SubmissionResponseDtoUtils.buildInvalidRequestResponseDto(requestDto, e));
+                responses.add(SubmissionResponseDto.buildDeniedSubmissionResponseDto(requestDto, e.getMessage()));
             }
         }
         // 2) Handle submission requests in success

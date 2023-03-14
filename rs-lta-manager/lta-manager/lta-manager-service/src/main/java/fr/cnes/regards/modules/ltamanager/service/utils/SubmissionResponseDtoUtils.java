@@ -19,9 +19,7 @@
 package fr.cnes.regards.modules.ltamanager.service.utils;
 
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
-import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettingsException;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
-import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import org.slf4j.Logger;
@@ -109,22 +107,6 @@ public final class SubmissionResponseDtoUtils {
                                          request.getExpiryDate(),
                                          request.getSession(),
                                          null);
-    }
-
-    public static SubmissionResponseDto buildInvalidRequestResponseDto(SubmissionRequestDto requestDto,
-                                                                       LtaSettingsException exception) {
-        String productId = requestDto.getId();
-        String correlationId = requestDto.getCorrelationId();
-        LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and id \"{}\" was rejected.",
-                     correlationId,
-                     productId,
-                     exception);
-        return new SubmissionResponseDto(correlationId,
-                                         SubmissionResponseStatus.DENIED,
-                                         productId,
-                                         null,
-                                         requestDto.getSession(),
-                                         exception.getMessage());
     }
 
 }
