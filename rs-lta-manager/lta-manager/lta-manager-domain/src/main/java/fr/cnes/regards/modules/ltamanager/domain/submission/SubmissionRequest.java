@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ltamanager.domain.submission;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.modules.ltamanager.domain.settings.DatatypeParameter;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import org.hibernate.annotations.TypeDef;
@@ -29,7 +30,9 @@ import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -103,6 +106,36 @@ public class SubmissionRequest {
         this.submissionStatus = submissionStatus;
         this.submittedProduct = submittedProduct;
         this.originUrn = originUrn;
+    }
+
+    public static SubmissionRequest buildSubmissionRequest(SubmissionRequestDto requestDto,
+                                                           DatatypeParameter datatypeConfig,
+                                                           OffsetDateTime currentDateTime,
+                                                           Integer requestExpiresInHour) {
+        String session = requestDto.getSession();
+        String owner = requestDto.getOwner();
+
+        if (session == null) {
+            // if session is not provided, replace it with <owner.name>-<YYYYMMdd>
+            session = String.format("%s-%s",
+                                    owner.split("@")[0],
+                                    currentDateTime.format(DateTimeFormatter.BASIC_ISO_DATE));
+        }
+
+        return new SubmissionRequest(requestDto.getCorrelationId(),
+                                     owner,
+                                     session,
+                                     requestDto.isReplaceMode(),
+                                     new SubmissionStatus(currentDateTime,
+                                                          currentDateTime,
+                                                          requestExpiresInHour,
+                                                          SubmissionRequestState.VALIDATED,
+                                                          null),
+                                     new SubmittedProduct(requestDto.getDatatype(),
+                                                          datatypeConfig.getModel(),
+                                                          Paths.get(datatypeConfig.getStorePath()),
+                                                          requestDto),
+                                     requestDto.getOriginUrn());
     }
 
     public String getCorrelationId() {
@@ -222,4 +255,5 @@ public class SubmissionRequest {
                + submittedProduct
                + '}';
     }
+
 }

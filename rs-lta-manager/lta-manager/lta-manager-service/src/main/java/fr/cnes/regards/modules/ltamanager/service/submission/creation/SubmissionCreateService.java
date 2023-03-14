@@ -28,10 +28,7 @@ import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepos
 import fr.cnes.regards.modules.ltamanager.domain.settings.DatatypeParameter;
 import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettingsException;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
-import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
-import fr.cnes.regards.modules.ltamanager.domain.submission.SubmittedProduct;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
-import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.service.settings.LtaSettingService;
 import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
@@ -43,7 +40,6 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -123,10 +119,12 @@ public class SubmissionCreateService {
                                                                                                   settingService.getDatypesConfig(
                                                                                                       settings),
                                                                                                   currentDateTime);
-                SubmissionRequest submissionRequest = buildSubmissionRequest(requestDto,
-                                                                             datatypeConfig,
-                                                                             currentDateTime);
-                submissionRequestsToSave.add(submissionRequest);
+                Integer requestExpiresInHour = settingService.getRequestExpiresInHoursConfig(settingService.retrieve());
+
+                submissionRequestsToSave.add(SubmissionRequest.buildSubmissionRequest(requestDto,
+                                                                                      datatypeConfig,
+                                                                                      currentDateTime,
+                                                                                      requestExpiresInHour));
             } catch (LtaSettingsException e) {
                 responses.add(SubmissionResponseDtoUtils.buildInvalidRequestResponseDto(requestDto, e));
             }
@@ -137,35 +135,6 @@ public class SubmissionCreateService {
         }
         // 3) Return responses from requests in success or in error
         return responses;
-    }
-
-    private SubmissionRequest buildSubmissionRequest(SubmissionRequestDto requestDto,
-                                                     DatatypeParameter datatypeConfig,
-                                                     OffsetDateTime currentDateTime) {
-        String session = requestDto.getSession();
-        String owner = requestDto.getOwner();
-
-        if (session == null) {
-            // if session is not provided, replace it with <owner.name>-<YYYYMMdd>
-            session = String.format("%s-%s",
-                                    owner.split("@")[0],
-                                    currentDateTime.format(DateTimeFormatter.BASIC_ISO_DATE));
-        }
-
-        return new SubmissionRequest(requestDto.getCorrelationId(),
-                                     owner,
-                                     session,
-                                     requestDto.isReplaceMode(),
-                                     new SubmissionStatus(currentDateTime,
-                                                          currentDateTime,
-                                                          settingService.getRequestExpiresInHoursConfig(settingService.retrieve()),
-                                                          SubmissionRequestState.VALIDATED,
-                                                          null),
-                                     new SubmittedProduct(requestDto.getDatatype(),
-                                                          datatypeConfig.getModel(),
-                                                          Paths.get(datatypeConfig.getStorePath()),
-                                                          requestDto),
-                                     requestDto.getOriginUrn());
     }
 
     // -------------------------------
