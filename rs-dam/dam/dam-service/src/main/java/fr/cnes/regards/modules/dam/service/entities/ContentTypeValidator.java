@@ -20,13 +20,14 @@ package fr.cnes.regards.modules.dam.service.entities;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.dam.service.entities.exception.InvalidCharsetException;
 import fr.cnes.regards.modules.dam.service.entities.exception.InvalidContentTypeException;
 import fr.cnes.regards.modules.dam.service.entities.exception.InvalidFilenameException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Utility class to validate supported content type for a file data type.
@@ -40,56 +41,32 @@ public final class ContentTypeValidator {
      */
     public final static String TEXT_MARKDOWN_ALTERNATIVE_MEDIATYPE = "text/x-markdown";
 
+    /**
+     * List of file content types allowed on a product description
+     */
+    public static final List<String> CONTENT_TYPE_DESCRIPTION_ALLOWED = Arrays.asList(MediaType.APPLICATION_PDF_VALUE,
+                                                                                      MediaType.TEXT_MARKDOWN_VALUE,
+                                                                                      TEXT_MARKDOWN_ALTERNATIVE_MEDIATYPE,
+                                                                                      MediaType.TEXT_HTML_VALUE,
+                                                                                      MediaType.TEXT_PLAIN_VALUE);
+
     private ContentTypeValidator() {
         // Nothing to do
     }
 
     public static void supports(DataType dataType, String filename, String contentType) throws ModuleException {
-
         // Original file must be given
-        if ((filename == null) || filename.isEmpty()) {
+        if (StringUtils.isEmpty(filename)) {
             throw new InvalidFilenameException();
         }
-
-        switch (dataType) {
-            case DESCRIPTION:
-                checkFileSupported(contentType,
-                                   Arrays.asList(MediaType.APPLICATION_PDF_VALUE,
-                                                 MediaType.TEXT_MARKDOWN_VALUE,
-                                                 TEXT_MARKDOWN_ALTERNATIVE_MEDIATYPE,
-                                                 MediaType.TEXT_HTML_VALUE));
-                break;
-            default:
-                // No restriction
-                break;
+        // Restrictions only applies to DESCRIPTION for now
+        if (DataType.DESCRIPTION.equals(dataType)) {
+            checkFileSupported(contentType, CONTENT_TYPE_DESCRIPTION_ALLOWED);
         }
-    }
-
-    public static void supportsForReference(DataType dataType, String filename, String contentType)
-        throws ModuleException {
-
-        // Original file must be given
-        if ((filename == null) || filename.isEmpty()) {
-            throw new InvalidFilenameException();
-        }
-
-        switch (dataType) {
-            case DESCRIPTION:
-                checkFileSupported(contentType,
-                                   Arrays.asList(MediaType.APPLICATION_PDF_VALUE,
-                                                 MediaType.TEXT_MARKDOWN_VALUE,
-                                                 MediaType.TEXT_HTML_VALUE,
-                                                 TEXT_MARKDOWN_ALTERNATIVE_MEDIATYPE));
-                break;
-            default:
-                // No restriction
-                break;
-        }
-
     }
 
     private static void checkFileSupported(String contentType, Collection<String> expectedContentTypes)
-        throws InvalidCharsetException, InvalidContentTypeException {
+        throws InvalidContentTypeException {
 
         // Check content types
         if (expectedContentTypes != null) {

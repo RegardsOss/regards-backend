@@ -737,7 +737,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         if (refs != null) {
             for (DataFile ref : refs) {
                 // Same logic as for normal file is applied to check format support
-                ContentTypeValidator.supportsForReference(dataType, ref.getFilename(), ref.getMimeType().toString());
+                ContentTypeValidator.supports(dataType, ref.getFilename(), ref.getMimeType().toString());
                 // Compute checksum on URI for removal
                 try {
                     ref.setChecksum(ChecksumUtils.computeHexChecksum(ref.getUri(),
