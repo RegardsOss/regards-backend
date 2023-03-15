@@ -239,6 +239,11 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         List<OrderDataFile> updatedDataFiles = new ArrayList<>();
         AtomicBoolean error = new AtomicBoolean();
 
+        // get all datafiles from suborders
+        List<OrderDataFile> orderDataFiles = getOrderDataFilesInSuborder(ProcessInputCorrelationIdentifier.repr(
+            batchSuborderIdentifier));
+        handleFeaturesNotProcessed(outputs, orderDataFiles, updatedDataFiles, evt);
+
         for (POutputFileDTO outputFile : outputs) {
 
             if (error.get()) {
@@ -247,12 +252,13 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
 
             allInputCidsReferenceTheSameFeature(outputFile.getInputCorrelationIds()).peek(featureIpId -> {
                 String orderDataFileUrl = ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, featureIpId);
-                List<OrderDataFile> orderDataFiles = getOrderDataFilesInSuborder(orderDataFileUrl);
-                int orderDataFileCount = orderDataFiles.size();
+
+                List<OrderDataFile> orderDataFilesUrls = orderDataFiles.stream().filter(file -> file.getUrl().startsWith(orderDataFileUrl)).toList();
+                int orderDataFileCount = orderDataFilesUrls.size();
                 if (orderDataFileCount != 1) {
                     LOGGER.warn(WARNING_MSG, logPrefix(evt), orderDataFileUrl, orderDataFileCount);
                 }
-                OrderDataFile odf = orderDataFiles.get(0);
+                OrderDataFile odf = orderDataFilesUrls.get(0);
                 String url = outputFile.getUrl().toString();
                 odf.setUrl(url);
                 odf.setState(FileState.AVAILABLE);
@@ -270,6 +276,43 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         }
 
         return updatedDataFiles;
+    }
+
+    /**
+     * In case of a SUBORDER scope, all features which do not have corresponding output files are set to
+     * {@link FileState#PROCESSING_ERROR}.
+     *
+     * @param outputs          outputs resulting from the processing
+     * @param orderDataFiles   ordered data files
+     * @param updatedDataFiles ordered data files with updated states
+     */
+    private void handleFeaturesNotProcessed(Seq<POutputFileDTO> outputs,
+                                            List<OrderDataFile> orderDataFiles,
+                                            List<OrderDataFile> updatedDataFiles, PExecutionResultEvent evt) {
+        updatedDataFiles.addAll(orderDataFiles.stream()
+                                              .filter(dataFile -> !getFeatureIdsFromInputCorrelationIds(outputs).contains(
+                                                  dataFile.getIpId().toString()))
+                                              .peek(featureNotHandled -> {
+                                                  LOGGER.error("{} feature with id \"{}\" not handled in suborder "
+                                                               + "because no output was found.",
+                                                              logPrefix(evt),
+                                                              featureNotHandled.getIpId());
+                                                  featureNotHandled.setState(FileState.PROCESSING_ERROR);
+                                              })
+                                              .toList());
+    }
+
+    /**
+     * Get featureIds from output/input correlationIds. Use of
+     * {@link ProcessInputCorrelationIdentifier#parse(String)} to retrieve featureIds from predefined pattern.
+     */
+    private io.vavr.collection.List<String> getFeatureIdsFromInputCorrelationIds(Seq<POutputFileDTO> outputs) {
+        return outputs.flatMap(output -> output.getInputCorrelationIds()
+                                               .map(ProcessInputCorrelationIdentifier::parse)
+                                               .filter(optCorr -> !optCorr.isEmpty())
+                                               .map(corr -> corr.get().getFeatureIpId())
+                                               .filter(featureIdOpt -> !featureIdOpt.isEmpty())
+                                               .map(Option::get)).toList();
     }
 
     /**

@@ -155,7 +155,10 @@ public class OrderProcessingService implements IOrderProcessingService {
 
                 AtomicLong suborderCount = new AtomicLong(1);
                 OrderCounts result = basketSelectionPageSearch.fluxSearchDataObjects(dsSel)
-                                                              .groupBy(feature -> hasAtLeastOneRequiredFileInStorage(
+                                                              .filter(feature -> featureRequiredDatafiles(feature,
+                                                                                                          requiredDatatypes).findAny()
+                                                                                                                            .isPresent())
+                                                              .groupBy(feature -> hasAtLeastOneInternalFile(
                                                                   feature,
                                                                   requiredDatatypes))
                                                               .doOnError(CatalogSearchException.class,
@@ -593,9 +596,9 @@ public class OrderProcessingService implements IOrderProcessingService {
                        .toJavaArray(Long[]::new);
     }
 
-    protected boolean hasAtLeastOneRequiredFileInStorage(EntityFeature entityFeature,
-                                                         List<DataType> requiredDatatypes) {
-        return featureRequiredDatafiles(entityFeature, requiredDatatypes).anyMatch(df -> !df.isReference());
+    protected boolean hasAtLeastOneInternalFile(EntityFeature entityFeature,
+                                                List<DataType> requiredDatatypes) {
+        return entityFeature.getFiles().values().stream().anyMatch(df -> !df.isReference());
     }
 
     protected boolean hasRequiredFilesInStorage(GroupedFlux<Boolean, EntityFeature> featureGroup) {
