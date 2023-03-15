@@ -60,8 +60,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceIT {
 
+    List<Long> requestIds = new ArrayList<>();
+
     @Before
     public void init() {
+        requestIds = new ArrayList<>();
         FeatureEntity feature = FeatureEntity.build("owner",
                                                     "session",
                                                     Feature.build("id2",
@@ -93,7 +96,7 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
                                                                                       new ArrayList<>(),
                                                                                       false));
 
-        featureCreationRequestRepo.save(featureCreationRequest0);
+        requestIds.add(featureCreationRequestRepo.save(featureCreationRequest0).getId());
 
         FeatureCreationRequest featureCreationRequest1 = new FeatureCreationRequest();
         featureCreationRequest1.setFeatureEntity(feature);
@@ -192,6 +195,33 @@ public class FeatureCreationServiceIT extends AbstractFeatureMultitenantServiceI
         results = featureCreationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(4, results.getNumberOfElements());
+    }
+
+    @Test
+    public void test_findRequests_with_id() {
+        // Given
+        Pageable pageable = PageRequest.of(0, 100);
+        SearchFeatureRequestParameters searchFeatureRequestParameters = new SearchFeatureRequestParameters().withIdsIncluded(
+            List.of(requestIds.get(0)));
+        // When
+        Page<FeatureCreationRequest> results = featureCreationService.findRequests(searchFeatureRequestParameters,
+                                                                                   pageable);
+        // Then
+        assertEquals(1, results.getNumberOfElements());
+
+        // Given
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withIdsExcluded(List.of(requestIds.get(0)));
+        // When
+        results = featureCreationService.findRequests(searchFeatureRequestParameters, pageable);
+        // Then
+        assertEquals(4, results.getNumberOfElements());
+
+        // Given
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withIdsExcluded(List.of());
+        // When
+        results = featureCreationService.findRequests(searchFeatureRequestParameters, pageable);
+        // Then
+        assertEquals(5, results.getNumberOfElements());
     }
 
     @Test
