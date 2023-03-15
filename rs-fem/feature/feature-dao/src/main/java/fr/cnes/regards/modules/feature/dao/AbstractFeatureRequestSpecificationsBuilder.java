@@ -48,6 +48,7 @@ public abstract class AbstractFeatureRequestSpecificationsBuilder<T>
         specifications.add(after("registrationDate", parameters.getLastUpdate().getAfter()));
         specifications.add(before("registrationDate", parameters.getLastUpdate().getBefore()));
         specifications.add(useValuesRestriction("step", parameters.getSteps()));
+        specifications.add(useValuesRestriction("id", parameters.getRequestIds()));
 
         if (this.searchInFeatureEntity) {
             specifications.add(equalsWithFeatureEntity("sessionOwner", parameters.getSource()));
