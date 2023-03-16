@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -111,6 +112,9 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
     @Autowired
     private IIngestMetadataMapper mapper;
 
+    @Autowired
+    private IngestRequestSchedulerService ingestRequestSchedulerService;
+
     private List<AIPEntity> aips;
 
     private IngestMetadataDto mtd;
@@ -154,6 +158,7 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
 
         mtd = IngestMetadataDto.build(SESSION_OWNER_0,
                                       SESSION_0,
+                                      null,
                                       IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                       Sets.newHashSet(CATEGORIES_0),
                                       null,
@@ -183,6 +188,7 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
                                                aips.get(0).getSip().getSip());
         ir.setAips(aips);
         ingestRequestRepository.save(ir);
+        ingestRequestSchedulerService.scheduleRequests();
         OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
@@ -237,6 +243,7 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
 
         requestService.scheduleRequestRetryJob(new SearchRequestParameters().withSession(SESSION_0)
                                                                             .withSessionOwner(SESSION_OWNER_0));
+        ingestRequestSchedulerService.scheduleRequests();
         waitForErrorRequestReach(1, 10_000 * 5);
 
         requestService.scheduleRequestRetryJob(new SearchRequestParameters());

@@ -94,6 +94,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                                SESSION,
+                                                                               null,
                                                                                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                                CATEGORIES,
                                                                                null,
@@ -154,6 +155,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                                SESSION,
+                                                                               null,
                                                                                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                                Sets.newHashSet("CAT"),
                                                                                null,
@@ -239,6 +241,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                                SESSION,
+                                                                               null,
                                                                                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                                Sets.newHashSet("CAT"),
                                                                                null,

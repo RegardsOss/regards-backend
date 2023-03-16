@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
@@ -255,7 +256,6 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
      * Verify steps and state of requests
      */
     private void checkNotificationStateAndStep(List<AbstractRequest> abstractRequests, String step) {
-        boolean isWrongStateStep = false;
         IngestRequestStep ingest_step = null;
         InternalRequestState state = null;
         DeletionRequestStep deletion_step = null;
@@ -276,24 +276,25 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Check states and steps of requests
         Iterator<AbstractRequest> it = abstractRequests.iterator();
         AbstractRequest abstractRequest;
-        while (it.hasNext() && !isWrongStateStep) {
+        Assertions.assertTrue(it.hasNext(), "Request list is empty");
+        while (it.hasNext()) {
             abstractRequest = it.next();
             // check state
-            if (abstractRequest.getState() != state) {
-                isWrongStateStep = true;
-                break;
-            }
+            Assertions.assertEquals(state, abstractRequest.getState(), "The request state is not the expected one");
             // check steps of different requests
             if (abstractRequest instanceof IngestRequest ingestRequest) {
-                isWrongStateStep = !ingestRequest.getStep().equals(ingest_step);
+                Assertions.assertEquals(ingest_step,
+                                        ingestRequest.getStep(),
+                                        "The request step is not the expected one");
             }
             if (abstractRequest instanceof OAISDeletionRequest deletionRequest) {
-                isWrongStateStep = !deletionRequest.getStep().equals(deletion_step);
+                Assertions.assertEquals(deletion_step,
+                                        deletionRequest.getStep(),
+                                        "The request step is not the expected one");
             }
             //update request
 
         }
-        Assert.assertFalse("Requests do not have expected step or state", isWrongStateStep);
     }
 
     /**

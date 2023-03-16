@@ -216,6 +216,7 @@ public class SIPValidationIT {
 
         SIPCollection collection = SIPCollection.build(IngestMetadataDto.build("sessionOwner",
                                                                                "session",
+                                                                               null,
                                                                                "ingestChain",
                                                                                Sets.newHashSet("cat 1"),
                                                                                null,

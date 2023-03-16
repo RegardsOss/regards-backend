@@ -157,6 +157,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
         mtd = IngestMetadataDto.build(SESSION_OWNER_0,
                                       SESSION_0,
+                                      null,
                                       IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                       Sets.newHashSet(CATEGORIES_0),
                                       null,

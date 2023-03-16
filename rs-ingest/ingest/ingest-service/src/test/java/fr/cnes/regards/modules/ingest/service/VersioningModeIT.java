@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -46,6 +47,7 @@ import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.S
                                    "regards.ingest.aip.delete.bulk.delay=100" },
                     locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class VersioningModeIT extends IngestMultitenantServiceIT {
 
     public static final String SESSION_0 = OffsetDateTime.now().toString();
@@ -588,6 +590,12 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
         // Run job to set version mode to INC_VERSION
         job.run();
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
@@ -651,6 +659,11 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                                })
                                .ifPresent(request -> ingestRequestService.fromWaitingTo(Lists.newArrayList(request),
                                                                                         VersioningMode.REPLACE));
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
         // once the 2 AIPs are stored, we ask for the deletion of the old one, so lets wait for this deletion
         ingestServiceTest.waitForAIP(1, 20_000, AIPState.DELETED);
@@ -720,6 +733,13 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
             predicates.add(cb.equal(root.get(STATE_ATTRIBUTE), InternalRequestState.WAITING_VERSIONING_MODE));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         }).ifPresent(request -> ingestRequestService.fromWaitingTo(Lists.newArrayList(request), VersioningMode.IGNORE));
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.IGNORED);
 
         // Well nothing should have changed

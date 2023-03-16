@@ -67,6 +67,11 @@ public interface ISIPService {
     SIPEntity updateLastFlag(SIPEntity sip, boolean last);
 
     /**
+     * Update State for specified entity
+     */
+    void updateState(SIPEntity sip, SIPState state);
+
+    /**
      * Update last flag for specified entity
      */
     void updateLastFlag(ISipIdAndVersion partialSip, boolean last);

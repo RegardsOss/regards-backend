@@ -71,6 +71,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -93,6 +95,10 @@ public class IngestRequestService implements IIngestRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
 
     public static final String UNEXPECTED_STEP_S_TEMPLATE = "Unexpected step \"%s\"";
+
+    private final List<InternalRequestState> POTENTIALLY_BLOCKING_STATES = List.of(InternalRequestState.TO_SCHEDULE,
+                                                                                   InternalRequestState.CREATED,
+                                                                                   InternalRequestState.RUNNING);
 
     @Autowired
     private IngestConfigurationProperties confProperties;
@@ -163,8 +169,12 @@ public class IngestRequestService implements IIngestRequestService {
         for (IngestRequest request : requests) {
             // Attach job
             request.setJobInfo(jobInfo);
+
+            // Set state to created
+            request.setState(InternalRequestState.CREATED);
         }
-        requests.forEach(r -> r.setJobInfo(jobInfo));
+
+        ingestRequestRepository.saveAll(requests);
     }
 
     @Override
@@ -179,7 +189,7 @@ public class IngestRequestService implements IIngestRequestService {
                 }.getType();
                 Set<Long> ids;
                 ids = IJob.getValue(jobInfo.getParametersAsMap(), IngestProcessingJob.IDS_PARAMETER, type);
-                List<IngestRequest> requests = loadByIds(ids);
+                List<IngestRequest> requests = findByIds(ids);
                 requests.forEach(r -> handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace()));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
@@ -193,8 +203,23 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public List<IngestRequest> loadByIds(Set<Long> ids) {
+    public List<IngestRequest> findByIds(Set<Long> ids) {
         return ingestRequestRepository.findByIdIn(ids);
+    }
+
+    @Override
+    public List<IngestRequest> findByProviderId(String providerId) {
+        return ingestRequestRepository.findByProviderId(providerId);
+    }
+
+    @Override
+    public Page<IngestRequest> findToSchedule(Pageable pageable) {
+        return ingestRequestRepository.findByState(InternalRequestState.TO_SCHEDULE, pageable);
+    }
+
+    @Override
+    public List<IngestRequest> findPotentiallyBlockingRequests(List<String> providerIds) {
+        return ingestRequestRepository.findByProviderIdInAndStateIn(providerIds, POTENTIALLY_BLOCKING_STATES);
     }
 
     @Override
@@ -325,9 +350,8 @@ public class IngestRequestService implements IIngestRequestService {
             if (!remoteStepGroupIds.isEmpty()) {
                 // Register request info to identify storage callback events
                 request.setRemoteStepGroupIds(remoteStepGroupIds);
-                // Put the request as un-schedule.
-                // The answering event from storage will put again the request to be executed
-                request.setState(InternalRequestState.TO_SCHEDULE);
+                // The answering event from storage will allow the request execution to continue
+                request.setState(InternalRequestState.WAITING_REMOTE_STORAGE);
                 // Keep track of the request
                 saveRequest(request);
                 // Monitoring
@@ -433,8 +457,6 @@ public class IngestRequestService implements IIngestRequestService {
         return remoteStepGroupIds;
     }
 
-    // NOTE : potential error if 2 instances work on the same provider aip at the same time then ...
-    // ... 2 "last" aip may occurs and db exception will be thrown.
     private void finalizeSuccessfulRequest(Collection<IngestRequest> requests,
                                            boolean afterStorage,
                                            Map<String, Optional<IngestProcessingChain>> chains,
@@ -481,8 +503,7 @@ public class IngestRequestService implements IIngestRequestService {
             // Update SIP state
             if (!aips.isEmpty()) {
                 SIPEntity sipEntity = aips.get(0).getSip();
-                sipEntity.setState(SIPState.STORED);
-                sipService.save(sipEntity);
+                sipService.updateState(sipEntity, SIPState.STORED);
 
                 // add ingest request event to list of ingest request events to publish
                 listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
@@ -641,16 +662,11 @@ public class IngestRequestService implements IIngestRequestService {
         for (AbstractRequest request : requests) {
             if (request instanceof IngestRequest ingestRequest) {
                 sessionNotifier.decrementProductWaitingVersioningMode(ingestRequest);
-                ingestRequest.setState(InternalRequestState.CREATED);
+                ingestRequest.setState(InternalRequestState.TO_SCHEDULE);
                 ingestRequest.getMetadata().setVersioningMode(versioningMode);
                 handleRequestGranted(ingestRequest);
-                ingestRequestToSchedulePerChain.add(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
             }
         }
-        ingestRequestToSchedulePerChain.keySet()
-                                       .forEach(chain -> scheduleIngestProcessingJobByChain(chain,
-                                                                                            ingestRequestToSchedulePerChain.get(
-                                                                                                chain)));
     }
 
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
@@ -696,6 +712,11 @@ public class IngestRequestService implements IIngestRequestService {
             request.setJobInfo(jobInfo);
         }
         return ingestRequestRepository.save(request);
+    }
+
+    public IngestRequest blockRequest(IngestRequest request) {
+        request.setState(InternalRequestState.BLOCKED);
+        return saveRequest(request);
     }
 
     private void updateRequestWithErrors(IngestRequest request,

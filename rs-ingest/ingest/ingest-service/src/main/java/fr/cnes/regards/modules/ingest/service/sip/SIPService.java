@@ -95,8 +95,7 @@ public class SIPService implements ISIPService {
             SIPEntity sipEntity = optionalSIPEntity.get();
             if (!deleteIrrevocably) {
                 // Mark the SIP correctly deleted
-                sipEntity.setState(SIPState.DELETED);
-                save(sipEntity);
+                updateState(sipEntity, SIPState.DELETED);
             } else {
                 sipRepository.delete(sipEntity);
             }
@@ -108,6 +107,15 @@ public class SIPService implements ISIPService {
     @Override
     public boolean validatedVersionExists(String providerId) {
         return sipRepository.countByProviderId(providerId) > 0;
+    }
+
+    @Override
+    public void updateState(SIPEntity sip, SIPState state) {
+        if (sip != null) {
+            sipRepository.updateState(sip.getId(), state);
+        } else {
+            LOGGER.error("Can't update the given sip because it is null");
+        }
     }
 
     @Override

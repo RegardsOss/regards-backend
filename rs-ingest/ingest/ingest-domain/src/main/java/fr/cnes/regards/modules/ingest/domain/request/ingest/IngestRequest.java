@@ -84,6 +84,7 @@ public class IngestRequest extends AbstractRequest {
         request.setRequestId(requestId == null ? generateRequestId() : requestId);
         request.setDtype(RequestTypeConstant.INGEST_VALUE);
         request.setMetadata(metadata);
+        request.setSubmissionDate(metadata.getSubmissionDate());
         request.setState(state);
         request.setStep(step);
         request.setSip(sip);

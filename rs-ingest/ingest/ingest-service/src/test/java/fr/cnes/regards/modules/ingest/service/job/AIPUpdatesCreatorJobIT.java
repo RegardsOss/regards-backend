@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
@@ -100,6 +101,9 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
 
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
+    @Autowired
+    private IngestRequestSchedulerService ingestRequestSchedulerService;
+
     public void initData() {
 
         long nbSIP = 6;
@@ -133,6 +137,11 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
                         SESSION_1,
                         SESSION_OWNER_0,
                         CATEGORIES_0);
+
+        waitSipCount(nbSIP);
+
+        ingestRequestSchedulerService.scheduleRequests();
+
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
         // Wait STORE_META request over

@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -135,6 +136,9 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
     @Autowired
     private StorageClientMock storageClient;
 
+    @Autowired
+    private IngestRequestSchedulerService ingestRequestSchedulerService;
+
     public void initData() {
         LOGGER.info("=========================> BEGIN INIT DATA FOR TESTS <=====================");
         storageClient.setBehavior(true, true);
@@ -147,8 +151,12 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
 
+        waitSipCount(nbSIP);
+        ingestRequestSchedulerService.scheduleRequests();
+
         IngestMetadataDto mtd = IngestMetadataDto.build(SESSION_OWNER_0,
                                                         SESSION_0,
+                                                        null,
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                         Sets.newHashSet(CATEGORIES_0),
                                                         null,
@@ -320,6 +328,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         IngestRequest ingestRequest = IngestRequest.build(null,
                                                           IngestMetadata.build("SESSION_OWNER",
                                                                                "SESSION",
+                                                                               OffsetDateTime.now(),
                                                                                "ingestChain",
                                                                                new HashSet<>(),
                                                                                StorageMetadata.build("RAS")),

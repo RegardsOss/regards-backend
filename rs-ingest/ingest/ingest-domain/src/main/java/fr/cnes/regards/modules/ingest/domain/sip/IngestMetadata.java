@@ -36,6 +36,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
@@ -57,6 +58,9 @@ public class IngestMetadata {
     @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
     @Column(length = 128, name = "session_name", nullable = false)
     private String session;
+
+    @Column(name = "submission_date")
+    private OffsetDateTime submissionDate;
 
     /**
      * {@link fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain} name
@@ -141,6 +145,14 @@ public class IngestMetadata {
         this.categories = categories;
     }
 
+    public OffsetDateTime getSubmissionDate() {
+        return submissionDate;
+    }
+
+    public void setSubmissionDate(OffsetDateTime submissionDate) {
+        this.submissionDate = submissionDate;
+    }
+
     /**
      * Build ingest metadata with default versioning mode: {@link VersioningMode#INC_VERSION} and no model
      *
@@ -152,10 +164,18 @@ public class IngestMetadata {
      */
     public static IngestMetadata build(String sessionOwner,
                                        String session,
+                                       OffsetDateTime submissionDate,
                                        String ingestChain,
                                        Set<String> categories,
                                        StorageMetadata... storages) {
-        return build(sessionOwner, session, ingestChain, categories, VersioningMode.INC_VERSION, null, storages);
+        return build(sessionOwner,
+                     session,
+                     submissionDate,
+                     ingestChain,
+                     categories,
+                     VersioningMode.INC_VERSION,
+                     null,
+                     storages);
     }
 
     /**
@@ -170,11 +190,19 @@ public class IngestMetadata {
      */
     public static IngestMetadata build(String sessionOwner,
                                        String session,
+                                       OffsetDateTime submissionDate,
                                        String ingestChain,
                                        Set<String> categories,
                                        String model,
                                        StorageMetadata... storages) {
-        return build(sessionOwner, session, ingestChain, categories, VersioningMode.INC_VERSION, model, storages);
+        return build(sessionOwner,
+                     session,
+                     submissionDate,
+                     ingestChain,
+                     categories,
+                     VersioningMode.INC_VERSION,
+                     model,
+                     storages);
     }
 
     /**
@@ -189,11 +217,12 @@ public class IngestMetadata {
      */
     public static IngestMetadata build(String sessionOwner,
                                        String session,
+                                       OffsetDateTime submissionDate,
                                        String ingestChain,
                                        Set<String> categories,
                                        VersioningMode versioningMode,
                                        StorageMetadata... storages) {
-        return build(sessionOwner, session, ingestChain, categories, versioningMode, null, storages);
+        return build(sessionOwner, session, submissionDate, ingestChain, categories, versioningMode, null, storages);
     }
 
     /**
@@ -209,6 +238,7 @@ public class IngestMetadata {
      */
     public static IngestMetadata build(String sessionOwner,
                                        String session,
+                                       OffsetDateTime submissionDate,
                                        String ingestChain,
                                        Set<String> categories,
                                        VersioningMode versioningMode,
@@ -223,6 +253,7 @@ public class IngestMetadata {
         m.setIngestChain(ingestChain);
         m.setSessionOwner(sessionOwner);
         m.setSession(session);
+        m.setSubmissionDate(submissionDate);
         m.setCategories(categories);
         m.setStorages(List.of(storages));
         m.setVersioningMode(versioningMode);

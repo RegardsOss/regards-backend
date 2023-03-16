@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -28,6 +29,8 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
 import java.util.List;
@@ -61,7 +64,22 @@ public interface IIngestRequestService {
     /**
      * Load a collection of requests
      */
-    List<IngestRequest> loadByIds(Set<Long> ids);
+    List<IngestRequest> findByIds(Set<Long> ids);
+
+    /**
+     * Load all requests with the given providerId
+     */
+    List<IngestRequest> findByProviderId(String providerId);
+
+    /**
+     * Load all requests with {@link InternalRequestState#TO_SCHEDULE} status
+     */
+    Page<IngestRequest> findToSchedule(Pageable pageable);
+
+    /**
+     * Load all requests that could block the creation of a request with a given providerId
+     */
+    List<IngestRequest> findPotentiallyBlockingRequests(List<String> providerIds);
 
     /**
      * Handle request granted during request handling

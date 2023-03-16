@@ -150,6 +150,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Create event
         IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
                                                         session,
+                                                        null,
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                         categories,
                                                         null,

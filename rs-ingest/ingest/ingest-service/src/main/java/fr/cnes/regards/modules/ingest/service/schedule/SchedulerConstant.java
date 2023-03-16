@@ -42,6 +42,15 @@ public class SchedulerConstant {
     public static final String DEFAULT_SCHEDULING_DELAY = "1000";
 
     /**
+     * For Ingest Request
+     */
+    public static final String INGEST_REQUEST_CREATE = "CREATE INGEST REQUEST";
+
+    public static final String INGEST_REQUEST_CREATE_LOCK = "scheduledCreateIngestRequest";
+
+    public static final String INGEST_REQUEST_CREATE_TITLE = "Ingest request creation scheduling";
+
+    /**
      * For postprocess
      */
     public static final String POST_PROCESS_REQUESTS = "AIP POST PROCESS REQUESTS";

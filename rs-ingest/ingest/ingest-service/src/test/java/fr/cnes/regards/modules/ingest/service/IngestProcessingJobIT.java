@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
@@ -129,6 +130,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
     @Autowired
     private StorageResponseFlowHandler storageResponseHandler;
 
+    @Autowired
+    private IngestRequestSchedulerService ingestRequestSchedulerService;
+
     @Override
     public void doInit() throws ModuleException {
         initFullProcessingChain();
@@ -186,6 +190,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         // Init a SIP in database with state CREATED and managed with default chain
         SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                          SESSION,
+                                                                         null,
                                                                          IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                          CATEGORIES,
                                                                          null,
@@ -232,7 +237,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         IngestRequest req = reqs.get(0);
         Assert.assertEquals(1, req.getAips().size());
         Assert.assertEquals(IngestRequestStep.REMOTE_STORAGE_REQUESTED, req.getStep());
-        Assert.assertEquals(InternalRequestState.TO_SCHEDULE, req.getState());
+        Assert.assertEquals(InternalRequestState.WAITING_REMOTE_STORAGE, req.getState());
         AIPEntity aip = req.getAips().get(0);
 
         String remoteStepGroupId = req.getRemoteStepGroupIds().get(0);
@@ -276,6 +281,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         // Init a SIP in database with state CREATED and managed with default chain
         SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                          SESSION,
+                                                                         null,
                                                                          IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                          CATEGORIES,
                                                                          null,
@@ -322,7 +328,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         IngestRequest req = reqs.get(0);
         Assert.assertEquals(1, req.getAips().size());
         Assert.assertEquals(IngestRequestStep.REMOTE_STORAGE_REQUESTED, req.getStep());
-        Assert.assertEquals(InternalRequestState.TO_SCHEDULE, req.getState());
+        Assert.assertEquals(InternalRequestState.WAITING_REMOTE_STORAGE, req.getState());
         AIPEntity aip = req.getAips().get(0);
 
         String remoteStepGroupId = req.getRemoteStepGroupIds().get(0);
@@ -358,6 +364,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
         SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                          SESSION,
+                                                                         null,
                                                                          PROCESSING_CHAIN_TEST,
                                                                          CATEGORIES,
                                                                          null,
@@ -437,6 +444,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         // Init a SIP with reference in database with state CREATED
         SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                          SESSION,
+                                                                         null,
                                                                          PROCESSING_CHAIN_TEST,
                                                                          CATEGORIES,
                                                                          null,
@@ -450,6 +458,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
         // Ingest
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
+        ingestRequestSchedulerService.scheduleRequests();
         ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
 
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_REF_ID_TEST);

@@ -137,6 +137,7 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
         IngestRequest ingestRequest = IngestRequest.build(null,
                                                           IngestMetadata.build("SESSION_OWNER",
                                                                                "SESSION",
+                                                                               null,
                                                                                "ingestChain",
                                                                                new HashSet<>(),
                                                                                StorageMetadata.build("RAS")),

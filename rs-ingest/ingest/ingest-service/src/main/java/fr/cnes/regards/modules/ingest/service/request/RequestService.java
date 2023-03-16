@@ -341,6 +341,7 @@ public class RequestService implements IRequestService {
         }
         request.setState(InternalRequestState.TO_SCHEDULE);
         request.clearError();
+        abstractRequestRepository.save(request);
     }
 
     @Override
@@ -380,27 +381,31 @@ public class RequestService implements IRequestService {
         Table<String, String, InternalRequestState> history = HashBasedTable.create();
 
         for (AbstractRequest request : requests) {
-            // Ignore BLOCKED request
-            if (request.getState() != InternalRequestState.BLOCKED) {
-                // Do not use history if the request is also a jobRequest or session values are missing
-                if (!isJobRequest(request) && (request.getSessionOwner() != null) && (request.getSession() != null)) {
-                    if (!history.contains(request.getSessionOwner(), request.getSession())) {
-                        // Check if the request can be processed right now
-                        request = scheduleRequest(request);
-                        // Store if request for this session can be executed right now
-                        history.put(request.getSessionOwner(), request.getSession(), request.getState());
+            // Ignore IngestRequest as they use their own scheduler
+            if (!(request instanceof IngestRequest)) {
+                // Ignore BLOCKED request
+                if (request.getState() != InternalRequestState.BLOCKED) {
+                    // Do not use history if the request is also a jobRequest or session values are missing
+                    if (!isJobRequest(request) && (request.getSessionOwner() != null) && (request.getSession()
+                                                                                          != null)) {
+                        if (!history.contains(request.getSessionOwner(), request.getSession())) {
+                            // Check if the request can be processed right now
+                            request = scheduleRequest(request);
+                            // Store if request for this session can be executed right now
+                            history.put(request.getSessionOwner(), request.getSession(), request.getState());
+                        }
+                        InternalRequestState state = history.get(request.getSessionOwner(), request.getSession());
+                        request.setState(state);
+                        abstractRequestRepository.save(request);
+                    } else {
+                        // Schedule the request
+                        scheduleRequest(request);
                     }
-                    InternalRequestState state = history.get(request.getSessionOwner(), request.getSession());
-                    request.setState(state);
-                    abstractRequestRepository.save(request);
+                    nbRequestScheduled++;
                 } else {
-                    // Schedule the request
-                    scheduleRequest(request);
+                    nbRequestBlocked++;
+                    abstractRequestRepository.save(request);
                 }
-                nbRequestScheduled++;
-            } else {
-                nbRequestBlocked++;
-                abstractRequestRepository.save(request);
             }
         }
         if (nbRequestBlocked > 0) {
@@ -472,8 +477,6 @@ public class RequestService implements IRequestService {
                 break;
             case RequestTypeConstant.AIP_POST_PROCESS_VALUE:
                 // Post process actions cannot be blocked as AIP is used in read only mode.
-            case RequestTypeConstant.INGEST_VALUE:
-                // Ingest cannot be blocked
             case RequestTypeConstant.AIP_SAVE_METADATA_VALUE:
                 // Save metadata cannot be blocked
                 return false;

@@ -27,6 +27,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,8 @@ public class IngestMetadataDto {
     @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
     @Size(max = 128)
     private String session;
+
+    private OffsetDateTime submissionDate;
 
     /**
      * {@link fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain} name
@@ -81,12 +84,14 @@ public class IngestMetadataDto {
      */
     public static IngestMetadataDto build(String sessionOwner,
                                           String session,
+                                          OffsetDateTime submissionDate,
                                           String ingestChain,
                                           Set<String> categories,
                                           String model,
                                           StorageMetadata... storages) {
         return IngestMetadataDto.build(sessionOwner,
                                        session,
+                                       submissionDate,
                                        ingestChain,
                                        categories,
                                        null,
@@ -105,6 +110,7 @@ public class IngestMetadataDto {
      */
     public static IngestMetadataDto build(String sessionOwner,
                                           String session,
+                                          OffsetDateTime submissionDate,
                                           String ingestChain,
                                           Set<String> categories,
                                           VersioningMode versioningMode,
@@ -118,6 +124,7 @@ public class IngestMetadataDto {
         m.setIngestChain(ingestChain);
         m.setSessionOwner(sessionOwner);
         m.setSession(session);
+        m.setSubmissionDate(submissionDate);
         m.setCategories(categories);
         m.setModel(model);
         m.setStorages(storages);
@@ -147,6 +154,14 @@ public class IngestMetadataDto {
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public OffsetDateTime getSubmissionDate() {
+        return submissionDate;
+    }
+
+    public void setSubmissionDate(OffsetDateTime submissionDate) {
+        this.submissionDate = submissionDate;
     }
 
     public String getIngestChain() {

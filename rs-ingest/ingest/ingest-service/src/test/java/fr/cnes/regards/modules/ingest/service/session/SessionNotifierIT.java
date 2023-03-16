@@ -80,6 +80,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sipEntity = SIPEntity.build(getDefaultTenant(),
                                     IngestMetadata.build(sessionOwner,
                                                          session,
+                                                         null,
                                                          ingestChain,
                                                          categories,
                                                          StorageMetadata.build("AWS", "/dir1/dir2/", new HashSet<>())),

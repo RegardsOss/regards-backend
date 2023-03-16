@@ -1,0 +1,101 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "versioningMode": "INC_VERSION",
+    "sessionOwner": "validation",
+    "session": "testALot",
+    "submissionDate": "2023-02-02T08:08:08Z",
+    "ingestChain": "DefaultProcessingChain",
+    "categories": [
+      "CAT_01"
+    ],
+    "storages": [
+      {
+        "pluginBusinessId": "Local",
+        "targetTypes": []
+      }
+    ]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "test-0",
+      "ipType": "DATA",
+      "properties": {
+        "contentInformations": [
+          {
+            "dataObject": {
+              "regardsDataType": "RAWDATA",
+              "filename": "sip1.xml",
+              "locations": [
+                {
+                  "url": "file:///input/sip1.xml"
+                }
+              ],
+              "checksum": "zaasfsdfsdlfkmsldgfml12df",
+              "algorithm": "MD5"
+            },
+            "representationInformation": {
+              "syntax": {
+                "name": "text",
+                "mimeType": "text/plain"
+              }
+            }
+          }
+        ],
+        "pdi": {
+          "contextInformation": {
+            "tags": []
+          },
+          "provenanceInformation": {
+            "history": []
+          },
+          "accessRightInformation": {}
+        },
+        "descriptiveInformation": {
+          "name": "Alice Second Version"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "test-1",
+      "ipType": "DATA",
+      "properties": {
+        "contentInformations": [
+          {
+            "dataObject": {
+              "regardsDataType": "RAWDATA",
+              "filename": "sip1.xml",
+              "locations": [
+                {
+                  "url": "file:///input/sip1.xml"
+                }
+              ],
+              "checksum": "zaasfsdfsdlfkmsldgfml12df",
+              "algorithm": "MD5"
+            },
+            "representationInformation": {
+              "syntax": {
+                "name": "text",
+                "mimeType": "text/plain"
+              }
+            }
+          }
+        ],
+        "pdi": {
+          "contextInformation": {
+            "tags": []
+          },
+          "provenanceInformation": {
+            "history": []
+          },
+          "accessRightInformation": {}
+        },
+        "descriptiveInformation": {
+          "name": "Bob Second Version"
+        }
+      }
+    }
+  ]
+}

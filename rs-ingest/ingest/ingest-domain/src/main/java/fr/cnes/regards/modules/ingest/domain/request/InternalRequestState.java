@@ -33,6 +33,12 @@ public enum InternalRequestState {
      * so we need administrator decision to go further
      */
     WAITING_VERSIONING_MODE,
+
+    /**
+     * The request is waiting an event from storage to proceed
+     */
+    WAITING_REMOTE_STORAGE,
+
     /**
      * When the request cannot be processed for now
      */

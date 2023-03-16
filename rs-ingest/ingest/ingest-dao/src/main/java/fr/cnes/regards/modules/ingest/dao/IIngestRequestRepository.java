@@ -93,6 +93,10 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
 
     @EntityGraph(attributePaths = "aips", type = EntityGraph.EntityGraphType.LOAD)
     List<IngestRequest> findByProviderId(String providerId);
+    
+    Page<IngestRequest> findByState(InternalRequestState state, Pageable pageable);
+
+    List<IngestRequest> findByProviderIdInAndStateIn(List<String> providerIds, List<InternalRequestState> states);
 
     /**
      * For testing purpose only

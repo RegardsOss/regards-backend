@@ -68,6 +68,9 @@ public abstract class AbstractRequest {
     @Column(name = "creation_date")
     private OffsetDateTime creationDate;
 
+    @Column(name = "submission_date")
+    private OffsetDateTime submissionDate;
+
     /**
      * Remote request group id
      */
@@ -99,10 +102,15 @@ public abstract class AbstractRequest {
     public AbstractRequest() {
     }
 
-    public AbstractRequest(String sessionOwner, String session, String providerId, String dtype) {
+    public AbstractRequest(String sessionOwner,
+                           String session,
+                           OffsetDateTime submissionDate,
+                           String providerId,
+                           String dtype) {
         this.creationDate = OffsetDateTime.now();
         this.sessionOwner = sessionOwner;
         this.session = session;
+        this.submissionDate = submissionDate;
         this.providerId = providerId;
         this.dtype = dtype;
         this.state = InternalRequestState.TO_SCHEDULE;
@@ -190,6 +198,14 @@ public abstract class AbstractRequest {
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public OffsetDateTime getSubmissionDate() {
+        return submissionDate;
+    }
+
+    public void setSubmissionDate(OffsetDateTime submissionDate) {
+        this.submissionDate = submissionDate;
     }
 
     public String getProviderId() {

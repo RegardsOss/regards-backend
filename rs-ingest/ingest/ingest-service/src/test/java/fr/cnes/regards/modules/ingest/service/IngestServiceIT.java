@@ -27,9 +27,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -77,9 +75,6 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
     @Autowired
     private IIngestService ingestService;
 
-    @Autowired
-    private IAIPPostProcessRequestRepository postProcessRepo;
-
     @SpyBean
     private IIngestRequestService ingestRequestService;
 
@@ -100,6 +95,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
     private void ingestSIP(String providerId, String checksum) throws EntityInvalidException {
         SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                          SESSION,
+                                                                         null,
                                                                          IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                          Sets.newHashSet("CAT"),
                                                                          null,
@@ -121,6 +117,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
         String providerId = "SIP_001";
         SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                          SESSION,
+                                                                         null,
                                                                          CHAIN_PP_LABEL,
                                                                          Sets.newHashSet("CAT"),
                                                                          null,
@@ -155,6 +152,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
         String providerId = "SIP_001";
         SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
                                                                          SESSION,
+                                                                         null,
                                                                          IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                          Sets.newHashSet("CAT"),
                                                                          null,
@@ -169,48 +167,6 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
         Assert.assertTrue(providerId.equals(entity.getProviderId()));
         Assert.assertTrue(entity.getVersion() == 1);
         Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
-    }
-
-    /**
-     * Check if service properly store SIP and prevent to store a SIP twice
-     *
-     * @throws ModuleException if error occurs!
-     */
-    @Requirement("REGARDS_DSL_ING_PRO_240")
-    @Requirement("REGARDS_DSL_ING_PRO_250")
-    @Requirement("REGARDS_DSL_ING_PRO_710")
-    @Purpose("Store SIP checksum and prevent from submitting twice")
-    @Test
-    public void ingestWithCollision() throws ModuleException {
-
-        // Ingest SIP
-        String providerId = "SIP_001";
-        String checksum = "zaasfsdfsdlfkmsldgfml12df";
-        ingestSIP(providerId, checksum);
-        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
-
-        SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
-        Assert.assertNotNull(entity);
-        Assert.assertTrue(providerId.equals(entity.getProviderId()));
-        Assert.assertTrue(entity.getVersion() == 1);
-        Assert.assertTrue(SIPState.INGESTED.equals(entity.getState()));
-
-        // Re-ingest same SIP
-        ingestSIP(providerId, checksum);
-        ingestServiceTest.waitDuring(FIVE_SECONDS);
-
-        // Detect error
-        ArgumentCaptor<IngestRequest> argumentCaptor = ArgumentCaptor.forClass(IngestRequest.class);
-        Mockito.verify(ingestRequestService, Mockito.times(1))
-               .handleIngestJobFailed(argumentCaptor.capture(),
-                                      ArgumentCaptor.forClass(SIPEntity.class).capture(),
-                                      ArgumentCaptor.forClass(String.class).capture());
-        IngestRequest request = argumentCaptor.getValue();
-        Assert.assertNotNull(request);
-        Assert.assertEquals(InternalRequestState.ERROR, request.getState());
-
-        // Check repository
-        ingestServiceTest.waitForIngestion(1, TWO_SECONDS);
     }
 
     /**

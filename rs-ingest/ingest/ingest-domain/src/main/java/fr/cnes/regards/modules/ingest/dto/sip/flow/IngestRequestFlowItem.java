@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip.flow;
 
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.*;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.util.Assert;
 
 import javax.validation.Valid;
@@ -37,7 +36,11 @@ import javax.validation.constraints.NotNull;
  * @author Marc SORDI
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class IngestRequestFlowItem extends AbstractRequestFlowItem implements ISubscribable {
+public class IngestRequestFlowItem extends AbstractRequestFlowItem implements ISubscribable, IMessagePropertiesAware {
+
+    // Prevent GSON converter from serializing this field
+    @GsonIgnore
+    protected MessageProperties messageProperties;
 
     @Valid
     @NotNull(message = IngestValidationMessages.MISSING_METADATA)
@@ -85,5 +88,18 @@ public class IngestRequestFlowItem extends AbstractRequestFlowItem implements IS
      */
     public static IngestRequestFlowItem build(IngestMetadataDto metadata, SIP sip) {
         return build(generateRequestId(), metadata, sip);
+    }
+
+    @Override
+    public MessageProperties getMessageProperties() {
+        if (messageProperties == null) {
+            messageProperties = new MessageProperties();
+        }
+        return messageProperties;
+    }
+
+    @Override
+    public void setMessageProperties(MessageProperties messageProperties) {
+        this.messageProperties = messageProperties;
     }
 }

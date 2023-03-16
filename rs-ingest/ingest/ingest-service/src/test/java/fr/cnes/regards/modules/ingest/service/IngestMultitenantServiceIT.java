@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
@@ -266,6 +267,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
         IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
                                                         session,
+                                                        null,
                                                         chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
                                                         Sets.newHashSet(categories),
                                                         versioningMode,
@@ -278,13 +280,17 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         return ingestSettingsService.isActiveNotification();
     }
 
-    public void initRandomData(int nbSIP) {
+    public void initRandomData(int nbSIP, IngestRequestSchedulerService schedulerService) {
         for (int i = 0; i < nbSIP; i++) {
             publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()),
                             getRandomStorage().get(0),
                             getRandomSession(),
                             getRandomSessionOwner(),
                             getRandomCategories());
+        }
+        if (schedulerService != null) {
+            waitSipCount(nbSIP);
+            schedulerService.scheduleRequests();
         }
         // Wait for SIP ingestion
         ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
@@ -363,5 +369,16 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         return this.jobInfoService.retrieveJobs(jobClassName, PageRequest.of(0, 1), JobStatus.values())
                                   .getContent()
                                   .get(0);
+    }
+
+    public void waitSipCount(long sipCount) {
+        waitSipCount(5, sipCount);
+    }
+
+    public void waitSipCount(int timeout, long sipCount) {
+        Awaitility.await().atMost(timeout, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return ingestRequestRepository.count() == sipCount;
+        });
     }
 }

@@ -28,12 +28,14 @@ import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -60,6 +62,7 @@ import java.util.zip.ZipFile;
                                    "regards.aip.dump.zip-limit = 3" },
                     locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
 
     OffsetDateTime lastDumpReqDate = OffsetDateTime.of(2020, 8, 31, 15, 15, 50, 345875000, ZoneOffset.of("+01:00"));
@@ -80,6 +83,9 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
     @Autowired
     private DumpSettingsService dumpSettingsService;
 
+    @Autowired
+    private IngestRequestSchedulerService ingestRequestSchedulerService;
+
     @Test
     @Purpose("Test creation of multiple zips between lastDumpReqDate and reqDumpDate")
     public void writeZipsTest() {
@@ -89,7 +95,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
 
         // Create aips and update aip dates
         storageClient.setBehavior(true, true);
-        initRandomData(nbSIP);
+        initRandomData(nbSIP, ingestRequestSchedulerService);
         updateAIPLastUpdateDate(nbAIPToDump);
 
         // Create zips
@@ -131,7 +137,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
         // Create aips
         int nbSIP = 14; // put at least nbSIP > 1
         storageClient.setBehavior(true, true);
-        initRandomData(nbSIP);
+        initRandomData(nbSIP, ingestRequestSchedulerService);
 
         // Create dump
         AIPSaveMetadataRequest metadataRequest = createSaveMetadataRequest();

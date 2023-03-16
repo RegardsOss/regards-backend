@@ -97,6 +97,7 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         sipEntity = SIPEntity.build(getDefaultTenant(),
                                     IngestMetadata.build(sessionOwner,
                                                          session,
+                                                         null,
                                                          ingestChain,
                                                          categories,
                                                          StorageMetadata.build(LOCATION,

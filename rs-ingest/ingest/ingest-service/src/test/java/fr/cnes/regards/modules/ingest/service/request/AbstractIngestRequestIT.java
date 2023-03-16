@@ -91,6 +91,7 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
         sipEntity = SIPEntity.build(getDefaultTenant(),
                                     IngestMetadata.build("sessionOwner",
                                                          "session",
+                                                         null,
                                                          "ingestChain",
                                                          Sets.newHashSet(),
                                                          StorageMetadata.build("storage")),

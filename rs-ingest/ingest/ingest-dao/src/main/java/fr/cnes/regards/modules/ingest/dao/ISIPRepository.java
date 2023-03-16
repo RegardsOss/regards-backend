@@ -142,6 +142,10 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     @Query(value = "UPDATE SIPEntity SET last = :last WHERE id = :id")
     int updateLast(@Param("id") Long id, @Param("last") boolean last);
 
+    @Modifying
+    @Query(value = "UPDATE SIPEntity SET state = :state WHERE id = :id")
+    int updateState(@Param("id") Long id, @Param("state") SIPState state);
+
     /**
      * Remove rawsip value of SIP where lowerDate < SIP.lastUpdate <= upperDate
      */

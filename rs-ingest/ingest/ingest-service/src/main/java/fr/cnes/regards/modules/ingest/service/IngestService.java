@@ -19,8 +19,6 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -62,6 +60,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
 import java.util.*;
 
 /**
@@ -122,9 +121,16 @@ public class IngestService implements IIngestService {
      * @param item request to manage
      */
     private IngestRequest registerIngestRequest(IngestRequestFlowItem item) {
+        IngestMetadata ingestMetadata = metadataMapper.dtoToMetadata(item.getMetadata());
+        if (ingestMetadata.getSubmissionDate() == null && item.getMessageProperties() != null) {
+            Date timestamp = item.getMessageProperties().getHeader("timestamp");
+            if (timestamp != null) {
+                ingestMetadata.setSubmissionDate(timestamp.toInstant().atOffset(ZoneOffset.UTC));
+            }
+        }
         return registerIngestRequest(item.getRequestId(),
                                      item.getSip(),
-                                     metadataMapper.dtoToMetadata(item.getMetadata()),
+                                     ingestMetadata,
                                      RequestInfoDto.build(item.getMetadata().getSessionOwner(),
                                                           item.getMetadata().getSession()),
                                      new HashSet<>(),
@@ -181,7 +187,7 @@ public class IngestService implements IIngestService {
         // Save granted ingest request, versioning mode is being handled later
         IngestRequest request = IngestRequest.build(requestId,
                                                     ingestMetadata,
-                                                    InternalRequestState.CREATED,
+                                                    InternalRequestState.TO_SCHEDULE,
                                                     IngestRequestStep.LOCAL_SCHEDULED,
                                                     sip);
         ingestRequestService.handleRequestGranted(request);
@@ -194,21 +200,13 @@ public class IngestService implements IIngestService {
 
     @Override
     public void handleIngestRequests(Collection<IngestRequestFlowItem> items) {
-        // Store requests per chain
-        ListMultimap<String, IngestRequest> requestPerChain = ArrayListMultimap.create();
         for (IngestRequestFlowItem item : items) {
             // Validate and transform to request
             IngestRequest ingestRequest = registerIngestRequest(item);
             if (ingestRequest != null) {
-                requestPerChain.put(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
                 // monitoring
                 sessionNotifier.incrementRequestCount(ingestRequest);
             }
-        }
-
-        // Schedule job per chain
-        for (String chainName : requestPerChain.keySet()) {
-            ingestRequestService.scheduleIngestProcessingJobByChain(chainName, requestPerChain.get(chainName));
         }
     }
 
@@ -241,8 +239,6 @@ public class IngestService implements IIngestService {
 
         // Monitoring
         sessionNotifier.incrementRequestCount(source, session, grantedRequests.size());
-
-        ingestRequestService.scheduleIngestProcessingJobByChain(ingestMetadata.getIngestChain(), grantedRequests);
 
         return info;
     }

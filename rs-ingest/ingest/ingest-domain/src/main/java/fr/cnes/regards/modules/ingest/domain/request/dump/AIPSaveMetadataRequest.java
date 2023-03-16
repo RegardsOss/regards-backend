@@ -47,7 +47,7 @@ public class AIPSaveMetadataRequest extends AbstractRequest {
     public AIPSaveMetadataRequest(OffsetDateTime previousDumpDate, String dumpLocation) {
         // session information are specific to AIP subset defined by users, the same goes for session owner. ProviderId is aip specific.
         // AIPSaveMetadataRequests are not related to sessions
-        super(null, null, null, RequestTypeConstant.AIP_SAVE_METADATA_VALUE);
+        super(null, null, null, null, RequestTypeConstant.AIP_SAVE_METADATA_VALUE);
         this.previousDumpDate = previousDumpDate;
         this.dumpLocation = dumpLocation;
     }

@@ -107,6 +107,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
         Mockito.verify(listener, Mockito.times(0)).onGranted(Mockito.anyCollection());
         RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto.build("sessionOwner",
                                                                              "session",
+                                                                             null,
                                                                              IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                              Sets.newHashSet("cat 1"),
                                                                              null,

@@ -190,6 +190,7 @@ public class ProductService implements IProductService {
 
         IngestMetadataDto ingestMetadata = IngestMetadataDto.build(product.getProcessingChain().getLabel(),
                                                                    product.getSession(),
+                                                                   null,
                                                                    product.getProcessingChain().getIngestChain(),
                                                                    acquisitionChain.getCategories(),
                                                                    product.getProcessingChain().getVersioningMode(),

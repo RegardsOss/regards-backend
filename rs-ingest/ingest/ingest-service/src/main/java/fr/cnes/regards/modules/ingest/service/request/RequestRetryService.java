@@ -21,13 +21,10 @@ package fr.cnes.regards.modules.ingest.service.request;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.util.List;
 
@@ -63,23 +60,6 @@ public class RequestRetryService implements IRequestRetryService {
             }
         }
         requestService.scheduleRequests(requests);
-
-        MultiValueMap<String, IngestRequest> ingestRequestToSchedulePerChain = new LinkedMultiValueMap<>();
-        // For macro job, create a job
-        for (AbstractRequest request : requests) {
-            if ((request.getState() == InternalRequestState.CREATED)) {
-                if (requestService.isJobRequest(request)) {
-                    requestService.scheduleJob(request);
-                } else if (request instanceof IngestRequest) {
-                    IngestRequest ingestRequest = (IngestRequest) request;
-                    ingestRequestToSchedulePerChain.add(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
-                }
-            }
-        }
-        ingestRequestToSchedulePerChain.keySet()
-                                       .forEach(chain -> ingestRequestService.scheduleIngestProcessingJobByChain(chain,
-                                                                                                                 ingestRequestToSchedulePerChain.get(
-                                                                                                                     chain)));
     }
 
 }

@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.apache.commons.io.FileUtils;
@@ -87,6 +88,9 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceIT {
     @Autowired
     private StorageClientMock storageClient;
 
+    @Autowired
+    private IngestRequestSchedulerService ingestRequestSchedulerService;
+
     @Override
     public void doInit() throws EntityException {
         // clear before test
@@ -106,7 +110,7 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceIT {
         // add aip to db
         int nbSIP = 6;
         storageClient.setBehavior(true, true);
-        initRandomData(nbSIP);
+        initRandomData(nbSIP, ingestRequestSchedulerService);
 
         // dump all aips created
         JobInfo jobInfo = runSaveMetadataJob();

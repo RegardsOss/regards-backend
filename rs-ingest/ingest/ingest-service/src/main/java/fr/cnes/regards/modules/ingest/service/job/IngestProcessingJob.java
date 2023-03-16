@@ -100,7 +100,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
         }.getType();
         Set<Long> ids = getValue(parameters, IDS_PARAMETER, type);
-        requests = ingestRequestService.loadByIds(ids);
+        requests = ingestRequestService.findByIds(ids);
 
         // Retrieve processing chain from parameters
         String processingChainName = getValue(parameters, CHAIN_NAME_PARAMETER);

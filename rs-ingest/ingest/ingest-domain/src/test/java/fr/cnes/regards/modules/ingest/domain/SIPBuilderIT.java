@@ -81,6 +81,7 @@ public class SIPBuilderIT {
         // Initialize a SIP Collection builder
         SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(sessionOwner,
                                                                                session,
+                                                                               null,
                                                                                ingestChain,
                                                                                CATEGORIES,
                                                                                null,

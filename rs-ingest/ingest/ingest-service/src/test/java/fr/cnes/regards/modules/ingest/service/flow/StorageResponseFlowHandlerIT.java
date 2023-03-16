@@ -22,7 +22,6 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
@@ -43,6 +42,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 
@@ -101,7 +102,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
 
         // Wait for storage responses
         if (!initDefaultNotificationSettings()) {
-            waitIngestRequests(0, 10_000L, null);
+            waitIngestRequests(0, 10);
         } else {
             ingestRequestRepository.deleteAll();
             Assert.assertEquals("All ingest requests should have been deleted", 0L, ingestRequestRepository.count());
@@ -114,16 +115,23 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
 
     }
 
-    public void waitIngestRequests(long requests, long timeout, InternalRequestState sipState) {
+    public void waitIngestRequests(long requests, long timeout) {
         // Wait
         long requestCount;
+        OffsetDateTime end = OffsetDateTime.now().plus(timeout, ChronoUnit.SECONDS);
         do {
             requestCount = ingestRequestRepository.count();
-            LOGGER.info("{} Ingest request(s) created in database", requestCount);
             if (requestCount == requests) {
                 break;
             }
-        } while (true);
+        } while (OffsetDateTime.now().isBefore(end));
+        if (requestCount != requests) {
+            Assert.fail(String.format("Only %d requests found after %d seconds but expected %d",
+                                      requestCount,
+                                      timeout,
+                                      requests));
+        }
+        LOGGER.info("{} Ingest request(s) created in database", requestCount);
     }
 
     protected SIP create(int i, List<String> tags) {

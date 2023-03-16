@@ -73,7 +73,7 @@ public class RequestDeletionService {
 
     public void deleteRequests(Collection<AbstractRequest> requests) {
         // Retrieve complete ingest requests before deletion
-        List<IngestRequest> ingestRequests = ingestRequestService.loadByIds(requests.stream()
+        List<IngestRequest> ingestRequests = ingestRequestService.findByIds(requests.stream()
                                                                                     .filter(r -> r.getDtype()
                                                                                                   .equals(
                                                                                                       RequestTypeConstant.INGEST_VALUE))
