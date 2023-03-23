@@ -1220,27 +1220,27 @@
             <!--  Toponyms -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.toponyms</groupId>
-                <artifactId>toponyms-rest</artifactId>
+                <artifactId>toponyms-instance-rest</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.toponyms</groupId>
-                <artifactId>toponyms-client</artifactId>
+                <artifactId>toponyms-instance-client</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.toponyms</groupId>
-                <artifactId>toponyms-service</artifactId>
+                <artifactId>toponyms-instance-service</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.toponyms</groupId>
-                <artifactId>toponyms-domain</artifactId>
+                <artifactId>toponyms-instance-domain</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.toponyms</groupId>
-                <artifactId>toponyms-dao</artifactId>
+                <artifactId>toponyms-instance-dao</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!-- Data provider -->

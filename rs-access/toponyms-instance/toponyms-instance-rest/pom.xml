@@ -22,10 +22,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.modules.toponyms</groupId>
-    <artifactId>toponyms-client</artifactId>
+    <artifactId>toponyms-instance-rest</artifactId>
     <packaging>jar</packaging>
 
-    <description>Client for toponyms interfaces</description>
+    <description>Controller layer of the UI Configuration module</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2021</inceptionYear>
     <licenses>
@@ -49,43 +49,34 @@
 
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>toponyms</artifactId>
+        <artifactId>toponyms-instance</artifactId>
         <version>${revision}</version>
     </parent>
 
     <dependencies>
+        <!-- Starters -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>feign-regards-starter</artifactId>
-            <scope>provided</scope>
+            <artifactId>hateoas-regards-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>geojson-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>gson-regards-starter</artifactId>
+            <artifactId>security-regards-starter</artifactId>
         </dependency>
         <!-- Module dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.modules.toponyms</groupId>
-            <artifactId>toponyms-domain</artifactId>
+            <artifactId>toponyms-instance-service</artifactId>
         </dependency>
-        <!-- Tests -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-integration-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+        <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>jpa-instance-regards-starter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.toponyms</groupId>
-            <artifactId>toponyms-rest</artifactId>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

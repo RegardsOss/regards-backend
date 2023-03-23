@@ -67,7 +67,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.toponyms</groupId>
-            <artifactId>toponyms-client</artifactId>
+            <artifactId>toponyms-instance-client</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>

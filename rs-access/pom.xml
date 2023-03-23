@@ -46,7 +46,7 @@
     </parent>
 
     <modules>
-        <module>toponyms</module>
+        <module>toponyms-instance</module>
         <module>uiconfiguration</module>
         <module>access-services</module>
         <module>backend-for-frontend</module>

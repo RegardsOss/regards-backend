@@ -22,10 +22,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.modules.toponyms</groupId>
-    <artifactId>toponyms-domain</artifactId>
+    <artifactId>toponyms-instance-client</artifactId>
     <packaging>jar</packaging>
 
-    <description>Toponyms domain</description>
+    <description>Client for toponyms interfaces</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2021</inceptionYear>
     <licenses>
@@ -49,26 +49,44 @@
 
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>toponyms</artifactId>
+        <artifactId>toponyms-instance</artifactId>
         <version>${revision}</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards-starter</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>geojson-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-commons-regards</artifactId>
+            <artifactId>gson-regards-starter</artifactId>
+        </dependency>
+        <!-- Module dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.toponyms</groupId>
+            <artifactId>toponyms-instance-domain</artifactId>
+        </dependency>
+        <!-- Tests -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-integration-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-spatial</artifactId>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-instance-regards-starter</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.geolatte</groupId>
-            <artifactId>geolatte-geojson</artifactId>
+            <groupId>fr.cnes.regards.modules.toponyms</groupId>
+            <artifactId>toponyms-instance-rest</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.toponyms</groupId>
-            <artifactId>toponyms-rest</artifactId>
+            <artifactId>toponyms-instance-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>

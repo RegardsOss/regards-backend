@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.modules.toponyms</groupId>
-    <artifactId>toponyms-service</artifactId>
+    <artifactId>toponyms-instance-service</artifactId>
     <packaging>jar</packaging>
 
     <description>Toponyms services</description>
@@ -49,7 +49,7 @@
 
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>toponyms</artifactId>
+        <artifactId>toponyms-instance</artifactId>
         <version>${revision}</version>
     </parent>
 
@@ -62,7 +62,7 @@
         <!-- Module dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.modules.toponyms</groupId>
-            <artifactId>toponyms-dao</artifactId>
+            <artifactId>toponyms-instance-dao</artifactId>
         </dependency>
         <!-- Test -->
         <dependency>

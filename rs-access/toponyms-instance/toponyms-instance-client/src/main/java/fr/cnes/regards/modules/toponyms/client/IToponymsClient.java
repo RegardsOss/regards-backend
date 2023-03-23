@@ -35,7 +35,7 @@ import java.util.List;
  *
  * @author Sébastien Binda
  */
-@RestClient(name = "rs-access-instance", contextId = "rs-access-project.toponyms-client")
+@RestClient(name = "rs-access-instance", contextId = "rs-access-project.toponyms-instance-client")
 public interface IToponymsClient {
 
     @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.SEARCH,

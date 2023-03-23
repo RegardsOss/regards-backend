@@ -22,10 +22,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.modules.toponyms</groupId>
-    <artifactId>toponyms-rest</artifactId>
+    <artifactId>toponyms-instance-domain</artifactId>
     <packaging>jar</packaging>
 
-    <description>Controller layer of the UI Configuration module</description>
+    <description>Toponyms domain</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2021</inceptionYear>
     <licenses>
@@ -49,35 +49,26 @@
 
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>toponyms</artifactId>
+        <artifactId>toponyms-instance</artifactId>
         <version>${revision}</version>
     </parent>
 
     <dependencies>
-        <!-- Starters -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>hateoas-regards-starter</artifactId>
+            <artifactId>geojson-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>security-regards-starter</artifactId>
-        </dependency>
-        <!-- Module dependencies -->
-        <dependency>
-            <groupId>fr.cnes.regards.modules.toponyms</groupId>
-            <artifactId>toponyms-service</artifactId>
-        </dependency>
-        <!-- Test -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-instance-regards-starter</artifactId>
-            <scope>test</scope>
+            <artifactId>jpa-commons-regards</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-integration-test</artifactId>
-            <scope>test</scope>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-spatial</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.geolatte</groupId>
+            <artifactId>geolatte-geojson</artifactId>
         </dependency>
     </dependencies>
 </project>
