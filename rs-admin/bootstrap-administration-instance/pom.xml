@@ -61,7 +61,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.project</groupId>
-            <artifactId>project-rest</artifactId>
+            <artifactId>project-instance-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>

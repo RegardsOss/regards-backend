@@ -54,7 +54,7 @@
     </parent>
 
     <modules>
-        <module>project</module>
+        <module>project-instance</module>
         <module>bootstrap-administration</module>
         <module>bootstrap-administration-instance</module>
         <module>accessrights</module>

@@ -22,10 +22,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.modules.project</groupId>
-    <artifactId>project-domain</artifactId>
+    <artifactId>project-instance-client</artifactId>
     <packaging>jar</packaging>
 
-    <description>Model layer of Project module</description>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>project-instance</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <description>Client (Feign) layer of Project module</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -47,25 +53,20 @@
         </developer>
     </developers>
 
-    <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>project</artifactId>
-        <version>${revision}</version>
-    </parent>
-
     <dependencies>
         <dependency>
-            <!-- dependency added so we can easily handle link between ProjectConnection and TenantConnection -->
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards-starter</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>jpa-multitenant-regards</artifactId>
         </dependency>
+        <!-- Microservice internal dependencies -->
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-commons-regards</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>amqp-regards</artifactId>
+            <groupId>fr.cnes.regards.modules.project</groupId>
+            <artifactId>project-instance-domain</artifactId>
         </dependency>
         <!-- Tests -->
         <dependency>

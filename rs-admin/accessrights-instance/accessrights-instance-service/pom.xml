@@ -70,7 +70,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.project</groupId>
-            <artifactId>project-service</artifactId>
+            <artifactId>project-instance-service</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>

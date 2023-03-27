@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.modules.project</groupId>
-    <artifactId>project-service</artifactId>
+    <artifactId>project-instance-service</artifactId>
     <packaging>jar</packaging>
 
     <description>Service layer of Project module</description>
@@ -49,7 +49,7 @@
 
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>project</artifactId>
+        <artifactId>project-instance</artifactId>
         <version>${revision}</version>
     </parent>
 
@@ -78,7 +78,7 @@
         <!-- Microservice internal dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.modules.project</groupId>
-            <artifactId>project-dao</artifactId>
+            <artifactId>project-instance-dao</artifactId>
         </dependency>
         <!-- Tests -->
         <dependency>

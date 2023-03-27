@@ -21,11 +21,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.modules</groupId>
-    <artifactId>project</artifactId>
-    <packaging>pom</packaging>
+    <groupId>fr.cnes.regards.modules.project</groupId>
+    <artifactId>project-instance-domain</artifactId>
+    <packaging>jar</packaging>
 
-    <description>Module for managing the different projects/tenants of the system</description>
+    <description>Model layer of Project module</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -48,18 +48,32 @@
     </developers>
 
     <parent>
-        <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-oss-backend</artifactId>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>project-instance</artifactId>
         <version>${revision}</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <modules>
-        <module>project-client</module>
-        <module>project-dao</module>
-        <module>project-domain</module>
-        <module>project-rest</module>
-        <module>project-service</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <!-- dependency added so we can easily handle link between ProjectConnection and TenantConnection -->
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-multitenant-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-commons-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>amqp-regards</artifactId>
+        </dependency>
+        <!-- Tests -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
 
 </project>

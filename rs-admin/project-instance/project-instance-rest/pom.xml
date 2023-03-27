@@ -22,10 +22,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.modules.project</groupId>
-    <artifactId>project-dao</artifactId>
-    <packaging>jar</packaging>
+    <artifactId>project-instance-rest</artifactId>
 
-    <description>DAO layer of Project module</description>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>project-instance</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <description>Controller layer of Project module</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -47,35 +52,41 @@
         </developer>
     </developers>
 
-    <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>project</artifactId>
-        <version>${revision}</version>
-    </parent>
-
     <dependencies>
+        <!-- REGARDS Framework -->
         <dependency>
-            <groupId>fr.cnes.regards.modules.project</groupId>
-            <artifactId>project-domain</artifactId>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>hateoas-regards-starter</artifactId>
         </dependency>
-        <!-- Tests dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>jpa-instance-regards-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
-            <scope>test</scope>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>security-regards</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <scope>test</scope>
+            <groupId>fr.cnes.regards.modules.project</groupId>
+            <artifactId>project-instance-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.accessrights</groupId>
+            <artifactId>accessrights-client</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-multitenant-regards-test</artifactId>
+            <artifactId>feign-regards-starter</artifactId>
+        </dependency>
+        <!-- Tests -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-integration-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.project</groupId>
+            <artifactId>project-instance-client</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

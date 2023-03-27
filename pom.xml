@@ -810,27 +810,27 @@
             <!-- Project -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.project</groupId>
-                <artifactId>project-rest</artifactId>
+                <artifactId>project-instance-rest</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.project</groupId>
-                <artifactId>project-service</artifactId>
+                <artifactId>project-instance-service</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.project</groupId>
-                <artifactId>project-client</artifactId>
+                <artifactId>project-instance-client</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.project</groupId>
-                <artifactId>project-dao</artifactId>
+                <artifactId>project-instance-dao</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.project</groupId>
-                <artifactId>project-domain</artifactId>
+                <artifactId>project-instance-domain</artifactId>
                 <version>${revision}</version>
             </dependency>
 

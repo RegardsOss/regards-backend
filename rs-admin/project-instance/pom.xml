@@ -21,16 +21,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
-    <artifactId>accessrights-instance-domain</artifactId>
-    <packaging>jar</packaging>
+    <groupId>fr.cnes.regards.modules</groupId>
+    <artifactId>project-instance</artifactId>
+    <packaging>pom</packaging>
 
-    <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>accessrights-instance</artifactId>
-        <version>${revision}</version>
-    </parent>
-
+    <description>Module for managing the different projects/tenants of the system</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -52,28 +47,19 @@
         </developer>
     </developers>
 
-    <dependencies>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-commons-regards</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>amqp-regards</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
-            <artifactId>tenant-settings-domain</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.project</groupId>
-            <artifactId>project-instance-domain</artifactId>
-        </dependency>
-        <!-- Test -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <modules>
+        <module>project-instance-client</module>
+        <module>project-instance-dao</module>
+        <module>project-instance-domain</module>
+        <module>project-instance-rest</module>
+        <module>project-instance-service</module>
+    </modules>
+
 </project>

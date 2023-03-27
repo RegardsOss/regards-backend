@@ -22,16 +22,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.modules.project</groupId>
-    <artifactId>project-client</artifactId>
+    <artifactId>project-instance-dao</artifactId>
     <packaging>jar</packaging>
 
-    <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>project</artifactId>
-        <version>${revision}</version>
-    </parent>
-
-    <description>Client (Feign) layer of Project module</description>
+    <description>DAO layer of Project module</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -53,28 +47,37 @@
         </developer>
     </developers>
 
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>project-instance</artifactId>
+        <version>${revision}</version>
+    </parent>
+
     <dependencies>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>feign-regards-starter</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-multitenant-regards</artifactId>
-        </dependency>
-        <!-- Microservice internal dependencies -->
-        <dependency>
             <groupId>fr.cnes.regards.modules.project</groupId>
-            <artifactId>project-domain</artifactId>
+            <artifactId>project-instance-domain</artifactId>
         </dependency>
-        <!-- Tests -->
+        <!-- Tests dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-instance-regards-starter</artifactId>
+        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-multitenant-regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
 
 </project>
