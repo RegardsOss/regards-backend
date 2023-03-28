@@ -23,16 +23,16 @@ import static org.junit.Assert.assertEquals;
 @MultitenantTransactional
 public class UIConfigurationControllerIT extends AbstractRegardsTransactionalIT {
 
-    private final String DEFAULT_APPLICATION_ID = "user";
+    private final String APPLICATION_ID_TEST = "user";
 
     private final String CONFIGURATION_VALUE = "test";
 
     @Autowired
-    private IUIConfigurationRepository configurationRepo;
+    private IUIConfigurationRepository uiConfigurationRepository;
 
     @Before
     public void setup() {
-        configurationRepo.deleteAll();
+        uiConfigurationRepository.deleteAll();
     }
 
     @Test
@@ -40,7 +40,7 @@ public class UIConfigurationControllerIT extends AbstractRegardsTransactionalIT 
         performDefaultGet(UIConfigurationController.CONFIGURATION_PATH + UIConfigurationController.APPLICATION_ID_PATH,
                           customizer().expectStatusNoContent(),
                           "Error message",
-                          DEFAULT_APPLICATION_ID);
+                          APPLICATION_ID_TEST);
     }
 
     @Test
@@ -48,12 +48,13 @@ public class UIConfigurationControllerIT extends AbstractRegardsTransactionalIT 
         UIConfiguration toAdd = new UIConfiguration();
         toAdd.setId(1L);
         toAdd.setConfiguration(CONFIGURATION_VALUE);
-        toAdd.setApplicationId(DEFAULT_APPLICATION_ID);
-        this.configurationRepo.save(toAdd);
+        toAdd.setApplicationId(APPLICATION_ID_TEST);
+        uiConfigurationRepository.save(toAdd);
+
         performDefaultGet(UIConfigurationController.CONFIGURATION_PATH + UIConfigurationController.APPLICATION_ID_PATH,
                           customizer().expectStatusOk(),
                           "Error message",
-                          DEFAULT_APPLICATION_ID);
+                          APPLICATION_ID_TEST);
     }
 
     @Test
@@ -61,13 +62,15 @@ public class UIConfigurationControllerIT extends AbstractRegardsTransactionalIT 
         UIConfiguration toAdd = new UIConfiguration();
         toAdd.setId(1L);
         toAdd.setConfiguration(CONFIGURATION_VALUE);
-        toAdd.setApplicationId(DEFAULT_APPLICATION_ID);
+        toAdd.setApplicationId(APPLICATION_ID_TEST);
+
         performDefaultPost(UIConfigurationController.CONFIGURATION_PATH + UIConfigurationController.APPLICATION_ID_PATH,
                            new ConfigurationDTO(CONFIGURATION_VALUE),
                            customizer().expectStatusOk(),
                            "Error message",
-                           DEFAULT_APPLICATION_ID);
-        assertEquals(toAdd, configurationRepo.findAll().get(0));
+                           APPLICATION_ID_TEST);
+
+        assertEquals(toAdd, uiConfigurationRepository.findAll().get(0));
     }
 
     @Test
@@ -76,17 +79,18 @@ public class UIConfigurationControllerIT extends AbstractRegardsTransactionalIT 
                            new ConfigurationDTO(CONFIGURATION_VALUE),
                            customizer().expectStatusOk(),
                            "Error message",
-                           DEFAULT_APPLICATION_ID);
+                           APPLICATION_ID_TEST);
 
-        UIConfiguration toUpdate = this.configurationRepo.findByApplicationId(DEFAULT_APPLICATION_ID).get(0);
+        UIConfiguration toUpdate = uiConfigurationRepository.findByApplicationId(APPLICATION_ID_TEST).get(0);
         toUpdate.setConfiguration(CONFIGURATION_VALUE + CONFIGURATION_VALUE);
 
         performDefaultPut(UIConfigurationController.CONFIGURATION_PATH + UIConfigurationController.APPLICATION_ID_PATH,
                           new ConfigurationDTO(CONFIGURATION_VALUE + CONFIGURATION_VALUE),
                           customizer().expectStatusOk(),
                           "Error message",
-                          DEFAULT_APPLICATION_ID);
-        assertEquals(toUpdate, configurationRepo.findAll().get(0));
+                          APPLICATION_ID_TEST);
+
+        assertEquals(toUpdate, uiConfigurationRepository.findAll().get(0));
     }
 
     @Test
@@ -95,6 +99,6 @@ public class UIConfigurationControllerIT extends AbstractRegardsTransactionalIT 
                           new ConfigurationDTO(CONFIGURATION_VALUE),
                           customizer().expectStatusNoContent(),
                           "Error message",
-                          DEFAULT_APPLICATION_ID);
+                          APPLICATION_ID_TEST);
     }
 }

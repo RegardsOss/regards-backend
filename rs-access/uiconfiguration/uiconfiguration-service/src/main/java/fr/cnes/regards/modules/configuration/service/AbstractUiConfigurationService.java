@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.configuration.domain.UILayout;
@@ -56,12 +55,6 @@ public abstract class AbstractUiConfigurationService implements ApplicationListe
      */
     @Autowired
     private ITenantResolver tenantResolver;
-
-    /**
-     * AMQP Message subscriber
-     */
-    @Autowired
-    private IInstanceSubscriber instanceSubscriber;
 
     @Value("${spring.application.name}")
     private String microserviceName;
@@ -103,20 +96,6 @@ public abstract class AbstractUiConfigurationService implements ApplicationListe
     protected abstract void initProjectUI(String pTenant);
 
     protected abstract void initInstanceUI();
-
-    /**
-     * @return the instanceSubscriber
-     */
-    public IInstanceSubscriber getInstanceSubscriber() {
-        return instanceSubscriber;
-    }
-
-    /**
-     * @return the runtimeTenantResolver
-     */
-    public IRuntimeTenantResolver getRuntimeTenantResolver() {
-        return runtimeTenantResolver;
-    }
 
     /**
      * @return the microserviceName

@@ -47,12 +47,12 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
      */
     private static final Logger LOG = LoggerFactory.getLogger(ModuleControllerIT.class);
 
+    private final static String APPLICATION_ID_TEST = "TEST";
+
     @Autowired
-    private IModuleRepository repository;
+    private IModuleRepository moduleRepository;
 
     private Module moduleTest;
-
-    private final static String APPLICATION_TEST = "TEST";
 
     @Override
     protected Logger getLogger() {
@@ -62,25 +62,20 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
     private Module createModule(boolean active, UIPage page) {
         final Module module = new Module();
         module.setActive(active);
-        module.setApplicationId(APPLICATION_TEST);
+        module.setApplicationId(APPLICATION_ID_TEST);
         module.setConf("{\"test\":\"test\"}");
         module.setContainer("TestContainer");
         module.setPage(page);
         module.setDescription("Description");
         module.setType("Module");
+        
         return module;
     }
 
     @Before
     public void init() {
-
-        final Module module = createModule(true, new UIPage(false, null, null, null));
-
-        final Module module2 = createModule(false, new UIPage(true, null, null, null));
-
-        moduleTest = repository.save(module);
-        repository.save(module2);
-
+        moduleTest = moduleRepository.save(createModule(true, new UIPage(false, null, null, null)));
+        moduleRepository.save(createModule(false, new UIPage(true, null, null, null)));
     }
 
     @Test
@@ -88,7 +83,7 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet("/applications/{applicationId}/modules",
                           customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2),
                           "The module list of TEST application should contains two modules",
-                          APPLICATION_TEST);
+                          APPLICATION_ID_TEST);
 
         performDefaultGet("/applications/{applicationId}/modules",
                           customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 0),
@@ -103,7 +98,7 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
                                       .expectToHaveSize(JSON_PATH_CONTENT, 1)
                                       .addParameter("active", "true"),
                           "The active module list should contains only one module",
-                          APPLICATION_TEST);
+                          APPLICATION_ID_TEST);
     }
 
     @Test
@@ -113,12 +108,12 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
                            module,
                            customizer().expectStatusOk(),
                            "The POST to save a new module should be a success",
-                           APPLICATION_TEST);
+                           APPLICATION_ID_TEST);
 
         performDefaultGet("/applications/{applicationId}/modules",
                           customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 3),
                           "The previously created module should be retrieved",
-                          APPLICATION_TEST);
+                          APPLICATION_ID_TEST);
     }
 
     @Test
@@ -126,13 +121,13 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultDelete(ModuleController.ROOT_MAPPING + ModuleController.MODULE_ID_MAPPING,
                              customizer().expectStatusOk(),
                              "The deletion of a given existing module should be a success",
-                             APPLICATION_TEST,
+                             APPLICATION_ID_TEST,
                              moduleTest.getId());
 
         performDefaultGet(ModuleController.ROOT_MAPPING + ModuleController.MODULE_ID_MAPPING,
                           customizer().expectStatusNotFound(),
                           "The previously deleted module should not exist anymore",
-                          APPLICATION_TEST,
+                          APPLICATION_ID_TEST,
                           moduleTest.getId().toString());
     }
 

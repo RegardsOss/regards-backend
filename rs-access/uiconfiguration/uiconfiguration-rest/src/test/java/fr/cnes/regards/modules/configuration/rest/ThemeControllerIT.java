@@ -47,9 +47,9 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     private static final Logger LOG = LoggerFactory.getLogger(ThemeControllerIT.class);
 
     @Autowired
-    private IThemeRepository repository;
+    private IThemeRepository themeRepository;
 
-    private Theme theme;
+    private Theme themeTest;
 
     @Override
     protected Logger getLogger() {
@@ -61,17 +61,15 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
         theme.setActive(pActive);
         theme.setConfiguration("{}");
         theme.setName(pName);
+
         return theme;
     }
 
     @Before
     public void init() {
-        theme = createTheme(false, "Theme");
-        final Theme theme2 = createTheme(true, "Theme2");
-        final Theme theme3 = createTheme(false, "Theme3");
-        theme = repository.save(theme);
-        repository.save(theme2);
-        repository.save(theme3);
+        themeTest = themeRepository.save(createTheme(false, "Theme"));
+        themeRepository.save(createTheme(true, "Theme2"));
+        themeRepository.save(createTheme(false, "Theme3"));
     }
 
     /**
@@ -96,7 +94,7 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
                           customizer().expectStatusOk(),
                           "Error getting one theme",
-                          theme.getId());
+                          themeTest.getId());
     }
 
     /**
@@ -110,12 +108,12 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultDelete(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
                              customizer().expectStatusOk(),
                              "Error deleting one theme",
-                             theme.getId());
+                             themeTest.getId());
 
         performDefaultGet(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
                           customizer().expectStatusNotFound(),
                           "The deleted theme should not pe present anymore",
-                          theme.getId());
+                          themeTest.getId());
     }
 
     /**
@@ -126,6 +124,7 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testSaveTheme() {
         final Theme theme = createTheme(true, "NewTheme");
+
         performDefaultPost(ThemeController.ROOT_MAPPING,
                            theme,
                            customizer().expectStatusOk(),
@@ -143,12 +142,13 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void testUpdateTheme() {
-        theme.setActive(true);
+        themeTest.setActive(true);
+
         performDefaultPut(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
-                          theme,
+                          themeTest,
                           customizer().expectStatusOk(),
                           "Error saving new theme",
-                          theme.getId());
+                          themeTest.getId());
     }
 
 }

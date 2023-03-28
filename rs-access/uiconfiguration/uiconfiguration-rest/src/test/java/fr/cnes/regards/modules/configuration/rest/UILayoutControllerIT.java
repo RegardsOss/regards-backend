@@ -60,6 +60,7 @@ public class UILayoutControllerIT extends AbstractRegardsTransactionalIT {
         UILayout.setId(1L);
         UILayout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         UILayout.setLayout("{}}");
+        
         performDefaultPut("/layouts/{applicationId}",
                           UILayout,
                           customizer().expect(status().isUnprocessableEntity()),
@@ -73,6 +74,7 @@ public class UILayoutControllerIT extends AbstractRegardsTransactionalIT {
         UILayout.setId(1L);
         UILayout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         UILayout.setLayout("{\"test\":\"ok\"}");
+
         performDefaultPut("/layouts/{applicationId}",
                           UILayout,
                           customizer().expectStatusOk(),

@@ -50,7 +50,7 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ModuleService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ThemeService.class);
 
     /**
      * The default configuration for dark theme
