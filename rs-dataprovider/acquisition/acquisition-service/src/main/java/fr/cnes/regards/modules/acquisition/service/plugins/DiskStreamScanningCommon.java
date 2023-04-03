@@ -19,8 +19,6 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -30,44 +28,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Scan directories and return detected files according to last modification date filter and glob pattern by stream.
+ * Scan plugin that use stream on a file tree structure.
+ * Can filter files according to their last modification date
  *
- * @author Marc Sordi
- */
-@Plugin(id = "GlobDiskStreamScanning",
-        version = "1.0.0-SNAPSHOT",
-        description = "Scan directories to detect files filtering with a glob pattern by stream",
-        markdown = "GlobDiskStreamScanning.md",
-        author = "REGARDS Team",
-        contact = "regards@c-s.fr",
-        license = "GPLv3",
-        owner = "CSSI",
-        url = "https://github.com/RegardsOss")
-public class GlobDiskStreamScanning implements IFluxScanPlugin {
+ * @author Thomas GUILLOU
+ **/
+public abstract class DiskStreamScanningCommon implements IFluxScanPlugin {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskStreamScanning.class);
-
-    public static final String FIELD_GLOB = "glob";
-
-    @PluginParameter(name = FIELD_GLOB,
-                     label = "Glob pattern",
-                     markdown = "glob_pattern.md",
-                     defaultValue = "*",
-                     optional = true)
-    private String glob;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiskStreamScanningCommon.class);
 
     @Autowired
     private INotificationClient notifClient;
@@ -95,27 +73,30 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
     private Stream<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate)
         throws ModuleException {
         try {
-            FileSystem fs = dirPath.getFileSystem();
-            final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
-            Predicate<Path> filter = entry -> {
-                boolean match = Files.isReadable(entry)
-                                && Files.isRegularFile(entry)
-                                && matcher.matches(entry.getFileName());
-                if (match && lastModificationDate.isPresent()) {
-                    OffsetDateTime lmd;
-                    try {
-                        lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(), ZoneOffset.UTC);
-                        return lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get());
-                    } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
-                        match = false;
-                    }
-                }
-                return match;
-            };
-            return Files.walk(dirPath).filter(filter);
+            Stream<Path> pathStream = Files.walk(dirPath).filter(this::isRegularFile).filter(this::isPathMatchPattern);
+            if (lastModificationDate.isPresent()) {
+                pathStream = pathStream.filter(path -> isFileMatchDateFilter(path, lastModificationDate.get()));
+            }
+            return pathStream;
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
+
+    private boolean isFileMatchDateFilter(Path entry, OffsetDateTime lastModificationDate) {
+        try {
+            OffsetDateTime lastModifiedDate = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
+                                                                       ZoneOffset.UTC);
+            return (lastModifiedDate.isAfter(lastModificationDate) || lastModifiedDate.isEqual(lastModificationDate));
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return false;
+    }
+
+    private boolean isRegularFile(Path entry) {
+        return Files.isReadable(entry) && Files.isRegularFile(entry);
+    }
+
+    protected abstract boolean isPathMatchPattern(Path path);
 }

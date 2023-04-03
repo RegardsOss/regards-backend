@@ -223,7 +223,7 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
         fileInfo.setDataType(DataType.RAWDATA);
         fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(searchDir, null)));
 
-        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskStreamScanning.class, null, null);
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskStreamScanningPlugin.class, null, null);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan streamed plugin");
         fileInfo.setScanPlugin(scanPlugin);
