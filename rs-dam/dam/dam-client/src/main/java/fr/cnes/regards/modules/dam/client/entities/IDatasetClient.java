@@ -72,7 +72,7 @@ public interface IDatasetClient {
      * Retrieve a dataset using its ip id
      */
     @GetMapping(path = ROOT_DATASET_PATH + DATASET_IP_ID_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<EntityModel<Dataset>> retrieveDataset(@PathVariable("dataset_ipId") String datasetIpId);
+    ResponseEntity<Dataset> retrieveDataset(@PathVariable("dataset_ipId") String datasetIpId);
 
     /**
      * Delete dataset

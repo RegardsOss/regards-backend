@@ -49,7 +49,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -241,14 +240,11 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                 // Retrieve dataset from dam
                 try {
                     FeignSecurityManager.asSystem();
-                    ResponseEntity<EntityModel<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
-                    if (response != null) {
-                        Dataset dataset = ResponseEntityUtils.extractContentOrNull(response);
-                        if (dataset != null) {
-                            conf.setDataset(dataset);
-                            // Add new retrieved dataset into cached ones
-                            cachedDatasets.add(dataset);
-                        }
+                    Dataset dataset = ResponseEntityUtils.extractBodyOrNull(datasetClient.retrieveDataset(conf.getDatasetUrn()));
+                    if (dataset != null) {
+                        conf.setDataset(dataset);
+                        // Add new retrieved dataset into cached ones
+                        cachedDatasets.add(dataset);
                     }
                 } catch (FeignException e) {
                     LOGGER.error(String.format("Error retrieving dataset with ipId %s", conf.getDatasetUrn()), e);
