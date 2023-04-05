@@ -61,6 +61,13 @@ import java.util.stream.Collectors;
                                                          subgraph = "graph.product.jobs") },
                   subgraphs = { @NamedSubgraph(name = "graph.product.jobs",
                                                attributeNodes = { @NamedAttributeNode(value = "parameters") }) })
+@NamedEntityGraph(name = "graph.product.with.scan.folder",
+                  attributeNodes = { @NamedAttributeNode(value = "fileList", subgraph = "subgraph.acquisition.file") },
+                  subgraphs = { @NamedSubgraph(name = "subgraph.acquisition.file",
+                                               attributeNodes = { @NamedAttributeNode(value = "fileInfo",
+                                                                                      subgraph = "subgraph.scan.dir") }),
+                                @NamedSubgraph(name = "subgraph.scan.dir",
+                                               attributeNodes = { @NamedAttributeNode(value = "scanDirInfo") }) })
 public class Product {
 
     private static final String MISSING_SESSION_ERROR = "Session is required";

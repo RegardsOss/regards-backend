@@ -48,7 +48,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     @EntityGraph(value = "graph.product.complete", type = EntityGraph.EntityGraphType.LOAD)
     Product findOneById(Long id);
 
-    @EntityGraph(value = "graph.product.complete", type = EntityGraph.EntityGraphType.LOAD)
+    @EntityGraph(value = "graph.product.with.scan.folder", type = EntityGraph.EntityGraphType.LOAD)
     Product findByProductName(String productName);
 
     @EntityGraph(value = "graph.product.complete", type = EntityGraph.EntityGraphType.LOAD)

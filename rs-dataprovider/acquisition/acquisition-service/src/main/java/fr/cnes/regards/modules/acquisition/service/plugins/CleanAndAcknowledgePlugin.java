@@ -27,12 +27,14 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.plugins.IChainBlockingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -43,6 +45,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This post processing plugin allows to optionally :
@@ -56,6 +59,7 @@ import java.util.List;
  */
 @Plugin(id = "CleanAndAcknowledgePlugin",
         version = "1.0.0-SNAPSHOT",
+        markdown = "CleanAndAcknowledgePlugin.md",
         description = "Optionally clean and/or create an acknowledgement for each product file",
         author = "REGARDS Team",
         contact = "regards@c-s.fr",
@@ -75,6 +79,8 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
     public static final String RECURSIVE_CHECK_PARAM = "recursiveCheck";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CleanAndAcknowledgePlugin.class);
+
+    private static final String STORE_ACK_IN_ROOT_DIRECTORY = "createAckIntoRootDirectory";
 
     @PluginParameter(name = CLEAN_FILE_PARAM,
                      label = "Enable product files removal",
@@ -105,6 +111,12 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
                      defaultValue = "false",
                      optional = true)
     public Boolean recursiveCheck;
+
+    @PluginParameter(name = STORE_ACK_IN_ROOT_DIRECTORY,
+                     label = "Store ack file in root directory instead of in the same directory than the scanned file.",
+                     defaultValue = "false",
+                     optional = true)
+    public Boolean storeAckIntoRootDirectory;
 
     private final String className = this.getClass().getSimpleName();
 
@@ -160,8 +172,7 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
      * @return number of ack that could not be created
      */
     private int createAck(AcquisitionFile acqFile) {
-        Path ackDirPath = acqFile.getFilePath().getParent().resolve(folderAck);
-        Path ackFilePath = ackDirPath.resolve(acqFile.getFilePath().getFileName() + extensionAck);
+        Path ackFilePath = computeAckFilePath(acqFile);
         int errorCount = 1;
         if (createAckFileWithRetries(ackFilePath)) {
             try {
@@ -178,8 +189,16 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
     /**
      * Creates the given Ack file by creating parent directory if missing and retrying given number of time in case
      * of IO error.
+     *
+     * @return <ul>
+     * <li>false if Exception during ack creation, or ackFilePath null. </li>
+     * <li>true if ack correctly created (or if ack already exists) </li>
+     * </ul>
      */
-    private boolean createAckFileWithRetries(Path ackFilePath) {
+    private boolean createAckFileWithRetries(@Nullable Path ackFilePath) {
+        if (ackFilePath == null) {
+            return false;
+        }
         boolean success = true;
         int loopCount = 0;
         do {
@@ -216,6 +235,41 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
                                                                 .forEach(scanDirectoryInfo -> executionBlockers.addAll(
                                                                     getExecutionBlockers(scanDirectoryInfo.getScannedDirectory()))));
         return executionBlockers;
+    }
+
+    /**
+     * @return generated ackFilePath depending on plugin options and file location :
+     * <ul>
+     *     <li>option storeAckIntoRootDirectory true: ackPath will be the scan root directory + folder ack location</li>
+     *     <li>option storeAckIntoRootDirectory false: ackPath will be the current file location + folder ack
+     *     location</li>
+     * </ul>
+     */
+    private Path computeAckFilePath(AcquisitionFile acqFile) {
+        Path ackFolderPath = null;
+        Path ackFilePath = null;
+        if (storeAckIntoRootDirectory) {
+            // find scan dir concerned by the current acqFile
+            Optional<Path> scanDir = acqFile.getFileInfo()
+                                            .getScanDirInfo()
+                                            .stream()
+                                            .map(ScanDirectoryInfo::getScannedDirectory)
+                                            .filter(path -> acqFile.getFilePath().startsWith(path))
+                                            .findFirst();
+            if (scanDir.isPresent()) {
+                ackFolderPath = scanDir.get().resolve(folderAck);
+            } else {
+                LOGGER.warn("Cannot retrieve scan folder of acqFile {}, at location {} ",
+                            acqFile.getId(),
+                            acqFile.getFilePath());
+            }
+        } else {
+            ackFolderPath = acqFile.getFilePath().getParent().resolve(folderAck);
+        }
+        if (ackFolderPath != null) {
+            ackFilePath = ackFolderPath.resolve(acqFile.getFilePath().getFileName() + extensionAck);
+        }
+        return ackFilePath;
     }
 
     private List<String> getExecutionBlockers(Path scanDirectory) {
