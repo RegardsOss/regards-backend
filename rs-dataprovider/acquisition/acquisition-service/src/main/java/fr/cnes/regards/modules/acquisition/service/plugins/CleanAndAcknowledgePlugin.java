@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.IChainBlockingPlugin;
@@ -43,6 +44,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * This post processing plugin allows to optionally :
@@ -113,10 +115,13 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
 
     @Override
     public void postProcess(Product product) {
-
+        Stream<AcquisitionFile> acquisitionFileStream = product.getAcquisitionFiles()
+                                                               .stream()
+                                                               .filter(p -> p.getState()
+                                                                            == AcquisitionFileState.ACQUIRED);
         // Manage acknowledgement
         if (Boolean.TRUE.equals(createAck)) {
-            int nbAckNotCreated = product.getAcquisitionFiles().stream().map(this::createAck).reduce(0, Integer::sum);
+            int nbAckNotCreated = acquisitionFileStream.map(this::createAck).reduce(0, Integer::sum);
             if (nbAckNotCreated > 0) {
                 notificationClient.notify(String.format("%d acknowledgement could not be created for product %s",
                                                         nbAckNotCreated,
@@ -129,7 +134,7 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
 
         // Manage file cleaning
         if (Boolean.TRUE.equals(cleanFile)) {
-            int nbDeletionIssues = product.getAcquisitionFiles().stream().map(acqFile -> {
+            int nbDeletionIssues = acquisitionFileStream.map(acqFile -> {
                 try {
                     Files.delete(acqFile.getFilePath());
                     return 0;
