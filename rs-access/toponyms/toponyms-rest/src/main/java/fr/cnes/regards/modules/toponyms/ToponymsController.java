@@ -152,14 +152,8 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
             Page<ToponymDTO> page = service.findAllByVisibility(locale,
                                                                 DEFAULT_TOPONYM_VISIBILITY,
                                                                 PageRequest.of(0, MAX_SEARCH_RESULTS));
-            // if entities were not found
-            if ((page == null) || (page.getContent().isEmpty())) {
-                throw new EntityNotFoundException(String.format(
-                    "Entities requested were not found with partial label %s",
-                    partialLabel));
-            } else {
-                return new ResponseEntity<>(toResources(page.getContent()), HttpStatus.OK);
-            }
+
+            return new ResponseEntity<>(toResources(page.getContent()), HttpStatus.OK);
         }
     }
 
