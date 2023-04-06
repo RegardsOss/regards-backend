@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -42,7 +43,10 @@ public class InstanceSubscriber extends AbstractSubscriber implements IInstanceS
                               String microserviceName,
                               IInstancePublisher instancePublisher,
                               IPublisher publisher,
-                              IRuntimeTenantResolver runtimeTenantResolver) {
+                              IRuntimeTenantResolver runtimeTenantResolver,
+                              ApplicationEventPublisher applicationEventPublisher,
+                              int declarationRetries,
+                              long failedDeclarationRetryInterval) {
         super(pVirtualHostAdmin,
               amqpAdmin,
               jsonMessageConverters,
@@ -51,7 +55,10 @@ public class InstanceSubscriber extends AbstractSubscriber implements IInstanceS
               instancePublisher,
               publisher,
               runtimeTenantResolver,
-              null);
+              null,
+              applicationEventPublisher,
+              declarationRetries,
+              failedDeclarationRetryInterval);
     }
 
     @Override

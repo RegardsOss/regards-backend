@@ -38,12 +38,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.MessageListener;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -115,6 +115,18 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     private final ITenantResolver tenantResolver;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    /**
+     * Interval between failed queue declaration attempts in milliseconds
+     */
+    private final long failedDeclarationRetryInterval;
+
+    /**
+     * Number of retries after passive queue declaration fails
+     */
+    private final int declarationRetries;
+
     protected AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin,
                                  IAmqpAdmin amqpAdmin,
                                  MessageConverter jsonMessageConverters,
@@ -123,7 +135,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                                  IInstancePublisher instancePublisher,
                                  IPublisher publisher,
                                  IRuntimeTenantResolver runtimeTenantResolver,
-                                 ITenantResolver tenantResolver) {
+                                 ITenantResolver tenantResolver,
+                                 ApplicationEventPublisher applicationEventPublisher,
+                                 int declarationRetries,
+                                 long failedDeclarationRetryInterval) {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
         this.jsonMessageConverters = jsonMessageConverters;
@@ -137,6 +152,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.tenantResolver = tenantResolver;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.declarationRetries = declarationRetries;
+        this.failedDeclarationRetryInterval = failedDeclarationRetryInterval;
     }
 
     @Override
@@ -442,15 +460,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 container.setBatchSize(batchHandler.getBatchSize());
                 container.setPrefetchCount(batchHandler.getBatchSize());
                 container.setReceiveTimeout(batchHandler.getReceiveTimeout());
-                MessageListener batchListener = new RabbitBatchMessageListener(amqpAdmin,
-                                                                               microserviceName,
-                                                                               instancePublisher,
-                                                                               publisher,
-                                                                               runtimeTenantResolver,
-                                                                               tenantResolver,
-                                                                               messageConverter,
-                                                                               batchHandler);
-                container.setMessageListener(batchListener);
+                container.setMessageListener(new RabbitBatchMessageListener(amqpAdmin,
+                                                                            microserviceName,
+                                                                            instancePublisher,
+                                                                            publisher,
+                                                                            runtimeTenantResolver,
+                                                                            tenantResolver,
+                                                                            messageConverter,
+                                                                            batchHandler));
             } else {
                 container.setChannelTransacted(true);
                 container.setDefaultRequeueRejected(false);
@@ -459,6 +476,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 messageListener.setMessageConverter(messageConverter);
                 container.setMessageListener(messageListener);
             }
+            container.setApplicationEventPublisher(applicationEventPublisher);
+            container.setDeclarationRetries(declarationRetries);
+            container.setFailedDeclarationRetryInterval(failedDeclarationRetryInterval);
 
             // Prevent duplicate queue
             Set<String> queueNames = new HashSet<>();
