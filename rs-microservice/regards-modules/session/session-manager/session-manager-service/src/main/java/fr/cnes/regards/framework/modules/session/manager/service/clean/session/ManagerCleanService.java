@@ -152,12 +152,17 @@ public class ManagerCleanService {
                                                                                       .orElse(null));
             // if a source was found, update its related information
             if (source != null) {
+                LOGGER.debug("Handling clean of {} sessions for source {}.",
+                             sessionsRetrievedBySource.size(),
+                             source.getName());
                 List<Session> sessionListBySource = entry.getValue();
                 Map<StepTypeEnum, DeltaSessionStep> deltaByType = new EnumMap<>(StepTypeEnum.class);
                 // iterate on all sessions of a source and calculate parameters impacted by the session deletion
                 for (Session session : sessionListBySource) {
+                    LOGGER.debug("Handling clean of session {} from source {}.", session.getName(), source.getName());
                     source.setNbSessions(source.getNbSessions() - 1);
                     updateDelta(session.getSteps(), deltaByType);
+                    LOGGER.debug("Delta updated with session {} : {}.", session.getName(), deltaByType);
                 }
                 // update source with the updated parameters
                 updateSourceAgg(source, deltaByType);
@@ -205,6 +210,8 @@ public class ManagerCleanService {
      * @param deltaByType the source step aggregation calculate
      */
     private void updateSourceAgg(Source source, Map<StepTypeEnum, DeltaSessionStep> deltaByType) {
+        LOGGER.debug("Updating source {} with aggregated delta {}.", source.getName(), deltaByType);
+
         Set<SourceStepAggregation> aggSet = source.getSteps();
         // iterate on the aggregation steps of the source and update their corresponding values
         for (SourceStepAggregation agg : aggSet) {

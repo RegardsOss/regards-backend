@@ -119,4 +119,26 @@ public class DeltaSessionStep {
     public void setRunning(long running) {
         this.running = running;
     }
+
+    @Override
+    public String toString() {
+        return "DeltaSessionStep{"
+               + "type="
+               + type
+               + ", in="
+               + in
+               + ", out="
+               + out
+               + ", error="
+               + error
+               + ", waiting="
+               + waiting
+               + ", running="
+               + running
+               + ", lastUpdateDate="
+               + lastUpdateDate
+               + ", sessionAdded="
+               + sessionAdded
+               + '}';
+    }
 }
