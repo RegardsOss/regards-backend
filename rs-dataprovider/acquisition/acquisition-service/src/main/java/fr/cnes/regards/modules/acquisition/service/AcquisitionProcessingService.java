@@ -683,16 +683,14 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public boolean canBeStarted(AcquisitionProcessingChainMonitor chainMonitor) {
         AcquisitionProcessingChain chain = chainMonitor.getChain();
-        return AcquisitionProcessingChainMode.MANUAL.equals(chain.getMode())
-               && !chain.isLocked()
+        return !chain.isLocked()
                && chain.isActive()
                && CollectionUtils.isEmpty(chainMonitor.getExecutionBlockers());
     }
 
     @Override
     public boolean canBeStarted(AcquisitionProcessingChain chain) {
-        return AcquisitionProcessingChainMode.MANUAL.equals(chain.getMode())
-               && !chain.isLocked()
+        return !chain.isLocked()
                && chain.isActive()
                && !hasExecutionBlockers(chain, false);
     }
