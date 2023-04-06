@@ -95,7 +95,7 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
 
         // Send it
         try {
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asInstance();
             emailClient.sendEmail(message, "[REGARDS] Account refused", null, account.getEmail());
         } finally {
             FeignSecurityManager.reset();

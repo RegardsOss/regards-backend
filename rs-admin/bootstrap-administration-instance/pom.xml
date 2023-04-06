@@ -68,6 +68,10 @@
             <artifactId>accessrights-instance-rest</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.modules.emails</groupId>
+            <artifactId>emails-rest</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
             <artifactId>tenant-settings-rest</artifactId>
         </dependency>

@@ -64,10 +64,6 @@
             <artifactId>local-authorities-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.emails</groupId>
-            <artifactId>emails-rest</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.modules.notification</groupId>
             <artifactId>notification-rest</artifactId>
         </dependency>

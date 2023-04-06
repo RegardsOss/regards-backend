@@ -23,8 +23,15 @@
 
     <groupId>fr.cnes.regards.modules.emails</groupId>
     <artifactId>emails-dao</artifactId>
-    <packaging>jar</packaging>
     <description>DAO layer of Emails module</description>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>emails</artifactId>
+        <version>${revision}</version>
+    </parent>
+
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -46,12 +53,6 @@
         </developer>
     </developers>
 
-    <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>emails</artifactId>
-        <version>${revision}</version>
-    </parent>
-
     <dependencies>
         <dependency>
             <groupId>fr.cnes.regards.modules.emails</groupId>
@@ -59,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-multitenant-regards-starter</artifactId>
+            <artifactId>jpa-instance-regards-starter</artifactId>
         </dependency>
         <!-- Tests dependencies -->
         <dependency>

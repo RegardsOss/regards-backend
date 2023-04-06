@@ -18,19 +18,14 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MimeTypeUtils;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import java.util.Date;
 
 /**
  * Implementation of the {@link ISendingStrategy}.<br>
@@ -38,32 +33,30 @@ import java.util.Date;
  *
  * @author Sylvain Vissiere-Guerinet
  */
+@Profile("!nomail")
 @Component
 public class EmailSendingStrategy implements ISendingStrategy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailSendingStrategy.class);
 
+    /**
+     * Feign client from module emails
+     */
+    // Use the feign client in order to avoid a cyclic reference between two instance modules
+    // (notification-instance-service and emails-service)
     @Autowired
-    private JavaMailSender mailSender;
-
-    @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
-    private String defaultSender;
+    private IEmailClient emailClient;
 
     @Override
     public void send(final Notification notification, final String[] recipients) {
-        // Build the email from the notification and add recipients
-        MimeMessage mimeMsg = mailSender.createMimeMessage();
+        // Send the email
+        String subject = "[" + notification.getSender() + "]" + notification.getTitle();
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMsg);
-            helper.setText(notification.getMessage(), notification.getMimeType().includes(MimeTypeUtils.TEXT_HTML));
-            helper.setTo(recipients);
-            helper.setFrom(defaultSender);
-            helper.setSentDate(new Date());
-            helper.setSubject("[" + notification.getSender() + "]" + notification.getTitle());
-            // Send the mail
-            mailSender.send(mimeMsg);
-        } catch (MessagingException e) {
-            LOGGER.error(e.getMessage(), e);
+            FeignSecurityManager.asInstance();
+            emailClient.sendEmail(notification.getMessage(), subject, null, recipients);
+            LOGGER.info("Send mail after notification. Recipient: [{}] - Subject: [{}]", recipients, subject);
+        } finally {
+            FeignSecurityManager.reset();
         }
     }
 

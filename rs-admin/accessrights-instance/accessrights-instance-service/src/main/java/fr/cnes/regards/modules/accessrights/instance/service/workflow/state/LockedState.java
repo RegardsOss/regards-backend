@@ -125,7 +125,7 @@ public class LockedState extends AbstractDeletableState {
         }
         // Send it
         try {
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asInstance();
             emailClient.sendEmail(message, "[REGARDS] Account Unlock", null, account.getEmail());
         } finally {
             FeignSecurityManager.reset();

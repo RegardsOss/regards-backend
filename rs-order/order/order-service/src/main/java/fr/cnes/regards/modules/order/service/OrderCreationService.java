@@ -419,7 +419,7 @@ public class OrderCreationService implements IOrderCreationService {
             String message = templateService.render(OrderTemplateConf.ORDER_CREATED_TEMPLATE_NAME, dataMap);
 
             // Send it
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asInstance();
             emailClient.sendEmail(message,
                                   String.format("Order number %d is confirmed", order.getId()),
                                   null,

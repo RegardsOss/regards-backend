@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.notification.service;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.emails.service.IEmailService;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ import org.mockito.Mockito;
 import org.springframework.mail.SimpleMailMessage;
 
 /**
- * Test class for {@link IEmailService}.
+ * Test class for {@link IEmailClient}.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -52,7 +52,7 @@ public class EmailSendingStrategyTest {
     /**
      * Feign client from module Email
      */
-    private IEmailService emailService;
+    private IEmailClient emailClient;
 
     /**
      * Tested class
@@ -70,10 +70,10 @@ public class EmailSendingStrategyTest {
     @Before
     public void setUp() {
         // Mock
-        emailService = Mockito.mock(IEmailService.class);
+        emailClient = Mockito.mock(IEmailClient.class);
 
         // Instanciate the tested class
-        strategy = new EmailSendingStrategy(emailService);
+        strategy = new EmailSendingStrategy(emailClient);
 
         // Define the sent notification
         notification = new Notification();
@@ -89,17 +89,17 @@ public class EmailSendingStrategyTest {
     @Requirement("?")
     @Purpose("Check that the system allows te send notifications as email through the email feign client.")
     public void send() {
-        // Define expected mail
-        final SimpleMailMessage expected = new SimpleMailMessage();
-        expected.setSubject("[" + SENDER + "]" + notification.getTitle());
-        expected.setText(MESSAGE);
-        expected.setTo(RECIPIENTS);
+        // Given : define expected mail
+        final SimpleMailMessage expectedMailMessage = new SimpleMailMessage();
+        expectedMailMessage.setSubject("[" + SENDER + "]" + notification.getTitle());
+        expectedMailMessage.setText(MESSAGE);
+        expectedMailMessage.setTo(RECIPIENTS);
 
-        // Call the tested method
+        // When : call the tested method
         strategy.send(notification, RECIPIENTS);
 
-        // // Verify method call.
-        Mockito.verify(emailService, Mockito.times(1)).sendEmail(Mockito.refEq(expected, "sentDate"));
+        // Then: verify method call.
+        Mockito.verify(emailClient, Mockito.times(1)).sendEmail(Mockito.refEq(expectedMailMessage, "sentDate"));
     }
 
 }

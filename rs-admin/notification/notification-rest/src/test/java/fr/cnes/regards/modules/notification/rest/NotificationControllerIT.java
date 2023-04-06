@@ -10,6 +10,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
@@ -30,12 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import javax.mail.internet.MimeMessage;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -50,13 +49,6 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     public static class Config {
 
         @Bean
-        public JavaMailSender mockSender() {
-            final JavaMailSender mailSender = Mockito.mock(JavaMailSender.class);
-            Mockito.when(mailSender.createMimeMessage()).thenReturn(Mockito.mock(MimeMessage.class));
-            return mailSender;
-        }
-
-        @Bean
         public IAccountsClient accountClient() {
             return Mockito.mock(IAccountsClient.class);
         }
@@ -69,6 +61,11 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         @Bean
         public IProjectsClient projectsClient() {
             return Mockito.mock(IProjectsClient.class);
+        }
+
+        @Bean
+        public IEmailClient emailClient() {
+            return Mockito.mock(IEmailClient.class);
         }
 
     }

@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
-import fr.cnes.regards.modules.emails.service.IEmailService;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -73,7 +73,7 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     private IAccessGroupClient accessGroupClient;
 
     @MockBean
-    private IEmailService emailService;
+    private IEmailClient emailClient;
 
     @MockBean
     private IStorageSettingClient storageSettingClient;

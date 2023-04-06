@@ -4,7 +4,7 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.emails.service.IEmailService;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 import org.apache.commons.lang3.StringUtils;
@@ -21,18 +21,18 @@ public class AccessRightsEmailService {
 
     private final ITemplateService templateService;
 
-    private final IEmailService emailService;
+    private final IEmailClient emailClient;
 
     private final IAccountsClient accountsClient;
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     public AccessRightsEmailService(ITemplateService templateService,
-                                    IEmailService emailService,
+                                    IEmailClient emailClient,
                                     IAccountsClient accountsClient,
                                     IRuntimeTenantResolver runtimeTenantResolver) {
         this.templateService = templateService;
-        this.emailService = emailService;
+        this.emailClient = emailClient;
         this.accountsClient = accountsClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
@@ -55,10 +55,15 @@ public class AccessRightsEmailService {
             LOGGER.error("Could not find template to generate the message. Falling back to default.", e);
             message = wrapper.getDefaultMessage();
         }
-        emailService.sendEmail(message,
-                               wrapper.getSubject(),
-                               wrapper.getFrom(),
-                               wrapper.getTo().toArray(new String[0]));
+        try {
+            FeignSecurityManager.asInstance();
+            emailClient.sendEmail(message,
+                                  wrapper.getSubject(),
+                                  wrapper.getFrom(),
+                                  wrapper.getTo().toArray(new String[0]));
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
     private String getNameFromAccount(String email) {

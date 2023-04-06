@@ -330,7 +330,7 @@ public class AccountService implements IAccountService, InitializingBean {
             message = "Password successfully changed";
         }
         try {
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asInstance();
             emailClient.sendEmail(message, "[REGARDS] Password changed", null, toChange.getEmail());
         } finally {
             FeignSecurityManager.reset();

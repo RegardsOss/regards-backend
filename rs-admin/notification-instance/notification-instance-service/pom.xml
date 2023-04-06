@@ -41,14 +41,13 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>security-regards-starter</artifactId>
         </dependency>
-        <!-- for emails -->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context-support</artifactId>
+            <groupId>fr.cnes.regards.modules.emails</groupId>
+            <artifactId>emails-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.mail</groupId>
-            <artifactId>jakarta.mail-api</artifactId>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards-starter</artifactId>
         </dependency>
         <!-- Tests -->
         <dependency>

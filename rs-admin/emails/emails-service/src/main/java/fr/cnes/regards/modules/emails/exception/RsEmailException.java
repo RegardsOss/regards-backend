@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,7 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.modules.emails.exception;
+
 /**
- *
+ * @author Stephane Cortine
  */
-package fr.cnes.regards.modules.emails.domain;
+public class RsEmailException extends Exception {
+
+    public RsEmailException(Throwable cause) {
+        super(cause);
+    }
+}

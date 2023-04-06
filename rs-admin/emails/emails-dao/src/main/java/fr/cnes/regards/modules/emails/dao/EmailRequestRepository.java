@@ -18,10 +18,14 @@
  */
 package fr.cnes.regards.modules.emails.dao;
 
-import fr.cnes.regards.modules.emails.domain.Email;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.emails.domain.EmailRequest;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Interface for an JPA auto-generated CRUD repository managing Emails.<br>
@@ -30,6 +34,9 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  *
  * @author CS SI
  */
-public interface IEmailRepository extends JpaRepository<Email, Long> {
+@InstanceEntity
+public interface EmailRequestRepository extends JpaRepository<EmailRequest, Long> {
+
+    List<EmailRequest> findByNextTryDateBefore(OffsetDateTime currentDateTime);
 
 }

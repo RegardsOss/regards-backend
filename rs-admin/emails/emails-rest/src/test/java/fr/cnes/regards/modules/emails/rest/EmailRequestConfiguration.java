@@ -16,46 +16,40 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.accessrights.rest;
+package fr.cnes.regards.modules.emails.rest;
 
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
+
+import javax.mail.internet.MimeMessage;
 
 /**
+ * Mock {@link JavaMailSender}
+ *
  * @author Marc Sordi
  */
 @Configuration
-public class FeignClientConfiguration {
+public class EmailRequestConfiguration {
 
     @Bean
-    public IEmailClient emailClient() {
+    public JavaMailSender mockJavaMailSender() {
+        final JavaMailSender mailSender = Mockito.mock(JavaMailSender.class);
+        Mockito.when(mailSender.createMimeMessage()).thenReturn(Mockito.mock(MimeMessage.class));
+
+        return mailSender;
+    }
+
+    @Bean
+    public INotificationRepository mockNotificationRepository() {
+        return Mockito.mock(INotificationRepository.class);
+    }
+
+    @Bean
+    public IEmailClient mockEmailClient() {
         return Mockito.mock(IEmailClient.class);
     }
-
-    @Bean
-    public IAccountsClient accountsClient() {
-        return Mockito.mock(IAccountsClient.class);
-    }
-
-    @Bean
-    public IStorageRestClient storageRestClient() {
-        return Mockito.mock(IStorageRestClient.class);
-    }
-
-    @Bean
-    public IProjectsClient projectsClient() {
-        return Mockito.mock(IProjectsClient.class);
-    }
-
-    @Bean
-    public IAccessGroupClient accessGroupClient() {
-        return Mockito.mock(IAccessGroupClient.class);
-    }
-
 }

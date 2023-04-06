@@ -19,16 +19,13 @@
 package fr.cnes.regards.modules.emails.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.emails.domain.Email;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.Date;
 
 /**
  * Feign client exposing the emails module endpoints to other microservices plugged through Eureka.
@@ -37,74 +34,39 @@ import java.util.List;
  * @author Xavier-Alexandre Brochard
  */
 
-@RestClient(name = "rs-admin", contextId = "rs-admin.emails-client")
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.emails-client")
 public interface IEmailClient {
 
-    String ROOT_PATH = "/emails";
+    String ROOT_PATH = "/email";
 
     /**
-     * Define the endpoint for retrieving the list of sent emails
+     * Save a mail to send in database. The email will send by an asynchronous process thanks to
+     * a scheduler. <br>Prefer using
+     * {@link #sendEmail(String, String, String, String...)}
      *
-     * @return A {@link List} of emails as {@link Email} wrapped in an {@link ResponseEntity}
-     */
-    @GetMapping(path = ROOT_PATH,
-                consumes = MediaType.APPLICATION_JSON_VALUE,
-                produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<List<Email>> retrieveEmails();
-
-    /**
-     * Define the endpoint for sending an email to recipients.<br>Prefer using {@link #sendEmail(String, String, String, String...)}
-     *
-     * @param pMessage The email in a simple representation.
+     * @param mailMessage The mail in a simple representation.
      */
     @PostMapping(path = ROOT_PATH,
                  consumes = MediaType.APPLICATION_JSON_VALUE,
                  produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Void> sendEmail(SimpleMailMessage pMessage);
+    ResponseEntity<Void> sendEmail(SimpleMailMessage mailMessage);
 
     /**
-     * Helper method to send mail without creating SimpleMailMessage before call
+     * Helper method to send email without creating SimpleMailMessage before call {@link #sendEmail}.
      *
      * @param message email message
      * @param subject email subject
      * @param from    email sender, if you don't care about who is sending, set null to use default.
      * @param to      recipients
      */
-    default ResponseEntity<Void> sendEmail(String message, String subject, String from, String... to) {
-        SimpleMailMessage mail = new SimpleMailMessage();
-        mail.setSubject(subject);
-        mail.setFrom(from);
-        mail.setText(message);
-        mail.setTo(to);
-        return sendEmail(mail);
+    default ResponseEntity<Void> sendEmail(String message, String subject, @Nullable String from, String... to) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(to);
+        mailMessage.setFrom(from);
+        mailMessage.setSubject(subject);
+        mailMessage.setText(message);
+        mailMessage.setSentDate(new Date());
+
+        return sendEmail(mailMessage);
     }
-
-    /**
-     * Define the endpoint for retrieving an email
-     *
-     * @param pId The email id
-     * @return The email as a {@link Email} wrapped in an {@link ResponseEntity}
-     */
-    @GetMapping(path = ROOT_PATH + "/{mail_id}",
-                consumes = MediaType.APPLICATION_JSON_VALUE,
-                produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Email> retrieveEmail(Long pId);
-
-    /**
-     * Define the endpoint for re-sending an email
-     */
-    @PutMapping(path = ROOT_PATH + "/{mail_id}",
-                consumes = MediaType.APPLICATION_JSON_VALUE,
-                produces = MediaType.APPLICATION_JSON_VALUE)
-    void resendEmail(Long pId);
-
-    /**
-     * Define the endpoint for deleting an email
-     *
-     * @param pId The email id
-     */
-    @DeleteMapping(path = ROOT_PATH + "/{mail_id}",
-                   consumes = MediaType.APPLICATION_JSON_VALUE,
-                   produces = MediaType.APPLICATION_JSON_VALUE)
-    void deleteEmail(Long pId);
 }

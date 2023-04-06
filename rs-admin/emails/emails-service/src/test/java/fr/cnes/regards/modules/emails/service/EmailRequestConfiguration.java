@@ -16,8 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.emails.rest;
+package fr.cnes.regards.modules.emails.service;
 
+import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,12 +33,23 @@ import javax.mail.internet.MimeMessage;
  * @author Marc Sordi
  */
 @Configuration
-public class EmailConfiguration {
+public class EmailRequestConfiguration {
 
     @Bean
-    public JavaMailSender mockSender() {
+    public JavaMailSender mockJavaMailSender() {
         final JavaMailSender mailSender = Mockito.mock(JavaMailSender.class);
         Mockito.when(mailSender.createMimeMessage()).thenReturn(Mockito.mock(MimeMessage.class));
+
         return mailSender;
+    }
+
+    @Bean
+    public INotificationRepository mockNotificationRepository() {
+        return Mockito.mock(INotificationRepository.class);
+    }
+
+    @Bean
+    public IEmailClient mockEmailClient() {
+        return Mockito.mock(IEmailClient.class);
     }
 }

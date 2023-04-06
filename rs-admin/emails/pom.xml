@@ -23,9 +23,16 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>emails</artifactId>
+    <description>Module for sending emails through REGARDS</description>
     <packaging>pom</packaging>
 
-    <description>Module for sending emails through the system</description>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -46,13 +53,6 @@
             <organizationUrl>http://www.c-s.fr</organizationUrl>
         </developer>
     </developers>
-
-    <parent>
-        <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-oss-backend</artifactId>
-        <version>${revision}</version>
-        <relativePath>../../pom.xml</relativePath>
-    </parent>
 
     <modules>
         <module>emails-dao</module>

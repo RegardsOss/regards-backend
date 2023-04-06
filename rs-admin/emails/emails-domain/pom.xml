@@ -23,8 +23,15 @@
 
     <groupId>fr.cnes.regards.modules.emails</groupId>
     <artifactId>emails-domain</artifactId>
-    <packaging>jar</packaging>
     <description>Model layer of Emails module</description>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>emails</artifactId>
+        <version>${revision}</version>
+    </parent>
+
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -45,12 +52,6 @@
             <organizationUrl>http://www.c-s.fr</organizationUrl>
         </developer>
     </developers>
-
-    <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>emails</artifactId>
-        <version>${revision}</version>
-    </parent>
 
     <dependencies>
         <dependency>

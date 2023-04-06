@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import fr.cnes.regards.modules.emails.service.IEmailService;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
@@ -36,20 +39,22 @@ import java.util.Date;
 @Component
 public class EmailSendingStrategy implements ISendingStrategy {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmailSendingStrategy.class);
+
     private static final int MAX_MAIL_LENGTH = 5120;
 
     /**
      * Feign client from module Email
      */
-    private final IEmailService emailService;
+    private final IEmailClient emailClient;
 
     /**
      * Creates new strategy with passed email client
      *
-     * @param emailService The email feign client
+     * @param emailClient The email feign client
      */
-    public EmailSendingStrategy(final IEmailService emailService) {
-        this.emailService = emailService;
+    public EmailSendingStrategy(final IEmailClient emailClient) {
+        this.emailClient = emailClient;
     }
 
     /*
@@ -61,19 +66,26 @@ public class EmailSendingStrategy implements ISendingStrategy {
     @Override
     public void send(final Notification notification, final String[] recipients) {
         // Build the email from the notification and add recipients
-        final SimpleMailMessage email = new SimpleMailMessage();
-        email.setSentDate(new Date());
-        email.setSubject("[" + notification.getSender() + "]" + notification.getTitle());
-        email.setTo(recipients);
+        final SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(recipients);
+        String subject = "[" + notification.getSender() + "]" + notification.getTitle();
+        mailMessage.setSubject(subject);
 
         String message = notification.getMessage();
         if (message.length() > MAX_MAIL_LENGTH) {
             message = message.substring(0, MAX_MAIL_LENGTH) + " ... [Too long message was truncated]";
         }
-        email.setText(message);
+        mailMessage.setText(message);
+        mailMessage.setSentDate(new Date());
 
         // Send the email
-        emailService.sendEmail(email);
+        try {
+            FeignSecurityManager.asInstance();
+            emailClient.sendEmail(mailMessage);
+            LOGGER.info("Send mail after notification. Recipient: [{}] - Subject: [{}]", recipients, subject);
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
 }

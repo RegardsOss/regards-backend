@@ -165,9 +165,12 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
             }
 
             // Send it
-            FeignSecurityManager.asSystem();
-            emailClient.sendEmail(message, "Reminder: some orders are waiting for you", null, entry.getKey());
-            FeignSecurityManager.reset();
+            try {
+                FeignSecurityManager.asInstance();
+                emailClient.sendEmail(message, "Reminder: some orders are waiting for you", null, entry.getKey());
+            } finally {
+                FeignSecurityManager.reset();
+            }
             // Update order availableUpdateDate to avoid another microservice instance sending notification emails
             entry.getValue().forEach(order -> order.setAvailableUpdateDate(now));
             orderRepository.saveAll(entry.getValue());

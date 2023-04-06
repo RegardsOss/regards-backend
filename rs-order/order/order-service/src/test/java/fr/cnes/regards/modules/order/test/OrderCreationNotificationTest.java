@@ -59,7 +59,7 @@ public class OrderCreationNotificationTest {
 
     private Order givenOrder;
 
-    private IEmailClient mailClient;
+    private IEmailClient emailClient;
 
     private IOrderJobService jobOrderService;
 
@@ -68,7 +68,7 @@ public class OrderCreationNotificationTest {
     private TemplateService templateService;
 
     public OrderCreationNotificationTest() {
-        mailClient = aMailClient().nominal();
+        emailClient = aMailClient().nominal();
         templateService = aTemplateService().nominal();
     }
 
@@ -90,8 +90,7 @@ public class OrderCreationNotificationTest {
                                         mockJobOrderService(),
                                         null,
                                         null,
-                                        null,
-                                        mailClient,
+                                        null, emailClient,
                                         mockOrderHelperService(),
                                         mockProjectClient(),
                                         mockSpringPublisher(),
@@ -151,7 +150,7 @@ public class OrderCreationNotificationTest {
         orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
 
         // Mail is sent and jobs are queued
-        verify(mailClient).sendEmail(any(), any(), any(), any());
+        verify(emailClient).sendEmail(any(), any(), any(), any());
         verify(jobOrderService).manageUserOrderStorageFilesJobInfos("USER");
     }
 
@@ -162,13 +161,13 @@ public class OrderCreationNotificationTest {
         orderCreation = givenOrderCreationServiceUnderTest();
         orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
 
-        verify(mailClient, times(0)).sendEmail(any(), any(), any(), any());
+        verify(emailClient, times(0)).sendEmail(any(), any(), any(), any());
     }
 
     @Test
     public void a_mail_http_failure_does_not_stop_order_creation_process() throws Exception {
         givenOrder = givenOrder(OrderStatus.PENDING);
-        mailClient = aMailClient().sendMailRaises(aHttpException());
+        emailClient = aMailClient().sendMailRaises(aHttpException());
 
         orderCreation = givenOrderCreationServiceUnderTest();
         orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
@@ -176,14 +175,14 @@ public class OrderCreationNotificationTest {
         // The mail exception is raised but handled
         // but it doesn't stop order creation process
         // => Jobs are queued (manageUserOrderStorageFilesJobInfos)
-        verify(mailClient).sendEmail(any(), any(), any(), any());
+        verify(emailClient).sendEmail(any(), any(), any(), any());
         verify(jobOrderService).manageUserOrderStorageFilesJobInfos("USER");
     }
 
     @Test
     public void a_mail_timeout_failure_does_not_stop_order_creation_process() throws Exception {
         givenOrder = givenOrder(OrderStatus.PENDING);
-        mailClient = aMailClient().sendMailRaises(aMailTimeoutException());
+        emailClient = aMailClient().sendMailRaises(aMailTimeoutException());
 
         orderCreation = givenOrderCreationServiceUnderTest();
         orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
@@ -191,19 +190,19 @@ public class OrderCreationNotificationTest {
         // The mail exception is raised but handled
         // but it doesn't stop order creation process
         // => Jobs are queued (manageUserOrderStorageFilesJobInfos)
-        verify(mailClient).sendEmail(any(), any(), any(), any());
+        verify(emailClient).sendEmail(any(), any(), any(), any());
         verify(jobOrderService).manageUserOrderStorageFilesJobInfos("USER");
     }
 
     @Test
     public void an_unexpected_mail_failure_does_not_stop_order_creation() throws Exception {
         givenOrder = givenOrder(OrderStatus.PENDING);
-        mailClient = aMailClient().sendMailRaises(anUnexpectedException());
+        emailClient = aMailClient().sendMailRaises(anUnexpectedException());
 
         orderCreation = givenOrderCreationServiceUnderTest();
         orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
 
-        verify(mailClient).sendEmail(any(), any(), any(), any());
+        verify(emailClient).sendEmail(any(), any(), any(), any());
         verify(jobOrderService).manageUserOrderStorageFilesJobInfos("USER");
     }
 

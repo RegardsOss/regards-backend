@@ -62,7 +62,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     /**
      * Find all notifications which should be sent daily and send them with the sending strategy
      */
-    @Scheduled(cron = "${regards.notification.cron.daily}")
+    @Scheduled(cron = "${regards.notification.cron.daily:0 0 5 * * ?}")
     public void sendDaily() {
         notificationService.retrieveNotificationsToSend(PageRequest.of(0, 10))
                            .getContent()

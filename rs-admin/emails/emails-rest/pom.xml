@@ -24,6 +24,14 @@
     <groupId>fr.cnes.regards.modules.emails</groupId>
     <artifactId>emails-rest</artifactId>
     <description>Controller layer of Emails module</description>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>emails</artifactId>
+        <version>${revision}</version>
+    </parent>
+
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -45,22 +53,7 @@
         </developer>
     </developers>
 
-    <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>emails</artifactId>
-        <version>${revision}</version>
-    </parent>
-
     <dependencies>
-        <!-- Microservice internal dependencies -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>module-regards-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>hateoas-regards-starter</artifactId>
-        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>security-regards-starter</artifactId>
@@ -69,19 +62,15 @@
             <groupId>fr.cnes.regards.modules.emails</groupId>
             <artifactId>emails-service</artifactId>
         </dependency>
+        <!-- Test -->
         <dependency>
-            <groupId>fr.cnes.regards.framework.utils</groupId>
-            <artifactId>exception-utils</artifactId>
-        </dependency>
-        <!-- Test dependencies -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-integration-test</artifactId>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-instance-regards-starter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
+            <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

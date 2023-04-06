@@ -119,7 +119,7 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
 
         // Send it
         try {
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asInstance();
             emailClient.sendEmail(message, "[REGARDS] Password Reset", null, account.getEmail());
         } finally {
             FeignSecurityManager.reset();
