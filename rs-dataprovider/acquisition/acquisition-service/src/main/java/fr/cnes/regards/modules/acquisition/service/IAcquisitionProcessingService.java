@@ -134,7 +134,7 @@ public interface IAcquisitionProcessingService {
     /**
      * Start all automatic chains according to several conditions
      */
-    void startAutomaticChains();
+    void startAutomaticChains(OffsetDateTime lastCheckDate, OffsetDateTime currentDate);
 
     /**
      * Start a chain manually

@@ -51,7 +51,7 @@ public interface IAcquisitionProcessingChainRepository
     AcquisitionProcessingChain findCompleteById(Long id);
 
     /**
-     * Find all active and not running processing chain for a specified mode
+     * Find all active ,not running and unlocked processing chain for a specified mode
      *
      * @param mode chain processing mode
      * @return all chains
@@ -60,10 +60,19 @@ public interface IAcquisitionProcessingChainRepository
     List<AcquisitionProcessingChain> findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode mode);
 
     /**
+     * Find all active and not running processing chain for a specified mode
+     *
+     * @param mode chain processing mode
+     * @return all chains
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    List<AcquisitionProcessingChain> findByModeAndActiveTrue(AcquisitionProcessingChainMode mode);
+
+    /**
      * @return all automatic chains that might be started
      */
     default List<AcquisitionProcessingChain> findAllBootableAutomaticChains() {
-        return findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode.AUTO);
+        return findByModeAndActiveTrue(AcquisitionProcessingChainMode.AUTO);
     }
 
     @Query(

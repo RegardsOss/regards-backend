@@ -1,53 +1,29 @@
 package fr.cnes.regards.modules.acquisition.service;
 
-import org.springframework.scheduling.support.CronSequenceGenerator;
+import org.springframework.scheduling.support.CronExpression;
 
 import java.time.OffsetDateTime;
-import java.util.Date;
 
 /**
  * This class allows to check if the next date of the provided cron expression will occurs in the next minute
  */
-public class CronComparator {
-
-    /**
-     * This value is correlated to the ScheduledDataProviderTasks scheduled expression
-     * If the next cron value is within 1 min, it will be run
-     */
-    public static final int CRON_REPETITION = 60000;
+public final class CronComparator {
 
     private CronComparator() {
     }
 
     /**
-     * Compare the provided cron expression and the current date
+     * Compare the provided cron expression and the provided last check date and the current date.
+     * If the next date of the cron expression after the provided last check date is before the provided current date,
+     * the cron should be run.
      *
      * @param cronExpression the cron expression (with seconds)
-     * @return true if the cron would occur in the next minute
+     * @param lastCheckDate  the current date
+     * @return true if the cron would occur before the provided currentDate
      */
-    public static boolean shouldRun(String cronExpression) {
-        return CronComparator.shouldRun(cronExpression, OffsetDateTime.now().toEpochSecond() * 1000);
-    }
-
-    /**
-     * Compare the provided cron expression and the provided date
-     *
-     * @param cronExpression the cron expression (with seconds)
-     * @param currentDate    the current date
-     * @return true if the cron would occur in the next minute
-     */
-    public static boolean shouldRun(String cronExpression, Long currentDate) {
-        CronSequenceGenerator cron = new CronSequenceGenerator(cronExpression);
-        Date nextDate = cron.next(new Date(currentDate));
-        return CronComparator.shouldRun(currentDate, nextDate.getTime());
-    }
-
-    /**
-     * @param currentDate current date timestamp in ms
-     * @param nextRun     next run date timestamp in ms
-     * @return true if the cron would occur in the next minute
-     */
-    public static boolean shouldRun(Long currentDate, Long nextRun) {
-        return nextRun - currentDate <= CRON_REPETITION;
+    public static boolean shouldRun(String cronExpression, OffsetDateTime lastCheckDate, OffsetDateTime currentDate) {
+        CronExpression cron = CronExpression.parse(cronExpression);
+        OffsetDateTime nextDate = cron.next(lastCheckDate);
+        return nextDate != null && (nextDate.isEqual(currentDate) || nextDate.isBefore(currentDate));
     }
 }

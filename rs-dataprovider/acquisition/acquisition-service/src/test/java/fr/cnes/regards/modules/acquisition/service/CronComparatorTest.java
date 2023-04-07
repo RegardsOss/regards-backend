@@ -13,16 +13,19 @@ public class CronComparatorTest {
         // Cron every 1 min
         String cron = "0 * * * * *";
         // Let's simulate we are less than 1 min before the next CRON date
-        long currentDateAsLong = OffsetDateTime.of(2010, 1, 1, 13, 59, 10, 0, ZoneOffset.UTC).toEpochSecond() * 1000;
-        Assert.assertEquals(true, CronComparator.shouldRun(cron, currentDateAsLong));
+        OffsetDateTime dateTime = OffsetDateTime.of(2010, 1, 1, 13, 59, 10, 0, ZoneOffset.UTC);
+        OffsetDateTime lastCheckDate = dateTime.minusMinutes(1);
+        Assert.assertTrue(CronComparator.shouldRun(cron, lastCheckDate, dateTime));
 
         // 1ms before
-        currentDateAsLong = OffsetDateTime.of(2010, 1, 1, 13, 59, 59, 9999, ZoneOffset.UTC).toEpochSecond() * 1000;
-        Assert.assertEquals(true, CronComparator.shouldRun(cron, currentDateAsLong));
+        dateTime = OffsetDateTime.of(2010, 1, 1, 13, 59, 59, 9999, ZoneOffset.UTC);
+        lastCheckDate = dateTime.minusMinutes(1);
+        Assert.assertTrue(CronComparator.shouldRun(cron, lastCheckDate, dateTime));
 
         // Exactly 1 min before
-        currentDateAsLong = OffsetDateTime.of(2010, 1, 1, 13, 59, 0, 0, ZoneOffset.UTC).toEpochSecond() * 1000;
-        Assert.assertEquals(true, CronComparator.shouldRun(cron, currentDateAsLong));
+        dateTime = OffsetDateTime.of(2010, 1, 1, 13, 59, 0, 0, ZoneOffset.UTC);
+        lastCheckDate = dateTime.minusMinutes(1);
+        Assert.assertTrue(CronComparator.shouldRun(cron, lastCheckDate, dateTime));
     }
 
     @Test
@@ -31,12 +34,14 @@ public class CronComparatorTest {
         String cron = "0 30 * * * *";
 
         // Let's simulate we are more than 1 min before the next CRON date
-        long currentDateAsLong = OffsetDateTime.of(2010, 1, 1, 13, 28, 59, 0, ZoneOffset.UTC).toEpochSecond() * 1000;
-        Assert.assertEquals(false, CronComparator.shouldRun(cron, currentDateAsLong));
+        OffsetDateTime currentDateTime = OffsetDateTime.of(2010, 1, 1, 13, 28, 59, 0, ZoneOffset.UTC);
+        OffsetDateTime lastCheckDate = currentDateTime.minusMinutes(1);
+        Assert.assertFalse(CronComparator.shouldRun(cron, lastCheckDate, currentDateTime));
 
         // Let's simulate we already are in the next occurrence
-        currentDateAsLong = OffsetDateTime.of(2010, 1, 1, 13, 30, 0, 0, ZoneOffset.UTC).toEpochSecond() * 1000;
-        Assert.assertEquals(false, CronComparator.shouldRun(cron, currentDateAsLong));
+        currentDateTime = OffsetDateTime.of(2010, 1, 1, 13, 31, 1, 0, ZoneOffset.UTC);
+        lastCheckDate = currentDateTime.minusMinutes(1);
+        Assert.assertFalse(CronComparator.shouldRun(cron, lastCheckDate, currentDateTime));
     }
 
 }

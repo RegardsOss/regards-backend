@@ -513,25 +513,25 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void startAutomaticChains() {
+    public void startAutomaticChains(OffsetDateTime lastCheckDate, OffsetDateTime currentDate) {
 
         // Load all automatic chains
         List<AcquisitionProcessingChain> processingChains = acqChainRepository.findAllBootableAutomaticChains();
 
         for (AcquisitionProcessingChain processingChain : processingChains) {
             // Check periodicity
-            if (isDeletionPending(processingChain)) {
-                LOGGER.debug("Acquisition processing chain \"{}\" won't start due to deletion pending",
-                             processingChain.getLabel());
-            } else if (!CronComparator.shouldRun(processingChain.getPeriodicity())) {
-                LOGGER.debug("Acquisition processing chain \"{}\" won't start due to periodicity",
-                             processingChain.getLabel());
-            } else if (processingChain.isLocked()) {
-                LOGGER.debug("Acquisition processing chain \"{}\" won't start because it's still locked (i.e. working)",
-                             processingChain.getLabel());
-            } else {
-                // Schedule job
-                scheduleProductAcquisitionJob(processingChain, Optional.empty(), false);
+            if (CronComparator.shouldRun(processingChain.getPeriodicity(), lastCheckDate, currentDate)) {
+                if (isDeletionPending(processingChain)) {
+                    LOGGER.warn("Acquisition processing chain \"{}\" won't start due to deletion pending",
+                                processingChain.getLabel());
+                } else if (processingChain.isLocked()) {
+                    LOGGER.warn(
+                        "Acquisition processing chain \"{}\" won't start because it's still locked (i.e. working)",
+                        processingChain.getLabel());
+                } else {
+                    // Schedule job
+                    scheduleProductAcquisitionJob(processingChain, Optional.empty(), false);
+                }
             }
         }
     }
