@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.search.service;
 
 import fr.cnes.regards.framework.amqp.IPoller;
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -65,7 +64,7 @@ public class EngineTestConfiguration {
         mockDataset.setIpId(UniformResourceName.fromString(
             "URN:AIP:DATASET:tenant:27de606c-a6cd-411f-a5ba-bd1b2f29c965:V1"));
         Mockito.when(client.retrieveDataset(Mockito.anyString()))
-               .thenReturn(new ResponseEntity<EntityModel<Dataset>>(HateoasUtils.wrap(mockDataset), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<Dataset>(mockDataset, HttpStatus.OK));
         return client;
     }
 

@@ -31,13 +31,7 @@ import java.util.Objects;
  */
 public class RoleHierarchyComparator implements Comparator<Role> {
 
-    private IRoleService roleService;
-
-    /**
-     * Create a comparator of role for the sorting by name
-     */
-    public RoleHierarchyComparator() {
-    }
+    private final IRoleService roleService;
 
     /**
      * Create a comparator of role for the sorting by hierarchy, if same hierarchy sorting by name
@@ -57,7 +51,7 @@ public class RoleHierarchyComparator implements Comparator<Role> {
             return 0;
         }
 
-        if (roleService.isHierarchicallyInferior(role, other)) {
+        if (roleService.isHierarchicallyInferiorOrEqual(role, other)) {
             // if role and other are both sons of the same parent, then they are considered hierarchically inferior to
             // each other but we want to order them according to there names, we add check on parent nullability so we are sure it is not one of the native role
             if ((!role.isNative() && !other.isNative()) && Objects.equals(role.getParentRole(),

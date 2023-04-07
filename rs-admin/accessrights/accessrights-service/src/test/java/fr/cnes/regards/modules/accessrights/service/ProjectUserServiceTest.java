@@ -600,7 +600,7 @@ public class ProjectUserServiceTest {
         when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
         when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
         // Make sure the borrowed role is not hierarchically inferior
-        when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(false);
+        when(roleService.isHierarchicallyInferiorOrEqual(borrowedRole, projectUser.getRole())).thenReturn(false);
 
         // Trigger the exception
         projectUserService.retrieveProjectUserAccessRights(EMAIL, borrowedRoleName);
@@ -633,7 +633,7 @@ public class ProjectUserServiceTest {
         when(roleService.retrieveRoleResourcesAccesses(borrowedRoleId)).thenReturn(borrowedRolePermissions);
 
         // Make sure the borrowed role is hierarchically inferior
-        when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(true);
+        when(roleService.isHierarchicallyInferiorOrEqual(borrowedRole, projectUser.getRole())).thenReturn(true);
 
         // Define expected permissions
         final List<ResourcesAccess> expected = new ArrayList<>();

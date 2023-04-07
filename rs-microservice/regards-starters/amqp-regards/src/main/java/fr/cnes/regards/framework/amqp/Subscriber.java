@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +62,10 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
                       String microserviceName,
                       IInstancePublisher instancePublisher,
                       IPublisher publisher,
-                      IRuntimeTenantResolver runtimeTenantResolver) {
+                      IRuntimeTenantResolver runtimeTenantResolver,
+                      ApplicationEventPublisher applicationEventPublisher,
+                      int declarationRetries,
+                      long failedDeclarationRetryInterval) {
         super(pVirtualHostAdmin,
               amqpAdmin,
               jsonMessageConverters,
@@ -70,7 +74,10 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
               instancePublisher,
               publisher,
               runtimeTenantResolver,
-              pTenantResolver);
+              pTenantResolver,
+              applicationEventPublisher,
+              declarationRetries,
+              failedDeclarationRetryInterval);
         tenantResolver = pTenantResolver;
     }
 

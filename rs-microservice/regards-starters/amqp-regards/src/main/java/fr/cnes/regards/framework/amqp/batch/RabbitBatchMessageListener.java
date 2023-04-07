@@ -298,7 +298,8 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             return (Errors) methodInvoker.invoke();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
                  ClassNotFoundException ex) {
-            String errorMessage = "Validation method fail - message assumed to be invalid as a default fallback!";
+            String errorMessage = "Some AMQP message has been refused as its validation failed. The message will be "
+                                  + "rerouted to DLQ";
             LOGGER.error(errorMessage, ex);
             // Propagate errors
             Errors errors = new MapBindingResult(new HashMap<>(), message.getClass().getName());

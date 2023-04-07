@@ -386,13 +386,13 @@ public class RoleService implements IRoleService, InitializingBean {
         Optional<Role> currentRole = roleRepository.findByName(securityRole);
 
         // Compare with native role
-        Role refRole = role;
+        Role targetRole = role;
         if (!role.isNative()) {
-            refRole = role.getParentRole();
+            targetRole = role.getParentRole();
         }
 
         // Check if target role is hierarchically inferior so current user can alter it
-        if (currentRole.isPresent() && isHierarchicallyInferior(refRole, currentRole.get())) {
+        if (currentRole.isPresent() && isHierarchicallyInferiorOrEqual(targetRole, currentRole.get())) {
 
             LOGGER.debug("User with role {} can add resource accesses to role {}",
                          currentRole.get().getName(),
@@ -400,11 +400,11 @@ public class RoleService implements IRoleService, InitializingBean {
 
         } else if (currentRole.isPresent()) {
             String message = "A user can only add resources on role hierarchically inferior to its own.";
-            LOGGER.error(message);
+            LOGGER.debug(message);
             throw new EntityOperationForbiddenException(message);
         } else {
             String message = String.format("Unknown role %s.", securityRole);
-            LOGGER.error(message);
+            LOGGER.debug(message);
             throw new EntityOperationForbiddenException(message);
         }
     }
@@ -585,7 +585,7 @@ public class RoleService implements IRoleService, InitializingBean {
             try {
                 providedRole = retrieveRole(roleName);
                 currentRole = retrieveRole(securityRole);
-                return securityRole.equals(DefaultRole.PROJECT_ADMIN.toString()) || isHierarchicallyInferior(
+                return securityRole.equals(DefaultRole.PROJECT_ADMIN.toString()) || isHierarchicallyInferiorOrEqual(
                     providedRole,
                     currentRole);
             } catch (EntityNotFoundException e) {
@@ -619,10 +619,10 @@ public class RoleService implements IRoleService, InitializingBean {
     }
 
     /**
-     * Determines if first role is inferior to second role.
+     * Determines if a target role is inferior or equal to the current role to grant only user authorized accesses.
      *
-     * @param first  role that should be inferior to second
-     * @param second role that should not be inferior to first
+     * @param targetRole  role that should be inferior to currentRole
+     * @param currentRole role that should superior to the targetRole
      * @return FALSE if: <br/>
      * <ul>
      * <li>second is null</li>
@@ -632,39 +632,39 @@ public class RoleService implements IRoleService, InitializingBean {
      * </ul>
      */
     @Override
-    public boolean isHierarchicallyInferior(Role first, Role second) {
+    public boolean isHierarchicallyInferiorOrEqual(Role targetRole, Role currentRole) {
         // we consider that null is hierarchically inferior to anyone
-        if (first == null) {
+        if (targetRole == null) {
             return true;
         }
-        if (second == null) {
+        if (currentRole == null) {
             return false;
         }
         // we treat project admin by hand as it doesn't really have a hierarchy
-        if (RoleAuthority.isProjectAdminRole(first.getName())) {
+        if (RoleAuthority.isProjectAdminRole(targetRole.getName())) {
             return false;
         }
-        if (RoleAuthority.isInstanceAdminRole(second.getName())) {
+        if (RoleAuthority.isInstanceAdminRole(currentRole.getName())) {
             return true;
         }
-        if (RoleAuthority.isProjectAdminRole(second.getName())) {
+        if (RoleAuthority.isProjectAdminRole(currentRole.getName())) {
             return true;
         }
-        // case of myself: we are not strictly inferior to ourselves
-        if (Objects.equal(second, first)) {
-            return false;
+        // case of myself
+        if (Objects.equal(currentRole, targetRole)) {
+            return true;
         }
         // now lets treat common cases
         RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
-        List<Role> ancestors = roleLineageAssembler.of(second).get();
+        List<Role> ancestors = roleLineageAssembler.of(currentRole).get();
         try (Stream<Role> stream = ancestors.stream()) {
-            if (first.isNative()) {
+            if (targetRole.isNative()) {
                 // if the role is native, then it is into the lineage so we can look for it
-                String roleName = first.getName();
+                String roleName = targetRole.getName();
                 return stream.anyMatch(r -> r.getName().equals(roleName));
             } else {
                 // if the role is not a native one, then we need to look for its parent(which is native).
-                String parent = first.getParentRole().getName();
+                String parent = targetRole.getParentRole().getName();
                 return stream.anyMatch(r -> r.getName().equals(parent));
             }
         }

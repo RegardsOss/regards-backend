@@ -159,7 +159,7 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         OrderProcessInfo processInfo = new OrderProcessInfo(Scope.SUBORDER,
                                                             Cardinality.ONE_PER_EXECUTION,
                                                             List.of(DataType.QUICKLOOK_SD),
-                                                            new SizeLimit(SizeLimit.Type.FEATURES, 9L),
+                                                            new SizeLimit(SizeLimit.Type.FEATURES, 1L),
                                                             new MultiplierResultSizeForecast(1d),
                                                             Boolean.TRUE);
         launchOrderAndExpectResults(processInfo, 0, Collections.singletonList(OrderStatus.FAILED));

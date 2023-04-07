@@ -74,6 +74,11 @@ public class RoleClientMock implements IRolesClient {
     }
 
     @Override
+    public ResponseEntity<Set<Role>> retrieveRoleAscendants(String roleName) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<EntityModel<Role>> updateRole(String pRoleName, @Valid Role pUpdatedRole) {
         return null;
     }

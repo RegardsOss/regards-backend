@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +56,10 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
                                  String microserviceName,
                                  IInstancePublisher instancePublisher,
                                  IPublisher publisher,
-                                 IRuntimeTenantResolver runtimeTenantResolver) {
+                                 IRuntimeTenantResolver runtimeTenantResolver,
+                                 ApplicationEventPublisher applicationEventPublisher,
+                                 int declarationRetries,
+                                 long failedDeclarationRetryInterval) {
         super(virtualHostAdmin,
               amqpAdmin,
               jsonMessageConverters,
@@ -64,7 +68,10 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
               instancePublisher,
               publisher,
               runtimeTenantResolver,
-              tenantResolver);
+              tenantResolver,
+              applicationEventPublisher,
+              declarationRetries,
+              failedDeclarationRetryInterval);
         this.tenantResolver = tenantResolver;
     }
 

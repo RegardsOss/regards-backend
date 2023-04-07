@@ -303,7 +303,7 @@ public class ProjectUserService implements IProjectUserService {
 
         if (borrowedRoleName != null) {
             Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
-            if (roleService.isHierarchicallyInferior(borrowedRole, returnedRole)) {
+            if (roleService.isHierarchicallyInferiorOrEqual(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
             } else {
                 throw new EntityOperationForbiddenException(borrowedRoleName,
@@ -446,7 +446,7 @@ public class ProjectUserService implements IProjectUserService {
         try {
             canDelete = roleService.isCurrentRoleSuperiorTo(projectUser.getRole().getName());
         } catch (EntityNotFoundException e) {
-            LOG.warn("Invalid project user : {}", projectUser.getEmail());
+            LOG.warn("Invalid project user : {}", projectUser.getEmail(), e);
         }
         return canDelete;
     }

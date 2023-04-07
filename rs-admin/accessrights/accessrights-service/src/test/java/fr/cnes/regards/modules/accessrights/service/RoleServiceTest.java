@@ -687,54 +687,54 @@ public class RoleServiceTest {
         Role registeredUser = factory.createRegisteredUser();
 
         // lets check that public is inferior to everyone
-        Assert.assertFalse(roleService.isHierarchicallyInferior(publicR, publicR));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(publicR, registeredUser));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(publicR, admin));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(publicR, projectAdmin));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(publicR, publicR));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(publicR, registeredUser));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(publicR, admin));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(publicR, projectAdmin));
 
         // lets check that registeredUser is only inferior to public
-        Assert.assertFalse(roleService.isHierarchicallyInferior(registeredUser, publicR));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(registeredUser, registeredUser));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(registeredUser, admin));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(registeredUser, projectAdmin));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(registeredUser, publicR));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(registeredUser, registeredUser));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(registeredUser, admin));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(registeredUser, projectAdmin));
 
         // check admin
-        Assert.assertFalse(roleService.isHierarchicallyInferior(admin, publicR));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(admin, registeredUser));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(admin, admin));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(admin, projectAdmin));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(admin, publicR));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(admin, registeredUser));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(admin, admin));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(admin, projectAdmin));
 
         // check project admin
-        Assert.assertFalse(roleService.isHierarchicallyInferior(projectAdmin, publicR));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(projectAdmin, registeredUser));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(projectAdmin, admin));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(projectAdmin, projectAdmin));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(projectAdmin, publicR));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(projectAdmin, registeredUser));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(projectAdmin, admin));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(projectAdmin, projectAdmin));
 
         // lets check with a custom role
         Role adminSon = new Role("Admin son", admin);
-        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, publicR));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, registeredUser));
-        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, admin));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(adminSon, projectAdmin));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(adminSon, publicR));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(adminSon, registeredUser));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(adminSon, admin));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(adminSon, projectAdmin));
         // a native role is inferior to one of its children
-        Assert.assertTrue(roleService.isHierarchicallyInferior(admin, adminSon));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(admin, adminSon));
 
         // native role are not inferior to themselves, lets check for customs
-        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, adminSon));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(adminSon, adminSon));
 
         // lets check two custom role on different hierarchical level
         Role registeredUserSon = new Role("Registered User Son", registeredUser);
-        Assert.assertFalse(roleService.isHierarchicallyInferior(adminSon, registeredUserSon));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(registeredUserSon, adminSon));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(adminSon, registeredUserSon));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(registeredUserSon, adminSon));
 
         // what happens if a custom role and a native one has the same parent:
-        Assert.assertFalse(roleService.isHierarchicallyInferior(admin, registeredUserSon));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(registeredUserSon, admin));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(admin, registeredUserSon));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(registeredUserSon, admin));
 
         // lets check two custom role on same hierarchical level
         Role adminSon2 = new Role("Admin Son 2", admin);
-        Assert.assertTrue(roleService.isHierarchicallyInferior(adminSon, adminSon2));
-        Assert.assertTrue(roleService.isHierarchicallyInferior(adminSon2, adminSon));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(adminSon, adminSon2));
+        Assert.assertTrue(roleService.isHierarchicallyInferiorOrEqual(adminSon2, adminSon));
 
     }
 

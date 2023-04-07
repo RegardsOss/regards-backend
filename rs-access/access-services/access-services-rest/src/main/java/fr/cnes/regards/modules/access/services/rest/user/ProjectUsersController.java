@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.rest.user;
 
+import com.google.common.base.Preconditions;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.*;
@@ -25,13 +26,16 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.access.services.domain.user.ProjectUserCreateDto;
 import fr.cnes.regards.modules.access.services.domain.user.ProjectUserReadDto;
 import fr.cnes.regards.modules.access.services.domain.user.ProjectUserUpdateDto;
 import fr.cnes.regards.modules.access.services.rest.user.utils.ComposableClientException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
@@ -47,9 +51,11 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -60,12 +66,14 @@ import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -106,6 +114,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
 
     private final IAuthenticationResolver authenticationResolver;
 
+    private final IRolesClient rolesClient;
+
     private final Function<Try<ResponseEntity<UserCurrentQuotas>>, Validation<ComposableClientException, UserCurrentQuotas>> ignoreStorageQuotaErrors = t -> t.map(
                                                                                                                                                                   ResponseEntity::getBody)
                                                                                                                                                               // special value for frontend if any error on storage or storage not deploy
@@ -122,14 +132,17 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     @Value("${spring.application.name}")
     private String appName;
 
+
     public ProjectUsersController(IProjectUsersClient projectUsersClient,
                                   IStorageRestClient storageClient,
                                   IResourceService resourceService,
-                                  IAuthenticationResolver authenticationResolver) {
+                                  IAuthenticationResolver authenticationResolver,
+                                  IRolesClient rolesClient) {
         this.projectUsersClient = projectUsersClient;
         this.storageClient = storageClient;
         this.resourceService = resourceService;
         this.authenticationResolver = authenticationResolver;
+        this.rolesClient = rolesClient;
     }
 
     /**
@@ -493,74 +506,103 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     }
 
     @Override
-    public EntityModel<ProjectUserReadDto> toResource(final ProjectUserReadDto element, final Object... extras) {
-
-        EntityModel<ProjectUserReadDto> resource = resourceService.toResource(element);
-
-        if ((element != null) && (element.getId() != null)) {
-
-            resource = resourceService.toResource(element);
-            MethodParam<Long> idParam = MethodParamFactory.build(Long.class, element.getId());
-            Class<? extends ProjectUsersController> clazz = this.getClass();
-
-            resourceService.addLink(resource, clazz, "retrieveProjectUser", LinkRels.SELF, idParam);
-            resourceService.addLink(resource,
-                                    clazz,
-                                    "updateProjectUser",
-                                    LinkRels.UPDATE,
-                                    idParam,
-                                    MethodParamFactory.build(ProjectUserUpdateDto.class));
-            resourceService.addLink(resource, clazz, "removeProjectUser", LinkRels.DELETE, idParam);
-            resourceService.addLink(resource,
-                                    clazz,
-                                    "retrieveProjectUserList",
-                                    LinkRels.LIST,
-                                    MethodParamFactory.build(SearchProjectUserParameters.class),
-                                    MethodParamFactory.build(Pageable.class),
-                                    MethodParamFactory.build(PagedResourcesAssembler.class));
-
-            if (UserStatus.WAITING_ACCESS.equals(element.getStatus())) {
-                resourceService.addLink(resource,
-                                        RegistrationController.class,
-                                        "acceptAccessRequest",
-                                        LinkRelation.of("accept"),
-                                        idParam);
-                resourceService.addLink(resource,
-                                        RegistrationController.class,
-                                        "denyAccessRequest",
-                                        LinkRelation.of("deny"),
-                                        idParam);
-            }
-            if (UserStatus.ACCESS_GRANTED.equals(element.getStatus())) {
-                resourceService.addLink(resource,
-                                        RegistrationController.class,
-                                        "inactiveAccess",
-                                        LinkRelation.of("inactive"),
-                                        idParam);
-            }
-            if (UserStatus.ACCESS_DENIED.equals(element.getStatus())) {
-                resourceService.addLink(resource,
-                                        RegistrationController.class,
-                                        "acceptAccessRequest",
-                                        LinkRelation.of("accept"),
-                                        idParam);
-            }
-            if (UserStatus.ACCESS_INACTIVE.equals(element.getStatus())) {
-                resourceService.addLink(resource,
-                                        RegistrationController.class,
-                                        "activeAccess",
-                                        LinkRelation.of("active"),
-                                        idParam);
-            }
-            if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(element.getStatus())) {
-                resourceService.addLink(resource,
-                                        clazz,
-                                        "sendVerificationEmail",
-                                        LinkRelation.of("sendVerificationEmail"),
-                                        MethodParamFactory.build(String.class, element.getEmail()));
-            }
+    public EntityModel<ProjectUserReadDto> toResource(final ProjectUserReadDto userResourceDto,
+                                                      final Object... extras) {
+        EntityModel<ProjectUserReadDto> resource = resourceService.toResource(userResourceDto);
+        if (userResourceDto != null && userResourceDto.getId() != null) {
+            addHateoasLinks(userResourceDto, resource);
         }
         return resource;
+    }
+
+    @Override
+    public PagedModel<EntityModel<ProjectUserReadDto>> toPagedResources(final Page<ProjectUserReadDto> elements,
+                                                                        final PagedResourcesAssembler<ProjectUserReadDto> assembler,
+                                                                        final Object... extras) {
+        Preconditions.checkNotNull(elements);
+        final PagedModel<EntityModel<ProjectUserReadDto>> pageResources = assembler.toModel(elements);
+        Set<Role> currentUserAscendantRoles = getCurrentLoggedUserAscendantRoles();
+        pageResources.forEach(resource -> resource.add(toResourceWithAccessRights(resource.getContent(),
+                                                                                  currentUserAscendantRoles,
+                                                                                  extras).getLinks()));
+        return pageResources;
+    }
+
+    /**
+     * Special HATEOAS method to add resource access restrictions to the current logged user.
+     * The latter should have at least a superior role to access user resources.
+     */
+    public EntityModel<ProjectUserReadDto> toResourceWithAccessRights(final ProjectUserReadDto userResourceDto,
+                                                                      Set<Role> currentUserAscendantRoles,
+                                                                      final Object... extras) {
+        EntityModel<ProjectUserReadDto> resource = resourceService.toResource(userResourceDto);
+        if (userResourceDto != null && userResourceDto.getId() != null && hasAccessToRole(userResourceDto.getRole(),
+                                                                                          currentUserAscendantRoles)) {
+            addHateoasLinks(userResourceDto, resource);
+        }
+        return resource;
+    }
+
+    private void addHateoasLinks(ProjectUserReadDto userResourceDto, EntityModel<ProjectUserReadDto> resource) {
+        MethodParam<Long> idParam = MethodParamFactory.build(Long.class, userResourceDto.getId());
+        Class<? extends ProjectUsersController> clazz = this.getClass();
+
+        resourceService.addLink(resource, clazz, "retrieveProjectUser", LinkRels.SELF, idParam);
+        resourceService.addLink(resource,
+                                clazz,
+                                "updateProjectUser",
+                                LinkRels.UPDATE,
+                                idParam,
+                                MethodParamFactory.build(ProjectUserUpdateDto.class));
+        resourceService.addLink(resource, clazz, "removeProjectUser", LinkRels.DELETE, idParam);
+        resourceService.addLink(resource,
+                                clazz,
+                                "retrieveProjectUserList",
+                                LinkRels.LIST,
+                                MethodParamFactory.build(SearchProjectUserParameters.class),
+                                MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(PagedResourcesAssembler.class));
+
+        if (UserStatus.WAITING_ACCESS.equals(userResourceDto.getStatus())) {
+            resourceService.addLink(resource,
+                                    RegistrationController.class,
+                                    "acceptAccessRequest",
+                                    LinkRelation.of("accept"),
+                                    idParam);
+            resourceService.addLink(resource,
+                                    RegistrationController.class,
+                                    "denyAccessRequest",
+                                    LinkRelation.of("deny"),
+                                    idParam);
+        }
+        if (UserStatus.ACCESS_GRANTED.equals(userResourceDto.getStatus())) {
+            resourceService.addLink(resource,
+                                    RegistrationController.class,
+                                    "inactiveAccess",
+                                    LinkRelation.of("inactive"),
+                                    idParam);
+        }
+        if (UserStatus.ACCESS_DENIED.equals(userResourceDto.getStatus())) {
+            resourceService.addLink(resource,
+                                    RegistrationController.class,
+                                    "acceptAccessRequest",
+                                    LinkRelation.of("accept"),
+                                    idParam);
+        }
+        if (UserStatus.ACCESS_INACTIVE.equals(userResourceDto.getStatus())) {
+            resourceService.addLink(resource,
+                                    RegistrationController.class,
+                                    "activeAccess",
+                                    LinkRelation.of("active"),
+                                    idParam);
+        }
+        if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(userResourceDto.getStatus())) {
+            resourceService.addLink(resource,
+                                    clazz,
+                                    "sendVerificationEmail",
+                                    LinkRelation.of("sendVerificationEmail"),
+                                    MethodParamFactory.build(String.class, userResourceDto.getEmail()));
+        }
     }
 
     /**
@@ -574,7 +616,6 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         EntityModel<ProjectUserReadDto> resource = resourceService.toResource(projectUser);
 
         if ((projectUser != null) && (projectUser.getId() != null)) {
-            resource = resourceService.toResource(projectUser);
             resourceService.addLink(resource, this.getClass(), "retrieveCurrentProjectUser", LinkRels.SELF);
             resourceService.addLink(resource,
                                     this.getClass(),
@@ -584,4 +625,74 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         }
         return resource;
     }
+
+    /**
+     * Check if the user modifications are accessible by the current logged user.
+     * The latter must have at least the same role.
+     *
+     * @param targetRole                user role to be checked
+     * @param currentUserAscendantRoles all roles accessible for the current logged user
+     * @return true if the logged user has access to the target user
+     */
+    private boolean hasAccessToRole(Role targetRole, Set<Role> currentUserAscendantRoles) {
+        boolean hasAccess = false;
+        if (!CollectionUtils.isEmpty(currentUserAscendantRoles)) {
+            // check if logged user has a role superior or equal to target user
+            // OR if logged user is INSTANCE_ADMIN (because this role does not have any ascendant)
+            hasAccess = currentUserAscendantRoles.stream()
+                                                 .anyMatch(role -> role.equals(targetRole)
+                                                                   || DefaultRole.INSTANCE_ADMIN.toString()
+                                                                                                .equals(role.getName()));
+        }
+        return hasAccess;
+    }
+
+    /**
+     * Retrieve the current logged user's ascendant roles
+     */
+    private Set<Role> getCurrentLoggedUserAscendantRoles() {
+        Set<Role> userAscendantRoles = new HashSet<>();
+        String currentUserEmail = authenticationResolver.getUser();
+        if (!StringUtils.isBlank(currentUserEmail)) {
+
+            try {
+                FeignSecurityManager.asUser(currentUserEmail, RoleAuthority.getSysRole(appName));
+                ResponseEntity<EntityModel<ProjectUserReadDto>> response = this.retrieveProjectUserByEmail(
+                    currentUserEmail);
+                if (response != null && response.getStatusCode().is2xxSuccessful()) {
+                    ProjectUserReadDto currentUserDto = ResponseEntityUtils.extractContentOrThrow(response,
+                                                                                                  "An error occurred while trying to "
+                                                                                                  + "retrieve the specific user");
+                    userAscendantRoles = getAscendantRoles(currentUserDto);
+                }
+            } catch (ModuleException e) {
+                LOGGER.warn("User \"{}\" not found. Unable to check his access to actions.", currentUserEmail, e);
+            } finally {
+                FeignSecurityManager.reset();
+            }
+
+        } else {
+            LOGGER.warn("Not able to acquire current user \"{}\" from authentication resolver. No access to "
+                        + " user resources granted !", currentUserEmail);
+        }
+        return userAscendantRoles;
+    }
+
+    /**
+     * Retrieve all ascendant roles of a user
+     */
+    private Set<Role> getAscendantRoles(ProjectUserReadDto userDto) {
+        Set<Role> ascendantRoles = null;
+        ResponseEntity<Set<Role>> response = rolesClient.retrieveRoleAscendants(userDto.getRole().getName());
+        if (response != null && response.getStatusCode().is2xxSuccessful()) {
+            ascendantRoles = ResponseEntityUtils.extractBodyOrNull(response);
+        }
+        if (ascendantRoles == null) {
+            LOGGER.warn("Ascendant roles for role \"{}\" not found. Unable to check his access to actions.",
+                        userDto.getEmail());
+        }
+        return ascendantRoles;
+    }
+
 }
+
