@@ -186,8 +186,6 @@ public class RequestService implements IRequestService {
 
     @Override
     public void scheduleJob(AbstractRequest request) {
-        request.setState(InternalRequestState.RUNNING);
-
         Set<JobParameter> jobParameters = Sets.newHashSet();
         JobInfo jobInfo;
 

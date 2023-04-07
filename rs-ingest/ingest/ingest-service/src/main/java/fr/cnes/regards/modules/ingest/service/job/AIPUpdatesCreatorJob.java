@@ -90,23 +90,29 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+
         logger.debug("[AIP UPDATE CREATOR JOB] Running job ...");
         long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage;
-        int nbScheduled = 0;
+        int nbRequestScheduled = 0;
+
         // Set the request as running
         request.setState(InternalRequestState.RUNNING);
         aipUpdatesCreatorRepository.save(request);
+
         AIPUpdateParametersDto updateTask = request.getConfig();
+
         aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
         while (aipsPage.hasContent()) {
             aipsPage = aipRepository.findByFilters(updateTask.getCriteria(), pageRequest);
+            logger.debug("[AIP UPDATE CREATOR JOB] Scheduling update of {} aips", aipsPage.getNumberOfElements());
             // Save number of pages to publish job advancement
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
             }
-            nbScheduled += aipUpdateReqService.create(aipsPage.getContent(), AbstractAIPUpdateTask.build(updateTask));
+            nbRequestScheduled += aipUpdateReqService.create(aipsPage.getContent(),
+                                                             AbstractAIPUpdateTask.build(updateTask));
             if (totalPages > 0) {
                 advanceCompletion();
             }
@@ -115,8 +121,8 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
         // Delete the request
         requestService.deleteRequest(request);
 
-        logger.debug("[AIP UPDATE JOB] {} AIPUpdateRequest(s) scheduled in {}ms",
-                     nbScheduled,
+        logger.debug("[AIP UPDATE CREATOR JOB] {} AIPUpdateRequest(s) scheduled in {}ms",
+                     nbRequestScheduled,
                      System.currentTimeMillis() - start);
     }
 

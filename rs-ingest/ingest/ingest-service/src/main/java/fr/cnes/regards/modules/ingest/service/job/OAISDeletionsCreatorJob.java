@@ -141,9 +141,9 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
 
         requestService.deleteRequest(oaisDeletionCreatorRequest);
 
-        logger.info("[OAIS DELETION CREATOR JOB] {} OAISDeletionRequest(s) scheduled in {}ms",
-                    nbRequestScheduled,
-                    System.currentTimeMillis() - start);
+        logger.debug("[OAIS DELETION CREATOR JOB] {} OAISDeletionRequest(s) scheduled in {}ms",
+                     nbRequestScheduled,
+                     System.currentTimeMillis() - start);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
      * @param oaisDeletionCreatorPayload payload including parameters
      * @return true or false
      */
-    public boolean hasValidParameters(OAISDeletionCreatorPayload oaisDeletionCreatorPayload) {
+    private boolean hasValidParameters(OAISDeletionCreatorPayload oaisDeletionCreatorPayload) {
 
         boolean isValid = true;
 

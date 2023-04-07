@@ -72,6 +72,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.IntStream;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * {@link AIPEntity} REST API testing
@@ -347,10 +350,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void testDeleteAips() {
-        // Create AIP
+        // Given create AIP
+        String category = "CAT 1";
         String session = OffsetDateTime.now().toString();
         String sessionOwner = "ESA";
-        createAIP("my object #11", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
+        createAIP("my object #11", Sets.newHashSet(category, "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
@@ -361,12 +365,34 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.documentRequestBody(documentDeleteAIPRequestParameters());
 
         OAISDeletionPayloadDto body = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY);
-        body.withSessionOwner(sessionOwner).withSession(session).withCategoriesIncluded(List.of("CAT 1"));
+        body.withSessionOwner(sessionOwner).withSession(session).withCategoriesIncluded(List.of(category));
 
+        // When
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.OAIS_DELETE_PATH,
                            body,
                            requestBuilderCustomizer,
                            "Should schedule AIP deletion");
+    }
+
+    @Test
+    public void testDeleteAips_with_ValidationContraints() {
+        // Given
+        OAISDeletionPayloadDto body = new OAISDeletionPayloadDto();
+        // When
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.OAIS_DELETE_PATH,
+                           body,
+                           customizer().expect(status().is(422)),
+                           "Session deletion mode is required");
+
+        // Given
+        body.setDeletionMode(SessionDeletionMode.IRREVOCABLY);
+        body.withAipIdsExcluded(IntStream.range(0, 1001).mapToObj(i -> "aipId" + i).toList());
+
+        // When
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.OAIS_DELETE_PATH,
+                           body,
+                           customizer().expect(status().is(422)),
+                           "List of values have a maximal size of 1000");
     }
 
     private List<FieldDescriptor> documentDeleteAIPRequestParameters() {
