@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import org.slf4j.Logger;
@@ -60,11 +61,16 @@ public class ScheduledDataProviderTasks {
         LOGGER.info("Checking for active chains to run.");
         OffsetDateTime now = OffsetDateTime.now();
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            try {
-                runtimeTenantResolver.forceTenant(tenant);
-                chainService.startAutomaticChains(lastCheckDate, now);
-            } finally {
-                runtimeTenantResolver.clearTenant();
+            if (!MaintenanceManager.getMaintenance(tenant)) {
+                try {
+                    runtimeTenantResolver.forceTenant(tenant);
+                    chainService.startAutomaticChains(lastCheckDate, now);
+                } finally {
+                    runtimeTenantResolver.clearTenant();
+                }
+            } else {
+                LOGGER.warn("Automatic chains run is disabled for tenant {} because maintenance mode is actived. "
+                            + "Disable maintenance mode to allow automatic chains to run.", tenant);
             }
         }
         lastCheckDate = now;
