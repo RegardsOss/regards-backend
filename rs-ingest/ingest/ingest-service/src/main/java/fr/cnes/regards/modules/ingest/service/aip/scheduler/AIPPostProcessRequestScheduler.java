@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
 @MultitenantTransactional
 public class AIPPostProcessRequestScheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPDeletionRequestScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPPostProcessRequestScheduler.class);
 
     IAIPPostProcessRequestRepository aipPostProcessRequestRepository;
 

@@ -39,6 +39,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,7 +77,7 @@ public class AIPDeletionRequestScheduler {
         this.deletionRequestIterationLimit = deletionRequestIterationLimit;
     }
 
-    public JobInfo scheduleJob() {
+    public Optional<JobInfo> scheduleJob() {
 
         LOGGER.debug("[OAIS DELETION SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
@@ -110,7 +111,7 @@ public class AIPDeletionRequestScheduler {
                          waitingRequest.getNumberOfElements(),
                          System.currentTimeMillis() - start);
         }
-        return jobInfo;
+        return Optional.ofNullable(jobInfo);
     }
 
 }

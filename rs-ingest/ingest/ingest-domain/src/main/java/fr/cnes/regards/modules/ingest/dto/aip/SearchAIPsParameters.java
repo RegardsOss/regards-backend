@@ -36,7 +36,6 @@ import java.util.Collection;
  * @author sbinda
  * @author Léo Mieulet
  */
-//@Valid
 public class SearchAIPsParameters implements AbstractSearchParameters {
 
     @Valid
