@@ -23,13 +23,12 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.stereotype.Component;
+
+import java.time.OffsetDateTime;
 
 /**
  * Scheduled actions to process new CREATED SIPS by sending bulk request to Ingest
@@ -53,22 +52,21 @@ public class ScheduledDataProviderTasks {
     @Autowired
     private IAcquisitionProcessingService chainService;
 
-    @Bean
-    public TaskScheduler taskScheduler() {
-        return new ConcurrentTaskScheduler();
-    }
+    private OffsetDateTime lastCheckDate = OffsetDateTime.now();
 
     // Run every minutes
     @Scheduled(cron = "0 * * * * *")
     public void processAcquisitionChains() {
-        LOGGER.trace("Process run active chains");
+        LOGGER.info("Checking for active chains to run.");
+        OffsetDateTime now = OffsetDateTime.now();
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                chainService.startAutomaticChains();
+                chainService.startAutomaticChains(lastCheckDate, now);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
+        lastCheckDate = now;
     }
 }
