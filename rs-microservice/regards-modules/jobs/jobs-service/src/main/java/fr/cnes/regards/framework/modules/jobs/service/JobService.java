@@ -4,7 +4,7 @@ import com.google.common.collect.*;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -34,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.*;
@@ -60,23 +60,13 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
      */
     private final Set<UUID> abortedBeforeStartedJobs = Collections.synchronizedSet(new HashSet<>());
 
-    @Autowired
-    private IWorkspaceService workspaceService;
+    private final IWorkspaceService workspaceService;
 
-    @Autowired
-    private IJobInfoService jobInfoService;
+    private final IJobInfoService jobInfoService;
 
-    /**
-     * All tenants resolver
-     */
-    @Autowired
-    private ITenantResolver tenantResolver;
+    private final ITenantResolver tenantResolver;
 
-    /**
-     * Current tenant resolver
-     */
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
@@ -84,19 +74,32 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
     @Value("${regards.jobs.scan.delay:1000}")
     private int scanDelay;
 
-    @Autowired
-    private ISubscriber subscriber;
+    private final ISubscriber subscriber;
 
-    @Autowired
-    private IPublisher publisher;
+    private final IPublisher publisher;
 
-    @Autowired
-    private AutowireCapableBeanFactory beanFactory;
+    private final AutowireCapableBeanFactory beanFactory;
 
     private ThreadPoolExecutor threadPool;
 
     // Boolean permitting to determine if method manage() can pull jobs and executing them
     private boolean canManage = true;
+
+    public JobService(IWorkspaceService workspaceService,
+                      IJobInfoService jobInfoService,
+                      ITenantResolver tenantResolver,
+                      IRuntimeTenantResolver runtimeTenantResolver,
+                      ISubscriber subscriber,
+                      IPublisher publisher,
+                      AutowireCapableBeanFactory beanFactory) {
+        this.workspaceService = workspaceService;
+        this.jobInfoService = jobInfoService;
+        this.tenantResolver = tenantResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.subscriber = subscriber;
+        this.publisher = publisher;
+        this.beanFactory = beanFactory;
+    }
 
     private static void printStackTrace(JobStatusInfo statusInfo, Exception e) {
         StringWriter sw = new StringWriter();
@@ -113,14 +116,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
         LOGGER.info("Shutting down job thread pool...");
         // Avoid pulling new jobs
         canManage = false;
-        threadPool.shutdown();
-        LOGGER.info("Waiting 60s max for jobs to be terminated...");
-        try {
-            threadPool.awaitTermination(60, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            LOGGER.warn("Waiting task interrupted");
-        }
-        threadPool = null;
+        stopThreadPool();
     }
 
     /**
@@ -150,20 +146,25 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
             try {
                 if (!threadPool.isShutdown()) {
                     for (String tenant : tenantResolver.getAllActiveTenants()) {
-                        runtimeTenantResolver.forceTenant(tenant);
-                        // Wait for availability of pool if it is overbooked
-                        while (threadPool.getActiveCount() >= threadPool.getMaximumPoolSize()) {
-                            Thread.sleep(scanDelay);
-                        }
-                        // Find highest priority job to execute
-                        JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
-                        if (jobInfo != null) {
-                            LOGGER.debug("Job found {}", jobInfo.getId());
-                            noJobAtAll = false;
-                            jobInfo.setTenant(tenant);
-                            this.execute(jobInfo);
+                        if (!MaintenanceManager.getMaintenance(tenant)) {
+                            runtimeTenantResolver.forceTenant(tenant);
+                            // Wait for availability of pool if it is overbooked
+                            while (threadPool.getActiveCount() >= threadPool.getMaximumPoolSize()) {
+                                Thread.sleep(scanDelay);
+                            }
+                            // Find highest priority job to execute
+                            JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
+                            if (jobInfo != null) {
+                                LOGGER.debug("Job found {}", jobInfo.getId());
+                                noJobAtAll = false;
+                                jobInfo.setTenant(tenant);
+                                this.execute(jobInfo);
+                            } else {
+                                LOGGER.debug("No job to run yet");
+                            }
                         } else {
-                            LOGGER.debug("No job to run yet");
+                            LOGGER.warn("Jobs are currently disabled for tenant {} cause maintenance mode is "
+                                        + "activated.", tenant);
                         }
                     }
                 }
@@ -200,7 +201,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
         // Retrieve all jobInfos of which completion has changed
         Set<JobInfo> toUpdateJobInfos = Sets.filter(jobsMap.keySet(), j -> j.getStatus().hasCompletionChanged());
         if (!toUpdateJobInfos.isEmpty()) {
-            // Create a multimap { tenant, (jobInfos) } // NOSONAR
+            // Create a multimap { tenant, (jobInfos) }
             HashMultimap<String, JobInfo> tenantJobInfoMultimap = HashMultimap.create();
             for (JobInfo jobInfo : toUpdateJobInfos) {
                 tenantJobInfoMultimap.put(jobInfo.getTenant(), jobInfo);
@@ -208,7 +209,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
             // For each tenant -> (jobInfo) update them
             for (Map.Entry<String, Collection<JobInfo>> entry : tenantJobInfoMultimap.asMap().entrySet()) {
                 runtimeTenantResolver.forceTenant(entry.getKey());
-                // Direct Update concerned properties into Database whithout changing anything else
+                // Direct Update concerned properties into Database without changing anything else
                 jobInfoService.updateJobInfosCompletion(entry.getValue());
             }
             // Clear completion status
@@ -273,7 +274,9 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 return null;
             }
             // First, instantiate job
-            @SuppressWarnings("rawtypes") IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
+            @SuppressWarnings("rawtypes") IJob job = (IJob) Class.forName(jobInfo.getClassName())
+                                                                 .getConstructor()
+                                                                 .newInstance();
             beanFactory.autowireBean(job);
             job.setJobInfoId(jobInfo.getId());
             job.setParameters(jobInfo.getParametersAsMap());
@@ -289,7 +292,8 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
             // ThreadPool has been shutted down (maybe due to a refresh)
             LOGGER.warn("Job thread pool rejects job {}", jobInfo.getId());
             resetJob(jobInfo);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException |
+                 IllegalAccessException e) {
             LOGGER.error("Unable to instantiate job", e);
             manageJobInstantiationError(jobInfo, e);
         } catch (JobWorkspaceException e) {
@@ -308,16 +312,24 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
     }
 
     public void cleanAndRestart() {
-        List<Runnable> runables = threadPool.shutdownNow();
-        LOGGER.info("Waiting 60s max for {} jobs to be terminated...", runables.size());
-        try {
-            threadPool.awaitTermination(60, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            LOGGER.warn("Waiting task interrupted");
-        }
-        threadPool = null;
+        stopThreadPool();
         this.afterPropertiesSet();
         LOGGER.info("JOB Service reinitialized and all jobs stopped !");
+    }
+
+    private void stopThreadPool() {
+        List<Runnable> runnableTasks = threadPool.shutdownNow();
+        if (!runnableTasks.isEmpty()) {
+            LOGGER.info("Waiting 60s max for {} jobs to be terminated...", runnableTasks.size());
+            try {
+                if (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+                    LOGGER.error("Terminating job thread pool executor. Jobs were not finished with 1min timeout");
+                }
+            } catch (InterruptedException e) {
+                LOGGER.warn("Waiting task interrupted");
+            }
+        }
+        threadPool = null;
     }
 
     /**
@@ -350,7 +362,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
             // Check job is currently running
             JobStatus status = jobInfo.getStatus().getStatus();
             switch (status) {
-                case RUNNING:
+                case RUNNING -> {
                     // Check if current microservice is running this job
                     if (jobsMap.containsKey(jobInfo)) {
                         LOGGER.info("Aborting running job {}", jobId);
@@ -361,22 +373,21 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                             "Event received to abort the running job {}, but this job is not running on this instance",
                             jobId);
                     }
-                    break;
-                case PENDING: // even a PENDING Job must be set at ABORTED status to avoid a third party service to
-                    // set it at QUEUED
-                case QUEUED:
-                    // TODO add a lock service
+                }
+                case PENDING, QUEUED -> {
                     // Update to ABORTED status (this avoids this job to be taken into account)
+                    // even a PENDING Job must be set at ABORTED status to avoid a third party service to
+                    // set it at QUEUED
                     jobInfo.updateStatus(JobStatus.ABORTED);
                     jobInfoService.save(jobInfo);
                     publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
-                    break;
-                case TO_BE_RUN:
+                }
+                case TO_BE_RUN ->
                     // Job not yet running
                     abortedBeforeStartedJobs.add(jobInfo.getId());
-                    break;
-                default:
-                    break;
+                default -> {
+                    // Nothing to do
+                }
             }
         }
     }
@@ -385,12 +396,10 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                                   IRuntimeTenantResolver runtimeTenantResolver) implements IHandler<StopJobEvent> {
 
         @Override
-        public void handle(TenantWrapper<StopJobEvent> wrapper) {
-            if (wrapper.getContent() != null) {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                jobService.abort(wrapper.getContent().getJobId());
-                runtimeTenantResolver.clearTenant();
-            }
+        public void handle(String tenant, StopJobEvent event) {
+            runtimeTenantResolver.forceTenant(tenant);
+            jobService.abort(event.getJobId());
+            runtimeTenantResolver.clearTenant();
         }
     }
 
