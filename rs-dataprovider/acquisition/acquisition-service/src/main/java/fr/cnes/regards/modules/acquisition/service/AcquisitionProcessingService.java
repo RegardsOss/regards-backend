@@ -32,9 +32,6 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.dao.*;
@@ -52,8 +49,6 @@ import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
-import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -68,7 +63,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.MimeTypeUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -116,11 +110,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     private final IAcquisitionProcessingService self;
 
-    private final INotificationClient notificationClient;
-
-    private final ITemplateService templateService;
-
     private final SessionNotifier sessionNotifier;
+
+    private final AcquisitionNotificationService acquisitionNotificationService;
 
     public AcquisitionProcessingService(IAcquisitionProcessingChainRepository acqChainRepository,
                                         IAcquisitionFileRepository acqFileRepository,
@@ -133,8 +125,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                         AutowireCapableBeanFactory beanFactory,
                                         IRuntimeTenantResolver runtimeTenantResolver,
                                         IAcquisitionProcessingService acquisitionProcessingService,
-                                        INotificationClient notificationClient,
-                                        ITemplateService templateService,
+                                        AcquisitionNotificationService acquisitionNotificationService,
                                         SessionNotifier sessionNotifier) {
         this.acqChainRepository = acqChainRepository;
         this.acqFileRepository = acqFileRepository;
@@ -147,8 +138,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         this.beanFactory = beanFactory;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.self = acquisitionProcessingService;
-        this.notificationClient = notificationClient;
-        this.templateService = templateService;
+        this.acquisitionNotificationService = acquisitionNotificationService;
         this.sessionNotifier = sessionNotifier;
     }
 
@@ -661,22 +651,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         boolean hasExecutionBlockers = !CollectionUtils.isEmpty(executionBlockers);
 
         if (hasExecutionBlockers && doNotify) {
-            try {
-                Map<String, Object> dataMap = new HashMap<>();
-                dataMap.put("chainLabel", chain.getLabel());
-                dataMap.put("executionBlockers", executionBlockers);
-                String message = templateService.render(AcquisitionTemplateConfiguration.EXECUTION_BLOCKERS_TEMPLATE,
-                                                        dataMap);
-                notificationClient.notify(message,
-                                          "Acquisition chain execution blockers",
-                                          NotificationLevel.ERROR,
-                                          MimeTypeUtils.TEXT_HTML,
-                                          DefaultRole.PROJECT_ADMIN);
-            } catch (TemplateException e) {
-                LOGGER.error("Unable to notify execution blockers for acquisition chain", e);
-            }
+            acquisitionNotificationService.notifyExecutionBlockers(chain.getLabel(), executionBlockers);
         }
-
         return hasExecutionBlockers;
     }
 
@@ -951,10 +927,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         long nbProductsScheduled = 0L;
         boolean stop = false;
         while (!Thread.currentThread().isInterrupted() && !stop) {
-            ProductsPage resp = self.manageRegisteredFilesByPage(processingChain, session);
+            ProductsPage productsPage = self.manageRegisteredFilesByPage(processingChain, session);
             // Works as long as there is at least one page left
-            nbProductsScheduled += resp.getScheduled();
-            stop = !resp.hasNext();
+            nbProductsScheduled += productsPage.getScheduled();
+            stop = !productsPage.hasNext();
         }
         // Just trace interruption
         if (Thread.currentThread().isInterrupted()) {
@@ -968,7 +944,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public ProductsPage manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain, String session)
         throws ModuleException {
 
-        // - Retrieve first page of new registered files
+        // Retrieve first page of new registered files
         Page<AcquisitionFile> page = acqFileRepository.findByStateAndFileInfoInOrderByAcqDateAsc(AcquisitionFileState.IN_PROGRESS,
                                                                                                  processingChain.getFileInfos(),
                                                                                                  PageRequest.of(0,
@@ -997,39 +973,21 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     String errorMessage = "File not valid according to plugin " + validationPlugin.getClass()
                                                                                                   .getSimpleName();
                     LOGGER.error(errorMessage);
-                    inProgressFile.setState(AcquisitionFileState.INVALID);
-                    inProgressFile.setError(errorMessage);
-                    acqFileRepository.save(inProgressFile);
-                    invalidFiles.add(inProgressFile);
+                    inProgressFile.setErrorMsgWithState(errorMessage, AcquisitionFileState.INVALID);
+                    invalidFiles.add(acqFileRepository.save(inProgressFile));
                 }
             } catch (ModuleException e) {
                 LOGGER.error(e.getMessage(), e);
-                inProgressFile.setState(AcquisitionFileState.INVALID);
-                inProgressFile.setError(String.format("File not valid according to plugin %s. Cause : %s",
-                                                      validationPlugin.getClass().getSimpleName(),
-                                                      e.getMessage()));
-                acqFileRepository.save(inProgressFile);
-                invalidFiles.add(inProgressFile);
+                inProgressFile.setErrorMsgWithState(String.format("File not valid according to plugin %s. Cause : %s",
+                                                                  validationPlugin.getClass().getSimpleName(),
+                                                                  e.getMessage()), AcquisitionFileState.INVALID);
+                invalidFiles.add(acqFileRepository.save(inProgressFile));
             }
         }
 
         // Send Notification for invalid files
         if (!invalidFiles.isEmpty()) {
-            Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put("invalidFiles", invalidFiles);
-            String message;
-            sessionNotifier.notifyFileInvalid(session, processingChain.getLabel(), invalidFiles.size());
-            try {
-                message = templateService.render(AcquisitionTemplateConfiguration.ACQUISITION_INVALID_FILES_TEMPLATE,
-                                                 dataMap);
-                notificationClient.notify(message,
-                                          "Acquisition invalid files report",
-                                          NotificationLevel.WARNING,
-                                          MimeTypeUtils.TEXT_HTML,
-                                          DefaultRole.PROJECT_ADMIN);
-            } catch (TemplateException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
+            acquisitionNotificationService.notifyInvalidAcquisitionFile(invalidFiles);
         }
 
         LOGGER.debug("Validation of {} file(s) finished with {} valid and {} invalid.",

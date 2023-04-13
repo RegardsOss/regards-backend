@@ -55,6 +55,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -104,6 +105,8 @@ public class ProductService implements IProductService {
 
     private final SessionNotifier sessionNotifier;
 
+    private final AcquisitionNotificationService acquisitionNotificationService;
+
     @Value("${regards.acquisition.product.bulk.deletion.limit:100}")
     private Integer bulkDeletionLimit;
 
@@ -122,7 +125,8 @@ public class ProductService implements IProductService {
                           IAcquisitionFileRepository acqFileRepository,
                           IIngestClient ingestClient,
                           IProductService productService,
-                          SessionNotifier sessionNotifier) {
+                          SessionNotifier sessionNotifier,
+                          AcquisitionNotificationService acquisitionNotificationService) {
         this.pluginService = pluginService;
         this.productRepository = productRepository;
         this.acqChainRepository = acqChainRepository;
@@ -132,6 +136,7 @@ public class ProductService implements IProductService {
         this.ingestClient = ingestClient;
         this.self = productService;
         this.sessionNotifier = sessionNotifier;
+        this.acquisitionNotificationService = acquisitionNotificationService;
     }
 
     @Override
@@ -438,7 +443,7 @@ public class ProductService implements IProductService {
 
             try {
                 String productName = productPlugin.getProductName(validFile.getFilePath());
-                if ((productName != null) && !productName.isEmpty()) {
+                if (!StringUtils.isBlank(productName)) {
                     validFilesByProductName.put(productName, validFile);
                 } else {
                     // Continue silently but register error in database
@@ -446,8 +451,7 @@ public class ProductService implements IProductService {
                                                         validFile.getFilePath().toString(),
                                                         "Null or empty product name");
                     LOGGER.error(errorMessage);
-                    validFile.setError(errorMessage);
-                    validFile.setState(AcquisitionFileState.ERROR);
+                    validFile.setErrorMsgWithState(errorMessage, AcquisitionFileState.ERROR);
                     acqFileRepository.save(validFile);
                 }
             } catch (ModuleException e) {
@@ -456,8 +460,7 @@ public class ProductService implements IProductService {
                                                     validFile.getFilePath().toString(),
                                                     e.getMessage());
                 LOGGER.error(errorMessage, e);
-                validFile.setError(errorMessage);
-                validFile.setState(AcquisitionFileState.ERROR);
+                validFile.setErrorMsgWithState(errorMessage, AcquisitionFileState.ERROR);
                 acqFileRepository.save(validFile);
             }
 
@@ -469,6 +472,7 @@ public class ProductService implements IProductService {
                                                   .collect(Collectors.toMap(Product::getProductName,
                                                                             Function.identity()));
         Set<Product> productsToSchedule = new HashSet<>();
+        List<AcquisitionFile> invalidFiles = new ArrayList<>();
 
         // Build all current products
         for (String productName : validFilesByProductName.keySet()) {
@@ -486,13 +490,15 @@ public class ProductService implements IProductService {
             } else if (!currentProduct.getProcessingChain().equals(processingChain)) {
                 // this case is forbidden because it breaks everything
                 // files are then declared invalid and product never created
-                for (AcquisitionFile af : productNewValidFiles) {
-                    af.setState(AcquisitionFileState.INVALID);
-                    af.setError(String.format("This file should generate a product(name: %s) which has been created "
-                                              + "by another chain %s. So it is invalid.",
-                                              productName,
-                                              currentProduct.getProcessingChain().getLabel()));
+                for (AcquisitionFile invalidFile : productNewValidFiles) {
+                    invalidFile.setErrorMsgWithState(String.format(
+                        "This file should generate a product(name: %s) which has been created "
+                        + "by another chain %s. So it is invalid.",
+                        productName,
+                        currentProduct.getProcessingChain().getLabel()), AcquisitionFileState.INVALID);
                     sessionNotifier.notifyFileInvalid(session, processingChain.getLabel(), 1);
+
+                    invalidFiles.add(invalidFile);
                 }
                 continue;
             } else if (!currentProduct.getSession().equals(session)) {
@@ -523,6 +529,10 @@ public class ProductService implements IProductService {
             sessionNotifier.notifyChangeProductState(changingStateProbe);
         }
 
+        if (!invalidFiles.isEmpty()) {
+            LOGGER.debug("{} invalid files for {} product(s)", invalidFiles.size(), productsToSchedule.size());
+            acquisitionNotificationService.notifyInvalidAcquisitionFile(invalidFiles);
+        }
         // Schedule SIP generation
         if (!productsToSchedule.isEmpty()) {
             LOGGER.debug("Scheduling SIP generation for {} product(s)", productsToSchedule.size());
