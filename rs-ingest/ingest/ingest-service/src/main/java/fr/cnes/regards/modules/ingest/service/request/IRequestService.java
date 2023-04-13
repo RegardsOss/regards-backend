@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
@@ -28,7 +27,6 @@ import fr.cnes.regards.modules.storage.client.RequestInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.transaction.annotation.Propagation;
 
 import java.util.Collection;
 import java.util.List;
@@ -111,7 +109,6 @@ public interface IRequestService {
      * @param jobIdsAlreadyStopped this parameters should initially be empty and then reused between each page handling
      * @return next page to treat
      */
-    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     Page<AbstractRequest> abortCurrentRequestPage(SearchRequestParameters filters,
                                                   Pageable pageRequest,
                                                   Set<UUID> jobIdsAlreadyStopped);

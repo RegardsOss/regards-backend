@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 
@@ -37,15 +38,18 @@ import java.util.Collection;
  */
 public class SearchAIPsParameters implements AbstractSearchParameters {
 
+    @Valid
     @Schema(description = "Filter on state of aip", example = "GENERATED|STORED|DELETED")
     private ValuesRestriction<AIPState> aipStates;
 
+    @Valid
     @Schema(description = "Filter on types of entity", example = "COLLECTION|DATA|DATASET")
     private ValuesRestriction<EntityType> aipIpTypes;
 
     @Schema(description = "Filter on range of date for last update")
     private DatesRangeRestriction lastUpdate = new DatesRangeRestriction();
 
+    @Valid
     @Schema(description = "Filter on provider id")
     private ValuesRestriction<String> providerIds;
 
@@ -55,12 +59,15 @@ public class SearchAIPsParameters implements AbstractSearchParameters {
     @Schema(description = "Filter on session that emitted the request", example = "Today_Mission1")
     private String session;
 
+    @Valid
     @Schema(description = "Filter on storages")
     private ValuesRestriction<String> storages;
 
+    @Valid
     @Schema(description = "Filter on categories")
     private ValuesRestriction<String> categories;
 
+    @Valid
     @Schema(description = "Filter on tags")
     private ValuesRestriction<String> tags;
 
@@ -70,6 +77,7 @@ public class SearchAIPsParameters implements AbstractSearchParameters {
     /**
      * URN of the AIP(s) to preserve or remove in the specified session
      */
+    @Valid
     @Schema(description = "Filter on identifier of aip")
     private ValuesRestriction<String> aipIds;
 

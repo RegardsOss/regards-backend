@@ -193,8 +193,8 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
 
         LOGGER.info("Jobs stil existing : {}", jobInfoRepository.count());
         LOGGER.info("Let's remove {} jobs info", jobInfoRepository.count());
-        jobInfoRepository.deleteAll();
 
+        jobInfoRepository.deleteAll();
     }
 
     @Test
@@ -383,7 +383,7 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
         aipUpdatesCreatorRequest = (AIPUpdatesCreatorRequest) abstractRequestRepository.findById(
             aipUpdatesCreatorRequest.getId()).get();
         Assert.assertEquals("The request should not be blocked",
-                            InternalRequestState.RUNNING,
+                            InternalRequestState.CREATED,
                             aipUpdatesCreatorRequest.getState());
     }
 

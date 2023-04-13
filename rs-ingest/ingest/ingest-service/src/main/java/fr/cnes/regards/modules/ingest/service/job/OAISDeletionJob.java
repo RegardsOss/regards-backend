@@ -76,7 +76,7 @@ public class OAISDeletionJob extends AbstractJob<Void> {
     public void run() {
         // INIT
         int nbRequestsToHandle = this.requests.size(); // nb of requests to handle (retry requests + deletions)
-        logger.debug("Running job for {} OAISDeletionRequest(s) requests", nbRequestsToHandle);
+        logger.debug("[OAIS DELETION JOB] Running job for {} OAISDeletionRequest(s) requests", nbRequestsToHandle);
         long start = System.currentTimeMillis();
 
         // NOTIFICATION RETRY
@@ -97,7 +97,7 @@ public class OAISDeletionJob extends AbstractJob<Void> {
             oaisDeletionRequestService.runDeletion(requests, this);
         }
 
-        logger.debug("Job handled for {} OAISDeletionRequest(s) requests in {}ms",
+        logger.debug("[OAIS DELETION JOB] Job handled for {} OAISDeletionRequest(s) requests in {}ms",
                      nbRequestsToHandle,
                      System.currentTimeMillis() - start);
     }

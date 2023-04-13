@@ -131,6 +131,26 @@ public class OAISDeletionService implements IOAISDeletionService {
                                            jobInfo.getStatus().getStatus()), e);
             }
             return true;
+        } else if (OAISDeletionJob.class.getName().equals(jobInfo.getClassName())) {
+            try {
+                Type type = new TypeToken<List<Long>>() {
+
+                }.getType();
+                List<Long> requestIds = IJob.getValue(jobInfo.getParametersAsMap(),
+                                                      OAISDeletionJob.OAIS_DELETION_REQUEST_IDS,
+                                                      type);
+
+                List<OAISDeletionRequest> requests = requestRepository.findAllById(requestIds);
+                requests.forEach(r -> {
+                    r.setState(InternalRequestState.ERROR);
+                    r.setErrors(Set.of(jobInfo.getStatus().getStackTrace()));
+                });
+            } catch (JobParameterMissingException | JobParameterInvalidException e) {
+                LOGGER.error(String.format("OAISDeletionJob request job with id \"%s\" fails with status \"%s\"",
+                                           jobInfo.getId(),
+                                           jobInfo.getStatus().getStatus()), e);
+            }
+            return true;
         }
         return false;
     }

@@ -20,8 +20,8 @@ package fr.cnes.regards.framework.jpa.restriction;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Collection;
 
 /**
@@ -32,12 +32,11 @@ import java.util.Collection;
  */
 public class ValuesRestriction<T> {
 
-    @Valid
     @NotNull
+    @Size(max = 1000, message = "List of values have a maximal size of 1000")
     @Schema(description = "List of accepted or refused values (according to the mode)")
     private Collection<T> values;
-
-    @Valid
+    
     @NotNull
     @Schema(description = "Restriction mode to use")
     private ValuesRestrictionMode mode;

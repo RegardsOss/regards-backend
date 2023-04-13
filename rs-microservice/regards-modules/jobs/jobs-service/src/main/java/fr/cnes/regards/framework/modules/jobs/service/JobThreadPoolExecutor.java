@@ -75,7 +75,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         }
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobThreadPoolExecutor.class);
 
     /**
      * Only for the thread names
@@ -174,6 +174,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                     jobInfo.updateStatus(JobStatus.FAILED);
                     jobInfo.getStatus().setStackTrace(sw.toString());
                     jobInfoService.save(jobInfo);
+
                     publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
                 });
             } catch (InterruptedException ie) {
@@ -185,6 +186,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             jobInfo.updateStatus(JobStatus.SUCCEEDED);
             jobInfo.setResult(jobInfo.getJob().getResult());
             jobInfoService.save(jobInfo);
+
             publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.SUCCEEDED));
         }
         // Delete complete workspace dir if job has one
