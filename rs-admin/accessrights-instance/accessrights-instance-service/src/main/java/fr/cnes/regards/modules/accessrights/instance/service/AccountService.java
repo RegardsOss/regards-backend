@@ -348,7 +348,9 @@ public class AccountService implements IAccountService, InitializingBean {
     public List<String> getOrigins() {
         List<String> origins = new ArrayList<>();
         origins.add(Account.REGARDS_ORIGIN);
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
+        // remark: getAllTenants() is called on a mandatory µS rs-authentication, so all tenants connections will
+        // always be active, no need to check this condition.
+        for (String tenant : tenantResolver.getAllTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 FeignSecurityManager.asSystem();

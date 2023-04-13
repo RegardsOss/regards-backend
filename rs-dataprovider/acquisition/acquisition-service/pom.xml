@@ -55,6 +55,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-regards</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.modules.acquisition</groupId>
             <artifactId>acquisition-dao</artifactId>
         </dependency>

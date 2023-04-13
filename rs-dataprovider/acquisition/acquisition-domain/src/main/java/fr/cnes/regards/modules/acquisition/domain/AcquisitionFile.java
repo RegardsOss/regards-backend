@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import org.hibernate.annotations.Type;
+import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -61,7 +62,7 @@ public class AcquisitionFile {
     private AcquisitionFileState state;
 
     /**
-     * This field is only used when acquisition file status is set to {@link AcquisitionFileState#ERROR}
+     * This field is only used when acquisition file status is set to {@link AcquisitionFileState#ERROR} or {@link AcquisitionFileState#INVALID}
      */
     @Type(type = "text")
     private String error;
@@ -142,6 +143,20 @@ public class AcquisitionFile {
 
     public void setFilePath(Path filePath) {
         this.filePath = filePath;
+    }
+
+    /**
+     * Call method {@link #setError(String)} then call method {@link #setState(AcquisitionFileState)}
+     *
+     * @param msg   the error message (it is required)
+     * @param state the state (it is required)
+     */
+    public void setErrorMsgWithState(String msg, AcquisitionFileState state) {
+        Assert.hasLength(msg, "Error message is required");
+        Assert.notNull(state, "State is required");
+
+        this.setError(msg);
+        this.setState(state);
     }
 
     @Override
