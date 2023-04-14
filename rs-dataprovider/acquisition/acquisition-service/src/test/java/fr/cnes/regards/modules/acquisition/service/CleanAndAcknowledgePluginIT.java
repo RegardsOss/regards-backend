@@ -183,7 +183,7 @@ public class CleanAndAcknowledgePluginIT extends AbstractRegardsTransactionalIT 
         acquisitionFile1.setFileInfo(fileInfo);
         acquisitionFile1.setFilePath(scanPath.resolve(PRODUCT_PATH_1));
         acquisitionFile1.setProduct(product1);
-        acquisitionFile1.setState(AcquisitionFileState.VALID);
+        acquisitionFile1.setState(AcquisitionFileState.ACQUIRED);
         fileService.save(acquisitionFile1);
 
         // Product 2
@@ -205,7 +205,7 @@ public class CleanAndAcknowledgePluginIT extends AbstractRegardsTransactionalIT 
         acquisitionFile2.setFileInfo(fileInfo);
         acquisitionFile2.setFilePath(scanPath.resolve(FOLDER_OF_PRODUCT_2).resolve(PRODUCT_PATH_2));
         acquisitionFile2.setProduct(product2);
-        acquisitionFile2.setState(AcquisitionFileState.VALID);
+        acquisitionFile2.setState(AcquisitionFileState.ACQUIRED);
         fileService.save(acquisitionFile2);
     }
 
