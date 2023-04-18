@@ -40,10 +40,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -264,21 +261,29 @@ public class RequestsGroupService {
         start = System.currentTimeMillis();
         LOGGER.debug("[REQUEST GROUPS] Start checking request groups done ... ");
         // Handle done groups
-        List<RequestGroup> groupsDone = reqGroupRepository.findGroupDones(maxRequestPerTransaction);
-        List<String> groupsDoneIds = groupsDone.stream().map(RequestGroup::getId).collect(Collectors.toList());
-        Set<RequestResultInfo> requestsInfo = groupReqInfoRepository.findByGroupIdIn(groupsDoneIds);
-        if (!groupsDone.isEmpty()) {
-            for (RequestGroup group : groupsDone) {
-                groupDone(group,
-                          requestsInfo.stream()
-                                      .filter(i -> i.getGroupId().equals(group.getId()))
-                                      .collect(Collectors.toSet()));
+        List<RequestGroup> groupToProcess = reqGroupRepository.findGroupDones(maxRequestPerTransaction);
+        Set<String> groupIdsToProcess = groupToProcess.stream()
+                                                      .map(RequestGroup::getId)
+                                                      .collect(Collectors.toUnmodifiableSet());
+        Set<RequestResultInfo> requestsInfo = groupReqInfoRepository.findByGroupIdIn(groupIdsToProcess);
+        Set<RequestGroup> groupDone = new HashSet<>();
+        if (!groupToProcess.isEmpty()) {
+            for (RequestGroup group : groupToProcess) {
+                boolean isGroupSuccess = groupDone(group,
+                                              requestsInfo.stream()
+                                                          .filter(i -> i.getGroupId().equals(group.getId()))
+                                                          .collect(Collectors.toSet()));
+                if(isGroupSuccess) {
+                   groupDone.add(group);
+                }
             }
-            groupReqInfoRepository.deleteByGroupIdIn(groupsDoneIds);
-            reqGroupRepository.deleteAll(groupsDone);
+            // Delete all result info as they have been handled but delete only groups in success.
+            // Remaining groups will be used to allow other microservices to retry requests.
+            groupReqInfoRepository.deleteByGroupIdIn(groupIdsToProcess);
+            reqGroupRepository.deleteAll(groupDone);
             LOGGER.info("[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}.",
                         System.currentTimeMillis() - start,
-                        groupsDone.size());
+                        groupDone.size());
         } else {
             LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. No groups done.",
                          System.currentTimeMillis() - start);
@@ -329,16 +334,17 @@ public class RequestsGroupService {
         }
     }
 
-    private void groupDone(RequestGroup reqGrp, Set<RequestResultInfo> infos) {
-        groupDone(reqGrp, infos, Optional.empty());
+    private boolean groupDone(RequestGroup reqGrp, Set<RequestResultInfo> infos) {
+        return groupDone(reqGrp, infos, Optional.empty());
     }
 
     /**
      * Handle a group request done. All requests of the given group has terminated (success or error).
      */
-    private void groupDone(RequestGroup reqGrp,
-                           Set<RequestResultInfo> resultInfos,
-                           Optional<FlowItemStatus> forcedStatus) {
+    private boolean groupDone(RequestGroup reqGrp,
+                                             Set<RequestResultInfo> resultInfos,
+                                             Optional<FlowItemStatus> forcedStatus) {
+        boolean isReqGrpInSuccess = false;
         Set<RequestResultInfo> errors = Sets.newHashSet();
         Set<RequestResultInfo> successes = Sets.newHashSet();
         for (RequestResultInfo info : resultInfos) {
@@ -350,17 +356,21 @@ public class RequestsGroupService {
         }
         // 1. Publish events
         if (errors.isEmpty()) {
-            LOGGER.trace("[{} GROUP {} {}] - {} requests success.",
-                         reqGrp.getType().toString().toUpperCase(),
-                         forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(),
-                         reqGrp.getId(),
-                         successes.size());
-            publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(),
-                                                           reqGrp.getType(),
-                                                           forcedStatus.orElse(FlowItemStatus.SUCCESS),
-                                                           successes));
-            if (successes.isEmpty()) {
-                LOGGER.debug("[{} GROUP {} {}] No success requests associated to terminated group",
+            if (!successes.isEmpty()) {
+                isReqGrpInSuccess = true;
+                LOGGER.trace("[{} GROUP {} {}] - {} requests success.",
+                             reqGrp.getType().toString().toUpperCase(),
+                             forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(),
+                             reqGrp.getId(),
+                             successes.size());
+                publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(),
+                                                               reqGrp.getType(),
+                                                               forcedStatus.orElse(FlowItemStatus.SUCCESS),
+                                                               successes));
+            } else {
+                // in this case, groups are not considered as success because it may be counter performing to
+                // search for all requests associated to this group. This can happen in case of request retry.
+                LOGGER.debug("[{} GROUP {} {}] No request result associated to group. Group will not be deleted.",
                              forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(),
                              reqGrp.getType(),
                              reqGrp.getId());
@@ -373,6 +383,7 @@ public class RequestsGroupService {
                          errors.size());
             publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(), reqGrp.getType(), successes, errors));
         }
+        return isReqGrpInSuccess;
     }
 
     public void deleteRequestInfoForFile(Long fileId) {

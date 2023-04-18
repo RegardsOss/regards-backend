@@ -94,6 +94,25 @@ public class SessionService {
         });
     }
 
+    public void notifySuccessRequest(SessionsRequestsInfo infoPerSession) {
+        WorkerStepPropertyEnum.parse(RequestStatus.SUCCESS).ifPresent(stepProperty -> {
+            infoPerSession.keySet().forEach(key -> {
+                String source = key.getLeft();
+                String session = key.getRight();
+                RequestsInfo sessionInfo = infoPerSession.get(key);
+                Map<String, StepProperty> propertySteps = new HashMap<>();
+                List<RequestDTO> requests = sessionInfo.getRequests()
+                                                       .values()
+                                                       .stream()
+                                                       .flatMap(Collection::stream)
+                                                       .collect(Collectors.toList());
+                preparePropertyStepForRequests(source, session, requests, stepProperty, propertySteps, true);
+                sendSteps(propertySteps);
+            });
+        });
+    }
+
+
     public void notifyDelete(SessionsRequestsInfo infoPerSession) {
         infoPerSession.keySet().forEach(key -> {
             String source = key.getLeft();
