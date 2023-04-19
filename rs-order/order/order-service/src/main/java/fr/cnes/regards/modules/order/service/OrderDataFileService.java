@@ -99,6 +99,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     private final OrderResponseService orderResponseService;
 
+    private final OrderDownloadService orderDownloadService;
+
     @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
 
@@ -119,7 +121,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                                 IAuthenticationResolver authResolver,
                                 IProcessingEventSender processingEventSender,
                                 IPublisher publisher,
-                                OrderResponseService orderResponseService) {
+                                OrderResponseService orderResponseService,
+                                OrderDownloadService orderDownloadService) {
         this.orderDataFileRepository = orderDataFileRepository;
         this.orderJobService = orderJobService;
         this.self = orderDataFileService;
@@ -130,6 +133,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         this.processingEventSender = processingEventSender;
         this.publisher = publisher;
         this.orderResponseService = orderResponseService;
+        this.orderDownloadService = orderDownloadService;
     }
 
     private static MediaType asMediaType(MimeType mimeType) {
@@ -331,11 +335,18 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     private ResponseEntity<InputStreamResource> downloadStoredFile(OrderDataFile dataFile) {
         try {
             InputStreamResource isr = null;
-            Response response = storageClient.downloadFile(dataFile.getChecksum(), false);
+            Optional<Response> responseOpt = orderDownloadService.downloadDataFile(dataFile,
+                                                                                   "Error while downloading file "
+                                                                                   + dataFile.getFilename());
+            if (responseOpt.isEmpty()) {
+                dataFile.setState(FileState.DOWNLOAD_ERROR);
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            Response response = responseOpt.get();
             String reason = response.reason();
             int status = response.status();
             if (status != HttpStatus.OK.value()) {
-                LOGGER.error("Error downloading file {} from storage : {} : {}",
+                LOGGER.error("Error downloading file {} from storage or dam : {} : {}",
                              dataFile.getChecksum(),
                              status,
                              reason);

@@ -549,5 +549,4 @@ public class OrderServiceIT {
         // AvailableUpdateDate should have been reset
         Assertions.assertTrue(orderRepos.findCompleteById(order.getId()).getAvailableUpdateDate().isAfter(start));
     }
-
 }

@@ -94,6 +94,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Abstract parameterized entity service
@@ -595,7 +596,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                 LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN, e);
             }
         } else {
-            setDataFilesUri(updated);
+            setDataFilesUri(updated, entityInDb);
             abstractEntityRepository.save(updated);
         }
 
@@ -871,10 +872,11 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             if (oCurrent.isPresent()) {
                 AbstractEntityRequest current = oCurrent.get();
                 for (RequestResultInfoDTO request : info.getSuccessRequests()) {
+                    AbstractEntity<? extends EntityFeature> entity = entityByUrn.get(current.getUrn());
                     // if we found a AbstractEntity matching with the urn stored in the  AbstractEntityRequest
-                    if (entityByUrn.get(current.getUrn()) != null) {
+                    if (entity != null) {
                         // seek the file inside the AbstractEntity with the checksum matching with it inside the RequestResultInfoDTO
-                        for (DataFile file : entityByUrn.get(current.getUrn()).getFiles().values()) {
+                        for (DataFile file : entity.getFiles().values()) {
                             // if the file is found we update it uri
                             if (file.getChecksum().equals(request.getResultFile().getMetaInfo().getChecksum())) {
                                 try {
@@ -886,6 +888,13 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                                     updated = true;
                                 } catch (ModuleException e) {
                                     LOGGER.error("Cannot get download url for data file : " + file.getFilename(), e);
+                                }
+                                // remove buffered file
+                                try {
+                                    localStorageService.removeFile(entity, file);
+                                } catch (ModuleException e) {
+                                    LOGGER.error("Cannot remove file " + file.getFilename() + "stored locally in DAM ",
+                                                 e);
                                 }
                             }
                         }
@@ -965,17 +974,24 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         return proxyfiedUrl;
     }
 
-    private void setDataFilesUri(U entity) throws ModuleException {
+    private void setDataFilesUri(U entity, U entityInDb) throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
-        final U finalEntity = entity;
-        List<DataFile> dataFiles = entity.getFiles()
-                                         .values()
-                                         .stream()
-                                         .filter(dataFile -> !dataFile.isReference())
-                                         .toList();
-        for (DataFile dataFile : dataFiles) {
-            dataFile.setUri(getDownloadUrl(finalEntity.getIpId(), dataFile.getChecksum(), tenant, true));
+        Stream<DataFile> newDataFilesStream = entity.getFiles().values().stream();
+        // set uri only for new files
+        if (entityInDb != null) {
+            // compare previous list and new list to get new files
+            newDataFilesStream = newDataFilesStream.filter(file -> !entityInDb.getFiles().values().contains(file));
         }
+        // don't modify external uri (!isReference)
+        List<DataFile> newDataFiles = newDataFilesStream.filter(dataFile -> Boolean.FALSE.equals(dataFile.isReference()))
+                                                        .toList();
+        for (DataFile dataFile : newDataFiles) {
+            dataFile.setUri(getDownloadUrl(entity.getIpId(), dataFile.getChecksum(), tenant, true));
+        }
+    }
+
+    private void setDataFilesUri(U entity) throws ModuleException {
+        setDataFilesUri(entity, null);
     }
 
     private static String encode4Uri(String str) {

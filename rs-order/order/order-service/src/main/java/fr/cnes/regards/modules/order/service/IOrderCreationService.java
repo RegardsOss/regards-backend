@@ -18,13 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-
-import java.util.Set;
-import java.util.UUID;
 
 public interface IOrderCreationService {
 
@@ -48,20 +42,5 @@ public interface IOrderCreationService {
      * @param tenant  current tenant
      */
     void completeOrderCreation(Basket basket, Long orderId, String role, int subOrderDuration, String tenant);
-
-    /**
-     *
-     */
-    void createExternalSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order);
-
-    /**
-     *
-     */
-    UUID createStorageSubOrder(DatasetTask dsTask,
-                               Set<OrderDataFile> bucketFiles,
-                               Order order,
-                               int subOrderDuration,
-                               String role,
-                               int priority);
 
 }

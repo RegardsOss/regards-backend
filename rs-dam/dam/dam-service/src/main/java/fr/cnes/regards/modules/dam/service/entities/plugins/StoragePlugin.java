@@ -96,7 +96,7 @@ public class StoragePlugin implements IStorageService {
                                                                  .collect(Collectors.toSet());
             this.entityRequestRepo.saveAll(infos);
         } else {
-            String message = "Data files are stored localy on datamanagement service as no storage location has been defined in microservice configuration.";
+            String message = "Data files are stored locally on datamanagement service as no storage location has been defined in microservice configuration.";
             String title = "Files stored locally";
             String[] users = new String[] { authResolver.getUser() };
             notificationClient.notify(message, title, NotificationLevel.INFO, users);
@@ -119,6 +119,8 @@ public class StoragePlugin implements IStorageService {
                                                                                              .anyMatch(f -> f.getChecksum()
                                                                                                              .equals(
                                                                                                                  file.getChecksum())))
+                                                                   // no need to store external files
+                                                                   .filter(file -> !file.isReference())
                                                                    .map(entry -> initStorageRequest(entry,
                                                                                                     toUpdate.getIpId()))
                                                                    .collect(Collectors.toSet());
@@ -140,6 +142,8 @@ public class StoragePlugin implements IStorageService {
                                                                                                  .anyMatch(f -> f.getChecksum()
                                                                                                                  .equals(
                                                                                                                      file.getChecksum())))
+                                                                        // no need to delete external files
+                                                                        .filter(file -> Boolean.FALSE.equals(file.isReference()))
                                                                         .map(entry -> initDeletionRequest(entry,
                                                                                                           toUpdate.getIpId()
                                                                                                                   .toString()))

@@ -21,15 +21,22 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotRestartOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
+import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.service.commons.AbstractOrderServiceIT;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
@@ -38,6 +45,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -46,14 +55,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static fr.cnes.regards.modules.order.test.SearchClientMock.DS1_IP_ID;
@@ -71,6 +79,21 @@ import static org.mockito.ArgumentMatchers.any;
                                    "regards.order.max.storage.files.jobs.per.user=2" })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class OrderServiceTestIT extends AbstractOrderServiceIT {
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    protected IBasketRepository basketRepos;
+
+    @Autowired
+    private IOrderDataFileService orderDataFileService;
+
+    @Autowired
+    private IOrderRepository orderRepos;
+
+    @Autowired
+    public IDatasetClient datasetClient;
 
     @Test
     public void simpleOrder() throws InterruptedException, EntityInvalidException {
@@ -615,6 +638,61 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         orderService.resume(orderId);
         waitForStatus(orderId, OrderStatus.DONE);
         checkCompletion(orderId, 100);
+    }
+
+    @Test
+    public void testDataSetFilesAttached()
+        throws EntityInvalidException, TooManyItemsSelectedInBasketException, CatalogSearchException,
+        EmptySelectionException, InterruptedException {
+        // GIVEN
+        // Simulate attached file of a dataset
+        String orderDataFileUri = "http://uri.fr";
+        String filename = "myFilename";
+        OaisUniformResourceName urn = new OaisUniformResourceName(OAISIdentifier.AIP,
+                                                                  EntityType.DATASET,
+                                                                  "tenant",
+                                                                  UUID.randomUUID(),
+                                                                  1,
+                                                                  null,
+                                                                  null);
+        DatasetFeature datasetFeature = new DatasetFeature(urn, "providerId", "label", "licence");
+        Dataset dataset = new Dataset();
+        dataset.setFeature(datasetFeature);
+        DataFile dataFile = new DataFile();
+        dataFile.setChecksum("myChecksum");
+        dataFile.setDataType(DataType.RAWDATA);
+        dataFile.setFilename(filename);
+        dataFile.setMimeType(MimeTypeUtils.parseMimeType("application/octet-stream"));
+        dataFile.setOnline(false);
+        dataFile.setUri(orderDataFileUri);
+        dataFile.setReference(false);
+        dataFile.setFilesize(67170l);
+        datasetFeature.getFiles().put(DataType.RAWDATA, dataFile);
+        ResponseEntity<Dataset> datasetResponseEntity = new ResponseEntity<>(dataset, HttpStatus.OK);
+        Mockito.when(datasetClient.retrieveDataset(Mockito.anyString())).thenReturn(datasetResponseEntity);
+
+        // create basket with 12 files
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
+        basketRepository.save(basket);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(basket.getOwner());
+        basketService.addSelection(basket.getId(), createBasketSelectionRequest(DS1_IP_ID.toString(), ""));
+        basket = basketService.load(basket.getId());
+
+        // WHEN
+        // Run order.
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.DONE);
+
+        // THEN get order data files created and check if dataset file is present.
+        List<OrderDataFile> availableFilesByOrder = orderDataFileService.findAllAvailables(order.getId());
+        Optional<OrderDataFile> first = availableFilesByOrder.stream()
+                                                             .filter(file -> orderDataFileUri.equals(file.getUri()))
+                                                             .findFirst();
+        Assertions.assertTrue(first.isPresent());
+        Assertions.assertEquals(filename, first.get().getFilename());
+        // 12 file selected in basket, and 1 file attached to dataset
+        Assertions.assertEquals(13, availableFilesByOrder.size());
     }
 
     private void checkCompletion(long orderId, int expectedCompletion) {

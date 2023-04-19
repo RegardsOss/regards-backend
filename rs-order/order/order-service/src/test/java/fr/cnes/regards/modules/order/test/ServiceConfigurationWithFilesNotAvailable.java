@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.order.test;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
@@ -34,6 +36,8 @@ import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * @author oroussel
@@ -101,5 +105,15 @@ public class ServiceConfigurationWithFilesNotAvailable {
     @Bean
     public IProcessingEventSender processingEventSender() {
         return Mockito.mock(IProcessingEventSender.class);
+    }
+
+    @Bean
+    public IDatasetClient datasetClient() {
+        return mock(IDatasetClient.class);
+    }
+
+    @Bean
+    public IAttachmentClient attachmentClient() {
+        return mock(IAttachmentClient.class);
     }
 }

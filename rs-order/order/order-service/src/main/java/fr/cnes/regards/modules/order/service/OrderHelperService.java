@@ -32,10 +32,12 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
 import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
@@ -49,6 +51,8 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.Charset;
@@ -82,6 +86,8 @@ public class OrderHelperService {
 
     private final OrderResponseService orderResponseService;
 
+    private final IOrderDataFileService dataFileService;
+
     @Value("${regards.order.secret}")
     private String secret;
 
@@ -105,7 +111,8 @@ public class OrderHelperService {
                               IRuntimeTenantResolver runtimeTenantResolver,
                               IProjectUsersClient projectUsersClient,
                               IOrderSettingsService orderSettingsService,
-                              OrderResponseService orderResponseService) {
+                              OrderResponseService orderResponseService,
+                              IOrderDataFileService dataFileService) {
         this.jwtService = jwtService;
         this.jobInfoService = jobInfoService;
         this.authenticationResolver = authenticationResolver;
@@ -113,6 +120,7 @@ public class OrderHelperService {
         this.projectUsersClient = projectUsersClient;
         this.orderSettingsService = orderSettingsService;
         this.orderResponseService = orderResponseService;
+        this.dataFileService = dataFileService;
     }
 
     public static boolean isOrderEffectivelyInPause(Order order) {
@@ -136,6 +144,35 @@ public class OrderHelperService {
         initIsAdminCache();
     }
 
+    /**
+     * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to
+     * DatasetTask.
+     * All OrderDataFile will be saved
+     *
+     * @return JobInfo Id
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public UUID createStorageSubOrderAndStoreDataFiles(DatasetTask datasetTask,
+                                                       Set<OrderDataFile> bucketFiles,
+                                                       Order order,
+                                                       int subOrderDuration,
+                                                       String role,
+                                                       int priority) {
+        dataFileService.create(bucketFiles);
+        return createStorageSubOrder(datasetTask,
+                                     bucketFiles,
+                                     order.getId(),
+                                     order.getOwner(),
+                                     subOrderDuration,
+                                     role,
+                                     priority);
+    }
+
+    /**
+     * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
+     *
+     * @return JobInfo Id
+     */
     @MultitenantTransactional
     public UUID createStorageSubOrder(DatasetTask datasetTask,
                                       Set<OrderDataFile> orderDataFiles,
@@ -183,6 +220,19 @@ public class OrderHelperService {
         }
     }
 
+    /**
+     * Create an external sub-order ie a FilesTask, and add it to DatasetTask.
+     * All OrderDataFile will be saved
+     */
+    @MultitenantTransactional
+    public void createExternalSubOrder(DatasetTask datasetTask, Set<OrderDataFile> orderDataFiles, Order order) {
+        dataFileService.create(orderDataFiles);
+        createExternalSubOrder(datasetTask, orderDataFiles, order.getId(), order.getOwner(), order.getCorrelationId());
+    }
+
+    /**
+     * Create an external sub-order ie a FilesTask, and add it to DatasetTask
+     */
     @MultitenantTransactional
     public void createExternalSubOrder(DatasetTask datasetTask,
                                        Set<OrderDataFile> orderDataFiles,
@@ -194,7 +244,6 @@ public class OrderHelperService {
                     orderDataFiles.size(),
                     orderId,
                     owner);
-
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(orderId);
         currentFilesTask.setOwner(owner);
@@ -216,6 +265,11 @@ public class OrderHelperService {
             hoursCount = orderSettingsService.getExpirationMaxDurationInHours();
         }
         return OffsetDateTime.now().plusHours(hoursCount);
+    }
+
+    public boolean isDataFileOrderable(DataFile dataFile) {
+        // ONLY orderable data files can be ordered !!! (ie RAWDATA and QUICKLOOKS)
+        return DataTypeSelection.ALL.getFileTypes().contains(dataFile.getDataType());
     }
 
     public String buildUrl() {

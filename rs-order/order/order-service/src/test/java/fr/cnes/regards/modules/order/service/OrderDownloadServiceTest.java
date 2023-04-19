@@ -64,7 +64,8 @@ public class OrderDownloadServiceTest {
                                            null,
                                            null,
                                            runtimeTenantResolver,
-                                           processingEventSender);
+                                           processingEventSender,
+                                           null);
         service.afterPropertiesSet();
     }
 

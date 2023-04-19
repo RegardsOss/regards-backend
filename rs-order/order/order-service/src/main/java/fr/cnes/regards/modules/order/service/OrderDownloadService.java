@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
+import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.Order;
@@ -111,6 +112,8 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
 
     private final IProcessingEventSender processingEventSender;
 
+    private final IAttachmentClient attachmentClient;
+
     public OrderDownloadService(IOrderRepository orderRepository,
                                 IOrderDataFileService dataFileService,
                                 IOrderJobService orderJobService,
@@ -119,7 +122,8 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                 IProjectsClient projectClient,
                                 IStorageRestClient storageClient,
                                 IRuntimeTenantResolver runtimeTenantResolver,
-                                IProcessingEventSender processingEventSender) {
+                                IProcessingEventSender processingEventSender,
+                                IAttachmentClient attachmentClient) {
         this.orderRepository = orderRepository;
         this.dataFileService = dataFileService;
         this.orderJobService = orderJobService;
@@ -129,6 +133,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         this.storageClient = storageClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.processingEventSender = processingEventSender;
+        this.attachmentClient = attachmentClient;
     }
 
     @Override
@@ -203,78 +208,90 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         if (dataFile.isReference()) {
             // Externally downloadable
             dataFile.setDownloadError(null);
-            return downloadDataFileToZip(downloadErrorFiles,
-                                         zos,
-                                         fileNamesInZip,
-                                         currentFileIterator,
-                                         dataFile,
-                                         dataFile.getIpId().toString());
+            return downloadExternalDataFileToZip(downloadErrorFiles,
+                                                 zos,
+                                                 fileNamesInZip,
+                                                 currentFileIterator,
+                                                 dataFile,
+                                                 dataFile.getIpId().toString());
         } else {
-            downloadOk = downloadDataFileToZipFromStorage(dataFile,
-                                                          currentFileIterator,
-                                                          fileNamesInZip,
-                                                          downloadErrorFiles,
-                                                          zos);
+            downloadOk = downloadDataFileToZip(dataFile, currentFileIterator, fileNamesInZip, downloadErrorFiles, zos);
         }
         return downloadOk;
     }
 
     /**
-     * Download given {@link OrderDataFile} from storage microservice into result {@link ZipArchiveOutputStream}
+     * Download given {@link OrderDataFile} into result {@link ZipArchiveOutputStream}.
+     * The given {@link OrderDataFile} can be stored in :
+     * <ul>
+     * <li>dam microservice, for dataset attached files</li>
+     * <li>storage microservice, for features files</li>
+     * </ul>
      */
-    private boolean downloadDataFileToZipFromStorage(OrderDataFile dataFile,
-                                                     Iterator<OrderDataFile> currentFileIterator,
-                                                     Multiset<String> fileNamesInZip,
-                                                     List<Pair<OrderDataFile, String>> downloadErrorFiles,
-                                                     ZipArchiveOutputStream zos) throws IOException {
-        String storageDlErrorPrefix = "Error while downloading file from Archival Storage";
+    private boolean downloadDataFileToZip(OrderDataFile dataFile,
+                                          Iterator<OrderDataFile> currentFileIterator,
+                                          Multiset<String> fileNamesInZip,
+                                          List<Pair<OrderDataFile, String>> downloadErrorFiles,
+                                          ZipArchiveOutputStream zos) throws IOException {
+        String errorPrefix = "Error while downloading file.";
         String aip = dataFile.getIpId().toString();
         dataFile.setDownloadError(null);
-        Response response = null;
         boolean downloadOk = false;
+
+        Optional<Response> responseOpt = downloadDataFile(dataFile, errorPrefix);
+        if (responseOpt.isPresent()) {
+            Response response = responseOpt.get();
+            if (response.status() != HttpStatus.OK.value()) {
+                // Unable to download file from storage
+                downloadErrorFiles.add(Pair.of(dataFile, humanizeError(responseOpt)));
+                currentFileIterator.remove();
+                LOGGER.warn("Cannot retrieve data file (aip : {}, checksum : {})", aip, dataFile.getChecksum());
+                dataFile.setDownloadError("Cannot retrieve data file, feign downloadFile method returns "
+                                          + responseOpt.map(Response::toString).orElse("null"));
+            } else { // Download ok
+
+                Long contentLength = Long.parseLong(response.headers()
+                                                            .get(OrderDataFileService.CONTENT_LENGTH_HEADER)
+                                                            .iterator()
+                                                            .next());
+                try (InputStream is = response.body().asInputStream()) {
+                    readInputStreamAndAddToZip(downloadErrorFiles,
+                                               zos,
+                                               fileNamesInZip,
+                                               currentFileIterator,
+                                               dataFile,
+                                               Optional.of(contentLength),
+                                               aip,
+                                               is);
+                    downloadOk = true;
+                }
+            }
+        }
+        return downloadOk;
+    }
+
+    public Optional<Response> downloadDataFile(OrderDataFile dataFile, String errorPrefix) {
+        Response response = null;
         try {
-            // To download through storage client we must be authenticate as user in order to
+            // To download through storage client we must be authenticated as user in order to
             // impact the download quotas, but we upgrade the privileges so that the request passes.
             FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
             // To download file with accessrights checked, we should use catalogDownloadClient
             // but the accessRight have already been checked here.
-            response = storageClient.downloadFile(dataFile.getChecksum(), false);
+            if (dataFile.urlIsFromDam()) {
+                response = attachmentClient.getFile(dataFile.getIpId().toString(), dataFile.getChecksum(), null, false);
+            } else {
+                response = storageClient.downloadFile(dataFile.getChecksum(), false);
+            }
         } catch (RuntimeException e) {
             String stack = getStack(e);
-            LOGGER.error(storageDlErrorPrefix, e);
-            dataFile.setDownloadError(String.format("%s\n%s", storageDlErrorPrefix, stack));
+            String source = dataFile.urlIsFromDam() ? "Error from Dam download" : "Error from Storage download";
+            LOGGER.error(errorPrefix + " " + source, e);
+            dataFile.setDownloadError(String.format("%s %s\n%s", errorPrefix, source, stack));
         } finally {
             FeignSecurityManager.reset();
         }
-        // Unable to download file from storage
-        if ((response == null) || (response.status() != HttpStatus.OK.value())) {
-            downloadErrorFiles.add(Pair.of(dataFile, humanizeError(Optional.ofNullable(response))));
-            currentFileIterator.remove();
-            LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})",
-                        aip,
-                        dataFile.getChecksum());
-            dataFile.setDownloadError("Cannot retrieve data file from storage, feign downloadFile method returns " + (
-                response == null ?
-                    "null" :
-                    response.toString()));
-        } else { // Download ok
-            Long contentLength = Long.parseLong(response.headers()
-                                                        .get(OrderDataFileService.CONTENT_LENGTH_HEADER)
-                                                        .iterator()
-                                                        .next());
-            try (InputStream is = response.body().asInputStream()) {
-                readInputStreamAndAddToZip(downloadErrorFiles,
-                                           zos,
-                                           fileNamesInZip,
-                                           currentFileIterator,
-                                           dataFile,
-                                           Optional.of(contentLength),
-                                           aip,
-                                           is);
-                downloadOk = true;
-            }
-        }
-        return downloadOk;
+        return Optional.ofNullable(response);
     }
 
     private boolean fileAlreadyInZip(OrderDataFile dataFile, List<OrderDataFile> downloadedFiles) {
@@ -287,12 +304,12 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         });
     }
 
-    protected boolean downloadDataFileToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles,
-                                            ZipArchiveOutputStream zos,
-                                            Multiset<String> fileNamesInZip,
-                                            Iterator<OrderDataFile> currentFileIterator,
-                                            OrderDataFile dataFile,
-                                            String dataObjectIpId) {
+    protected boolean downloadExternalDataFileToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles,
+                                                    ZipArchiveOutputStream zos,
+                                                    Multiset<String> fileNamesInZip,
+                                                    Iterator<OrderDataFile> currentFileIterator,
+                                                    OrderDataFile dataFile,
+                                                    String dataObjectIpId) {
         boolean downloadOk = false;
         try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()),
                                                                        proxy,

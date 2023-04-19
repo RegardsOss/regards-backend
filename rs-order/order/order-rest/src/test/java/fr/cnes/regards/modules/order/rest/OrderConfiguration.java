@@ -22,6 +22,8 @@ import com.google.common.collect.Maps;
 import feign.Request;
 import feign.RequestTemplate;
 import feign.Response;
+import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
@@ -47,6 +49,8 @@ import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * @author oroussel
@@ -142,5 +146,15 @@ public class OrderConfiguration {
     @Bean
     public IProcessingEventSender processingEventSender() {
         return Mockito.mock(IProcessingEventSender.class);
+    }
+
+    @Bean
+    public IDatasetClient datasetClient() {
+        return mock(IDatasetClient.class);
+    }
+
+    @Bean
+    public IAttachmentClient attachmentClient() {
+        return mock(IAttachmentClient.class);
     }
 }

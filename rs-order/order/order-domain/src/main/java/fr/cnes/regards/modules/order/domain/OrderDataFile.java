@@ -156,6 +156,15 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         this.productId = productId;
     }
 
+    public static OrderDataFile createAvailable(DataFile datafile,
+                                                Long orderId,
+                                                UniformResourceName id,
+                                                String providerId) {
+        OrderDataFile orderDataFile = new OrderDataFile(datafile, id, orderId, providerId);
+        orderDataFile.setState(FileState.AVAILABLE);
+        return orderDataFile;
+    }
+
     public void setState(FileState state) {
         this.state = state;
     }
@@ -295,5 +304,12 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     @Override
     public int hashCode() {
         return Objects.hash(getChecksum(), getDigestAlgorithm());
+    }
+
+    public boolean urlIsFromDam() {
+        // Files can be stored in service dam (for dataset files)
+        // and service storage, for product files
+        // to detect that, we use download url which is different.
+        return getUrl().endsWith("/dam");
     }
 }

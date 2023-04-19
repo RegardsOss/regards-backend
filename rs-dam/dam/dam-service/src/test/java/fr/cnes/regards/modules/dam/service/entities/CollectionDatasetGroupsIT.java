@@ -449,6 +449,7 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
         newFile.setMimeType(MimeType.valueOf("application/json"));
         newFile.setDigestAlgorithm("MD5");
         newFile.setUri("/pdtc");
+        newFile.setReference(Boolean.FALSE);
         dataset1.getFeature().getFiles().put(DataType.OTHER, newFile);
 
         dataset1 = dataSetService.update(dataset1);
@@ -588,6 +589,7 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
         file.setFilename("file 2");
         file.setMimeType(MimeType.valueOf("application/json"));
         file.setDigestAlgorithm("MD5");
+        file.setReference(Boolean.FALSE);
         file.setUri("/dir");
         dataset1.getFeature().getFiles().put(DataType.OTHER, file);
         dataset1 = dataSetService.update(dataset1);

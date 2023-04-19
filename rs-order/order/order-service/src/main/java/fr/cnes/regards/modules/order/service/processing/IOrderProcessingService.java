@@ -36,6 +36,8 @@ import java.util.UUID;
 public interface IOrderProcessingService {
 
     OrderCounts manageProcessedDatasetSelection(Order order,
+                                                String owner,
+                                                String role,
                                                 BasketDatasetSelection dsSel,
                                                 String tenant,
                                                 String user,

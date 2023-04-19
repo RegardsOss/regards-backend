@@ -98,6 +98,7 @@ public class OrderCreationNotificationTest {
                                         null,
                                         templateService,
                                         mockOrderRequestResponseService(),
+                                        null,
                                         null);
     }
 

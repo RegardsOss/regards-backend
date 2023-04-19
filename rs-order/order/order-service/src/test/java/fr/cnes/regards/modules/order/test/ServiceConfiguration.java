@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.order.test;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
@@ -115,5 +117,15 @@ public class ServiceConfiguration {
     @Bean
     public IProjectUsersClient projectUsersClient() {
         return mock(IProjectUsersClient.class);
+    }
+
+    @Bean
+    public IDatasetClient datasetClient() {
+        return mock(IDatasetClient.class);
+    }
+
+    @Bean
+    public IAttachmentClient attachmentClient() {
+        return mock(IAttachmentClient.class);
     }
 }

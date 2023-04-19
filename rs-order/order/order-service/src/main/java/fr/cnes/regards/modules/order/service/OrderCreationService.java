@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
-import fr.cnes.regards.modules.order.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
 import fr.cnes.regards.modules.order.service.utils.OrderCounts;
@@ -55,6 +54,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -99,6 +100,8 @@ public class OrderCreationService implements IOrderCreationService {
 
     private final OrderResponseService orderResponseService;
 
+    private final OrderAttachmentDataSetService orderAttachmentDataSetService;
+
     private final IOrderCreationService self;
 
     public OrderCreationService(IOrderRepository orderRepository,
@@ -115,6 +118,7 @@ public class OrderCreationService implements IOrderCreationService {
                                 IOrderProcessingService orderProcessingService,
                                 TemplateService templateService,
                                 OrderResponseService orderResponseService,
+                                OrderAttachmentDataSetService orderAttachmentDataSetService,
                                 IOrderCreationService orderCreationService) {
         this.orderRepository = orderRepository;
         this.dataFileService = dataFileService;
@@ -130,6 +134,7 @@ public class OrderCreationService implements IOrderCreationService {
         this.orderProcessingService = orderProcessingService;
         this.templateService = templateService;
         this.orderResponseService = orderResponseService;
+        this.orderAttachmentDataSetService = orderAttachmentDataSetService;
         this.self = orderCreationService;
     }
 
@@ -162,13 +167,14 @@ public class OrderCreationService implements IOrderCreationService {
 
             LOGGER.info("Completing order (id: {}) with owner {}...", order.getId(), owner);
             // To search objects with SearchClient
-            FeignSecurityManager.asUser(owner, role);
             int priority = orderJobService.computePriority(owner, role);
 
             // Dataset selections
             for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
                 if (dsSel.hasProcessing()) {
                     orderCounts = orderProcessingService.manageProcessedDatasetSelection(order,
+                                                                                         owner,
+                                                                                         role,
                                                                                          dsSel,
                                                                                          tenant,
                                                                                          owner,
@@ -177,7 +183,13 @@ public class OrderCreationService implements IOrderCreationService {
                                                                                          subOrderDuration);
                     hasProcessing = true;
                 } else {
-                    orderCounts = manageDatasetSelection(order, role, priority, orderCounts, dsSel, subOrderDuration);
+                    orderCounts = manageDatasetSelection(order,
+                                                         owner,
+                                                         role,
+                                                         priority,
+                                                         orderCounts,
+                                                         dsSel,
+                                                         subOrderDuration);
                 }
             }
 
@@ -245,25 +257,42 @@ public class OrderCreationService implements IOrderCreationService {
     }
 
     private OrderCounts manageDatasetSelection(Order order,
+                                               String owner,
                                                String role,
                                                int priority,
                                                OrderCounts orderCountsGlobal,
                                                BasketDatasetSelection dsSel,
-                                               int subOrderDuration) throws CatalogSearchException {
+                                               int subOrderDuration) throws ModuleException {
 
-        DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, DataTypeSelection.ALL.getFileTypes());
         OrderCounts orderCounts = new OrderCounts();
-
         // Bucket of internal files (managed by Storage)
         Set<OrderDataFile> storageBucketFiles = new HashSet<>();
         // Bucket of external files (not managed by Storage, directly downloadable)
         Set<OrderDataFile> externalBucketFiles = new HashSet<>();
 
+        DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, DataTypeSelection.ALL.getFileTypes());
+
+        // Firstly, get dataset attached rawdata files, and add them to buckets
+        orderAttachmentDataSetService.fillBucketsWithDataSetFiles(order,
+                                                                  owner,
+                                                                  role,
+                                                                  dsSel,
+                                                                  storageBucketFiles,
+                                                                  externalBucketFiles);
+
         // Execute opensearch request
         List<EntityFeature> features;
         int page = 0;
         do {
-            features = basketSelectionPageSearch.searchDataObjects(dsSel, page);
+            try {
+                FeignSecurityManager.asUser(owner, role);
+                features = basketSelectionPageSearch.searchDataObjects(dsSel, page);
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
+                LOGGER.error("Cannot retrieve features ", e);
+                throw new ModuleException(e.getMessage());
+            } finally {
+                FeignSecurityManager.reset();
+            }
             // For each DataObject
             for (EntityFeature feature : features) {
                 dispatchFeatureFilesInBuckets(order, feature, storageBucketFiles, externalBucketFiles, dsSel);
@@ -273,12 +302,12 @@ public class OrderCreationService implements IOrderCreationService {
                     storageBucketFiles)) {
                     orderCounts.addToInternalFilesCount(storageBucketFiles.size());
                     orderCounts.addTotalFileSizeOf(storageBucketFiles);
-                    orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask,
-                                                                        storageBucketFiles,
-                                                                        order,
-                                                                        subOrderDuration,
-                                                                        role,
-                                                                        priority));
+                    orderCounts.addJobInfoId(orderHelperService.createStorageSubOrderAndStoreDataFiles(dsTask,
+                                                                                                       storageBucketFiles,
+                                                                                                       order,
+                                                                                                       subOrderDuration,
+                                                                                                       role,
+                                                                                                       priority));
                     orderCounts.incrSubOrderCount();
                     storageBucketFiles.clear();
                 }
@@ -287,7 +316,7 @@ public class OrderCreationService implements IOrderCreationService {
                     externalBucketFiles)) {
                     orderCounts.addToExternalFilesCount(externalBucketFiles.size());
                     orderCounts.addTotalFileSizeOf(externalBucketFiles);
-                    self.createExternalSubOrder(dsTask, externalBucketFiles, order);
+                    orderHelperService.createExternalSubOrder(dsTask, externalBucketFiles, order);
                     externalBucketFiles.clear();
                 }
             }
@@ -298,18 +327,18 @@ public class OrderCreationService implements IOrderCreationService {
         if (!storageBucketFiles.isEmpty()) {
             orderCounts.addToInternalFilesCount(storageBucketFiles.size());
             orderCounts.addTotalFileSizeOf(storageBucketFiles);
-            orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask,
-                                                                storageBucketFiles,
-                                                                order,
-                                                                subOrderDuration,
-                                                                role,
-                                                                priority));
+            orderCounts.addJobInfoId(orderHelperService.createStorageSubOrderAndStoreDataFiles(dsTask,
+                                                                                               storageBucketFiles,
+                                                                                               order,
+                                                                                               subOrderDuration,
+                                                                                               role,
+                                                                                               priority));
             orderCounts.incrSubOrderCount();
         }
         if (!externalBucketFiles.isEmpty()) {
             orderCounts.addToExternalFilesCount(externalBucketFiles.size());
             orderCounts.addTotalFileSizeOf(externalBucketFiles);
-            self.createExternalSubOrder(dsTask, externalBucketFiles, order);
+            orderHelperService.createExternalSubOrder(dsTask, externalBucketFiles, order);
         }
 
         // Add dsTask ONLY IF it contains at least one FilesTask
@@ -335,7 +364,7 @@ public class OrderCreationService implements IOrderCreationService {
         List<DataFile> dataFileFiltered = feature.getFiles()
                                                  .values()
                                                  .stream()
-                                                 .filter(this::isDataFileOrderable)
+                                                 .filter(orderHelperService::isDataFileOrderable)
                                                  .filter(dataFile -> FileSelectionDescription.validate(dataFile,
                                                                                                        fileSelectDescr))
                                                  .toList();
@@ -347,11 +376,6 @@ public class OrderCreationService implements IOrderCreationService {
                 addExternalFileToExternalBucket(order, externalBucketFiles, dataFile, feature);
             }
         }
-    }
-
-    private boolean isDataFileOrderable(DataFile dataFile) {
-        // ONLY orderable data files can be ordered !!! (ie RAWDATA and QUICKLOOKS)
-        return DataTypeSelection.ALL.getFileTypes().contains(dataFile.getDataType());
     }
 
     private void addExternalFileToExternalBucket(Order order,
@@ -428,43 +452,6 @@ public class OrderCreationService implements IOrderCreationService {
             LOGGER.warn("Error while attempting to send order creation email (order has been created anyway)", e);
         }
         FeignSecurityManager.reset();
-    }
-
-    /**
-     * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
-     *
-     * @return JobInfo Id
-     */
-    @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public UUID createStorageSubOrder(DatasetTask datasetTask,
-                                      Set<OrderDataFile> bucketFiles,
-                                      Order order,
-                                      int subOrderDuration,
-                                      String role,
-                                      int priority) {
-        dataFileService.create(bucketFiles);
-        return orderHelperService.createStorageSubOrder(datasetTask,
-                                                        bucketFiles,
-                                                        order.getId(),
-                                                        order.getOwner(),
-                                                        subOrderDuration,
-                                                        role,
-                                                        priority);
-    }
-
-    /**
-     * Create an external sub-order ie a FilesTask, and add it to DatasetTask
-     */
-    @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createExternalSubOrder(DatasetTask datasetTask, Set<OrderDataFile> bucketFiles, Order order) {
-        dataFileService.create(bucketFiles);
-        orderHelperService.createExternalSubOrder(datasetTask,
-                                                  bucketFiles,
-                                                  order.getId(),
-                                                  order.getOwner(),
-                                                  order.getCorrelationId());
     }
 
     /**

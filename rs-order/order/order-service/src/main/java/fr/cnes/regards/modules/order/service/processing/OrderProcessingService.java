@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -38,6 +39,7 @@ import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
+import fr.cnes.regards.modules.order.service.OrderAttachmentDataSetService;
 import fr.cnes.regards.modules.order.service.job.BasketDatasetSelectionDescriptor;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
@@ -105,14 +107,17 @@ public class OrderProcessingService implements IOrderProcessingService {
 
     protected final IOrderJobService orderJobService;
 
+    protected final OrderAttachmentDataSetService orderAttachmentDataSetService;
+
     protected final IJobInfoService jobInfoService;
-    
+
     public OrderProcessingService(BasketSelectionPageSearch basketSelectionPageSearch,
                                   IProcessingRestClient processingClient,
                                   SuborderSizeCounter suborderSizeCounter,
                                   IOrderDataFileService orderDataFileService,
                                   IOrderDataFileRepository orderDataFileRepository,
                                   IOrderJobService orderJobService,
+                                  OrderAttachmentDataSetService orderAttachmentDataSetService,
                                   IJobInfoService jobInfoService) {
         this.basketSelectionPageSearch = basketSelectionPageSearch;
         this.processingClient = processingClient;
@@ -120,6 +125,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         this.orderDataFileService = orderDataFileService;
         this.orderDataFileRepository = orderDataFileRepository;
         this.orderJobService = orderJobService;
+        this.orderAttachmentDataSetService = orderAttachmentDataSetService;
         this.jobInfoService = jobInfoService;
     }
 
@@ -130,6 +136,8 @@ public class OrderProcessingService implements IOrderProcessingService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public OrderCounts manageProcessedDatasetSelection(Order order,
+                                                       String owner,
+                                                       String role,
                                                        BasketDatasetSelection dsSel,
                                                        String tenant,
                                                        String user,
@@ -138,61 +146,58 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                        int subOrderDuration) throws ModuleException {
 
         ProcessDatasetDescription processDatasetDesc = dsSel.getProcessDatasetDescription();
-        UUID processBusinessId = processDatasetDesc.getProcessBusinessId();
-        String processIdStr = processBusinessId.toString();
+        String processIdStr = processDatasetDesc.getProcessBusinessId().toString();
         try {
-            ResponseEntity<PProcessDTO> response = processingClient.findByUuid(processIdStr);
-            if (response.hasBody() && response.getStatusCode() == HttpStatus.OK) {
+            PProcessDTO processDto = getProcessByRest(owner, role, processIdStr);
+            OrderProcessInfo orderProcessInfo = parseOrderProcessInfo(order, dsSel, user, processDto);
+            List<DataType> requiredDatatypes = orderProcessInfo.getRequiredDatatypes();
 
-                PProcessDTO processDto = response.getBody();
-                OrderProcessInfo orderProcessInfo = parseOrderProcessInfo(order, dsSel, user, processDto);
-                List<DataType> requiredDatatypes = orderProcessInfo.getRequiredDatatypes();
+            // Creates datasetTasks with required data types and update estimated size
+            DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, requiredDatatypes.toJavaList());
+            dsTask.setFilesSize(orderProcessInfo.getSizeForecast().expectedResultSizeInBytes(dsTask.getFilesSize()));
 
-                // Creates datasetTasks with required data types and update estimated size
-                DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, requiredDatatypes.toJavaList());
-                dsTask.setFilesSize(orderProcessInfo.getSizeForecast()
-                                                    .expectedResultSizeInBytes(dsTask.getFilesSize()));
+            orderAttachmentDataSetService.createSubOrderOfDataSetFiles(order,
+                                                                       owner,
+                                                                       role,
+                                                                       dsTask,
+                                                                       dsSel,
+                                                                       subOrderDuration);
 
-                AtomicLong suborderCount = new AtomicLong(1);
-                OrderCounts result = basketSelectionPageSearch.fluxSearchDataObjects(dsSel)
-                                                              .filter(feature -> featureRequiredDatafiles(feature,
-                                                                                                          requiredDatatypes).findAny()
-                                                                                                                            .isPresent())
-                                                              .groupBy(feature -> hasAtLeastOneInternalFile(
-                                                                  feature,
-                                                                  requiredDatatypes))
-                                                              .doOnError(CatalogSearchException.class,
-                                                                         error -> Mono.error(new ModuleException(error)))
-                                                              .flatMap(featureGroup -> discriminateBetweenSomeInStorageOrOnlyExternal(
-                                                                  order,
-                                                                  dsSel,
-                                                                  tenant,
-                                                                  user,
-                                                                  userRole,
-                                                                  processDto,
-                                                                  orderProcessInfo,
-                                                                  suborderCount,
-                                                                  featureGroup,
-                                                                  subOrderDuration))
-                                                              .doOnNext(dsTask::addReliantTask)
-                                                              .map(filesTask -> new OrderCounts(0,
-                                                                                                filesTask.getFiles()
-                                                                                                         .size(),
-                                                                                                1,
-                                                                                                Collections.singleton(
-                                                                                                    filesTask.getJobInfo()
-                                                                                                             .getId())))
-                                                              .reduce(OrderCounts.initial(), OrderCounts::add)
-                                                              .block();
+            AtomicLong suborderCount = new AtomicLong(1);
+            FeignSecurityManager.asUser(owner, role);
+            OrderCounts result = basketSelectionPageSearch.fluxSearchDataObjects(dsSel)
+                                                          .filter(feature -> featureRequiredDatafiles(feature,
+                                                                                                      requiredDatatypes).findAny()
+                                                                                                                        .isPresent())
+                                                          .groupBy(feature -> hasAtLeastOneInternalFile(feature,
+                                                                                                        requiredDatatypes))
+                                                          .doOnError(CatalogSearchException.class,
+                                                                     error -> Mono.error(new ModuleException(error)))
+                                                          .flatMap(featureGroup -> discriminateBetweenSomeInStorageOrOnlyExternal(
+                                                              order,
+                                                              dsSel,
+                                                              tenant,
+                                                              user,
+                                                              userRole,
+                                                              processDto,
+                                                              orderProcessInfo,
+                                                              suborderCount,
+                                                              featureGroup,
+                                                              subOrderDuration))
+                                                          .doOnNext(dsTask::addReliantTask)
+                                                          .map(filesTask -> new OrderCounts(0,
+                                                                                            filesTask.getFiles().size(),
+                                                                                            1,
+                                                                                            Collections.singleton(
+                                                                                                filesTask.getJobInfo()
+                                                                                                         .getId())))
+                                                          .reduce(OrderCounts.initial(), OrderCounts::add)
+                                                          .block();
 
-                if (!dsTask.getReliantTasks().isEmpty()) {
-                    order.addDatasetOrderTask(dsTask);
-                }
-                return OrderCounts.add(orderCounts, result);
-            } else {
-                throw new ModuleException("Error retrieving process id " + processIdStr);
+            if (!dsTask.getReliantTasks().isEmpty()) {
+                order.addDatasetOrderTask(dsTask);
             }
-
+            return OrderCounts.add(orderCounts, result);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(e.getMessage());
@@ -204,6 +209,26 @@ public class OrderProcessingService implements IOrderProcessingService {
             } else {
                 throw e;
             }
+        } finally {
+            FeignSecurityManager.reset();
+        }
+    }
+
+    private PProcessDTO getProcessByRest(String owner, String role, String processIdStr) throws ModuleException {
+        try {
+            FeignSecurityManager.asUser(owner, role);
+            ResponseEntity<PProcessDTO> response = processingClient.findByUuid(processIdStr);
+            if (response.hasBody() && response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody();
+            } else {
+                throw new ModuleException("Error retrieving process id " + processIdStr);
+            }
+
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new ModuleException(e.getMessage());
+        } finally {
+            FeignSecurityManager.reset();
         }
     }
 
@@ -596,8 +621,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                        .toJavaArray(Long[]::new);
     }
 
-    protected boolean hasAtLeastOneInternalFile(EntityFeature entityFeature,
-                                                List<DataType> requiredDatatypes) {
+    protected boolean hasAtLeastOneInternalFile(EntityFeature entityFeature, List<DataType> requiredDatatypes) {
         return entityFeature.getFiles().values().stream().anyMatch(df -> !df.isReference());
     }
 
