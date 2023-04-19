@@ -120,7 +120,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                 LOGGER.debug("File ({}) in bucket ({}) exists", key, bucket);
                 return true;
             }).onErrorResume(NoSuchKeyException.class, t -> {
-                LOGGER.debug("File ({}) in bucket ({}) does not exist", key, bucket, t);
+                LOGGER.debug("File ({}) in bucket ({}) does not exist", key, bucket);
                 return Mono.just(false);
             }).onErrorMap(SdkClientException.class, S3ClientException::new);
         });
@@ -158,6 +158,18 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
             return fromFutureSupplier(() -> client.getObject(request, new GetResponseAndStream())).onErrorMap(
                 SdkClientException.class,
                 S3ClientException::new);
+        });
+    }
+
+    public Mono<RestoreObjectResponse> restore(String bucket, String key) {
+        return withClient(client -> {
+            RestoreObjectRequest request = RestoreObjectRequest.builder()
+                                                               .bucket(bucket)
+                                                               .key(key)
+                                                               .restoreRequest(r -> r.days(1))
+                                                               .build();
+            return fromFutureSupplier(() -> client.restoreObject(request)).onErrorMap(SdkClientException.class,
+                                                                                      S3ClientException::new);
         });
     }
 

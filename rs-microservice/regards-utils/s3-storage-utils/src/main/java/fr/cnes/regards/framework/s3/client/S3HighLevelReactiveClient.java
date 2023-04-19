@@ -46,6 +46,7 @@ import reactor.core.scheduler.Scheduler;
 import reactor.util.function.Tuple2;
 import reactor.util.retry.Retry;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.RestoreObjectResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -105,6 +106,10 @@ public class S3HighLevelReactiveClient {
                                                 SignalType.ON_SUBSCRIBE,
                                                 SignalType.ON_NEXT,
                                                 SignalType.ON_ERROR);
+    }
+
+    public Mono<RestoreObjectResponse> restore(StorageConfig config, String key) {
+        return getClient(config).restore(config.getBucket(), key);
     }
 
     public Mono<WriteResult> write(Write writeCmd) {

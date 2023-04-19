@@ -128,7 +128,7 @@ public final class DownloadUtils {
      * @param storageConfig the StorageConfig of the server
      * @return true if the file exists
      */
-    private static boolean existsS3(String key, StorageConfig storageConfig) {
+    public static boolean existsS3(String key, StorageConfig storageConfig) {
         S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
         StorageCommandID cmdId = new StorageCommandID(key, UUID.randomUUID());
         StorageCommand.Check check = StorageCommand.check(storageConfig, cmdId, key);

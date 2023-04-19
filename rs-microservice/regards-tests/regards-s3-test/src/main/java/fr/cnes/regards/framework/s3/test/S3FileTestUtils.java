@@ -131,6 +131,40 @@ public final class S3FileTestUtils {
         }));
     }
 
+    public static void deleteAllFilesFromRoot(StorageConfig s3Server, String rootPath) {
+        S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
+        StorageCommandResult.DeleteResult result = client.deleteWithPrefix(StorageCommand.delete(s3Server,
+                                                                                                 new StorageCommandID("",
+                                                                                                                      UUID.randomUUID()),
+                                                                                                 rootPath))
+                                                         .flatMap(r -> r.matchDeleteResult(Mono::just,
+                                                                                           unreachable -> Mono.error(new RuntimeException(
+                                                                                               String.format(
+                                                                                                   "Unreachable [endpoint: %s] : %s [bucket: %s]",
+                                                                                                   s3Server.getEndpoint(),
+                                                                                                   unreachable.getThrowable()
+                                                                                                              .getMessage(),
+                                                                                                   s3Server.getBucket()))),
+                                                                                           failure -> Mono.error(new RuntimeException(
+                                                                                               String.format(
+                                                                                                   "Delete failure [bucket: %s] [endpoint: %s]",
+                                                                                                   s3Server.getBucket(),
+                                                                                                   s3Server.getEndpoint())))))
+
+                                                         .doOnError(t -> LOGGER.error(
+                                                             "Failed [bucket: {}] to delete file {} [endpoint: {}]:",
+                                                             s3Server.getBucket(),
+                                                             rootPath,
+                                                             s3Server.getEndpoint(),
+                                                             t))
+                                                         .doOnSuccess(success -> LOGGER.info(
+                                                             "Success [bucket: {}] end deleting of file {} [endpoint: {}]",
+                                                             s3Server.getBucket(),
+                                                             rootPath,
+                                                             s3Server.getEndpoint()))
+                                                         .block();
+    }
+
     private static Option<Long> entrySize(FileStorageRequest request) {
         return Option.some(request.getMetaInfo().getFileSize());
     }
@@ -140,5 +174,12 @@ public final class S3FileTestUtils {
     }
 
     private S3FileTestUtils() {
+    }
+
+    private static S3HighLevelReactiveClient getS3HighLevelReactiveClient() {
+        Scheduler scheduler = Schedulers.newParallel("s3-reactive-client", 10);
+        int maxBytesPerPart = 5 * 1024 * 1024;
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
+        return client;
     }
 }
