@@ -196,15 +196,16 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
             Assert.assertEquals("There be requests infos for expired group", 2, reqInfoRepo.count());
             // Check group is terminated
             reqGrpService.checkRequestsGroupsDone();
+
             // Group should not exists anymore
-            Assert.assertFalse("Request group should be deleted as no requests are associated",
-                               reqGrpRepository.findById(groupId).isPresent());
+            Optional<RequestGroup> group = reqGrpRepository.findById(groupId);
+            Assert.assertTrue("Group should not be deleted even if there are no request info associated.",
+                              group.isPresent());
             // No request info should remains
             Assert.assertTrue("There should ne remaining request infos in success",
                               reqInfoRepo.findByGroupIdAndError(groupId, false).isEmpty());
             Assert.assertTrue("There should ne remaining request infos in error",
                               reqInfoRepo.findByGroupIdAndError(groupId, true).isEmpty());
-
         }
     }
 

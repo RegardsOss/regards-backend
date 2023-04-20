@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
@@ -69,6 +70,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -180,14 +185,10 @@ public class ProductService implements IProductService {
                     && (productCI.getDataObject().getLocations() != null)
                     && !productCI.getDataObject().getLocations().isEmpty()) {
                     for (OAISDataObjectLocation location : productCI.getDataObject().getLocations()) {
-                        if (productCI.getDataObject().getFileSize() != null) {
-                            location.setStorage(acquisitionChain.getReferenceLocation());
-                        } else {
-                            String message = String.format(
-                                "Files size must be calculated by the metadata plugin generation for referenced files.",
-                                product.getProductName());
-                            throw new SIPGenerationException(message);
+                        if (productCI.getDataObject().getFileSize() == null) {
+                            updateDataObjectFileSize(productCI.getDataObject(), product.getProductName());
                         }
+                        location.setStorage(acquisitionChain.getReferenceLocation());
                     }
                 }
             }
@@ -940,5 +941,26 @@ public class ProductService implements IProductService {
 
     public Integer getBulkAcquisitionLimit() {
         return bulkAcquisitionLimit;
+    }
+
+    /**
+     * Update file size of given {@link OAISDataObject} by accessing file on file system.
+     *
+     * @throws SIPGenerationException If file is not accessible.
+     */
+    private void updateDataObjectFileSize(OAISDataObject dataObject, String productName) throws SIPGenerationException {
+        Optional<OAISDataObjectLocation> firstLocation = dataObject.getLocations().stream().findFirst();
+        if (firstLocation.isPresent()) {
+            try {
+                OAISDataObjectLocation location = firstLocation.get();
+                URL url = new URL(location.getUrl());
+                dataObject.setFileSize(Paths.get(url.toURI()).toFile().length());
+            } catch (MalformedURLException | URISyntaxException e) {
+                throw new SIPGenerationException(String.format(
+                    "Unable to calculate file size for file %s in product %s.",
+                    firstLocation.get().getUrl(),
+                    productName), e);
+            }
+        }
     }
 }
