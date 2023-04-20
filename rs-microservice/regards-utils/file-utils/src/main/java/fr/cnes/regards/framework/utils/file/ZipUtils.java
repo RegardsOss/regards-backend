@@ -83,10 +83,9 @@ public class ZipUtils {
      * @param destination the path where the extracted file will be copied
      * @return true if the unzipping succeeded
      */
-    public static boolean unzip(Path archive, Path destination) throws IOException {
-        try {
+    public static boolean unzip(Path archive, Path destination) {
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(archive.toFile()))) {
             byte[] buffer = new byte[1024];
-            ZipInputStream zis = new ZipInputStream(new FileInputStream(archive.toFile()));
             ZipEntry zipEntry = zis.getNextEntry();
             while (zipEntry != null) {
                 File newFile = newFile(destination.toFile(), zipEntry);
@@ -104,18 +103,17 @@ public class ZipUtils {
                     }
 
                     // write file content
-                    FileOutputStream fos = new FileOutputStream(newFile);
-                    int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len);
+                    try (FileOutputStream fos = new FileOutputStream(newFile)) {
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
                     }
-                    fos.close();
                 }
                 zipEntry = zis.getNextEntry();
             }
 
             zis.closeEntry();
-            zis.close();
         } catch (IOException e) {
             LOGGER.error("Error while unzipping archive {}", archive, e);
             return false;
