@@ -39,6 +39,8 @@ public abstract class AbstractRecipientSender<E extends ISubscribable> implement
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRecipientSender.class);
 
+    public static final String RECIPIENT_LABEL = "recipientLabelTest";
+
     private int count = 0;
 
     @Autowired
@@ -62,7 +64,7 @@ public abstract class AbstractRecipientSender<E extends ISubscribable> implement
 
     @Override
     public String getRecipientLabel() {
-        return "recipientLabel";
+        return AbstractRecipientSender.RECIPIENT_LABEL;
     }
 
     @Override

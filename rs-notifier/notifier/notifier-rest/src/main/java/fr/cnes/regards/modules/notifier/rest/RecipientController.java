@@ -75,10 +75,11 @@ public class RecipientController implements IResourceController<PluginConfigurat
      *
      * @return paged list of {@link PluginConfiguration}(recipient)
      */
+    // TODO : not use ??
     @ResourceAccess(description = "List all recipient")
     @GetMapping
     @Operation(summary = "List all recipient", description = "List all recipient")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Recipients") })
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All recipients") })
     public ResponseEntity<List<EntityModel<PluginConfiguration>>> getRecipients(
         @Parameter(description = "Request page") Pageable page,
         final PagedResourcesAssembler<PluginConfiguration> assembler) {

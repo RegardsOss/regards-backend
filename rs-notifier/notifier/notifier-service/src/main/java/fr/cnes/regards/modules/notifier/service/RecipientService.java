@@ -24,8 +24,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 import fr.cnes.regards.modules.notifier.dto.internal.NotifierClearCacheEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.HashSet;
@@ -75,7 +78,7 @@ public class RecipientService implements IRecipientService {
     }
 
     @Override
-    public Set<PluginConfiguration> getRecipients(Collection<String> businessIds) {
+    public Set<PluginConfiguration> getRecipients(@Nullable Collection<String> businessIds) {
         if (businessIds == null || businessIds.isEmpty()) {
             return getRecipients();
         }
@@ -87,21 +90,65 @@ public class RecipientService implements IRecipientService {
                           .collect(Collectors.toSet());
     }
 
-    private Optional<PluginConfiguration> retrievePluginConfiguration(String id) {
+    @Override
+    public Set<RecipientDto> findRecipients(@Nullable Boolean directNotificationEnabled) {
+        Set<RecipientDto> resultRecipientDtos = new HashSet<>();
+        // Get all plugins configuration of IRecipientNotifier type from the database
+        for (PluginConfiguration recipientPluginConfiguration : getRecipients()) {
+            Optional<IRecipientNotifier> recipientNotifierPlugin = getRecipientNotifierPlugin(
+                recipientPluginConfiguration);
+
+            if (recipientNotifierPlugin.isPresent()) {
+                if (directNotificationEnabled == null) {
+                    // Add all recipients
+                    resultRecipientDtos.add(new RecipientDto(recipientPluginConfiguration.getBusinessId(),
+                                                             recipientNotifierPlugin.get().getRecipientLabel(),
+                                                             recipientNotifierPlugin.get().getDescription()));
+
+                } else {
+                    if (directNotificationEnabled.equals(Boolean.TRUE)) {
+                        if (recipientNotifierPlugin.get().isDirectNotificationEnabled()) {
+                            // Add only recipients which enable the direct notification
+                            resultRecipientDtos.add(new RecipientDto(recipientPluginConfiguration.getBusinessId(),
+                                                                     recipientNotifierPlugin.get().getRecipientLabel(),
+                                                                     recipientNotifierPlugin.get().getDescription()));
+                        }
+                    } else if (!recipientNotifierPlugin.get().isDirectNotificationEnabled()) {
+                        // Add only recipients which do not enable the direct notification
+                        resultRecipientDtos.add(new RecipientDto(recipientPluginConfiguration.getBusinessId(),
+                                                                 recipientNotifierPlugin.get().getRecipientLabel(),
+                                                                 recipientNotifierPlugin.get().getDescription()));
+                    }
+                }
+            }
+        }
+        return resultRecipientDtos;
+    }
+
+    private Optional<IRecipientNotifier> getRecipientNotifierPlugin(PluginConfiguration pluginConfiguration) {
+        try {
+            return Optional.ofNullable(pluginService.getPlugin(pluginConfiguration));
+        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+            LOGGER.error("No plugin of IRecipientNotifier type instantiated for plugin configuration[id:{}]",
+                         pluginConfiguration.getPluginId());
+        }
+        return Optional.empty();
+    }
+
+    private Optional<PluginConfiguration> retrievePluginConfiguration(String businessId) {
         // TODO make PluginService return optional
         //  rather than throwing an exception
         try {
-            return Optional.of(pluginService.getPluginConfiguration(id));
+            return Optional.of(pluginService.getPluginConfiguration(businessId));
         } catch (EntityNotFoundException e) {
-            LOGGER.debug("Configuration does not exist!", e);
+            LOGGER.debug("Configuration plugin[id:{}] does not exist!", businessId, e);
             return Optional.empty();
         }
     }
 
     @Override
-    public PluginConfiguration createOrUpdate(@Valid PluginConfiguration newRecipient) throws ModuleException {
-        // TODO remove createOrUpdate and make create and update visible
-        return newRecipient.getId() == null ? create(newRecipient) : update(newRecipient);
+    public PluginConfiguration createOrUpdate(@Valid PluginConfiguration recipient) throws ModuleException {
+        return recipient.getId() == null ? create(recipient) : update(recipient);
     }
 
     private PluginConfiguration create(PluginConfiguration newRecipient) throws ModuleException {
@@ -109,9 +156,9 @@ public class RecipientService implements IRecipientService {
         return pluginService.savePluginConfiguration(newRecipient);
     }
 
-    private PluginConfiguration update(PluginConfiguration newRecipient) throws ModuleException {
+    private PluginConfiguration update(PluginConfiguration recipient) throws ModuleException {
         clearCache();
-        return pluginService.updatePluginConfiguration(newRecipient);
+        return pluginService.updatePluginConfiguration(recipient);
     }
 
     @Override
@@ -152,9 +199,8 @@ public class RecipientService implements IRecipientService {
 
         // Let's schedule a notification job per recipient. This ensures that each recipient will have to process an
         // optimum batch of requests at once. Moreover, it also ensures that there will be no influence between each recipient errors
-        Set<PluginConfiguration> recipients = getRecipients();
         Set<Long> requestScheduledIds = new HashSet<>();
-        for (PluginConfiguration recipient : recipients) {
+        for (PluginConfiguration recipient : getRecipients()) {
             requestScheduledIds.addAll(notificationProcessingService.scheduleJobForOneRecipient(recipient));
         }
         return requestScheduledIds.size();

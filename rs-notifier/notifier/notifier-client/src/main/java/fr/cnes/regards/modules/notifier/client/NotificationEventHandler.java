@@ -43,7 +43,9 @@ public class NotificationEventHandler
     public void handleBatch(List<NotifierEvent> messages) {
         LOGGER.debug("[NOTIFIER RESPONSES HANDLER] Handling {} NotifierEvent...", messages.size());
         long start = System.currentTimeMillis();
+
         handle(messages);
+
         LOGGER.debug("[NOTIFIER RESPONSES HANDLER] {} NotifierEvent handled in {} ms",
                      messages.size(),
                      System.currentTimeMillis() - start);

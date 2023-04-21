@@ -37,8 +37,20 @@ public class RecipientSender10 extends AbstractRecipientSender<NotificationEvent
 
     public static final String PLUGIN_ID = "RecipientSender10";
 
+    public static final String DESCRIPTION = "descriptionRecipientSender10";
+
     @Override
     NotificationEvent10 buildEvent(JsonElement element, JsonElement action) {
         return NotificationEvent10.build(element, action);
+    }
+
+    @Override
+    public boolean isDirectNotificationEnabled() {
+        return true;
+    }
+
+    @Override
+    public String getDescription() {
+        return RecipientSender10.DESCRIPTION;
     }
 }

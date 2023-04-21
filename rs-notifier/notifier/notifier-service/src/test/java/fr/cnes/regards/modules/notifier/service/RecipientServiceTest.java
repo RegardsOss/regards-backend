@@ -59,6 +59,7 @@ public class RecipientServiceTest {
         recipientErrors = mock(IRecipientErrorRepository.class);
         pluginService = new InMemoryPluginService();
         publisher = mock(IPublisher.class);
+
         recipientService = new RecipientService(pluginService, recipientErrors, null, publisher);
     }
 

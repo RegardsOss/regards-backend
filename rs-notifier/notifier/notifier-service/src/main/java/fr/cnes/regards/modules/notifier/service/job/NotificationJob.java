@@ -80,6 +80,7 @@ public class NotificationJob extends AbstractJob<Void> {
     public void run() {
         logger.info("[{}] Notification job starts", jobInfoId);
         long start = System.currentTimeMillis();
+        
         Pair<Integer, Integer> processResult = notificationProcessingService.processRequests(notificationRequests,
                                                                                              recipient);
         logger.info("[{}]{}{} Notifications sent to <{} - {} - {}> in {} ms, {} notifications failed",

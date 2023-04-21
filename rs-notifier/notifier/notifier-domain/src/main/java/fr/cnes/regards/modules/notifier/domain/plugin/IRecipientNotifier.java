@@ -38,4 +38,15 @@ public interface IRecipientNotifier {
 
     boolean isAckRequired();
 
+    default boolean isDirectNotificationEnabled() {
+        return false;
+    }
+
+    /**
+     * Get the description of recipient
+     */
+    default String getDescription() {
+        return "";
+    }
+
 }

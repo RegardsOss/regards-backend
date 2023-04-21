@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.notifier.service;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.Set;
@@ -35,7 +37,23 @@ public interface IRecipientService {
 
     Set<PluginConfiguration> getRecipients(Collection<String> businessId);
 
+    /**
+     * Get all recipients({@link PluginConfiguration}) with IRecipientNotifier({@link IRecipientNotifier}) type
+     */
     Set<PluginConfiguration> getRecipients();
+
+    /**
+     * Find all recipients (from {@link PluginConfiguration}), plugins of IRecipientNotifier type
+     * <ul>
+     *   <li>directNotificationEnabled is null : set of all recipients</li>
+     *   <li>directNotificationEnabled is true : set of recipients which enables the direct notification</li>
+     *   <li>directNotificationEnabled is false : set of recipients which does not enable the direct notification</li>
+     * </ul>
+     *
+     * @param directNotificationEnabled if the plugin enable the direct notification
+     * @return a set of recipients ({@link RecipientDto})
+     */
+    Set<RecipientDto> findRecipients(@Nullable Boolean directNotificationEnabled);
 
     /**
      * Create or update a recipient({@link PluginConfiguration}) from a recipient({@link PluginConfiguration})

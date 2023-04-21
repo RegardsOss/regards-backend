@@ -302,13 +302,13 @@ public class PluginService implements IPluginService, InitializingBean {
             LOGGER.error(ERROR_WHILE_GETTING_THE_PLUGIN_CONFIGURATION, businessId);
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
-        PluginMetaData meta = PluginUtils.getPlugins().get(plgConf.getPluginId());
-        if (meta == null) {
+        PluginMetaData metaData = PluginUtils.getPlugins().get(plgConf.getPluginId());
+        if (metaData == null) {
             LOGGER.error("Plugin {} is not available. Plugin is missing or service cannot access it.",
                          plgConf.getPluginId());
             throw new EntityNotFoundException(plgConf.getPluginId(), PluginMetaData.class);
         }
-        plgConf.setMetaDataAndPluginId(meta);
+        plgConf.setMetaDataAndPluginId(metaData);
         return plgConf;
     }
 
