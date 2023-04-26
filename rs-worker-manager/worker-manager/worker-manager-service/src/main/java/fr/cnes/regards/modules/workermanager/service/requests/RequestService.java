@@ -482,8 +482,6 @@ public class RequestService {
                            byte[] content = event.getContent();
                            // dispatch to next workflow step only if content response is valid
                            if (content != null) {
-                               // notify sessions before dispatching to the next step
-                               sessionService.notifySuccessRequest(new SessionsRequestsInfo(List.of(request.toDTO())));
                                request.setContent(event.getContent());
                                request.setStatus(RequestStatus.TO_DISPATCH);
                                request.setDispatchedWorkerType(null);
