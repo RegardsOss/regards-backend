@@ -430,9 +430,7 @@ public class IngestRequestService implements IIngestRequestService {
         Set<IngestRequest> toFinalize = Sets.newHashSet();
 
         for (IngestRequest request : requests) {
-            // update request in case of success or success with retry
-            if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED
-                || request.getStep() == IngestRequestStep.REMOTE_STORAGE_ERROR) {
+            if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
                 // Update AIPs with meta returned by storage
                 aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(),
                                                                      requestInfo.getSuccessRequests());
@@ -473,11 +471,6 @@ public class IngestRequestService implements IIngestRequestService {
         List<IngestRequestEvent> listIngestRequestEvents = new ArrayList<>();
 
         for (IngestRequest request : requests) {
-
-            // increment request count if request previously in error is now in success
-            if(request.getState().equals(InternalRequestState.ERROR)) {
-                sessionNotifier.incrementRequestCount(request);
-            }
 
             List<AIPEntity> aips = request.getAips();
 
