@@ -604,10 +604,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
     public static DateArrayProperty buildDateCollection(String name, Collection offsetDateTimes) {
         DateArrayProperty att = new DateArrayProperty();
         att.setName(name);
-        if (offsetDateTimes instanceof HashSet<?>) {
+        if (offsetDateTimes instanceof Set<?>) {
             att.setValue(((Set<OffsetDateTime>) offsetDateTimes).stream().toArray(OffsetDateTime[]::new));
-        } else if (offsetDateTimes instanceof ArrayList<?>) {
-            att.setValue(((ArrayList<OffsetDateTime>) offsetDateTimes).stream().toArray(OffsetDateTime[]::new));
+        } else if (offsetDateTimes instanceof List<?>) {
+            att.setValue(((List<OffsetDateTime>) offsetDateTimes).stream().toArray(OffsetDateTime[]::new));
         }
         return att;
     }
@@ -639,10 +639,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
     public static DoubleArrayProperty buildDoubleCollection(String name, Collection values) {
         DoubleArrayProperty att = new DoubleArrayProperty();
         att.setName(name);
-        if (values instanceof HashSet<?>) {
+        if (values instanceof Set<?>) {
             att.setValue(((Set<Double>) values).stream().toArray(Double[]::new));
-        } else if (values instanceof ArrayList<?>) {
-            att.setValue(((ArrayList<Double>) values).stream().toArray(Double[]::new));
+        } else if (values instanceof List<?>) {
+            att.setValue(((List<Double>) values).stream().toArray(Double[]::new));
         }
         return att;
     }
@@ -674,10 +674,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
     public static IntegerArrayProperty buildIntegerCollection(String name, Collection values) {
         IntegerArrayProperty att = new IntegerArrayProperty();
         att.setName(name);
-        if (values instanceof HashSet<?>) {
+        if (values instanceof Set<?>) {
             att.setValue(((Set<Integer>) values).stream().toArray(Integer[]::new));
-        } else if (values instanceof ArrayList<?>) {
-            att.setValue(((ArrayList<Integer>) values).stream().toArray(Integer[]::new));
+        } else if (values instanceof List<?>) {
+            att.setValue(((List<Integer>) values).stream().toArray(Integer[]::new));
         }
         return att;
     }
@@ -709,10 +709,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
     public static LongArrayProperty buildLongCollection(String name, Collection values) {
         LongArrayProperty att = new LongArrayProperty();
         att.setName(name);
-        if (values instanceof HashSet<?>) {
+        if (values instanceof Set<?>) {
             att.setValue(((Set<Long>) values).stream().toArray(Long[]::new));
-        } else if (values instanceof ArrayList<?>) {
-            att.setValue(((ArrayList<Long>) values).stream().toArray(Long[]::new));
+        } else if (values instanceof List<?>) {
+            att.setValue(((List<Long>) values).stream().toArray(Long[]::new));
         }
         return att;
     }
@@ -749,10 +749,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
     public static StringArrayProperty buildStringCollection(String name, Collection values) {
         StringArrayProperty att = new StringArrayProperty();
         att.setName(name);
-        if (values instanceof HashSet<?>) {
+        if (values instanceof Set<?>) {
             att.setValue(((Set<String>) values).stream().toArray(String[]::new));
-        } else if (values instanceof ArrayList<?>) {
-            att.setValue(((ArrayList<String>) values).stream().toArray(String[]::new));
+        } else if (values instanceof List<?>) {
+            att.setValue(((List<String>) values).stream().toArray(String[]::new));
         }
         return att;
     }

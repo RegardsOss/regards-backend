@@ -31,6 +31,8 @@ import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import javax.persistence.Transient;
@@ -45,6 +47,9 @@ import java.util.*;
  * @author Marc Sordi
  */
 public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, UniformResourceName> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EntityFeature.class);
+
 
     @ConfigIgnore
     protected UniformResourceName virtualId;
@@ -115,14 +120,15 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
         if (!name.contains(".")) {
             return this.propertyMap.get(name);
         } else {
-            ObjectProperty fragment = (ObjectProperty) this.propertyMap.get(name.substring(0, name.indexOf('.')));
-            String propName = name.substring(name.indexOf('.') + 1);
-            if (fragment != null) {
+            if (this.propertyMap.get(name.substring(0, name.indexOf('.'))) instanceof ObjectProperty fragment) {
+                String propName = name.substring(name.indexOf('.') + 1);
                 Optional<IProperty<?>> attOpt = fragment.getValue()
                                                         .stream()
                                                         .filter(p -> p.getName().equals(propName))
                                                         .findFirst();
                 return attOpt.orElse(null);
+            } else {
+                LOGGER.debug("Failed to get property \"{}\" from entity \"{}\".", name, providerId);
             }
             return null;
         }
