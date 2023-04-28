@@ -39,11 +39,11 @@ import java.util.Collection;
 public class SearchAIPsParameters implements AbstractSearchParameters {
 
     @Valid
-    @Schema(description = "Filter on state of aip", example = "GENERATED|STORED|DELETED")
+    @Schema(description = "Filter on state of aip")
     private ValuesRestriction<AIPState> aipStates;
 
     @Valid
-    @Schema(description = "Filter on types of entity", example = "COLLECTION|DATA|DATASET")
+    @Schema(description = "Filter on types of entity")
     private ValuesRestriction<EntityType> aipIpTypes;
 
     @Schema(description = "Filter on range of date for last update")
@@ -105,7 +105,7 @@ public class SearchAIPsParameters implements AbstractSearchParameters {
         return aipIpTypes;
     }
 
-    public void setAipIpType(ValuesRestriction<EntityType> aipIpType) {
+    public void setAipIpTypes(ValuesRestriction<EntityType> aipIpTypes) {
         this.aipIpTypes = aipIpTypes;
     }
 
