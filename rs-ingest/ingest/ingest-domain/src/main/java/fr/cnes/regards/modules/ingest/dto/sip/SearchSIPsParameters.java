@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -39,25 +40,34 @@ import java.util.Set;
  */
 public class SearchSIPsParameters {
 
+    @Schema(description = "Filter on range of date for last update")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private OffsetDateTime from;
 
+    @Schema(description = "Filter on given states of SIP", example = "INGESTED|STORED|DELETED")
     private List<SIPState> states = Lists.newArrayList();
 
+    @Schema(description = "Filter on owner of session that emitted the request")
     @NotBlank(message = IngestValidationMessages.MISSING_SESSION_OWNER)
     private String sessionOwner;
 
+    @Schema(description = "Filter on session that emitted the request")
     @NotBlank(message = IngestValidationMessages.MISSING_SESSION)
     private String session;
 
+    @Schema(description = "Filter on processing chain")
     private String processing;
 
+    @Schema(description = "Filter on type of SIP")
     private EntityType ipType;
 
+    @Schema(description = "Filter on provider ids")
     private Set<String> providerIds = Sets.newHashSet();
 
+    @Schema(description = "Filter on categories")
     private Set<String> categories = Sets.newHashSet();
 
+    @Schema(description = "Filter on tags")
     private List<String> tags = Lists.newArrayList();
 
     public static SearchSIPsParameters build() {
