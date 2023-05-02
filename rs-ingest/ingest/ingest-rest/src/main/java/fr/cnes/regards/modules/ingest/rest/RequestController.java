@@ -155,7 +155,7 @@ public class RequestController implements IResourceController<RequestDto> {
     public ResponseEntity<Object> chooseVersioningMode(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria to find requests"
                                                                             + " to update with new versioning mode",
-                                                              content = @Content(schema = @Schema(implementation = SearchRequestParameters.class)))
+                                                              content = @Content(schema = @Schema(implementation = ChooseVersioningRequestParameters.class)))
         @Parameter(description = "Filter criteria for requests") @Valid @RequestBody
         ChooseVersioningRequestParameters filters) {
         if (filters.getNewVersioningMode() == VersioningMode.MANUAL) {

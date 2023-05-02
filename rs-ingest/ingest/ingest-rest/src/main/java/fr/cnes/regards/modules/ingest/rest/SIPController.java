@@ -34,6 +34,11 @@ import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.ingest.service.sip.scheduler.SipBodyDeletetionScheduler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +68,8 @@ public class SIPController implements IResourceController<SIPEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPController.class);
 
     public static final String TYPE_MAPPING = "/sips";
+
+    public static final String TYPE_SEARCH = "/search";
 
     public static final String REQUEST_PARAM_SIP_ID = "sipId";
 
@@ -139,13 +146,21 @@ public class SIPController implements IResourceController<SIPEntity> {
         }
     }
 
+    @Operation(summary = "Search for SIP entities", description = "Search for SIP entities with search parameters.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "The search request has been successfully processed."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         content = { @Content(mediaType = "application/html") }) })
     @ResourceAccess(description = "Search for SIPEntities with optional criterion.", role = DefaultRole.EXPLOIT)
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<PagedModel<EntityModel<SIPEntity>>> search(@RequestBody SearchSIPsParameters params,
-                                                                     @PageableDefault(sort = "id",
-                                                                                      direction = Sort.Direction.ASC)
-                                                                     Pageable pageable,
-                                                                     PagedResourcesAssembler<SIPEntity> pAssembler) {
+    @ResponseBody
+    @RequestMapping(method = RequestMethod.POST, path = TYPE_SEARCH)
+    public ResponseEntity<PagedModel<EntityModel<SIPEntity>>> search(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Search criterion.",
+                                                              content = @Content(schema = @Schema(implementation = SearchSIPsParameters.class)))
+        @RequestBody SearchSIPsParameters params,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<SIPEntity> pAssembler) {
         Page<SIPEntity> sipEntities = sipService.search(params, pageable);
         PagedModel<EntityModel<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -179,7 +194,7 @@ public class SIPController implements IResourceController<SIPEntity> {
                                 this.getClass(),
                                 "getSipEntity",
                                 LinkRels.SELF,
-                                MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
+                                MethodParamFactory.build(String.class, sipEntity.getSipId()));
         return resource;
     }
 }

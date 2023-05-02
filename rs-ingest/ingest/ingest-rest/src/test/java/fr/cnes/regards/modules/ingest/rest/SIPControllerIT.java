@@ -180,7 +180,10 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                                       Matchers.is(0)));
         SearchSIPsParameters body = SearchSIPsParameters.build();
         documentSearchSipParameters(requestBuilderCustomizer);
-        performDefaultPost(SIPController.TYPE_MAPPING, body, requestBuilderCustomizer, "Error retrieving SIPs");
+        performDefaultPost(SIPController.TYPE_MAPPING + SIPController.TYPE_SEARCH,
+                           body,
+                           requestBuilderCustomizer,
+                           "Error " + "retrieving SIPs");
 
     }
 
