@@ -146,4 +146,6 @@ public interface IIngestRequestService {
     void scheduleRequestWithVersioningMode(ChooseVersioningRequestParameters filters);
 
     void fromWaitingTo(Collection<AbstractRequest> requests, VersioningMode versioningMode);
+
+    IngestRequest saveRequest(IngestRequest request);
 }

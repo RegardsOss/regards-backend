@@ -22,11 +22,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,8 +38,6 @@ import java.util.Optional;
  * @author Sébastien Binda
  */
 public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TaggingStep.class);
 
     public TaggingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
@@ -61,13 +59,11 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
     }
 
     @Override
-    protected void doAfterError(List<AIP> pIn, Optional<ProcessingStepException> e) {
-        String error = "unknown cause";
-        if (e.isPresent()) {
-            error = e.get().getMessage();
-        }
-        handleRequestError(String.format("Tagging fails for AIP of SIP \"%s\". Cause : %s",
-                                         job.getCurrentEntity().getProviderId(),
-                                         error));
+    protected StepErrorInfo getStepErrorInfo(List<AIP> aips, Exception exception) {
+        return buildDefaultStepErrorInfo("TAGGING",
+                                         exception,
+                                         String.format("Tagging fails for AIP of SIP \"%s\".",
+                                                       job.getCurrentEntity().getProviderId()),
+                                         IngestErrorType.TAGGING);
     }
 }

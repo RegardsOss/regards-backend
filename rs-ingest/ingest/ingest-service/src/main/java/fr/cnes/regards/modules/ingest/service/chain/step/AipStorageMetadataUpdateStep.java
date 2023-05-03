@@ -23,8 +23,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAIPStorageMetadataUpdate;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +59,7 @@ public class AipStorageMetadataUpdateStep extends AbstractIngestStep<List<Storag
                    .getMetadata()
                    .setStorages(aipStorageMetadataUpdate.getStorageMetadata(storageMetadata));
             } catch (ModuleException e) {
-                throw new ProcessingStepException(e);
+                throw new ProcessingStepException(IngestErrorType.METADATA, e);
             }
         } else {
             LOGGER.debug("No AIP storage metadata update plugin on chain \"{}\"",
@@ -67,13 +69,11 @@ public class AipStorageMetadataUpdateStep extends AbstractIngestStep<List<Storag
     }
 
     @Override
-    protected void doAfterError(List<StorageMetadata> in, Optional<ProcessingStepException> e) {
-        String error = "unknown cause";
-        if (e.isPresent()) {
-            error = e.get().getMessage();
-        }
-        handleRequestError(String.format("Updating AIP storage metadata from AIP \"%s\" fails. Cause : %s",
-                                         job.getCurrentEntity().getProviderId(),
-                                         error));
+    protected StepErrorInfo getStepErrorInfo(List<StorageMetadata> in, Exception exception) {
+        return buildDefaultStepErrorInfo("METADATA",
+                                         exception,
+                                         String.format("Updating AIP storage metadata from AIP \"%s\" fails.",
+                                                       job.getCurrentEntity().getProviderId()),
+                                         IngestErrorType.METADATA);
     }
 }

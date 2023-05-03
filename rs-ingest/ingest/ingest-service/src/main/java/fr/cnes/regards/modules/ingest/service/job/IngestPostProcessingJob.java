@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
@@ -240,7 +241,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
             errorMsg = error.getValue();
             AIPPostProcessRequest request = this.requests.get(reqId);
             request.setState(InternalRequestState.ERROR);
-            request.setErrors(errorMsg);
+            request.setErrors(IngestErrorType.POSTPROCESSING, errorMsg);
             sessionNotifier.incrementPostProcessError(request);
             logger.error("Request {} corresponding to AIP {} in error. Caused by [{}]",
                          reqId,

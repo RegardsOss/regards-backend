@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
@@ -221,6 +222,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                 // put request state to error and change step
                 ingestRequest.setState(InternalRequestState.ERROR);
                 ingestRequest.setStep(IngestRequestStep.REMOTE_NOTIFICATION_ERROR);
+                ingestRequest.setErrorType(IngestErrorType.NOTIFICATION);
                 ingestRequest.addError(errorMsg);
             }
             // OAIS DELETION REQUESTS
@@ -232,6 +234,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                 // put request state to error and change step
                 oaisDeletionRequest.setState(InternalRequestState.ERROR);
                 oaisDeletionRequest.setStep(DeletionRequestStep.REMOTE_NOTIFICATION_ERROR);
+                oaisDeletionRequest.setErrorType(IngestErrorType.NOTIFICATION);
                 oaisDeletionRequest.addError(errorMsg);
             }
             // UPDATE REQUESTS
@@ -243,6 +246,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                 // put request state to error and change step
                 aipUpdateRequest.setState(InternalRequestState.ERROR);
                 aipUpdateRequest.setStep(AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR);
+                aipUpdateRequest.setErrorType(IngestErrorType.NOTIFICATION);
                 aipUpdateRequest.addError(errorMsg);
             }
         }

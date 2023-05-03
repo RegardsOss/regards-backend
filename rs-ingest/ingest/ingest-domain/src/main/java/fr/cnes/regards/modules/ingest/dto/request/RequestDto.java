@@ -32,6 +32,8 @@ public class RequestDto {
 
     private Set<String> errors;
 
+    private String errorType;
+
     private OffsetDateTime creationDate;
 
     private OffsetDateTime remoteStepDeadline;
@@ -60,6 +62,14 @@ public class RequestDto {
 
     public void setErrors(Set<String> errors) {
         this.errors = errors;
+    }
+
+    public String getErrorType() {
+        return errorType;
+    }
+
+    public void setErrorType(String errorType) {
+        this.errorType = errorType;
     }
 
     public OffsetDateTime getCreationDate() {

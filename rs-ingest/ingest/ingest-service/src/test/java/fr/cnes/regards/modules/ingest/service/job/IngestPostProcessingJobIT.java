@@ -24,7 +24,9 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
@@ -36,6 +38,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -164,9 +167,13 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
         // Creates a test chain with default post processing plugin
         createChainWithPostProcess(CHAIN_PP_WITH_ERRORS_LABEL, AIPPostProcessFailTestPlugin.class);
         initData(CHAIN_PP_WITH_ERRORS_LABEL);
-        Assert.assertEquals(3,
-                            aipPostProcessRepo.findAllByState(InternalRequestState.ERROR, PageRequest.of(0, 100))
-                                              .getTotalElements());
+        Page<AIPPostProcessRequest> pageRequests = aipPostProcessRepo.findAllByState(InternalRequestState.ERROR,
+                                                                                     PageRequest.of(0, 100));
+        Assert.assertEquals(3, pageRequests.getTotalElements());
+        List<AIPPostProcessRequest> requests = pageRequests.getContent();
+        Assert.assertTrue(requests.stream()
+                                  .allMatch(req -> req.getState().equals(InternalRequestState.ERROR)
+                                                   && req.getErrorType().equals(IngestErrorType.POSTPROCESSING)));
     }
 }
 

@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 import org.slf4j.Logger;
@@ -181,6 +182,7 @@ public class AIPMetadataService implements IAIPMetadataService {
                                                 metadataRequest.getCreationDate()),
                                   NotificationLevel.ERROR,
                                   DefaultRole.ADMIN);
+        metadataRequest.setErrorType(IngestErrorType.AIP_DUMP);
         metadataRequest.addError(errorMessage);
         metadataRequest.setState(InternalRequestState.ERROR);
         metadataRequestRepository.save(metadataRequest);

@@ -43,7 +43,6 @@ import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

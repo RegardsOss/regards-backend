@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestError;
@@ -193,7 +194,10 @@ public class IngestRequestService implements IIngestRequestService {
                 Set<Long> ids;
                 ids = IJob.getValue(jobInfo.getParametersAsMap(), IngestProcessingJob.IDS_PARAMETER, type);
                 List<IngestRequest> requests = findByIds(ids);
-                requests.forEach(r -> handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace()));
+                requests.forEach(r -> {
+                    r.setErrorType(IngestErrorType.GENERATION);
+                    handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace());
+                });
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
                                                jobInfo.getId(),
@@ -372,6 +376,7 @@ public class IngestRequestService implements IIngestRequestService {
             String message = String.format("Cannot send events to store AIP files because they are malformed. Cause: %s",
                                            e.getMessage());
             LOGGER.debug(message, e);
+            request.setErrorType(IngestErrorType.GENERATION);
             saveAndPublishErrorRequest(request, message);
             // Monitoring
             // Decrement from above
@@ -392,6 +397,7 @@ public class IngestRequestService implements IIngestRequestService {
                     // Save the request was denied at AIP files storage
                     request.setStep(IngestRequestStep.REMOTE_STORAGE_DENIED);
                     request.setState(InternalRequestState.ERROR);
+                    request.setErrorType(IngestErrorType.GENERATION);
                     // Keep track of the error
                     saveAndPublishErrorRequest(request, "Remote file storage request denied");
                 } else {
@@ -605,6 +611,7 @@ public class IngestRequestService implements IIngestRequestService {
     public void handleRemoteStoreError(IngestRequest request, RequestInfo requestInfo) {
         String errorMessage = null;
         // Propagate errors
+        request.setErrorType(IngestErrorType.GENERATION);
         requestInfo.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
         if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
             // Update AIP and SIP with current error
@@ -660,6 +667,7 @@ public class IngestRequestService implements IIngestRequestService {
 
             if (requestOp.isPresent()) {
                 IngestRequest request = requestOp.get();
+                request.setErrorType(IngestErrorType.GENERATION);
                 // Propagate errors
                 if (ri.getErrorRequests() != null) {
                     ri.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
@@ -724,6 +732,10 @@ public class IngestRequestService implements IIngestRequestService {
                                        request.getRequestId(),
                                        request.getSip().getId()));
         request.setState(InternalRequestState.ERROR);
+        // set default error code if none was provided
+        if(request.getErrorType() == null) {
+            request.setErrorType(IngestErrorType.UNEXPECTED);
+        }
         if (message != null) {
             request.addError(message);
         }

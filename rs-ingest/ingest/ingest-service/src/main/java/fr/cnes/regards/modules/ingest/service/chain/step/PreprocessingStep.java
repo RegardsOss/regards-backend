@@ -22,11 +22,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -41,8 +41,6 @@ import java.util.Optional;
  * @author Sébastien Binda
  */
 public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PreprocessingStep.class);
 
     public PreprocessingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
@@ -69,11 +67,10 @@ public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
     }
 
     @Override
-    protected void doAfterError(SIP sip, Optional<ProcessingStepException> e) {
-        String error = "unknown cause";
-        if (e.isPresent()) {
-            error = e.get().getMessage();
-        }
-        handleRequestError(String.format("Preprocessing fails for SIP \"%s\". Cause : %s", sip.getId(), error));
+    protected StepErrorInfo getStepErrorInfo(SIP sip, Exception exception) {
+        return buildDefaultStepErrorInfo("PREPROCESSING",
+                                         exception,
+                                         String.format("Preprocessing fails for SIP \"%s\".", sip.getId()),
+                                         IngestErrorType.PREPROCESSING);
     }
 }

@@ -19,25 +19,25 @@
 package fr.cnes.regards.modules.ingest.domain.exception;
 
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 
 /**
  * ProcessingStepException thrown by AIPGenerationStep
  *
  * @author Sébastien Binda
  */
-@SuppressWarnings("serial")
 public class AIPGenerationException extends ProcessingStepException {
 
-    public AIPGenerationException(String pMessage, Throwable pCause) {
-        super(pMessage, pCause);
+    public AIPGenerationException(IngestErrorType errorType, String message, Throwable cause) {
+        super(errorType, message, cause);
     }
 
-    public AIPGenerationException(String pMessage) {
-        super(pMessage);
+    public AIPGenerationException(IngestErrorType errorType, String message) {
+        this(errorType, message, null);
     }
 
-    public AIPGenerationException(Throwable pCause) {
-        super(pCause);
+    public AIPGenerationException(IngestErrorType errorType, Throwable pCause) {
+        this(errorType, null, pCause);
     }
 
 }

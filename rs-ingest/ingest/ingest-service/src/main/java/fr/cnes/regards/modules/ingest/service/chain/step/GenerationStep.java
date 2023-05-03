@@ -28,12 +28,12 @@ import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IAIPLightRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -41,8 +41,6 @@ import org.springframework.validation.Validator;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Generation step is used to generate AIP(s) from specified SIP calling {@link IAipGeneration#generate(SIPEntity, String, fr.cnes.regards.framework.urn.EntityType)} (SIP, UniformResourceName, UniformResourceName, String)}.
@@ -51,8 +49,6 @@ import java.util.stream.Collectors;
  * @author Sébastien Binda
  */
 public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenerationStep.class);
 
     @Autowired
     private Validator validator;
@@ -118,20 +114,19 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
             }
         }
         if (!errors.isEmpty()) {
-            throw new ProcessingStepException(String.format("Validation errors for AIPs generated from SIP %s: %s",
+            throw new ProcessingStepException(IngestErrorType.GENERATION,
+                                              String.format("Validation errors for AIPs generated from SIP %s: %s",
                                                             job.getCurrentEntity().getProviderId(),
-                                                            errors.stream().collect(Collectors.joining(", "))));
+                                                            String.join(", ", errors)));
         }
     }
 
     @Override
-    protected void doAfterError(SIPEntity sip, Optional<ProcessingStepException> e) {
-        String error = "unknown cause";
-        if (e.isPresent()) {
-            error = e.get().getMessage();
-        }
-        handleRequestError(String.format("Generation fails for AIP(s) of SIP \"%s\". Cause : %s",
-                                         sip.getSip().getId(),
-                                         error));
+    protected StepErrorInfo getStepErrorInfo(SIPEntity sip, Exception exception) {
+        return buildDefaultStepErrorInfo("GENERATION",
+                                         exception,
+                                         String.format("Generation fails for AIP(s) of SIP \"%s\".",
+                                                       sip.getSip().getId()),
+                                         IngestErrorType.GENERATION);
     }
 }

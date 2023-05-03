@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
  * Common processing step applied to job execution
@@ -44,22 +44,13 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
 
     @Override
     public O execute(I in) throws ProcessingStepException {
-        ProcessingStepException processingException = null;
         try {
             O out = doExecute(in);
             job.advanceCompletion();
             return out;
-        } catch (ProcessingStepException e) {
-            processingException = e;
+        } catch (RuntimeException | ProcessingStepException e) {
+            doAfterError(in, e);
             throw e;
-        } catch (RuntimeException e) {
-            // ignore the doAfterError mechanism, as the runtime will kill the job anyway
-            throw e;
-        } finally {
-            if (processingException != null) {
-                // Always run this method even if processingException occurs
-                doAfterError(in, Optional.ofNullable(processingException));
-            }
         }
     }
 
@@ -76,5 +67,5 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
      *
      * @param in input object
      */
-    protected abstract void doAfterError(I in, Optional<ProcessingStepException> e);
+    protected abstract void doAfterError(I in, @Nullable Exception e);
 }

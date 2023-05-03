@@ -19,25 +19,25 @@
 package fr.cnes.regards.modules.ingest.domain.exception;
 
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 
 /**
  * ProcessingStepException thrown by PreprocessingStep
  *
  * @author Sébastien Binda
  */
-@SuppressWarnings("serial")
 public class InvalidSIPReferenceException extends ProcessingStepException {
 
-    public InvalidSIPReferenceException(String pMessage, Throwable pCause) {
-        super(pMessage, pCause);
+    public InvalidSIPReferenceException(IngestErrorType errorType, String message, Throwable cause) {
+        super(errorType, message, cause);
     }
 
-    public InvalidSIPReferenceException(String pMessage) {
-        super(pMessage);
+    public InvalidSIPReferenceException(IngestErrorType errorType, String message) {
+        this(errorType, message, null);
     }
 
-    public InvalidSIPReferenceException(Throwable pCause) {
-        super(pCause);
+    public InvalidSIPReferenceException(IngestErrorType errorType, Throwable pCause) {
+        super(errorType, null, pCause);
     }
 
 }

@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
@@ -351,6 +352,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         Assert.assertEquals(1, req.getAips().size());
         Assert.assertEquals(IngestRequestStep.REMOTE_STORAGE_ERROR, req.getStep());
         Assert.assertEquals(InternalRequestState.ERROR, req.getState());
+        Assert.assertEquals(IngestErrorType.GENERATION, req.getErrorType());
     }
 
     @Requirement("REGARDS_DSL_ING_PRO_160")
@@ -429,7 +431,15 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         IngestRequest request = ingestRequestCaptor.getValue();
         Assert.assertNotNull(request);
         Assert.assertEquals(InternalRequestState.ERROR, request.getState());
-        Assert.assertTrue(!request.getErrors().isEmpty());
+        Assert.assertFalse(request.getErrors().isEmpty());
+        Assert.assertEquals(switch (errorClass.getSimpleName()) {
+            case "PreprocessingTestPlugin" -> IngestErrorType.PREPROCESSING;
+            case "ValidationTestPlugin" -> IngestErrorType.VALIDATION;
+            case "AIPGenerationTestPlugin" -> IngestErrorType.GENERATION;
+            case "AIPStorageMetadataTestPlugin" -> IngestErrorType.METADATA;
+            case "AIPTaggingTestPlugin" -> IngestErrorType.TAGGING;
+            default -> null;
+        }, request.getErrorType());
 
         Assert.assertNotNull(sipCaptor.getValue());
 

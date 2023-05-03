@@ -56,6 +56,10 @@ public abstract class AbstractRequest {
     @GeneratedValue(generator = "requestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @Column(name = "error_type", length = 100)
+    @Enumerated(value = EnumType.STRING)
+    private IngestErrorType errorType;
+
     @Column(columnDefinition = "jsonb", name = "errors")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> errors;
@@ -147,11 +151,24 @@ public abstract class AbstractRequest {
         this.remoteStepDeadline = remoteStepDeadline;
     }
 
+    public IngestErrorType getErrorType() {
+        return errorType;
+    }
+
+    public void setErrorType(IngestErrorType errorType) {
+        this.errorType = errorType;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
+    }
+
     public Set<String> getErrors() {
         return errors;
     }
 
-    public void setErrors(Set<String> errors) {
+    public void setErrors(IngestErrorType errorType, Set<String> errors) {
+        this.errorType = errorType;
         this.errors = errors;
     }
 
@@ -165,6 +182,7 @@ public abstract class AbstractRequest {
     public void clearError() {
         if (errors != null) {
             errors.clear();
+            errorType = null;
         }
     }
 

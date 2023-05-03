@@ -23,17 +23,15 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 
 import java.util.HashMap;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Validation step is used to validate {@link SIP} calling {@link ISipValidation#validate(SIP, Errors)}.
@@ -42,8 +40,6 @@ import java.util.stream.Collectors;
  * @author Sébastien Binda
  */
 public class ValidationStep extends AbstractIngestStep<SIP, Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ValidationStep.class);
 
     public ValidationStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
@@ -64,9 +60,10 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
                 LOGGER.error("SIP \"{}\" validation error : {}", sip.getId(), error);
                 addError(error);
             }
-            throw new ProcessingStepException(String.format("Invalid SIP \"%s\": %s",
+            throw new ProcessingStepException(IngestErrorType.VALIDATION,
+                                              String.format("Invalid SIP \"%s\": %s",
                                                             sip.getId(),
-                                                            errors.stream().collect(Collectors.joining(", "))));
+                                                            String.join(", ", errors)));
         }
 
         // On success
@@ -74,11 +71,10 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
     }
 
     @Override
-    protected void doAfterError(SIP sip, Optional<ProcessingStepException> e) {
-        String error = "unknown cause";
-        if (e.isPresent()) {
-            error = e.get().getMessage();
-        }
-        handleRequestError(String.format("Validation fails for SIP \"%s\". Cause : %s", sip.getId(), error));
+    protected StepErrorInfo getStepErrorInfo(SIP sip, Exception exception) {
+        return buildDefaultStepErrorInfo("VALIDATION",
+                                         exception,
+                                         String.format("Validation fails for SIP \"%s\".", sip.getId()),
+                                         IngestErrorType.VALIDATION);
     }
 }

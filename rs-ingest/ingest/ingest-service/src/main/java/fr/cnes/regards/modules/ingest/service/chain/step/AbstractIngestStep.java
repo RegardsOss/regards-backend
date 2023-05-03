@@ -24,12 +24,19 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.ErrorModeHandling;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,6 +46,8 @@ import java.util.Set;
  * @author Marc Sordi
  */
 public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I, O, IngestProcessingJob> {
+
+    protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     protected final IngestProcessingChain ingestChain;
 
@@ -50,22 +59,22 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
 
     protected Set<String> errors;
 
+    public AbstractIngestStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
+        super(job);
+        this.ingestChain = ingestChain;
+    }
+
     @Override
     public O execute(I in) throws ProcessingStepException {
         errors = new HashSet<>();
         return super.execute(in);
     }
 
-    public AbstractIngestStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
-        super(job);
-        this.ingestChain = ingestChain;
-    }
-
     protected <T> T getStepPlugin(String confId) throws ProcessingStepException {
         try {
             return pluginService.getPlugin(confId);
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-            throw new ProcessingStepException(e);
+            throw new ProcessingStepException(IngestErrorType.UNEXPECTED, e);
         }
     }
 
@@ -88,21 +97,67 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
         errors = updatedErrors;
     }
 
-    protected void handleRequestError(String error) {
+    protected IngestRequest handleRequestError(IngestErrorType errorType, String error) {
         Assert.hasText(error, "Error message is required");
         prependError(error);
-        job.getCurrentRequest().setState(InternalRequestState.ERROR);
-        job.getCurrentRequest().setErrors(errors);
-        ingestRequestService.handleIngestJobFailed(job.getCurrentRequest(), job.getCurrentEntity(), error);
+        IngestRequest currentRequest = job.getCurrentRequest();
+        currentRequest.setState(InternalRequestState.ERROR);
+        currentRequest.setErrors(errorType, errors);
+        return ingestRequestService.saveRequest(currentRequest);
     }
 
-    protected ProcessingStepException throwProcessingStepException(String error, Exception e) {
-        addError(error);
-        return new ProcessingStepException(error, e);
+    protected void handleRequestErrorWithJobHandling(IngestErrorType errorType, String error) {
+        ingestRequestService.handleIngestJobFailed(this.handleRequestError(errorType, error),
+                                                   job.getCurrentEntity(),
+                                                   error);
     }
 
-    protected ProcessingStepException throwProcessingStepException(String error) {
-        addError(error);
-        return new ProcessingStepException(error);
+    protected ProcessingStepException throwProcessingStepException(IngestErrorType errorType,
+                                                                   String errorMessage,
+                                                                   Exception e) {
+        addError(errorMessage);
+        return new ProcessingStepException(errorType, errorMessage, e);
+    }
+
+    protected ProcessingStepException throwProcessingStepException(IngestErrorType errorType, String errorMessage) {
+        addError(errorMessage);
+        return new ProcessingStepException(errorType, errorMessage);
+    }
+
+    @Override
+    protected void doAfterError(I in, @Nullable Exception exception) {
+        StepErrorInfo stepErrorInfo = getStepErrorInfo(in, exception);
+        switch (stepErrorInfo.handleModeError()) {
+            case HANDLE_REQUEST_WITH_JOB_CRASH ->
+                handleRequestErrorWithJobHandling(stepErrorInfo.errorType(), stepErrorInfo.errorMsg());
+            // in this case exception is not expected, only save error request. Job will be handled later on.
+            case HANDLE_ONLY_REQUEST_ERROR -> handleRequestError(stepErrorInfo.errorType(), stepErrorInfo.errorMsg());
+            case NOTHING_TO_DO -> LOGGER.debug("An error occurred during the processing of request with id \"{}\". "
+                                               + "Waiting for admin action to handle this case.",
+                                               job.getCurrentRequest().getRequestId());
+        }
+    }
+
+    protected abstract StepErrorInfo getStepErrorInfo(I in, @Nullable Exception exception);
+
+    protected StepErrorInfo buildDefaultStepErrorInfo(String stepName,
+                                                      Exception exception,
+                                                      String stepExceptionMessage,
+                                                      IngestErrorType defaultIngestErrorType) {
+        StepErrorInfo stepErrorInfo;
+        if (exception instanceof ProcessingStepException processingException) {
+            stepErrorInfo = new StepErrorInfo(stepName,
+                                              ErrorModeHandling.HANDLE_REQUEST_WITH_JOB_CRASH,
+                                              String.format("%s. Cause : %s",
+                                                            stepExceptionMessage,
+                                                            exception.getMessage()),
+                                              (IngestErrorType) processingException.getErrorType());
+        } else {
+            stepErrorInfo = new StepErrorInfo(stepName,
+                                              ErrorModeHandling.HANDLE_ONLY_REQUEST_ERROR,
+                                              "unknown cause",
+                                              defaultIngestErrorType);
+        }
+        return stepErrorInfo;
     }
 }

@@ -21,14 +21,15 @@ package fr.cnes.regards.modules.ingest.service.chain.step;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Persist all generated entities in database : {@link SIPEntity} including {@link SIP} and {@link AIPEntity} including {@link AIP}(s)
@@ -48,14 +49,11 @@ public class InternalFinalStep extends AbstractIngestStep<List<AIP>, List<AIPEnt
     }
 
     @Override
-    protected void doAfterError(List<AIP> in, Optional<ProcessingStepException> e) {
-        String error = "unknown cause";
-        if (e.isPresent()) {
-            error = e.get().getMessage();
-        }
-        handleRequestError(String.format("Persisting SIP and AIP from SIP \"%s\" fails. Cause : %s",
-                                         job.getCurrentEntity().getProviderId(),
-                                         error));
+    protected StepErrorInfo getStepErrorInfo(List<AIP> in, Exception exception) {
+        return buildDefaultStepErrorInfo("FINAL",
+                                         exception,
+                                         String.format("Persisting SIP and AIP from SIP \"%s\" fails.",
+                                                       job.getCurrentEntity().getProviderId()),
+                                         IngestErrorType.FINAL);
     }
-
 }

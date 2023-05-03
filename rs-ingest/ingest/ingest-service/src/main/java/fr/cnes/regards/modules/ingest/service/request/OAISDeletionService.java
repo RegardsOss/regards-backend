@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.mapper.IOAISDeletionPayloadMapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorPayload;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
@@ -123,7 +124,7 @@ public class OAISDeletionService implements IOAISDeletionService {
                 Optional<OAISDeletionCreatorRequest> request = creatorRepository.findById(requestId);
                 request.ifPresent(r -> {
                     r.setState(InternalRequestState.ERROR);
-                    r.setErrors(Set.of(jobInfo.getStatus().getStackTrace()));
+                    r.setErrors(IngestErrorType.DELETE, Set.of(jobInfo.getStatus().getStackTrace()));
                 });
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 LOGGER.error(String.format("OAISDeletionsCreatorJob request job with id \"%s\" fails with status \"%s\"",
@@ -143,7 +144,7 @@ public class OAISDeletionService implements IOAISDeletionService {
                 List<OAISDeletionRequest> requests = requestRepository.findAllById(requestIds);
                 requests.forEach(r -> {
                     r.setState(InternalRequestState.ERROR);
-                    r.setErrors(Set.of(jobInfo.getStatus().getStackTrace()));
+                    r.setErrors(IngestErrorType.DELETE, Set.of(jobInfo.getStatus().getStackTrace()));
                 });
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 LOGGER.error(String.format("OAISDeletionJob request job with id \"%s\" fails with status \"%s\"",
@@ -224,6 +225,7 @@ public class OAISDeletionService implements IOAISDeletionService {
                                                     request.getAip().getAipId());
                     LOGGER.error(errorMsg, e);
                     request.setState(InternalRequestState.ERROR);
+                    request.setErrorType(IngestErrorType.DELETE);
                     request.addError(errorMsg);
                     errors.add(request);
                 }
@@ -234,6 +236,7 @@ public class OAISDeletionService implements IOAISDeletionService {
                     request.getAip().getAipId());
                 LOGGER.warn(errorMsg);
                 request.setState(InternalRequestState.BLOCKED);
+                request.setErrorType(IngestErrorType.DELETE);
                 request.addError(errorMsg);
                 errors.add(request);
             }

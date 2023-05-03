@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.dto.request;
 import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -52,6 +53,10 @@ public class SearchRequestParameters implements AbstractSearchParameters {
     @Schema(description = "List of internal request states",
             example = "TO_SCHEDULE|CREATED|WAITING_VERSIONING_MODE|BLOCKED|RUNNING|ERROR|ABORTED|IGNORED")
     private ValuesRestriction<InternalRequestState> requestStates;
+
+    @Schema(description = "List of request error type keys",
+            example = "INITIAL|INITIAL_SIP_ALREADY_EXISTS|GENERATION|UPDATE|DELETE")
+    private ValuesRestriction<IngestErrorType> errorTypes;
 
     @Schema(description = "List of request type",
             example = "INGEST|UPDATE|AIP_UPDATES_CREATOR|AIP_SAVE_METADATA|AIP_POST_PROCESS|OAIS_DELETION|ABORTED|OAIS_DELETION_CREATOR")
@@ -134,6 +139,24 @@ public class SearchRequestParameters implements AbstractSearchParameters {
 
     public SearchRequestParameters withRequestStatesExcluded(Collection<InternalRequestState> states) {
         this.requestStates = new ValuesRestriction<InternalRequestState>().withExclude(states);
+        return this;
+    }
+
+    public ValuesRestriction<IngestErrorType> getErrorTypes() {
+        return this.errorTypes;
+    }
+
+    public void setErrorTypes(ValuesRestriction<IngestErrorType> errorTypes) {
+        this.errorTypes = errorTypes;
+    }
+
+    public SearchRequestParameters withErrorTypesIncluded(Collection<IngestErrorType> errorTypes) {
+        this.errorTypes = new ValuesRestriction<IngestErrorType>().withInclude(errorTypes);
+        return this;
+    }
+
+    public SearchRequestParameters withErrorTypesExcluded(Collection<IngestErrorType> errorTypes) {
+        this.errorTypes = new ValuesRestriction<IngestErrorType>().withExclude(errorTypes);
         return this;
     }
 

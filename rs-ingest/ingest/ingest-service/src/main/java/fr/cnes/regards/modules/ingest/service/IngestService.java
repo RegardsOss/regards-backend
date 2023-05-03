@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
@@ -169,7 +170,8 @@ public class IngestService implements IIngestService {
                                                                          InternalRequestState.ERROR,
                                                                          IngestRequestStep.LOCAL_DENIED,
                                                                          sip,
-                                                                         errs));
+                                                                         errs,
+                                                                         IngestErrorType.GENERATION));
             StringJoiner joiner = new StringJoiner(", ");
             errs.forEach(joiner::add);
             LOGGER.debug("Ingest request ({}) rejected for following reason(s) : {}",

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service.chain.step;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
@@ -28,13 +29,14 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.ErrorModeHandling;
+import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Optional;
 
 /**
  * Initialize {@link SIPEntity} from specified {@link IngestRequest}
@@ -67,13 +69,16 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
         try {
             checksum = sipService.calculateChecksum(sip);
         } catch (NoSuchAlgorithmException | IOException e) {
-            throw throwProcessingStepException(String.format("Cannot compute checksum for SIP identified by %s",
-                                                             sip.getId()), e);
+            throw throwProcessingStepException(IngestErrorType.INITIAL_CHECKSUM,
+                                               String.format("Cannot compute checksum for SIP identified by %s",
+                                                             sip.getId()),
+                                               e);
         }
 
         // Is SIP already ingested?
         if (sipService.isAlreadyIngested(checksum)) {
-            throw throwProcessingStepException(String.format("The SIP \"%s\" already exists and there is no difference "
+            throw throwProcessingStepException(IngestErrorType.INITIAL_SIP_ALREADY_EXISTS,
+                                               String.format("The SIP \"%s\" already exists and there is no difference "
                                                              + "between this one and the stored one.", sip.getId()));
         }
 
@@ -86,29 +91,32 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
                 // In this case, lets break generation, only if it is not the first one, with proper message
                 if (version != 1) {
                     ingestRequestService.ignore(request);
-                    throw new ProcessingStepException(String.format(
-                        "Sip %s is not generated because this is not the first version "
-                        + "and versioning mode ask to ignore this one.",
-                        sip.getId()));
+                    throw new ProcessingStepException(IngestErrorType.INITIAL_NOT_FIRST_VERSION_IGNORE,
+                                                      String.format(
+                                                          "Sip %s is not generated because this is not the first version "
+                                                          + "and versioning mode ask to ignore this one.",
+                                                          sip.getId()));
                 }
                 break;
             case MANUAL:
                 // In this case, lets break generation, only if it is not the first one, with proper message
                 if (version != 1) {
                     ingestRequestService.waitVersioningMode(request);
-                    throw new ProcessingStepException(String.format(
-                        "Sip %s is not generated because this is not the first version "
-                        + "and versioning mode ask for manual decision.",
-                        sip.getId()));
+                    throw new ProcessingStepException(IngestErrorType.INITIAL_NOT_FIRST_VERSION_MANUAL,
+                                                      String.format(
+                                                          "Sip %s is not generated because this is not the first version "
+                                                          + "and versioning mode ask for manual decision.",
+                                                          sip.getId()));
                 }
                 break;
             case INC_VERSION, REPLACE:
                 // in these cases, there is nothing to do right now
                 break;
             default:
-                throw throwProcessingStepException(String.format(
-                    "This versioning mode is not recognized by the system: %s",
-                    versioningMode));
+                throw throwProcessingStepException(IngestErrorType.INITIAL_UNKNOWN_VERSIONING,
+                                                   String.format(
+                                                       "This versioning mode is not recognized by the system: %s",
+                                                       versioningMode));
         }
 
         SIPEntity entity = SIPEntity.build(runtimeTenantResolver.getTenant(),
@@ -121,17 +129,19 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
     }
 
     @Override
-    protected void doAfterError(IngestRequest request, Optional<ProcessingStepException> e) {
-        if ((request.getState() != InternalRequestState.WAITING_VERSIONING_MODE) && (request.getState()
-                                                                                     != InternalRequestState.IGNORED)) {
-            String error = "unknown cause";
-            if (e.isPresent()) {
-                error = e.get().getMessage();
-            }
-            handleRequestError(String.format("Internal SIP creation from external SIP \"%s\" fails. Cause : %s",
-                                             request.getSip().getId(),
-                                             error));
+    protected StepErrorInfo getStepErrorInfo(IngestRequest request, Exception exception) {
+        String stepName = "INITIAL";
+        if ((request.getState() == InternalRequestState.WAITING_VERSIONING_MODE) || (request.getState()
+                                                                                     == InternalRequestState.IGNORED)) {
+            return new StepErrorInfo(stepName,
+                                     ErrorModeHandling.NOTHING_TO_DO,
+                                     "waiting for admin action.",
+                                     IngestErrorType.INITIAL);
         }
+        return buildDefaultStepErrorInfo(stepName,
+                                         exception,
+                                         String.format("Internal SIP creation from external SIP \"%s\" fails.",
+                                                       request.getSip().getId()),
+                                         IngestErrorType.INITIAL);
     }
-
 }

@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
@@ -277,12 +278,14 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                 } catch (ModuleException e) {
                     logger.warn("An error occured while updating aip {}: {}", aip.getAip().getAipId(), e.getMessage());
                     // Save error inside requests
+                    updateRequest.setErrorType(IngestErrorType.UPDATE);
                     updateRequest.addError(e.getMessage());
                     updateRequest.setState(InternalRequestState.ERROR);
                 }
             } else {
                 logger.warn("Update task for aip {} is not valid", aip.getAip().getAipId());
                 // Save error inside requests
+                updateRequest.setErrorType(IngestErrorType.UPDATE);
                 updateRequest.addError("Update task is not valid");
                 updateRequest.setState(InternalRequestState.ERROR);
             }

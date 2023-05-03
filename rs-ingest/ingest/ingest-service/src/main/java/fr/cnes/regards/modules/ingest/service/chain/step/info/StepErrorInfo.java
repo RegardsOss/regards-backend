@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,28 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.exception;
+package fr.cnes.regards.modules.ingest.service.chain.step.info;
 
-import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
+import fr.cnes.regards.modules.ingest.service.chain.step.AbstractIngestStep;
 
 /**
- * ProcessingStepException thrown by TaggingStep
+ * Information related to a {@link AbstractIngestStep} in error
  *
- * @author Sébastien Binda
- */
-public class TagAIPException extends ProcessingStepException {
-
-    public TagAIPException(IngestErrorType errorType, String message, Throwable cause) {
-        super(errorType, message, cause);
-    }
-
-    public TagAIPException(IngestErrorType errorType, String message) {
-        this(errorType, message, null);
-    }
-
-    public TagAIPException(IngestErrorType errorType, Throwable cause) {
-        this(errorType, null, cause);
-    }
+ * @author Iliana Ghazali
+ **/
+public record StepErrorInfo(String stepName,
+                            ErrorModeHandling handleModeError,
+                            String errorMsg,
+                            IngestErrorType errorType) {
 
 }

@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
@@ -170,6 +171,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(
             SESSION_0)));
         updateCreatorRequest.setState(InternalRequestState.ERROR);
+        updateCreatorRequest.setErrors(IngestErrorType.UPDATE, Set.of("update creator error"));
         aipUpdatesCreatorRepository.save(updateCreatorRequest);
 
         List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aips.get(0),
@@ -179,22 +181,27 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
                                                                                                 "SOME TAG")),
                                                                       true);
         updateRequest.get(0).setState(InternalRequestState.ERROR);
+        updateRequest.get(0).setErrors(IngestErrorType.UPDATE, Set.of("update error"));
         aipUpdateRequestRepository.saveAll(updateRequest);
 
         ingestRequestRepository.save(IngestRequest.build(null,
                                                          mapper.dtoToMetadata(mtd),
                                                          InternalRequestState.ERROR,
                                                          IngestRequestStep.REMOTE_STORAGE_ERROR,
-                                                         aips.get(0).getSip().getSip()));
+                                                         aips.get(0).getSip().getSip(),
+                                                         Set.of("generation error"),
+                                                         IngestErrorType.GENERATION));
         OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
+        deletionRequest.setErrors(IngestErrorType.DELETE, Set.of("delete creator error"));
         oaisDeletionCreatorRepository.save(deletionRequest);
 
         OAISDeletionRequest oaisDeletionRequest = OAISDeletionRequest.build(aips.get(0),
                                                                             SessionDeletionMode.BY_STATE,
                                                                             true);
         oaisDeletionRequest.setState(InternalRequestState.ERROR);
+        oaisDeletionRequest.setErrors(IngestErrorType.DELETE, Set.of("delete error"));
         oaisDeletionRequestRepository.save(oaisDeletionRequest);
         LOGGER.info("=========================> END INIT DATA FOR TESTS <=====================");
     }
@@ -287,6 +294,41 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         LOGGER.info("=========================> END SEARCH UPDATE IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
         Assert.assertEquals(1, requestDtos.getTotalElements());
+    }
+
+    @Test
+    public void testSearchRequestsWithErrorTypes() {
+        initData();
+        PageRequest pr = PageRequest.of(0, 100);
+        LOGGER.info("=========================> BEGIN SEARCH INGEST IN ERROR CODE <=====================");
+        Page<RequestDto> requests = requestService.findRequestDtos(new SearchRequestParameters().withErrorTypesIncluded(
+            Set.of(IngestErrorType.GENERATION)), pr);
+
+        SearchRequestParameters searchRequestParameters = new SearchRequestParameters().withErrorTypesIncluded(List.of(
+            IngestErrorType.GENERATION));
+        Page<RequestDto> requestDtos = requestService.findRequestDtos(searchRequestParameters, pr);
+
+        LOGGER.info("=========================> END SEARCH INGEST IN ERROR CODE <=====================");
+        Assert.assertEquals(1, requests.getTotalElements());
+        Assert.assertEquals(1, requestDtos.getTotalElements());
+
+        LOGGER.info("=========================> BEGIN SEARCH AIP UPDATE IN ERROR CODE <=====================");
+        requests = requestService.findRequestDtos(new SearchRequestParameters().withErrorTypesIncluded(Set.of(
+            IngestErrorType.UPDATE)), pr);
+        searchRequestParameters = new SearchRequestParameters().withErrorTypesIncluded(List.of(IngestErrorType.UPDATE));
+        requestDtos = requestService.findRequestDtos(searchRequestParameters, pr);
+        LOGGER.info("=========================> END SEARCH AIP UPDATE IN ERROR CODE <=====================");
+        Assert.assertEquals(2, requests.getTotalElements());
+        Assert.assertEquals(2, requestDtos.getTotalElements());
+
+        LOGGER.info("=========================> BEGIN SEARCH OAIS DELETION IN ERROR CODE <=====================");
+        requests = requestService.findRequestDtos(new SearchRequestParameters().withErrorTypesIncluded(Set.of(
+            IngestErrorType.DELETE)), pr);
+        searchRequestParameters = new SearchRequestParameters().withErrorTypesIncluded(List.of(IngestErrorType.DELETE));
+        requestDtos = requestService.findRequestDtos(searchRequestParameters, pr);
+        LOGGER.info("=========================> END SEARCH OAIS DELETION IN ERROR CODE <=====================");
+        Assert.assertEquals(2, requests.getTotalElements());
+        Assert.assertEquals(2, requestDtos.getTotalElements());
     }
 
     public HashSet<AIPEntity> makeRequests() {

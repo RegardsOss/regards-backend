@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
@@ -259,7 +260,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         IngestRequestStep ingest_step = null;
         InternalRequestState state = null;
         DeletionRequestStep deletion_step = null;
-
+        IngestErrorType errorType = null;
         // Init notification steps for requests
         if (step.equals("notify")) {
             ingest_step = IngestRequestStep.LOCAL_TO_BE_NOTIFIED;
@@ -271,6 +272,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
             deletion_step = DeletionRequestStep.REMOTE_NOTIFICATION_ERROR;
             // update step
             state = InternalRequestState.ERROR;
+            errorType = IngestErrorType.NOTIFICATION;
         }
 
         // Check states and steps of requests
@@ -281,6 +283,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
             abstractRequest = it.next();
             // check state
             Assertions.assertEquals(state, abstractRequest.getState(), "The request state is not the expected one");
+            Assertions.assertEquals(errorType, abstractRequest.getErrorType());
             // check steps of different requests
             if (abstractRequest instanceof IngestRequest ingestRequest) {
                 Assertions.assertEquals(ingest_step,

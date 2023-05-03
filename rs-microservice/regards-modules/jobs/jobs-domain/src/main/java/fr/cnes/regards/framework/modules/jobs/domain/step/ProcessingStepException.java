@@ -29,15 +29,22 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 @SuppressWarnings("serial")
 public class ProcessingStepException extends ModuleException {
 
-    public ProcessingStepException(String message, Throwable cause) {
+    private final ErrorType errorType;
+
+    public ProcessingStepException(ErrorType errorType, String message, Throwable cause) {
         super(message, cause);
+        this.errorType = errorType;
     }
 
-    public ProcessingStepException(String message) {
-        super(message);
+    public ProcessingStepException(ErrorType errorType, String message) {
+        this(errorType, message, null);
     }
 
-    public ProcessingStepException(Throwable cause) {
-        super(cause);
+    public ProcessingStepException(ErrorType errorType, Throwable cause) {
+        this(errorType, null, cause);
+    }
+
+    public ErrorType getErrorType() {
+        return errorType;
     }
 }

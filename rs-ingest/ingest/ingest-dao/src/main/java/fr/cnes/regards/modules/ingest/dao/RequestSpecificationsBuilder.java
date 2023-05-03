@@ -51,6 +51,8 @@ public class RequestSpecificationsBuilder
             specifications.add(useValuesRestrictionEnumAsString(DISCRIMINANT_ATTRIBUTE, parameters.getRequestTypes()));
 
             specifications.add(useValuesRestriction(STATE_ATTRIBUTE, parameters.getRequestStates()));
+
+            specifications.add(useValuesRestriction("errorType", parameters.getErrorTypes()));
         }
     }
 

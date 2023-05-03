@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.request.ingest;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
@@ -70,7 +71,7 @@ public class IngestRequest extends AbstractRequest {
                                       InternalRequestState state,
                                       IngestRequestStep step,
                                       SIP sip) {
-        return build(requestId, metadata, state, step, sip, null);
+        return build(requestId, metadata, state, step, sip, null, null);
     }
 
     public static IngestRequest build(@Nullable String requestId,
@@ -78,7 +79,8 @@ public class IngestRequest extends AbstractRequest {
                                       InternalRequestState state,
                                       IngestRequestStep step,
                                       SIP sip,
-                                      @Nullable Set<String> errors) {
+                                      @Nullable Set<String> errors,
+                                      @Nullable IngestErrorType errorType) {
         IngestRequest request = new IngestRequest();
         request.setConfig(new IngestPayload());
         request.setRequestId(requestId == null ? generateRequestId() : requestId);
@@ -91,7 +93,7 @@ public class IngestRequest extends AbstractRequest {
         request.setProviderId(sip.getId());
         request.setSessionOwner(metadata.getSessionOwner());
         request.setSession(metadata.getSession());
-        request.setErrors(errors);
+        request.setErrors(errorType, errors);
         request.setCreationDate(OffsetDateTime.now());
 
         return request;

@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -142,6 +143,7 @@ public class IngestServiceWithCollisionIT extends IngestMultitenantServiceIT {
         IngestRequest request = argumentCaptor.getValue();
         Assert.assertNotNull(request);
         Assert.assertEquals(InternalRequestState.ERROR, request.getState());
+        Assert.assertEquals(IngestErrorType.INITIAL_SIP_ALREADY_EXISTS, request.getErrorType());
 
         // Check repository
         ingestServiceTest.waitForIngestion(1, TWO_SECONDS);

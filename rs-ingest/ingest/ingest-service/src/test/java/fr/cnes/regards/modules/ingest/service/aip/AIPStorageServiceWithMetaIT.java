@@ -23,6 +23,8 @@ import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
@@ -40,6 +42,7 @@ import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
@@ -166,7 +169,7 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
     // files                | file size (o) | type          | ** EXPECTED LOCATION **
     // _____________________|_______________|_________________________________________
     // simple_sip_01.dat    |      10       | RAWDATA       | Local-RAW, LOCAL-ALL
-    // simple_sip_01.dat    |  no file size | RAWDATA       | error exptected
+    // simple_sip_01.dat    |  no file size | RAWDATA       | error expected
     public void valid_ingest_process_fail_if_file_size_not_provided()
         throws FileNotFoundException, EntityInvalidException {
         // CHECK
@@ -190,8 +193,13 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             return requestService.findRequests(filters, Pageable.ofSize(10)).getTotalElements() == 1;
         });
-        errorRequestsCount = requestService.findRequests(filters, Pageable.ofSize(10)).getTotalElements();
-        Assert.assertEquals(1, errorRequestsCount);
+        Page<AbstractRequest> pageRequest = requestService.findRequests(
+            filters,
+            Pageable.ofSize(10));
+        Assert.assertEquals(1, pageRequest.getTotalElements());
+        AbstractRequest request = pageRequest.getContent().get(0);
+        Assert.assertEquals(InternalRequestState.ERROR, request.getState());
+        Assert.assertEquals(IngestErrorType.GENERATION, request.getErrorType());
     }
 
     private void validateStorageRequests(List<FileStorageRequestDTO> actualStorageRequests,
