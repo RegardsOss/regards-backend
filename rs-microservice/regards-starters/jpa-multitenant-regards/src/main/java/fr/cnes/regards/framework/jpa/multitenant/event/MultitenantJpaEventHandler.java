@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
@@ -99,6 +100,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
      */
     private final JpaProperties jpaProperties;
 
+    private final LockService lockService;
+
     public MultitenantJpaEventHandler(String microserviceName,
                                       Map<String, DataSource> dataSources,
                                       LockingTaskExecutors lockingTaskExecutors,
@@ -108,7 +111,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                                       ITenantConnectionResolver multitenantResolver,
                                       MultitenantJpaEventPublisher localPublisher,
                                       IEncryptionService encryptionService,
-                                      JpaProperties jpaProperties) {
+                                      JpaProperties jpaProperties,
+                                      LockService lockService) {
         this.microserviceName = microserviceName;
         this.dataSources = dataSources;
         this.lockingTaskExecutors = lockingTaskExecutors;
@@ -119,6 +123,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
         this.localPublisher = localPublisher;
         this.encryptionService = encryptionService;
         this.jpaProperties = jpaProperties;
+        this.lockService = lockService;
     }
 
     @Override
@@ -159,6 +164,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 DataSource oldDataSource = dataSources.remove(tenant);
                 // Remove related lock executor
                 lockingTaskExecutors.removeLockingTaskExecutor(tenant);
+                // Remove related lock registry
+                lockService.removeLockRegistry(tenant);
                 if (oldDataSource != null) {
                     oldDataSource.unwrap(HikariDataSource.class).close();
                 }
@@ -170,6 +177,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 dataSources.put(tenant, dataSource);
                 // Register a lock executor
                 lockingTaskExecutors.registerLockingTaskExecutor(tenant, dataSource);
+                // Register a lock registry
+                lockService.registerLockRegistry(tenant, dataSource);
                 // Broadcast connection ready with a Spring event
                 localPublisher.publishConnectionReady(tenant);
             } catch (Exception ex) {
@@ -238,6 +247,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     DataSource oldDataSource = dataSources.remove(tenantConnection.getTenant());
                     // Remove related lock executor
                     lockingTaskExecutors.removeLockingTaskExecutor(tenantConnection.getTenant());
+                    // Remove related lock registry
+                    lockService.removeLockRegistry(tenantConnection.getTenant());
                     if (oldDataSource != null) {
                         oldDataSource.unwrap(HikariDataSource.class).close();
                     }
@@ -270,6 +281,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     DataSource oldDataSource = dataSources.remove(tcf.getTenant());
                     // Remove related lock executor
                     lockingTaskExecutors.removeLockingTaskExecutor(tcf.getTenant());
+                    // Remove related lock registry
+                    lockService.removeLockRegistry(tcf.getTenant());
                     if (oldDataSource != null) {
                         oldDataSource.unwrap(HikariDataSource.class).close();
                     }

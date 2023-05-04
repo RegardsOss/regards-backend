@@ -108,6 +108,7 @@
         <com.spotify.docker-maven-plugin.version>1.2.2</com.spotify.docker-maven-plugin.version>
         <com.spotify.dockerfile-maven-plugin.version>1.4.13</com.spotify.dockerfile-maven-plugin.version>
         <org.springframework.boot.spring-boot-maven-plugin.version>2.6.4</org.springframework.boot.spring-boot-maven-plugin.version>
+        <org.springframework.integration.spring-integration-jdbc.version>5.5.9</org.springframework.integration.spring-integration-jdbc.version>
         <org.asciidoctor.asciidoctor-maven-plugin.version>2.2.2</org.asciidoctor.asciidoctor-maven-plugin.version>
 
         <!-- Specify version to avoid incompatibility between elasticsearch and spring ones -->
@@ -1816,6 +1817,11 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${org.springframework.boot.spring-boot-maven-plugin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.integration</groupId>
+                <artifactId>spring-integration-jdbc</artifactId>
+                <version>${org.springframework.integration.spring-integration-jdbc.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>

@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventHandler;
 import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
@@ -126,6 +127,11 @@ public class DataSourcesAutoConfiguration {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Bean
+    public LockService lockService() {
+        return new LockService();
+    }
+
     /**
      * Create a default TenantConnection resolver if none defined.
      *
@@ -153,7 +159,8 @@ public class DataSourcesAutoConfiguration {
      */
     @Bean(name = { DATA_SOURCE_BEAN_NAME })
     public Map<String, DataSource> getDataSources(ITenantConnectionResolver tenantConnectionResolver,
-                                                  LockingTaskExecutors lockingTaskExecutors)
+                                                  LockingTaskExecutors lockingTaskExecutors,
+                                                  LockService lockService)
         throws JpaMultitenantException, EncryptionException {
         ConcurrentMap<String, DataSource> datasources = new ConcurrentHashMap<>();
         // Retrieve microservice tenant connections from multitenant resolver
@@ -163,10 +170,15 @@ public class DataSourcesAutoConfiguration {
         for (TenantConnection connection : connections) {
             connection.setPassword(encryptionService.decrypt(connection.getPassword()));
         }
-        initDataSources(datasources, connections, false, tenantConnectionResolver, lockingTaskExecutors);
+        initDataSources(datasources, connections, false, tenantConnectionResolver, lockingTaskExecutors, lockService);
         // Add static datasources configuration from properties file if necessary
         // configuration files are not encrypted so we do not need to decrypt passwords here.
-        initDataSources(datasources, daoProperties.getTenants(), true, tenantConnectionResolver, lockingTaskExecutors);
+        initDataSources(datasources,
+                        daoProperties.getTenants(),
+                        true,
+                        tenantConnectionResolver,
+                        lockingTaskExecutors,
+                        lockService);
 
         return datasources;
     }
@@ -206,7 +218,8 @@ public class DataSourcesAutoConfiguration {
                                                                  IDatasourceSchemaHelper datasourceSchemaHelper,
                                                                  @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME)
                                                                  Map<String, DataSource> dataSources,
-                                                                 LockingTaskExecutors lockingTaskExecutors) {
+                                                                 LockingTaskExecutors lockingTaskExecutors,
+                                                                 LockService lockService) {
         return new MultitenantJpaEventHandler(microserviceName,
                                               dataSources,
                                               lockingTaskExecutors,
@@ -216,7 +229,8 @@ public class DataSourcesAutoConfiguration {
                                               multitenantResolver,
                                               localPublisher(),
                                               encryptionService,
-                                              jpaProperties);
+                                              jpaProperties,
+                                              lockService);
     }
 
     /**
@@ -236,7 +250,8 @@ public class DataSourcesAutoConfiguration {
                                  List<TenantConnection> connections,
                                  boolean needRegistration,
                                  ITenantConnectionResolver tenantConnectionResolver,
-                                 LockingTaskExecutors lockingTaskExecutors) {
+                                 LockingTaskExecutors lockingTaskExecutors,
+                                 LockService lockService) {
 
         for (TenantConnection tenantConnection : connections) {
             // Prevent duplicates
@@ -260,6 +275,9 @@ public class DataSourcesAutoConfiguration {
                     existingDataSources.put(tenant, dataSource);
                     // Register a lock executor
                     lockingTaskExecutors.registerLockingTaskExecutor(tenant, dataSource);
+                    // Register a lock registry
+                    lockService.registerLockRegistry(tenant, dataSource);
+
                 } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException |
                          IOException e) {
                     // Do not block all tenants if for an inconsistent data source
