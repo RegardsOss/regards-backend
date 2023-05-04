@@ -128,6 +128,11 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                             productService.handleSipGenerationSuccess(jobInfo);
                         }
                     }
+                    case ABORTED -> {
+                        if (SIPGenerationJob.class.getName().equals(jobClassName)) {
+                            productService.handleSIPGenerationAborted(jobInfo);
+                        }
+                    }
                 }
             }
         }

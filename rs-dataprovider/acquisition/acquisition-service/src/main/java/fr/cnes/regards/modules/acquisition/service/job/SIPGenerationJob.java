@@ -77,7 +77,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-        throws JobParameterMissingException, JobParameterInvalidException {
+            throws JobParameterMissingException, JobParameterInvalidException {
 
         Long acqProcessingChainId = getValue(parameters, CHAIN_PARAMETER_ID);
         try {
@@ -109,15 +109,13 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
         Set<Product> success = Sets.newHashSet();
         Set<Product> errors = Sets.newHashSet();
-
-        Set<String> interruptedSessions = Sets.newHashSet();
+        Set<Product> interrupted = Sets.newHashSet();
 
         for (Product product : products) {
             if (Thread.currentThread().isInterrupted()) {
                 debugInterruption = "before thread interruption";
-                interruptedSessions.add(product.getSession());
+                interrupted.add(product);
             } else {
-                logger.trace("Generating SIP for product {}", product.getProductName());
                 try {
                     // Launch generation plugin
                     SIP sip = generateSipPlugin.generate(product);
@@ -130,7 +128,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 } catch (Exception e) {
                     if (!Thread.currentThread().isInterrupted()) {
                         String message = String.format("Error while generating product \"%s\"",
-                                                       product.getProductName());
+                                product.getProductName());
                         logger.error(message, e);
                         sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR, true);
                         product.setSipState(ProductSIPState.GENERATION_ERROR);
@@ -142,21 +140,18 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             }
 
         }
-
         productService.handleGeneratedProducts(processingChain, success, errors);
+        logger.info("[{}] {} SIP generated in {} milliseconds. {} success, {} errors, {} interrupted, {}",
+                processingChain.getLabel(),
+                generatedCount,
+                System.currentTimeMillis() - startTime,
+                success.size(),
+                errors.size(),
+                interrupted.size(),
+                debugInterruption);
         success.clear();
         errors.clear();
-
-        logger.info("[{}] : {} SIP(s) generated in {} milliseconds {}",
-                    processingChain.getLabel(),
-                    generatedCount,
-                    System.currentTimeMillis() - startTime,
-                    debugInterruption);
         products.clear();
-
-        if (!interruptedSessions.isEmpty()) {
-            interruptedSessions.forEach(s -> this.sessionNotifier.notifyEndingChain(processingChain.getLabel(), s));
-        }
     }
 
     @Override

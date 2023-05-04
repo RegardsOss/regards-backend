@@ -659,16 +659,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public boolean canBeStarted(AcquisitionProcessingChainMonitor chainMonitor) {
         AcquisitionProcessingChain chain = chainMonitor.getChain();
-        return !chain.isLocked()
-               && chain.isActive()
-               && CollectionUtils.isEmpty(chainMonitor.getExecutionBlockers());
+        return !chain.isLocked() && chain.isActive() && CollectionUtils.isEmpty(chainMonitor.getExecutionBlockers());
     }
 
     @Override
     public boolean canBeStarted(AcquisitionProcessingChain chain) {
-        return !chain.isLocked()
-               && chain.isActive()
-               && !hasExecutionBlockers(chain, false);
+        return !chain.isLocked() && chain.isActive() && !hasExecutionBlockers(chain, false);
     }
 
     /**
@@ -763,7 +759,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         List<Path> scannedFiles = scanPlugin.scan(scanDirInfo.getScannedDirectory(), scanningDate);
 
         // Sort list according to last modification date
-        Collections.sort(scannedFiles, (file1, file2) -> {
+        scannedFiles.sort((file1, file2) -> {
             try {
                 return Files.getLastModifiedTime(file1).compareTo(Files.getLastModifiedTime(file2));
             } catch (IOException e) {

@@ -616,6 +616,23 @@ public class ProductService implements IProductService {
         handleSipGenerationEnd(processingChain.get(), products);
     }
 
+    @Override
+    public void handleSIPGenerationAborted(JobInfo jobInfo) {
+        Long chainId = jobInfo.getParametersAsMap().get(SIPGenerationJob.CHAIN_PARAMETER_ID).getValue();
+        Optional<AcquisitionProcessingChain> processingChain = acqChainRepository.findById(chainId);
+        JobParameter productNameParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_NAMES);
+        if (productNameParam != null) {
+            Set<String> productNames = productNameParam.getValue();
+            Set<Product> products = retrieve(productNames);
+            if (processingChain.isPresent()) {
+                Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
+                for (String session : sessions) {
+                    sessionNotifier.notifyEndingChain(processingChain.get().getLabel(), session);
+                }
+            }
+        }
+    }
+
     /**
      * Notify each session started by scheduled products
      */

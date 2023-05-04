@@ -172,6 +172,11 @@ public interface IProductService {
     void handleSipGenerationSuccess(JobInfo jobInfo);
 
     /**
+     * Handle {@link SIPGenerationJob} aborted.
+     */
+    void handleSIPGenerationAborted(JobInfo jobInfo);
+
+    /**
      * Handle successful SIP submission
      */
     void handleIngestedSIPSuccess(Collection<RequestInfo> infos);
