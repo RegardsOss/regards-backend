@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -46,10 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A service to save document files on disk.</br>
@@ -126,11 +124,11 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
                     }
                 }
             } catch (URISyntaxException | IOException e) {
-                String message = String.format("Error during attaching file");
+                String message = "Error during attaching file";
                 LOGGER.error(message, e);
                 throw new ModuleException(message, e);
             } catch (NoSuchAlgorithmException e) {
-                String message = String.format("No such algorithm (used on checksum computation)");
+                String message = "No such algorithm (used on checksum computation)";
                 LOGGER.error(message, e);
                 throw new ModuleException(message, e);
             }
@@ -148,7 +146,7 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
         // Retrieve reference
         Optional<LocalFile> localFileOpt = localStorageRepo.findOneByEntityAndFileChecksum(entity,
                                                                                            dataFile.getChecksum());
-        if (!localFileOpt.isPresent()) {
+        if (localFileOpt.isEmpty()) {
             throw new EntityNotFoundException(String.format("Failed to remove the file %s for the document %s",
                                                             dataFile.getFilename(),
                                                             entity.getIpId()), LocalFile.class);
@@ -168,12 +166,12 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
                 try {
                     Files.delete(filePath);
                 } catch (IOException e) {
-                    String message = String.format("Cannot delete file %s", filePath.toAbsolutePath().toString());
+                    String message = String.format("Cannot delete file %s", filePath.toAbsolutePath());
                     LOGGER.error(message, e);
                     throw new ModuleException(message);
                 }
             } else {
-                LOGGER.info("File %s was not removed on disk since another document uses it", filePath.toString());
+                LOGGER.info("File %s was not removed on disk since another document uses it", filePath);
             }
         }
         // Remove from database
@@ -196,7 +194,7 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
         try {
             Files.copy(filePath, output);
         } catch (IOException e) {
-            String message = String.format("Cannot stream file %s", filePath.toAbsolutePath().toString());
+            String message = String.format("Cannot stream file %s", filePath.toAbsolutePath());
             LOGGER.error(message, e);
             throw new ModuleException(message);
         }
@@ -207,7 +205,6 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
      * Store file in local storage and keep a database reference
      */
     private void store(String checksum, MultipartFile file, AbstractEntity<?> entity) throws IOException {
-
         if (localStorageRepo.findOneByEntityAndFileChecksum(entity, checksum).isPresent()) {
             // Silently skip
             LOGGER.warn("File {} already attached to the entity {}. Skipping store action.",
@@ -238,6 +235,41 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
         // Save reference in database
         LocalFile localStorage = LocalFile.build(entity, checksum);
         localStorageRepo.save(localStorage);
+    }
+
+    @Override
+    public Collection<DataFile> attachLocalFiles(AbstractEntity<?> entity,
+                                                 DataType dataType,
+                                                 List<DataFile> localFiles,
+                                                 String fileUriTemplate) throws ModuleException {
+        Set<DataFile> docFiles = new HashSet<>();
+        try {
+            for (DataFile dataFile : localFiles) {
+                File file = new File(dataFile.asUri());
+                if (file.exists()) {
+                    ContentTypeValidator.supports(dataType, file.getName(), "");
+                    // Build data file
+                    dataFile.setReference(Boolean.FALSE);
+                    // update file uri
+                    dataFile.setFilesize(Files.size(file.toPath()));
+                    dataFile.setDigestAlgorithm(DIGEST_ALGORITHM);
+                    dataFile.setChecksum(ChecksumUtils.computeHexChecksum(file.toPath(), DIGEST_ALGORITHM));
+                    dataFile.setFilename(file.getName());
+                    docFiles.add(dataFile);
+                } else {
+                    throw new ModuleException(String.format("File at location %s not exists", dataFile.asUri()));
+                }
+            }
+        } catch (IOException e) {
+            String message = "Error during attaching file";
+            LOGGER.error(message, e);
+            throw new ModuleException(message, e);
+        } catch (NoSuchAlgorithmException e) {
+            String message = "No such algorithm (used on checksum computation)";
+            LOGGER.error(message, e);
+            throw new ModuleException(message, e);
+        }
+        return docFiles;
     }
 
     /**

@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
@@ -83,22 +84,22 @@ public class StoragePlugin implements IStorageService {
     public <T extends AbstractEntity<?>> T store(T toPersist) {
 
         Collection<FileStorageRequestDTO> files = toPersist.getFiles()
-                                                           .values()
-                                                           .stream()
-                                                           .map(entry -> initStorageRequest(entry, toPersist.getIpId()))
-                                                           .collect(Collectors.toSet());
+                .values()
+                .stream()
+                .map(entry -> initStorageRequest(entry, toPersist.getIpId()))
+                .collect(Collectors.toSet());
 
-        if (!StringUtils.isEmpty(damSettingsService.getStorageLocation()) && (!files.isEmpty())) {
+        if (!ObjectUtils.isEmpty(damSettingsService.getStorageLocation()) && (!files.isEmpty())) {
             Set<AbstractEntityRequest> infos = this.storageClient.store(files)
-                                                                 .stream()
-                                                                 .map(request -> new AbstractEntityRequest(request.getGroupId(),
-                                                                                                           toPersist.getIpId()))
-                                                                 .collect(Collectors.toSet());
+                    .stream()
+                    .map(request -> new AbstractEntityRequest(request.getGroupId(),
+                            toPersist.getIpId()))
+                    .collect(Collectors.toSet());
             this.entityRequestRepo.saveAll(infos);
         } else {
             String message = "Data files are stored locally on datamanagement service as no storage location has been defined in microservice configuration.";
             String title = "Files stored locally";
-            String[] users = new String[] { authResolver.getUser() };
+            String[] users = new String[]{authResolver.getUser()};
             notificationClient.notify(message, title, NotificationLevel.INFO, users);
         }
         return toPersist;
@@ -107,47 +108,47 @@ public class StoragePlugin implements IStorageService {
     @Override
     public <T extends AbstractEntity<?>> T update(T toUpdate, T oldEntity) {
 
-        if (!StringUtils.isEmpty(damSettingsService.getStorageLocation())) {
+        if (!ObjectUtils.isEmpty(damSettingsService.getStorageLocation())) {
 
             // manage added files in toUpdate and not in oldEntity
             Collection<FileStorageRequestDTO> filesToAdd = toUpdate.getFiles()
-                                                                   .values()
-                                                                   .stream()
-                                                                   .filter(file -> !oldEntity.getFiles()
-                                                                                             .values()
-                                                                                             .stream()
-                                                                                             .anyMatch(f -> f.getChecksum()
-                                                                                                             .equals(
-                                                                                                                 file.getChecksum())))
-                                                                   // no need to store external files
-                                                                   .filter(file -> !file.isReference())
-                                                                   .map(entry -> initStorageRequest(entry,
-                                                                                                    toUpdate.getIpId()))
-                                                                   .collect(Collectors.toSet());
+                    .values()
+                    .stream()
+                    .filter(file -> !oldEntity.getFiles()
+                            .values()
+                            .stream()
+                            .anyMatch(f -> f.getChecksum()
+                                    .equals(
+                                            file.getChecksum())))
+                    // no need to store external files
+                    .filter(file -> Boolean.FALSE.equals(file.isReference()))
+                    .map(entry -> initStorageRequest(entry,
+                            toUpdate.getIpId()))
+                    .collect(Collectors.toSet());
             if (!filesToAdd.isEmpty()) {
                 Set<AbstractEntityRequest> infos = this.storageClient.store(filesToAdd)
-                                                                     .stream()
-                                                                     .map(request -> new AbstractEntityRequest(request.getGroupId(),
-                                                                                                               toUpdate.getIpId()))
-                                                                     .collect(Collectors.toSet());
+                        .stream()
+                        .map(request -> new AbstractEntityRequest(request.getGroupId(),
+                                toUpdate.getIpId()))
+                        .collect(Collectors.toSet());
                 this.entityRequestRepo.saveAll(infos);
             }
             // manage deleted file in toUpdate and present in oldEntity
             Collection<FileDeletionRequestDTO> filesToDelete = oldEntity.getFiles()
-                                                                        .values()
-                                                                        .stream()
-                                                                        .filter(file -> !toUpdate.getFiles()
-                                                                                                 .values()
-                                                                                                 .stream()
-                                                                                                 .anyMatch(f -> f.getChecksum()
-                                                                                                                 .equals(
-                                                                                                                     file.getChecksum())))
-                                                                        // no need to delete external files
-                                                                        .filter(file -> Boolean.FALSE.equals(file.isReference()))
-                                                                        .map(entry -> initDeletionRequest(entry,
-                                                                                                          toUpdate.getIpId()
-                                                                                                                  .toString()))
-                                                                        .collect(Collectors.toSet());
+                    .values()
+                    .stream()
+                    .filter(file -> !toUpdate.getFiles()
+                            .values()
+                            .stream()
+                            .anyMatch(f -> f.getChecksum()
+                                    .equals(
+                                            file.getChecksum())))
+                    // no need to delete external files
+                    .filter(file -> Boolean.FALSE.equals(file.isReference()))
+                    .map(entry -> initDeletionRequest(entry,
+                            toUpdate.getIpId()
+                                    .toString()))
+                    .collect(Collectors.toSet());
             if (!filesToDelete.isEmpty()) {
                 this.storageClient.delete(filesToDelete);
             }
@@ -163,12 +164,12 @@ public class StoragePlugin implements IStorageService {
         if (!StringUtils.isEmpty(damSettingsService.getStorageLocation())) {
 
             Collection<FileDeletionRequestDTO> files = toDelete.getFiles()
-                                                               .values()
-                                                               .stream()
-                                                               .map(entry -> initDeletionRequest(entry,
-                                                                                                 toDelete.getIpId()
-                                                                                                         .toString()))
-                                                               .collect(Collectors.toList());
+                    .values()
+                    .stream()
+                    .map(entry -> initDeletionRequest(entry,
+                            toDelete.getIpId()
+                                    .toString()))
+                    .collect(Collectors.toList());
             if (!files.isEmpty()) {
                 this.storageClient.delete(files);
             }
@@ -178,24 +179,36 @@ public class StoragePlugin implements IStorageService {
     }
 
     private FileStorageRequestDTO initStorageRequest(DataFile file, UniformResourceName urn) {
+        String originUrl = computeOriginUrl(file);
         return FileStorageRequestDTO.build(file.getFilename(),
-                                           file.getChecksum(),
-                                           file.getDigestAlgorithm(),
-                                           file.getMimeType().toString(),
-                                           urn.toString(),
-                                           null,
-                                           null,
-                                           String.format(URI_TEMPLATE, file.getUri(), this.tenantResolver.getTenant()),
-                                           damSettingsService.getStorageLocation(),
-                                           Optional.ofNullable(damSettingsService.getStorageSubDirectory()));
+                file.getChecksum(),
+                file.getDigestAlgorithm(),
+                file.getMimeType().toString(),
+                urn.toString(),
+                null,
+                null,
+                originUrl,
+                damSettingsService.getStorageLocation(),
+                Optional.ofNullable(damSettingsService.getStorageSubDirectory()));
+    }
+
+    private String computeOriginUrl(DataFile file) {
+        String originUrl;
+        if (file.getUri().startsWith("file:")) {
+            // don't alter uri if is local file
+            originUrl = file.getUri();
+        } else {
+            originUrl = String.format(URI_TEMPLATE, file.getUri(), this.tenantResolver.getTenant());
+        }
+        return originUrl;
     }
 
     private FileDeletionRequestDTO initDeletionRequest(DataFile file, String urn) {
         return FileDeletionRequestDTO.build(file.getChecksum(),
-                                            damSettingsService.getStorageLocation(),
-                                            urn,
-                                            null,
-                                            null,
-                                            false);
+                damSettingsService.getStorageLocation(),
+                urn,
+                null,
+                null,
+                false);
     }
 }
