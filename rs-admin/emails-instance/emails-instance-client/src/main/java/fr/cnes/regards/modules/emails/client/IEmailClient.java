@@ -34,7 +34,7 @@ import java.util.Date;
  * @author Xavier-Alexandre Brochard
  */
 
-@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.emails-client")
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.emails-instance-client")
 public interface IEmailClient {
 
     String ROOT_PATH = "/email";

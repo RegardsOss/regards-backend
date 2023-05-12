@@ -59,7 +59,7 @@
         <module>bootstrap-administration-instance</module>
         <module>accessrights</module>
         <module>accessrights-instance</module>
-        <module>emails</module>
+        <module>emails-instance</module>
         <module>notification</module>
         <module>notification-instance</module>
         <module>local-tenant-resolver</module>

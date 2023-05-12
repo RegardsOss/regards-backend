@@ -97,23 +97,23 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.emails</groupId>
-            <artifactId>emails-client</artifactId>
+            <artifactId>emails-instance-client</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.emails</groupId>
-            <artifactId>emails-dao</artifactId>
+            <artifactId>emails-instance-dao</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.emails</groupId>
-            <artifactId>emails-domain</artifactId>
+            <artifactId>emails-instance-domain</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.emails</groupId>
-            <artifactId>emails-rest</artifactId>
+            <artifactId>emails-instance-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.emails</groupId>
-            <artifactId>emails-service</artifactId>
+            <artifactId>emails-instance-service</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.microservices.administration</groupId>

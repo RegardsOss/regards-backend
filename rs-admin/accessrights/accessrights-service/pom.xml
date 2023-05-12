@@ -83,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.emails</groupId>
-            <artifactId>emails-client</artifactId>
+            <artifactId>emails-instance-client</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>

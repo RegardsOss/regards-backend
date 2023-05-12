@@ -43,7 +43,7 @@ public class EmailSendingStrategy implements ISendingStrategy {
      * Feign client from module emails
      */
     // Use the feign client in order to avoid a cyclic reference between two instance modules
-    // (notification-instance-service and emails-service)
+    // (notification-instance-service and emails-instance-service)
     @Autowired
     private IEmailClient emailClient;
 

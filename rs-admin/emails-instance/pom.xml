@@ -21,15 +21,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.modules.emails</groupId>
-    <artifactId>emails-domain</artifactId>
-    <description>Model layer of Emails module</description>
-    <packaging>jar</packaging>
+    <groupId>fr.cnes.regards.modules</groupId>
+    <artifactId>emails</artifactId>
+    <description>Module for sending emails through REGARDS</description>
+    <packaging>pom</packaging>
 
     <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>emails</artifactId>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-oss-backend</artifactId>
         <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -53,21 +54,12 @@
         </developer>
     </developers>
 
-    <dependencies>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-data-regards</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-commons-regards</artifactId>
-        </dependency>
-        <!-- Tests -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>emails-instance-dao</module>
+        <module>emails-instance-domain</module>
+        <module>emails-instance-rest</module>
+        <module>emails-instance-service</module>
+        <module>emails-instance-client</module>
+    </modules>
 
 </project>
