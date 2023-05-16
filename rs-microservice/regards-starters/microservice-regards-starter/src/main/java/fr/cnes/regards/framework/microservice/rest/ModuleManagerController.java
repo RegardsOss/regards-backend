@@ -146,7 +146,7 @@ public class ModuleManagerController {
         }
     }
 
-    @PostMapping(value = CONFIGURATION_MAPPING)
+    @PostMapping(value = CONFIGURATION_MAPPING, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResourceAccess(description = "Import microservice configuration", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Set<ModuleImportReport>> importConfiguration(@RequestParam("file") MultipartFile file)
         throws ModuleException {

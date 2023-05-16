@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.project.domain;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -186,6 +187,7 @@ public class Project implements IIdentifiable<Long> {
         this.icon = icon;
     }
 
+    @Schema(name = "isPublic") // Force name isPublic otherwise swagger believes that attribute name is "public"
     public boolean isPublic() {
         return isPublic;
     }
@@ -210,6 +212,8 @@ public class Project implements IIdentifiable<Long> {
         this.crs = crs;
     }
 
+    @Schema(name = "isPoleToBeManaged") // Force name isPoleToBeManaged otherwise swagger believes that attribute name
+    // is "poleToBeManaged"
     public Boolean getPoleToBeManaged() {
         return isPoleToBeManaged;
     }
@@ -248,6 +252,7 @@ public class Project implements IIdentifiable<Long> {
     /**
      * @return whether the project is deleted or not
      */
+    @Schema(name = "isDeleted") // Force name isDeleted otherwise swagger believes that attribute name is "deleted"
     public boolean isDeleted() {
         return isDeleted;
     }
@@ -290,6 +295,8 @@ public class Project implements IIdentifiable<Long> {
     /**
      * @return whether the project is accessible or not
      */
+    @Schema(name = "isAccessible") // Force name isAccessible otherwise swagger believes that attribute name is
+    // "accessible"
     public Boolean getAccessible() {
         return isAccessible;
     }

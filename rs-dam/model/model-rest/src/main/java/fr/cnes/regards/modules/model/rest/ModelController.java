@@ -228,7 +228,7 @@ public class ModelController implements IResourceController<Model> {
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "Import a model", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.POST, value = "/import")
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EntityModel<Model>> importModel(@RequestParam("file") MultipartFile pFile)
         throws ModuleException {
         try {

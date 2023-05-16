@@ -50,6 +50,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -133,7 +134,7 @@ public class SIPController implements IResourceController<SIPEntity> {
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "SIP collection submission using multipart request", role = DefaultRole.EXPLOIT)
-    @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
+    @PostMapping(value = IMPORT_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RequestInfoDto> ingestFile(@RequestParam(name = REQUEST_PARAM_FILE) MultipartFile file)
         throws ModuleException {
         try {

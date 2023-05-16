@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -218,6 +219,7 @@ public class Role implements IIdentifiable<Long> {
     /**
      * @return the isDefault
      */
+    @Schema(name = "isDefault") // Force name isDefault otherwise swagger believes that attribute name is "default"
     public boolean isDefault() {
         return isDefault;
     }
@@ -232,6 +234,7 @@ public class Role implements IIdentifiable<Long> {
     /**
      * @return the isNative
      */
+    @Schema(name = "isNative") // Force name isNative otherwise swagger believes that attribute name is "native"
     public boolean isNative() {
         return isNative;
     }

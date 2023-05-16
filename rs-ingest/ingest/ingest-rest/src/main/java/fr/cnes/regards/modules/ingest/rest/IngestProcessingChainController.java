@@ -98,7 +98,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
     }
 
     @ResourceAccess(description = "Retrieve an IngestProcessingChain by name.", role = DefaultRole.EXPLOIT)
-    @RequestMapping(value = NAME_PATH, method = RequestMethod.GET)
+    @GetMapping(value = NAME_PATH)
     public ResponseEntity<EntityModel<IngestProcessingChain>> get(@PathVariable("name") String name)
         throws ModuleException {
         IngestProcessingChain chain = ingestProcessingService.getChain(name);
@@ -106,14 +106,14 @@ public class IngestProcessingChainController implements IResourceController<Inge
     }
 
     @ResourceAccess(description = "Delete an IngestProcessingChain by name.")
-    @RequestMapping(value = NAME_PATH, method = RequestMethod.DELETE)
+    @DeleteMapping(value = NAME_PATH)
     public ResponseEntity<Void> delete(@PathVariable("name") String name) throws ModuleException {
         ingestProcessingService.deleteChain(name);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Create a new ingestion processing chain", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping()
     public ResponseEntity<EntityModel<IngestProcessingChain>> create(@Valid @RequestBody
                                                                      IngestProcessingChain processingChain)
         throws ModuleException {
@@ -124,7 +124,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
 
     @ResourceAccess(description = "Create a new ingestion processing chain importing JSON file",
                     role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
+    @PostMapping(value = IMPORT_PATH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EntityModel<IngestProcessingChain>> createByFile(@RequestParam("file") MultipartFile file)
         throws ModuleException {
         try {
@@ -138,7 +138,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
     }
 
     @ResourceAccess(description = "Export an ingestion processing chain in JSON format", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.GET, value = EXPORT_PATH)
+    @GetMapping(value = EXPORT_PATH)
     public void export(HttpServletRequest pRequest, HttpServletResponse pResponse, @PathVariable("name") String name)
         throws ModuleException {
         IngestProcessingChain chain = ingestProcessingService.getChain(name);
@@ -162,7 +162,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
     }
 
     @ResourceAccess(description = "Update an existing IngestProcessingChain.", role = DefaultRole.ADMIN)
-    @RequestMapping(value = NAME_PATH, method = RequestMethod.PUT)
+    @PutMapping(value = NAME_PATH)
     public ResponseEntity<EntityModel<IngestProcessingChain>> update(@PathVariable("name") String name,
                                                                      @Valid @RequestBody
                                                                      IngestProcessingChain processingChain)

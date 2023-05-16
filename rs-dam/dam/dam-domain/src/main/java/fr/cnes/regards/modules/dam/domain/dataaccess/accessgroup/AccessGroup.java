@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -105,6 +106,7 @@ public class AccessGroup implements IIdentifiable<Long> {
         return users;
     }
 
+    @Schema(name = "isPublic") // Force name isPublic otherwise swagger believes that attribute name is "public"
     public boolean isPublic() {
         return isPublic;
     }
@@ -121,6 +123,7 @@ public class AccessGroup implements IIdentifiable<Long> {
         this.isInternal = isInternal;
     }
 
+    @Schema(name = "isInternal") // Force name isInternal otherwise swagger believes that attribute name is "internal"
     public boolean isInternal() {
         return isInternal;
     }

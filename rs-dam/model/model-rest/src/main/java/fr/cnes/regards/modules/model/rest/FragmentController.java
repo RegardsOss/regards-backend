@@ -130,7 +130,7 @@ public class FragmentController implements IResourceController<Fragment> {
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "Add a fragment", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping()
     public ResponseEntity<EntityModel<Fragment>> addFragment(@Valid @RequestBody Fragment fragment)
         throws ModuleException {
         return ResponseEntity.ok(toResource(fragmentService.addFragment(fragment)));
@@ -144,7 +144,7 @@ public class FragmentController implements IResourceController<Fragment> {
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "Get a fragment", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.GET, value = "/{fragmentId}")
+    @GetMapping(value = "/{fragmentId}")
     public ResponseEntity<EntityModel<Fragment>> getFragment(@PathVariable(name = "fragmentId") Long id)
         throws ModuleException {
         return ResponseEntity.ok(toResource(fragmentService.getFragment(id)));
@@ -159,7 +159,7 @@ public class FragmentController implements IResourceController<Fragment> {
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "Update a fragment", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.PUT, value = "/{fragmentId}")
+    @PutMapping(value = "/{fragmentId}")
     public ResponseEntity<EntityModel<Fragment>> updateFragment(@PathVariable(name = "fragmentId") Long id,
                                                                 @Valid @RequestBody Fragment fragment)
         throws ModuleException {
@@ -174,7 +174,7 @@ public class FragmentController implements IResourceController<Fragment> {
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "Delete a fragment", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{fragmentId}")
+    @DeleteMapping(value = "/{fragmentId}")
     public ResponseEntity<Void> deleteFragment(@PathVariable(name = "fragmentId") Long id) throws ModuleException {
         fragmentService.deleteFragment(id);
         return ResponseEntity.noContent().build();
@@ -189,7 +189,7 @@ public class FragmentController implements IResourceController<Fragment> {
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "Export a fragment", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.GET, value = "/{fragmentId}/export")
+    @GetMapping(value = "/{fragmentId}/export")
     public void exportFragment(HttpServletRequest request,
                                HttpServletResponse response,
                                @PathVariable(name = "fragmentId") Long fragmentId) throws ModuleException {
@@ -220,7 +220,7 @@ public class FragmentController implements IResourceController<Fragment> {
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "Import a fragment", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.POST, value = "/import")
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EntityModel<Fragment>> importFragment(@RequestParam("file") MultipartFile file)
         throws ModuleException {
         try {
