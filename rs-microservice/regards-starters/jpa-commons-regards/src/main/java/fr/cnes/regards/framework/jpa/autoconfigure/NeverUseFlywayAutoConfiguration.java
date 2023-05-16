@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureBefore(FlywayAutoConfiguration.class)
 public class NeverUseFlywayAutoConfiguration {
 
-    @Value("${spring.jpa.properties.hibernate.default_schema:null}")
+    @Value("${spring.jpa.properties.hibernate.default_schema:#{null}}")
     private String defaultSchema;
 
     /**
