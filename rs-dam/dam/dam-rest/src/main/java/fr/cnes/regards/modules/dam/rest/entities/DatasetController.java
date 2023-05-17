@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
@@ -173,7 +174,7 @@ public class DatasetController implements IResourceController<Dataset> {
     public ResponseEntity<PagedModel<EntityModel<Dataset>>> retrieveDatasets(
         @RequestParam(name = "label", required = false) String label,
         Pageable pageable,
-        PagedResourcesAssembler<Dataset> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<Dataset> assembler) {
 
         return new ResponseEntity<>(toPagedResources(datasetService.search(label, pageable), assembler), HttpStatus.OK);
 
@@ -298,7 +299,7 @@ public class DatasetController implements IResourceController<Dataset> {
     public ResponseEntity<PagedModel<EntityModel<AttributeModel>>> retrieveDataAttributes(
         @RequestBody DatasetDataAttributesRequestBody requestBody,
         final Pageable pageable,
-        final PagedResourcesAssembler<AttributeModel> assembler) throws ModuleException {
+        @Parameter(hidden = true) final PagedResourcesAssembler<AttributeModel> assembler) throws ModuleException {
         Page<AttributeModel> result = datasetService.getDataAttributeModels(requestBody.getDatasetIds(),
                                                                             requestBody.getModelNames(),
                                                                             pageable);
@@ -317,7 +318,7 @@ public class DatasetController implements IResourceController<Dataset> {
     public ResponseEntity<PagedModel<EntityModel<AttributeModel>>> retrieveAttributes(
         @RequestBody DatasetDataAttributesRequestBody body,
         final Pageable pageable,
-        final PagedResourcesAssembler<AttributeModel> assembler) throws ModuleException {
+        @Parameter(hidden = true) final PagedResourcesAssembler<AttributeModel> assembler) throws ModuleException {
         Page<AttributeModel> result = datasetService.getAttributeModels(body.getDatasetIds(),
                                                                         body.getModelNames(),
                                                                         pageable);

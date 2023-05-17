@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.dto.DatasetWithAccessRight;
 import fr.cnes.regards.modules.dam.service.dataaccess.IDatasetWithAccessRightService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,7 +78,7 @@ public class DatasetWithAccessRightController implements IResourceController<Dat
         @PathVariable(name = "accessGroupName") String accessGroupName,
         @RequestParam(name = "datasetLabel", required = false) String label,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageRequest,
-        PagedResourcesAssembler<DatasetWithAccessRight> assembler) throws ModuleException {
+        @Parameter(hidden = true) PagedResourcesAssembler<DatasetWithAccessRight> assembler) throws ModuleException {
         final Page<DatasetWithAccessRight> datasetsWithAR = service.search(label, accessGroupName, pageRequest);
         final PagedModel<EntityModel<DatasetWithAccessRight>> resources = toPagedResources(datasetsWithAR, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);

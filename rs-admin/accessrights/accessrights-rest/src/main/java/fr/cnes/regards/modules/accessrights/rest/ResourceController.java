@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -89,7 +90,7 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
                     role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccesses(
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ResourcesAccess> assembler) throws ModuleException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ResourcesAccess> assembler) throws ModuleException {
         return new ResponseEntity<>(toPagedResources(resourceService.retrieveRessources(null, pageable), assembler),
                                     HttpStatus.OK);
     }

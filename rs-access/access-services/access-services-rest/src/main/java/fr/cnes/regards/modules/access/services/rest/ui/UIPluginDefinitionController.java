@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.access.services.service.ui.IUIPluginDefinitionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,7 +101,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     public HttpEntity<PagedModel<EntityModel<UIPluginDefinition>>> retrievePlugins(
         @RequestParam(value = "type", required = false) final UIPluginTypesEnum type,
         @PageableDefault(sort = "name", direction = Sort.Direction.ASC, size = 500) Pageable pageable,
-        final PagedResourcesAssembler<UIPluginDefinition> assembler) {
+        @Parameter(hidden = true) final PagedResourcesAssembler<UIPluginDefinition> assembler) {
 
         Page<UIPluginDefinition> plugins;
         if (type != null) {

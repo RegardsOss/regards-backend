@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.data.domain.Pageable;
@@ -72,7 +73,7 @@ public class AccessGroupController implements IResourceController<AccessGroup> {
     public ResponseEntity<PagedModel<EntityModel<AccessGroup>>> retrieveAccessGroupsList(
         @RequestParam(name = "public", required = false) Boolean isPublic,
         @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<AccessGroup> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<AccessGroup> assembler) {
 
         return ResponseEntity.ok(toPagedResources(accessGroupService.retrieveAccessGroups(isPublic, pageable),
                                                   assembler));

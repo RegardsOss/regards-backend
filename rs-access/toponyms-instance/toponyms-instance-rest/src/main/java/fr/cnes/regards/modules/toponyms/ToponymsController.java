@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import fr.cnes.regards.modules.toponyms.service.ToponymsService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -90,7 +91,7 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     @ResourceAccess(description = "Endpoint to retrieve all toponyms with pagination", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(
         @SortDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ToponymDTO> assembler) throws EntityNotFoundException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ToponymDTO> assembler) throws EntityNotFoundException {
         Page<ToponymDTO> toponyms = service.findAllByVisibility(ToponymLocaleEnum.EN.getLocale(),
                                                                 DEFAULT_TOPONYM_VISIBILITY,
                                                                 pageable);

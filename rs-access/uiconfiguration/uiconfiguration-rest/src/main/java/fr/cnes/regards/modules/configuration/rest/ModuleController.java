@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.IModuleService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -97,7 +98,7 @@ public class ModuleController implements IResourceController<Module> {
         @RequestParam(value = "active", required = false) String onlyActive,
         @RequestParam(value = "type", required = false) String type,
         @SortDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<Module> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<Module> assembler) {
         Boolean activeBool = (onlyActive != null) ? Boolean.parseBoolean(onlyActive) : null;
         Page<Module> modules = service.retrieveModules(applicationId, activeBool, type, pageable);
         PagedModel<EntityModel<Module>> resources = toPagedResources(modules, assembler);

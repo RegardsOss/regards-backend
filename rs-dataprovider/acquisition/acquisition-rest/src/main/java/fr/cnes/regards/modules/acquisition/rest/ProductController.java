@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -106,7 +107,7 @@ public class ProductController implements IResourceController<Product> {
         @RequestParam(name = REQUEST_PARAM_FROM, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         OffsetDateTime from,
         @PageableDefault(sort = "lastUpdate", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<Product> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<Product> assembler) {
         Page<Product> products = productService.search(state,
                                                        sipState,
                                                        productName,

@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.SearchException;
 import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -129,8 +130,8 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Get features from a complex search", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<EntityFeature>>> searchDataObjects(
-        @RequestBody @Valid ComplexSearchRequest complexSearchRequest, PagedResourcesAssembler<EntityFeature> assembler)
-        throws ModuleException {
+        @RequestBody @Valid ComplexSearchRequest complexSearchRequest,
+        @Parameter(hidden = true) PagedResourcesAssembler<EntityFeature> assembler) throws ModuleException {
         List<ICriterion> searchCriterions = Lists.newArrayList();
         for (SearchRequest request : complexSearchRequest.getRequests()) {
             searchCriterions.add(dispatcher.computeComplexCriterion(request));

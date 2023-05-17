@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.service.IInstanceNotificationService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -120,7 +121,8 @@ public class NotificationController implements IResourceController<Notification>
     public ResponseEntity<PagedModel<EntityModel<INotificationWithoutMessage>>> retrieveNotifications(
         @RequestParam(name = "state", required = false) NotificationStatus state,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page,
-        PagedResourcesAssembler<INotificationWithoutMessage> assembler) throws EntityNotFoundException {
+        @Parameter(hidden = true) PagedResourcesAssembler<INotificationWithoutMessage> assembler)
+        throws EntityNotFoundException {
         Page<INotificationWithoutMessage> notifications = notificationService.retrieveNotifications(page, state);
         return new ResponseEntity<>(notifWithoutMsgPagedResources(notifications, assembler), HttpStatus.OK);
     }

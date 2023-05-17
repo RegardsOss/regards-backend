@@ -122,7 +122,7 @@ public class RequestController implements IResourceController<RequestDto> {
         @Parameter(description = "Filter criteria for requests") @RequestBody SearchRequestParameters filters,
         @Parameter(description = "Sorting and page configuration")
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<RequestDto> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<RequestDto> assembler) {
 
         return new ResponseEntity<>(toPagedResources(requestService.findRequestDtos(filters, pageable), assembler),
                                     HttpStatus.OK);

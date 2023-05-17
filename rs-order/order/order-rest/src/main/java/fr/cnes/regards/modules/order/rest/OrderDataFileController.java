@@ -37,6 +37,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Encoders;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +92,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     public ResponseEntity<PagedModel<EntityModel<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
                                                                             @PathVariable("datasetId") Long datasetId,
                                                                             Pageable pageRequest,
+                                                                            @Parameter(hidden = true)
                                                                             PagedResourcesAssembler<OrderDataFile> assembler) {
         Page<OrderDataFile> dataFiles = datasetTaskService.loadDataFiles(datasetId, pageRequest);
         return ResponseEntity.ok(toPagedResources(dataFiles, assembler));

@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
@@ -97,7 +98,8 @@ public class SearchEngineConfigurationController implements IResourceController<
     public ResponseEntity<PagedModel<EntityModel<SearchEngineConfiguration>>> retrieveConfs(
         @RequestParam(value = ENGINE_TYPE, required = false) final String engineType,
         @PageableDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,
-        final PagedResourcesAssembler<SearchEngineConfiguration> assembler) throws ModuleException {
+        @Parameter(hidden = true) final PagedResourcesAssembler<SearchEngineConfiguration> assembler)
+        throws ModuleException {
 
         return new ResponseEntity<>(toPagedResources(service.retrieveConfs(Optional.ofNullable(engineType), pageable),
                                                      assembler), HttpStatus.OK);

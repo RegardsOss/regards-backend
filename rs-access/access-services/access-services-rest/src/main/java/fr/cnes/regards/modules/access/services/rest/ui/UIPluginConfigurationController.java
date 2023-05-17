@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -89,7 +90,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
         @RequestParam(value = "isActive", required = false) final Boolean isActive,
         @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
         @RequestParam(value = "type", required = false) final UIPluginTypesEnum pluginType,
-        final PagedResourcesAssembler<UIPluginConfiguration> assembler,
+        @Parameter(hidden = true) final PagedResourcesAssembler<UIPluginConfiguration> assembler,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
         final Page<UIPluginConfiguration> pluginConfs = service.retrievePluginConfigurations(pluginType,
                                                                                              isActive,
@@ -117,7 +118,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
         @PathVariable("pluginId") final Long pPluginId,
         @RequestParam(value = "isActive", required = false) final Boolean isActive,
         @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
-        final PagedResourcesAssembler<UIPluginConfiguration> assembler,
+        @Parameter(hidden = true) final PagedResourcesAssembler<UIPluginConfiguration> assembler,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) throws EntityException {
         final UIPluginDefinition plugin = new UIPluginDefinition();
         plugin.setId(pPluginId);

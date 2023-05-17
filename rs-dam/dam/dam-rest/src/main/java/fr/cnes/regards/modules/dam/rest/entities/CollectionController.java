@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.service.entities.ICollectionService;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +88,7 @@ public class CollectionController implements IResourceController<Collection> {
     public ResponseEntity<PagedModel<EntityModel<Collection>>> retrieveCollections(
         @RequestParam(name = "label", required = false) String label,
         Pageable pageable,
-        PagedResourcesAssembler<Collection> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<Collection> assembler) {
 
         return new ResponseEntity<>(toPagedResources(collectionService.search(label, pageable), assembler),
                                     HttpStatus.OK);

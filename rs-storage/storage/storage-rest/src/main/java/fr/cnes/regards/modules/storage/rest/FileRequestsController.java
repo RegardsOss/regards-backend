@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -82,7 +83,7 @@ public class FileRequestsController implements IResourceController<FileRequestIn
         @PathVariable(name = "type") FileRequestType type,
         @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status,
         Pageable page,
-        PagedResourcesAssembler<FileRequestInfoDTO> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<FileRequestInfoDTO> assembler) {
         return new ResponseEntity<>(toPagedResources(service.getRequestInfos(storageName,
                                                                              type,
                                                                              Optional.ofNullable(status),

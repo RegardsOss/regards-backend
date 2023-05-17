@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -84,7 +85,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     @ResourceAccess(description = "List all the chains", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AcquisitionProcessingChain>>> retrieveAll(
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<AcquisitionProcessingChain> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<AcquisitionProcessingChain> assembler) {
         return ResponseEntity.ok(toPagedResources(processingService.getFullChains(pageable), assembler));
     }
 

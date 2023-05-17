@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -89,7 +90,7 @@ public class AcquisitionFileController implements IResourceController<Acquisitio
         @RequestParam(name = REQUEST_PARAM_FROM, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         OffsetDateTime from,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<AcquisitionFile> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<AcquisitionFile> assembler) {
         Page<AcquisitionFile> files = fileService.search(filePath, state, productId, chainId, from, pageable);
         return new ResponseEntity<>(toPagedResources(files, assembler), HttpStatus.OK);
     }

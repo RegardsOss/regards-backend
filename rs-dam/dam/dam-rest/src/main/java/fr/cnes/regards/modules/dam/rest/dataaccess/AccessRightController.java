@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +107,7 @@ public class AccessRightController implements IResourceController<AccessRight> {
         @RequestParam(name = "accessgroup", required = false) String accessGroupName,
         @RequestParam(name = "dataset", required = false) UniformResourceName datasetIpId,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<AccessRight> assembler) throws ModuleException {
+        @Parameter(hidden = true) PagedResourcesAssembler<AccessRight> assembler) throws ModuleException {
         Page<AccessRight> accessRights = accessRightService.retrieveAccessRights(accessGroupName,
                                                                                  datasetIpId,
                                                                                  pageable);

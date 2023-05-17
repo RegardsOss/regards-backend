@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.service.controllers.SessionManagerService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -86,7 +87,7 @@ public class SessionManagerController implements IResourceController<Session> {
         @RequestParam(value = "sessionState", required = false) String sessionState,
         @RequestParam(value = "sourceName", required = false) String sourceName,
         @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
-        PagedResourcesAssembler<Session> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<Session> assembler) {
         Page<Session> sessions = this.sessionManagerService.loadSessions(sessionName,
                                                                          sessionState,
                                                                          sourceName,

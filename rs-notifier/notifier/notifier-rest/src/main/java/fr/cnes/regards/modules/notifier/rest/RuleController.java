@@ -76,7 +76,8 @@ public class RuleController implements IResourceController<RuleDTO> {
     @Operation(summary = "List all rules", description = "List all Rules")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All Rules") })
     public ResponseEntity<PagedModel<EntityModel<RuleDTO>>> getRules(
-        @Parameter(description = "Wanted page") Pageable page, final PagedResourcesAssembler<RuleDTO> assembler) {
+        @Parameter(description = "Wanted page") Pageable page,
+        @Parameter(hidden = true) final PagedResourcesAssembler<RuleDTO> assembler) {
         return ResponseEntity.ok(toPagedResources(this.ruleService.getRules(page), assembler));
     }
 

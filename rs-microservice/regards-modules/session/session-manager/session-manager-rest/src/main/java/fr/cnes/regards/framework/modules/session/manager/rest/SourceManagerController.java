@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.service.controllers.SourceManagerService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -84,7 +85,7 @@ public class SourceManagerController implements IResourceController<Source> {
         @RequestParam(value = "sourceName", required = false) String sourceName,
         @RequestParam(value = "sourceState", required = false) String sourceState,
         @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
-        final PagedResourcesAssembler<Source> assembler) {
+        @Parameter(hidden = true) final PagedResourcesAssembler<Source> assembler) {
         Page<Source> sources = this.sourceManagerService.loadSources(sourceName, sourceState, pageable);
         return ResponseEntity.ok(toPagedResources(sources, assembler));
     }

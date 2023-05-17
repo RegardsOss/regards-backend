@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +91,7 @@ public class ProjectController implements IResourceController<Project> {
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<Project> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<Project> assembler) {
         Page<Project> projects = projectService.retrieveProjectList(pageable);
         return ResponseEntity.ok(toPagedResources(projects, assembler));
     }
@@ -104,7 +105,7 @@ public class ProjectController implements IResourceController<Project> {
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<Project> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<Project> assembler) {
         Page<Project> projects = projectService.retrievePublicProjectList(pageable);
         return ResponseEntity.ok(toPagedResources(projects, assembler));
     }

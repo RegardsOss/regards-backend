@@ -167,7 +167,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(
         @PageableDefault(sort = "created", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUser> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<ProjectUser> assembler) {
         return ResponseEntity.ok(toPagedResources(projectUserService.retrieveAccessRequestList(pageable), assembler));
     }
 
@@ -329,7 +329,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(
         @PathVariable("role_id") Long roleId,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUser> assembler) throws EntityNotFoundException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ProjectUser> assembler) throws EntityNotFoundException {
         Page<ProjectUser> projectUserList = roleService.retrieveRoleProjectUserList(roleId, pageable);
         return ResponseEntity.ok(toPagedResources(projectUserList, assembler));
     }
@@ -350,7 +350,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(
         @RequestParam("role_name") String role,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUser> assembler) throws EntityNotFoundException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ProjectUser> assembler) throws EntityNotFoundException {
         Page<ProjectUser> projectUserList = roleService.retrieveRoleProjectUserList(role, pageable);
         return ResponseEntity.ok(toPagedResources(projectUserList, assembler));
     }

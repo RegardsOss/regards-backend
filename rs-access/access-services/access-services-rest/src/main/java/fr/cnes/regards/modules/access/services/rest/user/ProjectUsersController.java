@@ -132,7 +132,6 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     @Value("${spring.application.name}")
     private String appName;
 
-
     public ProjectUsersController(IProjectUsersClient projectUsersClient,
                                   IStorageRestClient storageClient,
                                   IResourceService resourceService,
@@ -186,7 +185,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveAccessRequestList(
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
         return completeUserPagedResponseWithQuotas(() -> {
             FeignSecurityManager.asSystem();
             return projectUsersClient.retrieveAccessRequestList(pageable);
@@ -357,7 +356,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveRoleProjectUserList(
         @PathVariable("role_id") Long roleId,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
         return completeUserPagedResponseWithQuotas(() -> {
             FeignSecurityManager.asSystem();
             return projectUsersClient.retrieveRoleProjectUserList(roleId, pageable);
@@ -379,7 +378,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveRoleProjectUsersList(
         @RequestParam("role_name") String role,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
         return completeUserPagedResponseWithQuotas(() -> {
             FeignSecurityManager.asSystem();
             return projectUsersClient.retrieveRoleProjectUsersList(role, pageable);

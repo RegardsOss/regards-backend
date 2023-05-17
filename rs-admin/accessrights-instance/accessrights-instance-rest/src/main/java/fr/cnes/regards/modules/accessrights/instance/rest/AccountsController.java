@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.encryption.Encrypti
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.OnPasswordResetEvent;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAccountTransitions;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -150,7 +151,7 @@ public class AccountsController implements IResourceController<Account> {
     @ResourceAccess(description = "retrieve the list of account in the instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<Account>>> retrieveAccountList(
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<Account> assembler,
+        @Parameter(hidden = true) PagedResourcesAssembler<Account> assembler,
         AccountSearchParameters parameters) {
         return ResponseEntity.ok(toPagedResources(accountService.retrieveAccountList(parameters, pageable), assembler));
     }

@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.configuration.domain.Theme;
 import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.IThemeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,7 @@ public class ThemeController implements IResourceController<Theme> {
     @ResourceAccess(description = "Endpoint to retrieve HMI themes", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedModel<EntityModel<Theme>>> retrieveThemes(
         @SortDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<Theme> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<Theme> assembler) {
         return new ResponseEntity<>(toPagedResources(service.retrieveThemes(pageable), assembler), HttpStatus.OK);
     }
 

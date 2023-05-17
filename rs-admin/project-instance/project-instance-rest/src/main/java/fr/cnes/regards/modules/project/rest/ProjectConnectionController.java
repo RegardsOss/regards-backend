@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -88,7 +89,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     public ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> getAllProjectConnections(
         @PathVariable String projectName,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectConnection> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<ProjectConnection> assembler) {
         Page<ProjectConnection> connections = projectConnectionService.retrieveProjectsConnectionsByProject(projectName,
                                                                                                             pageable);
         return ResponseEntity.ok(toPagedResources(connections, assembler));

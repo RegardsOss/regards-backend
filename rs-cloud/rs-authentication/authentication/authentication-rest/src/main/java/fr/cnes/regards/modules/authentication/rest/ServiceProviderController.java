@@ -15,6 +15,7 @@ import fr.cnes.regards.modules.authentication.domain.exception.serviceprovider.S
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationParams;
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderAuthenticationService;
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderCrudService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ public class ServiceProviderController implements IResourceController<ServicePro
     @ResourceAccess(description = "Retrieves the list of service providers.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ServiceProviderDto>>> getServiceProviders(
         @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ServiceProviderDto> assembler) throws ModuleException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ServiceProviderDto> assembler) throws ModuleException {
         return serviceProviderCrud.findAll(pageable)
                                   .map(page -> page.map(ServiceProviderDto::new))
                                   .map(page -> new ResponseEntity<>(toPagedResources(page, assembler), HttpStatus.OK))

@@ -82,7 +82,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All recipients") })
     public ResponseEntity<List<EntityModel<PluginConfiguration>>> getRecipients(
         @Parameter(description = "Request page") Pageable page,
-        final PagedResourcesAssembler<PluginConfiguration> assembler) {
+        @Parameter(hidden = true) final PagedResourcesAssembler<PluginConfiguration> assembler) {
         return ResponseEntity.ok(toResources(recipientService.getRecipients()));
     }
 

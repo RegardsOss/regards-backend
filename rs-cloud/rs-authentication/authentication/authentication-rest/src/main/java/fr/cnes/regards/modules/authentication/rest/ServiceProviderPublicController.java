@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.dto.ServiceProviderPublicDto;
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderCrudService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,7 @@ public class ServiceProviderPublicController implements IResourceController<Serv
     @ResourceAccess(description = "Retrieves the list of service providers.", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<ServiceProviderPublicDto>>> getServiceProvidersPublic(
         @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ServiceProviderPublicDto> assembler) throws ModuleException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ServiceProviderPublicDto> assembler) throws ModuleException {
         return serviceProviderCrud.findAll(pageable)
                                   .map(page -> page.map(ServiceProviderPublicDto::new))
                                   .map(page -> new ResponseEntity<>(toPagedResources(page, assembler), HttpStatus.OK))
