@@ -8,3 +8,4 @@ create table t_glacier_archive
 );
 alter table t_glacier_archive
     add constraint uk_t_glacier_archive_url unique (url);
+create sequence seq_glacier_archive start 1 increment 50;
