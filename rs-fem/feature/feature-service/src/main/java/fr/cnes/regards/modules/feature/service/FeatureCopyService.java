@@ -134,7 +134,7 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
                                                         item.getRequestId(),
                                                         item.getRequestOwner(),
                                                         null,
-                                                        null,
+                                                        item.getUrn(),
                                                         RequestState.DENIED,
                                                         ErrorTranslator.getErrors(errors)));
             return;

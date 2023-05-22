@@ -254,13 +254,15 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         // Validate provided URN
         if (urn != null) {
-            if (existingRequestUrns.contains(urn)
-                || grantedRequests.stream()
-                                  .anyMatch(request -> request.getUrn().equals(urn))
-                || newUpdateRequests.stream().anyMatch(request -> request.getFeature().getUrn().equals(urn))) {
-                errors.rejectValue("urn",
-                                   "feature.request.urn.already.exists.error.message",
-                                   "Creation request with this URN already exists");
+            String rejectField = "urn";
+            String errorCode = "feature.request.urn.already.exists.error.message";
+            String defaultMessageTemplate = "Creation request with this URN already exists in %s";
+            if (existingRequestUrns.contains(urn)) {
+                errors.rejectValue(rejectField, errorCode, String.format(defaultMessageTemplate, "existing requests"));
+            } else if (grantedRequests.stream().anyMatch(request -> request.getUrn().equals(urn))) {
+                errors.rejectValue(rejectField, errorCode, String.format(defaultMessageTemplate, "granted requests"));
+            } else if (newUpdateRequests.stream().anyMatch(request -> request.getFeature().getUrn().equals(urn))) {
+                errors.rejectValue(rejectField, errorCode, String.format(defaultMessageTemplate, "new update requests"));
             } else {
                 // Check if provided URN match an existing feature
                 if (existingEntityUrns.contains(urn)) {
@@ -297,7 +299,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                                                         requestId,
                                                         requestOwner,
                                                         featureId,
-                                                        null,
+                                                        urn,
                                                         RequestState.DENIED,
                                                         ErrorTranslator.getErrors(errors)));
             metrics.count(featureId, null, FeatureCreationState.CREATION_REQUEST_DENIED);
@@ -330,7 +332,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                                                         requestId,
                                                         requestOwner,
                                                         featureId,
-                                                        null,
+                                                        urn,
                                                         RequestState.GRANTED,
                                                         null));
             // Add to granted request collection
@@ -650,10 +652,8 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             requests.forEach(item -> publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION,
                                                                                  item.getRequestId(),
                                                                                  item.getRequestOwner(),
-                                                                                 item.getFeature() != null ?
-                                                                                     item.getFeature().getId() :
-                                                                                     null,
-                                                                                 null,
+                                                                                 item.getProviderId(),
+                                                                                 item.getUrn(),
                                                                                  RequestState.ERROR,
                                                                                  null)));
             // set FeatureCreationRequest to error state

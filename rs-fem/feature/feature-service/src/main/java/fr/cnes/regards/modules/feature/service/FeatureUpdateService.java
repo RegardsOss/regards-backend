@@ -213,7 +213,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                                                         item.getRequestId(),
                                                         item.getRequestOwner(),
                                                         featureId,
-                                                        null,
+                                                        urn,
                                                         RequestState.GRANTED,
                                                         null));
             // Add to granted request collection
