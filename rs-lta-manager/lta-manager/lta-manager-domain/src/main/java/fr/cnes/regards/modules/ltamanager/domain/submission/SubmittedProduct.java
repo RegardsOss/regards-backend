@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ltamanager.domain.submission;
 
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
@@ -51,6 +52,8 @@ public class SubmittedProduct {
     @Column(name = "store_path", nullable = false, updatable = false)
     @NotNull(message = "storePath is required")
     @Convert(converter = PathAttributeConverter.class)
+    @Schema(implementation = String.class)
+    // this field is serialized/deserialized as a String (thanks to @Converter)
     private Path storePath;
 
     @Column(updatable = false, columnDefinition = "jsonb")

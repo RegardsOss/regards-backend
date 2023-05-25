@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.swagger.autoconfigure;
 
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
+import fr.cnes.regards.framework.swagger.autoconfigure.override.MapAwareConverter;
 import fr.cnes.regards.framework.swagger.autoconfigure.override.ModelResolverCustom;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.util.Json;
@@ -121,6 +122,7 @@ public class SwaggerAutoConfiguration {
      */
     private void overrideSwaggerSchemaConverter() {
         ModelConverters.getInstance().addConverter(new ModelResolverCustom(Json.mapper()));
+        ModelConverters.getInstance().addConverter(new MapAwareConverter());
     }
 
     private Scopes getScopes() {

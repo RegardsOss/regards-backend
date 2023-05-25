@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.converters.SipStateConverter;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -144,10 +145,12 @@ public class Product {
 
     @OneToOne
     @JoinColumn(name = "sip_gen_job_info_id", foreignKey = @ForeignKey(name = "fk_sip_gen_job_info_id"))
+    @Hidden // FIXME temporary hack : swagger generate a wrong specification, for now avoid to use it
     private JobInfo lastSIPGenerationJobInfo;
 
     @OneToOne
     @JoinColumn(name = "post_prod_job_info_id", foreignKey = @ForeignKey(name = "fk_post_prod_job_info_id"))
+    @Hidden // FIXME temporary hack : swagger generate a wrong specification, for now avoid to use it
     private JobInfo lastPostProductionJobInfo;
 
     public Long getId() {

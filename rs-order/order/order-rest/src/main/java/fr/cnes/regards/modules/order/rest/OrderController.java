@@ -200,18 +200,14 @@ public class OrderController implements IResourceController<OrderDto> {
     @Operation(summary = "Create an order automatically from a OrderRequestDto.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200",
                                          description = "The order was successfully initiated. "
-                                                       + "Returns OrderRequestResponseDtoEvent with the createdOrderId.",
-                                         content = @Content(mediaType = "application/json")),
+                                                       + "Returns OrderRequestResponseDtoEvent with the createdOrderId."),
                             @ApiResponse(responseCode = "400",
                                          description = "The order could not be created. "
-                                                       + "Refer to the response returned for more information.",
-                                         content = @Content(mediaType = "application/json")),
+                                                       + "Refer to the response returned for more information."),
                             @ApiResponse(responseCode = "403",
-                                         description = "The endpoint is not accessible for the user.",
-                                         content = @Content(mediaType = "application/html")),
+                                         description = "The endpoint is not accessible for the user."),
                             @ApiResponse(responseCode = "422",
-                                         description = "The submission request dto syntax is incorrect.",
-                                         content = @Content(mediaType = "application/json")) })
+                                         description = "The submission request dto syntax is incorrect.") })
     @ResponseBody
     @PostMapping(path = AUTO_ORDER_PATH)
     @ResourceAccess(description = "Create order automatically from a OrderRequestDto",

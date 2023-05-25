@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -187,6 +188,7 @@ public class AcquisitionProcessingChain {
     @ConfigIgnore
     @OneToOne
     @JoinColumn(name = "acq_job_info_id", foreignKey = @ForeignKey(name = "fk_acq_job_info_id"))
+    @Hidden // FIXME temporary hack : swagger generate a wrong specification, for now avoid to use it
     private JobInfo lastProductAcquisitionJobInfo;
 
     /**

@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
@@ -52,6 +53,8 @@ public class AcquisitionFile {
 
     @NotNull(message = "File path is required")
     @Convert(converter = PathAttributeConverter.class)
+    @Schema(implementation = String.class)
+    // this field is serialized/deserialized as a String (thanks to @Converter)
     private Path filePath;
 
     /**

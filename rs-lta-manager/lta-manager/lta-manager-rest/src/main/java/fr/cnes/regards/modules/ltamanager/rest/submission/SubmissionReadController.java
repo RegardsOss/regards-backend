@@ -88,7 +88,6 @@ public class SubmissionReadController extends AbstractSubmissionController
                                          useReturnTypeSchema = true,
                                          content = { @Content(mediaType = "application/json") }) })
     @GetMapping(path = REQUEST_INFO_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve the current status of a submission request.",
                     role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<SubmissionResponseDto>> getSubmissionRequestStatus(
@@ -103,14 +102,11 @@ public class SubmissionReadController extends AbstractSubmissionController
     }
 
     @Operation(summary = "Search for submission requests with criteria")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200",
-                                         description = "Returns submitted requests found.",
-                                         content = { @Content(mediaType = "application/json") }),
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns submitted requests found."),
                             @ApiResponse(responseCode = "403",
                                          description = "The endpoint is not accessible for the user.",
                                          content = { @Content(mediaType = "application/html") }) })
     @PostMapping(path = SEARCH_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Endpoint to search for submission requests.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<SubmittedSearchResponseDto>>> findSubmittedRequests(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterion.",
