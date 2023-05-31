@@ -81,7 +81,7 @@ public class SubmissionResponseDto {
 
     public static SubmissionResponseDto buildDeniedSubmissionResponseDto(SubmissionRequestDto requestDto,
                                                                          String message) {
-        String productId = requestDto.getId();
+        String productId = requestDto.getProductId();
         String correlationId = requestDto.getCorrelationId();
         LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and productId \"{}\" was rejected (cause: {}).",
                      correlationId,

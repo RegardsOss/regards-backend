@@ -66,7 +66,7 @@ public final class SubmissionResponseDtoUtils {
         if (request.isEmpty()) {
             LOGGER.debug("No submission request found for id {} ", requestId);
         } else {
-            productId = request.get().getProduct().getId();
+            productId = request.get().getProduct().getProductId();
             session = request.get().getSession();
             expiryDate = request.get().getExpiryDate();
         }
@@ -103,7 +103,7 @@ public final class SubmissionResponseDtoUtils {
 
         return new SubmissionResponseDto(correlationId,
                                          SubmissionResponseStatus.GRANTED,
-                                         request.getProduct().getId(),
+                                         request.getProduct().getProductId(),
                                          request.getExpiryDate(),
                                          request.getSession(),
                                          null);

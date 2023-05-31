@@ -314,15 +314,15 @@ public class SubmissionCreateServiceTest {
                                              List<SubmissionRequest> requestsCreated,
                                              Path expectedBuiltPath) {
         for (SubmissionRequest requestCreated : requestsCreated) {
-            String id = requestCreated.getProduct().getId();
-            if (id.equals(requestDtoWithSimpleStorePath.getId())) {
+            String id = requestCreated.getProduct().getProductId();
+            if (id.equals(requestDtoWithSimpleStorePath.getProductId())) {
                 Assertions.assertThat(requestCreated.getStorePath()).isEqualTo(Paths.get(SIMPLE_STORE_PATH));
                 Assertions.assertThat(requestCreated.getSession()).isEqualTo("sessionSimpleStore");
-            } else if (id.equals(requestDtoWithProperties.getId())) {
+            } else if (id.equals(requestDtoWithProperties.getProductId())) {
                 Assertions.assertThat(requestCreated.getStorePath()).isEqualTo(expectedBuiltPath);
                 Assertions.assertThat(requestCreated.getSession())
                           .isEqualTo("user-" + OffsetDateTime.now().format(DateTimeFormatter.BASIC_ISO_DATE));
-            } else if (id.equals(requestDtoWithReplace.getId())) {
+            } else if (id.equals(requestDtoWithReplace.getProductId())) {
                 Assertions.assertThat(requestCreated.isReplaceMode()).isTrue();
             }
         }

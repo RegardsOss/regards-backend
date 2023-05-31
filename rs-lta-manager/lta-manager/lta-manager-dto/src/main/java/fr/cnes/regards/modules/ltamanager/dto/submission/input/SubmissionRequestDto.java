@@ -40,7 +40,7 @@ import java.util.Objects;
  **/
 public class SubmissionRequestDto {
 
-    public final static String DATATYPE_FILED_NAME = "product.datatype";
+    public static final String DATATYPE_FILED_NAME = "product.datatype";
 
     @NotBlank(message = "correlationId is required to track this request.")
     @Size(max = 255, message = "correlationId length is limited to 255 characters.")
@@ -48,10 +48,10 @@ public class SubmissionRequestDto {
             maxLength = 255)
     private final String correlationId;
 
-    @NotBlank(message = "id is required.")
-    @Size(max = 255, message = "id length is limited to 255 characters.")
+    @NotBlank(message = "productId is required.")
+    @Size(max = 255, message = "productId length is limited to 255 characters.")
     @Schema(description = "Provider id of the OAIS product to generate.", maxLength = 255)
-    private final String id;
+    private final String productId;
 
     @NotBlank(message = "datatype is required.")
     @Size(max = 255, message = "datatype length is limited to 255 characters.")
@@ -101,7 +101,7 @@ public class SubmissionRequestDto {
     private String owner;
 
     @ConstructorProperties({ "correlationId",
-                             "id",
+                             "productId",
                              "datatype",
                              "geometry",
                              "files",
@@ -112,7 +112,7 @@ public class SubmissionRequestDto {
                              "session",
                              "replaceMode" })
     public SubmissionRequestDto(String correlationId,
-                                String id,
+                                String productId,
                                 String datatype,
                                 @Nullable IGeometry geometry,
                                 List<ProductFileDto> files,
@@ -122,7 +122,7 @@ public class SubmissionRequestDto {
                                 @Nullable String storePath,
                                 @Nullable String session,
                                 boolean replaceMode) {
-        this(correlationId, id, datatype, files);
+        this(correlationId, productId, datatype, files);
         this.tags = tags;
         this.originUrn = originUrn;
         this.properties = properties;
@@ -132,14 +132,14 @@ public class SubmissionRequestDto {
         this.geometry = geometry;
     }
 
-    public SubmissionRequestDto(String correlationId, String id, String datatype, List<ProductFileDto> files) {
-        Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(id, "id is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(datatype, "datatype is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notEmpty(files, "at least one file is mandatory ! Make sure other constraints are satisfied. ");
+    public SubmissionRequestDto(String correlationId, String productId, String datatype, List<ProductFileDto> files) {
+        Assert.notNull(correlationId, "correlationId is mandatory !");
+        Assert.notNull(productId, "productId is mandatory !");
+        Assert.notNull(datatype, "datatype is mandatory !");
+        Assert.notEmpty(files, "at least one file is mandatory !");
 
         this.correlationId = correlationId;
-        this.id = id;
+        this.productId = productId;
         this.datatype = datatype;
         this.files = files;
     }
@@ -148,8 +148,8 @@ public class SubmissionRequestDto {
         return correlationId;
     }
 
-    public String getId() {
-        return id;
+    public String getProductId() {
+        return productId;
     }
 
     public String getDatatype() {
@@ -252,8 +252,8 @@ public class SubmissionRequestDto {
                + "correlationId='"
                + correlationId
                + '\''
-               + ", id='"
-               + id
+               + ", productId='"
+               + productId
                + '\''
                + ", datatype='"
                + datatype

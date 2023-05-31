@@ -48,7 +48,7 @@ public interface SubmissionRequestMapper {
         };
         return new SubmissionResponseDto(submissionRequest.getCorrelationId(),
                                          status,
-                                         submissionRequest.getProduct().getId(),
+                                         submissionRequest.getProduct().getProductId(),
                                          submissionRequest.getExpiryDate(),
                                          submissionRequest.getSession(),
                                          submissionRequest.getMessage());

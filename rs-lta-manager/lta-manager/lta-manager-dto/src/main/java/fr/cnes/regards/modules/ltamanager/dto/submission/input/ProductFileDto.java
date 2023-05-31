@@ -58,11 +58,11 @@ public final class ProductFileDto {
 
     @ConstructorProperties({ "type", "url", "filename", "checksumMd5", "mimeType" })
     public ProductFileDto(LtaDataType type, String url, String filename, String checksumMd5, MimeType mimeType) {
-        Assert.notNull(type, "type is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(url, "url is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(filename, "filename is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(checksumMd5, "checksumMd5 is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(mimeType, "mimeType is mandatory ! Make sure other constraints are satisfied. ");
+        Assert.notNull(type, "type is mandatory !");
+        Assert.notNull(url, "url is mandatory !");
+        Assert.notNull(filename, "filename is mandatory !");
+        Assert.notNull(checksumMd5, "checksumMd5 is mandatory !");
+        Assert.notNull(mimeType, "mimeType is mandatory !");
 
         this.type = type;
         this.url = url;

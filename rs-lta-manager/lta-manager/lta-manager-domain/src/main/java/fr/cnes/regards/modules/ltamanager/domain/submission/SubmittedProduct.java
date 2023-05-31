@@ -66,10 +66,10 @@ public class SubmittedProduct {
     }
 
     public SubmittedProduct(String datatype, String model, Path storePath, SubmissionRequestDto product) {
-        Assert.notNull(datatype, "datatype is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(model, "model is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(storePath, "storePath is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(product, "product is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(datatype, "datatype is mandatory !");
+        Assert.notNull(model, "model is mandatory !");
+        Assert.notNull(storePath, "storePath is mandatory !");
+        Assert.notNull(product, "product is mandatory !");
 
         this.datatype = datatype;
         this.model = model;

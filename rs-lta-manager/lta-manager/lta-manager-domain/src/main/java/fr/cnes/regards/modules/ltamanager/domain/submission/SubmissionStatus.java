@@ -38,15 +38,15 @@ import java.util.Objects;
 @Embeddable
 public class SubmissionStatus {
 
-    public static String CREATION_DATE_FIELD_NAME = "creationDate";
+    public static final String CREATION_DATE_FIELD_NAME = "creationDate";
 
-    public static String STATUS_DATE_FIELD_NAME = "statusDate";
+    public static final String STATUS_DATE_FIELD_NAME = "statusDate";
 
-    public static String EXPIRY_DATE_FIELD_NAME = "expiryDate";
+    public static final String EXPIRY_DATE_FIELD_NAME = "expiryDate";
 
-    public static String STATUS_FIELD_NAME = "status";
+    public static final String STATUS_FIELD_NAME = "status";
 
-    public static List<String> STATUS_FIELD_NAMES = List.of(STATUS_FIELD_NAME,
+    public static final List<String> STATUS_FIELD_NAMES = List.of(STATUS_FIELD_NAME,
                                                             EXPIRY_DATE_FIELD_NAME,
                                                             STATUS_DATE_FIELD_NAME,
                                                             CREATION_DATE_FIELD_NAME);
@@ -85,9 +85,9 @@ public class SubmissionStatus {
                             Integer requestExpiresInHour,
                             SubmissionRequestState status,
                             @Nullable String message) {
-        Assert.notNull(creationDate, "creationDate is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(statusDate, "statusDate is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(status, "status is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(creationDate, "creationDate is mandatory !");
+        Assert.notNull(statusDate, "statusDate is mandatory !");
+        Assert.notNull(status, "status is mandatory !");
         Assert.notNull(requestExpiresInHour,
                        "requestExpiresInHour is mandatory ! Make sure other constraints are satisfied");
 
@@ -137,5 +137,22 @@ public class SubmissionStatus {
     @Override
     public int hashCode() {
         return Objects.hash(creationDate, statusDate, status, message);
+    }
+
+    @Override
+    public String toString() {
+        return "SubmissionStatus{"
+               + "creationDate="
+               + creationDate
+               + ", expiryDate="
+               + expiryDate
+               + ", statusDate="
+               + statusDate
+               + ", status="
+               + status
+               + ", message='"
+               + message
+               + '\''
+               + '}';
     }
 }

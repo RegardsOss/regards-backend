@@ -46,9 +46,9 @@ import java.util.Objects;
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class SubmissionRequest {
 
-    public final static String SUBMISSION_STATUS_FIELD_NAME = "submissionStatus";
+    public static final String SUBMISSION_STATUS_FIELD_NAME = "submissionStatus";
 
-    public final static String DATATYPE_FILED_NAME = "submittedProduct.datatype";
+    public static final String DATATYPE_FILED_NAME = "submittedProduct.datatype";
 
     @Id
     @SequenceGenerator(name = "submissionRequestSequence", initialValue = 1, sequenceName = "seq_submission_request")
@@ -93,11 +93,11 @@ public class SubmissionRequest {
                              SubmissionStatus submissionStatus,
                              SubmittedProduct submittedProduct,
                              @Nullable String originUrn) {
-        Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(owner, "owner is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(session, "session is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(submissionStatus, "submissionStatus is mandatory ! Make sure other constraints are satisfied.");
-        Assert.notNull(submittedProduct, "submittedProduct is mandatory ! Make sure other constraints are satisfied.");
+        Assert.notNull(correlationId, "correlationId is mandatory !");
+        Assert.notNull(owner, "owner is mandatory !");
+        Assert.notNull(session, "session is mandatory !");
+        Assert.notNull(submissionStatus, "submissionStatus is mandatory !");
+        Assert.notNull(submittedProduct, "submittedProduct is mandatory !");
 
         this.correlationId = correlationId;
         this.owner = owner;
