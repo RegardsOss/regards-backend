@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.jpa.multitenant.lock;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.jdbc.lock.DefaultLockRepository;
@@ -31,6 +32,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 /**
  * Service used to run a synchronous locked task. It ensures that no two tasks sharing the same lock will be run at the
  * same time.
@@ -42,6 +45,8 @@ import java.util.concurrent.locks.Lock;
  **/
 @Service
 public class LockService {
+
+    private static final Logger LOGGER = getLogger(LockService.class);
 
     public static final String LOCK_PREFIX = "SHARED_";
 
@@ -86,13 +91,17 @@ public class LockService {
      */
     public boolean runWithLock(String lockName, LockServiceTask process) throws InterruptedException {
         JdbcLockRegistry lockRegistry = lockRegistryMap.get(runtimeTenantResolver.getTenant());
+        LOGGER.debug("Getting lock {} for task {}", lockName, process.getClass().getSimpleName());
         Lock lock = lockRegistry.obtain(lockName);
         boolean lockAcquired = lock.tryLock(lockTimeToLive, TimeUnit.MILLISECONDS);
         if (!lockAcquired) {
+            LOGGER.warn("Unable to acquire lock {} for task {}", lockName, process.getClass().getSimpleName());
             return false;
         }
+        LOGGER.debug("Acquired lock {} for task {}", lockName, process.getClass().getSimpleName());
         process.run();
         lock.unlock();
+        LOGGER.debug("Released lock {} for task {}", lockName, process.getClass().getSimpleName());
         return true;
     }
 

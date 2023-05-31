@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -47,10 +48,10 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author Thibaud Michaudel
  **/
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { LockServiceTestConfiguration.class })
+@ContextConfiguration(classes = {LockServiceTestConfiguration.class})
 @ActiveProfiles("test")
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=lock_service_renew_test",
-    "regards.lock.cache.capacity=10" })
+@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=lock_service_renew_test",
+        "regards.lock.cache.capacity=10"})
 public class LockServiceIT {
 
     private static final Logger LOGGER = getLogger(LockServiceIT.class);
@@ -66,14 +67,19 @@ public class LockServiceIT {
     @Test
     public void lock_service_simple_test() throws InterruptedException {
         List<String> resultList = new ArrayList<>();
-        threadPool.submit(() -> runWithLock("lock1", resultList, "run1"));
-        Thread.sleep(20);
-        threadPool.submit(() -> runWithLock("lock1", resultList, "run2"));
-        threadPool.submit(() -> runWithLock("lock2", resultList, "run3"));
-        Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> resultList.size() == 3);
+        Thread.sleep(100);
+        Future<Boolean> t1 = threadPool.submit(() -> runWithLock("lock1", resultList, "run1"));
+        Thread.sleep(10);
+        Future<Boolean> t2 = threadPool.submit(() -> runWithLock("lock1", resultList, "run2"));
+        Thread.sleep(10);
+        Future<Boolean> t3 = threadPool.submit(() -> runWithLock("lock2", resultList, "run3"));
+        Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
+            return t1.isDone() && t2.isDone() && t3.isDone() && resultList.size() == 3;
+        });
         Assertions.assertEquals("run1", resultList.get(0));
         Assertions.assertEquals("run3", resultList.get(1));
         Assertions.assertEquals("run2", resultList.get(2));
+
     }
 
     @Test
@@ -121,7 +127,10 @@ public class LockServiceIT {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
+                LOGGER.error("process {} interrupted", textToAdd);
                 throw new RuntimeException(e);
+            } finally {
+                LOGGER.info("process {} ended", textToAdd);
             }
         }
     }
