@@ -24,9 +24,12 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -927,6 +930,31 @@ public class FileStorageRequestService {
         String session = request.getSession();
         this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
         this.sessionNotifier.incrementErrorRequests(sessionOwner, session);
+    }
+
+    public boolean handleJobCrash(JobInfo jobInfo) {
+        boolean isFileStorageRequestJob = FileStorageRequestJob.class.getName().equals(jobInfo.getClassName());
+        if (isFileStorageRequestJob) {
+            try {
+                FileStorageWorkingSubset workingSubset = IJob.getValue(jobInfo.getParametersAsMap(),
+                                                                       FileStorageRequestJob.WORKING_SUB_SET);
+                List<FileStorageRequest> fileStorageRequests = fileStorageRequestRepo.findAllById(workingSubset.getFileReferenceRequests()
+                                                                                                               .stream()
+                                                                                                               .map(
+                                                                                                                   FileStorageRequest::getId)
+                                                                                                               .toList());
+                fileStorageRequests.stream()
+                                   .filter(fileStorageRequest -> FileRequestStatus.RUNNING_STATUS.contains(
+                                       fileStorageRequest.getStatus()))
+                                   .forEach(r -> handleError(r, jobInfo.getStatus().getStackTrace()));
+            } catch (JobParameterMissingException | JobParameterInvalidException e) {
+                String message = String.format("Storage file storage request job with id \"%s\" fails with status "
+                                               + "\"%s\"", jobInfo.getId(), jobInfo.getStatus().getStatus());
+                LOGGER.error(message, e);
+                notificationClient.notify(message, "Storage job failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
+            }
+        }
+        return isFileStorageRequestJob;
     }
 
     /**
