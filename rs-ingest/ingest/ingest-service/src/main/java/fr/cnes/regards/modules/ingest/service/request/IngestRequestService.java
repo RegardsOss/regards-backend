@@ -34,6 +34,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
@@ -68,6 +70,7 @@ import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -337,9 +340,8 @@ public class IngestRequestService implements IIngestRequestService {
                 Set<IngestRequest> requests = Sets.newHashSet(request);
                 finalizeSuccessfulRequest(requests,
                                           false,
-                                          preloadChains(requests,
-                                                        new HashMap<String, Optional<IngestProcessingChain>>()),
-                                          preloadLastVersions(requests, new HashMap<String, AIPEntity>()));
+                                          preloadChains(requests, new HashMap<>()),
+                                          preloadLastVersions(requests, new HashMap<>()));
             }
         } catch (ModuleException e) {
             // Keep track of the error
@@ -403,27 +405,79 @@ public class IngestRequestService implements IIngestRequestService {
                                           Map<String, Optional<IngestProcessingChain>> chains,
                                           Map<String, AIPEntity> lastVersions) {
 
-        Set<IngestRequest> toFinalize = Sets.newHashSet();
+        Set<IngestRequest> requestsToFinalized = requests.stream()
+                                                         .map(request -> handleRemoteStorageSuccess(requestInfo,
+                                                                                                    request))
+                                                         .filter(Optional::isPresent)
+                                                         .map(Optional::get)
+                                                         .collect(Collectors.toSet());
+        finalizeSuccessfulRequest(requestsToFinalized, true, chains, lastVersions);
+    }
 
-        for (IngestRequest request : requests) {
-            if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
-                // Update AIPs with meta returned by storage
-                aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(),
-                                                                     requestInfo.getSuccessRequests());
-                // Check if there is another storage request we're waiting for
-                List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
-                if (!remoteStepGroupIds.isEmpty()) {
-                    saveRequest(request);
-                } else {
-                    // The current request is over
-                    toFinalize.add(request);
-                }
-            } else {
-                // Keep track of the error
-                saveAndPublishErrorRequest(request, String.format(UNEXPECTED_STEP_S_TEMPLATE, request.getStep()));
-            }
+    /**
+     * Handle remote success request from Storage to update IngestRequest
+     *
+     * @return a list containing the ingest request when every file from the AIP are successfully stored
+     */
+    private Optional<IngestRequest> handleRemoteStorageSuccess(RequestInfo requestInfo, IngestRequest request) {
+        if (request.getStep() != IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
+            // Keep track of the error
+            saveAndPublishErrorRequest(request, String.format(UNEXPECTED_STEP_S_TEMPLATE, request.getStep()));
+            return Optional.empty();
         }
-        finalizeSuccessfulRequest(toFinalize, true, chains, lastVersions);
+        // Update AIPs with meta returned by storage
+        aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
+        // Check if there is another storage request we're waiting for
+        if (!updateRemoteStepGroupId(request, requestInfo).isEmpty()) {
+            saveRequest(request);
+            return Optional.empty();
+        }
+        // Ensure all files are stored on a storage location
+        if (!areAipsFilesAllStored(request)) {
+            saveAndPublishErrorRequest(request,
+                                       "Error while changing product state to STORED - Some files are not "
+                                       + "stored on this AIP but in the same time this request is not "
+                                       + "waiting to any other storage request");
+            // Monitoring
+            // Decrement from #requestRemoteStorage
+            sessionNotifier.decrementProductStorePending(request);
+            sessionNotifier.incrementProductStoreError(request);
+            return Optional.empty();
+        }
+        // The current request is over
+        // - the request is not waiting any other remote step group id
+        // - every product files are stored
+        return Optional.of(request);
+    }
+
+    /**
+     * Return false when some aip in the provided request contains a file not yet store on a storage location
+     * Prevent an AIP to become {@link AIPState#STORED} whereas one of its file is not yet stored
+     * It should not happen, but it does. This is a first step to get the original issue.
+     */
+    private boolean areAipsFilesAllStored(IngestRequest request) {
+        return request.getAips().stream().allMatch(this::isAipStored);
+    }
+
+    /**
+     * Return true if all data files associated to the given {@link AIPEntity} are stored aka location is defined
+     */
+    private boolean isAipStored(AIPEntity aip) {
+        return aip.getAip().getProperties().getContentInformations().stream().allMatch(this::isDataObjectStored);
+    }
+
+    /**
+     * Return true if all data files associated to the given {@link ContentInformation} are stored aka location is defined
+     */
+    private boolean isDataObjectStored(ContentInformation contentInformation) {
+        return contentInformation.getDataObject().getLocations().stream().allMatch(this::isLocationDefined);
+    }
+
+    /**
+     * Return true if all data files associated to the given {@link ContentInformation} are stored aka location is defined
+     */
+    private boolean isLocationDefined(OAISDataObjectLocation location) {
+        return StringUtils.isNotBlank(location.getStorage()) && StringUtils.isNotBlank(location.getUrl());
     }
 
     private List<String> updateRemoteStepGroupId(IngestRequest request, RequestInfo requestInfo) {
@@ -557,29 +611,24 @@ public class IngestRequestService implements IIngestRequestService {
     @Override
     public void handleRemoteReferenceSuccess(Set<RequestInfo> requests) {
         Map<String, Optional<IngestProcessingChain>> chains = new HashMap<>();
-        Set<IngestRequest> requestsToFinilized = Sets.newHashSet();
+        Set<IngestRequest> requestsToFinalized = Sets.newHashSet();
         for (AbstractRequest request : requestService.getRequests(requests)) {
             IngestRequest iReq = (IngestRequest) request;
             // Check if there is another storage request we're waiting for
             if (iReq.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
-                for (RequestInfo ri : requests.stream()
-                                              .filter(r -> request.getRemoteStepGroupIds().contains(r.getGroupId()))
-                                              .collect(Collectors.toSet())) {
-                    aipStorageService.updateAIPsContentInfosAndLocations(iReq.getAips(), ri.getSuccessRequests());
-                    List<String> remoteStepGroupIds = updateRemoteStepGroupId(iReq, ri);
-                    if (!remoteStepGroupIds.isEmpty()) {
-                        saveRequest(iReq);
-                    } else {
-                        // The current request is over
-                        requestsToFinilized.add(iReq);
-                    }
-                }
+                requestsToFinalized.addAll(requests.stream()
+                                                   .filter(r -> request.getRemoteStepGroupIds()
+                                                                       .contains(r.getGroupId()))
+                                                   .map(ri -> handleRemoteStorageSuccess(ri, iReq))
+                                                   .filter(Optional::isPresent)
+                                                   .map(Optional::get)
+                                                   .collect(Collectors.toSet()));
             }
         }
-        finalizeSuccessfulRequest(requestsToFinilized,
+        finalizeSuccessfulRequest(requestsToFinalized,
                                   true,
-                                  preloadChains(requestsToFinilized, chains),
-                                  preloadLastVersions(requestsToFinilized, new HashMap<String, AIPEntity>()));
+                                  preloadChains(requestsToFinalized, chains),
+                                  preloadLastVersions(requestsToFinalized, new HashMap<>()));
     }
 
     @Override
