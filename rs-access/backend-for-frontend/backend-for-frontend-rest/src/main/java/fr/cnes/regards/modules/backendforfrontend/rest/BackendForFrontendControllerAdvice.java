@@ -39,7 +39,7 @@ public class BackendForFrontendControllerAdvice {
 
     private ResponseEntity<JsonObject> buildError(HttpStatusCodeException exception) {
         LOGGER.error(exception.getMessage(), exception);
-        JsonObject jsonObject = new JsonParser().parse(exception.getResponseBodyAsString()).getAsJsonObject();
+        JsonObject jsonObject = JsonParser.parseString(exception.getResponseBodyAsString()).getAsJsonObject();
         return ResponseEntity.status(exception.getStatusCode()).body(jsonObject);
     }
 }

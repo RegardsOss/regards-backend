@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
@@ -62,7 +63,9 @@ public class JsonSchemaRestriction extends AbstractRestriction {
     public Restriction toXml() {
         Restriction restriction = new Restriction();
         restriction.setJsonSchema(jsonSchema);
-        restriction.getIndexableField().addAll(indexableFields);
+        if (!CollectionUtils.isEmpty(indexableFields)) {
+            restriction.getIndexableField().addAll(indexableFields);
+        }
         return restriction;
     }
 

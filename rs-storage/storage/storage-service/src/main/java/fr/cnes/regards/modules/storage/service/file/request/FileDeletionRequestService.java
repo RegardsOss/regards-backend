@@ -23,12 +23,18 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
@@ -46,7 +52,6 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestJob;
 import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestsCreatorJob;
-import fr.cnes.regards.modules.storage.service.file.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -110,6 +115,8 @@ public class FileDeletionRequestService {
 
     private LockingTaskExecutors lockingTaskExecutors;
 
+    private INotificationClient notificationClient;
+
     @Value("${regards.storage.deletion.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
@@ -129,7 +136,8 @@ public class FileDeletionRequestService {
                                       FileCopyRequestService fileCopyReqService,
                                       FileCacheRequestService fileCacheReqService,
                                       SessionNotifier sessionNotifier,
-                                      LockingTaskExecutors lockingTaskExecutors) {
+                                      LockingTaskExecutors lockingTaskExecutors,
+                                      INotificationClient notificationClient) {
         this.fileDeletionRequestRepo = fileDeletionRequestRepo;
         this.pluginService = pluginService;
         this.jobInfoService = jobInfoService;
@@ -144,6 +152,7 @@ public class FileDeletionRequestService {
         this.fileCacheReqService = fileCacheReqService;
         this.sessionNotifier = sessionNotifier;
         this.lockingTaskExecutors = lockingTaskExecutors;
+        this.notificationClient = notificationClient;
     }
 
     /**
@@ -348,8 +357,8 @@ public class FileDeletionRequestService {
      */
     public JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, String pluginConfBusinessId) {
         Set<JobParameter> parameters = Sets.newHashSet();
-        parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfBusinessId));
-        parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
+        parameters.add(new JobParameter(FileDeletionRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfBusinessId));
+        parameters.add(new JobParameter(FileDeletionRequestJob.WORKING_SUB_SET, workingSubset));
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false,
                                                                     StorageJobsPriority.FILE_DELETION_JOB,
                                                                     parameters,
@@ -645,6 +654,32 @@ public class FileDeletionRequestService {
                 fileRef.getLocation().toString(),
                 fileRef.getMetaInfo().getChecksum()));
         }
+    }
+
+    public boolean handleJobCrash(JobInfo jobInfo) {
+        boolean isFileDeletionRequestJob = FileDeletionRequestJob.class.getName().equals(jobInfo.getClassName());
+        if (isFileDeletionRequestJob) {
+            try {
+                FileDeletionWorkingSubset workingSubset = IJob.getValue(jobInfo.getParametersAsMap(),
+                                                                        FileDeletionRequestJob.WORKING_SUB_SET);
+
+                List<FileDeletionRequest> fileStorageRequests = fileDeletionRequestRepo.findAllById(workingSubset.getFileDeletionRequests()
+                                                                                                                 .stream()
+                                                                                                                 .map(
+                                                                                                                     FileDeletionRequest::getId)
+                                                                                                                 .toList());
+                fileStorageRequests.stream()
+                                   .filter(fileDeletionRequest -> FileRequestStatus.RUNNING_STATUS.contains(
+                                       fileDeletionRequest.getStatus()))
+                                   .forEach(r -> handleError(r, jobInfo.getStatus().getStackTrace()));
+            } catch (JobParameterMissingException | JobParameterInvalidException e) {
+                String message = String.format("Storage file deletion request job with id \"%s\" fails with status "
+                                               + "\"%s\"", jobInfo.getId(), jobInfo.getStatus().getStatus());
+                LOGGER.error(message, e);
+                notificationClient.notify(message, "Storage job failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
+            }
+        }
+        return isFileDeletionRequestJob;
     }
 
     /**

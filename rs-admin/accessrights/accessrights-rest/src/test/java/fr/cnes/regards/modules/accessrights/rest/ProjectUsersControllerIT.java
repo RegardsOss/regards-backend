@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -234,7 +235,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         final Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically superior role
-        Assert.assertTrue(!roleService.isHierarchicallyInferiorOrEqual(borrowedRole, roleAdmin));
+        Assert.assertFalse(roleService.isHierarchicallyInferiorOrEqual(borrowedRole, roleAdmin));
         performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName,
                           customizer().expect(MockMvcResultMatchers.status().isForbidden()),
                           ERROR_MESSAGE,
@@ -369,7 +370,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
                                                           .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
                                                           .addHeader(HttpConstants.ACCEPT, "text/csv");
-        ResultActions results = performDefaultGet(path, customizer, "error");
+        ResultActions results = performDefaultPost(path, new JsonObject(), customizer, "error");
         String content = results.andReturn().getResponse().getContentAsString();
 
         //Then
@@ -412,7 +413,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         // When
         String path = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.SEARCH_USERS;
-        SearchProjectUserParameters searchParameters = new SearchProjectUserParameters().withAccessGroupsIncluded(Arrays.asList(
+        SearchProjectUserParameters searchParameters = new SearchProjectUserParameters().withAccessGroupsIncluded(List.of(
             "groupFilter"));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
 

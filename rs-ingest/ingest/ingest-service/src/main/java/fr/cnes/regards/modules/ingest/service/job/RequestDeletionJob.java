@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -34,6 +37,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,11 +79,15 @@ public class RequestDeletionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.debug("Running job ...");
+        logger.debug("[REQUEST DELETION JOB] Running job ...");
         long start = System.currentTimeMillis();
         int nbRequestsDeleted = 0;
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
-        criteria.withRequestStatesExcluded(Set.of(InternalRequestState.RUNNING));
+        if (criteria.getRequestStates() == null) {
+            criteria.withRequestStatesExcluded(Set.of(InternalRequestState.RUNNING));
+        } else {
+            criteria.getRequestStates().setValues(getValidRequestStates(criteria.getRequestStates()));
+        }
         Page<AbstractRequest> requestsPage;
         do {
             // Page request isn't modified as entities are removed on every page fetched
@@ -91,9 +100,34 @@ public class RequestDeletionJob extends AbstractJob<Void> {
             advanceCompletion();
             nbRequestsDeleted += requestsPage.getNumberOfElements();
         } while (requestsPage.hasNext());
-        logger.debug("Job handled for {} AbstractRequest(s) in {}ms",
+        logger.debug("[REQUEST DELETION JOB] Job handled for {} AbstractRequest(s) in {}ms",
                      nbRequestsDeleted,
                      System.currentTimeMillis() - start);
+    }
+
+    /**
+     * Get a safe list of RequestType criteria that can be used to make the research on Request.
+     * As it is not safe to delete a ${@link InternalRequestState#RUNNING}
+     */
+    public static Collection<InternalRequestState> getValidRequestStates(ValuesRestriction<InternalRequestState> requestStatesValuesRestriction) {
+        Collection<InternalRequestState> requestStates = requestStatesValuesRestriction.getValues();
+        if (requestStatesValuesRestriction.getMode().equals(ValuesRestrictionMode.INCLUDE)) {
+            Collection<InternalRequestState> requestStatesResult = requestStates;
+            if (requestStates.isEmpty()) {
+                requestStatesResult = List.of(InternalRequestState.values());
+            }
+            // RUNNING should not be present on INCLUDE
+            return requestStatesResult.stream()
+                                      .filter(requestType -> !requestType.equals(InternalRequestState.RUNNING))
+                                      .toList();
+        }
+        // RUNNING should be present on EXCLUDE
+        if (!requestStates.contains(InternalRequestState.RUNNING)) {
+            List<InternalRequestState> internalRequestStates = Lists.newArrayList(requestStates);
+            internalRequestStates.add(InternalRequestState.RUNNING);
+            return internalRequestStates;
+        }
+        return requestStates;
     }
 
     @Override

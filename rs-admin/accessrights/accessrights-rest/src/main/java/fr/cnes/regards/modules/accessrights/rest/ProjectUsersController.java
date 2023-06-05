@@ -381,9 +381,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = EXPORT, produces = "text/csv")
+    @PostMapping(value = EXPORT, produces = "text/csv")
     @ResourceAccess(description = "Generate a CSV file with all project users", role = DefaultRole.EXPLOIT)
-    public void exportAsCSV(SearchProjectUserParameters filters, HttpServletResponse response) throws IOException {
+    public void exportAsCSV(@Valid @RequestBody SearchProjectUserParameters filters, HttpServletResponse response)
+        throws IOException {
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=users.csv");
         response.setContentType("text/csv");
         projectUserExportService.export(new BufferedWriter(response.getWriter()), filters);
