@@ -129,11 +129,11 @@ public class FileStorageRequestService {
 
     protected FileStorageRequestService self;
 
-    private IJobInfoRepository jobInfoRepo;
+    private final IJobInfoRepository jobInfoRepo;
 
-    private INotificationClient notificationClient;
+    private final INotificationClient notificationClient;
 
-    private ITemplateService templateService;
+    private final ITemplateService templateService;
 
     @Value("${regards.storage.storage.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
@@ -805,6 +805,7 @@ public class FileStorageRequestService {
     public void handleSuccess(Collection<FileStorageRequestResultDTO> results) {
         Set<String> files = new HashSet<>();
         for (FileStorageRequestResultDTO result : results) {
+            boolean isHandleSuccess = true;
             FileStorageRequest request = result.getRequest();
             FileReferenceMetaInfo reqMetaInfos = request.getMetaInfo();
             Set<FileReference> fileRefs = Sets.newHashSet();
@@ -840,6 +841,7 @@ public class FileStorageRequestService {
                 } catch (ModuleException e) {
                     LOGGER.error(e.getMessage(), e);
                     handleError(request, e.getMessage());
+                    isHandleSuccess = false;
                 }
             }
 
@@ -866,7 +868,9 @@ public class FileStorageRequestService {
             }
 
             // Delete the FileRefRequest as it has been handled
-            delete(request);
+            if (isHandleSuccess) {
+                delete(request);
+            }
         }
 
         if (!files.isEmpty()) {

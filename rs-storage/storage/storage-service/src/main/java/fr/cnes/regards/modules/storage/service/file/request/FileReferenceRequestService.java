@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
@@ -230,6 +231,7 @@ public class FileReferenceRequestService {
      * @return {@link FileReference}
      * @throws ModuleException if the file reference can not be created.
      */
+    @Transactional(noRollbackFor = ModuleException.class)
     public FileReferenceResult reference(String owner,
                                          FileReferenceMetaInfo metaInfo,
                                          FileLocation location,
