@@ -25,10 +25,9 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * @author Kevin Marchois
@@ -49,6 +48,13 @@ public class FeatureNotificationRequest extends AbstractFeatureRequest {
 
     @Column(name = "sourceToNotify", length = 255)
     private String sourceToNotify;
+
+    @Column(name = "recipient_id", nullable = false)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "ta_feature_notification_request_recipient_ids",
+                     joinColumns = @JoinColumn(name = "feature_notification_request_id",
+                                               foreignKey = @ForeignKey(name = "fk_ta_feature_notification_request_recipient_ids")))
+    private Set<String> recipientIds;
 
     public static FeatureNotificationRequest build(String requestId,
                                                    String requestOwner,
@@ -87,6 +93,14 @@ public class FeatureNotificationRequest extends AbstractFeatureRequest {
 
     public void setSourceToNotify(String sourceToNotify) {
         this.sourceToNotify = sourceToNotify;
+    }
+
+    public Set<String> getRecipientIds() {
+        return recipientIds;
+    }
+
+    public void setRecipientIds(Set<String> recipientIds) {
+        this.recipientIds = recipientIds;
     }
 
     @Override

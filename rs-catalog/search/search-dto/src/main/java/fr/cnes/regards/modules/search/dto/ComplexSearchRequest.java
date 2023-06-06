@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.domain;
+package fr.cnes.regards.modules.search.dto;
 
 import fr.cnes.regards.framework.urn.DataType;
 import org.apache.commons.compress.utils.Lists;

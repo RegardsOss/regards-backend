@@ -84,6 +84,10 @@
             <artifactId>vavr</artifactId>
             <version>${vavr.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>response-entity-utils</artifactId>
+        </dependency>
         <!-- REGARDS clients -->
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
@@ -116,10 +120,6 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.storage</groupId>
             <artifactId>storage-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.utils</groupId>
-            <artifactId>response-entity-utils</artifactId>
         </dependency>
         <!-- Test dependencies -->
         <dependency>

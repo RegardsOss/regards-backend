@@ -42,8 +42,10 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Stephane Cortine
@@ -153,6 +155,7 @@ public class SearchFeatureNotificationServiceIT extends AbstractFeatureMultitena
         featureNotificationRequest3.setRequestDate(OffsetDateTime.of(2022, 11, 9, 14, 30, 30, 0, ZoneOffset.UTC));
         featureNotificationRequest3.setStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED);
         featureNotificationRequest3.setPriority(PriorityLevel.NORMAL);
+        featureNotificationRequest3.setRecipientIds(Set.of("recipient_businessId0", "recipient_businessId1"));
 
         notificationRequestRepo.save(featureNotificationRequest3);
     }
@@ -184,6 +187,17 @@ public class SearchFeatureNotificationServiceIT extends AbstractFeatureMultitena
         results = featureNotificationService.findRequests(searchFeatureRequestParameters, pageable);
         // Then
         assertEquals(4, results.getNumberOfElements());
+
+        // Given
+        searchFeatureRequestParameters = new SearchFeatureRequestParameters().withStatesIncluded(Arrays.asList(
+            RequestState.ERROR));
+        // When
+        results = featureNotificationService.findRequests(searchFeatureRequestParameters, pageable);
+        // Then
+        assertEquals(1, results.getNumberOfElements());
+
+        assertNotNull(results.getContent().get(0).getRecipientIds());
+        assertEquals(2, results.getContent().get(0).getRecipientIds().size());
     }
 
     @Test

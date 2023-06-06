@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.RecipientsSearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -99,7 +100,7 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
 
     @Operation(summary = "Retrieve one feature by its urn", description = "Retrieve one feature by its urn")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retrieve one feature by its urn") })
-    @RequestMapping(method = RequestMethod.GET, path = URN_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = URN_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Retrieve one feature by its urn", role = DefaultRole.EXPLOIT)
     public ResponseEntity<FeatureEntityDto> getFeature(
         @Parameter(description = "URN of the feature") @PathVariable("urn") String urn) {
@@ -107,19 +108,24 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
     }
 
     /**
-     * Creates job to send notify notification for each feature matching given search parameters
+     * Creates job to send notification for each feature matching given search parameters
      */
-    @Operation(summary = "Notify features according to search parameters",
-               description = "Notify features according to search parameters")
+    @Operation(summary = "Notify features to given recipients according to search parameters",
+               description = "Notify features to given recipients according to search parameters")
     @ApiResponses(value = { @ApiResponse(responseCode = "200",
-                                         description = "Notify features according to search parameters") })
-    @RequestMapping(method = RequestMethod.POST, path = NOTIFY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Notify features according to search parameters", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> notifyFeatures(
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
-                                                              content = @Content(schema = @Schema(implementation = SearchFeatureSimpleEntityParameters.class)))
-        @Parameter(description = "Filter criteria for features") @RequestBody
-        SearchFeatureSimpleEntityParameters selection) {
+                                         description = "Notify features to given recipients according to search parameters") })
+    @PostMapping(path = NOTIFY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Notify features to given recipients according to search parameters",
+                    role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Void> notifyFeatures(@io.swagger.v3.oas.annotations.parameters.RequestBody(description =
+                                                                                                         "Set of search criteria with the "
+                                                                                                         + "recipients of direct notification.",
+                                                                                                     content = @Content(
+                                                                                                         schema = @Schema(
+                                                                                                             implementation = SearchFeatureSimpleEntityParameters.class)))
+                                               @Parameter(description = "Filter criteria for features with the list of recipients")
+                                               @RequestBody RecipientsSearchFeatureSimpleEntityParameters selection) {
+
         featureService.scheduleNotificationsJob(selection);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
@@ -131,7 +137,7 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
                description = "Delete features according to search parameters")
     @ApiResponses(value = { @ApiResponse(responseCode = "200",
                                          description = "Delete features according to search parameters") })
-    @RequestMapping(method = RequestMethod.DELETE, path = DELETE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = DELETE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete features according to search parameters", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteFeatures(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
@@ -161,7 +167,7 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
                                 this.getClass(),
                                 "notifyFeatures",
                                 LinkRelation.of("notify"),
-                                MethodParamFactory.build(SearchFeatureSimpleEntityParameters.class));
+                                MethodParamFactory.build(RecipientsSearchFeatureSimpleEntityParameters.class));
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "deleteFeatures",

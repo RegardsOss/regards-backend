@@ -20,13 +20,20 @@ package fr.cnes.regards.modules.notifier.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.Rule;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.in.SpecificRecipientNotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import org.slf4j.Logger;
@@ -67,21 +74,28 @@ public class NotificationRegistrationService {
 
     private final NotificationRegistrationService self;
 
+    private final IPluginService pluginService;
+
     public NotificationRegistrationService(INotificationRequestRepository notificationRequestRepository,
                                            IPublisher publisher,
                                            Validator validator,
                                            INotificationClient notificationClient,
                                            RuleCache ruleCache,
-                                           NotificationRegistrationService notificationRegistrationService) {
+                                           NotificationRegistrationService notificationRegistrationService,
+                                           IPluginService pluginService) {
         this.notificationRequestRepository = notificationRequestRepository;
         this.publisher = publisher;
         this.validator = validator;
         this.notificationClient = notificationClient;
         this.ruleCache = ruleCache;
         this.self = notificationRegistrationService;
+        this.pluginService = pluginService;
     }
 
-    public void registerNotificationRequests(List<NotificationRequestEvent> events) {
+    /**
+     * Save all request events in
+     */
+    public void registerNotificationRequests(List<? extends NotificationRequestEvent> events) {
         if (!events.isEmpty()) {
 
             long startTime = System.currentTimeMillis();
@@ -94,28 +108,28 @@ public class NotificationRegistrationService {
             // then check validity
             try {
                 Set<Rule> rules = ruleCache.getRules();
+
                 Set<NotificationRequest> notificationToRegister = notRetryEvents.stream()
                                                                                 .map(event -> initNotificationRequest(
                                                                                     event,
                                                                                     rules))
+                                                                                .flatMap(Optional::stream)
                                                                                 .collect(Collectors.toSet());
-                notificationToRegister.remove(null);
                 notificationRequestRepository.saveAll(notificationToRegister);
                 LOGGER.debug("------------->>> {} notifications registered", notificationToRegister.size());
             } catch (ExecutionException e) {
                 LOGGER.error(e.getMessage(), e);
                 // Rules could not be retrieved, so let deny everything.
-                List<NotifierEvent> denied = notRetryEvents.stream()
-                                                           .map(event -> new NotifierEvent(event.getRequestId(),
-                                                                                           event.getRequestOwner(),
-                                                                                           NotificationState.DENIED))
-                                                           .collect(Collectors.toList());
-                publisher.publish(denied);
+                publisher.publish(notRetryEvents.stream()
+                                                .map(event -> new NotifierEvent(event.getRequestId(),
+                                                                                event.getRequestOwner(),
+                                                                                NotificationState.DENIED))
+                                                .collect(Collectors.toList()));
             }
         }
     }
 
-    public Set<NotificationRequestEvent> handleRetryRequests(List<NotificationRequestEvent> events) {
+    public Set<NotificationRequestEvent> handleRetryRequests(List<? extends NotificationRequestEvent> events) {
         try {
             return self.handleRetryRequestsConcurrent(events);
         } catch (ObjectOptimisticLockingFailureException e) {
@@ -127,12 +141,12 @@ public class NotificationRegistrationService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Set<NotificationRequestEvent> handleRetryRequestsConcurrent(List<NotificationRequestEvent> events) {
+    public Set<NotificationRequestEvent> handleRetryRequestsConcurrent(List<? extends NotificationRequestEvent> events) {
 
-        Map<String, NotificationRequestEvent> eventsPerRequestId = events.stream()
-                                                                         .collect(Collectors.toMap(
-                                                                             NotificationRequestEvent::getRequestId,
-                                                                             Function.identity()));
+        Map<String, ? extends NotificationRequestEvent> eventsPerRequestId = events.stream()
+                                                                                   .collect(Collectors.toMap(
+                                                                                       NotificationRequestEvent::getRequestId,
+                                                                                       Function.identity()));
         Set<NotificationRequest> alreadyKnownRequests = notificationRequestRepository.findAllByRequestIdIn(
             eventsPerRequestId.keySet());
         Set<NotificationRequest> updated = new HashSet<>();
@@ -141,33 +155,33 @@ public class NotificationRegistrationService {
         int nbRequestRetriedForRecipientError = 0;
         int nbRequestRetriedForRulesError = 0;
 
-        for (NotificationRequest known : alreadyKnownRequests) {
+        for (NotificationRequest knownRequest : alreadyKnownRequests) {
 
-            if (!known.getRecipientsInError().isEmpty()) {
+            if (!knownRequest.getRecipientsInError().isEmpty()) {
                 // This is a retry, let's prepare everything so that it can be retried properly
-                known.getRecipientsToSchedule().addAll(known.getRecipientsInError());
-                known.getRecipientsInError().clear();
-                known.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
-                updated.add(known);
-                responseToSend.add(new NotifierEvent(known.getRequestId(),
-                                                     known.getRequestOwner(),
+                knownRequest.getRecipientsToSchedule().addAll(knownRequest.getRecipientsInError());
+                knownRequest.getRecipientsInError().clear();
+                knownRequest.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
+                updated.add(knownRequest);
+                responseToSend.add(new NotifierEvent(knownRequest.getRequestId(),
+                                                     knownRequest.getRequestOwner(),
                                                      NotificationState.GRANTED));
                 // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
-                eventsPerRequestId.put(known.getRequestId(), null);
+                eventsPerRequestId.put(knownRequest.getRequestId(), null);
                 nbRequestRetriedForRecipientError++;
             }
             // This allows to retry if a rule failed to be matched to this notification.
             // THIS HAS TO BE DONE AFTER RECIPIENTS IN ERROR!!!! Otherwise, the rules won't be applied again
-            if (!known.getRulesToMatch().isEmpty()) {
-                known.setState(NotificationState.GRANTED);
-                updated.add(known);
+            if (!knownRequest.getRulesToMatch().isEmpty()) {
+                knownRequest.setState(NotificationState.GRANTED);
+                updated.add(knownRequest);
                 // This is a set so that we are not adding multiple time the same notifier event
-                responseToSend.add(new NotifierEvent(known.getRequestId(),
-                                                     known.getRequestOwner(),
+                responseToSend.add(new NotifierEvent(knownRequest.getRequestId(),
+                                                     knownRequest.getRequestOwner(),
                                                      NotificationState.GRANTED));
                 // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
                 // in worst case this is done twice, not a problem
-                eventsPerRequestId.put(known.getRequestId(), null);
+                eventsPerRequestId.put(knownRequest.getRequestId(), null);
                 nbRequestRetriedForRulesError++;
             }
         }
@@ -182,33 +196,84 @@ public class NotificationRegistrationService {
     }
 
     /**
-     * Check if a notification event is valid and create a request publish an error otherwise
+     * Check if a notification request event is valid and create a request otherwise publish an error
      *
-     * @return a implemented {@link NotificationRequest} or null if invalid
+     * @return a implemented {@link NotificationRequest} or empty value if invalid
      */
-    private NotificationRequest initNotificationRequest(NotificationRequestEvent event, Set<Rule> rules) {
+    private Optional<NotificationRequest> initNotificationRequest(NotificationRequestEvent event, Set<Rule> rules) {
 
-        Errors errors = new MapBindingResult(new HashMap<>(), NotificationRequestEvent.class.getName());
-        validator.validate(event, errors);
+        Errors errors = null;
+        Set<PluginConfiguration> pluginConfigurations = new HashSet<>();
+        NotificationState notificationState;
 
+        // Request event containing the list of recipients for a direct notification without rules.
+        if (event instanceof SpecificRecipientNotificationRequestEvent specificRecipientNotificationRequestEvent) {
+            rules.clear();
+            notificationState = NotificationState.TO_SCHEDULE_BY_RECIPIENT;
+
+            errors = new MapBindingResult(new HashMap<>(), SpecificRecipientNotificationRequestEvent.class.getName());
+            validator.validate(event, errors);
+            pluginConfigurations = validateRecipients(specificRecipientNotificationRequestEvent.getRecipients(),
+                                                      errors);
+        } else {
+            notificationState = NotificationState.GRANTED;
+
+            errors = new MapBindingResult(new HashMap<>(), NotificationRequestEvent.class.getName());
+            validator.validate(event, errors);
+        }
+        // Check if errors exist, return the new created notification request
         if (!errors.hasErrors()) {
-            publisher.publish(new NotifierEvent(event.getRequestId(),
-                                                event.getRequestOwner(),
-                                                NotificationState.GRANTED));
-            return new NotificationRequest(event.getPayload(),
-                                           event.getMetadata(),
-                                           event.getRequestId(),
-                                           event.getRequestOwner(),
-                                           event.getRequestDate(),
-                                           NotificationState.GRANTED,
-                                           rules);
+            publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), notificationState));
+            // Create the notification request
+            NotificationRequest notificationRequest = new NotificationRequest(event.getPayload(),
+                                                                              event.getMetadata(),
+                                                                              event.getRequestId(),
+                                                                              event.getRequestOwner(),
+                                                                              event.getRequestDate(),
+                                                                              notificationState);
+            notificationRequest.getRulesToMatch().addAll(rules);
+            notificationRequest.getRecipientsToSchedule().addAll(pluginConfigurations);
+
+            return Optional.of(notificationRequest);
         }
         notificationClient.notify(errors.toString(),
                                   "A NotificationRequestEvent received is invalid",
                                   NotificationLevel.ERROR,
                                   DefaultRole.ADMIN);
         publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), NotificationState.DENIED));
-        return null;
+
+        return Optional.empty();
+    }
+
+    private Set<PluginConfiguration> validateRecipients(Set<String> recipientIds, Errors errors) {
+        Set<PluginConfiguration> pluginConfigurations = new HashSet<>();
+        for (String businessId : recipientIds) {
+            try {
+                PluginConfiguration pluginConfiguration = pluginService.getPluginConfiguration(businessId);
+                pluginConfigurations.add(pluginConfiguration);
+                IRecipientNotifier recipientNotifierPlugin = pluginService.getPlugin(pluginConfiguration);
+                // Check if the plugin can enable the direct notification
+                if (!recipientNotifierPlugin.isDirectNotificationEnabled()) {
+                    errors.rejectValue("businessId",
+                                       "specificRecipientNotificationRequestEvent.recipients.not.enable"
+                                       + ".directnotification"
+                                       + ".error.message",
+                                       String.format("This plugin[id:%s] does not enable the direct notification.",
+                                                     businessId));
+                }
+            } catch (EntityNotFoundException | NotAvailablePluginConfigurationException e) {
+                errors.rejectValue("businessId",
+                                   "specificRecipientNotificationRequestEvent.recipients.not.available"
+                                   + ".error.message",
+                                   String.format("This plugin[id:%s] does not available.", businessId));
+            } catch (ModuleException e) {
+                errors.rejectValue("businessId",
+                                   "specificRecipientNotificationRequestEvent.recipients.error.message",
+                                   String.format("An error occurs during the instantiating of plugin[id:%s].",
+                                                 businessId));
+            }
+        }
+        return errors.hasErrors() ? new HashSet<>() : pluginConfigurations;
     }
 
 }

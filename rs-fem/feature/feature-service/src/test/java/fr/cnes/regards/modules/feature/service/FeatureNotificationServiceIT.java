@@ -55,9 +55,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -157,10 +155,13 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
             this.featureRepo.save(updatedEntity);
             notifCreated.add(FeatureNotificationRequestEvent.build("notifier",
                                                                    createdEntity.getUrn(),
-                                                                   PriorityLevel.LOW));
+                                                                   PriorityLevel.LOW,
+                                                                   new HashSet<>()));
             notifUpdated.add(FeatureNotificationRequestEvent.build("notifier",
                                                                    updatedEntity.getUrn(),
-                                                                   PriorityLevel.LOW));
+                                                                   PriorityLevel.LOW,
+                                                                   Set.of("recipient_businessId0",
+                                                                          "recipient_businessId1")));
         }
 
         this.publisher.publish(notifCreated);

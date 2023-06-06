@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.domain;
 
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
+import fr.cnes.regards.modules.search.dto.SearchRequest;
 
 import java.util.Map;
 

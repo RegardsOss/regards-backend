@@ -29,7 +29,6 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
-import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -37,11 +36,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Job to publis {@link FeatureNotificationRequestEvent}s for each {@link FeatureEntityDto} matching  search parameters
+ * Job to publish {@link FeatureNotificationRequestEvent}s for each {@link FeatureEntityDto} matching search parameters
  *
  * @author Sébastien Binda
  */
@@ -51,9 +50,18 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
 
     public static final String OWNER_PARAMETER = "owner";
 
+    public static final String RECIPIENTS_PARAMETER = "recipients";
+
     private SearchFeatureSimpleEntityParameters selection;
 
     private String owner;
+
+    /**
+     * List of recipients(business identifiers of plugin configurations
+     * {@link fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration}) for the direct
+     * notification
+     */
+    private Set<String> recipients;
 
     @Autowired
     private IFeatureService featureService;
@@ -67,42 +75,51 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
+
         selection = getValue(parameters, SELECTION_PARAMETER);
         owner = getValue(parameters, OWNER_PARAMETER);
+        recipients = getValue(parameters, RECIPIENTS_PARAMETER);
     }
 
     @Override
     public void run() {
+        long start = System.currentTimeMillis();
         Pageable page = PageRequest.of(0, pageSize);
         Page<FeatureEntityDto> results = null;
         long totalElementCheck = 0;
         boolean firstPass = true;
+
         do {
             // Search features to notify
             results = featureService.findAll(selection, page);
             if (firstPass) {
                 totalElementCheck = results.getTotalElements();
-                logger.info("Starting scheduling {} feature notification requests.", totalElementCheck);
+                logger.info("[PUBLISH FEATURE NOTIFICATION JOB] Starting scheduling {} feature notification request"
+                            + "(s).", totalElementCheck);
                 firstPass = false;
             }
-            // Scheduling page deletion job
-            publishNotificationEvents(results.map(f -> f.getFeature().getUrn()).toList());
-            logger.info("Scheduling job for {} feature notification requests (remaining {}).",
-                        results.getNumberOfElements(),
-                        totalElementCheck - results.getNumberOfElements());
+            // Publish notification requests of features with the list of recipients for the direct notification
+            publishFeatureNotificationRequestEvents(results.map(f -> f.getFeature().getUrn()).toList(), recipients);
+
+            logger.debug("[PUBLISH FEATURE NOTIFICATION JOB] Publish job for {} feature notification requests "
+                         + "(remaining {}).",
+                         results.getNumberOfElements(),
+                         totalElementCheck - results.getNumberOfElements());
             page = page.next();
-        } while ((results != null) && results.hasNext());
+        } while (results != null && results.hasNext() && !Thread.interrupted());
+        logger.debug("[PUBLISH FEATURE NOTIFICATION JOB] {} feature notification request(s) in {}ms",
+                     totalElementCheck,
+                     System.currentTimeMillis() - start);
     }
 
-    private void publishNotificationEvents(Collection<FeatureUniformResourceName> featureUrns) {
-        List<FeatureNotificationRequestEvent> events = Lists.newArrayList();
-        for (FeatureUniformResourceName urn : featureUrns) {
-            FeatureNotificationRequestEvent event = FeatureNotificationRequestEvent.build(owner,
-                                                                                          urn,
-                                                                                          PriorityLevel.HIGH);
-            events.add(event);
-        }
-        publisher.publish(events);
+    private void publishFeatureNotificationRequestEvents(Collection<FeatureUniformResourceName> featureUrns,
+                                                         Set<String> recipients) {
+        publisher.publish(featureUrns.stream()
+                                     .map(urn -> FeatureNotificationRequestEvent.build(owner,
+                                                                                       urn,
+                                                                                       PriorityLevel.HIGH,
+                                                                                       recipients))
+                                     .toList());
     }
 
 }

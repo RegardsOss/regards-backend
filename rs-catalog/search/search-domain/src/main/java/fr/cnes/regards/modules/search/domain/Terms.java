@@ -35,7 +35,7 @@ public enum Terms {
     /**
      *
      */
-    private Terms(String pName) {
+    Terms(String pName) {
         name = pName;
     }
 

@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
+import fr.cnes.regards.modules.search.dto.ComplexSearchRequest;
+import fr.cnes.regards.modules.search.dto.SearchRequest;
 import fr.cnes.regards.modules.search.rest.ComplexSearchController;
 import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;

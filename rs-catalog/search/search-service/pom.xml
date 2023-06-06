@@ -60,6 +60,10 @@
             <artifactId>search-dao</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.modules.search</groupId>
+            <artifactId>search-dto</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.modules.dam</groupId>
             <artifactId>dam-gson</artifactId>
         </dependency>

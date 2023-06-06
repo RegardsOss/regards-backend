@@ -45,7 +45,7 @@
     </parent>
 
     <dependencies>
-        <!-- Module domain -->
+        <!-- REGARDS -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>feign-regards-starter</artifactId>
@@ -54,6 +54,10 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.search</groupId>
             <artifactId>search-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.search</groupId>
+            <artifactId>search-dto</artifactId>
         </dependency>
         <!-- Test -->
         <dependency>

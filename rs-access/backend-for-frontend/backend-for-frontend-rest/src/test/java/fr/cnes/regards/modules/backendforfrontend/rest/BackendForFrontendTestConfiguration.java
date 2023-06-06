@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.backendforfrontend.rest;
 
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.client.cache.CacheableServiceAggregatorClient;
+import fr.cnes.regards.modules.notifier.client.IRecipientClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import org.mockito.Mockito;
@@ -71,5 +72,10 @@ public class BackendForFrontendTestConfiguration {
     @Bean
     public IToponymsClient toponymsClient() {
         return Mockito.mock(IToponymsClient.class);
+    }
+
+    @Bean
+    public IRecipientClient recipientClient() {
+        return Mockito.mock(IRecipientClient.class);
     }
 }

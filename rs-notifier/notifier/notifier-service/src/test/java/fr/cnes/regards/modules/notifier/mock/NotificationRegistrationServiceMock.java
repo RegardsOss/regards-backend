@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notifier.mock;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.service.NotificationRegistrationService;
@@ -46,13 +47,15 @@ public class NotificationRegistrationServiceMock extends NotificationRegistratio
                                                Validator validator,
                                                INotificationClient notificationClient,
                                                RuleCache ruleCache,
-                                               NotificationRegistrationService notificationRegistrationService) {
+                                               NotificationRegistrationService notificationRegistrationService,
+                                               IPluginService pluginService) {
         super(notificationRequestRepository,
               publisher,
               validator,
               notificationClient,
               ruleCache,
-              notificationRegistrationService);
+              notificationRegistrationService,
+              pluginService);
     }
 
 }

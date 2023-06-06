@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -86,19 +87,22 @@ public class FeatureClient {
      *
      * @param featureUrns   Urn of {@link Feature}s to notify
      * @param priorityLevel {@link PriorityLevel}
+     * @param recipients    List of recipients for the direct notification
      */
     public List<String> notifyFeatures(String notificationOwner,
                                        List<FeatureUniformResourceName> featureUrns,
-                                       PriorityLevel priorityLevel) {
-        List<FeatureNotificationRequestEvent> events = Lists.newArrayList();
+                                       PriorityLevel priorityLevel,
+                                       Set<String> recipients) {
+        List<FeatureNotificationRequestEvent> featureNotificationRequestEvents = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
             FeatureNotificationRequestEvent event = FeatureNotificationRequestEvent.build(notificationOwner,
                                                                                           urn,
-                                                                                          priorityLevel);
-            events.add(event);
+                                                                                          priorityLevel,
+                                                                                          recipients);
+            featureNotificationRequestEvents.add(event);
         }
-        publisher.publish(events);
-        return events.stream().map(FeatureNotificationRequestEvent::getRequestId).collect(Collectors.toList());
+        publisher.publish(featureNotificationRequestEvents);
+        return featureNotificationRequestEvents.stream().map(FeatureNotificationRequestEvent::getRequestId).toList();
     }
 
     public void createFeatures(List<FeatureCreationRequestEvent> featuresToCreate) {

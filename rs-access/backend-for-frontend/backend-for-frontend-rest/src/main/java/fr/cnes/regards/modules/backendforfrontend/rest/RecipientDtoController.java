@@ -16,16 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.notifier.rest;
+package fr.cnes.regards.modules.backendforfrontend.rest;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.notifier.client.IRecipientClient;
 import fr.cnes.regards.modules.notifier.dto.RecipientDto;
-import fr.cnes.regards.modules.notifier.service.IRecipientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Set;
 
 /**
- * REST interface for managing data {@link RecipientDto}(recipient from {@link fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration})
+ * Controller to find all recipients through of rs-notifier
  *
  * @author Stephane Cortine
  */
@@ -45,16 +46,13 @@ public class RecipientDtoController {
 
     public static final String RECIPIENTS_ROOT_PATH = "/recipients";
 
-    private final IRecipientService recipientService;
-
-    public RecipientDtoController(IRecipientService recipientService) {
-        this.recipientService = recipientService;
-    }
+    @Autowired
+    private IRecipientClient client;
 
     @ResourceAccess(description = "Endpoint to retrieve all recipient or only recipients enabling the direct "
                                   + "notification or only "
                                   + "them not enabling the direct notification")
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping
     @Operation(summary = "List all recipient",
                description = "List all recipient if missing parameter, or only recipients enabling the "
                              + "direct notification or only them not enabling the direct notification")
@@ -62,7 +60,12 @@ public class RecipientDtoController {
     public ResponseEntity<Set<RecipientDto>> findRecipients(
         @Parameter(description = "Recipient enable or not the direct notification") @RequestParam(required = false)
         final Boolean directNotificationEnabled) {
-        return ResponseEntity.ok(recipientService.findRecipients(directNotificationEnabled));
+        FeignSecurityManager.asSystem();
+        try {
+            return client.findRecipients(directNotificationEnabled);
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
 }

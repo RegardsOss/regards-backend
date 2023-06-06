@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationReposi
 import fr.cnes.regards.modules.feature.dao.IFeatureSimpleEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
+import fr.cnes.regards.modules.feature.domain.RecipientsSearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
@@ -123,17 +124,21 @@ public class FeatureService implements IFeatureService {
     }
 
     @Override
-    public JobInfo scheduleNotificationsJob(SearchFeatureSimpleEntityParameters selection) {
+    public JobInfo scheduleNotificationsJob(RecipientsSearchFeatureSimpleEntityParameters selection) {
         // Schedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(PublishFeatureNotificationJob.SELECTION_PARAMETER, selection));
+        jobParameters.add(new JobParameter(PublishFeatureNotificationJob.SELECTION_PARAMETER,
+                                           selection.getSearchParameters()));
         jobParameters.add(new JobParameter(PublishFeatureNotificationJob.OWNER_PARAMETER, authResolver.getUser()));
+        jobParameters.add(new JobParameter(PublishFeatureNotificationJob.RECIPIENTS_PARAMETER,
+                                           selection.getRecipientIds()));
         // the job priority will be set according the priority of the first request to schedule
         JobInfo jobInfo = new JobInfo(false,
                                       PriorityLevel.HIGH.getPriorityLevel(),
                                       jobParameters,
                                       authResolver.getUser(),
                                       PublishFeatureNotificationJob.class.getName());
+
         return jobInfoService.createAsQueued(jobInfo);
     }
 

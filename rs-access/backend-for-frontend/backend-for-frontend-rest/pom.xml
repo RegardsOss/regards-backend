@@ -83,6 +83,10 @@
             <artifactId>access-services-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.modules.notifier</groupId>
+            <artifactId>notifier-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.modules.model</groupId>
             <artifactId>model-dto</artifactId>
         </dependency>

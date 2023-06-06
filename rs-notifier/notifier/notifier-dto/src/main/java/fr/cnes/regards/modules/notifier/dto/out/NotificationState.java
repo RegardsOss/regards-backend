@@ -58,5 +58,5 @@ public enum NotificationState {
     /**
      * At least one recipient have not been successfully handled.
      */
-    ERROR
+    ERROR;
 }

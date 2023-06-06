@@ -679,7 +679,10 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
 
     protected List<FeatureNotificationRequestEvent> prepareNotificationRequests(Collection<FeatureUniformResourceName> urns) {
         List<FeatureNotificationRequestEvent> events = Lists.newArrayList();
-        urns.forEach(u -> events.add(FeatureNotificationRequestEvent.build("notifier", u, PriorityLevel.NORMAL)));
+        urns.forEach(u -> events.add(FeatureNotificationRequestEvent.build("notifier",
+                                                                           u,
+                                                                           PriorityLevel.NORMAL,
+                                                                           new HashSet<String>())));
         return events;
     }
 

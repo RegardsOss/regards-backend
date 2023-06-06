@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.catalog.services.helper;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
+import fr.cnes.regards.modules.search.dto.SearchRequest;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

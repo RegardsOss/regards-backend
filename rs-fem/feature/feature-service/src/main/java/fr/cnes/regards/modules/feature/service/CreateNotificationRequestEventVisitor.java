@@ -135,6 +135,9 @@ public class CreateNotificationRequestEventVisitor
     public Optional<NotificationRequestEvent> visitNotificationRequest(FeatureNotificationRequest featureNotificationRequest) {
         Feature feature = featureNotificationRequest.getToNotify();
         if (feature != null) {
+            if (!featureNotificationRequest.getRecipientIds().isEmpty()) {
+                return Optional.empty();
+            }
             return Optional.of(new NotificationRequestEvent(gson.toJsonTree(feature).getAsJsonObject(),
                                                             gson.toJsonTree(new NotificationActionEventMetadata(
                                                                     FeatureManagementAction.NOTIFIED,
@@ -143,6 +146,7 @@ public class CreateNotificationRequestEventVisitor
                                                                 .getAsJsonObject(),
                                                             featureNotificationRequest.getRequestId(),
                                                             featureNotificationRequest.getRequestOwner()));
+
         } else {
             visitorErrorRequests.add(featureNotificationRequest);
             return Optional.empty();

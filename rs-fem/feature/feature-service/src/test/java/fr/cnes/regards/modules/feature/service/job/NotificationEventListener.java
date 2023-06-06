@@ -35,6 +35,8 @@ public class NotificationEventListener implements IBatchHandler<FeatureNotificat
 
     private long numberOfRequests = 0L;
 
+    private List<FeatureNotificationRequestEvent> messages;
+
     @Override
     public Errors validate(FeatureNotificationRequestEvent message) {
         return null;
@@ -44,6 +46,7 @@ public class NotificationEventListener implements IBatchHandler<FeatureNotificat
     public void handleBatch(List<FeatureNotificationRequestEvent> messages) {
         LOGGER.info("TEST ------> handling {} notification messages", messages.size());
         numberOfRequests = getNumberOfRequests() + messages.size();
+        this.messages = messages;
     }
 
     public long getNumberOfRequests() {
@@ -52,6 +55,10 @@ public class NotificationEventListener implements IBatchHandler<FeatureNotificat
 
     public void reset() {
         numberOfRequests = 0;
+    }
+
+    public List<FeatureNotificationRequestEvent> getMessages() {
+        return messages;
     }
 
 }

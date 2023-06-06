@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.RecipientsSearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -55,7 +56,7 @@ public interface IFeatureService {
      *
      * @param selection {@link SearchFeatureSimpleEntityParameters}
      */
-    JobInfo scheduleNotificationsJob(SearchFeatureSimpleEntityParameters selection);
+    JobInfo scheduleNotificationsJob(RecipientsSearchFeatureSimpleEntityParameters selection);
 
     /**
      * Creates a job to creates new deletion requests for all features matching selection parameters

@@ -149,15 +149,13 @@ public class NotificationRequest {
                                String requestId,
                                String requestOwner,
                                OffsetDateTime requestDate,
-                               NotificationState state,
-                               Set<Rule> rulesToMatch) {
+                               NotificationState state) {
         this.payload = payload;
         this.requestDate = requestDate;
         this.metadata = metadata;
         this.state = state;
         this.requestId = requestId;
         this.requestOwner = requestOwner;
-        this.rulesToMatch.addAll(rulesToMatch);
     }
 
     public NotificationRequest() {

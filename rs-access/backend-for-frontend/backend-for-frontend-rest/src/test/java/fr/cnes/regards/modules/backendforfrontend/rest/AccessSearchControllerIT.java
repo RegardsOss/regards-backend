@@ -39,7 +39,7 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(AccessSearchControllerIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessSearchControllerIT.class);
 
     @Test
     @Requirement("REGARDS_DSL_ACC_USE_700")
@@ -129,6 +129,6 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
 
     @Override
     protected Logger getLogger() {
-        return LOG;
+        return LOGGER;
     }
 }

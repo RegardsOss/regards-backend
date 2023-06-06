@@ -167,8 +167,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   this.getClass().getSimpleName(),
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.ERROR,
-                                                                  new HashSet<>());
+                                                                  NotificationState.ERROR);
             toRetry.getRecipientsInError().add(recipientR1_1);
             notificationRequestsToRetry_AllRuleMatchOneRecipientError.add(toRetry);
             eventForRetry.add(new NotificationRequestEvent(toRetry.getPayload(),
@@ -186,8 +185,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   this.getClass().getSimpleName(),
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.SCHEDULED,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.SCHEDULED);
+            toRetry.getRulesToMatch().addAll(Sets.newHashSet(rule2));
             notRetriableRequests.add(toRetry);
             eventForRetry.add(new NotificationRequestEvent(toRetry.getPayload(),
                                                            toRetry.getMetadata(),
@@ -204,8 +203,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   this.getClass().getSimpleName(),
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.ERROR,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.ERROR);
+            toRetry.getRulesToMatch().addAll(Sets.newHashSet(rule2));
             toRetry.getRecipientsInError().add(recipientR1_1);
             notificationRequestsToRetry_RuleNotMatchedOneRecipientError.add(toRetry);
             eventForRetry.add(new NotificationRequestEvent(toRetry.getPayload(),
@@ -333,52 +332,60 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         JsonObject elementRule1 = initElement("elementRule1.json");
         List<NotificationRequest> first = new ArrayList<>(nbOfRequestPerType);
         for (int i = 0; i < nbOfRequestPerType; i++) {
-            first.add(new NotificationRequest(elementRule1,
-                                              gson.toJsonTree(globalMetadata).getAsJsonObject(),
-                                              AbstractRequestEvent.generateRequestId(),
-                                              REQUEST_OWNER,
-                                              OffsetDateTime.now(),
-                                              NotificationState.GRANTED,
-                                              rules));
+            NotificationRequest notificationRequest = new NotificationRequest(elementRule1,
+                                                                              gson.toJsonTree(globalMetadata)
+                                                                                  .getAsJsonObject(),
+                                                                              AbstractRequestEvent.generateRequestId(),
+                                                                              REQUEST_OWNER,
+                                                                              OffsetDateTime.now(),
+                                                                              NotificationState.GRANTED);
+            notificationRequest.getRulesToMatch().addAll(rules);
+            first.add(notificationRequest);
         }
         first = notificationRequestRepository.saveAll(first);
         // Lets create notification requests that should only be matched by second rule
         JsonObject elementRule2 = initElement("elementRule2.json");
         List<NotificationRequest> second = new ArrayList<>(nbOfRequestPerType);
         for (int i = 0; i < nbOfRequestPerType; i++) {
-            second.add(new NotificationRequest(elementRule2,
-                                               gson.toJsonTree(globalMetadata).getAsJsonObject(),
-                                               AbstractRequestEvent.generateRequestId(),
-                                               REQUEST_OWNER,
-                                               OffsetDateTime.now(),
-                                               NotificationState.GRANTED,
-                                               rules));
+            NotificationRequest notificationRequest = new NotificationRequest(elementRule2,
+                                                                              gson.toJsonTree(globalMetadata)
+                                                                                  .getAsJsonObject(),
+                                                                              AbstractRequestEvent.generateRequestId(),
+                                                                              REQUEST_OWNER,
+                                                                              OffsetDateTime.now(),
+                                                                              NotificationState.GRANTED);
+            notificationRequest.getRulesToMatch().addAll(rules);
+            second.add(notificationRequest);
         }
         second = notificationRequestRepository.saveAll(second);
         // Lets create notification requests that should be matched by both rules
         JsonObject elementBothRule = initElement("elementBothRule.json");
         List<NotificationRequest> both = new ArrayList<>(nbOfRequestPerType);
         for (int i = 0; i < nbOfRequestPerType; i++) {
-            both.add(new NotificationRequest(elementBothRule,
-                                             gson.toJsonTree(globalMetadata).getAsJsonObject(),
-                                             AbstractRequestEvent.generateRequestId(),
-                                             REQUEST_OWNER,
-                                             OffsetDateTime.now(),
-                                             NotificationState.GRANTED,
-                                             rules));
+            NotificationRequest notificationRequest = new NotificationRequest(elementBothRule,
+                                                                              gson.toJsonTree(globalMetadata)
+                                                                                  .getAsJsonObject(),
+                                                                              AbstractRequestEvent.generateRequestId(),
+                                                                              REQUEST_OWNER,
+                                                                              OffsetDateTime.now(),
+                                                                              NotificationState.GRANTED);
+            notificationRequest.getRulesToMatch().addAll(rules);
+            both.add(notificationRequest);
         }
         both = notificationRequestRepository.saveAll(both);
         // Lets create notification requests that should not be matched by any rules
         JsonObject elementNoneRule = initElement("elementNoneRule.json");
         List<NotificationRequest> none = new ArrayList<>(nbOfRequestPerType);
         for (int i = 0; i < nbOfRequestPerType; i++) {
-            none.add(new NotificationRequest(elementNoneRule,
-                                             gson.toJsonTree(globalMetadata).getAsJsonObject(),
-                                             AbstractRequestEvent.generateRequestId(),
-                                             REQUEST_OWNER,
-                                             OffsetDateTime.now(),
-                                             NotificationState.GRANTED,
-                                             rules));
+            NotificationRequest notificationRequest = new NotificationRequest(elementNoneRule,
+                                                                              gson.toJsonTree(globalMetadata)
+                                                                                  .getAsJsonObject(),
+                                                                              AbstractRequestEvent.generateRequestId(),
+                                                                              REQUEST_OWNER,
+                                                                              OffsetDateTime.now(),
+                                                                              NotificationState.GRANTED);
+            notificationRequest.getRulesToMatch().addAll(rules);
+            both.add(notificationRequest);
         }
         none = notificationRequestRepository.saveAll(none);
         // lets finally call the method to test
@@ -494,8 +501,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                      AbstractRequestEvent.generateRequestId(),
                                                                      REQUEST_OWNER,
                                                                      OffsetDateTime.now(),
-                                                                     NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                     new HashSet<>());
+                                                                     NotificationState.TO_SCHEDULE_BY_RECIPIENT);
             toSchedule.getRecipientsToSchedule().add(recipientR1_1);
             toSchedule.getRecipientsToSchedule().add(recipientR1_2);
             requestsToSchedule.add(toSchedule);
@@ -551,8 +557,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                      AbstractRequestEvent.generateRequestId(),
                                                                      REQUEST_OWNER,
                                                                      OffsetDateTime.now(),
-                                                                     NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                     new HashSet<>());
+                                                                     NotificationState.TO_SCHEDULE_BY_RECIPIENT);
             toSchedule.getRecipientsToSchedule().add(recipientR1_1);
             toSchedule.getRecipientsToSchedule().add(recipientR1_2);
             requestsToSchedule.add(toSchedule);
@@ -619,8 +624,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                      AbstractRequestEvent.generateRequestId(),
                                                                      REQUEST_OWNER,
                                                                      OffsetDateTime.now(),
-                                                                     NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                     new HashSet<>());
+                                                                     NotificationState.TO_SCHEDULE_BY_RECIPIENT);
             toSchedule.getRecipientsScheduled().add(recipientR1_1);
             toSchedule.getRecipientsScheduled().add(recipientR1_2);
             toProcess.add(toSchedule);
@@ -677,8 +681,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                      AbstractRequestEvent.generateRequestId(),
                                                                      REQUEST_OWNER,
                                                                      OffsetDateTime.now(),
-                                                                     NotificationState.SCHEDULED,
-                                                                     new HashSet<>());
+                                                                     NotificationState.SCHEDULED);
             toSchedule.getRecipientsScheduled().add(recipientR1_1);
             toSchedule.getRecipientsScheduled().add(recipientR1_2);
             toProcess.add(toSchedule);
@@ -739,8 +742,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                      AbstractRequestEvent.generateRequestId(),
                                                                      REQUEST_OWNER,
                                                                      OffsetDateTime.now(),
-                                                                     NotificationState.SCHEDULED,
-                                                                     new HashSet<>());
+                                                                     NotificationState.SCHEDULED);
             toSchedule.getRecipientsScheduled().add(recipientR1_1);
             toSchedule.getRecipientsScheduled().add(recipientR1_2);
             toProcess.add(toSchedule);
@@ -809,8 +811,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                           AbstractRequestEvent.generateRequestId(),
                                                           REQUEST_OWNER,
                                                           OffsetDateTime.now(),
-                                                          NotificationState.SCHEDULED,
-                                                          new HashSet<>()));
+                                                          NotificationState.SCHEDULED));
                     break;
                 case 1:
                     NotificationRequest inSuccess = new NotificationRequest(matchR1,
@@ -818,8 +819,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                             AbstractRequestEvent.generateRequestId(),
                                                                             REQUEST_OWNER,
                                                                             OffsetDateTime.now(),
-                                                                            NotificationState.SCHEDULED,
-                                                                            new HashSet<>());
+                                                                            NotificationState.SCHEDULED);
                     inSuccess.getSuccessRecipients().add(recipientR1_2);
                     completed.add(inSuccess);
                     break;
@@ -830,8 +830,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                           AbstractRequestEvent.generateRequestId(),
                                                                           REQUEST_OWNER,
                                                                           OffsetDateTime.now(),
-                                                                          NotificationState.SCHEDULED,
-                                                                          new HashSet<>());
+                                                                          NotificationState.SCHEDULED);
                     inError.getRecipientsInError().add(recipientR1_2);
                     completed.add(inError);
                     nbError++;
@@ -846,8 +845,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                  AbstractRequestEvent.generateRequestId(),
                                                                  REQUEST_OWNER,
                                                                  OffsetDateTime.now(),
-                                                                 NotificationState.SCHEDULED,
-                                                                 new HashSet<>());
+                                                                 NotificationState.SCHEDULED);
             notYet.getRecipientsScheduled().add(recipientR1_2);
             notYetCompleted.add(notYet);
         }
@@ -909,8 +907,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT);
+            request.getRulesToMatch().add(rule2);
             request.getRecipientsToSchedule().add(recipientR1_1);
             request.getRecipientsToSchedule().add(recipientR1_2);
             beingScheduled.add(request);
@@ -1042,8 +1040,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
                                                                   // was in state SCHEDULED because job have been scheduled but retry has set requests in state GRANTED
-                                                                  NotificationState.GRANTED,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.GRANTED);
+            request.getRulesToMatch().add(rule2);
             request.getRecipientsScheduled().add(recipientR1_1);
             request.getRecipientsScheduled().add(recipientR1_2);
             beingMatchForRuleError.add(request);
@@ -1150,8 +1148,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
                                                                   // was in state SCHEDULED because job have been scheduled but retry has set requests in state GRANTED
-                                                                  NotificationState.GRANTED,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.GRANTED);
+            request.getRulesToMatch().add(rule2);
             request.getRecipientsScheduled().add(recipientR1_1);
             request.getRecipientsScheduled().add(recipientR1_2);
             beingProcessed.add(request);
@@ -1262,8 +1260,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.GRANTED,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.GRANTED);
+            request.getRulesToMatch().add(rule2);
             // we consider that recipientR1_1 has not yet been processed and will fail
             request.getRecipientsScheduled().add(recipientR1_1);
             retryEvents.add(new NotificationRequestEvent(request.getPayload(),
@@ -1393,8 +1391,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT);
+            request.getRulesToMatch().add(rule2);
             request.getRecipientsToSchedule().add(recipientR1_1);
             request.getRecipientsToSchedule().add(recipientR1_2);
             beingScheduled.add(request);
@@ -1506,8 +1504,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT);
+            request.getRulesToMatch().add(rule2);
             request.getRecipientsToSchedule().add(recipientR1_1);
             request.getRecipientsToSchedule().add(recipientR1_2);
             beingRetried.add(request);
@@ -1609,8 +1607,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                  new HashSet<>());
+                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT);
             //recipientR1_1 & recipientR1_2 has already been scheduled previously
             request.getRecipientsScheduled().add(recipientR1_1);
             request.getRecipientsScheduled().add(recipientR1_2);
@@ -1718,8 +1715,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
                                                                   // was in state SCHEDULED because job have been scheduled but match has set requests in state TO_SCHEDULE
-                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                  new HashSet<>());
+                                                                  NotificationState.TO_SCHEDULE_BY_RECIPIENT);
             request.getRecipientsToSchedule().add(recipientR2_1);
             request.getRecipientsScheduled().add(recipientR1_1);
             request.getRecipientsScheduled().add(recipientR1_2);
@@ -1831,8 +1827,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.SCHEDULED,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.SCHEDULED);
+            request.getRulesToMatch().add(rule2);
             request.getRecipientsScheduled().add(recipientR1_1);
             request.getRecipientsScheduled().add(recipientR1_2);
             request.setState(NotificationState.ERROR);
@@ -1954,8 +1950,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
                                                                   // was in state SCHEDULED because job have been scheduled but match has set requests in state TO_SCHEDULE
-                                                                  NotificationState.SCHEDULED,
-                                                                  Sets.newHashSet(rule2));
+                                                                  NotificationState.SCHEDULED);
+            request.getRulesToMatch().add(rule2);
             request.getRecipientsScheduled().add(recipientR1_1);
             request.getRecipientsScheduled().add(recipientR1_2);
             beingProcessed.add(request);
@@ -2070,8 +2066,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                          halfId,
                                                                          owner1,
                                                                          now,
-                                                                         NotificationState.SCHEDULED,
-                                                                         rules);
+                                                                         NotificationState.SCHEDULED);
+        halfSuccessRequest.getRulesToMatch().addAll(rules);
         halfSuccessRequest.getRecipientsInError().add(recipient1);
         halfSuccessRequest.getSuccessRecipients().add(recipient2);
 
@@ -2080,8 +2076,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                      successId,
                                                                      owner2,
                                                                      now,
-                                                                     NotificationState.SCHEDULED,
-                                                                     rules);
+                                                                     NotificationState.SCHEDULED);
+        successRequest.getRulesToMatch().addAll(rules);
         successRequest.getSuccessRecipients().addAll(Arrays.asList(recipient1, recipient2));
 
         NotificationRequest errorRequest = new NotificationRequest(payload,
@@ -2089,8 +2085,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                    errorId,
                                                                    owner2,
                                                                    now,
-                                                                   NotificationState.SCHEDULED,
-                                                                   rules);
+                                                                   NotificationState.SCHEDULED);
+        errorRequest.getRulesToMatch().addAll(rules);
         errorRequest.getRecipientsInError().addAll(Arrays.asList(recipient1, recipient2));
 
         notificationRequestRepository.saveAll(Arrays.asList(successRequest, errorRequest, halfSuccessRequest));

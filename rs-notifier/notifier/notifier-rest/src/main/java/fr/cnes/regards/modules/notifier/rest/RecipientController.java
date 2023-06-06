@@ -52,12 +52,12 @@ import java.util.List;
  * @author Sébastien Binda
  */
 @RestController
-@RequestMapping(RecipientController.RECIPIENT)
+@RequestMapping(RecipientController.RECIPIENT_ROOT_PATH)
 public class RecipientController implements IResourceController<PluginConfiguration> {
 
-    public static final String RECIPIENT = "/recipient";
+    public static final String RECIPIENT_ROOT_PATH = "/recipient";
 
-    public static final String ID = "/{id}";
+    public static final String ID_PATH = "/{id}";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RecipientController.class);
 
@@ -76,6 +76,8 @@ public class RecipientController implements IResourceController<PluginConfigurat
      * @return paged list of {@link PluginConfiguration}(recipient)
      */
     // TODO : not use ??
+    @Deprecated
+    //the path of GET url is not correct, missing S : see RecipientDtoController in order to retrieve all recipients (path:/recipients)
     @ResourceAccess(description = "List all recipient")
     @GetMapping
     @Operation(summary = "List all recipient", description = "List all recipient")
@@ -128,7 +130,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
      * Delete a {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "Delete a recipient")
-    @DeleteMapping(path = ID)
+    @DeleteMapping(path = ID_PATH)
     @Operation(summary = "Delete a recipient", description = "Delete a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<Void> deleteRecipient(

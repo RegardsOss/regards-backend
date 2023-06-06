@@ -116,6 +116,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         long registrationStart = System.currentTimeMillis();
 
         List<FeatureNotificationRequest> notificationsRequest = new ArrayList<>();
+
         Set<String> existingRequestIds = this.featureNotificationRequestRepository.findRequestId();
 
         Set<FeatureUniformResourceName> featureUrns = events.stream()
@@ -134,7 +135,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                      notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
 
-        // Save a list of validated FeatureDeletionRequest from a list of
+        // Save a list of validated FeatureNotificationRequest from a list of FeatureNotificationRequestEvent
         featureNotificationRequestRepository.saveAll(notificationsRequest);
         LOGGER.debug("------------->>> {} Notification requests registered in {} ms",
                      notificationsRequest.size(),
@@ -155,7 +156,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                             List<FeatureNotificationRequest> notificationsRequest,
                                             Set<String> existingRequestIds) {
         // Validate event
-        Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
+        Errors errors = new MapBindingResult(new HashMap<>(), FeatureNotificationRequestEvent.class.getName());
         validator.validate(item, errors);
         validateRequest(item, errors);
 
@@ -196,6 +197,8 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                                                   item.getPriority(),
                                                                                   item.getUrn(),
                                                                                   RequestState.GRANTED);
+
+            request.setRecipientIds(item.getRecipients());
             request.setToNotify(featureToNotify.getFeature());
             request.setSessionToNotify(featureToNotify.getSession());
             request.setSourceToNotify(featureToNotify.getSessionOwner());
@@ -226,16 +229,27 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                                                     PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
                                                                                 .getContent();
         Set<AbstractFeatureRequest> visitorErrorRequests = new HashSet<>();
-        CreateNotificationRequestEventVisitor visitor = new CreateNotificationRequestEventVisitor(gson,
-                                                                                                  featureRepo,
-                                                                                                  visitorErrorRequests);
+        CreateNotificationRequestEventVisitor createNotificationRequestEventVisitor = new CreateNotificationRequestEventVisitor(
+            gson,
+            featureRepo,
+            visitorErrorRequests);
+        CreateSpecificRecipientNotificationRequestEventVisitor createSpecificRecipientNotificationRequestEventVisitor = new CreateSpecificRecipientNotificationRequestEventVisitor(
+            gson,
+            visitorErrorRequests);
+
         if (!requestsToSend.isEmpty()) {
-            List<NotificationRequestEvent> eventToSend = requestsToSend.stream()
-                                                                       .map(r -> r.accept(visitor))
-                                                                       .filter(Optional::isPresent)
-                                                                       .map(Optional::get)
-                                                                       .collect(Collectors.toList());
-            effectivelySend(sendingStart, eventToSend);
+            List<NotificationRequestEvent> notificationRequestEventsToSend = requestsToSend.stream()
+                                                                                           .map(r -> r.accept(
+                                                                                               createNotificationRequestEventVisitor))
+                                                                                           .flatMap(Optional::stream)
+                                                                                           .collect(Collectors.toList());
+            notificationRequestEventsToSend.addAll(requestsToSend.stream()
+                                                                 .map(r -> r.accept(
+                                                                     createSpecificRecipientNotificationRequestEventVisitor))
+                                                                 .flatMap(Optional::stream)
+                                                                 .collect(Collectors.toList()));
+
+            effectivelySend(sendingStart, notificationRequestEventsToSend);
             // remove visitor error requests from requests to send because they are in error and not sent!
             Set<AbstractFeatureRequest> requestsSent = new HashSet<>(requestsToSend);
             requestsSent.removeAll(visitorErrorRequests);
@@ -413,6 +427,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         featureCreationService.doOnError(filterRequests(requests, FeatureCreationRequest.class));
         featureDeletionService.doOnError(filterRequests(requests, FeatureDeletionRequest.class));
         featureUpdateService.doOnError(filterRequests(requests, FeatureUpdateRequest.class));
+
         doOnError(filterRequests(requests, FeatureNotificationRequest.class));
     }
 
@@ -420,6 +435,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         featureCreationService.doOnTerminated(filterRequests(requests, FeatureCreationRequest.class));
         featureDeletionService.doOnTerminated(filterRequests(requests, FeatureDeletionRequest.class));
         featureUpdateService.doOnTerminated(filterRequests(requests, FeatureUpdateRequest.class));
+
         doOnSuccess(filterRequests(requests, FeatureNotificationRequest.class));
     }
 

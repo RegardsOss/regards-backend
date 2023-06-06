@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 import javax.persistence.Convert;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * Request for feature notification using event driven mechanism
@@ -41,6 +42,11 @@ public class FeatureNotificationRequestEvent extends AbstractRequestEvent implem
 
     @NotNull(message = "Priority level is required")
     private PriorityLevel priority;
+
+    /**
+     * List of recipients(business identifiers) for the direct notification
+     */
+    private Set<String> recipients;
 
     public FeatureUniformResourceName getUrn() {
         return urn;
@@ -58,22 +64,34 @@ public class FeatureNotificationRequestEvent extends AbstractRequestEvent implem
         this.priority = priority;
     }
 
+    public Set<String> getRecipients() {
+        return recipients;
+    }
+
+    public void setRecipients(Set<String> recipients) {
+        this.recipients = recipients;
+    }
+
     public static FeatureNotificationRequestEvent build(String requestOwner,
                                                         FeatureUniformResourceName urn,
-                                                        PriorityLevel priority) {
-        return build(requestOwner, urn, OffsetDateTime.now().minusSeconds(1), priority);
+                                                        PriorityLevel priority,
+                                                        Set<String> recipients) {
+        return build(requestOwner, urn, OffsetDateTime.now().minusSeconds(1), priority, recipients);
     }
 
     public static FeatureNotificationRequestEvent build(String requestOwner,
                                                         FeatureUniformResourceName urn,
                                                         OffsetDateTime requestDate,
-                                                        PriorityLevel priority) {
+                                                        PriorityLevel priority,
+                                                        Set<String> recipients) {
         FeatureNotificationRequestEvent event = new FeatureNotificationRequestEvent();
         event.setRequestId(generateRequestId());
         event.setRequestOwner(requestOwner);
         event.setRequestDate(requestDate);
         event.setPriority(priority);
         event.setUrn(urn);
+        event.setRecipients(recipients);
+
         return event;
     }
 

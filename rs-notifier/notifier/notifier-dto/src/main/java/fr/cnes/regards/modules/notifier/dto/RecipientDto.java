@@ -18,17 +18,24 @@
  */
 package fr.cnes.regards.modules.notifier.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.Objects;
 
 /**
+ * DTO to handle the list of recipients for rest controllers.
+ *
  * @author Stephane Cortine
  */
 public class RecipientDto {
 
+    @Schema(description = "Recipient business identifier")
     private final String businessId;
 
+    @Schema(description = "Recipient label")
     private final String recipientLabel;
 
+    @Schema(description = "Recipient description")
     private final String description;
 
     public RecipientDto(String businessId, String recipientLabel, String description) {
