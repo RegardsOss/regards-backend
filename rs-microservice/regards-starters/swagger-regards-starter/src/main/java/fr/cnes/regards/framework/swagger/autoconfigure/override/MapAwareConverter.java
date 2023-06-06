@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * Hack for classes extending HashMap : for some unknown reason, isEmpty method is included in swagger spec generation.
+ * Hack for classes extending HashMap : for unknown reason, isEmpty method is included in swagger spec generation.
  * And so, during open api generation, the SessionStepProperties become an Object, and is not considered as Map.
  * Hiding with @Hidden this method solve the problem, but is ugly
  *

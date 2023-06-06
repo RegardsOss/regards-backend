@@ -149,16 +149,16 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
      * @throws ModuleException if error occurs!
      */
     private Dataset checkDataSource(Dataset dataset) throws ModuleException, NotAvailablePluginConfigurationException {
-        if (dataset.getDataSource() != null) {
+        if (dataset.getPlgConfDataSource() != null) {
             // Retrieve plugin from associated datasource
-            PluginConfiguration pluginConf = pluginService.getPluginConfiguration(dataset.getDataSource()
+            PluginConfiguration pluginConf = pluginService.getPluginConfiguration(dataset.getPlgConfDataSource()
                                                                                          .getBusinessId());
             IDataSourcePlugin datasourcePlugin = pluginService.getPlugin(pluginConf.getBusinessId());
             String modelName = datasourcePlugin.getModelName();
             try {
                 Model model = modelService.getModelByName(modelName);
                 dataset.setDataModel(model.getName());
-                dataset.setDataSource(pluginConf);
+                dataset.setPlgConfDataSource(pluginConf);
             } catch (ModuleException e) {
                 LOGGER.error("Unable to dejsonify model parameter from PluginConfiguration", e);
                 throw new EntityNotFoundException(String.format(
@@ -229,7 +229,7 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
             // check for updates on data model or datasource
             // if entityInDB is null then it is a creation so we cannot be modifying the data model or the datasource
             if (entityInDB != null) {
-                if (!Objects.equal(entity.getDataSource(), entityInDB.getDataSource())) {
+                if (!Objects.equal(entity.getPlgConfDataSource(), entityInDB.getPlgConfDataSource())) {
                     throw new EntityOperationForbiddenException("Datasources of datasets cannot be updated");
                 }
                 if (!Objects.equal(entity.getDataModel(), entityInDB.getDataModel())) {

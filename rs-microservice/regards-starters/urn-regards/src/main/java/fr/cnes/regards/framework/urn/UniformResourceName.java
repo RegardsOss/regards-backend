@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.urn;
 
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.framework.urn.validator.RegardsUrn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.Convert;
@@ -46,6 +47,7 @@ import java.util.regex.Pattern;
  */
 @Convert(converter = UrnConverter.class)
 @RegardsUrn
+@Schema(implementation = String.class)
 public class UniformResourceName {
 
     public static final int MAX_SIZE = 255;

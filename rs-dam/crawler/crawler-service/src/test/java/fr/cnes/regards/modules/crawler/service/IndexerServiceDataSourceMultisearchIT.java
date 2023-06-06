@@ -99,7 +99,7 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         dataset1.setSubsettingClause(ICriterion.all());
         dataset1.setOpenSearchSubsettingClause("");
         dataset1.setLicence("licence");
-        dataset1.setDataSource(dataSourcePluginConf);
+        dataset1.setPlgConfDataSource(dataSourcePluginConf);
         dataset1.setTags(Sets.newHashSet("BULLSHIT"));
         dataset1.setGroups(Sets.newHashSet("group0", "group11"));
         dsService.create(dataset1);
@@ -110,7 +110,7 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         dataset2.setOpenSearchSubsettingClause("");
         dataset2.setTags(Sets.newHashSet("BULLSHIT"));
         dataset2.setLicence("licence");
-        dataset2.setDataSource(dataSourcePluginConf);
+        dataset2.setPlgConfDataSource(dataSourcePluginConf);
         dataset2.setGroups(Sets.newHashSet("group12", "group11"));
         dsService.create(dataset2);
 
@@ -119,7 +119,7 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         dataset3.setSubsettingClause(ICriterion.all());
         dataset3.setOpenSearchSubsettingClause("");
         dataset3.setLicence("licence");
-        dataset3.setDataSource(dataSourcePluginConf);
+        dataset3.setPlgConfDataSource(dataSourcePluginConf);
         dataset3.setGroups(Sets.newHashSet("group2"));
         dsService.create(dataset3);
 

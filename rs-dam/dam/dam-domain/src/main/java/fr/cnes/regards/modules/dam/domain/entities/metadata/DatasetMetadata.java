@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.dam.domain.entities.metadata;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -93,10 +92,6 @@ public class DatasetMetadata {
      */
     private final ConcurrentHashMap<String, DataObjectGroup> dataObjectsGroups = new ConcurrentHashMap<>();
 
-    public Set<String> getDataObjectsGroups() {
-        return dataObjectsGroups.keySet();
-    }
-
     public void addDataObjectGroup(String groupName,
                                    Boolean datasetAccess,
                                    Boolean dataObjectAccess,
@@ -110,7 +105,7 @@ public class DatasetMetadata {
                                                        dataObjectAccessFilterPlugin));
     }
 
-    public Map<String, DataObjectGroup> getDataObjectsGroupsMap() {
+    public Map<String, DataObjectGroup> getDataObjectsGroups() {
         return dataObjectsGroups;
     }
 }

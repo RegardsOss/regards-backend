@@ -227,7 +227,7 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
                                           runtimeTenantResolver.getTenant(),
                                           conf.getFeature().getProviderId(),
                                           conf.getFeature().getLabel());
-            dataset.setDataSource(datasource);
+            dataset.setPlgConfDataSource(datasource);
             dataset.setOpenSearchSubsettingClause(conf.getSubsetting());
             dataset.setFeature(conf.getFeature());
             // override ipId if it was provided
@@ -243,7 +243,7 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
         List<ModuleConfigurationItem<DatasetConfiguration>> exportedDatasets = new ArrayList<>();
         for (Dataset dataset : datasetService.findAll()) {
             DatasetConfiguration configuration = DatasetConfiguration.builder()
-                                                                     .datasource(dataset.getDataSource()
+                                                                     .datasource(dataset.getPlgConfDataSource()
                                                                                         .getBusinessId())
                                                                      .subsetting(dataset.getOpenSearchSubsettingClause())
                                                                      .feature(dataset.getFeature())

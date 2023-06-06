@@ -178,7 +178,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @return a {@link ProjectUser}
      */
     @GetMapping(USER_ID_RELATIVE_PATH)
-    @ResourceAccess(description = "retrieve the project user and only display  metadata", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "retrieve the project user and only display metadata", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long userId)
         throws EntityNotFoundException {
         return ResponseEntity.ok(toResource(projectUserService.retrieveUser(userId)));
@@ -190,7 +190,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @return a {@link ProjectUser}
      */
     @GetMapping(MY_USER)
-    @ResourceAccess(description = "retrieve the current authenticated project user and only display  metadata",
+    @ResourceAccess(description = "retrieve the current authenticated project user and only display metadata",
                     role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<ProjectUser>> retrieveCurrentProjectUser()
         throws EntityNotFoundException, EntityOperationForbiddenException {
@@ -208,7 +208,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @return a {@link ProjectUser}
      */
     @GetMapping(EMAIL)
-    @ResourceAccess(description = "retrieve the project user and only display  metadata", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "retrieve the project user and only display metadata", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(@PathVariable("email") String userEmail)
         throws EntityNotFoundException {
         return ResponseEntity.ok(toResource(projectUserService.retrieveOneByEmail(userEmail)));

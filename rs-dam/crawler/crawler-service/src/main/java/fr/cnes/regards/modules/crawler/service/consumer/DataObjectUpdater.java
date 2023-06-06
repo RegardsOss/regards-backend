@@ -31,7 +31,7 @@ public class DataObjectUpdater extends AbstractDataObjectBulkSaver implements Co
                              Integer maxBulkSize) {
         super(saveDataObjectsCallable, executor, toSaveObjects, dataset.getId(), maxBulkSize);
         this.datasetIpId = dataset.getIpId().toString();
-        this.groupsMap = dataset.getMetadata().getDataObjectsGroupsMap();
+        this.groupsMap = dataset.getMetadata().getDataObjectsGroups();
         this.datasetModelName = dataset.getModel().getName();
         this.updateDate = updateDate;
     }

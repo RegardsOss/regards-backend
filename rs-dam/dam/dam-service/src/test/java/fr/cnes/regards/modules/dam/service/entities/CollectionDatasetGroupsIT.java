@@ -374,7 +374,7 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
         dataset1Updated.setGroups(Sets.newHashSet("G1"));
         dataset1Updated.setDataModel(dataset1.getDataModel());
         dataset1Updated.setCreationDate(dataset1.getCreationDate());
-        dataset1Updated.setDataSource(dataset1.getDataSource());
+        dataset1Updated.setPlgConfDataSource(dataset1.getPlgConfDataSource());
         dataset1Updated.setLicence(dataset1.getLicence());
         dataset1Updated.setMetadata(dataset1.getMetadata());
         dataset1Updated.setOpenSearchSubsettingClause(dataset1.getOpenSearchSubsettingClause());

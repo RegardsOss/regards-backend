@@ -138,11 +138,11 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
         return subsettingClause == null ? ICriterion.all() : subsettingClause;
     }
 
-    public PluginConfiguration getDataSource() {
+    public PluginConfiguration getPlgConfDataSource() {
         return plgConfDataSource;
     }
 
-    public void setDataSource(PluginConfiguration plgConfDataSource) {
+    public void setPlgConfDataSource(PluginConfiguration plgConfDataSource) {
         this.plgConfDataSource = plgConfDataSource;
     }
 

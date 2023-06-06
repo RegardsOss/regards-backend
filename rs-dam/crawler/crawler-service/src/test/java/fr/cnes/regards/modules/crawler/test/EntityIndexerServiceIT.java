@@ -265,7 +265,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     private Dataset createDataset(String label, PluginConfiguration datasource) throws ModuleException {
         Dataset dataset = new Dataset(dsModel, TENANT, label, label);
         dataset.setSubsettingClause(ICriterion.all());
-        dataset.setDataSource(datasource);
+        dataset.setPlgConfDataSource(datasource);
         dataset.setOpenSearchSubsettingClause("");
         // Create dataset
         return datasetService.create(dataset);

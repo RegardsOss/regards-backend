@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
-import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.annotations.Type;
 import org.springframework.util.MimeType;
 
@@ -62,11 +61,10 @@ public class AcquisitionFileInfo {
     /**
      * A {@link String} corresponding to the data file mime-type
      */
-    @NotNull(message = "Mime type is required") @Valid
+    @NotNull(message = "Mime type is required")
+    @Valid
     @Convert(converter = MimeTypeConverter.class)
     @Column(name = "mime_type", length = 255)
-    @Schema(implementation = String.class, description = "A String corresponding to the data file mime-type")
-    // this field is serialized/deserialized as a String (thanks to @Converter)
     private MimeType mimeType;
 
     @NotNull(message = "REGARDS data type is required")

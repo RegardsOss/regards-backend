@@ -248,9 +248,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                 savedSubsettingClause = dataset.getSubsettingClause();
                 prepareDatasetForEs(dataset);
                 // update dataset groups
-                for (Entry<String, DataObjectGroup> entry : dataset.getMetadata()
-                                                                   .getDataObjectsGroupsMap()
-                                                                   .entrySet()) {
+                for (Entry<String, DataObjectGroup> entry : dataset.getMetadata().getDataObjectsGroups().entrySet()) {
                     // remove group if no access
                     if (!entry.getValue().getDatasetAccess()) {
                         dataset.getGroups().remove(entry.getKey());
@@ -296,8 +294,8 @@ public class EntityIndexerService implements IEntityIndexerService {
     private void prepareDatasetForEs(Dataset dataset) throws ModuleException {
         // entity must be detached else Hibernate tries to commit update (datasource is cascade.DETACHED)
         em.detach(dataset);
-        if (dataset.getDataSource() != null) {
-            dataset.getDataSource().getParameters().clear();
+        if (dataset.getPlgConfDataSource() != null) {
+            dataset.getPlgConfDataSource().getParameters().clear();
         }
         // Subsetting clause must not be jsonify into Elasticsearch
         dataset.setSubsettingClause(null);
@@ -326,10 +324,10 @@ public class EntityIndexerService implements IEntityIndexerService {
         }
 
         Map<String, DataObjectGroup> curentMetadata = curDataset.getMetadata() != null ?
-            curDataset.getMetadata().getDataObjectsGroupsMap() :
+            curDataset.getMetadata().getDataObjectsGroups() :
             null;
         Map<String, DataObjectGroup> newMetadata = newDataset.getMetadata() != null ?
-            newDataset.getMetadata().getDataObjectsGroupsMap() :
+            newDataset.getMetadata().getDataObjectsGroups() :
             null;
         if (curentMetadata != null) {
             need = need || !curentMetadata.equals(newMetadata);
@@ -486,7 +484,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
         addProjectInfos(tenant, searchKey);
         // handle association between dataobjects and groups for all access rights set by plugin
-        for (DataObjectGroup group : dataset.getMetadata().getDataObjectsGroupsMap().values()) {
+        for (DataObjectGroup group : dataset.getMetadata().getDataObjectsGroups().values()) {
             // If access to the dataset is allowed and a plugin access filter is set on dataobject metadata, calculate which dataObjects are in the given group
             if (group.getDatasetAccess() && (group.getMetaDataObjectAccessFilterPluginBusinessId() != null)) {
                 try {

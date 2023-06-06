@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.oais.urn.converters.OaisUrnConverter;
 import fr.cnes.regards.framework.oais.validator.RegardsOaisUrn;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.persistence.Convert;
 import java.util.UUID;
@@ -42,6 +43,7 @@ import java.util.regex.Pattern;
  */
 @RegardsOaisUrn
 @Convert(converter = OaisUrnConverter.class)
+@Schema(implementation = String.class)
 public class OaisUniformResourceName extends UniformResourceName {
 
     /**

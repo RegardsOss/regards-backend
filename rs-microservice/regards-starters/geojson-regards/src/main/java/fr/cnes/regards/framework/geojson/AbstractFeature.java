@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson;
 
 import fr.cnes.regards.framework.geojson.geometry.*;
+import io.swagger.v3.oas.annotations.Hidden;
 
 import javax.validation.Valid;
 
@@ -61,6 +62,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     private IGeometry normalizedGeometry = IGeometry.unlocated();
 
     @Valid
+    @Hidden // FIXME Serializer/deserializer thinks properties is an Object even if P is a Collection
     protected P properties;
 
     public AbstractFeature() {

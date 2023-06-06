@@ -199,19 +199,19 @@ public class CrawlerServiceIT {
         dataset1 = new Dataset(modelDataset, tenant, "DS1", "labelDs1");
         dataset1.setLicence("licence");
         dataset1.setProviderId("ProviderId1");
-        dataset1.setDataSource(dataSourcePluginConf);
+        dataset1.setPlgConfDataSource(dataSourcePluginConf);
         // DS1 -> (G1) (group 1)
         dataset1.setGroups(Sets.newHashSet("G1"));
         dataset2 = new Dataset(modelDataset, tenant, "DS2", "labelDs2");
         dataset2.setLicence("licence");
         dataset2.setProviderId("ProviderId2");
-        dataset2.setDataSource(dataSourcePluginConf);
+        dataset2.setPlgConfDataSource(dataSourcePluginConf);
         // DS2 -> (G2)
         dataset2.setGroups(Sets.newHashSet("G2"));
         dataset3 = new Dataset(modelDataset, tenant, "DS3", "labelDs3");
         dataset3.setLicence("licence");
         dataset3.setProviderId("ProviderId3");
-        dataset3.setDataSource(dataSourcePluginConf);
+        dataset3.setPlgConfDataSource(dataSourcePluginConf);
         // DS3 -> (G3)
         dataset3.setGroups(Sets.newHashSet("G3"));
         // No tags on Datasets, it doesn't matter
