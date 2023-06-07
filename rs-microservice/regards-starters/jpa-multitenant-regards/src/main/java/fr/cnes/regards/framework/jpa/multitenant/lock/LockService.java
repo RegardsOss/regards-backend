@@ -99,8 +99,14 @@ public class LockService {
             return false;
         }
         LOGGER.debug("Acquired lock {} for task {}", lockName, process.getClass().getSimpleName());
-        process.run();
-        lock.unlock();
+        try {
+            process.run();
+        } catch (Throwable e) {
+            LOGGER.error("Unexpected error during execution of locked task with lock {}, releasing the lock", lock);
+            throw e;
+        } finally {
+            lock.unlock();
+        }
         LOGGER.debug("Released lock {} for task {}", lockName, process.getClass().getSimpleName());
         return true;
     }
