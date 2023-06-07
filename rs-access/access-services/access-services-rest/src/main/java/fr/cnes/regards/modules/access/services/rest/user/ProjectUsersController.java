@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
 import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.access.services.domain.user.ProjectUserCreateDto;
 import fr.cnes.regards.modules.access.services.domain.user.ProjectUserReadDto;
@@ -164,8 +165,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                                               content = @Content(schema = @Schema(implementation = SearchProjectUserParameters.class)))
         @Parameter(description = "Filter criterias for users of the project") @RequestBody
         SearchProjectUserParameters filters,
-        @Parameter(description = "Sorting and page configuration")
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
 
         return completeUserPagedResponseWithQuotas(() -> {

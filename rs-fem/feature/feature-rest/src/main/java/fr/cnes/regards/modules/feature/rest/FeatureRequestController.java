@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
@@ -90,8 +91,7 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
                                                               content = @Content(schema = @Schema(implementation = SearchFeatureRequestParameters.class)))
         @Parameter(description = "Filter criterias for feature requests") @RequestBody
         SearchFeatureRequestParameters filters,
-        @Parameter(description = "Sorting and page configuration")
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page) {
+        @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page) {
 
         return new ResponseEntity<>(toResources(featureRequestService.findAll(type, filters, page), type),
                                     HttpStatus.OK);

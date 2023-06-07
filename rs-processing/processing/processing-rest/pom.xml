@@ -53,6 +53,10 @@
             <artifactId>feign-regards-starter</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>swagger-regards-starter</artifactId>
+        </dependency>
 
         <!-- Test -->
         <dependency>

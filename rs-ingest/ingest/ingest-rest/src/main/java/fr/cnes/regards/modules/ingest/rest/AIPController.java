@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
@@ -156,8 +157,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
                                                               content = @Content(schema = @Schema(implementation = SearchAIPsParameters.class)))
         @Parameter(description = "Filter criterias for AIPs") @RequestBody SearchAIPsParameters filters,
-        @Parameter(description = "Sorting and page configuration")
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<AIPEntityLight> assembler) {
 
         return new ResponseEntity<>(toPagedResources(aipService.findLightByFilters(filters, pageable), assembler),

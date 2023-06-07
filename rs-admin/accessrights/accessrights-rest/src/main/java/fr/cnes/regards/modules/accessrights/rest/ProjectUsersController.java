@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.hateoas.*;
 import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -148,8 +149,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                                               content = @Content(schema = @Schema(implementation = SearchProjectUserParameters.class)))
         @Parameter(description = "Filter criterias for users of the project") @RequestBody
         SearchProjectUserParameters filters,
-        @Parameter(description = "Sorting and page configuration")
-        @PageableDefault(sort = "created", direction = Sort.Direction.ASC) Pageable pageable,
+        @PageableQueryParam @PageableDefault(sort = "created", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler) {
 
         return ResponseEntity.ok(toPagedResources(projectUserService.retrieveUsers(filters, pageable),

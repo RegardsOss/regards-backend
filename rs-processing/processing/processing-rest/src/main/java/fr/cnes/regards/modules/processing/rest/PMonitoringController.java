@@ -20,10 +20,10 @@ package fr.cnes.regards.modules.processing.rest;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
 import fr.cnes.regards.modules.processing.domain.SearchExecutionEntityParameters;
 import fr.cnes.regards.modules.processing.domain.dto.ExecutionMonitoringDTO;
 import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
-import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Pageable;
@@ -68,8 +68,7 @@ public class PMonitoringController implements IResourceController<ExecutionMonit
     public HttpEntity<PagedModel<EntityModel<ExecutionMonitoringDTO>>> executions(
         @RequestParam(name = TENANT_PARAM, required = true) String tenant,
         @RequestBody SearchExecutionEntityParameters filters,
-        @Parameter(description = "Sorting and page configuration")
-        @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
+        @PageableQueryParam @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
 
         RequestAttributes ctxRequestAttributes = RequestContextHolder.getRequestAttributes();
 
