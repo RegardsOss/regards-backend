@@ -60,7 +60,7 @@ public interface IBusinessSearchService {
      * @param urn feature identifier
      */
     <F extends EntityFeature> F get(UniformResourceName urn)
-        throws EntityOperationForbiddenException, EntityNotFoundException;
+            throws EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
      * Compute summary for given request (delegate method to catalog search service)
@@ -90,5 +90,11 @@ public interface IBusinessSearchService {
                                                   String propertyPath,
                                                   int maxCount,
                                                   String partialText)
-        throws SearchException, OpenSearchUnknownParameter;
+            throws SearchException, OpenSearchUnknownParameter;
+
+
+    /**
+     * Validates that the given WKT Geometry is valid
+     */
+    Boolean isValidGeometry(String wktGeometry);
 }

@@ -23,12 +23,14 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Unit test for {@link GeometryParser}
@@ -46,50 +48,74 @@ public class GeometryParserTest {
     @Requirement("REGARDS_DSL_DAM_PLG_250")
     @Purpose("Test queries like g=POLYGON((1 1,5 1,5 5,1 5,1 1),(2 2,2 3,3 3,3 2,2 2))")
     public final void testParse_shouldParseGeometry() throws OpenSearchParseException, UnsupportedEncodingException {
-        String request = URLEncoder.encode("POLYGON((1 2,3 4,5 6,7 8,1 2),(9 8,7 6,5 4,3 2,9 8))", "UTF-8");
+        String request = URLEncoder.encode(
+            "POLYGON((0 0, -0.5 0.5, 0 1,  0.5 1,1 0.5, 0.5 0,0 0), (0.5 0.2, 0.6 0.5, 0.2 0.9,-0.2 0.5, 0.1 0.2, 0.2"
+            + " 0.3, 0.5 0.2))",
+            StandardCharsets.UTF_8);
         ICriterion criterion = PARSER.parse("g=" + request);
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof PolygonCriterion);
 
         final PolygonCriterion crit = (PolygonCriterion) criterion;
         // External ring
-        Assert.assertThat(crit.getCoordinates()[0][0][0], Matchers.equalTo(1d));
-        Assert.assertThat(crit.getCoordinates()[0][0][1], Matchers.equalTo(2d));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][0][0], Matchers.equalTo(0.0));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][0][1], Matchers.equalTo(0.0));
 
-        Assert.assertThat(crit.getCoordinates()[0][1][0], Matchers.equalTo(3d));
-        Assert.assertThat(crit.getCoordinates()[0][1][1], Matchers.equalTo(4d));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][1][0], Matchers.equalTo(-0.5));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][1][1], Matchers.equalTo(0.5));
 
-        Assert.assertThat(crit.getCoordinates()[0][2][0], Matchers.equalTo(5d));
-        Assert.assertThat(crit.getCoordinates()[0][2][1], Matchers.equalTo(6d));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][2][0], Matchers.equalTo(0.0));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][2][1], Matchers.equalTo(1.0));
 
-        Assert.assertThat(crit.getCoordinates()[0][3][0], Matchers.equalTo(7d));
-        Assert.assertThat(crit.getCoordinates()[0][3][1], Matchers.equalTo(8d));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][3][0], Matchers.equalTo(0.5));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][3][1], Matchers.equalTo(1.0));
 
-        Assert.assertThat(crit.getCoordinates()[0][4][0], Matchers.equalTo(1d));
-        Assert.assertThat(crit.getCoordinates()[0][4][1], Matchers.equalTo(2d));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][4][0], Matchers.equalTo(1.0));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][4][1], Matchers.equalTo(0.5));
+
+        MatcherAssert.assertThat(crit.getCoordinates()[0][5][0], Matchers.equalTo(0.5));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][5][1], Matchers.equalTo(0.0));
+
+        MatcherAssert.assertThat(crit.getCoordinates()[0][6][0], Matchers.equalTo(0.0));
+        MatcherAssert.assertThat(crit.getCoordinates()[0][6][1], Matchers.equalTo(0.0));
 
         // Internal ring
-        Assert.assertThat(crit.getCoordinates()[1][0][0], Matchers.equalTo(9d));
-        Assert.assertThat(crit.getCoordinates()[1][0][1], Matchers.equalTo(8d));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][0][0], Matchers.equalTo(0.5));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][0][1], Matchers.equalTo(0.2));
 
-        Assert.assertThat(crit.getCoordinates()[1][1][0], Matchers.equalTo(7d));
-        Assert.assertThat(crit.getCoordinates()[1][1][1], Matchers.equalTo(6d));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][1][0], Matchers.equalTo(0.6));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][1][1], Matchers.equalTo(0.5));
 
-        Assert.assertThat(crit.getCoordinates()[1][2][0], Matchers.equalTo(5d));
-        Assert.assertThat(crit.getCoordinates()[1][2][1], Matchers.equalTo(4d));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][2][0], Matchers.equalTo(0.2));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][2][1], Matchers.equalTo(0.9));
 
-        Assert.assertThat(crit.getCoordinates()[1][3][0], Matchers.equalTo(3d));
-        Assert.assertThat(crit.getCoordinates()[1][3][1], Matchers.equalTo(2d));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][3][0], Matchers.equalTo(-0.2));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][3][1], Matchers.equalTo(0.5));
 
-        Assert.assertThat(crit.getCoordinates()[1][4][0], Matchers.equalTo(9d));
-        Assert.assertThat(crit.getCoordinates()[1][4][1], Matchers.equalTo(8d));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][4][0], Matchers.equalTo(0.1));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][4][1], Matchers.equalTo(0.2));
+
+        MatcherAssert.assertThat(crit.getCoordinates()[1][5][0], Matchers.equalTo(0.2));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][5][1], Matchers.equalTo(0.3));
+
+        MatcherAssert.assertThat(crit.getCoordinates()[1][6][0], Matchers.equalTo(0.5));
+        MatcherAssert.assertThat(crit.getCoordinates()[1][6][1], Matchers.equalTo(0.2));
     }
 
     @Test(expected = OpenSearchParseException.class)
     @Requirement("REGARDS_DSL_DAM_PLG_250")
     @Purpose("Test queries like g=MULTILINESTRING((3 4,10 50,20 25),(-5 -8,-10 -8,-15 -4))")
-    public final void testParse_shouldFailIfNotPolygon() throws OpenSearchParseException, UnsupportedEncodingException {
-        String request = URLEncoder.encode("MULTILINESTRING((3 4,10 50,20 25),(-5 -8,-10 -8,-15 -4))", "UTF-8");
+    public final void testParse_shouldFailIfNotPolygon() throws OpenSearchParseException {
+        String request = URLEncoder.encode("MULTILINESTRING((3 4,10 50,20 25),(-5 -8,-10 -8,-15 -4))",
+                                           StandardCharsets.UTF_8);
+        PARSER.parse("g=" + request);
+    }
+
+    @Test(expected = OpenSearchParseException.class)
+    @Requirement("REGARDS_DSL_DAM_PLG_250")
+    @Purpose("Test invalid polygon with same successive points like g=POLYGON(0 0,0 0,0 0, 0 0, 0 0)")
+    public final void testParse_shouldFailIfInvalidPolygon() throws OpenSearchParseException {
+        String request = URLEncoder.encode("POLYGON((0 0,0 0,0 0, 0 0, 0 0))", StandardCharsets.UTF_8);
         PARSER.parse("g=" + request);
     }
 
