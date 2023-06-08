@@ -34,7 +34,7 @@ import org.springframework.core.convert.converter.Converter;
  *
  * @author Sébastien Binda
  */
-public class GeometryCriterionBuilder {
+public final class GeometryCriterionBuilder {
 
     /**
      * Class logger
@@ -55,8 +55,10 @@ public class GeometryCriterionBuilder {
             WKTReader wkt = new WKTReader();
             Geometry geometry = wkt.read(wktGeometry);
 
-            if (geometry instanceof Polygon) {
-                Polygon polygon = (Polygon) geometry;
+            if (geometry instanceof Polygon polygon) {
+                if (!geometry.isValid()) {
+                    throw new InvalidGeometryException("The passed WKT string contains an invalid POLYGON");
+                }
                 Converter<Polygon, double[][][]> converter = new PolygonToArray();
                 double[][][] coordinates = converter.convert(polygon);
                 return ICriterion.intersectsPolygon(coordinates);
@@ -64,40 +66,37 @@ public class GeometryCriterionBuilder {
                 // Only Polygons are handled for now
                 throw new InvalidGeometryException("The passed WKT string does not reference a polygon");
             }
-        } catch (ParseException e) {
+        } catch (ParseException | IllegalArgumentException e) {
             LOGGER.error("Geometry parsing error", e);
             throw new InvalidGeometryException(e.getMessage(), e);
         }
     }
 
     /**
-     * Creates a circle geometry criterion from longitute, latitude and radius.
+     * Creates a circle geometry criterion from longitude, latitude and radius.
      *
      * @return {@link ICriterion}
      */
     public static ICriterion build(String lonParam, String latParam, String radiusParam)
-        throws InvalidGeometryException {
+            throws InvalidGeometryException {
         // Check required query parameter
         if (latParam == null && lonParam == null && radiusParam == null) {
             return null;
         }
 
         if (latParam == null) {
-            String errorMessage = String.format("Missing center latitude parameter to create circle geometry");
-            throw new InvalidGeometryException(errorMessage);
+            throw new InvalidGeometryException("Missing center latitude parameter to create circle geometry");
         }
 
         if (lonParam == null) {
-            String errorMessage = String.format("Missing center longitude parameter to create circle geometry");
-            throw new InvalidGeometryException(errorMessage);
+            throw new InvalidGeometryException("Missing center longitude parameter to create circle geometry");
         }
 
         if (radiusParam == null) {
-            String errorMessage = String.format("Missing radius parameter to create circle geometry");
-            throw new InvalidGeometryException(errorMessage);
+            throw new InvalidGeometryException("Missing radius parameter to create circle geometry");
         }
 
-        double[] center = { Double.parseDouble(lonParam), Double.parseDouble(latParam) };
+        double[] center = {Double.parseDouble(lonParam), Double.parseDouble(latParam)};
         return ICriterion.intersectsCircle(center, radiusParam);
     }
 

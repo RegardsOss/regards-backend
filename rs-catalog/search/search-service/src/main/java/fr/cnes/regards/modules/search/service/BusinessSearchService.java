@@ -27,10 +27,13 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.opensearch.service.parser.GeometryCriterionBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -46,11 +49,16 @@ import java.util.List;
 @MultitenantTransactional
 public class BusinessSearchService implements IBusinessSearchService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BusinessSearchService.class);
+
     /**
      * Catalog search service (entity level search service)
      */
-    @Autowired
-    protected ICatalogSearchService searchService;
+    protected ICatalogSearchService catalogSearchService;
+
+    public BusinessSearchService(ICatalogSearchService searchService) {
+        this.catalogSearchService = searchService;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -59,7 +67,7 @@ public class BusinessSearchService implements IBusinessSearchService {
                                                          List<String> facets,
                                                          Pageable pageable)
         throws SearchException, OpenSearchUnknownParameter {
-        FacetPage<AbstractEntity<?>> facetPage = searchService.search(criterion, searchType, facets, pageable);
+        FacetPage<AbstractEntity<?>> facetPage = catalogSearchService.search(criterion, searchType, facets, pageable);
 
         // Extract feature(s) from entity(ies)
         List<F> features = new ArrayList<>();
@@ -70,9 +78,21 @@ public class BusinessSearchService implements IBusinessSearchService {
     }
 
     @Override
+    public Boolean isValidGeometry(String wktGeometry) {
+
+        try {
+            GeometryCriterionBuilder.build(wktGeometry);
+            return true;
+        } catch (InvalidGeometryException e) {
+            LOGGER.debug(String.format("Invalid geometry : %s", e.getMessage()), e);
+            return false;
+        }
+    }
+
+    @Override
     public <F extends EntityFeature> F get(UniformResourceName urn)
         throws EntityOperationForbiddenException, EntityNotFoundException {
-        AbstractEntity<F> entity = searchService.get(urn);
+        AbstractEntity<F> entity = catalogSearchService.get(urn);
         return entity.getFeature();
     }
 
@@ -82,7 +102,7 @@ public class BusinessSearchService implements IBusinessSearchService {
                                                   UniformResourceName dataset,
                                                   List<DataType> dataTypes) {
         // Just delegate to entity search service
-        return searchService.computeDatasetsSummary(criterion, searchType, dataset, dataTypes);
+        return catalogSearchService.computeDatasetsSummary(criterion, searchType, dataset, dataTypes);
     }
 
     @Override
@@ -92,11 +112,11 @@ public class BusinessSearchService implements IBusinessSearchService {
                                                          int maxCount,
                                                          String partialText) {
         // Just delegate to entity search service
-        return searchService.retrieveEnumeratedPropertyValues(criterion,
-                                                              searchType,
-                                                              propertyPath,
-                                                              maxCount,
-                                                              partialText);
+        return catalogSearchService.retrieveEnumeratedPropertyValues(criterion,
+                                                                     searchType,
+                                                                     propertyPath,
+                                                                     maxCount,
+                                                                     partialText);
     }
 
 }
