@@ -375,8 +375,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             if (entity == null) {
                 request.setState(RequestState.ERROR);
                 request.setStep(FeatureRequestStep.LOCAL_ERROR);
-                request.addError(String.format("No feature referenced in database with following URN : %s",
-                                               request.getUrn()));
+                request.addError(String.format("No feature referenced in database with following URN = %s ProviderId"
+                                               + " = %s", request.getUrn(), request.getProviderId()));
                 errorRequests.add(request);
                 // Monitoring log
                 FeatureLogger.updateError(request.getRequestOwner(),
