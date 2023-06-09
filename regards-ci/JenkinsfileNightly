@@ -59,6 +59,7 @@ pipeline {
                         compile: {
                             runMavenDockerImgWithoutCoTS("Build with CI profile", "compile")
                             runMavenDockerImgWithoutCoTS("Create dependency-check (with vunerabilities) report", "dependencyCheck")
+                            archiveArtifacts artifacts: "target/dependency-check-report.html"
                             dependencyCheckPublisher(
                                     pattern: 'target/dependency-check-report.xml',
                                     failedTotalLow: 10000,
