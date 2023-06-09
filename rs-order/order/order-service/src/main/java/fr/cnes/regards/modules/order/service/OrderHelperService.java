@@ -52,7 +52,6 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.Charset;
@@ -151,7 +150,7 @@ public class OrderHelperService {
      *
      * @return JobInfo Id
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     public UUID createStorageSubOrderAndStoreDataFiles(DatasetTask datasetTask,
                                                        Set<OrderDataFile> bucketFiles,
                                                        Order order,

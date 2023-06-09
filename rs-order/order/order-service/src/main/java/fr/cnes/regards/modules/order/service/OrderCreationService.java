@@ -183,7 +183,7 @@ public class OrderCreationService implements IOrderCreationService {
                                                                                          subOrderDuration);
                     hasProcessing = true;
                 } else {
-                    orderCounts = manageDatasetSelection(order,
+                    orderCounts = self.manageDatasetSelection(order,
                                                          owner,
                                                          role,
                                                          priority,
@@ -256,13 +256,14 @@ public class OrderCreationService implements IOrderCreationService {
         }
     }
 
-    private OrderCounts manageDatasetSelection(Order order,
-                                               String owner,
-                                               String role,
-                                               int priority,
-                                               OrderCounts orderCountsGlobal,
-                                               BasketDatasetSelection dsSel,
-                                               int subOrderDuration) throws ModuleException {
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    public OrderCounts manageDatasetSelection(Order order,
+                                              String owner,
+                                              String role,
+                                              int priority,
+                                              OrderCounts orderCountsGlobal,
+                                              BasketDatasetSelection dsSel,
+                                              int subOrderDuration) throws ModuleException {
 
         OrderCounts orderCounts = new OrderCounts();
         // Bucket of internal files (managed by Storage)
@@ -274,8 +275,6 @@ public class OrderCreationService implements IOrderCreationService {
 
         // Firstly, get dataset attached rawdata files, and add them to buckets
         orderAttachmentDataSetService.fillBucketsWithDataSetFiles(order,
-                                                                  owner,
-                                                                  role,
                                                                   dsSel,
                                                                   storageBucketFiles,
                                                                   externalBucketFiles);

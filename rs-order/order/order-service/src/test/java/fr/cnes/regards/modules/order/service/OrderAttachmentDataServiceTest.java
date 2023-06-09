@@ -85,8 +85,6 @@ public class OrderAttachmentDataServiceTest {
         Set<OrderDataFile> storageBucket = new HashSet<>();
         Set<OrderDataFile> externalBucket = new HashSet<>();
         orderAttachmentDataSetService.fillBucketsWithDataSetFiles(order,
-                                                                  "owner",
-                                                                  "role",
                                                                   dsSel,
                                                                   storageBucket,
                                                                   externalBucket);

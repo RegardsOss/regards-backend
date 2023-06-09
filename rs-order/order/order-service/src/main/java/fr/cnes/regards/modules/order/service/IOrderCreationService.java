@@ -18,7 +18,11 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.service.utils.OrderCounts;
 
 public interface IOrderCreationService {
 
@@ -43,4 +47,24 @@ public interface IOrderCreationService {
      */
     void completeOrderCreation(Basket basket, Long orderId, String role, int subOrderDuration, String tenant);
 
+    /**
+     * Process a dataset of an order, see {@link this#completeOrderCreation(Basket, Long, String, int, String)}
+     *
+     * @param order            order to process
+     * @param owner            order creator
+     * @param role             owner's role
+     * @param priority         order priority
+     * @param orderCounts      metadata about the order processing
+     * @param dsSel            dataset currently processed
+     * @param subOrderDuration suborder availability duration in hours
+     * @return updated order metadata
+     * @throws ModuleException in dataset could not be processed
+     */
+    OrderCounts manageDatasetSelection(Order order,
+                                       String owner,
+                                       String role,
+                                       int priority,
+                                       OrderCounts orderCounts,
+                                       BasketDatasetSelection dsSel,
+                                       int subOrderDuration) throws ModuleException;
 }

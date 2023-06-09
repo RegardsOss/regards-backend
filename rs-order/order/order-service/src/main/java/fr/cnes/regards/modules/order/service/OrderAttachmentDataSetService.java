@@ -77,7 +77,7 @@ public class OrderAttachmentDataSetService {
                                              int subOrderDuration) throws ModuleException {
         Set<OrderDataFile> storageBucket = new HashSet<>();
         Set<OrderDataFile> externalBucket = new HashSet<>();
-        fillBucketsWithDataSetFiles(order, owner, role, dsSel, storageBucket, externalBucket);
+        fillBucketsWithDataSetFiles(order, dsSel, storageBucket, externalBucket);
         if (!storageBucket.isEmpty()) {
             int priority = orderJobService.computePriority(owner, role);
             orderHelperService.createStorageSubOrderAndStoreDataFiles(dsTask,
@@ -105,12 +105,10 @@ public class OrderAttachmentDataSetService {
      * Dam stored files are considered as externally, and so there is no availability verification.
      */
     public void fillBucketsWithDataSetFiles(Order order,
-                                            String owner,
-                                            String role,
                                             BasketDatasetSelection dsSel,
                                             Set<OrderDataFile> storageBucket,
                                             Set<OrderDataFile> externalBucket) throws ModuleException {
-        Dataset dataset = retrieveDataSetByRest(dsSel.getDatasetIpid(), owner, role);
+        Dataset dataset = retrieveDataSetByRest(dsSel.getDatasetIpid());
         if (dataset != null) {
             Set<OrderDataFile> bucketFiles = createOrderDataFilesOf(order, dataset);
             // separate external+dam files and storages files
@@ -148,9 +146,9 @@ public class OrderAttachmentDataSetService {
                       .collect(Collectors.toSet());
     }
 
-    private Dataset retrieveDataSetByRest(String datasetIpid, String owner, String role) throws ModuleException {
+    private Dataset retrieveDataSetByRest(String datasetIpid) throws ModuleException {
         try {
-            FeignSecurityManager.asUser(owner, role);
+            FeignSecurityManager.asSystem();
             return ResponseEntityUtils.extractBodyOrNull(datasetClient.retrieveDataset(datasetIpid));
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error("Cannot retrieve dataset ", e);
