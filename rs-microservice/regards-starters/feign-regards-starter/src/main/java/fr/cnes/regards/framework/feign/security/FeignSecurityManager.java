@@ -125,9 +125,15 @@ public class FeignSecurityManager {
     private String getInstanceToken() {
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
                                                                                           .getAuthentication();
-        return jwtService.generateToken("instance",
-                                        authentication.getUser().getLogin(),
-                                        DefaultRole.INSTANCE_ADMIN.toString());
+        String user;
+        if (authentication != null) {
+            user = authentication.getUser().getLogin();
+        } else {
+            //If the authentication wasn't set in the thread context, use the microservice name as default login
+            user = appName;
+        }
+
+        return jwtService.generateToken("instance", user, DefaultRole.INSTANCE_ADMIN.toString());
     }
 
     /**
