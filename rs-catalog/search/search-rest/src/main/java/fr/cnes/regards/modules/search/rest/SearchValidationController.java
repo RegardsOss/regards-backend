@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.rest;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.search.domain.SearchValidationMappings;
+import fr.cnes.regards.modules.search.dto.GeometryRequestParameter;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,7 +39,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = SearchValidationMappings.TYPE_MAPPING)
 public class SearchValidationController {
 
-
     private final IBusinessSearchService businessSearchService;
 
     public SearchValidationController(IBusinessSearchService businessSearchService) {
@@ -46,19 +46,17 @@ public class SearchValidationController {
     }
 
     @Operation(summary = "Validate Geometry search parameter",
-            description = "Validate that the given WKT Geometry is valid.")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200",
-            description = "The given geometry is valid."),
-            @ApiResponse(responseCode = "422",
-                    description = "The given geometry is not valid."),
-            @ApiResponse(responseCode = "403",
-                    description = "The endpoint is not accessible for the user.",
-                    content = {@Content(mediaType = "application/html")})})
+               description = "Validate that the given WKT Geometry is valid.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "The given geometry is valid."),
+                            @ApiResponse(responseCode = "422", description = "The given geometry is not valid."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         content = { @Content(mediaType = "application/html") }) })
     @PostMapping(path = SearchValidationMappings.GEO_VALIDATION_MAPPING)
     @ResponseBody
     @ResourceAccess(description = "Validate that the given WKT Geometry is valid", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> isValidGeometry(@RequestBody String wktGeometry) {
-        if (businessSearchService.isValidGeometry(wktGeometry)) {
+    public ResponseEntity<Void> isValidGeometry(@RequestBody GeometryRequestParameter geometryRequestParameter) {
+        if (businessSearchService.isValidGeometry(geometryRequestParameter.getWktString())) {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.unprocessableEntity().build();

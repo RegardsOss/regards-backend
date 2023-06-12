@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.rest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.search.domain.SearchValidationMappings;
+import fr.cnes.regards.modules.search.dto.GeometryRequestParameter;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
@@ -29,36 +30,35 @@ import org.springframework.test.context.TestPropertySource;
  * @author Sébastien Binda
  **/
 @TestPropertySource(locations = "classpath:test.properties",
-        properties = {"spring.jpa.properties.hibernate.default_schema=validation_search_tests"})
+                    properties = { "spring.jpa.properties.hibernate.default_schema=validation_search_tests" })
 @MultitenantTransactional
 public class SearchValidationControllerIT extends AbstractRegardsTransactionalIT {
-
 
     @Test
     public void test_geometry_validation_ok() {
         performDefaultPost(SearchValidationMappings.TYPE_MAPPING + SearchValidationMappings.GEO_VALIDATION_MAPPING,
-                "POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))",
-                customizer().expectStatusOk(),
-                "Polygon should be valid");
+                           GeometryRequestParameter.build("POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))"),
+                           customizer().expectStatusOk(),
+                           "Polygon should be valid");
 
     }
 
     @Test
     public void test_geometry_validation_ko() {
         performDefaultPost(SearchValidationMappings.TYPE_MAPPING + SearchValidationMappings.GEO_VALIDATION_MAPPING,
-                "POLYGON((0 0, 0 1, 1 1))",
-                customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY),
-                "Polygon should not be valid");
+                           GeometryRequestParameter.build("POLYGON((0 0, 0 1, 1 1))"),
+                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY),
+                           "Polygon should not be valid");
 
         performDefaultPost(SearchValidationMappings.TYPE_MAPPING + SearchValidationMappings.GEO_VALIDATION_MAPPING,
-                "POLYGON((0 0, 0 0, 0 0, 0 0,0 0))",
-                customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY),
-                "Polygon should not be valid");
+                           GeometryRequestParameter.build("POLYGON((0 0, 0 0, 0 0, 0 0,0 0))"),
+                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY),
+                           "Polygon should not be valid");
 
         performDefaultPost(SearchValidationMappings.TYPE_MAPPING + SearchValidationMappings.GEO_VALIDATION_MAPPING,
-                "POLYGON((0 0, 0 1, 1 1, 1 0, 0 2))",
-                customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY),
-                "Polygon should not be valid");
+                           GeometryRequestParameter.build("POLYGON((0 0, 0 1, 1 1, 1 0, 0 2))"),
+                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY),
+                           "Polygon should not be valid");
 
     }
 }
