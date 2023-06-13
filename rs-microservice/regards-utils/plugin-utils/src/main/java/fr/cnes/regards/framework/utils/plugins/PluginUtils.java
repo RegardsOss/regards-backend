@@ -290,7 +290,7 @@ public final class PluginUtils {
             autowirePlugin(returnPlugin);
 
             // Launch init method if detected
-            doInitPlugin(returnPlugin);
+            doInitPlugin(returnPlugin, conf);
 
         } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException |
                  SecurityException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
@@ -337,16 +337,22 @@ public final class PluginUtils {
      * Look for {@link PluginInit} annotation and launch corresponding method if found.
      *
      * @param <T>    a {@link Plugin}
+     * @param conf   current plugin configuration
      * @param plugin the {@link Plugin} instance @ if a problem occurs
      */
-    private static <T> void doInitPlugin(final T plugin) {
+    private static <T> void doInitPlugin(final T plugin, PluginConfiguration conf) {
         for (final Method method : ReflectionUtils.getAllDeclaredMethods(plugin.getClass())) {
             if (method.isAnnotationPresent(PluginInit.class)) {
                 // Invoke method
                 ReflectionUtils.makeAccessible(method);
 
                 try {
-                    method.invoke(plugin);
+                    if (method.getAnnotation(PluginInit.class).hasConfiguration()) {
+                        method.invoke(plugin, conf);
+                    } else {
+                        method.invoke(plugin);
+                    }
+
                 } catch (InvocationTargetException e) {
                     if (e.getCause() instanceof PluginInitException) {
                         throw new PluginUtilsRuntimeException(String.format(

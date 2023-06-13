@@ -21,8 +21,14 @@ package fr.cnes.regards.framework.modules.plugins.annotations;
 import java.lang.annotation.*;
 
 /**
- * This annotation can be used to initialize a plugin. It must be used on a no-arg method. The method is called after
- * parameter injection.
+ * This annotation can be used to initialize a plugin. It must either be used :
+ * <ul>
+ *  <li>On a no-arg method when {@link #hasConfiguration()} is false</ui>
+ *  <li>On a method with an unique argument of type
+ *  {@link fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration PluginConfiguration} when
+ *  {@link #hasConfiguration()} is true </ul>
+ * </ul>
+ * The method is called after parameter injection.
  *
  * @author Christophe Mertz
  */
@@ -31,4 +37,5 @@ import java.lang.annotation.*;
 @Documented
 public @interface PluginInit {
 
+    boolean hasConfiguration() default false;
 }
