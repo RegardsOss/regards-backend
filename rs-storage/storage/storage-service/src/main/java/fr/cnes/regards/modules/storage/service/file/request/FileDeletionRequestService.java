@@ -87,35 +87,35 @@ public class FileDeletionRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionRequestService.class);
 
-    private IFileDeletetionRequestRepository fileDeletionRequestRepo;
+    private final IFileDeletetionRequestRepository fileDeletionRequestRepo;
 
-    private IPluginService pluginService;
+    private final IPluginService pluginService;
 
-    private IJobInfoService jobInfoService;
+    private final IJobInfoService jobInfoService;
 
-    private IAuthenticationResolver authResolver;
+    private final IAuthenticationResolver authResolver;
 
-    private StoragePluginConfigurationHandler storageHandler;
+    private final StoragePluginConfigurationHandler storageHandler;
 
-    protected FileDeletionRequestService self;
+    private final FileDeletionRequestService self;
 
-    private FileReferenceEventPublisher publisher;
+    private final FileReferenceEventPublisher publisher;
 
-    private FileReferenceService fileRefService;
+    private final FileReferenceService fileRefService;
 
-    private RequestsGroupService reqGroupService;
+    private final RequestsGroupService reqGroupService;
 
-    private RequestStatusService reqStatusService;
+    private final RequestStatusService reqStatusService;
 
-    private FileCopyRequestService fileCopyReqService;
+    private final FileCopyRequestService fileCopyReqService;
 
-    private FileCacheRequestService fileCacheReqService;
+    private final FileCacheRequestService fileCacheReqService;
 
-    private SessionNotifier sessionNotifier;
+    private final SessionNotifier sessionNotifier;
 
-    private LockingTaskExecutors lockingTaskExecutors;
+    private final LockingTaskExecutors lockingTaskExecutors;
 
-    private INotificationClient notificationClient;
+    private final INotificationClient notificationClient;
 
     @Value("${regards.storage.deletion.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
@@ -175,7 +175,7 @@ public class FileDeletionRequestService {
                                                                                   .equals(fileReferenceToDelete.getId()))
                                                                     .findFirst();
         FileDeletionRequest request;
-        if (!existingOne.isPresent()) {
+        if (existingOne.isEmpty()) {
             // Create new deletion request
             FileDeletionRequest newDelRequest = new FileDeletionRequest(fileReferenceToDelete,
                                                                         forceDelete,

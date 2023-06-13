@@ -154,7 +154,11 @@ public class FileDeletionRequest {
     }
 
     public void setErrorCause(String errorCause) {
-        this.errorCause = errorCause;
+        if (errorCause != null && errorCause.length() > 512) {
+            this.errorCause = errorCause.substring(0, 511);
+        } else {
+            this.errorCause = errorCause;
+        }
     }
 
     public void setStatus(FileRequestStatus status) {
@@ -222,13 +226,10 @@ public class FileDeletionRequest {
         }
         FileDeletionRequest other = (FileDeletionRequest) obj;
         if (id == null) {
-            if (other.id != null) {
-                return false;
-            }
-        } else if (!id.equals(other.id)) {
-            return false;
+            return other.id == null;
+        } else {
+            return id.equals(other.id);
         }
-        return true;
     }
 
 }
