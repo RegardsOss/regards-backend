@@ -19,7 +19,13 @@
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository;
 
 import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+
+import javax.persistence.LockModeType;
+import java.util.Optional;
 
 /**
  * Class CompanyRepository
@@ -29,5 +35,13 @@ import org.springframework.data.repository.CrudRepository;
  * @author CS
  */
 public interface IUserRepository extends CrudRepository<User, Long> {
+
+    @Lock(LockModeType.OPTIMISTIC)
+    @Query("select u from User u where u.id = :id")
+    Optional<User> findByIdOptimisticLock(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Query("select u from User u where u.id = :id")
+    Optional<User> findByIdPessimisticReadLock(@Param("id") Long id);
 
 }

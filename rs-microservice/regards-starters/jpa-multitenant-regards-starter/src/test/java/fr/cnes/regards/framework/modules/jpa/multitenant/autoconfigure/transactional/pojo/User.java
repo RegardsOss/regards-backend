@@ -54,6 +54,17 @@ public class User {
     private String lastName;
 
     /**
+     * Counter with no semantic meaning for a user. Just to test the concurrency access of the same user when
+     * multiples threads tries to update this value with int incrementation.
+     */
+    @Column(name = "count", nullable = false)
+    private Integer count = 0;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private long version = 0L;
+
+    /**
      * User's company
      */
     @ManyToOne
@@ -165,4 +176,19 @@ public class User {
         company = pCompany;
     }
 
+    public void incrementCounter() {
+        count++;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
 }

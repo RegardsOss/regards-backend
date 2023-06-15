@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transact
 import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +35,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Class DaoTransactionIT
@@ -58,6 +63,56 @@ public class DaoTransactionIT {
      */
     @Autowired
     private DaoUserService service;
+
+    @Test
+    public void test_optimistic_lock_retry() throws InterruptedException {
+
+        // Given
+        // Creates a user
+        service.deleteAll("test1");
+        service.addWithoutError("test1");
+        Long userId = service.getUsers("test1").get(0).getId();
+        ExecutorService threadpool = Executors.newFixedThreadPool(20);
+
+        // With
+        // Run concurrent updates of the user
+        int nbIteration = 200;
+
+        List<Future<?>> allTasks = new ArrayList<>();
+        for (int i = 0; i < nbIteration; i++) {
+            allTasks.add(threadpool.submit(() -> service.incrementUserCountWithRetryWithOptimistic(userId, "test1")));
+        }
+        Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(() -> allTasks.stream().allMatch(Future::isDone));
+        threadpool.shutdown();
+
+        // Then
+        // User counter should be 1000
+        Assert.assertEquals(nbIteration, (int) service.getUsers("test1").get(0).getCount());
+
+    }
+
+    @Test
+    public void test_pessimistic_lock() throws InterruptedException {
+        // Given
+        // Creates a user
+        service.deleteAll("test1");
+        service.addWithoutError("test1");
+        Long userId = service.getUsers("test1").get(0).getId();
+        ExecutorService threadpool = Executors.newFixedThreadPool(10);
+
+        // With
+        // Run concurrent updates of the user
+        int nbIteration = 200;
+        for (int i = 0; i < nbIteration; i++) {
+            threadpool.submit(() -> service.incrementUserCountWithPessimisticLock(userId, "test1"));
+        }
+        Thread.sleep(5_000);
+        threadpool.shutdown();
+
+        // Then
+        // User counter should be 1000
+        Assert.assertEquals(nbIteration, (int) service.getUsers("test1").get(0).getCount());
+    }
 
     /**
      * Test for multitenant transactions.
@@ -122,13 +177,13 @@ public class DaoTransactionIT {
         service.addWithoutError(testTenant2);
         users.clear();
         users = service.getUsers(testTenant2);
-        Assert.assertTrue("There must be 2 elements !", users.size() == 2);
+        Assert.assertEquals("There must be 2 elements !", 2, users.size());
         LOG.info("Inserts correctly done and commited ! ");
 
         // Check that the first tenant hasn't changed.
         users.clear();
         users = service.getUsers(testTenant);
-        Assert.assertTrue("There must be 1 element ! " + users.size(), users.size() == 1);
+        Assert.assertEquals("There must be 1 element ! " + users.size(), 1, users.size());
     }
 
 }
