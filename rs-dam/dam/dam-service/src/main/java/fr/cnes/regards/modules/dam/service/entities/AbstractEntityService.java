@@ -106,7 +106,7 @@ import java.util.stream.Stream;
  * @author oroussel
  */
 public abstract class AbstractEntityService<F extends EntityFeature, U extends AbstractEntity<F>>
-        extends AbstractEntityValidationService<F, U> implements IEntityService<U> {
+    extends AbstractEntityValidationService<F, U> implements IEntityService<U> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityService.class);
 
@@ -378,12 +378,12 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // Set IpId
         if (entity.getIpId() == null) {
             entity.setIpId(new OaisUniformResourceName(OAISIdentifier.AIP,
-                    EntityType.valueOf(entity.getType()),
-                    runtimeTenantResolver.getTenant(),
-                    UUID.randomUUID(),
-                    1,
-                    null,
-                    null));
+                                                       EntityType.valueOf(entity.getType()),
+                                                       runtimeTenantResolver.getTenant(),
+                                                       UUID.randomUUID(),
+                                                       1,
+                                                       null,
+                                                       null));
         }
 
         // As long as there is no way to create new entity version thanks to dam,
@@ -440,14 +440,14 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     @Override
     public void publishEvents(EventType eventType, Set<UniformResourceName> ipIds) {
         UniformResourceName[] datasetsIpIds = ipIds.stream()
-                .filter(ipId -> ipId.getEntityType() == EntityType.DATASET)
-                .toArray(UniformResourceName[]::new);
+                                                   .filter(ipId -> ipId.getEntityType() == EntityType.DATASET)
+                                                   .toArray(UniformResourceName[]::new);
         if (datasetsIpIds.length > 0) {
             publisher.publish(new DatasetEvent(datasetsIpIds));
         }
         UniformResourceName[] notDatasetsIpIds = ipIds.stream()
-                .filter(ipId -> ipId.getEntityType() != EntityType.DATASET)
-                .toArray(UniformResourceName[]::new);
+                                                      .filter(ipId -> ipId.getEntityType() != EntityType.DATASET)
+                                                      .toArray(UniformResourceName[]::new);
         if (notDatasetsIpIds.length > 0) {
             publisher.publish(new NotDatasetEntityEvent(notDatasetsIpIds));
         }
@@ -474,7 +474,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // If entity is a collection or a dataset => propagate its groups to tagged collections (recursively)
         if (((entity instanceof Collection) || (entity instanceof Dataset)) && !entity.getTags().isEmpty()) {
             List<AbstractEntity<?>> taggedColls = entityRepository.findByIpIdIn(extractUrnsOfType(entity.getTags(),
-                    EntityType.COLLECTION));
+                                                                                                  EntityType.COLLECTION));
             for (AbstractEntity<?> coll : taggedColls) {
                 if (coll.getGroups().addAll(entity.getGroups())) {
                     // If collection has already been updated, stop recursion !!! (else StackOverflow)
@@ -656,7 +656,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // Remove relate files
         for (Map.Entry<DataType, DataFile> entry : toDelete.getFiles().entries()) {
             if ((entry != null) && (entry.getValue() != null) && localStorageService.isFileLocallyStored(toDelete,
-                    entry.getValue())) {
+                                                                                                         entry.getValue())) {
                 localStorageService.removeFile(toDelete, entry.getValue());
             }
         }
@@ -698,17 +698,17 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     private static Set<UniformResourceName> extractUrns(Set<String> tags) {
         return tags.stream()
-                .filter(OaisUniformResourceName::isValidUrn)
-                .map(OaisUniformResourceName::fromString)
-                .collect(Collectors.toSet());
+                   .filter(OaisUniformResourceName::isValidUrn)
+                   .map(OaisUniformResourceName::fromString)
+                   .collect(Collectors.toSet());
     }
 
     private static Set<UniformResourceName> extractUrnsOfType(Set<String> tags, EntityType entityType) {
         return tags.stream()
-                .filter(OaisUniformResourceName::isValidUrn)
-                .map(OaisUniformResourceName::fromString)
-                .filter(urn -> urn.getEntityType() == entityType)
-                .collect(Collectors.toSet());
+                   .filter(OaisUniformResourceName::isValidUrn)
+                   .map(OaisUniformResourceName::fromString)
+                   .filter(urn -> urn.getEntityType() == entityType)
+                   .collect(Collectors.toSet());
     }
 
     private static DeletedEntity createDeletedEntity(AbstractEntity<?> entity) {
@@ -730,9 +730,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         U entity = loadWithRelations(urn);
         // Store files locally
         java.util.Collection<DataFile> files = localStorageService.attachFiles(entity,
-                dataType,
-                attachments,
-                fileUriTemplate);
+                                                                               dataType,
+                                                                               attachments,
+                                                                               fileUriTemplate);
         // Merge previous files with new ones
         if (entity.getFiles().get(dataType) != null) {
             entity.getFiles().get(dataType).addAll(files);
@@ -747,7 +747,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     }
 
     private void attachRefs(DataType dataType, List<DataFile> refs, U entity, String fileUriTemplate)
-            throws ModuleException {
+        throws ModuleException {
         List<DataFile> localFileToAttach = new ArrayList<>();
         for (DataFile ref : refs) {
             // Same logic as for normal file is applied to check format support
@@ -758,7 +758,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                 // Compute checksum on URI for removal
                 try {
                     ref.setChecksum(ChecksumUtils.computeHexChecksum(ref.getUri(),
-                            LocalStorageService.DIGEST_ALGORITHM));
+                                                                     LocalStorageService.DIGEST_ALGORITHM));
                     ref.setDigestAlgorithm(LocalStorageService.DIGEST_ALGORITHM);
                 } catch (NoSuchAlgorithmException | IOException e) {
                     String message = "Error while computing checksum";
@@ -774,9 +774,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         }
         if (!localFileToAttach.isEmpty()) {
             java.util.Collection<DataFile> files = localStorageService.attachLocalFiles(entity,
-                    dataType,
-                    localFileToAttach,
-                    fileUriTemplate);
+                                                                                        dataType,
+                                                                                        localFileToAttach,
+                                                                                        fileUriTemplate);
             entity.getFiles().get(dataType).addAll(files);
         }
     }
@@ -802,9 +802,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                 if (uriProtocol.equals("file")) {
                     if (!url.getPath().startsWith(localInputPath)) {
                         throw new ModuleException("Not authorized path. It must be inside dam attachment input "
-                                + "directory (starts with 'file:/"
-                                + localInputPath
-                                + "')");
+                                                  + "directory (starts with 'file:"
+                                                  + localInputPath
+                                                  + "')");
                     }
                 } else if (!uriProtocol.startsWith("http")) {
                     // only protocols "file", "http" and "https" are authorized
@@ -830,8 +830,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         }
 
         String message = String.format("Data file with checksum \"%s\" in entity \"%s\" not found",
-                checksum,
-                urn.toString());
+                                       checksum,
+                                       urn.toString());
         LOGGER.error(message);
         throw new EntityNotFoundException(message);
     }
@@ -872,8 +872,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     private void initStoragePluginConfiguration() throws NotAvailablePluginConfigurationException {
         try {
             storeEntityPluginConf = PluginConfiguration.build(Class.forName(storeEntityFilesPlugin),
-                    null,
-                    IPluginParam.set());
+                                                              null,
+                                                              IPluginParam.set());
             storeEntityPluginConf.setMetaData(PluginUtils.getPlugins().get(storeEntityPluginConf.getPluginId()));
             storeEntityPluginConf.setVersion(storeEntityPluginConf.getMetaData().getVersion());
             pluginService.savePluginConfiguration(storeEntityPluginConf);
@@ -905,27 +905,27 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     @Override
     public void storeSucces(Set<RequestInfo> requests) {
         Set<AbstractEntityRequest> succesRequests = this.abstractEntityRequestRepo.findByGroupIdIn(requests.stream()
-                .map(
-                        RequestInfo::getGroupId)
-                .collect(
-                        Collectors.toSet()));
+                                                                                                           .map(
+                                                                                                               RequestInfo::getGroupId)
+                                                                                                           .collect(
+                                                                                                               Collectors.toSet()));
         Map<UniformResourceName, AbstractEntity<? extends EntityFeature>> entityByUrn = this.entityRepository.findByIpIdIn(
-                        succesRequests.stream().map(AbstractEntityRequest::getUrn).collect(Collectors.toSet()))
-                .stream()
-                .collect(
-                        Collectors.toMap(
-                                AbstractEntity::getIpId,
-                                Function.identity()));
+                                                                                                succesRequests.stream().map(AbstractEntityRequest::getUrn).collect(Collectors.toSet()))
+                                                                                                             .stream()
+                                                                                                             .collect(
+                                                                                                                 Collectors.toMap(
+                                                                                                                     AbstractEntity::getIpId,
+                                                                                                                     Function.identity()));
         boolean updated = false;
         Set<AbstractEntityRequest> treatedRequests = new HashSet<>();
         // for all request succeeded
         for (RequestInfo info : requests) {
             // get the AbstractEntityRequest with a matching groupId
             Optional<AbstractEntityRequest> oCurrent = succesRequests.stream()
-                    .filter(matchingRequest -> matchingRequest.getGroupId()
-                            .equals(
-                                    info.getGroupId()))
-                    .findAny();
+                                                                     .filter(matchingRequest -> matchingRequest.getGroupId()
+                                                                                                               .equals(
+                                                                                                                   info.getGroupId()))
+                                                                     .findAny();
             if (oCurrent.isPresent()) {
                 AbstractEntityRequest current = oCurrent.get();
                 for (RequestResultInfoDTO request : info.getSuccessRequests()) {
@@ -938,9 +938,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                             if (file.getChecksum().equals(request.getResultFile().getMetaInfo().getChecksum())) {
                                 try {
                                     file.setUri(getDownloadUrl(current.getUrn(),
-                                            file.getChecksum(),
-                                            runtimeTenantResolver.getTenant(),
-                                            false));
+                                                               file.getChecksum(),
+                                                               runtimeTenantResolver.getTenant(),
+                                                               false));
                                     treatedRequests.add(current);
                                     updated = true;
                                 } catch (ModuleException e) {
@@ -951,7 +951,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                                     localStorageService.removeFile(entity, file);
                                 } catch (ModuleException e) {
                                     LOGGER.trace("Cannot remove file " + file.getFilename() + "stored locally in DAM",
-                                            e);
+                                                 e);
                                 }
                             }
                         }
@@ -971,7 +971,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         this.abstractEntityRequestRepo.deleteAll(treatedRequests);
         this.entityRepository.saveAll(entityByUrn.values());
         this.publishEvents(EventType.UPDATE,
-                treatedRequests.stream().map(AbstractEntityRequest::getUrn).collect(Collectors.toSet()));
+                           treatedRequests.stream().map(AbstractEntityRequest::getUrn).collect(Collectors.toSet()));
     }
 
     @Override
@@ -984,9 +984,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             if (oReq.isPresent()) {
                 treatedRequests.add(oReq.get());
                 Set<String> errors = request.getErrorRequests()
-                        .stream()
-                        .map(RequestResultInfoDTO::getErrorCause)
-                        .collect(Collectors.toSet());
+                                            .stream()
+                                            .map(RequestResultInfoDTO::getErrorCause)
+                                            .collect(Collectors.toSet());
                 for (String error : errors) {
                     buf.append(String.format("<li>%s</li>", error));
                 }
@@ -996,10 +996,10 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         if (!treatedRequests.isEmpty()) {
             buf.append("</ul>");
             this.notificationClient.notify(buf.toString(),
-                    "Data-management storage failed",
-                    NotificationLevel.ERROR,
-                    MimeTypeUtils.TEXT_HTML,
-                    DefaultRole.PROJECT_ADMIN);
+                                           "Data-management storage failed",
+                                           NotificationLevel.ERROR,
+                                           MimeTypeUtils.TEXT_HTML,
+                                           DefaultRole.PROJECT_ADMIN);
             // delete treated requests
             this.abstractEntityRequestRepo.deleteAll(treatedRequests);
         }
@@ -1016,15 +1016,15 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         if (project == null) {
             FeignSecurityManager.asSystem();
             project = ResponseEntityUtils.extractContentOrThrow(projectClient.retrieveProject(tenant),
-                    "Error while retrieving project : response body is empty");
+                                                                "Error while retrieving project : response body is empty");
             projects.put(tenant, project);
             FeignSecurityManager.reset();
         }
         String proxyfiedUrl = project.getHost() //NOSONAR -> impossible NPE, managed in a condition 5 lines upper
-                + urlPrefix + "/" + encode4Uri("rs-catalog") + CATALOG_DOWNLOAD_PATH.replace("{aip_id}",
-                        uniformResourceName.toString())
-                .replace("{checksum}",
-                        checksum);
+                              + urlPrefix + "/" + encode4Uri("rs-catalog") + CATALOG_DOWNLOAD_PATH.replace("{aip_id}",
+                                                                                                           uniformResourceName.toString())
+                                                                                                  .replace("{checksum}",
+                                                                                                           checksum);
         if (locallyStored) {
             proxyfiedUrl += "/dam";
         }
@@ -1041,7 +1041,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         }
         // don't modify external uri (!isReference)
         List<DataFile> newDataFiles = newDataFilesStream.filter(dataFile -> Boolean.FALSE.equals(dataFile.isReference()))
-                .toList();
+                                                        .toList();
         for (DataFile dataFile : newDataFiles) {
             dataFile.setUri(getDownloadUrl(entity.getIpId(), dataFile.getChecksum(), tenant, true));
         }
