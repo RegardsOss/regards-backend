@@ -254,7 +254,6 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
                     dataFile.setFilesize(Files.size(file.toPath()));
                     dataFile.setDigestAlgorithm(DIGEST_ALGORITHM);
                     dataFile.setChecksum(ChecksumUtils.computeHexChecksum(file.toPath(), DIGEST_ALGORITHM));
-                    dataFile.setFilename(file.getName());
                     docFiles.add(dataFile);
                 } else {
                     throw new ModuleException(String.format("File at location %s not exists", dataFile.asUri()));
