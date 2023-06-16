@@ -19,11 +19,28 @@
 package fr.cnes.regards.framework.jpa.multitenant.lock;
 
 /**
- * Task for the {@link LockService}.
- *
  * @author Thibaud Michaudel
  **/
-public interface LockServiceTask<T> {
+public class LockServiceResponse<T> {
 
-    T run();
+    private boolean executed;
+
+    private T response;
+
+    public LockServiceResponse(boolean executed, T response) {
+        this.executed = executed;
+        this.response = response;
+    }
+
+    public LockServiceResponse(boolean executed) {
+        this.executed = executed;
+    }
+
+    public boolean isExecuted() {
+        return executed;
+    }
+
+    public T getResponse() {
+        return response;
+    }
 }

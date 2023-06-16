@@ -79,13 +79,13 @@ public class LockServiceRenewIT {
 
     private boolean runWithLock(String lock, List<String> resultList, String textToAdd) throws InterruptedException {
         tenantResolver.forceTenant("test1");
-        return lockService.runWithLock(lock, new TestProcess(resultList, textToAdd));
+        return lockService.runWithLock(lock, new TestProcess(resultList, textToAdd)).isExecuted();
     }
 
     private boolean runRenewingProcess(String lock, List<String> resultList, String textToAdd)
         throws InterruptedException {
         tenantResolver.forceTenant("test1");
-        return lockService.runWithLock(lock, new TestRenewingProcess(lock, resultList, textToAdd));
+        return lockService.runWithLock(lock, new TestRenewingProcess(lock, resultList, textToAdd)).isExecuted();
     }
 
     private static class TestProcess implements LockServiceTask {
@@ -100,7 +100,7 @@ public class LockServiceRenewIT {
         }
 
         @Override
-        public void run() {
+        public Void run() {
             LOGGER.info("process {} started", textToAdd);
             resultList.add(textToAdd);
             try {
@@ -108,6 +108,7 @@ public class LockServiceRenewIT {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+            return null;
         }
     }
 
@@ -126,7 +127,7 @@ public class LockServiceRenewIT {
         }
 
         @Override
-        public void run() {
+        public Void run() {
             try {
                 LOGGER.info("process {} started", textToAdd);
                 Thread.sleep(750);
@@ -136,6 +137,7 @@ public class LockServiceRenewIT {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+            return null;
         }
     }
 }

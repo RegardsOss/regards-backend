@@ -53,6 +53,9 @@ public class LockService {
     @Value("${regards.lock.time.to.live:60000}")
     private int lockTimeToLive;
 
+    @Value("${regards.lock.try.timeout:60000}")
+    private int lockTryTimeout;
+
     @Value("${regards.lock.cache.capacity:100000}")
     private int cacheCapacity;
 
@@ -89,26 +92,42 @@ public class LockService {
      * Run synchronously the given {@link LockServiceTask} with the given lock.
      * The process will wait for the lock to be free to run the task.
      */
-    public boolean runWithLock(String lockName, LockServiceTask process) throws InterruptedException {
+    public <T> LockServiceResponse<T> runWithLock(String lockName, LockServiceTask process)
+        throws InterruptedException {
+        return tryRunWithLock(lockName, process, lockTryTimeout, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Try to run synchronously the given {@link LockServiceTask} with the given lock.
+     * The process will wait for the lock to be free to run the task.
+     * If the lock is still not free after the given time, stop trying and return false.
+     *
+     * @param timeToWait how long the service will try to get the lock
+     * @return true if the process was run, false otherwise
+     */
+    public <T> LockServiceResponse<T> tryRunWithLock(String lockName,
+                                                     LockServiceTask<T> process,
+                                                     int timeToWait,
+                                                     TimeUnit timeUnit) throws InterruptedException {
         JdbcLockRegistry lockRegistry = lockRegistryMap.get(runtimeTenantResolver.getTenant());
         LOGGER.debug("Getting lock {} for task {}", lockName, process.getClass().getSimpleName());
         Lock lock = lockRegistry.obtain(lockName);
-        boolean lockAcquired = lock.tryLock(lockTimeToLive, TimeUnit.MILLISECONDS);
+        boolean lockAcquired = lock.tryLock(timeToWait, timeUnit);
         if (!lockAcquired) {
             LOGGER.warn("Unable to acquire lock {} for task {}", lockName, process.getClass().getSimpleName());
-            return false;
+            return new LockServiceResponse<>(false);
         }
         LOGGER.debug("Acquired lock {} for task {}", lockName, process.getClass().getSimpleName());
         try {
-            process.run();
+            T response = process.run();
+            return new LockServiceResponse<>(true, response);
         } catch (Throwable e) {
             LOGGER.error("Unexpected error during execution of locked task with lock {}, releasing the lock", lock);
             throw e;
         } finally {
+            LOGGER.debug("Released lock {} for task {}", lockName, process.getClass().getSimpleName());
             lock.unlock();
         }
-        LOGGER.debug("Released lock {} for task {}", lockName, process.getClass().getSimpleName());
-        return true;
     }
 
     /**

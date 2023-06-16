@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockServiceResponse;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockServiceTask;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.awaitility.Awaitility;
@@ -48,10 +49,10 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author Thibaud Michaudel
  **/
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {LockServiceTestConfiguration.class})
+@ContextConfiguration(classes = { LockServiceTestConfiguration.class })
 @ActiveProfiles("test")
-@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=lock_service_renew_test",
-        "regards.lock.cache.capacity=10"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=lock_service_renew_test",
+                                   "regards.lock.cache.capacity=10" })
 public class LockServiceIT {
 
     private static final Logger LOGGER = getLogger(LockServiceIT.class);
@@ -83,6 +84,14 @@ public class LockServiceIT {
     }
 
     @Test
+    public void lock_service_simple_test_with_response() throws InterruptedException {
+        String response = "Hello";
+        LockServiceResponse<String> res = lockService.runWithLock("lock1", new TestProcessWithRecord(response));
+        Assertions.assertTrue(res.isExecuted());
+        Assertions.assertEquals(response, res.getResponse());
+    }
+
+    @Test
     @Ignore("Slow test by design")
     public void lock_service_cache_test() {
         List<String> resultList = new ArrayList<>();
@@ -106,7 +115,7 @@ public class LockServiceIT {
 
     private boolean runWithLock(String lock, List<String> resultList, String textToAdd) throws InterruptedException {
         tenantResolver.forceTenant("test1");
-        return lockService.runWithLock(lock, new TestProcess(resultList, textToAdd));
+        return lockService.runWithLock(lock, new TestProcess(resultList, textToAdd)).isExecuted();
     }
 
     private static class TestProcess implements LockServiceTask {
@@ -121,7 +130,7 @@ public class LockServiceIT {
         }
 
         @Override
-        public void run() {
+        public Void run() {
             LOGGER.info("process {} started", textToAdd);
             resultList.add(textToAdd);
             try {
@@ -132,6 +141,21 @@ public class LockServiceIT {
             } finally {
                 LOGGER.info("process {} ended", textToAdd);
             }
+            return null;
+        }
+    }
+
+    private static class TestProcessWithRecord implements LockServiceTask<String> {
+
+        private final String response;
+
+        private TestProcessWithRecord(String response) {
+            this.response = response;
+        }
+
+        @Override
+        public String run() {
+            return response;
         }
     }
 }
