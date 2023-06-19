@@ -145,8 +145,8 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
                                                                                     .equals(NEARLINE_CONF_LABEL))
                                                                       .findFirst();
         Assert.assertTrue(location.isPresent());
-        Assert.assertEquals(4L, location.get().getNbFilesStored().longValue());
-        Assert.assertEquals(1L, location.get().getNbFilesStoredWithPendingActionRemaining().longValue());
+        Assert.assertEquals(4L, location.get().getNbFilesStored());
+        Assert.assertEquals(1L, location.get().getNbFilesStoredWithPendingActionRemaining());
 
         // Now run periodic action, the SimpleNearLinePlugin automaticly inform system that all remaining actions are done.
         Set<JobInfo> jobs = storageLocationService.runPeriodicTasks();
@@ -161,8 +161,8 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
                                          .findFirst();
         Assert.assertTrue(location.isPresent());
         // Now 0 files should be in pending state
-        Assert.assertEquals(4L, location.get().getNbFilesStored().longValue());
-        Assert.assertEquals(0L, location.get().getNbFilesStoredWithPendingActionRemaining().longValue());
+        Assert.assertEquals(4L, location.get().getNbFilesStored());
+        Assert.assertEquals(0L, location.get().getNbFilesStoredWithPendingActionRemaining());
     }
 
     @Test
@@ -178,8 +178,8 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         Optional<StorageLocation> storageLocation = storageLocationService.search(storage);
         Assert.assertTrue("There should be file referenced for STAF storage", storageLocation.isPresent());
         Assert.assertEquals("Total size on STAF storage is invalid",
-                            totalSize.longValue(),
-                            storageLocation.get().getTotalSizeOfReferencedFilesInKo().longValue());
+                            totalSize,
+                            storageLocation.get().getTotalSizeOfReferencedFilesInKo());
         Assert.assertEquals("Total number of files on STAF storage is invalid",
                             4L,
                             storageLocation.get().getNumberOfReferencedFiles().longValue());
@@ -192,11 +192,8 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
         Assert.assertEquals("Total size on STAF storage is invalid",
-                            totalSize.longValue(),
-                            storageLocationService.search(storage)
-                                                  .get()
-                                                  .getTotalSizeOfReferencedFilesInKo()
-                                                  .longValue());
+                            totalSize,
+                            storageLocationService.search(storage).get().getTotalSizeOfReferencedFilesInKo());
         Assert.assertEquals("Total number of files on STAF storage invalid",
                             5L,
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
@@ -211,10 +208,10 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         StorageLocationDTO loc = storageLocationService.getByName(storage);
         Assert.assertNotNull("A location should be retrieved", loc);
         Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
-        Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored().longValue());
-        Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo().longValue());
-        Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
-        Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+        Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored());
+        Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo());
+        Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError());
+        Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError());
     }
 
     @Test
@@ -240,10 +237,11 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
             Assert.assertEquals("Location should be offline",
                                 loc.getConfiguration().getStorageType(),
                                 StorageType.OFFLINE);
-            Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored().longValue());
-            Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo().longValue());
-            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
-            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+            Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored());
+            Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo());
+            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError());
+            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError());
+            Assert.assertFalse("There should not be a pending action running", loc.isPendingActionRunning());
         });
         Assert.assertEquals("Location two is missing",
                             1L,
@@ -253,10 +251,11 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
             Assert.assertEquals("Location should be offline",
                                 loc.getConfiguration().getStorageType(),
                                 StorageType.OFFLINE);
-            Assert.assertEquals("There should be 5 files referenced", 5L, loc.getNbFilesStored().longValue());
-            Assert.assertEquals("The total size should be 20ko", 20L, loc.getTotalStoredFilesSizeKo().longValue());
-            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
-            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+            Assert.assertEquals("There should be 5 files referenced", 5L, loc.getNbFilesStored());
+            Assert.assertEquals("The total size should be 20ko", 20L, loc.getTotalStoredFilesSizeKo());
+            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError());
+            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError());
+            Assert.assertFalse("There should be no pending action running", loc.isPendingActionRunning());
         });
         Assert.assertEquals("Location three is missing",
                             1L,
@@ -266,10 +265,10 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
             Assert.assertEquals("Location should be offline",
                                 loc.getConfiguration().getStorageType(),
                                 StorageType.ONLINE);
-            Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
-            Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
-            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
-            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+            Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored());
+            Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo());
+            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError());
+            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError());
         });
         Assert.assertEquals("Location four is missing",
                             1L,
@@ -279,10 +278,10 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
             Assert.assertEquals("Location should be offline",
                                 loc.getConfiguration().getStorageType(),
                                 StorageType.NEARLINE);
-            Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
-            Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
-            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
-            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
+            Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored());
+            Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo());
+            Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError());
+            Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError());
         });
     }
 
@@ -460,7 +459,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         Long fileSize = 20L;
         MimeType mimeType = MediaType.IMAGE_PNG;
         FileReferenceMetaInfo metaInfos = new FileReferenceMetaInfo(checksum, algorithm, fileName, fileSize, mimeType);
-        String originUrl = "file://" + Paths.get("src/test/resources/input/cnes.png").toAbsolutePath().toString();
+        String originUrl = "file://" + Paths.get("src/test/resources/input/cnes.png").toAbsolutePath();
         // create requests
         for (int i = 0; i < nbRequests; i++) {
             FileStorageRequest request = new FileStorageRequest(owner,

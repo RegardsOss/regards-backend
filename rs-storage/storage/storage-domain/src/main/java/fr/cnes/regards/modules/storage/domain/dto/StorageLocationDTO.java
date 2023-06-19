@@ -25,69 +25,118 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfigurat
  */
 public class StorageLocationDTO {
 
-    private final Long nbStorageError;
-
-    private final StorageLocationConfiguration configuration;
+    private StorageLocationConfiguration configuration;
 
     private String name;
 
-    private Long nbFilesStored;
+    /**
+     * Number of files stored into this storage location
+     */
+    private long nbFilesStored = 0L;
 
-    private Long nbDeletionError;
+    /**
+     * Number of deletion requests in error for this storage location
+     */
+    private long nbDeletionError = 0L;
 
-    private Long nbFilesStoredWithPendingActionRemaining;
+    /**
+     * Number of storage requests in error for this storage location
+     */
+    private long nbStorageError = 0L;
 
-    private Long totalStoredFilesSizeKo;
+    /**
+     * Number of files stored into this storage location witch a remaining pending action to do to finalise storage.
+     */
+    private long nbFilesStoredWithPendingActionRemaining = 0L;
 
+    private long totalStoredFilesSizeKo = 0L;
+
+    /**
+     * Indicates if at least one storage request  associated to this storage location is running
+     */
     private boolean storageRunning = false;
 
+    /**
+     * Indicates if at least one deletion request  associated to this storage location is running
+     */
     private boolean deletionRunning = false;
 
+    /**
+     * Indicates if at least one copy request  associated to this storage location is running
+     */
     private boolean copyRunning = false;
 
+    /**
+     * Indicates if a pending action job is running fot this storage location. Pending Action Job is a job used to run
+     * specific asynchronous actions of storage locations.
+     */
+    private boolean pendingActionRunning = false;
+
+    /**
+     * Does this location allows to physically delete files ?
+     */
     private boolean allowsPhysicalDeletion = false;
 
-    public StorageLocationDTO(String name,
-                              Long nbFilesStored,
-                              Long nbFilesStoredWithPendingActionRemaining,
-                              Long totalStoredFilesSizeKo,
-                              Long nbStorageError,
-                              Long nbDeletionError,
-                              boolean storageRunning,
-                              boolean deletionRunning,
-                              boolean copyRunning,
-                              StorageLocationConfiguration configuration,
-                              boolean allowPhysicalDeletion) {
-        this.name = name;
+    public static StorageLocationDTO build(String name, StorageLocationConfiguration configuration) {
+        StorageLocationDTO dto = new StorageLocationDTO();
+        dto.name = name;
+        dto.configuration = configuration;
+        return dto;
+    }
+
+    public StorageLocationDTO withErrorInformation(long nbStorageError, long nbDeletionError) {
+        this.nbDeletionError = nbDeletionError;
+        this.nbStorageError = nbStorageError;
+        return this;
+    }
+
+    public StorageLocationDTO withFilesInformation(long nbFilesStored,
+                                                   long nbFilesStoredWithPendingActionRemaining,
+                                                   long totalStoredFilesSizeKo) {
         this.nbFilesStored = nbFilesStored;
         this.nbFilesStoredWithPendingActionRemaining = nbFilesStoredWithPendingActionRemaining;
         this.totalStoredFilesSizeKo = totalStoredFilesSizeKo;
-        this.nbStorageError = nbStorageError;
-        this.nbDeletionError = nbDeletionError;
+        return this;
+    }
+
+    public StorageLocationDTO withAllowPhysicalDeletion() {
+        this.allowsPhysicalDeletion = true;
+        return this;
+    }
+
+    public StorageLocationDTO withAllowPhysicalDeletion(boolean allowsPhysicalDeletion) {
+        this.allowsPhysicalDeletion = allowsPhysicalDeletion;
+        return this;
+    }
+
+    public StorageLocationDTO withRunningProcessesInformation(boolean storageRunning,
+                                                              boolean deletionRunning,
+                                                              boolean copyRunning,
+                                                              boolean pendingActionRunning) {
         this.storageRunning = storageRunning;
         this.deletionRunning = deletionRunning;
         this.copyRunning = copyRunning;
-        this.configuration = configuration;
-        this.allowsPhysicalDeletion = allowPhysicalDeletion;
+        this.pendingActionRunning = pendingActionRunning;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public Long getNbFilesStored() {
+    public long getNbFilesStored() {
         return nbFilesStored;
     }
 
-    public Long getTotalStoredFilesSizeKo() {
+    public long getTotalStoredFilesSizeKo() {
         return totalStoredFilesSizeKo;
     }
 
-    public Long getNbStorageError() {
+    public long getNbStorageError() {
         return nbStorageError;
     }
 
-    public Long getNbDeletionError() {
+    public long getNbDeletionError() {
         return nbDeletionError;
     }
 
@@ -107,11 +156,15 @@ public class StorageLocationDTO {
         return copyRunning;
     }
 
+    public boolean isPendingActionRunning() {
+        return pendingActionRunning;
+    }
+
     public boolean isAllowsPhysicalDeletion() {
         return allowsPhysicalDeletion;
     }
 
-    public Long getNbFilesStoredWithPendingActionRemaining() {
+    public long getNbFilesStoredWithPendingActionRemaining() {
         return nbFilesStoredWithPendingActionRemaining;
     }
 }

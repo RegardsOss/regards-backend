@@ -36,19 +36,13 @@ public class StorageRestClientMock implements IStorageRestClient {
         pluginMetaData.setInterfaceNames(Sets.newHashSet(IOnlineStorageLocation.class.getName()));
         PluginConfiguration pluginConfiguration = new PluginConfiguration();
         pluginConfiguration.setMetaData(pluginMetaData);
-        StorageLocationDTO storageLocationDTO = new StorageLocationDTO("Local",
-                                                                       0L,
-                                                                       0L,
-                                                                       0L,
-                                                                       0L,
-                                                                       0L,
-                                                                       true,
-                                                                       true,
-                                                                       true,
-                                                                       new StorageLocationConfiguration("name",
-                                                                                                        pluginConfiguration,
-                                                                                                        0L),
-                                                                       true);
+        StorageLocationConfiguration configuration = new StorageLocationConfiguration("name", pluginConfiguration, 0L);
+        StorageLocationDTO storageLocationDTO = StorageLocationDTO.build("Local", configuration)
+                                                                  .withAllowPhysicalDeletion()
+                                                                  .withRunningProcessesInformation(true,
+                                                                                                   true,
+                                                                                                   true,
+                                                                                                   false);
         return ResponseEntity.ok(Collections.singletonList(EntityModel.of(storageLocationDTO)));
     }
 

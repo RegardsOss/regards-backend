@@ -341,17 +341,9 @@ public class CacheService {
     public StorageLocationDTO toStorageLocation() {
         StorageLocationConfiguration conf = new StorageLocationConfiguration(CACHE_NAME, null, getMaxCacheSizeKo());
         conf.setStorageType(StorageType.CACHE);
-        return new StorageLocationDTO(CACHE_NAME,
-                                      getTotalCachedFiles(),
-                                      0L,
-                                      getCacheSizeUsedKB(),
-                                      0L,
-                                      0L,
-                                      false,
-                                      false,
-                                      false,
-                                      conf,
-                                      true);
+        return StorageLocationDTO.build(CACHE_NAME, conf)
+                                 .withAllowPhysicalDeletion()
+                                 .withFilesInformation(getTotalCachedFiles(), 0, getCacheSizeUsedKB());
     }
 
     public boolean isCacheEmpty() {

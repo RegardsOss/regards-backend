@@ -47,7 +47,6 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -95,8 +94,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     }
 
     @Before
-    public void init()
-        throws NoSuchAlgorithmException, FileNotFoundException, IOException, InterruptedException, ModuleException {
+    public void init() throws NoSuchAlgorithmException, IOException, InterruptedException, ModuleException {
         tenantResolver.forceTenant(getDefaultTenant());
         clear();
         initDataStoragePluginConfiguration();
@@ -342,19 +340,10 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
 
     private StorageLocationDTO buildStorageLocationDTO(String name, Long allocatedSizeInKo, boolean offline)
         throws IOException {
-        return new StorageLocationDTO(name,
-                                      null,
-                                      null,
-                                      null,
-                                      null,
-                                      null,
-                                      false,
-                                      false,
-                                      false,
-                                      new StorageLocationConfiguration(name,
-                                                                       offline ? null : getPluginConf(name),
-                                                                       allocatedSizeInKo),
-                                      false);
+        StorageLocationConfiguration conf = new StorageLocationConfiguration(name,
+                                                                             offline ? null : getPluginConf(name),
+                                                                             allocatedSizeInKo);
+        return StorageLocationDTO.build(name, conf);
     }
 
 }

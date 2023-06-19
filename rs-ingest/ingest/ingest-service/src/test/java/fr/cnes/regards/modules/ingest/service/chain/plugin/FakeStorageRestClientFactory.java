@@ -46,18 +46,10 @@ public class FakeStorageRestClientFactory {
     public static List<EntityModel<StorageLocationDTO>> createResponse(List<StorageMetadata> storageMetadata,
                                                                        boolean isOffline) {
         return storageMetadata.stream()
-                              .map(storageMeta -> new StorageLocationDTO(storageMeta.getPluginBusinessId(),
-                                                                         0L,
-                                                                         0L,
-                                                                         0L,
-                                                                         0L,
-                                                                         0L,
-                                                                         false,
-                                                                         false,
-                                                                         false,
-                                                                         getStorageLocationConfiguration(storageMeta,
-                                                                                                         isOffline),
-                                                                         true))
+                              .map(storageMeta -> StorageLocationDTO.build(storageMeta.getPluginBusinessId(),
+                                                                           getStorageLocationConfiguration(storageMeta,
+                                                                                                           isOffline))
+                                                                    .withAllowPhysicalDeletion())
                               .map(HateoasUtils::wrap)
                               .toList();
     }

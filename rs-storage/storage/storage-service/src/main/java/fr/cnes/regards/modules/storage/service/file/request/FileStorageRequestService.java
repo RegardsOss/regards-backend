@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileStorageRequestJob;
+import fr.cnes.regards.modules.storage.service.file.job.PeriodicStorageLocationJob;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.service.template.StorageTemplatesConf;
@@ -1061,6 +1062,19 @@ public class FileStorageRequestService {
         return fileStorageRequestRepo.existsByStorageAndStatusIn(storageId,
                                                                  Sets.newHashSet(FileRequestStatus.TO_DO,
                                                                                  FileRequestStatus.PENDING));
+    }
+
+    /**
+     * Check if a {@link PeriodicStorageLocationJob} is running for the given storage location.
+     */
+    public boolean isPendingActionRunning(String storageId) {
+        Page<JobInfo> jobs = jobInfoService.retrieveJobs(PeriodicStorageLocationJob.class.getName(),
+                                                         Pageable.ofSize(100),
+                                                         JobStatus.getAllNotFinishedStatus());
+        return jobs.stream()
+                   .map(job -> job.getParametersAsMap().get(PeriodicStorageLocationJob.DATA_STORAGE_CONF_BUSINESS_ID))
+                   .filter(Objects::nonNull)
+                   .anyMatch(storageIdParameter -> storageId.equals(storageIdParameter.getValue()));
     }
 
     /**

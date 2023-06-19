@@ -141,14 +141,15 @@ public class StorageLocationService {
     public StorageLocationDTO getByName(String storageName) throws ModuleException {
         Optional<StorageLocation> oLoc = storageLocationRepo.findByName(storageName);
         Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageName);
-        Long nbStorageError = storageService.count(storageName, FileRequestStatus.ERROR);
-        Long nbDeletionError = deletionReqService.count(storageName, FileRequestStatus.ERROR);
+        long nbStorageError = storageService.count(storageName, FileRequestStatus.ERROR);
+        long nbDeletionError = deletionReqService.count(storageName, FileRequestStatus.ERROR);
         boolean deletionRunning = deletionReqService.isDeletionRunning(storageName);
         boolean copyRunning = copyService.isCopyRunning(storageName);
         boolean storageRunning = storageService.isStorageRunning(storageName);
-        Long nbReferencedFiles = null;
-        Long totalSizeOfReferencedFiles = null;
-        Long nbPendingFiles = null;
+        boolean pendingActionRunning = storageService.isPendingActionRunning(storageName);
+        long nbReferencedFiles = 0L;
+        long totalSizeOfReferencedFiles = 0L;
+        long nbPendingFiles = 0L;
         StorageLocationConfiguration conf = null;
         if (oConf.isPresent() && oLoc.isPresent()) {
             conf = oConf.get();
@@ -167,17 +168,14 @@ public class StorageLocationService {
         } else {
             throw new EntityNotFoundException(storageName, StorageLocation.class);
         }
-        return new StorageLocationDTO(storageName,
-                                      nbReferencedFiles,
-                                      nbPendingFiles,
-                                      totalSizeOfReferencedFiles,
-                                      nbStorageError,
-                                      nbDeletionError,
-                                      storageRunning,
-                                      deletionRunning,
-                                      copyRunning,
-                                      conf,
-                                      pLocationConfService.allowPhysicalDeletion(conf));
+        return StorageLocationDTO.build(storageName, conf)
+                                 .withFilesInformation(nbReferencedFiles, nbPendingFiles, totalSizeOfReferencedFiles)
+                                 .withErrorInformation(nbStorageError, nbDeletionError)
+                                 .withRunningProcessesInformation(storageRunning,
+                                                                  deletionRunning,
+                                                                  copyRunning,
+                                                                  pendingActionRunning)
+                                 .withAllowPhysicalDeletion(pLocationConfService.allowPhysicalDeletion(conf));
     }
 
     /**
@@ -201,49 +199,42 @@ public class StorageLocationService {
             boolean deletionRunning = deletionReqService.isDeletionRunning(conf.getName());
             boolean copyRunning = copyService.isCopyRunning(conf.getName());
             boolean storageRunning = storageService.isStorageRunning(conf.getName());
+            boolean pendingActionRunning = storageService.isPendingActionRunning(conf.getName());
             StorageLocation monitored = monitoredLocations.get(conf.getName());
             if (monitored != null) {
-                locationsDto.add(new StorageLocationDTO(conf.getName(),
-                                                        monitored.getNumberOfReferencedFiles(),
-                                                        monitored.getNumberOfPendingFiles(),
-                                                        monitored.getTotalSizeOfReferencedFilesInKo(),
-                                                        nbStorageError,
-                                                        nbDeletionError,
-                                                        storageRunning,
-                                                        deletionRunning,
-                                                        copyRunning,
-                                                        conf,
-                                                        pLocationConfService.allowPhysicalDeletion(conf)));
+                locationsDto.add(StorageLocationDTO.build(conf.getName(), conf)
+                                                   .withFilesInformation(monitored.getNumberOfReferencedFiles(),
+                                                                         monitored.getNumberOfPendingFiles(),
+                                                                         monitored.getTotalSizeOfReferencedFilesInKo())
+                                                   .withErrorInformation(nbStorageError, nbDeletionError)
+                                                   .withRunningProcessesInformation(storageRunning,
+                                                                                    deletionRunning,
+                                                                                    copyRunning,
+                                                                                    pendingActionRunning)
+                                                   .withAllowPhysicalDeletion(pLocationConfService.allowPhysicalDeletion(
+                                                       conf)));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto.add(new StorageLocationDTO(conf.getName(),
-                                                        0L,
-                                                        0L,
-                                                        0L,
-                                                        nbStorageError,
-                                                        nbDeletionError,
-                                                        storageRunning,
-                                                        deletionRunning,
-                                                        copyRunning,
-                                                        conf,
-                                                        pLocationConfService.allowPhysicalDeletion(conf)));
+                locationsDto.add(StorageLocationDTO.build(conf.getName(), conf)
+                                                   .withErrorInformation(nbStorageError, nbDeletionError)
+                                                   .withRunningProcessesInformation(storageRunning,
+                                                                                    deletionRunning,
+                                                                                    copyRunning,
+                                                                                    pendingActionRunning)
+                                                   .withAllowPhysicalDeletion(pLocationConfService.allowPhysicalDeletion(
+                                                       conf)));
             }
         }
         // Handle not configured storage as OFFLINE ones
         for (StorageLocation monitored : monitoredLocations.values()) {
-            Long nbStorageError = 0L;
-            Long nbDeletionError = 0L;
-            locationsDto.add(new StorageLocationDTO(monitored.getName(),
-                                                    monitored.getNumberOfReferencedFiles(),
-                                                    monitored.getNumberOfPendingFiles(),
-                                                    monitored.getTotalSizeOfReferencedFilesInKo(),
-                                                    nbStorageError,
-                                                    nbDeletionError,
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    new StorageLocationConfiguration(monitored.getName(), null, null),
-                                                    false));
+            long nbStorageError = 0L;
+            long nbDeletionError = 0L;
+            StorageLocationConfiguration conf = new StorageLocationConfiguration(monitored.getName(), null, null);
+            locationsDto.add(StorageLocationDTO.build(monitored.getName(), conf)
+                                               .withFilesInformation(monitored.getNumberOfReferencedFiles(),
+                                                                     monitored.getNumberOfPendingFiles(),
+                                                                     monitored.getTotalSizeOfReferencedFilesInKo())
+                                               .withErrorInformation(nbStorageError, nbDeletionError));
         }
         return locationsDto;
     }
@@ -506,17 +497,8 @@ public class StorageLocationService {
                                                                                           .getPluginConfiguration(),
                                                                            storageLocation.getConfiguration()
                                                                                           .getAllocatedSizeInKo());
-        return new StorageLocationDTO(storageLocation.getName(),
-                                      0L,
-                                      0L,
-                                      0L,
-                                      0L,
-                                      0L,
-                                      false,
-                                      false,
-                                      false,
-                                      newConf,
-                                      pLocationConfService.allowPhysicalDeletion(newConf));
+        return StorageLocationDTO.build(storageLocation.getName(), newConf)
+                                 .withAllowPhysicalDeletion(pLocationConfService.allowPhysicalDeletion(newConf));
     }
 
     /**
@@ -529,17 +511,8 @@ public class StorageLocationService {
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
         StorageLocationConfiguration newConf = pLocationConfService.update(storageName,
                                                                            storageLocation.getConfiguration());
-        return new StorageLocationDTO(storageLocation.getName(),
-                                      0L,
-                                      0L,
-                                      0L,
-                                      0L,
-                                      0L,
-                                      false,
-                                      false,
-                                      false,
-                                      newConf,
-                                      pLocationConfService.allowPhysicalDeletion(newConf));
+        return StorageLocationDTO.build(storageLocation.getName(), newConf)
+                                 .withAllowPhysicalDeletion(pLocationConfService.allowPhysicalDeletion(newConf));
     }
 
     public void deleteRequests(String storageName, FileRequestType type, Optional<FileRequestStatus> status) {
