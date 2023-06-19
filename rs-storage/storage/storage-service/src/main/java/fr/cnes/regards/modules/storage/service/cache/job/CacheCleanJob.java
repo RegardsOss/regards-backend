@@ -19,8 +19,13 @@
 package fr.cnes.regards.modules.storage.service.cache.job;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 /**
  * Cache purge job.<br>
@@ -30,12 +35,29 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CacheCleanJob extends AbstractJob<Void> {
 
+    /**
+     * Parameter to force deletion of all files in cache and not only expired ones.
+     */
+    public static final String FORCE_PARAMETER_NAME = "force";
+
     @Autowired
     private CacheService cacheService;
 
+    private boolean forceMode = false;
+
+    @Override
+    public void setParameters(Map<String, JobParameter> parameters)
+        throws JobParameterMissingException, JobParameterInvalidException {
+        forceMode = parameters.get(FORCE_PARAMETER_NAME).getValue();
+    }
+
     @Override
     public void run() {
-        cacheService.purge();
+        long start = System.currentTimeMillis();
+        cacheService.purge(forceMode);
+        logger.debug("[CACHE CLEAN JOB] Clean files from cache with resetMode={} done in {}ms",
+                     forceMode,
+                     System.currentTimeMillis() - start);
     }
 
 }

@@ -74,7 +74,7 @@ public class CacheScheduler {
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            cacheService.scheduleCacheCleanUp(CacheScheduler.class.getName());
+            cacheService.scheduleCacheCleanUp(CacheScheduler.class.getName(), false);
             runtimeTenantResolver.clearTenant();
         }
     }

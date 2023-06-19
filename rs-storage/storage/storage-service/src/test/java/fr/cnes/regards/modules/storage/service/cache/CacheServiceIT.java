@@ -155,11 +155,35 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                             UUID.randomUUID().toString());
         }
         Assert.assertEquals("There should be 1000 files in cache", 1000, repository.findAll().size());
-        service.purge();
+        service.purge(false);
         Assert.assertEquals("There should be 900 files in cache", 900, repository.findAll().size());
         // As we do not have create files on disk, all files in cache are invalid and should deleted
         service.checkDiskDBCoherence();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Assert.assertEquals("There should be 0 files in cache", 0, repository.findAll().size());
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_STO_ARC_450")
+    @Purpose("Files in cache are purged when they are expired")
+    public void test_force_purge() throws IOException {
+        OffsetDateTime expirationDate = OffsetDateTime.now().minusDays(100);
+        // Create some files in cache
+        for (int i = 0; i < 1_000; i++) {
+            expirationDate = expirationDate.plusDays(1);
+            service.addFile(UUID.randomUUID().toString(),
+                            10L,
+                            "test.file.test",
+                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                            DataType.RAWDATA.name(),
+                            new URL("file", null, "/plop/test.file.test"),
+                            expirationDate,
+                            UUID.randomUUID().toString());
+        }
+        // Only 100 files are expired, nevertheless the force mode is activated so all files should deleted from the
+        // cache
+        Assert.assertEquals("There should be 1000 files in cache", 1000, repository.findAll().size());
+        service.purge(true);
         Assert.assertEquals("There should be 0 files in cache", 0, repository.findAll().size());
     }
 
@@ -191,7 +215,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                                               12L,
                                               p.getFileName().toString(),
                                               MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
-                                              new URL("file:" + p.toAbsolutePath().toString()),
+                                              new URL("file:" + p.toAbsolutePath()),
                                               OffsetDateTime.now().plusDays(1),
                                               UUID.randomUUID().toString(),
                                               "RAWDATA"));

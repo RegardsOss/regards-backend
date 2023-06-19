@@ -402,7 +402,7 @@ public class StorageLocationService {
     public void deleteFiles(String storageName, Boolean forceDelete, String sessionOwner, String session)
         throws ModuleException {
         if (storageName.equals(CacheService.CACHE_NAME)) {
-            cacheService.scheduleCacheCleanUp(authResolver.getUser());
+            cacheService.scheduleCacheCleanUp(authResolver.getUser(), forceDelete);
         } else {
             deletionService.scheduleJob(storageName, forceDelete, sessionOwner, session);
         }

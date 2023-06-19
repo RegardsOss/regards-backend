@@ -38,6 +38,9 @@ public class CacheVerificationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        long start = System.currentTimeMillis();
         cacheService.checkDiskDBCoherence();
+        logger.debug("[CACHE CONSISTENCY CHECKING JOB] Cache consistency check done in {}ms",
+                     System.currentTimeMillis() - start);
     }
 }

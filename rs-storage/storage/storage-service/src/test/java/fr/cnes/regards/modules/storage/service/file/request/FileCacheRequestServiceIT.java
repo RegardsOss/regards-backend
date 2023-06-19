@@ -223,7 +223,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
         Assert.assertEquals("There should be 10 files in cache", 10, cacheFileRepo.count());
 
         // Simulate cache  purge. One  file is expired so one  file should be  removed from cache
-        cacheService.purge();
+        cacheService.purge(false);
 
         jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);

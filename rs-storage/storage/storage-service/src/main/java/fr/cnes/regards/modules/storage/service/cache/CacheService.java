@@ -206,15 +206,26 @@ public class CacheService {
     }
 
     /**
-     * Delete all out dated {@link CacheFile}s.<br/>
+     * Delete files from cache.
+     * Il force mode is true, so all files are deleted.
+     * If foce mode is false, so all out dated files are deleted.
      */
-    public int purge() {
+    public int purge(boolean force) {
         int nbPurged = 0;
-        LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now());
+        if (force) {
+            LOGGER.debug("Deleting all (force mode activated) files from cache. Current date : {}",
+                         OffsetDateTime.now());
+        } else {
+            LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now());
+        }
         Pageable page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
         Page<CacheFile> files;
         do {
-            files = cachedFileRepository.findByExpirationDateBefore(OffsetDateTime.now(), page);
+            if (force) {
+                files = cachedFileRepository.findAll(page);
+            } else {
+                files = cachedFileRepository.findByExpirationDateBefore(OffsetDateTime.now(), page);
+            }
             deleteCachedFiles(files.getContent());
             nbPurged = nbPurged + files.getNumberOfElements();
         } while (files.hasNext());
@@ -350,8 +361,9 @@ public class CacheService {
         return cachedFileRepository.count() == 0;
     }
 
-    public void scheduleCacheCleanUp(String jobOwner) {
+    public void scheduleCacheCleanUp(String jobOwner, boolean forceDelete) {
         Set<JobParameter> parameters = Sets.newHashSet();
+        parameters.add(new JobParameter(CacheCleanJob.FORCE_PARAMETER_NAME, forceDelete));
         if (jobService.retrieveJobsCount(CacheCleanJob.class.getName(),
                                          JobStatus.PENDING,
                                          JobStatus.RUNNING,
