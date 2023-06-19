@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.plugin.IDeletionProgressManager;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
+import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,12 +45,17 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
 
     private final FileDeletionRequestService fileDeletionRequestService;
 
+    private final StorageLocationService storageLocationService;
+
     private final Set<FileDeletionRequest> handled = Sets.newHashSet();
 
-    public FileDeletionJobProgressManager(FileDeletionRequestService fileDeletionRequestService, IJob<?> job) {
+    public FileDeletionJobProgressManager(FileDeletionRequestService fileDeletionRequestService,
+                                          StorageLocationService storageLocationService,
+                                          IJob<?> job) {
         super();
         this.job = job;
         this.fileDeletionRequestService = fileDeletionRequestService;
+        this.storageLocationService = storageLocationService;
     }
 
     @Override
@@ -77,6 +83,12 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
         fileDeletionRequestService.handleSuccess(fileDeletionRequest);
         // NOTE : the FileReferenceEvent is published by the fileReferenceService when the file is completely deleted
         handled.add(fileDeletionRequest);
+    }
+
+    @Override
+    public void deletionSucceedWithPendingAction(FileDeletionRequest fileDeletionRequest) {
+        this.deletionSucceed(fileDeletionRequest);
+        storageLocationService.updateLocationPendingAction(fileDeletionRequest.getStorage(), true);
     }
 
     public boolean isHandled(FileDeletionRequest req) {

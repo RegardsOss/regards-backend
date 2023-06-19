@@ -27,10 +27,16 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
+/**
+ * Storage Job to trigger periodic actions on a given store location.
+ * Some storage location (aka plugin) needs to do some asynchronous action(s) at periodic times.
+ * This job allow each storage plugin to define a periodic action to do.
+ */
 public class PeriodicStorageLocationJob extends AbstractJob<Void> {
 
     public static final String DATA_STORAGE_CONF_BUSINESS_ID = "storage";
@@ -41,6 +47,9 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Autowired
+    private StorageLocationService storageLocationService;
+
+    @Autowired
     private FileReferenceService fileRefService;
 
     @Override
@@ -48,16 +57,15 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
         try {
             long startTime = System.currentTimeMillis();
             IStorageLocation storagePlugin = pluginService.getPlugin(storageLocation);
-            PeriodicActionProgressManager progressManager = new PeriodicActionProgressManager(fileRefService);
+            PeriodicActionProgressManager progressManager = new PeriodicActionProgressManager(fileRefService,
+                                                                                              storageLocationService);
             storagePlugin.runPeriodicAction(progressManager);
             progressManager.bulkSavePendings();
             progressManager.notifyPendingActionErrors();
             logger.info("Periodic task on storage {} done in {}ms",
                         storageLocation,
                         System.currentTimeMillis() - startTime);
-        } catch (ModuleException e) {
-            throw new RuntimeException(e);
-        } catch (NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             throw new RuntimeException(e);
         }
     }
@@ -65,7 +73,6 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
-        super.setParameters(parameters);
         storageLocation = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
     }
 }

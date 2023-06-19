@@ -141,6 +141,7 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
 
         // Simulate deletion request ends
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileDeletionRequestService,
+                                                                                    storageLocationService,
                                                                                     new FileDeletionRequestJob());
         manager.deletionSucceed(fdr);
         fileRefEventHandler.handleBatch(Lists.newArrayList(FileReferenceEvent.build(fileRefChecksum,

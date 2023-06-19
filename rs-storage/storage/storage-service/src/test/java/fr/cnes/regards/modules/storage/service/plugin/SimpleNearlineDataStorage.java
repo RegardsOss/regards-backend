@@ -156,7 +156,6 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
         if (Pattern.matches(doNotHandlePattern, fileName)) {
             // Do nothing to test not handled files
             LOGGER.info("File {} ignored for storage", fileName);
-            return;
         } else if (Pattern.matches(errorFilePattern, fileName)) {
             LOGGER.error("Simulated error for file storage {}.", fileName);
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
@@ -169,8 +168,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
             }
             String storedUrl = String.format("%s%s",
                                              BASE_URL,
-                                             Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum())
-                                                  .toString());
+                                             Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum()));
             try {
                 if (!Files.exists(Paths.get(storedUrl).getParent())) {
                     Files.createDirectories(Paths.get(storedUrl).getParent());
@@ -216,7 +214,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
             if (Pattern.matches(deleteErrorFilePattern, fileName)) {
                 progressManager.deletionFailed(request, "Specific error generated for tests");
             } else {
-                progressManager.deletionSucceed(request);
+                progressManager.deletionSucceedWithPendingAction(request);
             }
         });
     }

@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.plugin.*;
+import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -146,7 +147,6 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
         if (Pattern.matches(doNotHandlePattern, fileName)) {
             // Do nothing to test not handled files
             LOGGER.info("File {} ignored for storage", fileName);
-            return;
         } else if (Pattern.matches(errorFilePattern, fileName)) {
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
         } else {
@@ -198,7 +198,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
                 } catch (IOException e) {
                     // Nothing to do
                 }
-                progressManager.deletionSucceed(request);
+                progressManager.deletionSucceedWithPendingAction(request);
             }
         });
     }
@@ -230,6 +230,11 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     @Override
     public boolean isValidUrl(String urlToValidate, Set<String> errors) {
         return true;
+    }
+
+    @Override
+    public void runPeriodicAction(IPeriodicActionProgressManager progressManager) {
+        progressManager.allPendingActionSucceed(AbstractStorageIT.ONLINE_CONF_LABEL);
     }
 
     @Override

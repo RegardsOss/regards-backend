@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionReque
 import fr.cnes.regards.modules.storage.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
+import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
@@ -53,6 +54,9 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
     private FileDeletionRequestService fileDeletionRequestService;
 
     @Autowired
+    private StorageLocationService storageLocationService;
+
+    @Autowired
     private IPluginService pluginService;
 
     @Autowired
@@ -75,6 +79,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         // Initiate the job progress manager
         FileDeletionJobProgressManager progressManager = new FileDeletionJobProgressManager(fileDeletionRequestService,
+                                                                                            storageLocationService,
                                                                                             this);
         // lets instantiate the plugin to use
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();

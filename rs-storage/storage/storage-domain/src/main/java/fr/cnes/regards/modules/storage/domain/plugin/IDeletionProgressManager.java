@@ -37,7 +37,15 @@ public interface IDeletionProgressManager {
      *
      * @param FileDeletionRequest {@link FileDeletionRequest} deleted.
      */
-    public void deletionSucceed(FileDeletionRequest fileDeletionRequest);
+    void deletionSucceed(FileDeletionRequest fileDeletionRequest);
+
+    /**
+     * Notify system that the given {@link FileDeletionRequest} is deleted by a pending action is remaining to fullfill
+     * complete file deletion.
+     *
+     * @param FileDeletionRequest {@link FileDeletionRequest} deleted.
+     */
+    void deletionSucceedWithPendingAction(FileDeletionRequest fileDeletionRequest);
 
     /**
      * Notify the system that the given {@link FileReference} couldn't be deleted.
@@ -45,6 +53,6 @@ public interface IDeletionProgressManager {
      * @param fileDeletionRequest {@link FileDeletionRequest} not deleted.
      * @param cause               {@link String} error message.
      */
-    public void deletionFailed(FileDeletionRequest fileDeletionRequest, String cause);
+    void deletionFailed(FileDeletionRequest fileDeletionRequest, String cause);
 
 }

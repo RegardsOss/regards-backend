@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.amqp.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Optional;
 
 /**
@@ -30,6 +32,7 @@ public interface IEvent {
     /**
      * Define the default amqp property correlation_id when sending message to rabbitmq exchange.
      */
+    @JsonIgnore
     default Optional<String> getMessageCorrelationId() {
         return Optional.empty();
     }

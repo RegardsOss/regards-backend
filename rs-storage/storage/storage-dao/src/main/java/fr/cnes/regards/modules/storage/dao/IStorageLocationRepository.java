@@ -37,6 +37,13 @@ public interface IStorageLocationRepository
 
     Set<StorageLocation> findByNumberOfPendingFilesGreaterThan(Long minimumNumberOfPendingFiles);
 
+    default Set<StorageLocation> findStorageWithPendingActionRemaining() {
+        return findByNumberOfPendingFilesGreaterThanOrPendingActionRemaining(0L, true);
+    }
+
+    Set<StorageLocation> findByNumberOfPendingFilesGreaterThanOrPendingActionRemaining(Long minimumNumberOfPendingFiles,
+                                                                                       boolean pendingActionRemaining);
+
     void deleteByName(String name);
 
 }

@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
@@ -47,10 +48,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -278,9 +276,27 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
     @Test
     @Requirement("REGARDS_DSL_STO_ARC_100")
     @Purpose("Check that a deletion request for file is well when physical deletion is allowed.")
-    public void deleteStoredFile() {
+    public void deleteStoredFile() throws ModuleException, InterruptedException {
         Path deletedFilePath = deleteStoredFile(ONLINE_CONF_LABEL);
         Assert.assertFalse("File should be deleted on disk", Files.exists(deletedFilePath));
+
+        // Verify that deletion needs remaining action as defined in the test plugin
+        StorageLocation loc = storageLocationService.search(ONLINE_CONF_LABEL).get();
+        Assert.assertTrue(loc.getPendingActionRemaining());
+
+        // Run pending actions
+        Set<JobInfo> jobs = storageLocationService.runPeriodicTasks();
+        Assert.assertEquals(1, jobs.size());
+        jobs.forEach(j -> {
+            try {
+                jobService.runJob(j, getDefaultTenant()).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // Then check that pending action remaining is false now that pending action has been run.
+        Assert.assertFalse(storageLocationService.search(ONLINE_CONF_LABEL).get().getPendingActionRemaining());
     }
 
     @Test
@@ -304,6 +320,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                                                 Optional.empty(),
                                                                 SESSION_OWNER_1,
                                                                 SESSION_1);
+            storageLocationService.monitorStorageLocations(false);
             Assert.assertNotNull("File reference should have been created", fileRef);
             Assert.assertTrue("File reference should belongs to first owner",
                               fileRef.getLazzyOwners().contains(firstOwner));

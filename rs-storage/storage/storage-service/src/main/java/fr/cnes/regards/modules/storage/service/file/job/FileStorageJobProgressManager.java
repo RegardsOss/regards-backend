@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IPeriodicActionProgressMana
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,16 +50,20 @@ public class FileStorageJobProgressManager extends PeriodicActionProgressManager
 
     private final FileStorageRequestService storageRequestService;
 
+    private final StorageLocationService storageLocationService;
+
     private final Set<FileStorageRequestResultDTO> handledRequests = Sets.newHashSet();
 
     private final Set<FileStorageRequestResultDTO> handledAndSavedRequests = Sets.newHashSet();
 
     public FileStorageJobProgressManager(FileStorageRequestService storageRequestService,
                                          FileReferenceService fileRefService,
+                                         StorageLocationService storageLocationService,
                                          IJob<?> job) {
-        super(fileRefService);
+        super(fileRefService, storageLocationService);
         this.job = job;
         this.storageRequestService = storageRequestService;
+        this.storageLocationService = storageLocationService;
     }
 
     @Override

@@ -39,6 +39,11 @@ public interface IPeriodicActionProgressManager {
     void storagePendingActionSucceed(String pendingActionSucceedUrl);
 
     /**
+     * Indicates that all pending actions for the given storage location have successfully finished
+     */
+    void allPendingActionSucceed(String storageLocationName);
+
+    /**
      * Inform progress manager that a remaining pending action has been terminated in error for a given file url.
      */
     void storagePendingActionError(Path pendingActionErrorPath);

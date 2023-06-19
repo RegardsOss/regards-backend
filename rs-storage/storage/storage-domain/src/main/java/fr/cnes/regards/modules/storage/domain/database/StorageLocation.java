@@ -58,6 +58,9 @@ public class StorageLocation {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdateDate;
 
+    @Column(name = "pending_action_remaining")
+    private boolean pendingActionRemaining = false;
+
     public StorageLocation(String name) {
         super();
         this.name = name;
@@ -111,4 +114,11 @@ public class StorageLocation {
         this.lastUpdateDate = lastUpdateDate;
     }
 
+    public boolean getPendingActionRemaining() {
+        return pendingActionRemaining;
+    }
+
+    public void setPendingActionRemaining(boolean pendingActionRemaining) {
+        this.pendingActionRemaining = pendingActionRemaining;
+    }
 }

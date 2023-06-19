@@ -536,6 +536,18 @@ public class StorageLocationService {
         }
     }
 
+    /**
+     * Update {@link StorageLocation} to set pending action remaining boolean value
+     */
+    public void updateLocationPendingAction(String locationName, boolean pendingActionRemaining) {
+        Optional<StorageLocation> oLocation = storageLocationRepo.findByName(locationName);
+        if (oLocation.isPresent()) {
+            StorageLocation location = oLocation.get();
+            location.setPendingActionRemaining(pendingActionRemaining);
+            storageLocationRepo.save(location);
+        }
+    }
+
     public Page<FileRequestInfoDTO> getRequestInfos(String storageName,
                                                     FileRequestType type,
                                                     Optional<FileRequestStatus> status,
@@ -610,7 +622,7 @@ public class StorageLocationService {
      */
     public Set<JobInfo> runPeriodicTasks() {
         Set<JobInfo> jobs = Sets.newHashSet();
-        storageLocationRepo.findByNumberOfPendingFilesGreaterThan(0L).forEach(storage -> {
+        storageLocationRepo.findStorageWithPendingActionRemaining().forEach(storage -> {
             Set<JobParameter> parameters = Sets.newHashSet();
             parameters.add(new JobParameter(PeriodicStorageLocationJob.DATA_STORAGE_CONF_BUSINESS_ID,
                                             storage.getName()));

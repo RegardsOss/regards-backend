@@ -84,7 +84,7 @@ import java.util.concurrent.TimeoutException;
  */
 public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
-    protected static final String ONLINE_CONF_LABEL = "target";
+    public static final String ONLINE_CONF_LABEL = "target";
 
     protected static final String OFFLINE_CONF_LABEL = "offline";
 
@@ -180,7 +180,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected String originUrl = "file://in/this/directory/file.test";
 
     @Autowired
-    private StorageLocationService storageLocationService;
+    protected StorageLocationService storageLocationService;
 
     protected void init() throws ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());

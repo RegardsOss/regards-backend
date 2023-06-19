@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,9 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     private FileReferenceService fileRefService;
 
     @Autowired
+    private StorageLocationService storageLocationService;
+
+    @Autowired
     private IPluginService pluginService;
 
     @Autowired
@@ -95,6 +99,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
         // Initiate the job progress manager
         FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileStorageReqService,
                                                                                           fileRefService,
+                                                                                          storageLocationService,
                                                                                           this);
 
         nbRequestToHandle = workingSubset.getFileReferenceRequests().size();

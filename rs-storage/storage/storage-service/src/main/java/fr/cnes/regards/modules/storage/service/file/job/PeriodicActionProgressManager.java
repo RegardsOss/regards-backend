@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.service.file.job;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.storage.domain.plugin.IPeriodicActionProgressManager;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +34,16 @@ public class PeriodicActionProgressManager implements IPeriodicActionProgressMan
 
     private final FileReferenceService fileRefService;
 
+    private final StorageLocationService storageLocationService;
+
     private final Set<String> pendingActionSucceedUrls = Sets.newHashSet();
 
     private final Set<Path> pendingActionErrorPaths = Sets.newHashSet();
 
-    public PeriodicActionProgressManager(FileReferenceService fileRefService) {
+    public PeriodicActionProgressManager(FileReferenceService fileRefService,
+                                         StorageLocationService storageLocationService) {
         this.fileRefService = fileRefService;
+        this.storageLocationService = storageLocationService;
     }
 
     protected void bulkSavePendings() {
@@ -59,6 +64,11 @@ public class PeriodicActionProgressManager implements IPeriodicActionProgressMan
             bulkSavePendings();
         }
         // Do not advance job completion as this is an asynchronous action not associated to job store requests.
+    }
+
+    @Override
+    public void allPendingActionSucceed(String storageLocationName) {
+        storageLocationService.updateLocationPendingAction(storageLocationName, false);
     }
 
     @Override
