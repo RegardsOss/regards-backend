@@ -25,13 +25,14 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.ErrorHandler;
 
-import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,8 +43,6 @@ public class RegardsErrorHandler implements ErrorHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RegardsErrorHandler.class);
 
-    public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
-
     private static final String AMQP_DLQ_FAILURE_MESSAGE = "Message failure";
 
     private final IInstancePublisher instancePublisher;
@@ -53,6 +52,9 @@ public class RegardsErrorHandler implements ErrorHandler {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private final String microserviceName;
+
+    @Value("${regards.instance.tenant.name:instance}")
+    private String instanceTenantName;
 
     public RegardsErrorHandler(IRuntimeTenantResolver runtimeTenantResolver,
                                IInstancePublisher instancePublisher,
@@ -74,38 +76,34 @@ public class RegardsErrorHandler implements ErrorHandler {
         // Try to notify message
         if (ListenerExecutionFailedException.class.isAssignableFrom(t.getClass())) {
             ListenerExecutionFailedException lefe = (ListenerExecutionFailedException) t;
-            if (lefe.getFailedMessage() != null) {
+            LOGGER.error("AMQP failed message : {}", lefe.getFailedMessage());
 
-                LOGGER.error("AMQP failed message : {}", lefe.getFailedMessage().toString());
+            // Build event
+            // Message#toString is already handling encoding and content type if possible
+            String message = "AMQP message has been routed to DLQ (dead letter queue).";
+            Set<String> roles = new HashSet<>(Collections.singletonList(DefaultRole.PROJECT_ADMIN.toString()));
+            NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(message,
+                                                                                         AMQP_DLQ_FAILURE_MESSAGE,
+                                                                                         NotificationLevel.ERROR,
+                                                                                         microserviceName).toRoles(roles));
 
-                // Build event
-                // Message#toString is already handling encoding and content type if possible
-                String message = "AMQP message has been routed to DLQ (dead letter queue).";
-                Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.PROJECT_ADMIN.toString()));
-                NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(message,
-                                                                                             AMQP_DLQ_FAILURE_MESSAGE,
-                                                                                             NotificationLevel.ERROR,
-                                                                                             microserviceName).toRoles(
-                    roles));
+            // Publish to INSTANCE ADMIN
+            instancePublisher.publish(event);
 
-                // Publish to INSTANCE ADMIN
-                instancePublisher.publish(event);
-
-                // Try to publish to PROJECT_ADMIN looking for tenant to properly route the notification
-                String tenant = lefe.getFailedMessage()
-                                    .getMessageProperties()
-                                    .getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
-                if (tenant != null && !tenant.isEmpty()) {
-                    try {
-                        // Route notification to the right tenant
-                        runtimeTenantResolver.forceTenant(tenant);
-                        publisher.publish(event);
-                    } finally {
-                        runtimeTenantResolver.clearTenant();
-                    }
-                } else {
-                    LOGGER.error("Invalid message. Missing tenant header !");
+            // Try to publish to PROJECT_ADMIN looking for tenant to properly route the notification
+            String tenant = lefe.getFailedMessage()
+                                .getMessageProperties()
+                                .getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+            if (StringUtils.isNotBlank(tenant) && !instanceTenantName.equals(tenant)) {
+                try {
+                    // Route notification to the right tenant
+                    runtimeTenantResolver.forceTenant(tenant);
+                    publisher.publish(event);
+                } finally {
+                    runtimeTenantResolver.clearTenant();
                 }
+            } else {
+                LOGGER.error("Invalid message. Missing tenant header !");
             }
         } else {
             NotificationDtoBuilder notifBuilder = new NotificationDtoBuilder(t.getMessage(),

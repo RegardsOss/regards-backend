@@ -14,6 +14,7 @@ import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.EntityModel;
@@ -51,17 +52,26 @@ public class V1_7_0__OriginMigration extends BaseJavaMigration {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private boolean ignoreProjectUserMigration;
+
     public V1_7_0__OriginMigration(IAccountsClient accountsClient,
                                    IProjectUsersClient projectUsersClient,
-                                   IRuntimeTenantResolver runtimeTenantResolver) {
+                                   IRuntimeTenantResolver runtimeTenantResolver,
+                                   @Value("${regards.migration.ignore_project_user_migration:true}")
+                                   boolean ignoreProjectUserMigration) {
         this.accountsClient = accountsClient;
         this.projectUsersClient = projectUsersClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.ignoreProjectUserMigration = ignoreProjectUserMigration;
     }
 
     @Override
     public void migrate(Context context) throws InterruptedException {
-
+        if (ignoreProjectUserMigration) {
+            LOGGER.info("Java migration of {} ignored by configuration", this.getClass().getSimpleName());
+            // stop migrating ProjectUser on new tenant as there is nothing to do
+            return;
+        }
         LOGGER.info("Starting Java migration {}", this.getClass().getSimpleName());
 
         Connection connection = context.getConnection();

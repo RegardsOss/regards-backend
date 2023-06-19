@@ -34,6 +34,7 @@ import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.AsyncConsumerStoppedEvent;
+import org.springframework.amqp.rabbit.listener.BlockingQueueConsumer;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -335,7 +336,16 @@ public class AmqpAutoConfiguration {
     @Bean
     @Profile("!test")
     public ApplicationListener<AsyncConsumerStoppedEvent> createAsyncConsumerStoppedEventListener() {
-        return event -> System.exit(SpringApplication.exit(context, () -> 0));
+        return event -> {
+            if (event.getConsumer() instanceof BlockingQueueConsumer blockingQueueConsumer
+                && blockingQueueConsumer.isNormalCancel()) {
+                // ignore normal cancel as the software can reconnect to it safely
+                // For example, it happens when there is a new tenant, consumer is
+                // cancel "normally" (or expected) then recreated
+                return;
+            }
+            System.exit(SpringApplication.exit(context, () -> 0));
+        };
     }
 
 }

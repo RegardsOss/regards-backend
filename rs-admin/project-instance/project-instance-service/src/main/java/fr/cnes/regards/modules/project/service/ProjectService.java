@@ -81,16 +81,23 @@ public class ProjectService implements IProjectService {
      */
     private final String defaultTenantHost;
 
+    /**
+     * Default tenant name.
+     */
+    private final String instanceTenantName;
+
     public ProjectService(IProjectConnectionService projectConnectionService,
                           final IProjectRepository projectRepository,
                           IInstancePublisher instancePublisher,
                           @Value("${regards.default.tenants}") String defaultTenants,
-                          @Value("${regards.config.first.project.public.access}") String defaultTenantHost) {
+                          @Value("${regards.config.first.project.public.access}") String defaultTenantHost,
+                          @Value("${regards.instance.tenant.name:instance}") String instanceTenantName) {
         this.projectRepository = projectRepository;
         this.projectConnectionService = projectConnectionService;
         this.instancePublisher = instancePublisher;
         this.defaultTenants = Arrays.stream(defaultTenants.split(",")).map(String::trim).collect(Collectors.toSet());
         this.defaultTenantHost = defaultTenantHost;
+        this.instanceTenantName = instanceTenantName;
     }
 
     @EventListener
@@ -175,6 +182,10 @@ public class ProjectService implements IProjectService {
         final Project theProject = projectRepository.findOneByNameIgnoreCase(pNewProject.getName());
         if (theProject != null) {
             throw new EntityAlreadyExistsException("A Project with name " + pNewProject.getName() + " already exists");
+        }
+        if (pNewProject.getName().toLowerCase().equals(instanceTenantName)) {
+            throw new ModuleException("You cannot create a tenant named " + instanceTenantName);
+
         }
 
         Project project = projectRepository.save(pNewProject);

@@ -421,10 +421,6 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         Map<String, SimpleMessageListenerContainer> vhostsContainers = listeners.get(handlerClassName);
         // Virtual host already registered, just add queues to current container
         vhostsContainers.computeIfPresent(virtualHost, (vHost, container) -> {
-            LOGGER.warn("Handler {} that handles {} events already defined for virtual host {}",
-                        handlerClassName,
-                        eventType.getName(),
-                        virtualHost);
             // Add missing queues errorHandler
             String[] existingQueues = container.getQueueNames();
             Set<String> newQueueNames = new HashSet<>();
@@ -435,6 +431,11 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             }
             // Add new queues to the existing container
             if (!newQueueNames.isEmpty()) {
+                LOGGER.info("Adding queues {} on handler {} that handles {} events for virtual host {}",
+                            newQueueNames,
+                            handlerClassName,
+                            eventType.getName(),
+                            virtualHost);
                 container.addQueueNames(newQueueNames.toArray(new String[0]));
             }
             return container;
