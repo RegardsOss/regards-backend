@@ -100,7 +100,7 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
                                                                                                MediaType.APPLICATION_ATOM_XML),
                                                                                            groupId,
                                                                                            ONLINE_CONF_LABEL,
-                                                                                           null,
+                                                                                           Optional.empty(),
                                                                                            groupId,
                                                                                            Optional.empty(),
                                                                                            Optional.empty(),
@@ -116,7 +116,7 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
                                                                                                                  MediaType.APPLICATION_ATOM_XML),
                                                                                        groupId,
                                                                                        ONLINE_CONF_LABEL,
-                                                                                       null,
+                                                                                       Optional.empty(),
                                                                                        groupId,
                                                                                        Optional.of(
                                                                                            "toto la belle erreur"),

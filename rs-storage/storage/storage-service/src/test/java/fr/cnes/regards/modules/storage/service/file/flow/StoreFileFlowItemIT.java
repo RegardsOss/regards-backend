@@ -323,8 +323,8 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
         // Check file is not referenced yet
         Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
         // Check a file reference request is created
-        Assert.assertEquals("File request should be created",
-                            2,
+        Assert.assertEquals("The file request should have been updated",
+                            1,
                             stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
@@ -356,7 +356,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
 
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 8, stepEventList.size());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 5, stepEventList.size());
         checkStepEvent(stepEventList.get(0),
                        SessionNotifierPropertyEnum.STORE_REQUESTS,
                        StepPropertyEventTypeEnum.INC,
@@ -377,34 +377,16 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                        "1");
         checkStepEvent(stepEventList.get(3),
                        SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
+                       StepPropertyEventTypeEnum.DEC,
                        SESSION_OWNER,
                        SESSION,
                        "1");
         checkStepEvent(stepEventList.get(4),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(5),
                        SessionNotifierPropertyEnum.STORED_FILES,
                        StepPropertyEventTypeEnum.INC,
                        SESSION_OWNER,
                        SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(6),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(7),
-                       SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
+                       "2");
     }
 
     @Test

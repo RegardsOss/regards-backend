@@ -151,14 +151,13 @@ public class FileStorageRequest {
         Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
         Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
+        Assert.notNull(storageSubDirectory);
         Assert.notNull(groupId, "GroupId is mandatory");
 
         this.owners.addAll(owners);
         this.originUrl = originUrl;
         this.storage = storage;
-        if (storageSubDirectory != null) {
-            this.storageSubDirectory = storageSubDirectory.orElse(null);
-        }
+        this.storageSubDirectory = storageSubDirectory.orElse(null);
         this.metaInfo = metaInfos;
         this.groupIds.add(groupId);
         this.creationDate = OffsetDateTime.now();
@@ -170,12 +169,8 @@ public class FileStorageRequest {
      * Update an existing request from a new received request.
      */
     public void update(FileStorageRequestDTO request, String groupId) {
-        if (!this.owners.contains(request.getOwner())) {
-            this.owners.add(request.getOwner());
-        }
-        if (!this.groupIds.contains(groupId)) {
-            this.groupIds.add(groupId);
-        }
+        this.owners.add(request.getOwner());
+        this.groupIds.add(groupId);
         this.storageSubDirectory = request.getSubDirectory();
         this.originUrl = request.getOriginUrl();
         if (this.metaInfo != null) {

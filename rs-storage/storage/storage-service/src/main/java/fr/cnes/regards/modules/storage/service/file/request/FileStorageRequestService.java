@@ -337,14 +337,19 @@ public class FileStorageRequestService {
         this.sessionNotifier.incrementStoreRequests(sessionOwner, session);
         // Check if fileReference is present
         if (fileRef.isPresent()) {
+            LOGGER.debug("Handling incoming request for file {} : File already exists", request.getFileName());
             // handle file
             return handleFileToStoreAlreadyExists(fileRef.get(), request, oDeletionReq, groupId);
         } else if (oReq.isPresent()) {
             FileStorageRequest existingReq = oReq.get();
+            LOGGER.debug("Handling incoming request for file {} : A request on this file already exists in status {}",
+                         request.getFileName(),
+                         existingReq.getStatus());
             switch (existingReq.getStatus()) {
                 case DELAYED:
                 case TO_DO:
-                    return saveNewFileStorageRequest(request, groupId, sessionOwner, session);
+                    existingReq.update(request, groupId);
+                    break;
                 case PENDING:
                     // check whether job is still alive
                     // to know if this request is still running, lets get all FAILED jobs since existing requests date
@@ -381,6 +386,7 @@ public class FileStorageRequestService {
             }
             return RequestResult.build(existingReq);
         } else {
+            LOGGER.debug("Handling incoming request for file {} : Creating new request ", request.getFileName());
             return saveNewFileStorageRequest(request, groupId, sessionOwner, session);
         }
     }
