@@ -22,6 +22,8 @@ import fr.cnes.regards.modules.storage.domain.database.GlacierArchive;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.Optional;
+
 /**
  * JPA Repository to handle access to {@link GlacierArchive} entities.
  *
@@ -30,4 +32,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface IGlacierArchiveRepository
     extends JpaRepository<GlacierArchive, Long>, JpaSpecificationExecutor<GlacierArchive> {
 
+    Optional<GlacierArchive> findOneByStorageAndUrl(String storage, String url);
 }

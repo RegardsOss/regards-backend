@@ -24,6 +24,8 @@ import fr.cnes.regards.modules.storage.domain.database.GlacierArchive;
 import io.jsonwebtoken.lang.Assert;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 /**
  * Service to handle actions on {@link fr.cnes.regards.modules.storage.domain.database.GlacierArchive}s
  *
@@ -39,11 +41,24 @@ public class GlacierArchiveService {
         this.glacierArchiveRepository = glacierArchiveRepository;
     }
 
-    public GlacierArchive saveGlacierArchive(String url, String checksum, Long archiveSize) {
+    public GlacierArchive saveGlacierArchive(String storage, String url, String checksum, Long archiveSize) {
         Assert.notNull(url);
         Assert.notNull(checksum);
         Assert.notNull(archiveSize);
 
-        return glacierArchiveRepository.save(new GlacierArchive(url, checksum, archiveSize));
+        Optional<GlacierArchive> optionalArchive = glacierArchiveRepository.findOneByStorageAndUrl(storage, url);
+        if (optionalArchive.isPresent()) {
+            GlacierArchive archive = optionalArchive.get();
+            archive.setChecksum(checksum);
+            archive.setArchiveSize(archiveSize);
+            return glacierArchiveRepository.save(archive);
+        } else {
+            return glacierArchiveRepository.save(new GlacierArchive(storage, url, checksum, archiveSize));
+        }
+    }
+
+    public void deleteGlacierArchive(String storage, String url) {
+        Optional<GlacierArchive> optionalArchive = glacierArchiveRepository.findOneByStorageAndUrl(storage, url);
+        optionalArchive.ifPresent(glacierArchive -> glacierArchiveRepository.delete(glacierArchive));
     }
 }

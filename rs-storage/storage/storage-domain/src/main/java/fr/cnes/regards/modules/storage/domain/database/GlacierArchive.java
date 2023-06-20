@@ -26,8 +26,9 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "t_glacier_archive",
-       indexes = { @Index(name = "idx_glacier_archive", columnList = "url") },
-       uniqueConstraints = { @UniqueConstraint(name = "uk_t_glacier_archive_url", columnNames = { "url" }) })
+       indexes = { @Index(name = "idx_glacier_storage_url", columnList = "storage,url") },
+       uniqueConstraints = { @UniqueConstraint(name = "uk_t_glacier_archive_storage_url",
+                                               columnNames = { "storage", "url" }) })
 public class GlacierArchive {
 
     /**
@@ -38,6 +39,9 @@ public class GlacierArchive {
     @GeneratedValue(generator = "glacierArchiveSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @Column(name = "storage")
+    private String storage;
+
     @Column(name = "url")
     private String url;
 
@@ -47,8 +51,9 @@ public class GlacierArchive {
     @Column(name = "size_ko")
     private Long archiveSize = 0L;
 
-    public GlacierArchive(String url, String checksum, Long archiveSize) {
+    public GlacierArchive(String storage, String url, String checksum, Long archiveSize) {
         super();
+        this.storage = storage;
         this.url = url;
         this.checksum = checksum;
         this.archiveSize = archiveSize;
@@ -64,6 +69,14 @@ public class GlacierArchive {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getStorage() {
+        return storage;
+    }
+
+    public void setStorage(String storage) {
+        this.storage = storage;
     }
 
     public String getUrl() {
