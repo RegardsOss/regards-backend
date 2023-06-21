@@ -971,6 +971,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     LOGGER.error(errorMessage);
                     inProgressFile.setErrorMsgWithState(errorMessage, AcquisitionFileState.INVALID);
                     invalidFiles.add(acqFileRepository.save(inProgressFile));
+                    sessionNotifier.notifyFileInvalid(session, processingChain.getLabel(), 1);
                 }
             } catch (ModuleException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -978,6 +979,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                                                   validationPlugin.getClass().getSimpleName(),
                                                                   e.getMessage()), AcquisitionFileState.INVALID);
                 invalidFiles.add(acqFileRepository.save(inProgressFile));
+                sessionNotifier.notifyFileInvalid(session, processingChain.getLabel(), 1);
             }
         }
 
