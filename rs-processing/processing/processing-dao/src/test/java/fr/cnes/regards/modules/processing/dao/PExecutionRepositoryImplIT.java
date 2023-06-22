@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Flux;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
@@ -87,10 +88,10 @@ public class PExecutionRepositoryImplIT extends AbstractRepoIT {
                                                                                  new SearchExecutionEntityParameters().withStatusIncluded(
                                                                                                                           Arrays.asList(SUCCESS))
                                                                                                                       .withCreationDateBefore(
-                                                                                                                          nowUtc().minusHours(
+                                                                                                                          nowUtc().plusHours(
                                                                                                                               5))
                                                                                                                       .withCreationDateAfter(
-                                                                                                                          nowUtc().plusHours(
+                                                                                                                          nowUtc().minusHours(
                                                                                                                               5)),
                                                                                  PageRequest.of(0, 5))
                                                      .collectList()
@@ -103,18 +104,19 @@ public class PExecutionRepositoryImplIT extends AbstractRepoIT {
         pExecutions = domainExecRepo.findAllForMonitoringSearch(batchEntity.getTenant(),
                                                                 new SearchExecutionEntityParameters().withProcessBusinessId(
                                                                                                          batchEntity.getProcessBusinessId().toString())
-                                                                                                     .withUserEmail(
-                                                                                                         batchEntity.getUserEmail())
+                                                                                                     .withUserEmailIncluded(
+                                                                                                         Collections.singleton(
+                                                                                                             batchEntity.getUserEmail()))
                                                                                                      .withStatusIncluded(
                                                                                                          Arrays.asList(
                                                                                                              RUNNING,
                                                                                                              PREPARE,
                                                                                                              CLEANUP))
                                                                                                      .withCreationDateBefore(
-                                                                                                         nowUtc().minusHours(
+                                                                                                         nowUtc().plusHours(
                                                                                                              5))
                                                                                                      .withCreationDateAfter(
-                                                                                                         nowUtc().plusHours(
+                                                                                                         nowUtc().minusHours(
                                                                                                              5)),
                                                                 PageRequest.of(0, 1)).collectList().block();
         // THEN
@@ -123,18 +125,18 @@ public class PExecutionRepositoryImplIT extends AbstractRepoIT {
 
         // WHEN
         pExecutions = domainExecRepo.findAllForMonitoringSearch(batchEntity.getTenant(),
-                                                                new SearchExecutionEntityParameters().withUserEmail(
-                                                                                                         batchEntity.getUserEmail())
+                                                                new SearchExecutionEntityParameters().withUserEmailIncluded(
+                                                                                                         Collections.singleton(batchEntity.getUserEmail()))
                                                                                                      .withStatusIncluded(
                                                                                                          Arrays.asList(
                                                                                                              RUNNING,
                                                                                                              PREPARE,
                                                                                                              CLEANUP))
                                                                                                      .withCreationDateBefore(
-                                                                                                         nowUtc().minusHours(
+                                                                                                         nowUtc().plusHours(
                                                                                                              5))
                                                                                                      .withCreationDateAfter(
-                                                                                                         nowUtc().plusHours(
+                                                                                                         nowUtc().minusHours(
                                                                                                              5)),
                                                                 PageRequest.of(1, 1)).collectList().block();
         // THEN
@@ -157,10 +159,10 @@ public class PExecutionRepositoryImplIT extends AbstractRepoIT {
                                                                               new SearchExecutionEntityParameters().withStatusIncluded(
                                                                                                                        Arrays.asList(SUCCESS))
                                                                                                                    .withCreationDateBefore(
-                                                                                                                       nowUtc().minusHours(
+                                                                                                                       nowUtc().plusHours(
                                                                                                                            5))
                                                                                                                    .withCreationDateAfter(
-                                                                                                                       nowUtc().plusHours(
+                                                                                                                       nowUtc().minusHours(
                                                                                                                            5)))
                                                  .block();
         // THEN
@@ -174,10 +176,10 @@ public class PExecutionRepositoryImplIT extends AbstractRepoIT {
                                                                                                                Arrays.asList(
                                                                                                                    RUNNING))
                                                                                                            .withCreationDateBefore(
-                                                                                                               nowUtc().minusHours(
+                                                                                                               nowUtc().plusHours(
                                                                                                                    5))
                                                                                                            .withCreationDateAfter(
-                                                                                                               nowUtc().plusHours(
+                                                                                                               nowUtc().minusHours(
                                                                                                                    5)))
                                          .block();
         // THEN
@@ -185,16 +187,16 @@ public class PExecutionRepositoryImplIT extends AbstractRepoIT {
 
         // WHEN
         countPExecutions = domainExecRepo.countAllForMonitoringSearch(batchEntity.getTenant(),
-                                                                      new SearchExecutionEntityParameters().withUserEmail(
-                                                                                                               batchEntity.getUserEmail())
+                                                                      new SearchExecutionEntityParameters().withUserEmailIncluded(
+                                                                                                               Collections.singleton(batchEntity.getUserEmail()))
                                                                                                            .withStatusIncluded(
                                                                                                                Arrays.asList(
                                                                                                                    RUNNING))
                                                                                                            .withCreationDateBefore(
-                                                                                                               nowUtc().minusHours(
+                                                                                                               nowUtc().plusHours(
                                                                                                                    1))
                                                                                                            .withCreationDateAfter(
-                                                                                                               nowUtc().plusHours(
+                                                                                                               nowUtc().minusHours(
                                                                                                                    1)))
                                          .block();
         // THEN

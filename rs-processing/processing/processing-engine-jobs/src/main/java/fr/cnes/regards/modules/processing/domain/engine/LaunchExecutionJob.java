@@ -53,10 +53,10 @@ public class LaunchExecutionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        STATIC_LOGGER.info("exec={} - LaunchExecutionJob start", execId);
+        STATIC_LOGGER.info("ExecId={} - LaunchExecutionJob start", execId);
         execService.runExecutable(execId)
-                   .subscribe(exec -> STATIC_LOGGER.info("exec={} - LaunchExecutionJob success", execId),
-                              err -> STATIC_LOGGER.error("exec={} - LaunchExecutionJob failure: {}",
+                   .subscribe(exec -> STATIC_LOGGER.info("ExecId={} - LaunchExecutionJob success", execId),
+                              err -> STATIC_LOGGER.error("ExecId={} - LaunchExecutionJob failure: {}",
                                                          execId,
                                                          err.getMessage()));
     }

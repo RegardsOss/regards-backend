@@ -70,9 +70,9 @@ public interface IExecutable {
      * @return a new executable with this and next in sequence.
      */
     default IExecutable andThen(String name, IExecutable next) {
-        return ctx1 -> execute(ctx1).doOnNext(c -> LOGGER.debug("Starting execution of '{}'", name))
+        return ctx1 -> execute(ctx1).doOnNext(c -> LOGGER.info("Starting execution of '{}'", name))
                                     .flatMap(next::execute)
-                                    .doOnNext(c -> LOGGER.debug("Finished execution of '{}'", name));
+                                    .doOnNext(c -> LOGGER.info("Finished execution of '{}'", name));
     }
 
     default IExecutable onError(Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> recover) {
@@ -90,4 +90,7 @@ public interface IExecutable {
         return context -> execute(context).flatMap(c -> Mono.empty());
     }
 
+    default String getExecutableDescription() {
+        return "";
+    }
 }
