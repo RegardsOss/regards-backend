@@ -38,9 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -119,7 +117,7 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
                         dataFile.setDigestAlgorithm(DIGEST_ALGORITHM);
                         dataFile.setChecksum(checksum);
                         dataFile.setFilename(file.getOriginalFilename());
-                        store(checksum, file, entity);
+                        store(checksum, file.getOriginalFilename(), file.getInputStream(), entity);
                         docFiles.add(dataFile);
                     }
                 }
@@ -204,11 +202,12 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
     /**
      * Store file in local storage and keep a database reference
      */
-    private void store(String checksum, MultipartFile file, AbstractEntity<?> entity) throws IOException {
+    private void store(String checksum, String filename, InputStream inputStream, AbstractEntity<?> entity)
+        throws IOException {
         if (localStorageRepo.findOneByEntityAndFileChecksum(entity, checksum).isPresent()) {
             // Silently skip
             LOGGER.warn("File {} already attached to the entity {}. Skipping store action.",
-                        file.getOriginalFilename(),
+                        filename,
                         entity.getLabel());
             return;
         }
@@ -228,7 +227,7 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
             Path filePath = getDataFilePath(checksum);
             // Accept a file to be attached to several entities
             if (!Files.exists(filePath)) {
-                Files.copy(file.getInputStream(), filePath);
+                Files.copy(inputStream, filePath);
             }
         }
 
@@ -255,6 +254,7 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
                     dataFile.setDigestAlgorithm(DIGEST_ALGORITHM);
                     dataFile.setChecksum(ChecksumUtils.computeHexChecksum(file.toPath(), DIGEST_ALGORITHM));
                     docFiles.add(dataFile);
+                    store(dataFile.getChecksum(), dataFile.getFilename(), new FileInputStream(file), entity);
                 } else {
                     throw new ModuleException(String.format("File at location %s not exists", dataFile.asUri()));
                 }
