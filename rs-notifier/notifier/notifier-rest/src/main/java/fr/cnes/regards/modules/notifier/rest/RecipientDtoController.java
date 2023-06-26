@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notifier.rest;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,7 +54,7 @@ public class RecipientDtoController {
 
     @ResourceAccess(description = "Endpoint to retrieve all recipient or only recipients enabling the direct "
                                   + "notification or only "
-                                  + "them not enabling the direct notification")
+                                  + "them not enabling the direct notification", role = DefaultRole.EXPLOIT)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "List all recipient",
                description = "List all recipient if missing parameter, or only recipients enabling the "
