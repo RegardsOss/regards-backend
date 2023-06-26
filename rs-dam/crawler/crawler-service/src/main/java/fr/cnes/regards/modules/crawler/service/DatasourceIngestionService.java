@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -285,6 +286,7 @@ public class DatasourceIngestionService {
      * @throws NotAvailablePluginConfigurationException from {@link fr.cnes.regards.framework.modules.plugins.service.PluginService#getPlugin(String, IPluginParam...)}
      * @throws ModuleException                          from {@link fr.cnes.regards.framework.modules.plugins.service.PluginService#getPlugin(String, IPluginParam...)}
      */
+    @Transactional(noRollbackFor = { ModuleException.class, NotAvailablePluginConfigurationException.class })
     private void updatePlannedDate(DatasourceIngestion dsIngestion)
         throws ModuleException, NotAvailablePluginConfigurationException {
         int refreshRate = ((IDataSourcePlugin) pluginService.getPlugin(dsIngestion.getId())).getRefreshRate();
