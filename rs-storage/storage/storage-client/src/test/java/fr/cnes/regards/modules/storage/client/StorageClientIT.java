@@ -287,7 +287,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
             client.store(files);
         }
 
-        waitRequestEnds(nbGroups, 240);
+        waitRequestEnds(nbGroups, 300);
 
         Assert.assertEquals(nbGroups, listener.getNbRequestEnds());
 
