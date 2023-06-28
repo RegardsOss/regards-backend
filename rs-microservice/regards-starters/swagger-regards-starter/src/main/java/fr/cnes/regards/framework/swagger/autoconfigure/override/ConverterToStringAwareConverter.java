@@ -23,12 +23,17 @@ import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverter;
 import io.swagger.v3.core.converter.ModelConverterContext;
 import io.swagger.v3.oas.models.media.Schema;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.Convert;
+import javax.persistence.Converter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -47,28 +52,75 @@ import java.util.stream.Stream;
  * BE CAREFUL, this converter works only on attributes fields. In case of annotation @Convert on a class, you need to
  * precise the @Schema(implementation = ...) for swagger. This converter ModelConverter may by adapted in the future to
  * avoid that
+ * <p>
+ * This converter works on autoApplied converters. So attribute without annotation @Convert will be manage too, if
+ * converter is auto apply.
  *
  * @author Thomas GUILLOU
  **/
 public class ConverterToStringAwareConverter implements ModelConverter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConverterToStringAwareConverter.class);
+
+    /**
+     * List of type that is automagically serialized to string by a Converter
+     */
+    private List<Type> autoConvertedTypes;
+
+    public ConverterToStringAwareConverter() {
+        initAutoConvertedTypes();
+    }
+
+    private void initAutoConvertedTypes() {
+        long start = System.currentTimeMillis();
+        try {
+            // find all converters auto applied and get converted types
+            Stream<Type[]> genericTypesAutoConverted = new Reflections("fr.cnes.regards").getTypesAnnotatedWith(
+                                                                                             Converter.class)
+                                                                                         .stream()
+                                                                                         .filter(clazz -> clazz.getAnnotation(
+                                                                                                                   Converter.class)
+                                                                                                               .autoApply())
+                                                                                         .filter(clazz -> clazz.getAnnotatedInterfaces().length
+                                                                                                          > 0)
+                                                                                         .map(clazz -> ((ParameterizedType) clazz.getAnnotatedInterfaces()[0].getType()).getActualTypeArguments());
+
+            // find those that serialize to String (AttributeConverter<?, String>)
+            autoConvertedTypes = genericTypesAutoConverted.filter(genericTypes -> {
+                Type typeConverted = genericTypes[1];
+                return typeConverted.equals(String.class);
+            }).map(genericTypes -> genericTypes[0]).toList();
+        } catch (Exception e) {
+            LOGGER.error("An error occurred while initializing auto converted types", e);
+            autoConvertedTypes = List.of();
+        }
+        LOGGER.debug("Init auto converted types duration : {}", System.currentTimeMillis() - start);
+    }
+
     @Override
     public Schema<?> resolve(AnnotatedType type, ModelConverterContext context, Iterator<ModelConverter> chain) {
         if (chain.hasNext()) {
             Schema<?> schema = chain.next().resolve(type, context, chain);
-            Annotation[] ctxAnnotations = type.getCtxAnnotations();
-            if (ctxAnnotations != null && ctxAnnotations.length > 0) {
-                // search for @Convert annotation
-                Optional<Annotation> convertAnnotation = Stream.of(ctxAnnotations).filter(anno -> {
-                    Class<? extends Annotation> annoType = anno.annotationType();
-                    if (annoType != null) {
-                        return annoType.equals(Convert.class);
-                    }
-                    return false;
-                }).findFirst();
-                convertAnnotation.ifPresent(annotation -> modifySchemaForConvertAnnotation(type,
-                                                                                           schema,
-                                                                                           (Convert) annotation));
+            // if type is known as automatic convert types, replace it by String
+            // else check if this type is annotated with @Convert
+            if (autoConvertedTypes.contains(type.getType())) {
+                schema.set$ref(null);
+                schema.setType("string");
+            } else {
+                Annotation[] ctxAnnotations = type.getCtxAnnotations();
+                if (ctxAnnotations != null && ctxAnnotations.length > 0) {
+                    // search for @Convert annotation
+                    Optional<Annotation> convertAnnotation = Stream.of(ctxAnnotations).filter(anno -> {
+                        Class<? extends Annotation> annoType = anno.annotationType();
+                        if (annoType != null) {
+                            return annoType.equals(Convert.class);
+                        }
+                        return false;
+                    }).findFirst();
+                    convertAnnotation.ifPresent(annotation -> modifySchemaForConvertAnnotation(type,
+                                                                                               schema,
+                                                                                               (Convert) annotation));
+                }
             }
             return schema;
         } else {
@@ -104,4 +156,5 @@ public class ConverterToStringAwareConverter implements ModelConverter {
             }
         }
     }
+
 }
