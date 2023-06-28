@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
@@ -243,7 +244,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         Set<Path> filesToStore = Sets.newHashSet();
         for (int i = 0; i < nbGroups; i++) {
             Path path = Paths.get("target/store/file_" + i + ".txt");
-            String str = "fichier de test " + i;
+            String str = "fichier de test storeBulk" + i;
             byte[] strToBytes = str.getBytes();
             Files.write(path, strToBytes);
             filesToStore.add(path);
@@ -289,7 +290,13 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
         waitRequestEnds(nbGroups, 300);
 
-        Assert.assertEquals(nbGroups, listener.getNbRequestEnds());
+        Assert.assertEquals("There should be no requests in error state",
+                            0L,
+                            storageReqRepo.countByStorageAndStatus(ONLINE_CONF, FileRequestStatus.ERROR).longValue());
+
+        Assert.assertEquals("All storage request groups should be successfully done",
+                            nbGroups,
+                            listener.getNbRequestEnds());
 
     }
 

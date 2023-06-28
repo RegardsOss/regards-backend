@@ -80,6 +80,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeTypeUtils;
 
+import javax.annotation.Nullable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
@@ -364,7 +365,18 @@ public class FileStorageRequestService {
                         sessionNotifier.incrementErrorRequests(sessionOwner, session);
                         // There is no break because we want to get into the case ERROR
                     } else {
-                        return saveNewFileStorageRequest(request, groupId, sessionOwner, session);
+                        // Then other request is pending create in one in DELAYED state so it can be handled once the
+                        // other one is over.
+                        LOGGER.info("Storage request for file {}/{} (cs={}) already pending, create a new request in "
+                                    + "delayed status.",
+                                    request.getFileName(),
+                                    request.getStorage(),
+                                    request.getChecksum());
+                        return saveNewFileStorageRequest(request,
+                                                         groupId,
+                                                         sessionOwner,
+                                                         session,
+                                                         FileRequestStatus.DELAYED);
                     }
                 case ERROR:
                     // If request already exists and in ERROR status retry exiting one instead of create a new request
@@ -391,12 +403,26 @@ public class FileStorageRequestService {
         }
     }
 
+    /**
+     * Creates a new {@link FileStorageRequest} for the given dto
+     */
     private RequestResult saveNewFileStorageRequest(FileStorageRequestDTO request,
                                                     String groupId,
                                                     String sessionOwner,
                                                     String session) {
+        return saveNewFileStorageRequest(request, groupId, sessionOwner, session, null);
+    }
+
+    /**
+     * Creates a new {@link FileStorageRequest} for the given dto with given status.
+     */
+    private RequestResult saveNewFileStorageRequest(FileStorageRequestDTO request,
+                                                    String groupId,
+                                                    String sessionOwner,
+                                                    String session,
+                                                    @Nullable FileRequestStatus status) {
         Optional<String> cause = Optional.empty();
-        Optional<FileRequestStatus> status = Optional.empty();
+        Optional<FileRequestStatus> oStatus = Optional.ofNullable(status);
         // Check that URL is a valid
         try {
             new URL(request.getOriginUrl());
@@ -406,7 +432,7 @@ public class FileStorageRequestService {
                                   + "storage. Cause : "
                                   + e.getMessage();
             LOGGER.error(errorMessage);
-            status = Optional.of(FileRequestStatus.ERROR);
+            oStatus = Optional.of(FileRequestStatus.ERROR);
             cause = Optional.of(errorMessage);
         }
         return RequestResult.build(createNewFileStorageRequest(Sets.newHashSet(request.getOwner()),
@@ -416,7 +442,7 @@ public class FileStorageRequestService {
                                                                request.getOptionalSubDirectory(),
                                                                groupId,
                                                                cause,
-                                                               status,
+                                                               oStatus,
                                                                sessionOwner,
                                                                session));
     }

@@ -115,7 +115,9 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         } else {
             return (root, query, criteriaBuilder) -> criteriaBuilder.like((Expression<String>) getPath(root,
                                                                                                        pathToField),
-                                                                          "%" + value + "%");
+                                                                          "%"
+                                                                          + replacePostgresSpecialCharacters(value)
+                                                                          + "%");
         }
     }
 
@@ -126,7 +128,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         } else {
             return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper((Expression<String>) getPath(
                 root,
-                pathToField)), ("%" + value + "%").toUpperCase());
+                pathToField)), ("%" + replacePostgresSpecialCharacters(value) + "%").toUpperCase());
         }
     }
 
@@ -326,13 +328,13 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         String ignoreCaseValue = ignoreCase ? value.toLowerCase() : value;
         switch (matchMode) {
             case CONTAINS -> {
-                return ("%" + ignoreCaseValue + "%");
+                return ("%" + replacePostgresSpecialCharacters(ignoreCaseValue) + "%");
             }
             case STARTS_WITH -> {
-                return (ignoreCaseValue + "%");
+                return (replacePostgresSpecialCharacters(ignoreCaseValue) + "%");
             }
             case ENDS_WITH -> {
-                return ("%" + ignoreCaseValue);
+                return ("%" + replacePostgresSpecialCharacters(ignoreCaseValue));
             }
             default -> {
                 return ignoreCaseValue;
@@ -437,6 +439,13 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             }
         }
         return result;
+    }
+
+    /**
+     * Utility method to escape all postgres special characters for a like expression search.
+     */
+    public static String replacePostgresSpecialCharacters(String value) {
+        return value.replace("_", "\\_");
     }
 
 }

@@ -147,7 +147,11 @@ public class RequestResultInfo {
     }
 
     public void setErrorCause(String errorCause) {
-        this.errorCause = errorCause;
+        if (errorCause != null && errorCause.length() > 512) {
+            this.errorCause = errorCause.substring(0, 511);
+        } else {
+            this.errorCause = errorCause;
+        }
     }
 
     public String getRequestChecksum() {
