@@ -400,30 +400,40 @@ public class ProductService implements IProductService {
             }
         }
 
-        if (nbExpectedMandatory == nbActualMandatory) {
+        if (nbActualMandatory > nbExpectedMandatory || nbActualOptional > nbExpectedOptional) {
+            handleProductInvalidTooManyFiles(product,
+                                             String.format(
+                                                 "Invalid product files count. %s/%s mandatory files and %s/%s optional files found"
+                                                 + "Please check your configuration and reacquire.",
+                                                 nbExpectedMandatory,
+                                                 nbActualMandatory,
+                                                 nbActualOptional,
+                                                 nbExpectedOptional));
+        } else if (nbExpectedMandatory == nbActualMandatory) {
             // ProductStatus is COMPLETED if mandatory files is acquired
             product.setState(ProductState.COMPLETED);
+            // Remove error if there was one previously
+            product.setError(null);
             if (nbExpectedOptional == nbActualOptional) {
                 // ProductStatus is FINISHED if mandatory and optional files is acquired
                 product.setState(ProductState.FINISHED);
-            } else if (nbActualOptional >= nbExpectedOptional) {
-                product.setState(ProductState.INVALID);
-                // Propagate to SIP state
-                product.setSipState(ProductSIPState.NOT_SCHEDULED_INVALID);
-                product.setError(String.format(
-                    "This product should only have %s optional files according to configuration. We found %s files matching. Please check your configuration and reacquire.",
-                    nbExpectedMandatory,
-                    nbActualMandatory));
             }
-        } else if (nbActualMandatory >= nbExpectedMandatory) {
-            product.setState(ProductState.INVALID);
-            // Propagate to SIP state
-            product.setSipState(ProductSIPState.NOT_SCHEDULED_INVALID);
-            product.setError(String.format(
-                "This product should only have %s mandatory files according to configuration. We found %s files matching. Please check your configuration and reacquire.",
-                nbExpectedMandatory,
-                nbActualMandatory));
         }
+    }
+
+    /**
+     * Update product and associated acquisition files to error state in case of product contains too many files for
+     * the associated configuration.
+     */
+    private void handleProductInvalidTooManyFiles(Product product, String errorCause) {
+        product.setState(ProductState.INVALID);
+        product.setSipState(ProductSIPState.NOT_SCHEDULED_INVALID);
+        product.setError(errorCause);
+        product.getAcquisitionFiles().forEach(acqFile -> {
+            acqFile.setErrorMsgWithState(String.format("File has been invalidated cause its product owner %s is "
+                                                       + "invalid. Product contains too much files.",
+                                                       product.getProductName()), AcquisitionFileState.ERROR);
+        });
     }
 
     @Override
