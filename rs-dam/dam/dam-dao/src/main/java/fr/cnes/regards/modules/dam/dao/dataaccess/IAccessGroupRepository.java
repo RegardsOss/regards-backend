@@ -20,23 +20,19 @@ package fr.cnes.regards.modules.dam.dao.dataaccess;
 
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Repository handling AccessGroup
  *
  * @author Sylvain Vissiere-Guerinet
  */
+@Repository
 public interface IAccessGroupRepository extends JpaRepository<AccessGroup, Long> {
 
     /**
@@ -44,12 +40,12 @@ public interface IAccessGroupRepository extends JpaRepository<AccessGroup, Long>
      *
      * @return the access group or null if none found
      */
-    AccessGroup findOneByName(String pName);
+    AccessGroup findOneByName(String name);
 
     Optional<AccessGroup> findByName(String name);
 
     @Override
-    List<AccessGroup> findAllById(Iterable<Long> longs);
+    List<AccessGroup> findAllById(Iterable<Long> ids);
 
     /**
      * Find all public or non public group
@@ -58,28 +54,6 @@ public interface IAccessGroupRepository extends JpaRepository<AccessGroup, Long>
      * @param pageable {@link Pageable}
      * @return list of public or non public groups
      */
-    default Page<AccessGroup> findAllByIsPublic(Boolean isPublic, Pageable pageable) {
-        Page<BigInteger> idPage = findIdPageByIsPublic(isPublic, pageable);
-        List<AccessGroup> accessGroups = findAllById(idPage.getContent()
-                                                           .stream()
-                                                           .map(BigInteger::longValue)
-                                                           .collect(Collectors.toList()));
-        return new PageImpl<>(accessGroups, idPage.getPageable(), idPage.getTotalElements());
-    }
-
-    @Query(value = "SELECT ag.id FROM {h-schema}t_access_group ag LEFT JOIN {h-schema}ta_access_group_users agu on ag.id=agu.access_group_id WHERE ag.public=:isPublic",
-           nativeQuery = true)
-    Page<BigInteger> findIdPageByIsPublic(@Param("isPublic") Boolean isPublic, Pageable pageable);
-
-    @Override
-    @EntityGraph(value = "graph.accessgroup.users", type = EntityGraph.EntityGraphType.LOAD)
-    default Page<AccessGroup> findAll(Pageable pageable) {
-        Page<Long> idPage = findIdPage(pageable);
-        List<AccessGroup> accessGroups = findAllById(idPage.getContent());
-        return new PageImpl<>(accessGroups, idPage.getPageable(), idPage.getTotalElements());
-    }
-
-    @Query("select ag.id from AccessGroup ag")
-    Page<Long> findIdPage(Pageable pageable);
+    Page<AccessGroup> findByIsPublic(boolean isPublic, Pageable pageable);
 
 }

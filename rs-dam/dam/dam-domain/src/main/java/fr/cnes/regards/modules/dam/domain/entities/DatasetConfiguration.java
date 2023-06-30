@@ -19,19 +19,16 @@
 package fr.cnes.regards.modules.dam.domain.entities;
 
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
-import lombok.Builder;
-import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 /**
  * POJO to configure a dataset
  *
  * @author Marc SORDI
  */
-@Data
-@Builder
 public class DatasetConfiguration {
 
     @NotBlank(message = "Datasource identifier must be set")
@@ -44,4 +41,76 @@ public class DatasetConfiguration {
 
     @NotNull(message = "Feature must be set and must fit the model")
     private DatasetFeature feature;
+
+    public DatasetConfiguration(String datasource, String subsetting, DatasetFeature feature) {
+        this.datasource = datasource;
+        this.subsetting = subsetting;
+        this.feature = feature;
+    }
+
+    public String getDatasource() {
+        return datasource;
+    }
+
+    public void setDatasource(String datasource) {
+        this.datasource = datasource;
+    }
+
+    public String getSubsetting() {
+        return subsetting;
+    }
+
+    public void setSubsetting(String subsetting) {
+        this.subsetting = subsetting;
+    }
+
+    public DatasetFeature getFeature() {
+        return feature;
+    }
+
+    public void setFeature(DatasetFeature feature) {
+        this.feature = feature;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        DatasetConfiguration that = (DatasetConfiguration) o;
+
+        if (!Objects.equals(datasource, that.datasource)) {
+            return false;
+        }
+        if (!Objects.equals(subsetting, that.subsetting)) {
+            return false;
+        }
+        return feature.equals(that.feature);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = datasource != null ? datasource.hashCode() : 0;
+        result = 31 * result + (subsetting != null ? subsetting.hashCode() : 0);
+        result = 31 * result + feature.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "DatasetConfiguration{"
+               + "datasource='"
+               + datasource
+               + '\''
+               + ", subsetting='"
+               + subsetting
+               + '\''
+               + ", feature="
+               + feature
+               + '}';
+    }
 }

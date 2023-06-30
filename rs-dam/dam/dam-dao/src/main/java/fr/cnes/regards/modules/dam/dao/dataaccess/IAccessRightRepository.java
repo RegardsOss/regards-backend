@@ -46,7 +46,7 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
      */
     @Override
     @EntityGraph(value = "graph.accessright.dataset.and.accessgroup", type = EntityGraph.EntityGraphType.LOAD)
-    Optional<AccessRight> findById(Long pId);
+    Optional<AccessRight> findById(Long id);
 
     default Page<AccessRight> findAllByDataset(Dataset dataset, Pageable pageable) {
         Page<Long> idPage = findIdPageByDataset(dataset, pageable);
@@ -78,7 +78,7 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
 
     @Override
     @EntityGraph(value = "graph.accessright.dataset.and.accessgroup", type = EntityGraph.EntityGraphType.LOAD)
-    List<AccessRight> findAllById(Iterable<Long> longs);
+    List<AccessRight> findAllById(Iterable<Long> ids);
 
     @EntityGraph(value = "graph.accessright.dataset.and.accessgroup", type = EntityGraph.EntityGraphType.LOAD)
     List<AccessRight> findAllByDataset(Dataset dataset);

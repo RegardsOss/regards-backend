@@ -42,7 +42,7 @@ import javax.validation.constraints.NotNull;
                                                                               subgraph = "subgraph.accessgroup"),
                                                           @NamedAttributeNode(value = "dataAccessPlugin") },
                                        subgraphs = { @NamedSubgraph(name = "subgraph.accessgroup",
-                                                                    attributeNodes = { @NamedAttributeNode(value = "users") }),
+                                                                    attributeNodes = { @NamedAttributeNode(value = "name") }),
                                                      @NamedSubgraph(name = "subgraph.dataset",
                                                                     attributeNodes = { @NamedAttributeNode(value = "tags"),
                                                                                        @NamedAttributeNode(value = "groups"),

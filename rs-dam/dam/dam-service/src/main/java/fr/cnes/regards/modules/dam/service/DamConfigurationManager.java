@@ -242,13 +242,10 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
     private List<ModuleConfigurationItem<DatasetConfiguration>> exportDatasets() {
         List<ModuleConfigurationItem<DatasetConfiguration>> exportedDatasets = new ArrayList<>();
         for (Dataset dataset : datasetService.findAll()) {
-            DatasetConfiguration configuration = DatasetConfiguration.builder()
-                                                                     .datasource(dataset.getPlgConfDataSource()
-                                                                                        .getBusinessId())
-                                                                     .subsetting(dataset.getOpenSearchSubsettingClause())
-                                                                     .feature(dataset.getFeature())
-                                                                     .build();
-            exportedDatasets.add(ModuleConfigurationItem.build(configuration));
+            exportedDatasets.add(ModuleConfigurationItem.build(new DatasetConfiguration(dataset.getPlgConfDataSource()
+                                                                                               .getBusinessId(),
+                                                                                        dataset.getOpenSearchSubsettingClause(),
+                                                                                        dataset.getFeature())));
         }
         return exportedDatasets;
     }

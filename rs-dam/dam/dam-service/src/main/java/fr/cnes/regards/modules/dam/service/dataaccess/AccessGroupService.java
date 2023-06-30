@@ -85,20 +85,40 @@ public class AccessGroupService implements IAccessGroupService, InitializingBean
     }
 
     @Override
-    public Page<AccessGroup> retrieveAccessGroups(Boolean isPublic, Pageable pPageable) {
-        if (isPublic != null && isPublic) {
-            return accessGroupRepository.findAllByIsPublic(isPublic, pPageable);
+    public void initDefaultAccessGroup() {
+        // Build the AccessGroup we need in the current project
+        AccessGroup publicDocumentAccessGroup = new AccessGroup();
+        publicDocumentAccessGroup.setName(AccessGroupService.ACCESS_GROUP_PUBLIC_DOCUMENTS);
+        publicDocumentAccessGroup.setPublic(true);
+        publicDocumentAccessGroup.setInternal(true);
+        try {
+            createAccessGroup(publicDocumentAccessGroup);
+        } catch (EntityAlreadyExistsException e) {
+            // the entity already exists, no problem
+            LOGGER.trace("Entity already exists, no problem", e);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to register the public AccessGroup used by documents", e);
+            // Do not prevent microservice to boot
         }
-        return accessGroupRepository.findAll(pPageable);
     }
 
     @Override
-    public AccessGroup createAccessGroup(AccessGroup pToBeCreated) throws EntityAlreadyExistsException {
-        if (accessGroupRepository.findOneByName(pToBeCreated.getName()) != null) {
-            throw new EntityAlreadyExistsException(String.format(ACCESS_GROUP_ALREADY_EXIST_ERROR_MESSAGE,
-                                                                 pToBeCreated.getName()));
+    public Page<AccessGroup> retrieveAccessGroups(boolean isPublic, Pageable pageable) {
+        if (isPublic) {
+            return accessGroupRepository.findByIsPublic(isPublic, pageable);
         }
-        AccessGroup created = accessGroupRepository.save(pToBeCreated);
+
+        return accessGroupRepository.findAll(pageable);
+    }
+
+    @Override
+    public AccessGroup createAccessGroup(AccessGroup toBeCreated) throws EntityAlreadyExistsException {
+        if (accessGroupRepository.findOneByName(toBeCreated.getName()) != null) {
+            throw new EntityAlreadyExistsException(String.format(ACCESS_GROUP_ALREADY_EXIST_ERROR_MESSAGE,
+                                                                 toBeCreated.getName()));
+        }
+        // Save the new access group in bd
+        AccessGroup created = accessGroupRepository.save(toBeCreated);
         if (created.isPublic()) {
             publisher.publish(new PublicAccessGroupEvent(created, AccessGroupAction.CREATE));
         }
@@ -107,10 +127,10 @@ public class AccessGroupService implements IAccessGroupService, InitializingBean
     }
 
     @Override
-    public AccessGroup retrieveAccessGroup(String pAccessGroupName) throws EntityNotFoundException {
-        AccessGroup accessGroup = accessGroupRepository.findOneByName(pAccessGroupName);
+    public AccessGroup retrieveAccessGroup(String accessGroupName) throws EntityNotFoundException {
+        AccessGroup accessGroup = accessGroupRepository.findOneByName(accessGroupName);
         if (accessGroup == null) {
-            throw new EntityNotFoundException(pAccessGroupName, AccessGroup.class);
+            throw new EntityNotFoundException(accessGroupName, AccessGroup.class);
         }
         return accessGroup;
     }
@@ -121,9 +141,9 @@ public class AccessGroupService implements IAccessGroupService, InitializingBean
     }
 
     @Override
-    public void deleteAccessGroup(String pAccessGroupName)
+    public void deleteAccessGroup(String accessGroupName)
         throws EntityOperationForbiddenException, EntityNotFoundException {
-        AccessGroup toDelete = retrieveAccessGroup(pAccessGroupName);
+        AccessGroup toDelete = retrieveAccessGroup(accessGroupName);
         // Prevent users to delete the public AccessGroup used by Documents
         if (toDelete.isInternal()) {
             throw new EntityOperationForbiddenException(toDelete.getName(),
@@ -138,8 +158,8 @@ public class AccessGroupService implements IAccessGroupService, InitializingBean
     }
 
     @Override
-    public boolean existGroup(Long pId) {
-        return accessGroupRepository.existsById(pId);
+    public boolean existGroup(Long id) {
+        return accessGroupRepository.existsById(id);
     }
 
     @Override
@@ -166,24 +186,6 @@ public class AccessGroupService implements IAccessGroupService, InitializingBean
         oldGroup.setPublic(updatedGroup.isPublic());
 
         return accessGroupRepository.save(oldGroup);
-    }
-
-    @Override
-    public void initDefaultAccessGroup() {
-        // Build the AccessGroup we need in the current project
-        AccessGroup publicDocumentAccessGroup = new AccessGroup();
-        publicDocumentAccessGroup.setName(AccessGroupService.ACCESS_GROUP_PUBLIC_DOCUMENTS);
-        publicDocumentAccessGroup.setPublic(true);
-        publicDocumentAccessGroup.setInternal(true);
-        try {
-            createAccessGroup(publicDocumentAccessGroup);
-        } catch (EntityAlreadyExistsException e) {
-            // the entity already exists, no problem
-            LOGGER.trace("Entity already exists, no problem", e);
-        } catch (RuntimeException e) {
-            LOGGER.error("Failed to register the public AccessGroup used by documents", e);
-            // Do not prevent microservice to boot
-        }
     }
 
 }

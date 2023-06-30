@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroupMapper;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.*;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
@@ -98,6 +99,9 @@ public abstract class AbstractAccessRightControllerIT extends AbstractRegardsIT 
 
     @Autowired
     protected IAccessGroupService agService;
+
+    @Autowired
+    private AccessGroupMapper accessGroupMapper;
 
     @Autowired
     protected IAccessRightRepository arRepo;

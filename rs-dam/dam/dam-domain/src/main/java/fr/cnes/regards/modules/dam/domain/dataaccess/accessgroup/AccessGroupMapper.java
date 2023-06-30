@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,25 +18,25 @@
  */
 package fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import fr.cnes.regards.modules.dam.dto.AccessGroupDto;
+import org.mapstruct.Mapper;
 
 /**
- * User database converter
+ * Mappers from {@link AccessGroup}
  *
- * @author Sylvain Vissiere-Guerinet
+ * @author Stephane Cortine
  */
-@Converter(autoApply = true)
-public class UserConverter implements AttributeConverter<User, String> {
+@Mapper(componentModel = "spring")
+public interface AccessGroupMapper {
 
-    @Override
-    public String convertToDatabaseColumn(User attribute) {
-        return attribute.getEmail();
-    }
+    /**
+     * Map between {@link AccessGroup} to {@link AccessGroupDto}
+     */
+    AccessGroupDto convertToAccessGroupDto(AccessGroup accessGroup);
 
-    @Override
-    public User convertToEntityAttribute(String dbData) {
-        return new User(dbData);
-    }
+    /**
+     * Map between {@link AccessGroupDto} to {@link AccessGroup}
+     */
+    AccessGroup convertToAccessGroup(AccessGroupDto accessGroupDto);
 
 }

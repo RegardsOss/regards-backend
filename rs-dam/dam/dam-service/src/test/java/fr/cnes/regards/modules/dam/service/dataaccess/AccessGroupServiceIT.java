@@ -20,75 +20,84 @@ package fr.cnes.regards.modules.dam.service.dataaccess;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@TestPropertySource(locations = "classpath:dataaccess.properties")
-@ContextConfiguration(classes = { TestAccessGroupConfiguration.class })
 @RegardsTransactional
-@DirtiesContext
+@TestPropertySource(locations = "classpath:dataaccess.properties")
+//@ContextConfiguration(classes = { TestAccessGroupConfiguration.class })
+//@DirtiesContext
 public class AccessGroupServiceIT extends AbstractRegardsServiceTransactionalIT {
+
+    private static final String AG1_NAME = "AG1";
+
+    private static final String AG2_NAME = "AG2";
+
+    private static final String AG3_NAME = "AG3";
+
+    @Autowired
+    private IAccessGroupRepository accessGroupRepository;
 
     @Autowired
     private IAccessGroupService accessGroupService;
 
-    private AccessGroup accessGroup1;
-
-    private static final String AG1_NAME = "AG1";
-
-    private static final String USER1_EMAIL = "toto@tata.titi";
-
-    @Autowired
-    private IAccessGroupRepository dao;
-
-    @Autowired
-    private IProjectUsersClient projectUserClient;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
     @Before
     public void init() {
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        accessGroupRepository.save(new AccessGroup(AG1_NAME));
 
-        accessGroup1 = new AccessGroup(AG1_NAME);
-        dao.save(accessGroup1);
+        AccessGroup accessGroup2 = new AccessGroup(AG2_NAME);
+        accessGroup2.setPublic(true);
+        accessGroupRepository.save(accessGroup2);
+
+        AccessGroup accessGroup3 = new AccessGroup(AG3_NAME);
+        accessGroup3.setInternal(true);
+        accessGroupRepository.save(accessGroup3);
     }
 
     @Test(expected = EntityAlreadyExistsException.class)
     public void testCreateAccessGroupDuplicate() throws EntityAlreadyExistsException {
-        final AccessGroup duplicate = new AccessGroup(AG1_NAME);
-        accessGroupService.createAccessGroup(duplicate);
+        // Given
+        AccessGroup duplicatedAccessGroup = new AccessGroup(AG1_NAME);
+
+        // When
+        accessGroupService.createAccessGroup(duplicatedAccessGroup);
     }
-
+    
     @Test
-    public void testCreateAccessGroup() throws EntityAlreadyExistsException {
-        final AccessGroup notDuplicate = new AccessGroup(AG1_NAME + "different");
-        final AccessGroup shouldReturn = new AccessGroup(AG1_NAME + "different");
-        shouldReturn.setId(2L);
+    public void testCreateAccessGroupByDefault() throws EntityAlreadyExistsException {
+        // Given
+        String accessGroupByDefault = AccessGroupService.ACCESS_GROUP_PUBLIC_DOCUMENTS;
 
-        final AccessGroup after = accessGroupService.createAccessGroup(notDuplicate);
-        Assert.assertEquals(shouldReturn, after);
-    }
+        // When
+        AccessGroup documentAccessGroup = accessGroupRepository.findOneByName(accessGroupByDefault);
 
-    @Test
-    public void testDocumentAccessGroupCreated() throws EntityAlreadyExistsException {
-        final AccessGroup documentAccessGroup = dao.findOneByName(AccessGroupService.ACCESS_GROUP_PUBLIC_DOCUMENTS);
-        dao.findAll();
+        // Then
+        Assert.assertNotNull(documentAccessGroup);
         Assert.assertEquals(documentAccessGroup.isPublic(), true);
+    }
+
+    @Test
+    public void testRetrieveAccessGroups() {
+        // When
+        Page<AccessGroup> accessGroups = accessGroupService.retrieveAccessGroups(true, PageRequest.of(0, 10));
+        // Then
+        Assert.assertEquals(2, accessGroups.getContent().size());
+
+        // When
+        accessGroups = accessGroupService.retrieveAccessGroups(false, PageRequest.of(0, 10));
+        // Then
+        Assert.assertEquals(4, accessGroups.getContent().size());
     }
 
 }

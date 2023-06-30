@@ -33,19 +33,25 @@ import java.util.Optional;
  */
 public interface IAccessGroupService {
 
-    Page<AccessGroup> retrieveAccessGroups(Boolean isPublic, Pageable pPageable);
+    /**
+     * Retrieve the list of access groups
+     *
+     * @param isPublic true for the public access group otherwise all access groups
+     * @return the list of access groups
+     */
+    Page<AccessGroup> retrieveAccessGroups(boolean isPublic, Pageable pageable);
 
-    AccessGroup createAccessGroup(AccessGroup pToBeCreated) throws EntityAlreadyExistsException;
+    AccessGroup createAccessGroup(AccessGroup toBeCreated) throws EntityAlreadyExistsException;
 
-    AccessGroup retrieveAccessGroup(String pAccessGroupName) throws EntityNotFoundException;
+    AccessGroup retrieveAccessGroup(String accessGroupName) throws EntityNotFoundException;
 
     Optional<AccessGroup> getByName(String name);
 
-    void deleteAccessGroup(String pAccessGroupName) throws EntityOperationForbiddenException, EntityNotFoundException;
+    void deleteAccessGroup(String accessGroupName) throws EntityOperationForbiddenException, EntityNotFoundException;
 
     boolean existGroup(Long pId);
 
-    AccessGroup update(String pAccessGroupName, AccessGroup pAccessGroup) throws ModuleException;
+    AccessGroup update(String accessGroupName, AccessGroup accessGroup) throws ModuleException;
 
     void initDefaultAccessGroup();
 

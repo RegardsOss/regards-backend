@@ -165,12 +165,10 @@ public class DamConfigurationManagerIT extends AbstractMultitenantServiceIT {
         feature.addProperty(IProperty.buildJson("providers", providers));
 
         // Create a dataset configuration module item
-        DatasetConfiguration dsConf = DatasetConfiguration.builder()
-                                                          .datasource(datasourceConfiguration.getBusinessId())
-                                                          .subsetting("hydro.data_type:\"TEST_TYPE\"")
-                                                          .feature(feature)
-                                                          .build();
-        ModuleConfigurationItem<DatasetConfiguration> item = ModuleConfigurationItem.build(dsConf);
+        ModuleConfigurationItem<DatasetConfiguration> item = ModuleConfigurationItem.build(new DatasetConfiguration(
+            datasourceConfiguration.getBusinessId(),
+            "hydro" + ".data_type:\"TEST_TYPE\"",
+            feature));
 
         // Import configuration
         ModuleConfiguration conf = ModuleConfiguration.build(configurationManager.getModuleInformation(),

@@ -45,9 +45,10 @@
     </parent>
 
     <dependencies>
+        <!-- Regards -->
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-dto</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.model</groupId>
@@ -77,9 +78,14 @@
             <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
             <artifactId>tenant-settings-domain</artifactId>
         </dependency>
+        <!-- External -->
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
         </dependency>
 
         <!-- Test -->
@@ -105,9 +111,9 @@
                         <target>${java.version}</target>
                         <annotationProcessorPaths>
                             <path>
-                                <groupId>org.projectlombok</groupId>
-                                <artifactId>lombok</artifactId>
-                                <version>${lombok.version}</version>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${org.mapstruct.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>

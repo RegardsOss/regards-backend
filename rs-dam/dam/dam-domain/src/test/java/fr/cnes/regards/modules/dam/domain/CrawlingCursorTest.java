@@ -20,10 +20,11 @@ package fr.cnes.regards.modules.dam.domain;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -37,8 +38,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author Iliana Ghazali
  **/
-@Slf4j
 class CrawlingCursorTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrawlingCursorTest.class);
 
     @Test
     @Purpose("Test if all data are returned with all pages if data dont have a last update date")
@@ -220,7 +222,7 @@ class CrawlingCursorTest {
                                                 CrawlingCursor cursor,
                                                 String message,
                                                 boolean start) {
-        log.info("Cursor start {} : {}", message, cursor);
+        LOGGER.info("Cursor start {} : {}", message, cursor);
         AtomicInteger iterationCounter = new AtomicInteger(0);
         // Simulate applying overlap
         if (!start) {
@@ -231,7 +233,7 @@ class CrawlingCursorTest {
         if (!iterationList.isEmpty()) {
             cursor.setLastEntityDate(cursor.getCurrentLastEntityDate());
         }
-        log.info("Cursor end {} : {}", message, cursor);
+        LOGGER.info("Cursor end {} : {}", message, cursor);
         return iterationList;
     }
 
@@ -284,10 +286,10 @@ class CrawlingCursorTest {
             subListElements = listData.subList(offset, maxSublist);
         }
 
-        log.info("---------------------------------------------------------");
-        log.info("Page number {}", cursor.getPosition());
-        log.info("{} Elements returned : {}", subListElements.size(), subListElements);
-        log.info("Crawling cursor {}", cursor);
+        LOGGER.info("---------------------------------------------------------");
+        LOGGER.info("Page number {}", cursor.getPosition());
+        LOGGER.info("{} Elements returned : {}", subListElements.size(), subListElements);
+        LOGGER.info("Crawling cursor {}", cursor);
         // SIMULATE computations from plugins
         // lastUpdateDate
         if (lastUpdateDatePresent) {

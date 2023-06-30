@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.rest.DamRestConfiguration;
-import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,15 +54,8 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
 
     private static final String AG2_NAME = "AG2";
 
-    private static final String USER1_EMAIL = "user1@user1.user1";
-
-    private AccessGroup ag1;
-
     @Autowired
-    private IAccessGroupRepository dao;
-
-    @Autowired
-    private IAccessGroupService agService;
+    private IAccessGroupRepository accessGroupRepository;
 
     @Autowired
     private IProjectUsersClient projectUserClientMock;
@@ -74,7 +66,7 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
     @After
     public void clear() {
         runtimetenantResolver.forceTenant(getDefaultTenant());
-        dao.deleteAll();
+        accessGroupRepository.deleteAll();
         runtimetenantResolver.clearTenant();
     }
 
@@ -88,11 +80,11 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
         Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(ArgumentMatchers.any()))
                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
-        ag1 = new AccessGroup(AG1_NAME);
-        ag1 = dao.save(ag1);
+
+        AccessGroup ag1 = accessGroupRepository.save(new AccessGroup(AG1_NAME));
         AccessGroup ag2 = new AccessGroup(AG2_NAME);
         ag2.setPublic(true);
-        dao.save(ag2);
+        accessGroupRepository.save(ag2);
     }
 
     @Test
