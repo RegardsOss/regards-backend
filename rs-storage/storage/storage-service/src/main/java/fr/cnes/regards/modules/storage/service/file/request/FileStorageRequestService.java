@@ -201,6 +201,42 @@ public class FileStorageRequestService {
     }
 
     /**
+     * Compare {@link FileStorageRequestDTO} and {@link FileStorageRequest} to check if the two requests handle the
+     * same file with identical checksum and storage location.
+     */
+    private boolean isIdenticalRequest(FileStorageRequestDTO requestDto, FileStorageRequest request) {
+        return request.getMetaInfo().getChecksum().equals(requestDto.getChecksum()) && request.getStorage()
+                                                                                              .equals(requestDto.getStorage());
+    }
+
+    /**
+     * Find more valuable request form list of existing requests and matching the request to handle.
+     */
+    private Optional<FileStorageRequest> findMoreDiscriminantRequest(FileStorageRequestDTO requestToHandle,
+                                                                     Collection<FileStorageRequest> existingRequests) {
+        return Optional.ofNullable(existingRequests.stream()
+                                                   .filter(existingRequest -> isIdenticalRequest(requestToHandle,
+                                                                                                 existingRequest))
+                                                   .reduce(null, this::findMoreDiscriminantRequestByStatus));
+    }
+
+    /**
+     * Find more valuable request between the given ones by status order like ERROR > DELAYED > TO_DO > PENDING.
+     */
+    private FileStorageRequest findMoreDiscriminantRequestByStatus(FileStorageRequest request1,
+                                                                   FileStorageRequest request2) {
+        // We are trying to retrieve the more discriminant request from all existing requests with the same checksum
+        // and storage that the current handling request
+        if (request1 == null) {
+            return request2;
+        }
+        return switch (request1.getStatus()) {
+            case ERROR, DELAYED, TO_DO -> request1;
+            case PENDING -> request2;
+        };
+    }
+
+    /**
      * Initialize new storage requests for a given group identifier. Parameter existingFiles is passed to improve performance in bulk creation to
      * avoid requesting {@link IFileReferenceRepository} on each request.
      *
@@ -227,17 +263,7 @@ public class FileStorageRequestService {
                                                                              .getStorage()
                                                                              .equals(request.getStorage()))
                                                             .findFirst();
-            Optional<FileStorageRequest> oReq = existingRequests.stream()
-                                                                .filter(fileStorageRequest -> fileStorageRequest.getMetaInfo()
-                                                                                                                .getChecksum()
-                                                                                                                .equals(
-                                                                                                                    request.getChecksum())
-                                                                                              && fileStorageRequest.getStorage()
-                                                                                                                   .equals(
-                                                                                                                       request.getStorage())
-                                                                                              && (checkStorageRequestStatus(
-                                                                    fileStorageRequest.getStatus())))
-                                                                .findFirst();
+            Optional<FileStorageRequest> oReq = findMoreDiscriminantRequest(request, existingRequests);
             Optional<FileDeletionRequest> oDelReq = existingDeletionRequests.stream()
                                                                             .filter(f -> f.getFileReference()
                                                                                           .getMetaInfo()
@@ -267,16 +293,6 @@ public class FileStorageRequestService {
                          request.getFileName(),
                          System.currentTimeMillis() - start);
         }
-    }
-
-    /**
-     * Check the status of the storage request.
-     *
-     * @param status the status of the storage request
-     * @return true if status = TO_DO or ERROR or PENDING; otherwise false
-     */
-    private boolean checkStorageRequestStatus(FileRequestStatus status) {
-        return STORED_REQUEST_STATUSES.contains(status);
     }
 
     /**
