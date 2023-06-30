@@ -303,11 +303,17 @@ public class RequestService implements IRequestService {
         Page<AbstractRequest> pageRequests = findRequests(searchFilters, PageRequest.of(0, 500));
         List<AbstractRequest> requests = pageRequests.getContent();
 
-        for (AbstractRequest request : requests) {
-            // Rollback the state to TO_SCHEDULE
-            request.setState(InternalRequestState.TO_SCHEDULE);
+        // Set all requests status to TO_SCHEDULE, requests remaining blocked will be updated after.
+        requests.forEach(r -> r.setState(InternalRequestState.TO_SCHEDULE));
+        
+        if (requestType == RequestTypeEnum.INGEST) {
+            // For ingest request only reset to blocked status blocked requests.
+            // Requests that can be scheduled will be run in IngestRequestScheduler.
+            blockIngestRequests(requests.stream().map(r -> (IngestRequest) r).toList());
+        } else {
+            // For all other requests type, schedule unblocked requests directly.
+            scheduleRequests(requests);
         }
-        scheduleRequests(requests);
 
         // For macro job, create a job
         if (isJobRequest(requestType)) {
@@ -317,6 +323,58 @@ public class RequestService implements IRequestService {
                 }
             }
         }
+    }
+
+    @Override
+    public List<IngestRequest> blockIngestRequests(Collection<IngestRequest> ingestsRequests) {
+        List<IngestRequest> requestsReady = new ArrayList<>();
+        if (ingestsRequests == null || ingestsRequests.isEmpty()) {
+            return requestsReady;
+        }
+
+        List<String> providerIds = ingestsRequests.stream().map(AbstractRequest::getProviderId).distinct().toList();
+        List<IngestRequest> potentiallyBlockingRequests = findPotentiallyBlockingRequests(providerIds);
+        for (IngestRequest request : ingestsRequests) {
+            if (canProceedWithRequest(request, potentiallyBlockingRequests)) {
+                requestsReady.add(request);
+            } else {
+                request.setState(InternalRequestState.BLOCKED);
+            }
+        }
+        return requestsReady;
+    }
+
+    public List<IngestRequest> findPotentiallyBlockingRequests(List<String> providerIds) {
+        return ingestRequestRepository.findByProviderIdInAndStateIn(providerIds,
+                                                                    InternalRequestState.POTENTIALLY_BLOCKED_INGEST_REQUEST_STATES);
+    }
+
+    /**
+     * Check that there is no older request dealing with the same providerId being processed
+     */
+    private boolean canProceedWithRequest(IngestRequest requestToCheck, List<IngestRequest> requests) {
+        List<IngestRequest> requestsWithSameProviderId = requests.stream()
+                                                                 .filter(request -> request.getProviderId()
+                                                                                           .equals(requestToCheck.getProviderId()))
+                                                                 .toList();
+        if (requestsWithSameProviderId.stream()
+                                      .anyMatch(request -> request.getState() == InternalRequestState.CREATED
+                                                           || request.getState() == InternalRequestState.RUNNING)) {
+            //Another request with the same providerId is already running
+            return false;
+        }
+        //Check that the given request is the oldest one with the state TO_SCHEDULE
+        Optional<IngestRequest> oldestRequest = requestsWithSameProviderId.stream()
+                                                                          .filter(request -> request.getState()
+                                                                                             == InternalRequestState.TO_SCHEDULE)
+                                                                          .min(Comparator.comparing(request -> request.getSubmissionDate()
+                                                                                                               != null ?
+                                                                              request.getSubmissionDate() :
+                                                                              request.getCreationDate()));
+        if (oldestRequest.isEmpty()) {
+            return false;
+        }
+        return oldestRequest.get().getRequestId().equals(requestToCheck.getRequestId());
     }
 
     /**
@@ -379,7 +437,7 @@ public class RequestService implements IRequestService {
         Table<String, String, InternalRequestState> history = HashBasedTable.create();
 
         for (AbstractRequest request : requests) {
-            // Ignore IngestRequest as they use their own scheduler
+            // Ignore IngestRequest as they use their own scheduler see IngestRequestScheduler.
             if (!(request instanceof IngestRequest)) {
                 // Ignore BLOCKED request
                 if (request.getState() != InternalRequestState.BLOCKED) {
@@ -406,6 +464,7 @@ public class RequestService implements IRequestService {
                 }
             }
         }
+
         if (nbRequestBlocked > 0) {
             LOGGER.info("{} requests saved in BLOCKED state", nbRequestBlocked);
         }

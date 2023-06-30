@@ -65,7 +65,10 @@ public class AIPUpdateJobScheduler extends AbstractTaskScheduler {
      */
     private final Task aipUpdateTask = () -> {
         LockAssert.assertLocked();
+        long start = System.currentTimeMillis();
         aipUpdateRequestScheduler.scheduleJob();
+        LOGGER.debug("[INGEST UPDATE REQUEST TASK SCHEDULER] Scheduler handled in {} ms",
+                     System.currentTimeMillis() - start);
     };
 
     /**

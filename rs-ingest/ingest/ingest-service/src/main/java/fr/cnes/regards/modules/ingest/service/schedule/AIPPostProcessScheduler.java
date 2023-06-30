@@ -67,7 +67,10 @@ public class AIPPostProcessScheduler extends AbstractTaskScheduler {
      */
     private final Task postProcessTask = () -> {
         LockAssert.assertLocked();
+        long start = System.currentTimeMillis();
         aipPostProcessRequestScheduler.scheduleJob();
+        LOGGER.debug("[INGEST POST PROCESS TASK SCHEDULER] Scheduler handled in {} ms",
+                     System.currentTimeMillis() - start);
     };
 
     /**

@@ -47,7 +47,7 @@ public class OAISDataObjectLocation {
      * URL to access the file
      */
     @NotNull(message = URL_REQUIRED)
-    @Pattern(regexp = "\\b[a-zA-Z]+://?[-a-zA-Z0-9+&@#/%'?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%'=~_|]",
+    @Pattern(regexp = "\\b[a-zA-Z1-9]+://?[-a-zA-Z0-9+&@#/%'?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%'=~_|]",
              message = "URl should respect URL format from RFC 1738")
     private String url;
 
@@ -94,8 +94,7 @@ public class OAISDataObjectLocation {
         try {
             return buildInternal(path.toUri().toURL().toString(), null, null);
         } catch (MalformedURLException e) {
-            String errorMessage = String.format("Cannot transform %s to valid URL (MalformedURLException).",
-                                                path.toString());
+            String errorMessage = String.format("Cannot transform %s to valid URL (MalformedURLException).", path);
             LOGGER.error(errorMessage, e);
             throw new IllegalArgumentException(errorMessage);
         }
@@ -162,12 +161,8 @@ public class OAISDataObjectLocation {
             return false;
         }
         if (url == null) {
-            if (other.url != null) {
-                return false;
-            }
-        } else if (!url.equals(other.url)) {
-            return false;
-        }
-        return true;
+            return other.url == null;
+        } else
+            return url.equals(other.url);
     }
 }

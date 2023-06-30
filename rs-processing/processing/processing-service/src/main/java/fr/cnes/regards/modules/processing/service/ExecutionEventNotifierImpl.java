@@ -81,7 +81,7 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
                        .flatMap(exec -> registerOutputFiles(exec, event.outputFiles()))
                        .flatMap(exec -> registerStep(event, exec))
                        .flatMap(exec -> sendResult(event, exec))
-                       .subscriberContext(addInContext(PExecution.class, execution));
+                       .contextWrite(addInContext(PExecution.class, execution));
     }
 
     private Mono<PExecution> sendResult(ExecutionEvent event, PExecution exec) {

@@ -128,7 +128,7 @@ public class DownloadService implements IDownloadService {
                        Flux<DataBuffer> dataBufferFlux = downloadUsingStorageRestClient(tenant, user, checksum);
                        return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                    })
-                   .flatMap(voidMono -> voidMono.map(n -> dest))
+                   .flatMap(voidMono -> voidMono.then(Mono.fromCallable(() -> dest)))
                    .onErrorResume(errorWithContextMono(PExecution.class,
                                                        (exec, t) -> new InternalDownloadException(exec,
                                                                                                   "Failed to "

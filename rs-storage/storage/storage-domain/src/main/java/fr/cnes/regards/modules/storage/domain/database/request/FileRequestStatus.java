@@ -51,6 +51,9 @@ public enum FileRequestStatus {
     ERROR;
 
     public final static Set<FileRequestStatus> RUNNING_STATUS = Sets.newHashSet(FileRequestStatus.TO_DO,
-                                                                                FileRequestStatus.PENDING);
+            FileRequestStatus.PENDING);
+
+    public final static Set<FileRequestStatus> RUNNING_AND_DELAYED_STATUS = Sets.newHashSet(FileRequestStatus.TO_DO,
+            FileRequestStatus.PENDING, FileRequestStatus.DELAYED);
 
 }

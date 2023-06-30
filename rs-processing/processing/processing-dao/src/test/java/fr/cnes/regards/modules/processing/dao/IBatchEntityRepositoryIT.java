@@ -173,10 +173,10 @@ public class IBatchEntityRepositoryIT extends AbstractRepoIT {
                                                                           new SearchExecutionEntityParameters().withStatusIncluded(
                                                                                                                    Arrays.asList(SUCCESS))
                                                                                                                .withCreationDateBefore(
-                                                                                                                   nowUtc().minusHours(
+                                                                                                                   nowUtc().plusHours(
                                                                                                                        5))
                                                                                                                .withCreationDateAfter(
-                                                                                                                   nowUtc().plusHours(
+                                                                                                                   nowUtc().minusHours(
                                                                                                                        5)))
                                              .block();
 
@@ -188,10 +188,10 @@ public class IBatchEntityRepositoryIT extends AbstractRepoIT {
                                                                           new SearchExecutionEntityParameters().withStatusIncluded(
                                                                                                                    Arrays.asList(RUNNING))
                                                                                                                .withCreationDateBefore(
-                                                                                                                   nowUtc().minusHours(
+                                                                                                                   nowUtc().plusHours(
                                                                                                                        5))
                                                                                                                .withCreationDateAfter(
-                                                                                                                   nowUtc().plusHours(
+                                                                                                                   nowUtc().minusHours(
                                                                                                                        5)))
                                              .block();
 
@@ -203,10 +203,10 @@ public class IBatchEntityRepositoryIT extends AbstractRepoIT {
                                                                                new SearchExecutionEntityParameters().withStatusIncluded(
                                                                                                                         Arrays.asList(RUNNING))
                                                                                                                     .withCreationDateBefore(
-                                                                                                                        nowUtc().minusHours(
+                                                                                                                        nowUtc().plusHours(
                                                                                                                             1))
                                                                                                                     .withCreationDateAfter(
-                                                                                                                        nowUtc().plusHours(
+                                                                                                                        nowUtc().minusHours(
                                                                                                                             1)))
                                                   .block();
         assertThat(countRunningTimed).isEqualTo(1);

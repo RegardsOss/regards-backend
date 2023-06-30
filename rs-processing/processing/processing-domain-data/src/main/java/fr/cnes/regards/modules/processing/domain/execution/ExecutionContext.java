@@ -87,6 +87,11 @@ public class ExecutionContext {
         return this;
     }
 
+    public <T> ExecutionContext withParams(Map<Class<?>, Object> paramsToAdd) {
+        params.putAll(paramsToAdd);
+        return this;
+    }
+
     @SuppressWarnings("unchecked")
     public <T> Mono<T> getParam(Class<T> type) {
         return Try.of(() -> params.get(type))

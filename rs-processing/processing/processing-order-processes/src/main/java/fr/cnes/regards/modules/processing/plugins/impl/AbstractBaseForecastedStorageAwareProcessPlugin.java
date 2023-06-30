@@ -48,7 +48,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -110,7 +109,6 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                                      }
                                  })
                                  .map(wd -> context)
-                                 .subscribeOn(Schedulers.boundedElastic())
                                  .contextWrite(addInContext(PExecution.class, exec))
                                  .switchIfEmpty(Mono.error(new WorkdirPreparationException(exec, "Unknown error")));
         };

@@ -35,7 +35,7 @@ public class SearchExecutionEntityParameters {
     private String processBusinessId;
 
     @Schema(description = "Filter on email of user")
-    private String userEmail;
+    private ValuesRestriction<String> userEmail;
 
     @Schema(description = "Filter on creation date")
     private DatesRangeRestriction creationDate = new DatesRangeRestriction();
@@ -56,16 +56,16 @@ public class SearchExecutionEntityParameters {
         return this;
     }
 
-    public String getUserEmail() {
+    public ValuesRestriction<String> getUserEmail() {
         return userEmail;
     }
 
-    public void setUserEmail(String userEmail) {
+    public void setUserEmail(ValuesRestriction<String> userEmail) {
         this.userEmail = userEmail;
     }
 
-    public SearchExecutionEntityParameters withUserEmail(String userEmail) {
-        this.userEmail = userEmail;
+    public SearchExecutionEntityParameters withUserEmailIncluded(Collection<String> userEmails) {
+        this.userEmail = new ValuesRestriction<String>().withInclude(userEmails);
         return this;
     }
 

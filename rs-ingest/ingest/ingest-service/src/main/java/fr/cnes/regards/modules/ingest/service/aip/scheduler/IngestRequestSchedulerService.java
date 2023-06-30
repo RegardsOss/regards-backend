@@ -18,26 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip.scheduler;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Service to schedule IngestRequest
  *
  * @author Thibaud Michaudel
  */
+// Service not transactional. Transactions are created for each schedule action into IngestRequestService to avoid
+// too long transactions.
 @Service
-@MultitenantTransactional
 public class IngestRequestSchedulerService {
 
     private final IngestRequestService ingestRequestService;
@@ -50,68 +42,20 @@ public class IngestRequestSchedulerService {
     }
 
     /**
-     * Schedule the requests
+     * Schedule All the ingest requests in db
      */
     //This method should not be called outside the scheduler
     public void scheduleRequests() {
-        Pageable pageableIngestRequestToSchedule = PageRequest.of(0, pageSize);
-        Page<IngestRequest> pageIngestRequestStep;
+        boolean hasNext;
         do {
-            pageIngestRequestStep = ingestRequestService.findToSchedule(pageableIngestRequestToSchedule);
-            List<IngestRequest> requestsToSchedule = pageIngestRequestStep.toList();
-            if (requestsToSchedule.isEmpty()) {
-                return;
-            }
-            List<String> providerIds = requestsToSchedule.stream()
-                                                         .map(request -> request.getProviderId())
-                                                         .distinct()
-                                                         .toList();
-            List<IngestRequest> potentiallyBlockingRequests = ingestRequestService.findPotentiallyBlockingRequests(
-                providerIds);
-
-            List<IngestRequest> requestsReady = new ArrayList<>();
-            for (IngestRequest request : requestsToSchedule) {
-                if (canProceedWithRequest(request, potentiallyBlockingRequests)) {
-                    requestsReady.add(request);
-                } else {
-                    ingestRequestService.blockRequest(request);
-                }
-            }
-            Map<String, List<IngestRequest>> requestsReadyByChainMap = requestsReady.stream()
-                                                                                    .collect(Collectors.groupingBy(
-                                                                                        request -> request.getMetadata()
-                                                                                                          .getIngestChain()));
-            requestsReadyByChainMap.forEach(ingestRequestService::scheduleIngestProcessingJobByChain);
-            pageableIngestRequestToSchedule = pageIngestRequestStep.nextPageable();
-        } while (pageIngestRequestStep.hasNext());
+            hasNext = ingestRequestService.scheduleRequestsFirstPage(pageSize);
+        } while (hasNext);
     }
 
     /**
-     * Check that there is no older request dealing with the same providerId being processed
+     * Schedule first page of ingest requests
      */
-    private boolean canProceedWithRequest(IngestRequest requestToCheck, List<IngestRequest> requests) {
-        List<IngestRequest> requestsWithSameProviderId = requests.stream()
-                                                                 .filter(request -> request.getProviderId()
-                                                                                           .equals(requestToCheck.getProviderId()))
-                                                                 .toList();
-        if (requestsWithSameProviderId.stream()
-                                      .anyMatch(request -> request.getState() == InternalRequestState.CREATED
-                                                           || request.getState() == InternalRequestState.RUNNING)) {
-            //Another request with the same providerId is already running
-            return false;
-        }
-        //Check that the given request is the oldest one with the state TO_SCHEDULE
-        Optional<IngestRequest> oldestRequest = requestsWithSameProviderId.stream()
-                                                                          .filter(request -> request.getState()
-                                                                                             == InternalRequestState.TO_SCHEDULE)
-                                                                          .min(Comparator.comparing(request -> request.getSubmissionDate()
-                                                                                                               != null ?
-                                                                              request.getSubmissionDate() :
-                                                                              request.getCreationDate()));
-        if (oldestRequest.isEmpty()) {
-            return false;
-        }
-        return oldestRequest.get().getRequestId().equals(requestToCheck.getRequestId());
+    public void scheduleFirstPageRequests() {
+        ingestRequestService.scheduleRequestsFirstPage(pageSize);
     }
-
 }

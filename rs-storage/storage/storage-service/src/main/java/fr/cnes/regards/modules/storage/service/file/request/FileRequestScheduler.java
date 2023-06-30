@@ -132,15 +132,15 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.storage.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-               fixedDelayString = "${regards.storage.schedule.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+            fixedDelayString = "${regards.storage.schedule.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, STORAGE_ACTIONS);
                 lockingTaskExecutors.executeWithLock(handleRequestsTask,
-                                                     new LockConfiguration(STORAGE_LOCK,
-                                                                           Instant.now().plusSeconds(1200)));
+                        new LockConfiguration(STORAGE_LOCK,
+                                Instant.now().plusSeconds(1200)));
             } catch (Throwable e) {
                 handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);
             } finally {

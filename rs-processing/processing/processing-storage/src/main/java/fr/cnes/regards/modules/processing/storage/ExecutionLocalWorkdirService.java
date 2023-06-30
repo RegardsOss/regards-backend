@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -80,12 +81,14 @@ public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirServi
                    })
                    .flatMapMany(x -> Flux.fromIterable(inputFiles))
                    .parallel(8)
+                   .runOn(Schedulers.newParallel("download-parallel", 8))
                    .flatMap(f -> {
                        Path dest = workdir.inputFolder().resolve(f.getLocalRelativePath());
                        LOGGER.info("Attempt to download input file {} into input folder at {}", f, dest);
                        return download(f, dest);
                    })
                    .collectSortedList(Comparator.comparing(Path::toAbsolutePath))
+                   .publishOn(Schedulers.boundedElastic())
                    .doOnNext(paths -> LOGGER.debug("Downloaded all these paths in workdir {}:\n{}",
                                                    workdir.getBasePath(),
                                                    paths))

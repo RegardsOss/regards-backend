@@ -68,7 +68,10 @@ public class OAISDeletionJobScheduler extends AbstractTaskScheduler {
      */
     private final Task aipDeletionTask = () -> {
         LockAssert.assertLocked();
+        long start = System.currentTimeMillis();
         aipDeletionRequestScheduler.scheduleJob();
+        LOGGER.debug("[INGEST DELETION REQUEST TASK SCHEDULER] Scheduler handled in {} ms",
+                     System.currentTimeMillis() - start);
     };
 
     /**

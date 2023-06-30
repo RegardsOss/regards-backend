@@ -52,7 +52,10 @@ public class AIPSaveMetadataScheduler extends AbstractDumpScheduler {
     protected Task getDumpTask() {
         return () -> {
             LockAssert.assertLocked();
+            long start = System.currentTimeMillis();
             aipSaveMetadataService.scheduleJobs();
+            LOGGER.debug("[INGEST AIP DUMP TASK SCHEDULER] Scheduler handled in {} ms",
+                         System.currentTimeMillis() - start);
         };
     }
 

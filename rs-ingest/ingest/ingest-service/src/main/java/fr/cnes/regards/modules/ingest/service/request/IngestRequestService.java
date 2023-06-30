@@ -100,10 +100,6 @@ public class IngestRequestService implements IIngestRequestService {
 
     public static final String UNEXPECTED_STEP_S_TEMPLATE = "Unexpected step \"%s\"";
 
-    private final List<InternalRequestState> POTENTIALLY_BLOCKING_STATES = List.of(InternalRequestState.TO_SCHEDULE,
-                                                                                   InternalRequestState.CREATED,
-                                                                                   InternalRequestState.RUNNING);
-
     @Autowired
     private IngestConfigurationProperties confProperties;
 
@@ -222,11 +218,6 @@ public class IngestRequestService implements IIngestRequestService {
     @Override
     public Page<IngestRequest> findToSchedule(Pageable pageable) {
         return ingestRequestRepository.findByState(InternalRequestState.TO_SCHEDULE, pageable);
-    }
-
-    @Override
-    public List<IngestRequest> findPotentiallyBlockingRequests(List<String> providerIds) {
-        return ingestRequestRepository.findByProviderIdInAndStateIn(providerIds, POTENTIALLY_BLOCKING_STATES);
     }
 
     @Override
@@ -700,6 +691,18 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
+    public boolean scheduleRequestsFirstPage(int pageSize) {
+        Page<IngestRequest> pageIngestRequestStep = findToSchedule(Pageable.ofSize(pageSize));
+
+        List<IngestRequest> requestsReady = requestService.blockIngestRequests(pageIngestRequestStep.toList());
+        Map<String, List<IngestRequest>> requestsReadyByChainMap = requestsReady.stream()
+                                                                                .collect(Collectors.groupingBy(request -> request.getMetadata()
+                                                                                                                                 .getIngestChain()));
+        requestsReadyByChainMap.forEach(this::scheduleIngestProcessingJobByChain);
+        return pageIngestRequestStep.hasNext();
+    }
+
+    @Override
     public void scheduleRequestWithVersioningMode(ChooseVersioningRequestParameters filters) {
         Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(ChooseVersioningJob.CRITERIA_JOB_PARAM_NAME,
                                                                            filters));
@@ -733,7 +736,7 @@ public class IngestRequestService implements IIngestRequestService {
                                        request.getSip().getId()));
         request.setState(InternalRequestState.ERROR);
         // set default error code if none was provided
-        if(request.getErrorType() == null) {
+        if (request.getErrorType() == null) {
             request.setErrorType(IngestErrorType.UNEXPECTED);
         }
         if (message != null) {
@@ -773,11 +776,6 @@ public class IngestRequestService implements IIngestRequestService {
             request.setJobInfo(jobInfo);
         }
         return ingestRequestRepository.save(request);
-    }
-
-    public IngestRequest blockRequest(IngestRequest request) {
-        request.setState(InternalRequestState.BLOCKED);
-        return saveRequest(request);
     }
 
     private void updateRequestWithErrors(IngestRequest request,

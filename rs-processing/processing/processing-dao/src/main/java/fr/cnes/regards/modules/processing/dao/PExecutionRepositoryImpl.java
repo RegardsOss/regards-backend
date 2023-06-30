@@ -19,6 +19,10 @@ package fr.cnes.regards.modules.processing.dao;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
+import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.SearchExecutionEntityParameters;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
@@ -40,6 +44,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -144,16 +150,19 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             }
             orderBy = sj.toString();
         }
-        DatabaseClient.GenericExecuteSpec execute = databaseClient.sql(" SELECT E.* "
-                                                                       + " FROM t_execution AS E "
-                                                                       + " WHERE (:ignoreTenant OR E.tenant = :tenant) "
-                                                                       + "   AND (:ignoreProcessBid OR E.process_business_id = :processBid) "
-                                                                       + "   AND (:ignoreUserEmail OR E.user_email = :userEmail) "
-                                                                       + "   AND  E.current_status IN (:status) "
-                                                                       + "   AND  E.last_updated >= :lastUpdatedFrom "
-                                                                       + "   AND  E.last_updated <= :lastUpdatedTo "
-                                                                       + orderBy
-                                                                       + " LIMIT :limit OFFSET :offset");
+        DatabaseClient.GenericExecuteSpec execute = databaseClient.sql(String.format(""" 
+                                                                                         SELECT E.*
+                                                                                         FROM t_execution AS E
+                                                                                         WHERE (:ignoreTenant OR E.tenant = :tenant)
+                                                                                         AND (:ignoreProcessBid OR E.process_business_id = :processBid)
+                                                                                         AND %s
+                                                                                         AND  E.current_status IN (:status)
+                                                                                         AND  E.last_updated >= :lastUpdatedFrom
+                                                                                         AND  E.last_updated <= :lastUpdatedTo
+                                                                                         %s
+                                                                                         LIMIT :limit OFFSET :offset;""",
+                                                                                     getUserExpression(filters),
+                                                                                     orderBy));
 
         execute = bindParametersInWhere(execute, tenant, filters);
 
@@ -168,17 +177,18 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     @Override
     public Mono<Integer> countAllForMonitoringSearch(String tenant, SearchExecutionEntityParameters filters) {
-        DatabaseClient.GenericExecuteSpec execute = databaseClient.sql(" SELECT COUNT(*) "
-                                                                       + " FROM t_execution AS E "
-                                                                       + " WHERE (:ignoreTenant OR E.tenant = :tenant) "
-                                                                       + "   AND (:ignoreProcessBid OR E.process_business_id = :processBid) "
-                                                                       + "   AND (:ignoreUserEmail OR E.user_email = :userEmail) "
-                                                                       + "   AND  E.current_status IN (:status) "
-                                                                       + "   AND  E.last_updated >= :lastUpdatedFrom "
-                                                                       + "   AND  E.last_updated <= :lastUpdatedTo ");
+        String sqlExpression = String.format("""
+                                                 SELECT COUNT(*)
+                                                 FROM t_execution AS E
+                                                 WHERE (:ignoreTenant OR E.tenant = :tenant)
+                                                 AND (:ignoreProcessBid OR E.process_business_id = :processBid)
+                                                 AND %s
+                                                 AND  E.current_status IN (:status)
+                                                 AND  E.last_updated >= :lastUpdatedFrom
+                                                 AND  E.last_updated <= :lastUpdatedTo;""", getUserExpression(filters));
 
+        DatabaseClient.GenericExecuteSpec execute = databaseClient.sql(sqlExpression);
         execute = bindParametersInWhere(execute, tenant, filters);
-
         return execute.map((row, metadata) -> converter.read(Integer.class, row, metadata)).one();
     }
 
@@ -194,24 +204,60 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             execute.bindNull(PROCESS_BID_COLUMN, UUID.class) :
             execute.bind(PROCESS_BID_COLUMN, UUID.fromString(filters.getProcessBusinessId()));
 
-        execute = execute.bind("ignoreUserEmail", filters.getUserEmail() == null);
-        execute = filters.getUserEmail() == null ?
-            execute.bindNull(USER_EMAIL_COLUMN, String.class) :
-            execute.bind(USER_EMAIL_COLUMN, filters.getUserEmail());
-
         execute = (filters.getStatus() == null || filters.getStatus().getValues().isEmpty()) ?
             execute.bind("status", Stream.of(ExecutionStatus.values()).map(Enum::name).toList()) :
             execute.bind("status", filters.getStatus().getValues().stream().map(Enum::toString).toList());
 
-        execute = filters.getCreationDate().getBefore() == null ?
-            execute.bind("lastUpdatedFrom", OffsetDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)) :
-            execute.bind("lastUpdatedFrom", filters.getCreationDate().getBefore());
-
         execute = filters.getCreationDate().getAfter() == null ?
+            execute.bind("lastUpdatedFrom", OffsetDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)) :
+            execute.bind("lastUpdatedFrom", filters.getCreationDate().getAfter());
+
+        execute = filters.getCreationDate().getBefore() == null ?
             execute.bind("lastUpdatedTo", OffsetDateTime.of(2100, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)) :
-            execute.bind("lastUpdatedTo", filters.getCreationDate().getAfter());
+            execute.bind("lastUpdatedTo", filters.getCreationDate().getBefore());
 
         return execute;
+    }
+
+    private String getUserExpression(SearchExecutionEntityParameters filters) {
+        String userExpression;
+        boolean emptyUsers = filters.getUserEmail() == null || filters.getUserEmail().getValues().isEmpty();
+        if (emptyUsers) {
+            userExpression = "true";
+        } else {
+            userExpression = getValueRestrictionExpression(filters.getUserEmail(), "E.user_email");
+        }
+        return userExpression;
+    }
+
+    private static String getValueRestrictionExpression(ValuesRestriction<String> restriction, String paramName) {
+        List<String> exprBuilder = new ArrayList<>();
+        String column = restriction.isIgnoreCase() ? "LOWER(" + paramName + ")" : paramName;
+        String operator;
+        if (restriction.getMatchMode() == ValuesRestrictionMatchMode.STRICT) {
+            if (restriction.getMode().equals(ValuesRestrictionMode.INCLUDE)) {
+                operator = " = ";
+            } else {
+                operator = " != ";
+            }
+        } else {
+            if (restriction.getMode().equals(ValuesRestrictionMode.INCLUDE)) {
+                operator = " LIKE ";
+            } else {
+                operator = " NOT LIKE ";
+            }
+        }
+        for (String value : restriction.getValues()) {
+            if (restriction.getMatchMode() == ValuesRestrictionMatchMode.STRICT) {
+                exprBuilder.add(column + operator + "'" + value + "'");
+            } else {
+                String likeExpr = AbstractSpecificationsBuilder.getLikeStringExpression(restriction.getMatchMode(),
+                                                                                        value,
+                                                                                        restriction.isIgnoreCase());
+                exprBuilder.add(column + operator +  "'" + likeExpr + "'");
+            }
+        }
+        return String.join(" OR ", exprBuilder);
     }
 
     public static final class ExecutionNotFoundException extends ProcessingException {
