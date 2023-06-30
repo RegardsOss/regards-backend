@@ -73,6 +73,8 @@ public final class DataSourceHelper {
 
     private static final String HR = "####################################################";
 
+    private static final long CONNECTION_MAX_LIFE_TIME_MS = 600000L;
+
     /**
      * Static class
      */
@@ -132,10 +134,10 @@ public final class DataSourceHelper {
             config.setMinimumIdle(minPoolSize);
             config.setMaximumPoolSize(maxPoolSize);
             config.setPoolName(String.format("Hikari-Pool-%s", tenant));
-            config.setIdleTimeout(30000L);
             // Docker Swarm / Kube workaround: https://github.com/brettwooldridge/HikariCP/issues/1237
             // maxLifetime should be 10mins to avoid stale postgres connections
-            config.setMaxLifetime(600000L);
+            config.setConnectionTimeout(CONNECTION_MAX_LIFE_TIME_MS);
+            config.setMaxLifetime(CONNECTION_MAX_LIFE_TIME_MS);
             // Postgres schema configuration
             config.setConnectionInitSql("SET search_path to " + schemaIdentifier);
 
@@ -156,7 +158,7 @@ public final class DataSourceHelper {
         } catch (SQLException e) {
             LOGGER.error("Data source connection fails.", e);
             if (destroyOnFail) {
-                LOGGER.error("Destroying data source", dataSource.toString());
+                LOGGER.error("Destroying data source", dataSource);
                 dataSource.unwrap(HikariDataSource.class).close();
             }
             throw e;

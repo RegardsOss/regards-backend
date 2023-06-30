@@ -72,7 +72,10 @@ public class IngestRequestScheduler extends AbstractTaskScheduler {
      */
     private final LockingTaskExecutor.Task createIngestRequestTask = () -> {
         LockAssert.assertLocked();
-        ingestRequestSchedulerService.scheduleRequests();
+        long start = System.currentTimeMillis();
+        // Only schedule first page of ingest request to avoid one tenant using all resources.
+        ingestRequestSchedulerService.scheduleFirstPageRequests();
+        LOGGER.debug("[INGEST REQUEST TASK SCHEDULER] Scheduler handled in {} ms", System.currentTimeMillis() - start);
     };
 
     public IngestRequestScheduler(ITenantResolver tenantResolver,

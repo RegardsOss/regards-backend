@@ -77,11 +77,6 @@ public interface IIngestRequestService {
     Page<IngestRequest> findToSchedule(Pageable pageable);
 
     /**
-     * Load all requests that could block the creation of a request with a given providerId
-     */
-    List<IngestRequest> findPotentiallyBlockingRequests(List<String> providerIds);
-
-    /**
      * Handle request granted during request handling
      */
     void handleRequestGranted(IngestRequest request);
@@ -142,6 +137,8 @@ public interface IIngestRequestService {
     void ignore(IngestRequest request);
 
     void waitVersioningMode(IngestRequest request);
+
+    boolean scheduleRequestsFirstPage(int pageSize);
 
     void scheduleRequestWithVersioningMode(ChooseVersioningRequestParameters filters);
 

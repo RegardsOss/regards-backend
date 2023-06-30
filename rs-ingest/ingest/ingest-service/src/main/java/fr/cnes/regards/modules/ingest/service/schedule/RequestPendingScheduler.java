@@ -67,12 +67,15 @@ public class RequestPendingScheduler extends AbstractTaskScheduler {
 
     private final Task unlockRequestsTask = () -> {
         LockAssert.assertLocked();
+        long start = System.currentTimeMillis();
         requestService.unblockRequests(RequestTypeEnum.AIP_UPDATES_CREATOR);
         requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
         requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
         requestService.unblockRequests(RequestTypeEnum.UPDATE);
         requestService.unblockRequests(RequestTypeEnum.AIP_POST_PROCESS);
         requestService.unblockRequests(RequestTypeEnum.INGEST);
+        LOGGER.debug("[INGEST REQUEST PENDING TASK SCHEDULER] Scheduler handled in {} ms",
+                     System.currentTimeMillis() - start);
     };
 
     @Scheduled(initialDelayString = "${regards.ingest.schedule.pending.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",

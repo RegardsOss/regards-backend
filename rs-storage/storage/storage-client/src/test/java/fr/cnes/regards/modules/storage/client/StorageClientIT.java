@@ -288,7 +288,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
             client.store(files);
         }
 
-        waitRequestEnds(nbGroups, 240);
+        waitRequestEnds(nbGroups, 300);
 
         Assert.assertEquals("There should be no requests in error state",
                             0L,

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
+import java.util.List;
+
 public enum InternalRequestState {
 
     /**
@@ -51,4 +53,11 @@ public enum InternalRequestState {
      * When the request stopped with an error
      */
     ERROR, ABORTED, IGNORED;
+
+    /**
+     * List of states for IngestRequest that can potentially be blocked by an other request.
+     */
+    public static List<InternalRequestState> POTENTIALLY_BLOCKED_INGEST_REQUEST_STATES = List.of(InternalRequestState.TO_SCHEDULE,
+                                                                                                 InternalRequestState.CREATED,
+                                                                                                 InternalRequestState.RUNNING);
 }
