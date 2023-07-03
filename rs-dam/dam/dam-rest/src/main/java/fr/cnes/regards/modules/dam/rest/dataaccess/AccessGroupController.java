@@ -141,7 +141,7 @@ public class AccessGroupController implements IResourceController<AccessGroupDto
                                 "updateAccessGroup",
                                 LinkRels.UPDATE,
                                 nameParam,
-                                MethodParamFactory.build(AccessGroup.class));
+                                MethodParamFactory.build(AccessGroupDto.class));
         if (!accessRightService.hasAccessRights(accessGroupMapper.convertToAccessGroup(accessGroupDto))) {
             resourceService.addLink(resource, this.getClass(), "deleteAccessGroup", LinkRels.DELETE, nameParam);
         }
