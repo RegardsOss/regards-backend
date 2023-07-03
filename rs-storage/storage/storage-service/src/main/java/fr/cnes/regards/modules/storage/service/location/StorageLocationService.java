@@ -147,6 +147,7 @@ public class StorageLocationService {
         boolean copyRunning = copyService.isCopyRunning(storageName);
         boolean storageRunning = storageService.isStorageRunning(storageName);
         boolean pendingActionRunning = storageService.isPendingActionRunning(storageName);
+        boolean pendingActionRemaining = false;
         long nbReferencedFiles = 0L;
         long totalSizeOfReferencedFiles = 0L;
         long nbPendingFiles = 0L;
@@ -154,6 +155,7 @@ public class StorageLocationService {
         if (oConf.isPresent() && oLoc.isPresent()) {
             conf = oConf.get();
             StorageLocation loc = oLoc.get();
+            pendingActionRemaining = loc.getPendingActionRemaining();
             if (conf.getPluginConfiguration() != null) {
                 nbReferencedFiles = loc.getNumberOfReferencedFiles();
                 totalSizeOfReferencedFiles = loc.getTotalSizeOfReferencedFilesInKo();
@@ -163,6 +165,7 @@ public class StorageLocationService {
             conf = oConf.get();
         } else if (oLoc.isPresent()) {
             StorageLocation loc = oLoc.get();
+            pendingActionRemaining = loc.getPendingActionRemaining();
             nbReferencedFiles = loc.getNumberOfReferencedFiles();
             totalSizeOfReferencedFiles = loc.getTotalSizeOfReferencedFilesInKo();
         } else {
@@ -170,6 +173,7 @@ public class StorageLocationService {
         }
         return StorageLocationDTO.build(storageName, conf)
                                  .withFilesInformation(nbReferencedFiles, nbPendingFiles, totalSizeOfReferencedFiles)
+                                 .withPendingActionRemaining(pendingActionRemaining)
                                  .withErrorInformation(nbStorageError, nbDeletionError)
                                  .withRunningProcessesInformation(storageRunning,
                                                                   deletionRunning,
@@ -206,6 +210,7 @@ public class StorageLocationService {
                                                    .withFilesInformation(monitored.getNumberOfReferencedFiles(),
                                                                          monitored.getNumberOfPendingFiles(),
                                                                          monitored.getTotalSizeOfReferencedFilesInKo())
+                                                   .withPendingActionRemaining(monitored.getPendingActionRemaining())
                                                    .withErrorInformation(nbStorageError, nbDeletionError)
                                                    .withRunningProcessesInformation(storageRunning,
                                                                                     deletionRunning,
@@ -253,7 +258,7 @@ public class StorageLocationService {
                                                                                                  null));
         if (reset && (storageMonitoring.getId() != null)) {
             storageMonitoringRepo.delete(storageMonitoring);
-            storageLocationRepo.deleteAll();
+            storageLocationRepo.resetAll(monitoringDate);
             storageMonitoring = new StorageMonitoring(true, null, null, null);
         }
         storageMonitoring.setRunning(true);
