@@ -145,7 +145,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     @PostMapping(path = RUN_PERIODIC_ACTION_PATH)
     @ResourceAccess(description = "Force rung of periodic tasks on storage locations",
-                    role = DefaultRole.INSTANCE_ADMIN)
+                    role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> runPeriodicTasks() {
         storageLocationService.runPeriodicTasks();
         return new ResponseEntity<>(HttpStatus.OK);

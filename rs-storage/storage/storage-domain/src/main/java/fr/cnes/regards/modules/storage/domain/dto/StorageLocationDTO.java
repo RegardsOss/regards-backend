@@ -73,6 +73,11 @@ public class StorageLocationDTO {
     private boolean pendingActionRunning = false;
 
     /**
+     * Indicates if the location needs to run an asynchronous remaining action to perform actions on stored files.
+     */
+    private boolean pendingActionRemaining = false;
+
+    /**
      * Does this location allows to physically delete files ?
      */
     private boolean allowsPhysicalDeletion = false;
@@ -96,6 +101,11 @@ public class StorageLocationDTO {
         this.nbFilesStored = nbFilesStored;
         this.nbFilesStoredWithPendingActionRemaining = nbFilesStoredWithPendingActionRemaining;
         this.totalStoredFilesSizeKo = totalStoredFilesSizeKo;
+        return this;
+    }
+
+    public StorageLocationDTO withPendingActionRemaining(boolean pendingActionRemaining) {
+        this.pendingActionRemaining = pendingActionRemaining;
         return this;
     }
 
@@ -166,5 +176,9 @@ public class StorageLocationDTO {
 
     public long getNbFilesStoredWithPendingActionRemaining() {
         return nbFilesStoredWithPendingActionRemaining;
+    }
+
+    public boolean isPendingActionRemaining() {
+        return pendingActionRemaining;
     }
 }

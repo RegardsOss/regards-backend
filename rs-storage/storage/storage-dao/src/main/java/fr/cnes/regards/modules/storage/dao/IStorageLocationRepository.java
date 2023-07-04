@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
 
@@ -46,4 +47,25 @@ public interface IStorageLocationRepository
 
     void deleteByName(String name);
 
+    void deleteByPendingActionRemainingFalse();
+
+    /**
+     * Reinitialize all storage location by :<ul>
+     * <li>Delete all location without pending remaining action</li>
+     * <li>Reset to 0 location with pending remaining action</li>
+     * </ul>
+     */
+    default void resetAll(OffsetDateTime resetDate) {
+        // First delete all location without any remaining information
+        deleteByPendingActionRemainingFalse();
+        // Then reset all other ones to initial state and keeping information about global remaining pending action.
+        // The remaining pending action does not rely on file reference associated so if if value is true, a pending
+        // action needs to be run and we cannot lose this information.
+        findAll().forEach(loc -> {
+            loc.setLastUpdateDate(resetDate);
+            loc.setNumberOfPendingFiles(0L);
+            loc.setNumberOfReferencedFiles(0L);
+            loc.setTotalSizeOfReferencedFilesInKo(0L);
+        });
+    }
 }
