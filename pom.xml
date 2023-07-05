@@ -226,6 +226,7 @@
         <module>rs-storage</module>
         <module>rs-worker-manager</module>
         <module>rs-lta-manager</module>
+        <module>rs-delivery</module>
     </modules>
 
     <dependencies>
@@ -1679,6 +1680,32 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.ltamanager</groupId>
                 <artifactId>lta-manager-amqp</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <!--Lta Manager -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.delivery</groupId>
+                <artifactId>delivery-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.delivery</groupId>
+                <artifactId>delivery-dto</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.delivery</groupId>
+                <artifactId>delivery-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.delivery</groupId>
+                <artifactId>delivery-rest</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.delivery</groupId>
+                <artifactId>delivery-amqp</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!-- CNES REMOTE STORAGES -->

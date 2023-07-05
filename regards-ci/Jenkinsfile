@@ -115,6 +115,11 @@ pipeline {
                                 runMavenDockerImgParallelOne("tests", "rs-lta-manager")
                             }
                         }
+                        stage('Delivery') {
+                            steps {
+                                runMavenDockerImgParallelOne("tests", "rs-delivery")
+                            }
+                        }
                     }
                 }
                 stage('-2-') {

@@ -139,6 +139,13 @@ pipeline {
                                 }
                             }
                         }
+                        stage('Delivery') {
+                            steps {
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelOne("sonarTests", "rs-delivery")
+                                }
+                            }
+                        }
                     }
                 }
                 stage('-2-') {
