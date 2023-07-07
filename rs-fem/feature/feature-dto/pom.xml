@@ -79,5 +79,9 @@
             <groupId>org.springframework.hateoas</groupId>
             <artifactId>spring-hateoas</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>swagger-regards-starter</artifactId>
+        </dependency>
     </dependencies>
 </project>

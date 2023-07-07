@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.dam.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Dto for {@link fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup} entity.
  *
@@ -49,6 +51,7 @@ public class AccessGroupDto {
         this.name = name;
     }
 
+    @Schema(name = "isPublic") // Force name isPublic otherwise swagger believes that attribute name is "public"
     public boolean isPublic() {
         return isPublic;
     }
@@ -57,6 +60,7 @@ public class AccessGroupDto {
         isPublic = aPublic;
     }
 
+    @Schema(name = "isInternal") // Force name isInternal otherwise swagger believes that attribute name is "internal"
     public boolean isInternal() {
         return isInternal;
     }

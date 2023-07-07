@@ -103,7 +103,7 @@ public class ConverterToStringAwareConverter implements ModelConverter {
             Schema<?> schema = chain.next().resolve(type, context, chain);
             // if type is known as automatic convert types, replace it by String
             // else check if this type is annotated with @Convert
-            if (autoConvertedTypes.contains(type.getType())) {
+            if (isTypeAutoConverted(type)) {
                 schema.set$ref(null);
                 schema.setType("string");
             } else {
@@ -126,6 +126,14 @@ public class ConverterToStringAwareConverter implements ModelConverter {
         } else {
             return null;
         }
+    }
+
+    private boolean isTypeAutoConverted(AnnotatedType type) {
+        if (type.getType() instanceof SimpleType) {
+            return autoConvertedTypes.stream()
+                                     .anyMatch(match -> type.getType().getTypeName().contains(match.getTypeName()));
+        }
+        return false;
     }
 
     private void modifySchemaForConvertAnnotation(AnnotatedType type, Schema<?> schema, Convert convert) {

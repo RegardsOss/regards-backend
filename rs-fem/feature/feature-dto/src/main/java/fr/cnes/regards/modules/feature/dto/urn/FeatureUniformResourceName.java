@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.validator.RegardsUrn;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.persistence.Convert;
 import java.util.UUID;
@@ -42,6 +43,7 @@ import java.util.regex.Pattern;
  */
 @RegardsUrn
 @Convert(converter = FeatureUrnConverter.class)
+@Schema(implementation = String.class)
 public class FeatureUniformResourceName extends UniformResourceName {
 
     public static final int MAX_SIZE = 132;
