@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.dto.conf.RecipientPluginConf;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
@@ -258,7 +259,19 @@ public class NotificationProcessingService {
             List<NotificationRequest> errorRequests = requestsByIsSuccessful.get(false);
 
             // Publish all completed requests as events
-            publisher.publish(completedRequests.stream().map(this::mapRequestToEvent).collect(Collectors.toList()));
+            long start = System.currentTimeMillis();
+            Map<String, RecipientPluginConf> recipientsInfoCache = new HashMap<>();
+            List<NotifierEvent> events = completedRequests.getContent()
+                                                          .stream()
+                                                          .map(request -> this.mapRequestToEvent(request,
+                                                                                                 recipientsInfoCache))
+                                                          .toList();
+            LOGGER.info("{} messages calculated in {}ms", events.size(), System.currentTimeMillis() - start);
+            if (!events.isEmpty()) {
+                start = System.currentTimeMillis();
+                publisher.publish(events);
+                LOGGER.info("{} messages sent in {}ms", events.size(), System.currentTimeMillis() - start);
+            }
 
             // Delete all successful requests
             notificationRequestRepository.deleteByRequestIdIn(successRequests.stream()
@@ -288,7 +301,8 @@ public class NotificationProcessingService {
                                                                                   Sort.by(Order.asc(NotificationRequest.REQUEST_DATE_JPQL_NAME))));
     }
 
-    private NotifierEvent mapRequestToEvent(NotificationRequest notificationRequest) {
+    private NotifierEvent mapRequestToEvent(NotificationRequest notificationRequest,
+                                            Map<String, RecipientPluginConf> recipientsInfoCache) {
 
         NotificationState notificationState = notificationRequest.getRecipientsInError().isEmpty() ?
             NotificationState.SUCCESS :
@@ -301,13 +315,15 @@ public class NotificationProcessingService {
                                                               .stream()
                                                               .map(pluginConfiguration -> getRecipient(
                                                                   pluginConfiguration,
-                                                                  RecipientStatus.SUCCESS))
+                                                                  RecipientStatus.SUCCESS,
+                                                                  recipientsInfoCache))
                                                               .filter(Objects::nonNull)
                                                               .collect(Collectors.toSet());
         Set<Recipient> errorRecipients = notificationRequest.getRecipientsInError()
                                                             .stream()
                                                             .map(pluginConfiguration -> getRecipient(pluginConfiguration,
-                                                                                                     RecipientStatus.ERROR))
+                                                                                                     RecipientStatus.ERROR,
+                                                                                                     recipientsInfoCache))
                                                             .filter(Objects::nonNull)
                                                             .collect(Collectors.toSet());
 
@@ -317,13 +333,21 @@ public class NotificationProcessingService {
         return notifierEvent;
     }
 
-    private Recipient getRecipient(PluginConfiguration pluginConfiguration, RecipientStatus status) {
+    private Recipient getRecipient(PluginConfiguration pluginConfiguration,
+                                   RecipientStatus status,
+                                   Map<String, RecipientPluginConf> recipientInfosCache) {
         Recipient recipient = null;
+        RecipientPluginConf recipientConf = recipientInfosCache.get(pluginConfiguration.getBusinessId());
+
         try {
-            IRecipientNotifier plugin = pluginService.getPlugin(pluginConfiguration.getBusinessId());
+            if (recipientConf == null) {
+                IRecipientNotifier plugin = pluginService.getPlugin(pluginConfiguration.getBusinessId());
+                recipientConf = new RecipientPluginConf(plugin.getRecipientLabel(), plugin.isAckRequired());
+                recipientInfosCache.put(pluginConfiguration.getBusinessId(), recipientConf);
+            }
             // Only build a recipient if recipientLabel has been set
-            if (StringUtils.isNotBlank(plugin.getRecipientLabel())) {
-                recipient = new Recipient(plugin.getRecipientLabel(), status, plugin.isAckRequired());
+            if (StringUtils.isNotBlank(recipientConf.recipientLabel())) {
+                recipient = new Recipient(recipientConf.recipientLabel(), status, recipientConf.ackRequired());
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             // Should never happen, hopefully, but hey, you never know - expect the unexpected to show how modern you are
