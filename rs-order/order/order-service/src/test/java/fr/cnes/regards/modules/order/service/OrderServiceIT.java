@@ -222,27 +222,27 @@ public class OrderServiceIT {
         // Nominal : user INSTANCE_ADMIN + not order owner
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.INSTANCE_ADMIN.toString());
         Mockito.when(authResolver.getUser()).thenReturn(fakeOwner);
-        Assertions.assertTrue(orderService.hasCurrentUserAccessTo(order));
+        Assertions.assertTrue(orderService.hasCurrentUserAccessTo(order.getOwner()));
 
         // Nominal : user PROJECT_ADMIN + not order owner
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PROJECT_ADMIN.toString());
         Mockito.when(authResolver.getUser()).thenReturn(fakeOwner);
-        Assertions.assertTrue(orderService.hasCurrentUserAccessTo(order));
+        Assertions.assertTrue(orderService.hasCurrentUserAccessTo(order.getOwner()));
 
         // Error : user not admin + not order owner
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.ADMIN.toString());
         Mockito.when(authResolver.getUser()).thenReturn(fakeOwner);
-        Assertions.assertFalse(orderService.hasCurrentUserAccessTo(order));
+        Assertions.assertFalse(orderService.hasCurrentUserAccessTo(order.getOwner()));
 
         // Error : user public + not order owner
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PUBLIC.toString());
         Mockito.when(authResolver.getUser()).thenReturn(fakeOwner);
-        Assertions.assertFalse(orderService.hasCurrentUserAccessTo(order));
+        Assertions.assertFalse(orderService.hasCurrentUserAccessTo(order.getOwner()));
 
         // Nominal : user public + real order owner
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.PUBLIC.toString());
         Mockito.when(authResolver.getUser()).thenReturn(realOwner);
-        Assertions.assertTrue(orderService.hasCurrentUserAccessTo(order));
+        Assertions.assertTrue(orderService.hasCurrentUserAccessTo(order.getOwner()));
     }
 
     @Test
@@ -384,7 +384,7 @@ public class OrderServiceIT {
         dataFile1.setFilesize(1_000_000L);
         dataFile1.setFilename("tutu");
         dataFile1.setReference(false);
-        OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId(), PRODUCT_ID);
+        OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId(), PRODUCT_ID, 1);
         // dataFile is ONLINE, its state will be AVAILABLE after asking Storage
         df1.setState(FileState.AVAILABLE);
 
@@ -399,7 +399,7 @@ public class OrderServiceIT {
         dataFile2.setReference(false);
         dataFile2.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
         dataFile2.setDataType(DataType.RAWDATA);
-        OrderDataFile df2 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId(), PRODUCT_ID);
+        OrderDataFile df2 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId(), PRODUCT_ID, 1);
         dataFileRepos.save(df2);
         ds1SubOrder1Task.addFile(df2);
 
@@ -409,8 +409,8 @@ public class OrderServiceIT {
         storageJobInfo.setPriority(1);
         storageJobInfo.updateStatus(JobStatus.PENDING);
 
-        OrderDataFile df3 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId(), PRODUCT_ID);
-        OrderDataFile df4 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId(), PRODUCT_ID);
+        OrderDataFile df3 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId(), PRODUCT_ID, 1);
+        OrderDataFile df4 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId(), PRODUCT_ID, 1);
 
         storageJobInfo.setParameters(new FilesJobParameter(new Long[] { df3.getId(), df4.getId() }));
 

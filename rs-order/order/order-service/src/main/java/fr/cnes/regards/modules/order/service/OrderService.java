@@ -156,6 +156,11 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    public Optional<String> getOrderOwner(Long orderId) {
+        return orderRepository.findOwnerById(orderId);
+    }
+
+    @Override
     public Order loadSimple(Long id) {
         return orderRepository.findSimpleById(id);
     }
@@ -184,7 +189,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public Page<Order> searchOrders(SearchRequestParameters filters, Pageable pageRequest) {
-        return orderRepository.findAllOrders(new RequestSpecificationsBuilder().withParameters(filters).build(),
+        return orderRepository.findAll(new RequestSpecificationsBuilder().withParameters(filters).build(),
                                              pageRequest);
     }
 
@@ -459,12 +464,12 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public boolean hasCurrentUserAccessTo(Order order) {
+    public boolean hasCurrentUserAccessTo(String owner) {
         String role = authResolver.getRole();
         String user = authResolver.getUser();
         return DefaultRole.INSTANCE_ADMIN.name().equals(role)
                || DefaultRole.PROJECT_ADMIN.name().equals(role)
-               || order.getOwner().equals(user);
+               || owner.equals(user);
     }
 
     private void checkAction(long orderId, Action action) throws ModuleException {

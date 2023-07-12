@@ -142,7 +142,8 @@ public class OrderAttachmentDataSetService {
                       .map(file -> OrderDataFile.createAvailable(file,
                                                                  order.getId(),
                                                                  feature.getId(),
-                                                                 feature.getProviderId()))
+                                                                 feature.getProviderId(),
+                                                                 feature.getVersion()))
                       .collect(Collectors.toSet());
     }
 

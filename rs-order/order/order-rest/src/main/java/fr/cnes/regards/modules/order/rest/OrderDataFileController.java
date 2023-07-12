@@ -162,7 +162,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
         // Check if order owner of the file is the authenticated user
         Order order = orderService.getOrder(dataFile.getOrderId());
-        if (!orderService.hasCurrentUserAccessTo(order)) {
+        if (!orderService.hasCurrentUserAccessTo(order.getOwner())) {
             if (!order.getOwner().equals(asUser.orElseGet(authResolver::getUser))) {
                 LOGGER.error("Ordered file does not belongs to current user {}",
                              asUser.orElseGet(authResolver::getUser));

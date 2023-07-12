@@ -418,9 +418,11 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                   MimeType.valueOf(OCTET_STREAM),
                                                   true,
                                                   true);
+            // This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
             dataFileOut.setChecksum(UUID.randomUUID().toString());
-            // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
             dataFileOut.setFilesize(expectedSize);
+            // create a datafile without productId because it is associated to many products (cardinality
+            // ONE_PER_EXECUTION)
             OrderDataFile orderDataFile = new OrderDataFile(dataFileOut, dsSelIpId, orderId);
             orderDataFileService.save(orderDataFile);
             return new Long[] { orderDataFile.getId() };
@@ -442,7 +444,11 @@ public class OrderProcessingService implements IOrderProcessingService {
                     dataFileOut.setChecksum(UUID.randomUUID().toString());
                     // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
                     dataFileOut.setFilesize(expectedSize);
-                    return List.of(new OrderDataFile(dataFileOut, feature.getId(), orderId, feature.getProviderId()));
+                    return List.of(new OrderDataFile(dataFileOut,
+                                                     feature.getId(),
+                                                     orderId,
+                                                     feature.getProviderId(),
+                                                     feature.getVersion()));
                 } else if (cardinality == Cardinality.ONE_PER_INPUT_FILE) {
                     return featureRequiredDatafiles(feature, requiredDataTypes).map(dataFile -> {
                         long expectedSize = sizeForecast.expectedResultSizeInBytes(dataFile.getFilesize());
@@ -459,7 +465,11 @@ public class OrderProcessingService implements IOrderProcessingService {
                         dataFileOut.setChecksum(UUID.randomUUID().toString());
                         // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
                         dataFileOut.setFilesize(expectedSize);
-                        return new OrderDataFile(dataFileOut, feature.getId(), orderId, feature.getProviderId());
+                        return new OrderDataFile(dataFileOut,
+                                                 feature.getId(),
+                                                 orderId,
+                                                 feature.getProviderId(),
+                                                 feature.getVersion());
                     }).toList();
                 } else {
                     // Happens only if some new cases appear for Cardinality
@@ -484,7 +494,8 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                                                                                     dataFile -> new OrderDataFile(dataFile,
                                                                                                                                                   feature.getId(),
                                                                                                                                                   -1L,
-                                                                                                                                                  feature.getProviderId()))
+                                                                                                                                                  feature.getProviderId(),
+                                                                                                                                                  feature.getVersion()))
                                                                                                                 .toList())
                                                    .toJavaMap());
     }
@@ -614,8 +625,11 @@ public class OrderProcessingService implements IOrderProcessingService {
         return features.flatMap(f -> List.ofAll(f.getFiles().values())
                                          .filter(file -> !file.isReference()
                                                          && requiredDatatypes.contains(file.getDataType()))
-                                         .map(file -> new OrderDataFile(file, f.getId(), orderId, f.getProviderId())))
-                       .distinct()
+                                         .map(file -> new OrderDataFile(file,
+                                                                        f.getId(),
+                                                                        orderId,
+                                                                        f.getProviderId(),
+                                                                        f.getVersion()))).distinct()
                        .map(orderDataFileRepository::save)
                        .map(OrderDataFile::getId)
                        .toJavaArray(Long[]::new);

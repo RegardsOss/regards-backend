@@ -25,6 +25,7 @@ import org.springframework.util.MimeType;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 /**
  * @author Thomas GUILLOU
@@ -36,6 +37,9 @@ public class OrderDataFileDTO {
 
     @Schema(description = "providerId of the product containing this file.", maxLength = 255)
     private final String productId;
+
+    @Schema(description = "version of the product.")
+    private final Integer version;
 
     /**
      * Required file reference
@@ -72,6 +76,7 @@ public class OrderDataFileDTO {
 
     public OrderDataFileDTO(Long id,
                             @Nullable String productId,
+                            @Nullable Integer version,
                             String uri,
                             MimeType mimeType,
                             @Nullable String checksum,
@@ -79,6 +84,7 @@ public class OrderDataFileDTO {
                             String filename) {
         this.id = id;
         this.productId = productId;
+        this.version = version;
         this.uri = uri;
         this.mimeType = mimeType;
         this.checksum = checksum;
@@ -114,13 +120,61 @@ public class OrderDataFileDTO {
         return filename;
     }
 
+    public Integer getVersion() {
+        return version;
+    }
+
     public static OrderDataFileDTO fromOrderDataFile(OrderDataFile orderDataFile) {
         return new OrderDataFileDTO(orderDataFile.getId(),
                                     orderDataFile.getProductId(),
+                                    orderDataFile.getVersion(),
                                     orderDataFile.getUri(),
                                     orderDataFile.getMimeType(),
                                     orderDataFile.getChecksum(),
                                     orderDataFile.getFilesize(),
                                     orderDataFile.getFilename());
+    }
+
+    @Override
+    public String toString() {
+        return "OrderDataFileDTO{"
+               + "id="
+               + id
+               + ", productId='"
+               + productId
+               + '\''
+               + ", version="
+               + version
+               + ", uri='"
+               + uri
+               + '\''
+               + ", mimeType="
+               + mimeType
+               + ", checksum='"
+               + checksum
+               + '\''
+               + ", filesize="
+               + filesize
+               + ", filename='"
+               + filename
+               + '\''
+               + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        OrderDataFileDTO that = (OrderDataFileDTO) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

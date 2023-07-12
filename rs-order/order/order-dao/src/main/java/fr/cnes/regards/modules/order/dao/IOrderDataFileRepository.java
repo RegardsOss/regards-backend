@@ -28,6 +28,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import javax.persistence.Convert;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -141,11 +142,21 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
         """, nativeQuery = true)
     List<OrderDataFile> selectByDatasetTaskAndStateAndLimit(long datasetTaskId, List<String> states, int limit);
 
-    default Page<OrderDataFile> findAvailableByOrderId(Long orderId, Pageable page) {
-        return findByStateAndOrderId(FileState.AVAILABLE, orderId, page);
+    /**
+     * Find all {@link OrderDataFile} by orderId and optionally by fileTaskId (which represents a suborder task)
+     */
+    default Page<OrderDataFile> findAvailableDataFiles(Long orderId, @Nullable Long fileTaskId, Pageable page) {
+        return fileTaskId == null ?
+            findByStateAndOrderId(FileState.AVAILABLE, orderId, page) :
+            findByStateAndOrderIdAndFilesTaskId(FileState.AVAILABLE, orderId, fileTaskId, page);
     }
 
     Page<OrderDataFile> findByStateAndOrderId(FileState state, Long orderId, Pageable page);
+
+    Page<OrderDataFile> findByStateAndOrderIdAndFilesTaskId(FileState state,
+                                                            Long orderId,
+                                                            Long filesTaskId,
+                                                            Pageable page);
 
     boolean existsByStateAndOrderId(FileState available, Long orderId);
 }

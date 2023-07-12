@@ -255,7 +255,7 @@ public class OrderController implements IResourceController<OrderDto> {
     public ResponseEntity<EntityModel<OrderDto>> retrieveOrder(@PathVariable("orderId") Long orderId) {
         Order order = orderService.loadSimple(orderId);
         if (order != null) {
-            if (!orderService.hasCurrentUserAccessTo(order)) {
+            if (!orderService.hasCurrentUserAccessTo(order.getOwner())) {
                 LOGGER.error("Ordered file is not accessible to current user ({})", authResolver.getUser());
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
             }

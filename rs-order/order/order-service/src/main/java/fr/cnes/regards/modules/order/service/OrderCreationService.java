@@ -384,7 +384,8 @@ public class OrderCreationService implements IOrderCreationService {
         OrderDataFile orderDataFile = new OrderDataFile(datafile,
                                                         feature.getId(),
                                                         order.getId(),
-                                                        feature.getProviderId());
+                                                        feature.getProviderId(),
+                                                        feature.getVersion());
         // An external file is immediately set to AVAILABLE status because it needs nothing more to be downloaded
         orderDataFile.setState(FileState.AVAILABLE);
         externalBucketFiles.add(orderDataFile);
@@ -397,7 +398,8 @@ public class OrderCreationService implements IOrderCreationService {
         OrderDataFile orderDataFile = new OrderDataFile(dataFile,
                                                         feature.getId(),
                                                         order.getId(),
-                                                        feature.getProviderId());
+                                                        feature.getProviderId(),
+                                                        feature.getVersion());
         storageBucketFiles.add(orderDataFile);
         // Send a very useful notification if file is bigger than bucket size
         if (orderDataFile.getFilesize() > suborderSizeCounter.getStorageBucketSize()) {

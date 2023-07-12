@@ -57,6 +57,12 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     Order findSimpleById(Long id);
 
     /**
+     * Find owner by orderId
+     */
+    @Query("select o.owner from Order o where o.id = :orderId")
+    Optional<String> findOwnerById(@Param("orderId") long orderId);
+
+    /**
      * Find by label and owner (allows checking unicity before inserting)
      */
     Optional<Order> findByLabelAndOwner(String label, String owner);
@@ -69,11 +75,6 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
         List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.map(OrderIdOnly::getId).getContent());
         // 3. Recreate the page from this
         return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
-    }
-
-    default Page<Order> findAllOrders(Specification<Order> orderSpecification, Pageable pageRequest) {
-        Page<Order> orders = findAll(orderSpecification, pageRequest);
-        return orders;
     }
 
     @Query(value = "select o.id as id from Order o order by o.creationDate desc",

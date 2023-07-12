@@ -27,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -109,9 +110,9 @@ public interface IOrderDataFileService {
     boolean hasDownloadErrors(Long orderId);
 
     /**
-     * Get a page of available files in a specific order
+     * Get a page of available files in a specific order and optionally in a suborder (fileTaskId)
      */
-    Page<OrderDataFileDTO> findAvailableFilesByOrder(Order order, Pageable page);
+    Page<OrderDataFileDTO> findAvailableDataFiles(Long orderId, @Nullable Long filesTaskId, Pageable page);
 
     /**
      * Does order have {@link OrderDataFile} in {@link fr.cnes.regards.modules.order.domain.FileState#AVAILABLE}

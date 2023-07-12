@@ -52,6 +52,7 @@ import org.springframework.util.MimeType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -283,8 +284,10 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     }
 
     @Override
-    public Page<OrderDataFileDTO> findAvailableFilesByOrder(Order order, Pageable page) {
-        Page<OrderDataFile> availableByOrderId = orderDataFileRepository.findAvailableByOrderId(order.getId(), page);
+    public Page<OrderDataFileDTO> findAvailableDataFiles(Long orderId, @Nullable Long filesTaskId, Pageable page) {
+        Page<OrderDataFile> availableByOrderId = orderDataFileRepository.findAvailableDataFiles(orderId,
+                                                                                                filesTaskId,
+                                                                                                page);
         return new PageImpl<>(availableByOrderId.stream().map(OrderDataFileDTO::fromOrderDataFile).toList(),
                               availableByOrderId.getPageable(),
                               availableByOrderId.getTotalElements());

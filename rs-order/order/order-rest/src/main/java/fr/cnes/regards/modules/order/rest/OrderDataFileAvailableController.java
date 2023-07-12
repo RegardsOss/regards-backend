@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
 import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
 import fr.cnes.regards.modules.order.service.IOrderService;
@@ -46,6 +45,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 /**
  * @author Thomas GUILLOU
@@ -94,16 +95,53 @@ public class OrderDataFileAvailableController implements IResourceController<Ord
         @PathVariable("orderId") Long orderId,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page,
         @Parameter(hidden = true) PagedResourcesAssembler<OrderDataFileDTO> assembler) {
-        Order order = orderService.loadSimple(orderId);
-        if (order != null) {
-            if (!orderService.hasCurrentUserAccessTo(order)) {
+        Optional<String> owner = orderService.getOrderOwner(orderId);
+        if (owner.isPresent()) {
+            if (!orderService.hasCurrentUserAccessTo(owner.get())) {
                 LOGGER.error("Ordered file is not accessible to current user ({})", authResolver.getUser());
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-            return ResponseEntity.ok(toPagedResources(orderDataFileService.findAvailableFilesByOrder(order, page),
+            return ResponseEntity.ok(toPagedResources(orderDataFileService.findAvailableDataFiles(orderId, null, page),
                                                       assembler));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @Operation(summary = "Get files available in specific suborder",
+               description = "Return files corresponding to the orderId and filesTaskId input, if exists and user has "
+                             + "access to it")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "The suborder has been successfully retrieved."),
+                            @ApiResponse(responseCode = "204",
+                                         description = "The suborder has been successfully retrieved, but no file is available."),
+                            @ApiResponse(responseCode = "206",
+                                         description = "The suborder has been successfully retrieved, but is not finished",
+                                         content = { @Content(mediaType = "application/json") }),
+                            @ApiResponse(responseCode = "404",
+                                         description = "Suborder not found",
+                                         content = { @Content(mediaType = "application/json") }),
+                            @ApiResponse(responseCode = "403",
+                                         description = "Suborder is not accessible for the current user.",
+                                         content = { @Content(mediaType = "application/html") }), })
+    @ResourceAccess(description = "Retrieve specified suborder", role = DefaultRole.REGISTERED_USER)
+    @GetMapping(path = OrderControllerEndpointConfiguration.FIND_AVAILABLE_FILES_BY_SUBORDER_PATH)
+    public ResponseEntity<PagedModel<EntityModel<OrderDataFileDTO>>> getAvailableFilesInSuborder(
+        @PathVariable("orderId") long orderId,
+        @PathVariable("filesTaskId") long filesTaskId,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page,
+        @Parameter(hidden = true) PagedResourcesAssembler<OrderDataFileDTO> assembler) {
+        Optional<String> owner = orderService.getOrderOwner(orderId);
+        if (owner.isPresent()) {
+            if (!orderService.hasCurrentUserAccessTo(owner.get())) {
+                LOGGER.error("Ordered file is not accessible to current user ({})", authResolver.getUser());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            return ResponseEntity.ok(toPagedResources(orderDataFileService.findAvailableDataFiles(orderId,
+                                                                                                  filesTaskId,
+                                                                                                  page), assembler));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 

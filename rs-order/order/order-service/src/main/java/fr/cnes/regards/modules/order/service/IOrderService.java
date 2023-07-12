@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 public interface IOrderService {
 
@@ -55,6 +55,11 @@ public interface IOrderService {
      * @return {@link Order}
      */
     Order getOrder(Long orderId);
+
+    /**
+     * Get {@link Order#getOwner()} by id
+     */
+    Optional<String> getOrderOwner(Long orderId);
 
     /**
      * Load an order.
@@ -168,7 +173,7 @@ public interface IOrderService {
     boolean isActionAvailable(long orderId, OrderService.Action action);
 
     /**
-     * Check if current user have access to order in parameter.
+     * Check if current user has access to the order using order's owner.
      * User must validate one of the following conditions :
      * <li>have role ADMIN_PROJECT</li>
      * <li>have role ADMIN_INSTANCE</li>
@@ -176,5 +181,5 @@ public interface IOrderService {
      *
      * @return false if none of these conditions are validated
      */
-    boolean hasCurrentUserAccessTo(Order order);
+    boolean hasCurrentUserAccessTo(String owner);
 }

@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.order.domain;
 /**
  * @author Sébastien Binda
  */
-public class OrderControllerEndpointConfiguration {
+public final class OrderControllerEndpointConfiguration {
 
     public static final String ORDERS_FILES_MAPPING = "/orders/files";
 
@@ -37,4 +37,10 @@ public class OrderControllerEndpointConfiguration {
 
     public static final String FIND_AVAILABLE_FILES_BY_ORDER_PATH = "/orders/{orderId}/files/available";
 
+    public static final String FIND_AVAILABLE_FILES_BY_SUBORDER_PATH = "/orders/{orderId}/filesTask/{filesTaskId}/files"
+                                                                       + "/available";
+
+    private OrderControllerEndpointConfiguration() {
+        // class of constants
+    }
 }

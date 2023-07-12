@@ -120,6 +120,8 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
      */
     private Long orderId;
 
+    private Long filesTaskId;
+
     /**
      * DataObject IP_ID
      */
@@ -132,15 +134,22 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     private String productId;
 
+    private Integer version = 0;
+
     public OrderDataFile() {
         super();
     }
 
+    // this constructor without productId is required in case an OrderDataFile is associated to many products
     public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId) {
-        this(dataFile, ipId, orderId, null);
+        this(dataFile, ipId, orderId, null, null);
     }
 
-    public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId, String productId) {
+    public OrderDataFile(DataFile dataFile,
+                         UniformResourceName ipId,
+                         Long orderId,
+                         String productId,
+                         Integer version) {
         super.setFilename(dataFile.getFilename());
         super.setFilesize(dataFile.getFilesize());
         super.setUri(dataFile.getUri());
@@ -154,13 +163,15 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         this.ipId = ipId;
         this.orderId = orderId;
         this.productId = productId;
+        this.version = (version != null) ? version : 0;
     }
 
     public static OrderDataFile createAvailable(DataFile datafile,
                                                 Long orderId,
                                                 UniformResourceName id,
-                                                String providerId) {
-        OrderDataFile orderDataFile = new OrderDataFile(datafile, id, orderId, providerId);
+                                                String providerId,
+                                                Integer version) {
+        OrderDataFile orderDataFile = new OrderDataFile(datafile, id, orderId, providerId, version);
         orderDataFile.setState(FileState.AVAILABLE);
         return orderDataFile;
     }
@@ -240,6 +251,11 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         return orderId;
     }
 
+    @Column(name = "files_task_id")
+    public Long getFilesTaskId() {
+        return filesTaskId;
+    }
+
     @Column(name = "download_error_reason")
     @Type(type = "text")
     public String getDownloadError() {
@@ -265,12 +281,25 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         return productId;
     }
 
+    @Column(name = "version")
+    public Integer getVersion() {
+        return version;
+    }
+
     public void setProductId(String productId) {
         this.productId = productId;
     }
 
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public void setOrderId(Long orderId) {
         this.orderId = orderId;
+    }
+
+    public void setFilesTaskId(Long filesTaskId) {
+        this.filesTaskId = filesTaskId;
     }
 
     public void setId(Long id) {
@@ -311,5 +340,29 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         // and service storage, for product files
         // to detect that, we use download url which is different.
         return getUrl().endsWith("/dam");
+    }
+
+    @Override
+    public String toString() {
+        return "OrderDataFile{"
+               + "id="
+               + id
+               + ", state="
+               + state
+               + ", orderId="
+               + orderId
+               + ", filesTaskId="
+               + filesTaskId
+               + ", ipId="
+               + ipId
+               + ", downloadError='"
+               + downloadError
+               + '\''
+               + ", productId='"
+               + productId
+               + '\''
+               + ", version="
+               + version
+               + '}';
     }
 }
