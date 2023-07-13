@@ -57,16 +57,16 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
                                    response.status(),
                                    response.reason()));
         HttpHeaders responseHeaders = new HttpHeaders();
-        response.headers()
-                .entrySet()
-                .forEach(entry -> responseHeaders.put(entry.getKey(), new ArrayList<>(entry.getValue())));
+        response.headers().forEach((key, value) -> responseHeaders.put(key, new ArrayList<>(value)));
 
-        byte[] responseBody;
-        try {
-            responseBody = ByteStreams.toByteArray(response.body().asInputStream());
-        } catch (IOException e) {
-            LOGGER.debug("Failed to process response body.", e);
-            return super.decode(methodKey, response);
+        byte[] responseBody = null;
+        if (response.body() != null) {
+            try {
+                responseBody = ByteStreams.toByteArray(response.body().asInputStream());
+            } catch (IOException e) {
+                LOGGER.debug("Failed to process response body.", e);
+                return super.decode(methodKey, response);
+            }
         }
 
         Charset responseCharset = null;

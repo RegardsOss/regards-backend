@@ -23,22 +23,37 @@ package fr.cnes.regards.modules.order.domain;
  */
 public final class OrderControllerEndpointConfiguration {
 
-    public static final String ORDERS_FILES_MAPPING = "/orders/files";
+    public static final String ORDERS_ROOT_MAPPING = "/orders";
 
-    public static final String ORDERS_PUBLIC_FILES_MAPPING = "/orders/public/files";
+    // FILES PATHS
+
+    public static final String ORDERS_FILES_MAPPING = ORDERS_ROOT_MAPPING + "/files";
 
     public static final String ORDER_DATA_FILE_ID = "/{dataFileId}";
 
     public static final String ORDERS_FILES_DATA_FILE_ID = ORDERS_FILES_MAPPING + ORDER_DATA_FILE_ID;
 
+    // PUBLIC FILES PATHS
+
+    public static final String ORDERS_PUBLIC_FILES_MAPPING = ORDERS_ROOT_MAPPING + "/public/files";
+
     public static final String PUBLIC_ORDERS_FILES_DATA_FILE_ID = ORDERS_PUBLIC_FILES_MAPPING + ORDER_DATA_FILE_ID;
 
-    public static final String ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES = "/orders/{orderId}/dataset/{datasetId}/files";
+    //  DATASET PATHS
 
-    public static final String FIND_AVAILABLE_FILES_BY_ORDER_PATH = "/orders/{orderId}/files/available";
+    public static final String ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES = ORDERS_ROOT_MAPPING
+                                                                          + "/{orderId}/dataset"
+                                                                          + "/{datasetId}/files";
 
-    public static final String FIND_AVAILABLE_FILES_BY_SUBORDER_PATH = "/orders/{orderId}/filesTask/{filesTaskId}/files"
-                                                                       + "/available";
+    // AVAILABLE PATHS
+
+    public static final String FIND_AVAILABLE_FILES_BY_ORDER_PATH = ORDERS_ROOT_MAPPING
+                                                                    + "/{orderId}/files"
+                                                                    + "/available";
+
+    public static final String FIND_AVAILABLE_FILES_BY_SUBORDER_PATH = ORDERS_ROOT_MAPPING
+                                                                       + "/{orderId}/filesTask"
+                                                                       + "/{filesTaskId}/files/available";
 
     private OrderControllerEndpointConfiguration() {
         // class of constants

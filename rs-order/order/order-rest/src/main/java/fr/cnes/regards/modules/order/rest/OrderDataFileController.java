@@ -102,10 +102,9 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @RequestMapping(method = RequestMethod.GET,
                     path = OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
                     produces = MediaType.ALL_VALUE)
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("dataFileId") Long dataFileId,
-                                                            HttpServletResponse response)
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("dataFileId") Long dataFileId)
         throws NoSuchElementException {
-        return manageFile(Boolean.FALSE, dataFileId, Optional.empty(), response);
+        return manageFile(Boolean.FALSE, dataFileId, Optional.empty());
     }
 
     @ResourceAccess(description = "Test file download availability", role = DefaultRole.PUBLIC)
@@ -113,10 +112,9 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID)
     public ResponseEntity<InputStreamResource> testDownloadFile(@PathVariable("dataFileId") Long dataFileId,
                                                                 @RequestParam(name = IOrderService.ORDER_TOKEN)
-                                                                String token,
-                                                                HttpServletResponse response)
+                                                                String token)
         throws NoSuchElementException {
-        return manageFile(Boolean.TRUE, dataFileId, Optional.ofNullable(token), response);
+        return manageFile(Boolean.TRUE, dataFileId, Optional.ofNullable(token));
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
@@ -125,11 +123,9 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID,
                     produces = MediaType.ALL_VALUE)
     public ResponseEntity<InputStreamResource> publicDownloadFile(@PathVariable("dataFileId") Long dataFileId,
-                                                                  @RequestParam(name = IOrderService.ORDER_TOKEN,
-                                                                                required = true) String token,
-                                                                  HttpServletResponse response)
+                                                                  @RequestParam(name = IOrderService.ORDER_TOKEN) String token)
         throws NoSuchElementException {
-        return manageFile(Boolean.FALSE, dataFileId, Optional.of(token), response);
+        return manageFile(Boolean.FALSE, dataFileId, Optional.of(token));
     }
 
     /**
@@ -138,8 +134,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
      */
     private ResponseEntity<InputStreamResource> manageFile(Boolean headRequest,
                                                            Long dataFileId,
-                                                           Optional<String> validityToken,
-                                                           HttpServletResponse response) throws NoSuchElementException {
+                                                           Optional<String> validityToken) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user = null;
         if (validityToken.isPresent()) {

@@ -1459,6 +1459,11 @@
             <!-- Order -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.order</groupId>
+                <artifactId>order-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.order</groupId>
                 <artifactId>order-rest</artifactId>
                 <version>${revision}</version>
             </dependency>
