@@ -50,6 +50,9 @@ public class SearchRequestParameters implements AbstractSearchParameters {
     @Schema(description = "Filter on creation date")
     private DatesRangeRestriction creationDate = new DatesRangeRestriction();
 
+    @Schema(description = "Filter on last update date")
+    private DatesRangeRestriction lastUpdate = new DatesRangeRestriction();
+
     @Schema(description = "List of internal request states",
             example = "TO_SCHEDULE|CREATED|WAITING_VERSIONING_MODE|BLOCKED|RUNNING|ERROR|ABORTED|IGNORED")
     private ValuesRestriction<InternalRequestState> requestStates;
@@ -114,13 +117,31 @@ public class SearchRequestParameters implements AbstractSearchParameters {
         this.creationDate = creationDate;
     }
 
-    public SearchRequestParameters withLastUpdateAfter(OffsetDateTime after) {
+    public SearchRequestParameters withCreationDateAfter(OffsetDateTime after) {
         this.creationDate.setAfter(after);
         return this;
     }
 
-    public SearchRequestParameters withLastUpdateBefore(OffsetDateTime before) {
+    public SearchRequestParameters withCreationDateBefore(OffsetDateTime before) {
         this.creationDate.setBefore(before);
+        return this;
+    }
+
+    public DatesRangeRestriction getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(DatesRangeRestriction lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+
+    public SearchRequestParameters withLastUpdateAfter(OffsetDateTime after) {
+        this.lastUpdate.setAfter(after);
+        return this;
+    }
+
+    public SearchRequestParameters withLastUpdateBefore(OffsetDateTime before) {
+        this.lastUpdate.setBefore(before);
         return this;
     }
 

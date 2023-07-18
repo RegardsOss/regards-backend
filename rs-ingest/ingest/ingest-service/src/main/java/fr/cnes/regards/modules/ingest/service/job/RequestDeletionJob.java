@@ -36,7 +36,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +85,11 @@ public class RequestDeletionJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         int nbRequestsDeleted = 0;
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
+
+        // Override criteria on last update
+        criteria.withLastUpdateBefore(RequestDeletionJob.getValidLastUpdateBefore(criteria.getLastUpdate()
+                                                                                          .getBefore()));
+        // Override state in filter
         if (criteria.getRequestStates() == null) {
             criteria.withRequestStatesExcluded(Set.of(InternalRequestState.RUNNING));
         } else {
@@ -128,6 +135,20 @@ public class RequestDeletionJob extends AbstractJob<Void> {
             return internalRequestStates;
         }
         return requestStates;
+    }
+
+    /**
+     * Get a safe date, that cannot exceed current date, to avoid processing any
+     * requests created and/or updated while this job is running
+     *
+     * @param requestLastUpdateBefore request criteria on last update to be before a date
+     * @return a valid date to use inside job criteria
+     */
+    public static OffsetDateTime getValidLastUpdateBefore(@Nullable OffsetDateTime requestLastUpdateBefore) {
+        if (requestLastUpdateBefore == null || requestLastUpdateBefore.isAfter(OffsetDateTime.now())) {
+            return OffsetDateTime.now();
+        }
+        return requestLastUpdateBefore;
     }
 
     @Override
