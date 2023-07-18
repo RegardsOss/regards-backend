@@ -72,6 +72,10 @@ public abstract class AbstractRequest {
     @Column(name = "creation_date")
     private OffsetDateTime creationDate;
 
+    @NotNull(message = "Last update is required")
+    @Column(name = "last_update")
+    private OffsetDateTime lastUpdate;
+
     @Column(name = "submission_date")
     private OffsetDateTime submissionDate;
 
@@ -112,6 +116,7 @@ public abstract class AbstractRequest {
                            String providerId,
                            String dtype) {
         this.creationDate = OffsetDateTime.now();
+        this.lastUpdate = OffsetDateTime.now();
         this.sessionOwner = sessionOwner;
         this.session = session;
         this.submissionDate = submissionDate;
@@ -120,6 +125,9 @@ public abstract class AbstractRequest {
         this.state = InternalRequestState.TO_SCHEDULE;
     }
 
+    @Column(length = 128, name = "dtype", insertable = false, updatable = false)
+    private String dtype;
+
     public Long getId() {
         return id;
     }
@@ -127,9 +135,6 @@ public abstract class AbstractRequest {
     public void setId(Long id) {
         this.id = id;
     }
-
-    @Column(length = 128, name = "dtype", insertable = false, updatable = false)
-    private String dtype;
 
     public List<String> getRemoteStepGroupIds() {
         return remoteStepGroupIds;
@@ -238,8 +243,12 @@ public abstract class AbstractRequest {
         return state;
     }
 
+    /**
+     * Set state and update last update date of the request
+     */
     public void setState(InternalRequestState state) {
         this.state = state;
+        this.setLastUpdate(OffsetDateTime.now());
     }
 
     public String getDtype() {
@@ -248,5 +257,13 @@ public abstract class AbstractRequest {
 
     public void setDtype(String dtype) {
         this.dtype = dtype;
+    }
+
+    public OffsetDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(OffsetDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 }

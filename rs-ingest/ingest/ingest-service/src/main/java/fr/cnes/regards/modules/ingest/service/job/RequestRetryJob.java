@@ -76,9 +76,17 @@ public class RequestRetryJob extends AbstractJob<Void> {
         logger.debug("Running job ...");
         long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, requestIterationLimit, Sort.Direction.ASC, "id");
+        // Override criteria on last update
+        criteria.withLastUpdateBefore(RequestDeletionJob.getValidLastUpdateBefore(criteria.getLastUpdate()
+                                                                                          .getBefore()));
         // Override state in filter
-        criteria.withRequestStatesExcluded(null)
-                .withRequestStatesIncluded(Set.of(InternalRequestState.ERROR, InternalRequestState.ABORTED));
+        if (criteria.getRequestStates() == null) {
+            criteria.withRequestStatesIncluded(Set.of(InternalRequestState.ERROR, InternalRequestState.ABORTED));
+        } else {
+            criteria.getRequestStates()
+                    .setValues(RequestDeletionJob.getValidRequestStates(criteria.getRequestStates()));
+        }
+
         int nbRelaunchedRequests = 0;
         Page<AbstractRequest> requestsPage;
         do {
