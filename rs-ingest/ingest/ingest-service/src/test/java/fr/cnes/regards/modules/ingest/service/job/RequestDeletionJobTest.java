@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -83,6 +84,28 @@ public class RequestDeletionJobTest {
                             listContainingRunning,
                             requestStateRandomList);
 
+    }
+
+    @Test
+    public void testValidLastUpdateBefore_validDate() {
+        OffsetDateTime threeWeeksAgo = OffsetDateTime.now().minusWeeks(3);
+        Assert.assertEquals("date should not change when valid",
+                            threeWeeksAgo,
+                            RequestDeletionJob.getValidLastUpdateBefore(threeWeeksAgo));
+    }
+
+    @Test
+    public void testValidLastUpdateBefore_invalidDate() {
+        OffsetDateTime threeWeeksAgo = OffsetDateTime.now().plusWeeks(3);
+        Assert.assertNotEquals("date should be changed as it cannot exceed now",
+                               threeWeeksAgo,
+                               RequestDeletionJob.getValidLastUpdateBefore(threeWeeksAgo));
+    }
+
+    @Test
+    public void testValidLastUpdateBefore_nullDate() {
+        Assert.assertNotNull("date should be changed as it cannot exceed now",
+                             RequestDeletionJob.getValidLastUpdateBefore(null));
     }
 
     private Collection<InternalRequestState> getValidRequestStateIncluded(Collection<InternalRequestState> list) {
