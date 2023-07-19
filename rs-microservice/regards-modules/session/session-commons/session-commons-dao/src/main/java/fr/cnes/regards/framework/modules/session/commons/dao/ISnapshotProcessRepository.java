@@ -51,6 +51,9 @@ public interface ISnapshotProcessRepository extends JpaRepository<SnapshotProces
     @Lock(LockModeType.PESSIMISTIC_READ)
     Page<SnapshotProcess> findByJobIdIsNull(Pageable pageable);
 
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    Page<SnapshotProcess> findByJobIdIsNotNullOrderByLastUpdateDateAsc(Pageable pageable);
+
     @Modifying
     @Query("DELETE FROM SnapshotProcess p where p.source NOT IN (SELECT s.source FROM SessionStep s) "
            + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")

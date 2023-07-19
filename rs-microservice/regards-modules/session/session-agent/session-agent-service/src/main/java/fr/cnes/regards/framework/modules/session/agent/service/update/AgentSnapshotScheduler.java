@@ -42,7 +42,17 @@ import java.time.Instant;
 @EnableScheduling
 public class AgentSnapshotScheduler extends AbstractTaskScheduler {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotScheduler.class);
+
+    public static final Long MAX_TASK_DELAY = 60L; // In second
+
+    public static final String DEFAULT_INITIAL_DELAY = "10000";
+
+    public static final String DEFAULT_SCHEDULING_DELAY = "5000"; // every 5 seconds
+
+    public static final String SNAPSHOT_PROCESS = "Session Step Snapshot";
+
+    public static final String SNAPSHOT_PROCESS_TITLE = "Snapshot process scheduling";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -58,16 +68,6 @@ public class AgentSnapshotScheduler extends AbstractTaskScheduler {
 
     @Value("${spring.application.name}")
     private String microserviceName;
-
-    public static final Long MAX_TASK_DELAY = 60L; // In second
-
-    public static final String DEFAULT_INITIAL_DELAY = "10000";
-
-    public static final String DEFAULT_SCHEDULING_DELAY = "5000"; // every 5 seconds
-
-    public static final String SNAPSHOT_PROCESS = "Session Step Snapshot";
-
-    public static final String SNAPSHOT_PROCESS_TITLE = "Snapshot process scheduling";
 
     /**
      * Snapshot task
