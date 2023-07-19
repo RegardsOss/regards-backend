@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.modules.session.agent.service.update;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
@@ -34,7 +35,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -102,7 +102,7 @@ public class AgentSnapshotJobService {
                      Duration.between(schedulerStartDate, OffsetDateTime.now()).toMillis());
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @MultitenantTransactional(propagation = Propagation.REQUIRED)
     public Pair<Boolean, Integer> handlePageSnapshots(OffsetDateTime schedulerStartDate, Pageable pageable) {
         Page<SnapshotProcess> snapshotPage = this.snapshotRepo.findByJobIdIsNull(pageable);
         // Filter out all snapshot processes with no step events to update
