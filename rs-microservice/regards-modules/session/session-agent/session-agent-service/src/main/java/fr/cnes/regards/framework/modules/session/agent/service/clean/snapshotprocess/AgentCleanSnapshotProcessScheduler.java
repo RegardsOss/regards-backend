@@ -65,9 +65,15 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
 
     public static final String DEFAULT_SCHEDULING_DELAY = "2629800000"; // once a month
 
+    public static final String DEFAULT_DEAD_JOBS_SCHEDULING_DELAY = "600000"; // one every 10 minutes
+
     public static final String CLEAN_SNAPSHOT_PROCESS = "Clean snapshot process";
 
     public static final String CLEAN_SNAPSHOT_PROCESS_TITLE = "Clean snapshot process scheduling";
+
+    public static final String CLEAN_DEAD_JOBS_PROCESS_TITLE = "Clean dead jobs process scheduling";
+
+    public static final String CLEAN_DEAD_JOBS_PROCESS = "Clean snapshot process";
 
     /**
      * Snapshot task
@@ -75,6 +81,11 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
     private final LockingTaskExecutor.Task cleanSnapshotProcessTask = () -> {
         LockAssert.assertLocked();
         agentCleanSnapshotProcessJobService.scheduleJob();
+    };
+
+    private final LockingTaskExecutor.Task cleanDeadJobsTask = () -> {
+        LockAssert.assertLocked();
+        agentCleanSnapshotProcessJobService.cleanDeadJobs();
     };
 
     /**
@@ -87,15 +98,32 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
                                   + DEFAULT_SCHEDULING_DELAY
                                   + "}")
     protected void scheduleCleanSnapshotProcess() {
+        runTaskForAllTenants(cleanSnapshotProcessTask, CLEAN_SNAPSHOT_PROCESS_TITLE, CLEAN_SNAPSHOT_PROCESS);
+    }
+
+    /**
+     * Clean snapshot process to remove dead jobs if any
+     */
+    @Scheduled(initialDelayString = "${regards.session.agent.clean.snapshot.dead.jobs.scheduler.bulk.initial.delay:"
+                                    + DEFAULT_INITIAL_DELAY
+                                    + "}",
+               fixedDelayString = "${regards.session.agent.clean.snapshot.dead.jobs.scheduler.bulk.delay:"
+                                  + DEFAULT_DEAD_JOBS_SCHEDULING_DELAY
+                                  + "}")
+    protected void scheduleCleanDeadJobs() {
+        runTaskForAllTenants(cleanDeadJobsTask, CLEAN_DEAD_JOBS_PROCESS_TITLE, CLEAN_DEAD_JOBS_PROCESS);
+    }
+
+    private void runTaskForAllTenants(LockingTaskExecutor.Task task, String taskTitle, String taskType) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                traceScheduling(tenant, CLEAN_SNAPSHOT_PROCESS);
-                lockingTaskExecutors.executeWithLock(cleanSnapshotProcessTask,
+                traceScheduling(tenant, taskType);
+                lockingTaskExecutors.executeWithLock(task,
                                                      new LockConfiguration(microserviceName + "_clean-snapshot-process",
                                                                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
-                handleSchedulingError(CLEAN_SNAPSHOT_PROCESS, CLEAN_SNAPSHOT_PROCESS_TITLE, e);
+                handleSchedulingError(taskType, taskTitle, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

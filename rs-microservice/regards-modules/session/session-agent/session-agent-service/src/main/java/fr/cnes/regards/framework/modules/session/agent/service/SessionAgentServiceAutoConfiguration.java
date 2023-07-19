@@ -67,8 +67,9 @@ public class SessionAgentServiceAutoConfiguration {
     }
 
     @Bean
-    public AgentCleanSnapshotProcessJobService agentCleanSnapshotProcessJobService() {
-        return new AgentCleanSnapshotProcessJobService();
+    public AgentCleanSnapshotProcessJobService agentCleanSnapshotProcessJobService(JobInfoService jobInfoService,
+                                                                                   ISnapshotProcessRepository snapshotProcessRepo) {
+        return new AgentCleanSnapshotProcessJobService(jobInfoService, snapshotProcessRepo);
     }
 
     @Bean

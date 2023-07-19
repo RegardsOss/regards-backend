@@ -22,9 +22,11 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service to launch {@link AgentCleanSnapshotProcessJob}
@@ -36,11 +38,15 @@ public class AgentCleanSnapshotProcessJobService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanSnapshotProcessJobService.class);
 
-    @Autowired
-    private JobInfoService jobInfoService;
+    private final JobInfoService jobInfoService;
 
-    @Autowired
-    private ISnapshotProcessRepository snapshotProcessRepo;
+    private final ISnapshotProcessRepository snapshotProcessRepo;
+
+    public AgentCleanSnapshotProcessJobService(JobInfoService jobInfoService,
+                                               ISnapshotProcessRepository snapshotProcessRepo) {
+        this.jobInfoService = jobInfoService;
+        this.snapshotProcessRepo = snapshotProcessRepo;
+    }
 
     public void scheduleJob() {
         LOGGER.trace("[CLEAN SNAPSHOT PROCESS SCHEDULER] Scheduling job ...");
@@ -48,7 +54,21 @@ public class AgentCleanSnapshotProcessJobService {
         JobInfo jobInfo = new JobInfo(false, 0, null, null, AgentCleanSnapshotProcessJob.class.getName());
         // create job
         jobInfoService.createAsQueued(jobInfo);
-        LOGGER.trace("[CLEAN SNAPSHOT PROCESS ] AgentCleanSnapshotProcessJob scheduled in {}",
-                     System.currentTimeMillis() - start);
+        LOGGER.trace("[CLEAN SNAPSHOT PROCESS SCHEDULER] Job scheduled in {}", System.currentTimeMillis() - start);
+    }
+
+    @MultitenantTransactional
+    public void cleanDeadJobs() {
+        // Retrieve first page of active snapshot
+        Pageable page = Pageable.ofSize(100);
+        // Find processes with a job running associated
+        Page<SnapshotProcess> snapshots = snapshotProcessRepo.findByJobIdIsNotNullOrderByLastUpdateDateAsc(page);
+        // For each one if associated job does not exist or is finished, remove the jobId from the snapshot process
+        snapshots.forEach(snapshot -> {
+            JobInfo job = jobInfoService.retrieveJob(snapshot.getJobId());
+            if (job == null || job.getStatus().getStatus().isFinished()) {
+                snapshot.setJobId(null);
+            }
+        });
     }
 }
