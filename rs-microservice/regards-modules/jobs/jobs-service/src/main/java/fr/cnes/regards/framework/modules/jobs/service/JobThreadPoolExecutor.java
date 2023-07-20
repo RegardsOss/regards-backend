@@ -32,6 +32,7 @@ import org.springframework.util.FileSystemUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.OffsetDateTime;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -132,6 +133,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         }
         runtimeTenantResolver.forceTenant(jobInfo.getTenant());
         jobInfo.updateStatus(JobStatus.RUNNING);
+        jobInfo.setLastHeartbeatDate(OffsetDateTime.now());
         jobInfoService.save(jobInfo);
         publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.RUNNING));
         super.beforeExecute(t, r);
