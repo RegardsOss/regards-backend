@@ -56,7 +56,7 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
 
     // JOBS
     @Autowired
-    private IJobInfoService jobInfoService;
+    protected IJobInfoService jobInfoService;
 
     // SESSION AGENT
 

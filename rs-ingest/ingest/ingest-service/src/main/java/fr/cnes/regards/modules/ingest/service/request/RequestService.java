@@ -305,7 +305,7 @@ public class RequestService implements IRequestService {
 
         // Set all requests status to TO_SCHEDULE, requests remaining blocked will be updated after.
         requests.forEach(r -> r.setState(InternalRequestState.TO_SCHEDULE));
-        
+
         if (requestType == RequestTypeEnum.INGEST) {
             // For ingest request only reset to blocked status blocked requests.
             // Requests that can be scheduled will be run in IngestRequestScheduler.

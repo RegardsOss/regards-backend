@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
@@ -25,6 +27,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
 import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsIT;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepService;
+import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessJobService;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
@@ -36,6 +39,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -44,6 +48,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Test for {@link AgentCleanSnapshotProcessService}
@@ -65,6 +70,9 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtil
     private AgentCleanSnapshotProcessService agentCleanSnapshotProcessService;
 
     @Autowired
+    private AgentCleanSnapshotProcessJobService agentCleanSnapshotProcessJobService;
+
+    @Autowired
     private IStepPropertyUpdateRequestRepository repo;
 
     @Autowired
@@ -76,6 +84,49 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtil
     @Override
     public void doInit() {
         UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(limitStoreSnapshotProcess);
+    }
+
+    @Test
+    @Purpose("Test that dead jobs are removed from snapshot process through scheduler")
+    public void test_clean_dead_jobs_scheduler() {
+
+        // GIVEN two  snapshot process. One associated to running job and one associated to a failed job.
+
+        JobInfo jobInfoRunning = new JobInfo(false, 1, null, "test", "fakeJob");
+        jobInfoRunning.getStatus().setStatus(JobStatus.RUNNING);
+        jobInfoRunning.setId(UUID.randomUUID());
+        jobInfoRunning = jobInfoService.save(jobInfoRunning);
+
+        JobInfo jobInfoDead = new JobInfo(false, 1, null, "test", "fakeJob");
+        jobInfoDead.getStatus().setStatus(JobStatus.FAILED);
+        jobInfoDead.setId(UUID.randomUUID());
+        jobInfoDead = jobInfoService.save(jobInfoDead);
+
+        SnapshotProcess processRunning = new SnapshotProcess();
+        processRunning.setSource("SOURCE");
+        processRunning.setLastUpdateDate(OffsetDateTime.now().minusMinutes(1));
+        processRunning.setJobId(jobInfoRunning.getId());
+
+        SnapshotProcess processDead = new SnapshotProcess();
+        processDead.setSource("SOURCE_2");
+        processDead.setLastUpdateDate(OffsetDateTime.now().minusMinutes(1));
+        processDead.setJobId(jobInfoDead.getId());
+
+        snapshotProcessRepo.save(processRunning);
+        snapshotProcessRepo.save(processDead);
+
+        Page<SnapshotProcess> processes = snapshotProcessRepo.findAll(PageRequest.ofSize(10));
+        Assert.assertEquals(2, processes.getTotalElements());
+        Assert.assertEquals(0, processes.stream().filter(p -> p.getJobId() == null).count());
+
+        // When clean dead job scheduler is executed
+        agentCleanSnapshotProcessJobService.cleanDeadJobs();
+
+        // Then process associated to dead job is updated to remove job association.
+        processes = snapshotProcessRepo.findAll(PageRequest.ofSize(10));
+        Assert.assertEquals(2, processes.getTotalElements());
+        Assert.assertEquals(1, processes.stream().filter(p -> p.getJobId() == null).count());
+
     }
 
     @Test
