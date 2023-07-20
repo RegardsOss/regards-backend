@@ -286,6 +286,8 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
             jobInfo.setJob(job);
             // Run job (before executing Job, JobThreadPoolExecutor save JobInfo, have a look if you don't believe me)
             future = (RunnableFuture<Void>) threadPool.submit(job);
+            // Initiate first heart beat of job
+            jobInfo.setLastHeartbeatDate(OffsetDateTime.now());
             jobsMap.put(jobInfo, future);
             return future;
         } catch (RejectedExecutionException e) {
