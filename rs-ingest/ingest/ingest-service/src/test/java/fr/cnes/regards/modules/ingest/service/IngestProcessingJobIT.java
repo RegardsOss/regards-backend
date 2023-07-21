@@ -85,7 +85,9 @@ import java.util.Set;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob",
                                    "eureka.client.enabled=false",
-                                   "regards.ingest.aip.delete.bulk.delay=100" })
+                                   "regards.ingest.aip.delete.bulk.delay=100",
+                                   "regards.ingest.schedule.request.initial.delay=500",
+                                   "regards.ingest.schedule.request.delay=500" })
 public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")
@@ -402,7 +404,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
         Set<AIPEntity> resultAips = aipRepository.findBySipSipId(resultSip.getSipId());
         Assert.assertNotNull(resultAips);
-        Assert.assertTrue(resultAips.size() == 1);
+        Assert.assertEquals(1, resultAips.size());
         AIPEntity resultAip = resultAips.stream().findFirst().get();
         Assert.assertNotNull(resultAip);
         Assert.assertEquals(AIPState.GENERATED, resultAip.getState());
