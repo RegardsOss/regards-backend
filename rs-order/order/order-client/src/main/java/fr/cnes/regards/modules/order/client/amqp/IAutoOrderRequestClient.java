@@ -16,38 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.client.mocks;
+package fr.cnes.regards.modules.order.client.amqp;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 
-import java.util.Set;
-
-import static fr.cnes.regards.modules.order.client.utils.OrderTestConstants.USER_EMAIL;
-import static fr.cnes.regards.modules.order.client.utils.OrderTestConstants.USER_ROLE;
+import java.util.List;
 
 /**
+ * Interface to create automatically orders from {@link OrderRequestDto}s via amqp messages.
+ *
  * @author Iliana Ghazali
  **/
-public class TestAuthenticationResolver implements IAuthenticationResolver {
+public interface IAutoOrderRequestClient {
 
-    @Override
-    public String getUser() {
-        return USER_EMAIL;
-    }
-
-    @Override
-    public String getRole() {
-        return USER_ROLE;
-    }
-
-    @Override
-    public String getToken() {
-        return null;
-    }
-
-    @Override
-    public Set<String> getAccessGroups() {
-        return IAuthenticationResolver.super.getAccessGroups();
-    }
+    /**
+     * Create order from {@link OrderRequestDto}s requests
+     *
+     * @param orderRequests requests containing metadata to create an order
+     */
+    void createOrderFromRequests(List<OrderRequestDto> orderRequests);
 
 }

@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.order.client.utils;
+package fr.cnes.regards.modules.order.client.env.utils;
 
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.urn.DataType;
@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static fr.cnes.regards.modules.order.client.utils.OrderTestConstants.*;
+import static fr.cnes.regards.modules.order.client.env.utils.OrderTestConstants.*;
 
 @Service
 public class OrderTestUtilsService {

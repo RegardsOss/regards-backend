@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.client;
+package fr.cnes.regards.modules.order.client.feign;
 
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
@@ -24,8 +24,8 @@ import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.order.client.config.TestConfiguration;
-import fr.cnes.regards.modules.order.client.utils.OrderTestUtilsService;
+import fr.cnes.regards.modules.order.client.env.config.OrderClientTestConfiguration;
+import fr.cnes.regards.modules.order.client.env.utils.OrderTestUtilsService;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
@@ -54,7 +54,7 @@ import java.util.List;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_data_available_client_it" })
 @ActiveProfiles("testFeign")
-@ContextConfiguration(classes = TestConfiguration.class)
+@ContextConfiguration(classes = OrderClientTestConfiguration.class)
 public class OrderDataFileAvailableClientIT extends AbstractRegardsWebIT {
 
     // CLIENTS

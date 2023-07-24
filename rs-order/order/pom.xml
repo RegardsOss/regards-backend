@@ -37,6 +37,7 @@
     </properties>
 
     <modules>
+        <module>order-client</module>
         <module>order-domain</module>
         <module>order-dao</module>
         <module>order-dto</module>

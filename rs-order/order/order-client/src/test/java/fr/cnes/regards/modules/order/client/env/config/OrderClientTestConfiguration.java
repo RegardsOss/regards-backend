@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.client.config;
+package fr.cnes.regards.modules.order.client.env.config;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -25,7 +25,8 @@ import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.order.client.mocks.TestAuthenticationResolver;
+import fr.cnes.regards.modules.order.client.env.mocks.AutoOrderResponseClientMock;
+import fr.cnes.regards.modules.order.client.env.mocks.TestAuthenticationResolver;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -40,11 +41,16 @@ import org.springframework.context.annotation.Configuration;
  * @author Iliana Ghazali
  **/
 @Configuration
-public class TestConfiguration {
+public class OrderClientTestConfiguration {
 
     @Bean
     IAuthenticationResolver authenticationResolver() {
         return new TestAuthenticationResolver();
+    }
+
+    @Bean
+    AutoOrderResponseClientMock autoOrderResponseClientMock() {
+        return new AutoOrderResponseClientMock();
     }
 
     @MockBean

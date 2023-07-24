@@ -63,6 +63,10 @@
             <groupId>fr.cnes.regards.modules.order</groupId>
             <artifactId>order-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.order</groupId>
+            <artifactId>order-amqp</artifactId>
+        </dependency>
         <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
