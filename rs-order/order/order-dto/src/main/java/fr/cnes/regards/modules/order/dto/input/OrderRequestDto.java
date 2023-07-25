@@ -49,9 +49,9 @@ public class OrderRequestDto {
     /**
      * Order identifier provided by the user. Is nullable in case of REST.
      */
-    @Size(message = "provided correlationId must not exceed 100 characters.", max = 100)
+    @Size(message = "provided correlationId must not exceed 255 characters.", max = 255)
     @Nullable
-    private final String correlationId;
+    private String correlationId;
 
     /**
      * Ordering user login name.
@@ -90,6 +90,10 @@ public class OrderRequestDto {
     @Nullable
     public String getCorrelationId() {
         return correlationId;
+    }
+
+    public void setCorrelationId(@Nullable String correlationId) {
+        this.correlationId = correlationId;
     }
 
     @Nullable

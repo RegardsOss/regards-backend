@@ -21,15 +21,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.modules</groupId>
-    <artifactId>delivery</artifactId>
-    <packaging>pom</packaging>
+    <groupId>fr.cnes.regards.modules.delivery</groupId>
+    <artifactId>delivery-dao</artifactId>
+    <packaging>jar</packaging>
 
     <parent>
-        <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-oss-backend</artifactId>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>delivery</artifactId>
         <version>${revision}</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -53,12 +52,21 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>delivery-domain</module>
-        <module>delivery-dao</module>
-        <module>delivery-dto</module>
-        <module>delivery-rest</module>
-        <module>delivery-amqp</module>
-        <module>delivery-service</module>
-    </modules>
+    <dependencies>
+        <!-- Regards -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.delivery</groupId>
+            <artifactId>delivery-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-multitenant-regards-starter</artifactId>
+        </dependency>
+        <!-- Tests -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-multitenant-regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

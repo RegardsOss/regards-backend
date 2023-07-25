@@ -55,8 +55,8 @@
     <dependencies>
         <!-- Regards -->
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>swagger-regards-starter</artifactId>
+            <groupId>fr.cnes.regards.modules.order</groupId>
+            <artifactId>order-dto</artifactId>
         </dependency>
         <!-- Test -->
         <dependency>
