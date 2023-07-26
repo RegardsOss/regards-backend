@@ -46,12 +46,15 @@ public class JobSchedulerCleanerIT {
 
     @Test
     public void testCleaner() throws InterruptedException {
-        JobInfo fake = new JobInfo(false, 0, null, "", "Fake");
-        fake.setLastHeartbeatDate(OffsetDateTime.now().minus(JobService.HEARTBEAT_DELAY, ChronoUnit.MILLIS));
-        fake.updateStatus(JobStatus.RUNNING);
-        jobInfoRepo.save(fake);
+        // Given
+        JobInfo fakeJobInfo = new JobInfo(false, 0, null, "", "Fake");
+        fakeJobInfo.setLastHeartbeatDate(OffsetDateTime.now().minus(JobService.HEARTBEAT_DELAY, ChronoUnit.MILLIS));
+        fakeJobInfo.updateStatus(JobStatus.RUNNING);
+        jobInfoRepo.save(fakeJobInfo);
         Thread.sleep(JobService.HEARTBEAT_DELAY * timeSlotNumber);
+        // When
         jobInfoService.cleanDeadJobs();
+        // Then
         assertEquals(1, this.jobInfoService.retrieveJobs(JobStatus.FAILED).size());
     }
 }
