@@ -48,6 +48,7 @@ import reactor.util.retry.Retry;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.RestoreObjectResponse;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -149,6 +150,12 @@ public class S3HighLevelReactiveClient {
                                     new StorageCommandResult.CheckAbsent(checkCmd))
                                 .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(checkCmd,
                                                                                                           t)));
+    }
+
+    public Mono<Boolean> isStandardStorageClass(StorageConfig config,
+                                                String key,
+                                                @Nullable String standardStorageClass) {
+        return getClient(config).isStandardStorageClass(config.getBucket(), key, standardStorageClass);
     }
 
     public Mono<Optional<String>> eTag(Check checkCmd) {
