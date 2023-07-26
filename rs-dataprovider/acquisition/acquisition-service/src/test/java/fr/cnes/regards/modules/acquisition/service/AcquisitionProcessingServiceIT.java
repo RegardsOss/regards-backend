@@ -21,6 +21,11 @@ package fr.cnes.regards.modules.acquisition.service;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -36,6 +41,9 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
+import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
+import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
+import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
@@ -48,6 +56,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
@@ -56,6 +65,8 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -68,8 +79,10 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingServiceIT.class);
 
+    private static final String ACQUISITION_PROCESSSING_CHAIN_LABEL = "Processing chain 1";
+
     @Autowired
-    private IAcquisitionProcessingService processingService;
+    private IAcquisitionProcessingService acquisitionProcessingService;
 
     @Autowired
     private ProductService productService;
@@ -80,13 +93,19 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    @Autowired
+    private IJobInfoRepository jobInfoRepository;
+
     @Before
     public void initialize() throws ModuleException {
-        processingService.getFullChains(PageRequest.of(0, 100)).getContent().forEach(c -> {
+        acquisitionProcessingService.getFullChains(PageRequest.of(0, 100)).getContent().forEach(c -> {
             try {
                 c.setActive(false);
-                processingService.updateChain(c);
-                processingService.deleteChain(c.getId());
+                acquisitionProcessingService.updateChain(c);
+                acquisitionProcessingService.deleteChain(c.getId());
             } catch (ModuleException e) {
                 e.printStackTrace();
             }
@@ -98,41 +117,53 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
     @Requirement("REGARDS_DSL_ING_PRO_030")
     @Purpose("Create an acquisition chain")
     public void createChain() throws ModuleException {
-
-        // Save processing chain
-        processingService.createChain(create());
+        // Given : save processing chain
+        acquisitionProcessingService.createChain(createAcquisitionProcessingChain());
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // Test loading chain by mode
-        List<AcquisitionProcessingChain> automaticChains = processingService.findAllBootableAutomaticChains();
-        Assert.assertTrue(automaticChains.isEmpty());
-        List<AcquisitionProcessingChain> manualChains = processingService.findByModeAndActiveTrueAndLockedFalse(
+        // When : test loading chain by mode
+        List<AcquisitionProcessingChain> automaticChains = acquisitionProcessingService.findAllBootableAutomaticChains();
+
+        List<AcquisitionProcessingChain> manualChains = acquisitionProcessingService.findByModeAndActiveTrueAndLockedFalse(
             AcquisitionProcessingChainMode.MANUAL);
+        // Then
+        Assert.assertTrue(automaticChains.isEmpty());
         Assert.assertTrue(!manualChains.isEmpty() && (manualChains.size() == 1));
     }
 
     @Test
     public void deleteProducts() throws ModuleException {
-        AcquisitionProcessingChain chain = processingService.createChain(create());
-        // Add a product
+        // Given
+        AcquisitionProcessingChain chain = acquisitionProcessingService.createChain(createAcquisitionProcessingChain());
+        // When : add a product
         createProduct(chain);
-
+        // Then
         Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
+
+        // When
         productService.deleteByProcessingChain(chain);
+        // Then
         Assert.assertFalse("There should not be any product associated to the chain",
                            productService.countByChain(chain) > 0);
     }
 
     @Test
     public void deleteProductsWithSession() throws ModuleException {
-        AcquisitionProcessingChain chain = processingService.createChain(create());
-        // Add a product
+        // Given
+        AcquisitionProcessingChain chain = acquisitionProcessingService.createChain(createAcquisitionProcessingChain());
+        // When : add a product
         createProduct(chain);
+        // Then
+        Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
 
-        Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
+        // When
         productService.deleteBySession(chain, "plop");
+        // Then
         Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
+
+        // When
         productService.deleteBySession(chain, "session");
+        // Then
         Assert.assertFalse("There should not be any product associated to the chain",
                            productService.countByChain(chain) > 0);
     }
@@ -141,16 +172,18 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
     @Purpose(
         "The product has to be stored by reference, thus test if the store path is saved in the content information of the product")
     public void createProductsByReference() throws ModuleException {
+        // Given
         String refStorageIf = "reference-loc";
         // create chain
-        AcquisitionProcessingChain chain = create();
+        AcquisitionProcessingChain chain = createAcquisitionProcessingChain();
         // set products to be stored by reference and remove one storage from chain (only one storage is allowed in this case)
         chain.setProductsStored(false);
         chain.setReferenceLocation(refStorageIf);
-        chain = processingService.createChain(chain);
-        // create product
+        chain = acquisitionProcessingService.createChain(chain);
+
+        // When : create product
         Product product = createProduct(chain);
-        // test result
+        // Then : test result
         Product productCreated = productService.retrieve(product.getProductName());
         Assert.assertEquals("Location should be equal to the pluginId provided in acquisition storage",
                             refStorageIf,
@@ -164,11 +197,72 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
                                           .next()
                                           .getStorage());
     }
+    
+    @Test
+    public void test_acquisition_processing_chain_in_running_but_inactive_job() throws ModuleException {
+        // Given
+        AcquisitionProcessingChain acquisitionProcessingChain = createAcquisitionProcessingChain();
 
-    private AcquisitionProcessingChain create() {
-        // Create a processing chain
+        Product product = createProduct(acquisitionProcessingService.createChain(acquisitionProcessingChain));
+
+        OffsetDateTime inactiveTime_heartbeat = OffsetDateTime.now().minus(5, ChronoUnit.MINUTES);
+
+        JobInfo productAcquisitionJob = new JobInfo();
+        productAcquisitionJob.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY);
+        productAcquisitionJob.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID,
+                                                             acquisitionProcessingChain.getId()),
+                                            new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION,
+                                                             "my test session"));
+        productAcquisitionJob.setClassName(ProductAcquisitionJob.class.getName());
+        productAcquisitionJob.setOwner("user 1");
+        productAcquisitionJob.getStatus().setStatus(JobStatus.RUNNING);
+        productAcquisitionJob.setLastHeartbeatDate(inactiveTime_heartbeat);
+        jobInfoRepository.save(productAcquisitionJob);
+
+        acquisitionProcessingChain.setLastProductAcquisitionJobInfo(productAcquisitionJob);
+        acquisitionProcessingService.updateChain(acquisitionProcessingChain);
+
+        final JobInfo sipGenerationJob = new JobInfo();
+        sipGenerationJob.setPriority(AcquisitionJobPriority.SIP_GENERATION_JOB_PRIORITY);
+        sipGenerationJob.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID,
+                                                        acquisitionProcessingChain.getId()),
+                                       new JobParameter(SIPGenerationJob.PRODUCT_NAMES,
+                                                        Set.of(product.getProductName())));
+        sipGenerationJob.setClassName(SIPGenerationJob.class.getName());
+        sipGenerationJob.setOwner("user 1");
+        sipGenerationJob.getStatus().setStatus(JobStatus.RUNNING);
+        sipGenerationJob.setLastHeartbeatDate(inactiveTime_heartbeat);
+        jobInfoRepository.save(sipGenerationJob);
+
+        checkAcquisitionProcessingChainActive(true);
+
+        // When
+        jobInfoService.cleanDeadJobs();
+
+        // Then
+        checkAcquisitionProcessingChainActive(false);
+    }
+
+    private void checkAcquisitionProcessingChainActive(boolean active) {
+        Page<AcquisitionProcessingChainMonitor> acquisitionProcessingChainMonitorPage = acquisitionProcessingService.buildAcquisitionProcessingChainSummaries(
+            ACQUISITION_PROCESSSING_CHAIN_LABEL,
+            Boolean.TRUE,
+            AcquisitionProcessingChainMode.MANUAL,
+            PageRequest.of(0, 10));
+
+        Assert.assertEquals(1, acquisitionProcessingChainMonitorPage.getContent().size());
+        if (active) {
+            Assert.assertTrue(acquisitionProcessingChainMonitorPage.getContent().get(0).isActive());
+        } else {
+            Assert.assertFalse(acquisitionProcessingChainMonitorPage.getContent().get(0).isActive());
+        }
+
+    }
+
+    private AcquisitionProcessingChain createAcquisitionProcessingChain() {
+        // Create a acquisition processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
-        processingChain.setLabel("Processing chain 1");
+        processingChain.setLabel(ACQUISITION_PROCESSSING_CHAIN_LABEL);
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
@@ -232,7 +326,7 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
     }
 
     public Product createProduct(AcquisitionProcessingChain chain) throws SIPGenerationException {
-        // HANDLE PRODUCt
+        // HANDLE PRODUCT
         Product product = new Product();
         product.setIpId("productIpId");
         product.setProcessingChain(chain);
@@ -260,7 +354,6 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
         sip.getProperties().getContentInformations().add(ci);
 
         // SUBMIT PRODUCT
-        productService.saveAndSubmitSIP(product, chain);
-        return product;
+        return productService.saveAndSubmitSIP(product, chain);
     }
 }
