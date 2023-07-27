@@ -16,15 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.exception;
+package fr.cnes.regards.modules.order.domain.exception;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
+ * Exception occurs if the sum of the selected products file sizes exceeds the maximum allowed.
+ *
  * @author Iliana Ghazali
- **/
-public class OrderRequestServiceException extends Exception {
+ */
+public class ExceededBasketSizeException extends ModuleException {
 
-    public OrderRequestServiceException(String cause) {
-        super(cause);
+    public ExceededBasketSizeException(String msg) {
+        super(msg);
     }
-
 }

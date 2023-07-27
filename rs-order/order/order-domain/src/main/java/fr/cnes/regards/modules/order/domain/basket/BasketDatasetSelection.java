@@ -54,10 +54,10 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     private int objectsCount = 0;
 
     @Column(name = "files_count")
-    private final long filesCount = 0;
+    private long filesCount = 0;
 
     @Column(name = "files_size")
-    private final long filesSize = 0;
+    private long filesSize = 0;
 
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb", name = "file_types_sizes")
@@ -116,12 +116,20 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         this.objectsCount = objectsCount;
     }
 
+    public long getFilesSize() {
+        return filesSize;
+    }
+
+    public void setFilesSize(long filesSize) {
+        this.filesSize = filesSize;
+    }
+
     public long getFilesCount() {
         return filesCount;
     }
 
-    public long getFilesSize() {
-        return filesSize;
+    public void setFilesCount(long filesCount) {
+        this.filesCount = filesCount;
     }
 
     public Long getFileTypeSize(String fileType) {
@@ -138,7 +146,6 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     public Long getFileTypeCount(String fileType) {
         return Optional.ofNullable(fileTypesCount).map(m -> m.getOrDefault(fileType, 0L)).orElse(0L);
     }
-
     public void setFileTypeCount(String fileType, Long filesCount) {
         if (fileTypesCount == null) {
             fileTypesCount = new StringToLongMap();

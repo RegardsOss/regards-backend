@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBask
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
-import fr.cnes.regards.modules.order.exception.OrderRequestServiceException;
+import fr.cnes.regards.modules.order.exception.AutoOrderException;
 import fr.cnes.regards.modules.order.service.BasketService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import fr.cnes.regards.modules.order.service.settings.OrderSettingsService;
@@ -49,7 +49,7 @@ import static fr.cnes.regards.modules.order.service.request.OrderRequestTestUtil
 import static org.mockito.ArgumentMatchers.*;
 
 /**
- * Test for {@link OrderRequestService} </br>
+ * Test for {@link AutoOrderRequestService} </br>
  * The purpose of this test is to verify that {@link OrderResponseDtoEvent} are correctly sent following the
  * creation of an order in success or failure.
  *
@@ -57,6 +57,9 @@ import static org.mockito.ArgumentMatchers.*;
  **/
 @RunWith(MockitoJUnitRunner.class)
 public class OrderRequestServiceTest {
+
+    // Class under test
+    private AutoOrderRequestService orderRequestService;
 
     @Mock
     private BasketService basketService;
@@ -70,16 +73,13 @@ public class OrderRequestServiceTest {
     @Spy
     private IPublisher publisher;
 
-    // Class under test
-    private OrderRequestService orderRequestService;
-
     @Before
     public void init() throws EntityInvalidException, TooManyItemsSelectedInBasketException, EmptySelectionException,
         CatalogSearchException {
         AutoOrderCompletionService autoOrderCompletionService = new AutoOrderCompletionService(basketService,
                                                                                                orderService,
                                                                                                orderSettings);
-        this.orderRequestService = new OrderRequestService(autoOrderCompletionService, publisher);
+        this.orderRequestService = new AutoOrderRequestService(autoOrderCompletionService);
         Mockito.when(basketService.findOrCreate(any())).thenAnswer(answer -> new Basket(answer.getArgument(0)));
         Mockito.when(basketService.addSelection(any(), any(), anyString(), anyString()))
                .thenAnswer(answer -> new Basket(answer.getArgument(0)));
@@ -98,7 +98,7 @@ public class OrderRequestServiceTest {
         List<OrderRequestDto> orderRequests = createValidOrderRequests(nbReq);
 
         // WHEN
-        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequests, null);
+        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequestsWithSizeLimit(orderRequests, null);
 
         // THEN
         checkOrderRequestResponses(responses, nbReq, OrderRequestStatus.GRANTED, null, 0L);
@@ -115,14 +115,14 @@ public class OrderRequestServiceTest {
         Mockito.when(basketService.addSelection(any(), any(), any(), any())).thenThrow(expectedException);
 
         // WHEN
-        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequests, null);
+        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequestsWithSizeLimit(orderRequests, null);
 
         // THEN
         checkOrderRequestResponses(responses,
                                    nbReq,
                                    OrderRequestStatus.FAILED,
-                                   String.format(OrderRequestService.ERROR_RESPONSE_FORMAT,
-                                                 OrderRequestServiceException.class.getSimpleName(),
+                                   String.format("%s: '%s'",
+                                                 AutoOrderException.class.getSimpleName(),
                                                  String.format(AutoOrderCompletionService.ERROR_RESPONSE_FORMAT,
                                                                expectedException.getClass().getSimpleName(),
                                                                expectedException.getMessage())),

@@ -437,6 +437,8 @@ public class BasketService implements IBasketService {
                 datasetSelection.setObjectsCount(0);
             } else {
                 datasetSelection.setObjectsCount((int) curDsSelectionSubSummary.getDocumentsCount());
+                datasetSelection.setFilesSize(curDsSelectionSubSummary.getFilesSize());
+                datasetSelection.setFilesCount(curDsSelectionSubSummary.getFilesCount());
                 curDsSelectionSubSummary.getFileTypesSummaryMap().forEach((fileType, fs) -> {
                     datasetSelection.setFileTypeCount(fileType, fs.getFilesCount());
                     datasetSelection.setFileTypeSize(fileType, fs.getFilesSize());

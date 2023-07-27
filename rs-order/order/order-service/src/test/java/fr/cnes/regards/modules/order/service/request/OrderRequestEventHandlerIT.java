@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service.request;
 
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.integration.test.job.AbstractMultitenantServiceWithJobIT;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -37,8 +38,10 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
+import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeException;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import fr.cnes.regards.modules.order.exception.AutoOrderException;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventTestHandler;
 import fr.cnes.regards.modules.order.service.commons.OrderResponseEventHandler;
@@ -246,7 +249,51 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // check no mail was sent
         Mockito.verifyNoInteractions(emailClient);
+    }
 
+    @Test
+    public void create_order_invalid_size() throws InterruptedException {
+        // --- GIVEN ---
+        int nbOrders = 1;
+        List<OrderRequestDtoEvent> validOrderRequests = createValidOrderRequestEvents(nbOrders);
+        validOrderRequests.forEach(e -> e.setSizeLimitInBytes(1L));
+
+        // --- WHEN ---
+        publisher.publish(validOrderRequests);
+        Mockito.verify(requestHandler, Mockito.timeout(100000)).handleBatch(any());
+        Thread.sleep(1_000);
+
+        // --- THEN ---
+        // Wait for jobs to be executed and for orders taken into account (in RUNNING state @see
+        // OrderCreationService#manageOrderState{Order, OrderCounts))
+        awaitForJobCompletion(nbOrders);
+
+        // THEN
+        ArgumentCaptor<ISubscribable> responseCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.times(4)).publish(responseCaptor.capture());
+        List<OrderResponseDtoEvent> responses = responseCaptor.getAllValues()
+                                                              .stream()
+                                                              .filter(event -> event.getClass()
+                                                                               == OrderResponseDtoEvent.class)
+                                                              .map(orderResponse -> (OrderResponseDtoEvent) orderResponse)
+                                                              .toList();
+        checkOrderRequestResponsesEvents(responses,
+                                         validOrderRequests.size(),
+                                         OrderRequestStatus.DENIED,
+                                         String.format("%s: '%s'",
+                                                       AutoOrderException.class.getSimpleName(),
+                                                       String.format(AutoOrderCompletionService.ERROR_RESPONSE_FORMAT,
+                                                                     ExceededBasketSizeException.class.getSimpleName(),
+                                                                     String.format(
+                                                                         "The size of the basket ['%d bytes'] exceeds the maximum size allowed ['%d bytes']. Please review the"
+                                                                         + " order requested so that it does not exceed the maximum size "
+                                                                         + "configured.",
+                                                                         6033303,
+                                                                         1))),
+                                         null);
+
+        // check no mail was sent
+        Mockito.verifyNoInteractions(emailClient);
     }
 
     @Test
@@ -262,9 +309,15 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         Thread.sleep(2_000);
 
         // THEN
-        ArgumentCaptor<OrderResponseDtoEvent> responseCaptor = ArgumentCaptor.forClass(OrderResponseDtoEvent.class);
+        ArgumentCaptor<ISubscribable> responseCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(responseCaptor.capture());
-        checkOrderRequestResponsesEvents(List.of(responseCaptor.getAllValues().get(1)),
+        List<OrderResponseDtoEvent> responses = responseCaptor.getAllValues()
+                                                              .stream()
+                                                              .filter(event -> event.getClass()
+                                                                               == OrderResponseDtoEvent.class)
+                                                              .map(orderResponse -> (OrderResponseDtoEvent) orderResponse)
+                                                              .toList();
+        checkOrderRequestResponsesEvents(responses,
                                          1,
                                          OrderRequestStatus.DENIED,
                                          "Error detected on field \"user\". Cause: \"User should be present\".",
@@ -326,7 +379,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         simulateApplicationReadyEvent();
     }
 
-    private void awaitForJobAndOrderAsyncCompletion(int nbOrders, OrderStatus finalOrderStatuses) {
+    private void awaitForJobCompletion(int nbOrders) {
         // Wait for CreateOrderJob creation
         try {
             Awaitility.await().atMost(Duration.of(1000, ChronoUnit.MILLIS)).until(() -> {
@@ -337,10 +390,13 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         } catch (Exception e) {
             Assertions.fail("1 CreatedOrderJob should be present with status QUEUED.", e);
         }
-
         // Wait for CreateOrderJob completion
         this.getJobTestUtils().runAndWaitJob(this.getJobTestUtils().retrieveFullJobInfos(CreateOrderJob.class), 10);
+    }
 
+    private void awaitForJobAndOrderAsyncCompletion(int nbOrders, OrderStatus finalOrderStatuses) {
+        // Wait for CreateOrderJob creation and execution
+        awaitForJobCompletion(nbOrders);
         // Wait for order statuses to be in final expected state
         try {
             Awaitility.await().atMost(Duration.of(30000, ChronoUnit.MILLIS)).until(() -> {

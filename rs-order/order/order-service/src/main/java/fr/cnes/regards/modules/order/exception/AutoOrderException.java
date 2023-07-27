@@ -16,18 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.domain.exception;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+package fr.cnes.regards.modules.order.exception;
 
 /**
- * Exception occurs if there are more products than allowed in the basket.
+ * Global exception for
+ * {@link fr.cnes.regards.modules.order.service.request.AutoOrderRequestService}
  *
  * @author Iliana Ghazali
- */
-public class TooManyItemsSelectedInBasketException extends ModuleException {
+ **/
+public class AutoOrderException extends Exception {
 
-    public TooManyItemsSelectedInBasketException(String msg) {
-        super(msg);
+    public AutoOrderException(String errorMessage) {
+        super(errorMessage);
     }
+
+    public AutoOrderException(String cause, Throwable t) {
+        super(cause, t);
+    }
+
 }

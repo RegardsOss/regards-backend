@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.dto.output;
 
+import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
@@ -55,6 +56,22 @@ public class OrderResponseDto {
         this.correlationId = correlationId;
         this.message = message;
         this.downloadLink = downloadLink;
+    }
+
+    public static OrderResponseDto buildErrorResponse(OrderRequestDto orderRequest,
+                                                      Exception e,
+                                                      OrderRequestStatus responseStatus) {
+        return new OrderResponseDto(responseStatus,
+                                    null,
+                                    orderRequest.getCorrelationId(),
+                                    String.format("%s: '%s'", e.getClass().getSimpleName(), e.getMessage()),
+                                    null);
+    }
+
+    public static OrderResponseDto buildSuccessResponse(OrderRequestDto orderRequest,
+                                                        Long createdOrderId,
+                                                        OrderRequestStatus responseStatus) {
+        return new OrderResponseDto(responseStatus, createdOrderId, orderRequest.getCorrelationId(), null, null);
     }
 
     public OrderRequestStatus getStatus() {

@@ -61,10 +61,18 @@ public class OrderRequestDto {
     @Nullable
     private String user;
 
+    /**
+     * Maximum basket size limit.
+     * Always null with REST requests.
+     */
+    @Nullable
+    private Long sizeLimitInBytes;
+
     public OrderRequestDto(List<String> queries,
                            OrderRequestFilters filters,
                            @Nullable String correlationId,
-                           @Nullable String user) {
+                           @Nullable String user,
+                           @Nullable Long sizeLimitInBytes) {
         Assert.notEmpty(queries, "at least one query is mandatory!");
         Assert.notNull(filters, "filters are mandatory!");
 
@@ -72,6 +80,7 @@ public class OrderRequestDto {
         this.filters = filters;
         this.correlationId = correlationId;
         this.user = user;
+        this.sizeLimitInBytes = sizeLimitInBytes;
     }
 
     public List<String> getQueries() {
@@ -96,6 +105,15 @@ public class OrderRequestDto {
         return filters;
     }
 
+    public void setSizeLimitInBytes(@Nullable Long sizeLimitInBytes) {
+        this.sizeLimitInBytes = sizeLimitInBytes;
+    }
+
+    @Nullable
+    public Long getSizeLimitInBytes() {
+        return sizeLimitInBytes;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -109,12 +127,13 @@ public class OrderRequestDto {
                && filters.equals(that.filters)
                && Objects.equals(correlationId,
                                  that.correlationId)
-               && Objects.equals(user, that.user);
+               && Objects.equals(user, that.user)
+               && Objects.equals(sizeLimitInBytes, that.sizeLimitInBytes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(queries, filters, correlationId, user);
+        return Objects.hash(queries, filters, correlationId, user, sizeLimitInBytes);
     }
 
     @Override
@@ -130,6 +149,8 @@ public class OrderRequestDto {
                + ", user='"
                + user
                + '\''
+               + ", sizeLimitInBytes="
+               + sizeLimitInBytes
                + '}';
     }
 }

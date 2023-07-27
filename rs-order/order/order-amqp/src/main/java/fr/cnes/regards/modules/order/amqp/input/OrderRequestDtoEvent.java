@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestFilters;
 import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -36,8 +37,12 @@ import java.util.List;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class OrderRequestDtoEvent extends OrderRequestDto implements ISubscribable {
 
-    public OrderRequestDtoEvent(List<String> queries, OrderRequestFilters filters, String correlationId, String user) {
-        super(queries, filters, correlationId, user);
+    public OrderRequestDtoEvent(List<String> queries,
+                                OrderRequestFilters filters,
+                                String correlationId,
+                                @Nullable String user,
+                                @Nullable Long sizeLimitInBytes) {
+        super(queries, filters, correlationId, user, sizeLimitInBytes);
         Assert.notNull(correlationId, "correlationId is mandatory for OrderRequestDtoEvents");
     }
 }

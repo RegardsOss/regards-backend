@@ -19,10 +19,12 @@
 package fr.cnes.regards.modules.order.service.request;
 
 import com.google.gson.reflect.TypeToken;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +44,10 @@ public class CreateOrderJob extends AbstractJob<Void> {
     private List<OrderRequestDto> orderRequestDtos;
 
     @Autowired
-    private OrderRequestService orderRequestService;
+    private AutoOrderRequestService orderRequestService;
+
+    @Autowired
+    private IPublisher publisher;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -54,13 +59,12 @@ public class CreateOrderJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.debug("[{}] SubmissionDeleteExpiredJob starts. Handle {} OrderRequestDto.",
-                     jobInfoId,
-                     orderRequestDtos.size());
+        logger.debug("[{}] Create order job starts. Handle {} OrderRequestDtos.", jobInfoId, orderRequestDtos.size());
         long start = System.currentTimeMillis();
-        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequests(orderRequestDtos, null);
-        orderRequestService.publishResponses(responses);
-        logger.debug("[{}] SubmissionDeleteExpiredJob ended in {}ms. Handled {} OrderRequestResponseDtos.",
+        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequestsWithSizeLimit(orderRequestDtos,
+                                                                                                    null);
+        publisher.publish(responses.stream().map(OrderResponseDtoEvent::new).toList());
+        logger.debug("[{}] Create order job ended in {}ms. Handled {} OrderRequestResponseDtos.",
                      jobInfoId,
                      System.currentTimeMillis() - start,
                      responses.size());

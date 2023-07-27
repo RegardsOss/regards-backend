@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 import fr.cnes.regards.modules.order.service.*;
-import fr.cnes.regards.modules.order.service.request.OrderRequestService;
+import fr.cnes.regards.modules.order.service.request.AutoOrderRequestService;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -161,7 +161,7 @@ public class OrderController implements IResourceController<OrderDto> {
     private IOrderService orderService;
 
     @Autowired
-    private OrderRequestService orderRequestService;
+    private AutoOrderRequestService orderRequestService;
 
     @Autowired
     private IOrderDownloadService orderDownloadService;

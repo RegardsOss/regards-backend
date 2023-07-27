@@ -57,7 +57,7 @@ public class OrderRequestTestUtils {
                                                           new OrderRequestFilters(Set.of(DataTypeLight.RAWDATA),
                                                                                   FILENAME_FILTER),
                                                           String.valueOf(i),
-                                                          TEST_USER_ORDER));
+                                                          TEST_USER_ORDER, null));
         }
         return orderRequestDtos;
     }
@@ -69,7 +69,7 @@ public class OrderRequestTestUtils {
                                                                                 new OrderRequestFilters(Set.of(
                                                                                     DataTypeLight.RAWDATA), null),
                                                                                 String.valueOf(i),
-                                                                                TEST_USER_ORDER);
+                                                                                TEST_USER_ORDER, null);
             invalidOrderRequest.setUser(RandomStringUtils.randomAlphanumeric(129));
             orderRequestDtos.add(invalidOrderRequest);
         }
@@ -83,7 +83,8 @@ public class OrderRequestTestUtils {
             orderRequestDtos.add(new OrderRequestDto(SEARCH_QUERIES,
                                                      new OrderRequestFilters(Set.of(DataTypeLight.RAWDATA), null),
                                                      String.valueOf(i),
-                                                     TEST_USER_ORDER));
+                                                     TEST_USER_ORDER,
+                                                     null));
         }
         return orderRequestDtos;
     }
