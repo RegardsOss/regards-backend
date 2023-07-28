@@ -184,12 +184,12 @@ public class OrderCreationService implements IOrderCreationService {
                     hasProcessing = true;
                 } else {
                     orderCounts = self.manageDatasetSelection(order,
-                                                         owner,
-                                                         role,
-                                                         priority,
-                                                         orderCounts,
-                                                         dsSel,
-                                                         subOrderDuration);
+                                                              owner,
+                                                              role,
+                                                              priority,
+                                                              orderCounts,
+                                                              dsSel,
+                                                              subOrderDuration);
                 }
             }
 
@@ -395,20 +395,25 @@ public class OrderCreationService implements IOrderCreationService {
                                                 Set<OrderDataFile> storageBucketFiles,
                                                 DataFile dataFile,
                                                 EntityFeature feature) {
-        OrderDataFile orderDataFile = new OrderDataFile(dataFile,
-                                                        feature.getId(),
-                                                        order.getId(),
-                                                        feature.getProviderId(),
-                                                        feature.getVersion());
-        storageBucketFiles.add(orderDataFile);
-        // Send a very useful notification if file is bigger than bucket size
-        if (orderDataFile.getFilesize() > suborderSizeCounter.getStorageBucketSize()) {
-            // To send a notification, NotificationClient needs it
-            notificationClient.notify(String.format("File \"%s\" is bigger than sub-order size",
-                                                    orderDataFile.getFilename()),
-                                      "Order creation",
-                                      NotificationLevel.WARNING,
-                                      DefaultRole.PROJECT_ADMIN);
+        if (dataFile.getFilesize() != null) {
+            OrderDataFile orderDataFile = new OrderDataFile(dataFile,
+                                                            feature.getId(),
+                                                            order.getId(),
+                                                            feature.getProviderId(),
+                                                            feature.getVersion());
+            storageBucketFiles.add(orderDataFile);
+            // Send a very useful notification if file is bigger than bucket size
+            if (orderDataFile.getFilesize() > suborderSizeCounter.getStorageBucketSize()) {
+                // To send a notification, NotificationClient needs it
+                notificationClient.notify(String.format("File \"%s\" is bigger than sub-order size",
+                                                        orderDataFile.getFilename()),
+                                          "Order creation",
+                                          NotificationLevel.WARNING,
+                                          DefaultRole.PROJECT_ADMIN);
+            }
+        } else {
+            LOGGER.debug("Data file with name '{}' cannot be ordered because its size is null!",
+                         dataFile.getFilename());
         }
     }
 
