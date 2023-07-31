@@ -125,7 +125,10 @@ public final class AbstractRequestSpecifications {
                                                                               root,
                                                                               cb,
                                                                               sessionOwner,
-                                                                              session)));
+                                                                              session),
+                                                                          AbstractRequestSpecifications.searchOAISDeletionCreator(
+                                                                              root,
+                                                                              cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
