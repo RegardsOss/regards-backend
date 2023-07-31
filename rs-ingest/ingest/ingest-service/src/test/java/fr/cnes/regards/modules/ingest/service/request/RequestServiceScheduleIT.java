@@ -278,8 +278,22 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
 
         // BEGIN ------- Test StorageDeletionRequest
         createIngestRequest(aips.get(0));
-        createOAISDeletionCreatorRequest();
+        oaisDeletionRequest = createOAISDeletionCreatorRequest();
         storageDeletionRequest = createOAISDeletionRequest(aips);
+        Assert.assertEquals("Request is blocked until creator is not deleted",
+                            InternalRequestState.BLOCKED,
+                            storageDeletionRequest.getState());
+        requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
+        storageDeletionRequest = (OAISDeletionRequest) abstractRequestRepository.findById(storageDeletionRequest.getId())
+                                                                                .get();
+        Assert.assertEquals("Request is blocked until creator is not deleted, unblock is supposed to do nothing",
+                            InternalRequestState.BLOCKED,
+                            storageDeletionRequest.getState());
+        abstractRequestRepository.deleteById(oaisDeletionRequest.getId());
+        // delete creator request
+        requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
+        storageDeletionRequest = (OAISDeletionRequest) abstractRequestRepository.findById(storageDeletionRequest.getId())
+                                                                                .get();
         Assert.assertEquals("The request should not be blocked",
                             InternalRequestState.CREATED,
                             storageDeletionRequest.getState());
