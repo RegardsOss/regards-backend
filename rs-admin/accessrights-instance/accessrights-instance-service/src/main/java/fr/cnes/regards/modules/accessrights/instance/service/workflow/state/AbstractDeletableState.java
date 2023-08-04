@@ -19,9 +19,7 @@
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -72,20 +70,30 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         this.accountUnlockTokenService = accountUnlockTokenService;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#deleteAccount(fr.cnes.regards.modules.
+     * accessrights.domain.instance.Account)
+     */
     @Override
-    public void deleteAccount(final Account pAccount) throws EntityException {
-        switch (pAccount.getStatus()) {
-            case ACTIVE:
-            case LOCKED:
-            case PENDING:
-            case INACTIVE:
-                doDelete(pAccount);
-                break;
-            default:
-                throw new EntityTransitionForbiddenException(pAccount.getId().toString(),
-                                                             ProjectUser.class,
-                                                             pAccount.getStatus().toString(),
-                                                             Thread.currentThread().getStackTrace()[1].getMethodName());
+    public void deleteAccount(final Account account) throws EntityOperationForbiddenException {
+        checkDeleteAccountPossible(account);
+        
+        LOGGER.info("Deleting password reset tokens associated to account {} from instance.", account.getEmail());
+        passwordResetTokenService.deletePasswordResetTokenForAccount(account);
+        LOGGER.info("Deleting unlock tokens associated to account {} from instance.", account.getEmail());
+        accountUnlockTokenService.deleteAllByAccount(account);
+        LOGGER.info("Deleting account {} from instance.", account.getEmail());
+        accountRepository.deleteById(account.getId());
+    }
+
+    private void checkDeleteAccountPossible(final Account account) throws EntityOperationForbiddenException {
+        if (!canDelete(account)) {
+            String message = String.format("Cannot remove account %s because it is linked to at least one project.",
+                                           account.getEmail());
+            LOGGER.error(message);
+            throw new EntityOperationForbiddenException(account.getId().toString(), Account.class, message);
         }
     }
 
@@ -98,27 +106,6 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     @Override
     public boolean canDelete(Account account) {
         return CollectionUtils.isEmpty(account.getProjects());
-    }
-
-    /**
-     * Delete an account
-     *
-     * @param pAccount the account
-     * @throws EntityOperationForbiddenException when the account is linked to at least a project user
-     */
-    private void doDelete(final Account pAccount) throws EntityOperationForbiddenException {
-        if (!canDelete(pAccount)) {
-            String message = String.format("Cannot remove account %s because it is linked to at least one project.",
-                                           pAccount.getEmail());
-            LOGGER.error(message);
-            throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, message);
-        }
-        LOGGER.info("Deleting password reset tokens associated to account {} from instance.", pAccount.getEmail());
-        passwordResetTokenService.deletePasswordResetTokenForAccount(pAccount);
-        LOGGER.info("Deleting unlock tokens associated to account {} from instance.", pAccount.getEmail());
-        accountUnlockTokenService.deleteAllByAccount(pAccount);
-        LOGGER.info("Deleting account {} from instance.", pAccount.getEmail());
-        accountRepository.deleteById(pAccount.getId());
     }
 
     /**
