@@ -20,10 +20,10 @@
 
 package fr.cnes.regards.config;
 
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import org.springframework.beans.factory.annotation.Autowired;

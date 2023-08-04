@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.ingest.service.notification;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -46,7 +47,6 @@ import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.settings.IngestSettingsService;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.junit.Assert;
 import org.junit.Test;

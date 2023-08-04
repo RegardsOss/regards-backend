@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.service;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -45,7 +46,6 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.assertj.core.util.Lists;
 import org.awaitility.Awaitility;
 import org.junit.Assert;

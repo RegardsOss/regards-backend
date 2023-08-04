@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.notifier.service.flow;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.service.NotificationRegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

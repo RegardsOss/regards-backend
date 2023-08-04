@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp.single;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.AbstractPublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
@@ -26,6 +27,8 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
+import java.util.List;
 
 /**
  * Single virtual host publisher implementation
@@ -41,8 +44,10 @@ public class SingleVhostPublisher extends AbstractPublisher implements IPublishe
                                 RabbitAdmin rabbitAdmin,
                                 IAmqpAdmin amqpAdmin,
                                 IRabbitVirtualHostAdmin rabbitVirtualHostAdmin,
-                                IRuntimeTenantResolver threadTenantResolver) {
-        super(rabbitTemplate, rabbitAdmin, amqpAdmin, rabbitVirtualHostAdmin, applicationId);
+                                IRuntimeTenantResolver threadTenantResolver,
+                                Gson gson,
+                                List<String> eventsToNotifier) {
+        super(rabbitTemplate, rabbitAdmin, amqpAdmin, rabbitVirtualHostAdmin, applicationId, gson, eventsToNotifier);
         this.threadTenantResolver = threadTenantResolver;
     }
 

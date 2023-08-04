@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;

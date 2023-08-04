@@ -18,11 +18,14 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
+import java.util.List;
 
 /**
  * {@link InstancePublisher} uses a fixed tenant to publish instance events.
@@ -35,8 +38,10 @@ public class InstancePublisher extends AbstractPublisher implements IInstancePub
                              RabbitTemplate rabbitTemplate,
                              RabbitAdmin rabbitAdmin,
                              IAmqpAdmin amqpAdmin,
-                             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        super(rabbitTemplate, rabbitAdmin, amqpAdmin, pRabbitVirtualHostAdmin, applicationId);
+                             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
+                             Gson gson,
+                             List<String> eventsToNotifier) {
+        super(rabbitTemplate, rabbitAdmin, amqpAdmin, pRabbitVirtualHostAdmin, applicationId, gson, eventsToNotifier);
     }
 
     @Override

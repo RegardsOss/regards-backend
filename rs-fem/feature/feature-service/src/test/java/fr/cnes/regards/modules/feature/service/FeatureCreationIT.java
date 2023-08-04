@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.service;
 
 import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.DataType;
@@ -40,7 +41,6 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.awaitility.core.ConditionTimeoutException;

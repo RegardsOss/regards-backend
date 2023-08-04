@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.amqp.configuration.*;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.event.*;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
@@ -93,12 +94,26 @@ public abstract class AbstractSubscriberIT {
     @Purpose("Publish and receive a broadcast event without restriction")
     @Test
     public void publishInfo() {
+        // Given
         AbstractInfoReceiver infoSubscriber = new AbstractInfoReceiver() {
 
         };
         subscriber.subscribeTo(Info.class, infoSubscriber, true);
-        publisher.publish(new Info());
+
+        NotificationRequestEventReceiver notificationRequestEventReceiver = new NotificationRequestEventReceiver() {
+
+        };
+        subscriber.subscribeTo(NotificationRequestEvent.class, notificationRequestEventReceiver, true);
+        // When
+        Info info = new Info();
+        publisher.publish(info);
+        // Then
         infoSubscriber.assertCount(1);
+        Assert.assertEquals(info.getMessage(), infoSubscriber.getLastInfo().getMessage());
+
+        notificationRequestEventReceiver.assertCount(1);
+        Assert.assertNotNull(notificationRequestEventReceiver.getLastInfo().getMetadata());
+        Assert.assertNotNull(notificationRequestEventReceiver.getLastInfo().getPayload());
     }
 
     @Requirement("REGARDS_DSL_CMP_ARC_030")
@@ -106,10 +121,21 @@ public abstract class AbstractSubscriberIT {
     @Purpose("Publish and receive a broadcast event without restriction with GSON message converter")
     @Test
     public void publishInfoWithGson() {
+        // Given
         GsonInfoHandler handler = new GsonInfoHandler();
         subscriber.subscribeTo(GsonInfo.class, handler, true);
+
+        NotificationRequestEventReceiver notificationRequestEventReceiver = new NotificationRequestEventReceiver() {
+
+        };
+        subscriber.subscribeTo(NotificationRequestEvent.class, notificationRequestEventReceiver, true);
+
+        // When
         publisher.publish(new GsonInfo());
+        // Then
         handler.assertCount(1);
+
+        notificationRequestEventReceiver.assertCount(0);
     }
 
     @Requirement("REGARDS_DSL_CMP_ARC_030")
@@ -117,9 +143,12 @@ public abstract class AbstractSubscriberIT {
     @Purpose("Publish and receive a broadcast event without restriction with GSON message converter")
     @Test
     public void publishInfoNoWrapperWithGson() {
+        // Given
         GsonInfoNoWrapperHandler handler = new GsonInfoNoWrapperHandler();
         subscriber.subscribeTo(GsonInfo.class, handler, true);
+        // When
         publisher.publish(new GsonInfo());
+        // Then
         handler.assertCount(1);
     }
 
@@ -127,12 +156,14 @@ public abstract class AbstractSubscriberIT {
     @Purpose("Publish and receive a broadcast event with restriction on microservice type")
     @Test
     public void publishMicroserviceInfo() {
+        // Given
         MicroserviceReceiver receiver = new MicroserviceReceiver();
         MicroserviceReceiver receiver2 = new MicroserviceReceiver();
         subscriber.subscribeTo(MicroserviceInfo.class, receiver, true);
         subscriber.subscribeTo(MicroserviceInfo.class, receiver2, true);
+        // When
         publisher.publish(new MicroserviceInfo());
-
+        // Then
         Assert.assertFalse(receiver.checkCount(1) && receiver2.checkCount(1));
         Assert.assertTrue(receiver.checkCount(1) || receiver2.checkCount(1));
     }
@@ -149,6 +180,7 @@ public abstract class AbstractSubscriberIT {
     @Purpose("Publish a broadcast event received by multiple receivers")
     @Test
     public void publishInfoMultipleReceiver() {
+        // Given
         AbstractInfoReceiver subscriberOne = new AbstractInfoReceiver() {
 
         };
@@ -160,8 +192,9 @@ public abstract class AbstractSubscriberIT {
         subscriber.subscribeTo(Info.class, subscriberTwo, true);
 
         String message = "Multiple receivers!";
+        // When
         publisher.publish(Info.create(message));
-
+        // Then
         subscriberOne.assertCount(1);
         Assert.assertEquals(message, subscriberOne.getLastInfo().getMessage());
 
@@ -176,6 +209,7 @@ public abstract class AbstractSubscriberIT {
     @Purpose("Publish a unicast event with multiple receivers but received by only one")
     @Test
     public void publishInfoSingleTarget() {
+        // Given
         AbstractReceiver<UnicastInfo> handler1 = new AbstractReceiver<UnicastInfo>() {
 
         };
@@ -185,8 +219,9 @@ public abstract class AbstractSubscriberIT {
 
         };
         subscriber.subscribeTo(UnicastInfo.class, handler2, true);
-
+        // When
         publisher.publish(new UnicastInfo());
+        // Then
         Assert.assertFalse(handler1.checkCount(1) && handler2.checkCount(1));
         Assert.assertTrue(handler1.checkCount(1) || handler2.checkCount(1));
     }
@@ -219,7 +254,7 @@ public abstract class AbstractSubscriberIT {
 
     @Test
     public void customQueueNameUnicastTest() throws InterruptedException {
-
+        // Given
         String queueName = "test.queue.customQueueNameUnicastTest";
         String queueName2 = "test.queue2.customQueueNameUnicastTest";
         String exchangeName = "test.exchange.customQueueNameUnicastTest";
@@ -233,15 +268,16 @@ public abstract class AbstractSubscriberIT {
 
         };
         subscriber.subscribeTo(UnicastInfo.class, handler2, queueName2, exchangeName);
-
+        // When
         publisher.publish(new UnicastInfo(), exchangeName, Optional.of(queueName));
-
+        // Then
         Assert.assertFalse(handler1.checkCount(1) && handler2.checkCount(1));
         Assert.assertTrue(handler1.checkCount(1) || handler2.checkCount(1));
     }
 
     @Test
     public void customQueueNameBroadcastAllTest() throws InterruptedException {
+        // Given
         String queueName = "test.queue.customQueueNameBroadcastAllTest";
         String queueName2 = "test.queue2.customQueueNameBroadcastAllTest";
         String exchangeName = "test.exchange.customQueueNameBroadcastAllTest";
@@ -255,17 +291,18 @@ public abstract class AbstractSubscriberIT {
         };
         subscriber.subscribeTo(Info.class, receiver, queueName, exchangeName);
         subscriber.subscribeTo(Info.class, receiver2, queueName2, exchangeName);
+        // When
         publisher.publish(new Info(), exchangeName, Optional.empty());
 
         Thread.sleep(5_000);
-
+        // Then
         Assert.assertEquals("Check 1 invalid", 1, receiver.getCount().intValue());
         Assert.assertEquals("Check 2 invalid", 1, receiver2.getCount().intValue());
     }
 
     @Test
     public void onePerMicroserviceTypeTest() {
-
+        // Given
         RegardsAmqpAdmin admin = (RegardsAmqpAdmin) amqpAdmin;
 
         // Microservice A
@@ -290,8 +327,9 @@ public abstract class AbstractSubscriberIT {
         SingleReceiverB b2 = new SingleReceiverB();
         subscriber.subscribeTo(OnePerMicroserviceInfo.class, b2);
 
-        // Check only one consumer per microservice type receives the event.
+        // When : check only one consumer per microservice type receives the event.
         publisher.publish(new OnePerMicroserviceInfo());
+        // Then
         Assert.assertFalse(a1.checkCount(1) && a2.checkCount(1));
         Assert.assertTrue(a1.checkCount(1) || a2.checkCount(1));
         Assert.assertFalse(b1.checkCount(1) && b2.checkCount(1));
@@ -363,10 +401,6 @@ public abstract class AbstractSubscriberIT {
 
     }
 
-    private class Receiver2 extends AbstractReceiver<Info> {
-
-    }
-
     private class SingleReceiverA extends AbstractReceiver<OnePerMicroserviceInfo> {
 
     }
@@ -380,6 +414,27 @@ public abstract class AbstractSubscriberIT {
         @Override
         public void handle(String tenant, ErrorEvent message) {
             throw new RuntimeException("Because");
+        }
+    }
+
+    private class NotificationRequestEventReceiver extends AbstractReceiver<NotificationRequestEvent> {
+
+        private TenantWrapper<NotificationRequestEvent> lastWrapper;
+
+        private NotificationRequestEvent lastInfo;
+
+        @Override
+        protected void doHandle(TenantWrapper<NotificationRequestEvent> wrapper) {
+            this.lastWrapper = wrapper;
+            this.lastInfo = wrapper.getContent();
+        }
+
+        public NotificationRequestEvent getLastInfo() {
+            return lastInfo;
+        }
+
+        public TenantWrapper<NotificationRequestEvent> getLastWrapper() {
+            return lastWrapper;
         }
     }
 }

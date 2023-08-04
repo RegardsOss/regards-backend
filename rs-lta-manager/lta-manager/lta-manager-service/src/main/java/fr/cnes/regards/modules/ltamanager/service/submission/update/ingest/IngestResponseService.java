@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
@@ -28,7 +29,6 @@ import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.IngestStatus
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.notification.SuccessLtaRequestNotification;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

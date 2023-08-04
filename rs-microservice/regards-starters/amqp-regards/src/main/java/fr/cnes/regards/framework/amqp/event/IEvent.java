@@ -37,4 +37,20 @@ public interface IEvent {
         return Optional.empty();
     }
 
+    /**
+     * Define the default amqp property origin request app_id when sending message to rabbitmq exchange.
+     */
+    @JsonIgnore
+    default Optional<String> getOriginRequestAppId() {
+        return Optional.empty();
+    }
+
+    /**
+     * Define the default amqp property origin priority when sending message to rabbitmq exchange.
+     */
+    @JsonIgnore
+    default Optional<Integer> getOriginRequestPriority() {
+        return Optional.of(Integer.valueOf(1));
+    }
+
 }

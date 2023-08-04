@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
@@ -26,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
+import java.util.List;
 
 /**
  * {@link Publisher} uses {@link IRuntimeTenantResolver} to resolve current thread tenant to publish an event in the
@@ -53,8 +56,10 @@ public class Publisher extends AbstractPublisher implements IPublisher {
                      RabbitTemplate rabbitTemplate,
                      RabbitAdmin rabbitAdmin,
                      IAmqpAdmin amqpAdmin,
-                     IRuntimeTenantResolver pThreadTenantResolver) {
-        super(rabbitTemplate, rabbitAdmin, amqpAdmin, pVirtualHostAdmin, applicationId);
+                     IRuntimeTenantResolver pThreadTenantResolver,
+                     Gson gson,
+                     List<String> eventsToNotifier) {
+        super(rabbitTemplate, rabbitAdmin, amqpAdmin, pVirtualHostAdmin, applicationId, gson, eventsToNotifier);
         this.threadTenantResolver = pThreadTenantResolver;
     }
 

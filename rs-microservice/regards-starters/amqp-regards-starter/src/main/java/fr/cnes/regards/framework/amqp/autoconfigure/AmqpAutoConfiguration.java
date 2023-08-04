@@ -58,6 +58,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 /**
  * Automatic configuration class for RabbitMQ (amqp protocol)
  *
@@ -96,6 +98,9 @@ public class AmqpAutoConfiguration {
     @Autowired
     private ApplicationContext context;
 
+    @Autowired
+    private Gson gson;
+
     @Value("${spring.application.name}")
     private String microserviceName;
 
@@ -113,6 +118,12 @@ public class AmqpAutoConfiguration {
      */
     @Value("${regards.rabbitmq.interval.retries.failed.queue:5000}")
     private long failedDeclarationRetryInterval;
+
+    /**
+     * List of events which will also be sent to rs-notifier after publishing the original event
+     */
+    @Value("${regards.copied.events.to.notifier:#{T(java.util.Collections).emptyList()}}")
+    private List<String> eventsToNotifier;
 
     @Bean
     @ConditionalOnMissingBean(IRabbitVirtualHostAdmin.class)
@@ -201,14 +212,18 @@ public class AmqpAutoConfiguration {
                                  rabbitTemplate,
                                  rabbitAdmin,
                                  amqpAdmin,
-                                 threadTenantResolver);
+                                 threadTenantResolver,
+                                 gson,
+                                 eventsToNotifier);
         } else {
             return new SingleVhostPublisher(applicationId,
                                             rabbitTemplate,
                                             rabbitAdmin,
                                             amqpAdmin,
                                             rabbitVirtualHostAdmin,
-                                            threadTenantResolver);
+                                            threadTenantResolver,
+                                            gson,
+                                            eventsToNotifier);
         }
     }
 
@@ -268,7 +283,13 @@ public class AmqpAutoConfiguration {
                                                 RabbitAdmin rabbitAdmin,
                                                 IAmqpAdmin amqpAdmin,
                                                 RabbitTemplate rabbitTemplate) {
-        return new InstancePublisher(applicationId, rabbitTemplate, rabbitAdmin, amqpAdmin, rabbitVirtualHostAdmin);
+        return new InstancePublisher(applicationId,
+                                     rabbitTemplate,
+                                     rabbitAdmin,
+                                     amqpAdmin,
+                                     rabbitVirtualHostAdmin,
+                                     gson,
+                                     eventsToNotifier);
     }
 
     @Bean

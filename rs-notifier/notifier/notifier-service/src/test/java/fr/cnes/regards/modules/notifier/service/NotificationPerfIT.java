@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.notifier.service;
 
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.context.ActiveProfiles;

@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
@@ -40,7 +41,6 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -107,11 +107,11 @@ public class AIPNotificationService implements IAIPNotificationService {
             abstractRequestRepo.saveAll(requestsToSend);
 
             // then create notification request events and send them to notifier
-            notifierClient.sendNotifications(createNotificationRequestEvent(requestsToSend));
+            notifierClient.sendNotifications(createNotificationRequestEvents(requestsToSend));
         }
     }
 
-    private List<NotificationRequestEvent> createNotificationRequestEvent(Set<AbstractRequest> requestsToSend) {
+    private List<NotificationRequestEvent> createNotificationRequestEvents(Set<AbstractRequest> requestsToSend) {
         List<NotificationRequestEvent> eventToSend = Lists.newArrayList();
         // for each request, create the associated notification request event
         for (AbstractRequest abstractRequest : requestsToSend) {

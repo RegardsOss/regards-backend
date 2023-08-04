@@ -1,12 +1,12 @@
 package fr.cnes.regards.modules.feature.service;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
 import java.util.Optional;
 import java.util.Set;

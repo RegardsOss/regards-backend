@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.notifier.client;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

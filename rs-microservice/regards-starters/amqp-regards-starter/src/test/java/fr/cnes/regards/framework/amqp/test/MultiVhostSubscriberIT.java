@@ -34,7 +34,9 @@ import org.springframework.test.context.junit4.SpringRunner;
                                    "regards.tenants=PROJECT, PROJECT1",
                                    "regards.tenant=PROJECT",
                                    "regards.amqp.internal.transaction=true",
-                                   "spring.jmx.enabled=false" }, locations = "classpath:amqp.properties")
+                                   "spring.jmx.enabled=false",
+                                   "regards.copied.events.to.notifier=fr.cnes.regards.framework.amqp.test.event.Info" },
+                    locations = "classpath:amqp.properties")
 public class MultiVhostSubscriberIT extends AbstractSubscriberIT {
 
 }

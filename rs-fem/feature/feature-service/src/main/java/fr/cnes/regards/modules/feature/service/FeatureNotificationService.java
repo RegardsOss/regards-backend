@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.service;
 
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.feature.dao.FeatureNotificationRequestSpecificationBuilder;
@@ -41,7 +42,6 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

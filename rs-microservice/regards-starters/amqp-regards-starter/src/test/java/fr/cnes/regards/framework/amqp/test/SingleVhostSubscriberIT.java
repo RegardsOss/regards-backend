@@ -44,7 +44,8 @@ import org.springframework.test.context.junit4.SpringRunner;
                                    "regards.tenant=PROJECT",
                                    "regards.amqp.internal.transaction=true",
                                    "spring.jmx.enabled=false",
-                                   "" }, locations = "classpath:amqp.properties")
+                                   "regards.copied.events.to.notifier=fr.cnes.regards.framework.amqp.test.event.Info" },
+                    locations = "classpath:amqp.properties")
 public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
 
     @Autowired
@@ -118,30 +119,5 @@ public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
                 throw new IllegalArgumentException("Message handling fails!");
             }
         }
-    }
-
-    @Override
-    public void publishMicroserviceInfo() {
-        super.publishMicroserviceInfo();
-    }
-
-    @Override
-    public void onePerMicroserviceTypeTest() {
-        super.onePerMicroserviceTypeTest();
-    }
-
-    @Override
-    public void publishInfoWithGson() {
-        super.publishInfoWithGson();
-    }
-
-    @Override
-    public void publishInfoNoWrapperWithGson() {
-        super.publishInfoNoWrapperWithGson();
-    }
-
-    @Override
-    public void testErrorMsg() throws InterruptedException {
-        super.testErrorMsg();
     }
 }

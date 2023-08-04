@@ -29,7 +29,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
- * A notification wrapper
+ * A notification {@link NotificationDTO} event in order to notify rs-admin
  *
  * @author Marc SORDI
  */

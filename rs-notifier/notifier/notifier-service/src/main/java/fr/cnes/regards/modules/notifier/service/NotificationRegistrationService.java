@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notifier.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -32,7 +33,6 @@ import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.in.SpecificRecipientNotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -36,7 +37,6 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRespon
 import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
 import fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.notification.SuccessLtaRequestNotification;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
@@ -38,7 +39,6 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;

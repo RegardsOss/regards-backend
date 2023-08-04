@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.noti
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
 /**
  * @author Thomas GUILLOU

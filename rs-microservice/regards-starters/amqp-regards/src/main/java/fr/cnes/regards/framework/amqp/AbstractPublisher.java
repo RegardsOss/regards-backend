@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.configuration.*;
 import fr.cnes.regards.framework.amqp.event.*;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
@@ -80,16 +82,27 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     private final ConcurrentMap<String, ConcurrentMap<String, Boolean>> broadcastExchangesPerTenant = new ConcurrentHashMap<>();
 
+    /**
+     * List of events which will also be sent to rs-notifier
+     */
+    private List<String> eventsToNotifier;
+
+    private final Gson gson;
+
     public AbstractPublisher(RabbitTemplate rabbitTemplate,
                              RabbitAdmin rabbitAdmin,
                              IAmqpAdmin amqpAdmin,
                              IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-                             String applicationId) {
+                             String applicationId,
+                             Gson gson,
+                             List<String> eventsToNotifier) {
         this.rabbitTemplate = rabbitTemplate;
         this.rabbitAdmin = rabbitAdmin;
         this.amqpAdmin = amqpAdmin;
         this.rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
         this.applicationId = applicationId;
+        this.gson = gson;
+        this.eventsToNotifier = eventsToNotifier;
     }
 
     @Override
@@ -263,13 +276,16 @@ public abstract class AbstractPublisher implements IPublisherContract {
                 return Boolean.TRUE;
             });
 
-            // Send message
+            // Send message of IEvent type
             publishMessageByTenant(currentTenant,
                                    exchangeName,
                                    RegardsAmqpAdmin.DEFAULT_ROUTING_KEY,
                                    message,
                                    priority,
                                    headers);
+
+            publishEventToNotifierIfNeeded(currentTenant, message, priority, true, headers);
+
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
@@ -352,74 +368,123 @@ public abstract class AbstractPublisher implements IPublisherContract {
                                                     int priority,
                                                     AmqpChannel channel,
                                                     boolean purgeQueue) {
-
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
             rabbitVirtualHostAdmin.bind(virtualHost);
 
-            // Declare AMQP elements for first publication
-            ConcurrentMap<String, ExchangeAndRoutingKey> exchangesAndRoutingKeysByEvent = exchangesAndRoutingKeysByEventPerTenant.computeIfAbsent(
-                tenant,
-                key -> new ConcurrentHashMap<>());
-            ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.computeIfAbsent(channel.getExchangeName()
-                                                                                             .orElse(channel.getEventType()
-                                                                                                            .getName()),
-                                                                                      key -> {
-                                                                                          amqpAdmin.declareDeadLetter();
+            publishMessageByTenant(tenant, event, priority, channel, purgeQueue, null);
 
-                                                                                          // Declare exchange
-                                                                                          Exchange exchange = amqpAdmin.declareExchange(
-                                                                                              channel);
+            publishEventToNotifierIfNeeded(tenant, event, priority, purgeQueue, null);
 
-                                                                                          if (WorkerMode.UNICAST.equals(
-                                                                                              channel.getWorkerMode())) {
-                                                                                              // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
-                                                                                              // specific routing key
-                                                                                              Queue queue = amqpAdmin.declareQueue(
-                                                                                                  tenant,
-                                                                                                  channel);
-                                                                                              if (purgeQueue) {
-                                                                                                  amqpAdmin.purgeQueue(
-                                                                                                      queue.getName(),
-                                                                                                      false);
-                                                                                              }
-                                                                                              amqpAdmin.declareBinding(
-                                                                                                  queue,
-                                                                                                  exchange,
-                                                                                                  channel.getWorkerMode(),
-                                                                                                  Optional.empty());
-                                                                                              return ExchangeAndRoutingKey.of(
-                                                                                                  exchange.getName(),
-                                                                                                  amqpAdmin.getRoutingKey(
-                                                                                                      Optional.of(queue),
-                                                                                                      channel.getWorkerMode(),
-                                                                                                      Optional.empty()));
-                                                                                          } else if (WorkerMode.BROADCAST.equals(
-                                                                                              channel.getWorkerMode())) {
-                                                                                              // Routing key useless ... always skipped with a fanout exchange
-                                                                                              return ExchangeAndRoutingKey.of(
-                                                                                                  exchange.getName(),
-                                                                                                  amqpAdmin.getRoutingKey(
-                                                                                                      Optional.empty(),
-                                                                                                      channel.getWorkerMode(),
-                                                                                                      channel.getRoutingKey()));
-                                                                                          } else {
-                                                                                              String errorMessage = String.format(
-                                                                                                  "Unexpected worker mode : %s.",
-                                                                                                  channel.getWorkerMode());
-                                                                                              LOGGER.error(errorMessage);
-                                                                                              throw new IllegalArgumentException(
-                                                                                                  errorMessage);
-                                                                                          }
-
-                                                                                      });
-
-            // Publish
-            LOGGER.debug("Publishing message on {}/{}", er.exchange, er.routingKey);
-            publishMessageByTenant(tenant, er.exchange, er.routingKey, event, priority, null);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
+    }
+
+    /**
+     * Publish a notification request event {@link NotificationRequestEvent} to rs-notifier if the given event is
+     * available in the list of events for rs-notifier
+     */
+    private <T extends IEvent> void publishEventToNotifierIfNeeded(String tenant,
+                                                                   T event,
+                                                                   int priority,
+                                                                   boolean purgeQueue,
+                                                                   Map<String, Object> headers) {
+        if (!eventsToNotifier.contains(event.getClass().getName())) {
+            return;
+        }
+        String requestId = "";
+        String requestOwner = "";
+        if (AbstractRequestEvent.class.isAssignableFrom(event.getClass())) {
+            requestId = ((AbstractRequestEvent) event).getRequestId();
+            requestOwner = ((AbstractRequestEvent) event).getRequestOwner();
+        }
+
+        NotificationRequestEvent notificationRequestEvent = new NotificationRequestEvent(gson.toJsonTree(event)
+                                                                                             .getAsJsonObject(),
+                                                                                         gson.toJsonTree(new NotificationEventMetadata(
+                                                                                                 event.getOriginRequestAppId()
+                                                                                                      .orElse(null),
+                                                                                                 event.getOriginRequestPriority()
+                                                                                                      .orElse(null),
+                                                                                                 event.getClass()
+                                                                                                      .getName()))
+                                                                                             .getAsJsonObject(),
+                                                                                         requestId,
+                                                                                         requestOwner);
+        AmqpChannel channel = AmqpChannel.build(notificationRequestEvent.getClass());
+        LOGGER.debug("Publishing event {} after event {} (Target : {}, WorkerMode : {} )",
+                     notificationRequestEvent.getClass(),
+                     event.getClass(),
+                     channel.getTarget(),
+                     channel.getWorkerMode());
+
+        publishMessageByTenant(tenant, notificationRequestEvent, priority, channel, purgeQueue, headers);
+    }
+
+    private <T extends IEvent> void publishMessageByTenant(String tenant,
+                                                           T event,
+                                                           int priority,
+                                                           AmqpChannel channel,
+                                                           boolean purgeQueue,
+                                                           Map<String, Object> headers) {
+        // Declare AMQP elements for first publication
+        ConcurrentMap<String, ExchangeAndRoutingKey> exchangesAndRoutingKeysByEvent = exchangesAndRoutingKeysByEventPerTenant.computeIfAbsent(
+            tenant,
+            key -> new ConcurrentHashMap<>());
+        ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.computeIfAbsent(channel.getExchangeName()
+                                                                                         .orElse(channel.getEventType()
+                                                                                                        .getName()),
+                                                                                  key -> {
+                                                                                      amqpAdmin.declareDeadLetter();
+
+                                                                                      // Declare exchange
+                                                                                      Exchange exchange = amqpAdmin.declareExchange(
+                                                                                          channel);
+
+                                                                                      if (WorkerMode.UNICAST.equals(
+                                                                                          channel.getWorkerMode())) {
+                                                                                          // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
+                                                                                          // specific routing key
+                                                                                          Queue queue = amqpAdmin.declareQueue(
+                                                                                              tenant,
+                                                                                              channel);
+                                                                                          if (purgeQueue) {
+                                                                                              amqpAdmin.purgeQueue(queue.getName(),
+                                                                                                                   false);
+                                                                                          }
+                                                                                          amqpAdmin.declareBinding(queue,
+                                                                                                                   exchange,
+                                                                                                                   channel.getWorkerMode(),
+                                                                                                                   Optional.empty());
+                                                                                          return ExchangeAndRoutingKey.of(
+                                                                                              exchange.getName(),
+                                                                                              amqpAdmin.getRoutingKey(
+                                                                                                  Optional.of(queue),
+                                                                                                  channel.getWorkerMode(),
+                                                                                                  Optional.empty()));
+                                                                                      } else if (WorkerMode.BROADCAST.equals(
+                                                                                          channel.getWorkerMode())) {
+                                                                                          // Routing key useless ... always skipped with a fanout exchange
+                                                                                          return ExchangeAndRoutingKey.of(
+                                                                                              exchange.getName(),
+                                                                                              amqpAdmin.getRoutingKey(
+                                                                                                  Optional.empty(),
+                                                                                                  channel.getWorkerMode(),
+                                                                                                  channel.getRoutingKey()));
+                                                                                      } else {
+                                                                                          String errorMessage = String.format(
+                                                                                              "Unexpected worker mode : %s.",
+                                                                                              channel.getWorkerMode());
+                                                                                          LOGGER.error(errorMessage);
+                                                                                          throw new IllegalArgumentException(
+                                                                                              errorMessage);
+                                                                                      }
+                                                                                  });
+
+        // Publish
+        LOGGER.debug("Publishing message on {}/{}", er.exchange, er.routingKey);
+        publishMessageByTenant(tenant, er.exchange, er.routingKey, event, priority, headers);
     }
 
     /**
@@ -467,6 +532,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
             messageProperties.setAppId(this.applicationId);
             messageProperties.setReceivedRoutingKey(routingKey);
             event.getMessageCorrelationId().ifPresent(messageProperties::setCorrelationId);
+
             return new Message(message.getBody(), messageProperties);
         });
     }
