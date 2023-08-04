@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
-import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 
 /**
@@ -138,24 +141,22 @@ public interface IAccountTransitions {
      * Remove an {@link Account} from db.<br>
      * Only remove if no project user for any tenant.
      *
-     * @param pAccount The account
-     * @throws ModuleException Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.<br>
-     *                         {@link EntityTransitionForbiddenException} Thrown if the {@link Account} is not in state ACTIVE.
+     * @param account The account
+     * @throws EntityOperationForbiddenException Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
      */
-    default void deleteAccount(final Account pAccount) throws ModuleException {
-        throw new EntityTransitionForbiddenException(pAccount.getId().toString(),
-                                                     Account.class,
-                                                     pAccount.getStatus().toString(),
-                                                     Thread.currentThread().getStackTrace()[1].getMethodName());
+    default void deleteAccount(final Account account) throws EntityOperationForbiddenException {
+        throw new EntityOperationForbiddenException(account.getId().toString(),
+                                                    Account.class,
+                                                    "Cannot remove account because it is linked to at least one project.");
     }
 
     /**
      * Can we delete this account? An account is considered deletable if there is no project user linked to it
      *
-     * @param pAccount the account
+     * @param account the account
      * @return <code>true</code> if we can, else <code>false</code>
      */
-    default boolean canDelete(final Account pAccount) { // NOSONAR
+    default boolean canDelete(final Account account) { // NOSONAR
         return false;
     }
 }

@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactiona
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -143,16 +142,16 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * accessrights. domain.instance.Account)
      */
     @Override
-    public void deleteAccount(final Account pAccount) throws ModuleException {
-        accountStateProvider.getState(pAccount).deleteAccount(pAccount);
+    public void deleteAccount(final Account account) throws EntityOperationForbiddenException {
+        accountStateProvider.getState(account).deleteAccount(account);
     }
 
     /* (non-Javadoc)
      * @see fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#canDelete(fr.cnes.regards.modules.accessrights.domain.instance.Account)
      */
     @Override
-    public boolean canDelete(Account pAccount) {
-        return accountStateProvider.getState(pAccount).canDelete(pAccount);
+    public boolean canDelete(Account account) {
+        return accountStateProvider.getState(account).canDelete(account);
     }
 
 }
