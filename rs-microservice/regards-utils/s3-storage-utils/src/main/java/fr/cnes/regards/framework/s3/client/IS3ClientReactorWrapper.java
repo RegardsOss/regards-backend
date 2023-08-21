@@ -27,6 +27,7 @@ import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.Optional;
 
@@ -34,6 +35,23 @@ public interface IS3ClientReactorWrapper {
 
     Mono<Boolean> exists(String bucket, String key);
 
+    /**
+     * Check if the given file is in the Standard storage class, i.e. it is immediatly accessible
+     *
+     * @param bucket               the bucket containing the file
+     * @param key                  the key of the file
+     * @param standardStorageClass the Stantard storage class if the server doesn't use the default one
+     * @return true if the file is in Standard storage class
+     */
+    Mono<Boolean> isStandardStorageClass(String bucket, String key, @Nullable String standardStorageClass);
+
+    /**
+     * Return the etag of the given file, which may or may not be the md5 of the file
+     *
+     * @param bucket the bucket containg the file
+     * @param key    the key of the file
+     * @return the eTag of the file
+     */
     Mono<Optional<String>> eTag(String bucket, String key);
 
     Mono<Optional<Long>> contentLength(String bucket, String key);

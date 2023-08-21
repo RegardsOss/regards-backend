@@ -50,7 +50,7 @@ public class LockService {
 
     public static final String LOCK_PREFIX = "SHARED_";
 
-    @Value("${regards.lock.time.to.live:60000}")
+    @Value("${regards.lock.time.to.live:60000000}")
     private int lockTimeToLive;
 
     @Value("${regards.lock.try.timeout:60000}")
@@ -93,7 +93,7 @@ public class LockService {
      * The process will wait for the lock to be free to run the task.
      */
     public <T> LockServiceResponse<T> runWithLock(String lockName, LockServiceTask process)
-        throws InterruptedException {
+            throws InterruptedException {
         return tryRunWithLock(lockName, process, lockTryTimeout, TimeUnit.SECONDS);
     }
 
