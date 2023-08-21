@@ -90,7 +90,8 @@ public class OrderCreationNotificationTest {
                                         mockJobOrderService(),
                                         null,
                                         null,
-                                        null, emailClient,
+                                        null,
+                                        emailClient,
                                         mockOrderHelperService(),
                                         mockProjectClient(),
                                         mockSpringPublisher(),
@@ -98,6 +99,7 @@ public class OrderCreationNotificationTest {
                                         null,
                                         templateService,
                                         mockOrderRequestResponseService(),
+                                        null,
                                         null,
                                         null);
     }
