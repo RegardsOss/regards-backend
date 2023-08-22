@@ -21,9 +21,9 @@ public class CreateNotificationRequestEventVisitor
 
         private String action;
 
-        private String sessionOwner;
+        private final String sessionOwner;
 
-        private String session;
+        private final String session;
 
         public NotificationActionEventMetadata(FeatureManagementAction action, String sessionOwner, String session) {
             this.action = action.toString();
@@ -64,7 +64,8 @@ public class CreateNotificationRequestEventVisitor
 
     @Override
     public Optional<NotificationRequestEvent> visitCreationRequest(FeatureCreationRequest creationRequest) {
-        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(creationRequest.getFeature()).getAsJsonObject(),
+        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(creationRequest.getFeatureEntity().getFeature())
+                                                            .getAsJsonObject(),
                                                         gson.toJsonTree(new NotificationActionEventMetadata(
                                                                 FeatureManagementAction.CREATED,
                                                                 creationRequest.getFeatureEntity().getSessionOwner(),
