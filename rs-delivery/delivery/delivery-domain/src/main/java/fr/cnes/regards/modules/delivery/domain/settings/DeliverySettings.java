@@ -47,11 +47,12 @@ public final class DeliverySettings {
 
     public static final int DEFAULT_REQUEST_TTL_HOURS = 12;
 
-    public static final S3DeliveryServer DEFAULT_S3_SERVER = new S3DeliveryServer("rs-s3-minio",
+    public static final S3DeliveryServer DEFAULT_S3_SERVER = new S3DeliveryServer("https",
+                                                                                  "rs-s3-minio",
                                                                                   9000,
                                                                                   "fr-regards-1",
                                                                                   "default-key",
-                                                                                  "default-password");
+                                                                                  "default-secret");
 
     public static final String DEFAULT_BUILD_BUCKET = "default-build-bucket";
 

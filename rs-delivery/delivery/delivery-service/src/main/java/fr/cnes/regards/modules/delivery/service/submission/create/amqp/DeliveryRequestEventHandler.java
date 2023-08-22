@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.submission.creation.amqp;
+package fr.cnes.regards.modules.delivery.service.submission.create.amqp;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.delivery.amqp.input.DeliveryRequestDtoEvent;
 import fr.cnes.regards.modules.delivery.amqp.output.DeliveryResponseDtoEvent;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
-import fr.cnes.regards.modules.delivery.service.submission.creation.DeliveryCreateService;
+import fr.cnes.regards.modules.delivery.service.submission.create.DeliveryCreateService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

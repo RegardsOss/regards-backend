@@ -40,4 +40,8 @@ public interface IOrderDataFileAvailableClient {
     ResponseEntity<PagedModel<EntityModel<OrderDataFileDTO>>> getAvailableFilesInSuborder(
         @PathVariable("orderId") long orderId, @PathVariable("filesTaskId") long filesTaskId, Pageable page);
 
+    @GetMapping(path = OrderControllerEndpointConfiguration.FIND_AVAILABLE_FILES_BY_ORDER_PATH)
+    ResponseEntity<PagedModel<EntityModel<OrderDataFileDTO>>> getAvailableFilesInOrder(
+        @PathVariable("orderId") long orderId, Pageable page);
+
 }

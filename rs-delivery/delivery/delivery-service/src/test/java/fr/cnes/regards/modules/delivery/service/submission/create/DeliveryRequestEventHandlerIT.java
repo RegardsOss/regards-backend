@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.submission.creation;
+package fr.cnes.regards.modules.delivery.service.submission.create;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.delivery.domain.settings.DeliverySettings;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import fr.cnes.regards.modules.delivery.service.settings.DeliverySettingService;
-import fr.cnes.regards.modules.delivery.service.submission.creation.amqp.DeliveryRequestEventHandler;
+import fr.cnes.regards.modules.delivery.service.submission.create.amqp.DeliveryRequestEventHandler;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
@@ -43,7 +43,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -90,7 +89,7 @@ public class DeliveryRequestEventHandlerIT extends AbstractMultitenantServiceIT 
     @SpyBean
     private DeliveryRequestEventHandler handler; // class under test
 
-    @MockBean
+    @Autowired
     private IProjectUsersClient projectUsersClient;
 
     @Autowired

@@ -114,6 +114,23 @@ public class DeliveryStatus {
         return errorType;
     }
 
+    public void setExpiryDate(OffsetDateTime expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public void setStatusDate(OffsetDateTime statusDate) {
+        this.statusDate = statusDate;
+    }
+
+    public void setStatus(DeliveryRequestStatus status) {
+        this.status = status;
+    }
+
+    public void setError(DeliveryErrorType errorType, @Nullable String errorCause) {
+        this.errorType = errorType;
+        this.errorCause = errorCause;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

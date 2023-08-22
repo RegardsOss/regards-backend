@@ -48,11 +48,12 @@ public class S3ServerCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                        DeliverySettings.S3_SERVER,
                                                                        "s3 server",
                                                                        DeliverySettings.DEFAULT_S3_SERVER,
-                                                                       new S3DeliveryServer("rs-s3-server",
+                                                                       new S3DeliveryServer("http",
+                                                                                            "rs-s3-server",
                                                                                             9000,
                                                                                             "fr-regards-1",
                                                                                             "regards",
-                                                                                            "password"));
+                                                                                            "secret"));
         // WHEN
         DynamicTenantSetting savedS3Server = dynamicTenantSettingService.create(testedS3Server);
         // THEN
@@ -60,11 +61,12 @@ public class S3ServerCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                          DeliverySettings.S3_SERVER,
                                                                          "s3 server",
                                                                          DeliverySettings.DEFAULT_S3_SERVER,
-                                                                         new S3DeliveryServer("rs-s3-server",
+                                                                         new S3DeliveryServer("http",
+                                                                                              "rs-s3-server",
                                                                                               9000,
                                                                                               "fr-regards-1",
                                                                                               "regards",
-                                                                                              "password"));
+                                                                                              "secret"));
         Assertions.assertThat((S3DeliveryServer) savedS3Server.getValue())
                   .as("Unexpected saved s3Server value.")
                   .isEqualTo(expectedS3Server.getValue());
@@ -79,28 +81,31 @@ public class S3ServerCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                 DeliverySettings.S3_SERVER,
                                                                 "s3 server",
                                                                 DeliverySettings.DEFAULT_S3_SERVER,
-                                                                new S3DeliveryServer("rs-s3-server",
+                                                                new S3DeliveryServer("http",
+                                                                                     "rs-s3-server",
                                                                                      9000,
                                                                                      "fr-regards-1",
                                                                                      "regards",
-                                                                                     "password"))));
+                                                                                     "secret"))));
         // WHEN
         DynamicTenantSetting updatedS3Server = dynamicTenantSettingService.update(DeliverySettings.S3_SERVER,
-                                                                                  new S3DeliveryServer("rs-s3-server",
+                                                                                  new S3DeliveryServer("http",
+                                                                                                       "rs-s3-server",
                                                                                                        9000,
                                                                                                        "fr-regards-2",
                                                                                                        "regards",
-                                                                                                       "password"));
+                                                                                                       "secret"));
         // THEN
         DynamicTenantSetting expectedS3Server = new DynamicTenantSetting(1L,
                                                                          DeliverySettings.S3_SERVER,
                                                                          "s3 server",
                                                                          DeliverySettings.DEFAULT_S3_SERVER,
-                                                                         new S3DeliveryServer("rs-s3-server",
+                                                                         new S3DeliveryServer("http",
+                                                                                              "rs-s3-server",
                                                                                               9000,
                                                                                               "fr-regards-2",
                                                                                               "regards",
-                                                                                              "password"));
+                                                                                              "secret"));
         Assertions.assertThat((S3DeliveryServer) updatedS3Server.getValue())
                   .as("Unexpected updated s3Server value.")
                   .isEqualTo(expectedS3Server.getValue());

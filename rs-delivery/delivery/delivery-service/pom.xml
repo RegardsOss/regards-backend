@@ -82,10 +82,23 @@
             <groupId>fr.cnes.regards.modules.accessrights</groupId>
             <artifactId>accessrights-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+            <artifactId>jobs-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.order</groupId>
+            <artifactId>order-client</artifactId>
+        </dependency>
         <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-job-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

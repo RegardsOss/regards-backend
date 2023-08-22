@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.apache.commons.compress.utils.Lists;
 import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +37,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -64,48 +60,53 @@ public class JobTestUtils {
     private JobInfoService jobInfoService;
 
     /**
-     * @param jobs           jobs to execute till the end
-     * @param maxJobDuration duration in second to wait before job timeout
-     * @return jobInfos updated
+     * @param jobs                jobs to execute
+     * @param maxJobDurationInSec job execution timeout duration (in seconds). After this time, the test will fail.
+     * @return jobInfos updated with a final status (success or failure)
      */
-    public List<JobInfo> runAndWaitJob(Collection<JobInfo> jobs, long maxJobDuration) {
-        // Run Job and wait for end
+    public List<JobInfo> runAndWaitJob(Collection<JobInfo> jobs, long maxJobDurationInSec) {
+        return jobs.stream().map(jobInfo -> runAndWaitJob(jobInfo, maxJobDurationInSec)).toList();
+    }
+
+    /**
+     * see {@link this#runAndWaitJob(Collection, long)}
+     */
+    public JobInfo runAndWaitJob(JobInfo jobInfo, long maxJobDurationInSec) {
+        // Run job
+        logger.info("Start execution of job with id '{}'.", jobInfo.getId());
         String tenant = runtimeTenantResolver.getTenant();
+        jobService.runJob(jobInfo, tenant);
+        // verify that job is properly updated at the end of its execution
+        return checkJobInfoUpdate(jobInfo, tenant, maxJobDurationInSec);
+    }
+
+    /**
+     * Check if a job is executed until a final status (either {@link JobStatus#SUCCEEDED} or {@link JobStatus#FAILED}).
+     * See {@link fr.cnes.regards.framework.modules.jobs.service.JobThreadPoolExecutor} to know how job is handled in
+     * case of error.
+     * If another status is found after the timeout, something has gone wrong and the test will fail.
+     */
+    private JobInfo checkJobInfoUpdate(JobInfo jobInfo, String tenant, long maxJobDurationInSec) {
+        // Job should be updated at the end with a final status either SUCCEEDED or FAILED
+        // see JobThreadPoolExecutor to know how job is handled in case of error
+        // If another status is found after the timeout, something has gone wrong.
+        JobInfo updatedJobInfo = null;
         try {
-            Iterator<JobInfo> it = jobs.iterator();
-            List<RunnableFuture<Void>> list = com.google.common.collect.Lists.newArrayList();
-            while (it.hasNext()) {
-                JobInfo next = it.next();
-                next.getParameters();
-                list.add(jobService.runJob(next, tenant));
-            }
-            for (RunnableFuture<Void> futur : list) {
-                logger.info("Waiting synchronous job ...");
-                futur.get(maxJobDuration, TimeUnit.SECONDS);
-                logger.info("Synchronous job ends");
-            }
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("Job took too much time to complete - it should not last more than {}s - {}",
-                         maxJobDuration,
-                         e);
-            Assert.fail(e.getMessage());
-        } finally {
-            runtimeTenantResolver.forceTenant(tenant);
+            Awaitility.await("waiting for job completion")
+                      .pollInterval(Duration.ofMillis(10))
+                      .atMost(Duration.ofSeconds(maxJobDurationInSec))
+                      .until(() -> {
+                          runtimeTenantResolver.forceTenant(tenant);
+                          JobInfo jobInfoUpd = jobInfoService.retrieveJob(jobInfo.getId());
+                          return jobInfoUpd.getStatus().getStatus() == JobStatus.SUCCEEDED
+                                 || jobInfoUpd.getStatus().getStatus() == JobStatus.FAILED;
+                      });
+            updatedJobInfo = jobInfoService.retrieveJob(jobInfo.getId());
+        } catch (ConditionTimeoutException e) {
+            Assert.fail(String.format("Job did not end in a final status in the expected amount of time. Cause: %s",
+                                      e));
         }
-        // Retrieve the updated list of job infos, as their status updated
-        List<JobInfo> jobsInfoUpdated = Lists.newArrayList();
-        for (JobInfo jobInfo : jobs) {
-            // All jobs were returned, but their status are not updated yet
-            Awaitility.await("waiting the job done").pollInterval(Duration.ofMillis(10)).until(() -> {
-                runtimeTenantResolver.forceTenant(tenant);
-                JobInfo jobInfoUpd = jobInfoService.retrieveJob(jobInfo.getId());
-                return jobInfoUpd.getStatus().getStatus() == JobStatus.SUCCEEDED
-                       || jobInfoUpd.getStatus().getStatus() == JobStatus.FAILED;
-            });
-            jobsInfoUpdated.add(jobInfoService.retrieveJob(jobInfo.getId()));
-        }
-        // Get updated jobInfo
-        return jobsInfoUpdated;
+        return updatedJobInfo;
     }
 
     public List<JobInfo> retrieveJobs() {

@@ -16,15 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.submission.creation;
+package fr.cnes.regards.modules.delivery.service.submission.create;
 
 import fr.cnes.regards.modules.delivery.amqp.input.DeliveryRequestDtoEvent;
 import fr.cnes.regards.modules.delivery.amqp.output.DeliveryResponseDtoEvent;
-import fr.cnes.regards.modules.delivery.dao.IDeliveryRequestRepository;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.domain.settings.DeliverySettings;
 import fr.cnes.regards.modules.delivery.dto.input.DeliveryRequestDto;
 import fr.cnes.regards.modules.delivery.service.settings.DeliverySettingService;
+import fr.cnes.regards.modules.delivery.service.submission.DeliveryRequestService;
 import fr.cnes.regards.modules.order.client.amqp.IAutoOrderRequestClient;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import org.slf4j.Logger;
@@ -48,14 +48,14 @@ public class DeliveryCreateService {
 
     private final DeliverySettingService settingService;
 
-    private final IDeliveryRequestRepository deliveryRequestRepository;
+    private final DeliveryRequestService deliveryRequestService;
 
     public DeliveryCreateService(IAutoOrderRequestClient orderClient,
                                  DeliverySettingService settingService,
-                                 IDeliveryRequestRepository deliveryRequestRepository) {
+                                 DeliveryRequestService deliveryRequestService) {
         this.orderClient = orderClient;
         this.settingService = settingService;
-        this.deliveryRequestRepository = deliveryRequestRepository;
+        this.deliveryRequestService = deliveryRequestService;
     }
 
     /**
@@ -91,7 +91,7 @@ public class DeliveryCreateService {
         // create orders from events
         orderClient.createOrderFromRequests(orderRequestDtos);
         // save delivery requests
-        deliveryRequestRepository.saveAll(deliveryRequests);
+        deliveryRequestService.saveAllRequests(deliveryRequests);
 
         return responses;
     }

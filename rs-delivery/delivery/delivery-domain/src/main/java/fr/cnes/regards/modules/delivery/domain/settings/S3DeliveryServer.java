@@ -27,7 +27,9 @@ import javax.validation.constraints.Positive;
  * @author Iliana Ghazali
  **/
 public record S3DeliveryServer(
-    // host to access S3 server
+    // Scheme to access S3 server (http, https ...)
+    @NotBlank(message = "Scheme must be present.") String scheme,
+    // Host to access S3 server
     @NotBlank(message = "S3 host must be present.") String host,
     // S3 server port
     @Positive(message = "S3 port must be present and valid.") Integer port,
@@ -36,6 +38,6 @@ public record S3DeliveryServer(
     // connection login
     @NotBlank(message = "key must be present.") String key,
     // s3 server secret
-    @NotBlank(message = "password must be present.") String password) {
+    @NotBlank(message = "secret must be present.") String secret) {
 
 }
