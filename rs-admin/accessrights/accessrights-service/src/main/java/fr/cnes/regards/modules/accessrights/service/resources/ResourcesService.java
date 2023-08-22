@@ -161,21 +161,39 @@ public class ResourcesService implements IResourcesService {
 
         // Extract and save new resources
         List<ResourcesAccess> newResources = new ArrayList<>();
+        List<ResourcesAccess> updatedResources = new ArrayList<>();
         for (ResourcesAccess ra : resources) {
-            if (!existingResources.contains(ra)) {
+            Optional<ResourcesAccess> existingResource = existingResources.stream()
+                                                                          .filter(r -> r.equals(ra))
+                                                                          .findFirst();
+            if (existingResource.isEmpty()) {
                 newResources.add(ra);
+            } else {
+                if (!existingResource.get().getDefaultRole().equals(ra.getDefaultRole())) {
+                    ResourcesAccess updatedResource = existingResource.get();
+                    updatedResource.setDefaultRole(ra.getDefaultRole());
+                    updatedResources.add(updatedResource);
+                }
             }
         }
         if (!newResources.isEmpty()) {
             resourceAccessRepo.saveAll(newResources);
         }
+        if (!updatedResources.isEmpty()) {
+            resourceAccessRepo.saveAll(updatedResources);
+        }
 
         // Compute map by native roles
         Map<DefaultRole, Set<ResourcesAccess>> accessesByDefaultRole = new EnumMap<>(DefaultRole.class);
         for (ResourcesAccess nra : newResources) {
-            Set<ResourcesAccess> set = accessesByDefaultRole.computeIfAbsent(nra.getDefaultRole(),
-                                                                             k -> new HashSet<>());
-            set.add(nra);
+            Set<ResourcesAccess> roleResources = accessesByDefaultRole.computeIfAbsent(nra.getDefaultRole(),
+                                                                                       k -> new HashSet<>());
+            roleResources.add(nra);
+        }
+        for (ResourcesAccess ura : updatedResources) {
+            Set<ResourcesAccess> roleResources = accessesByDefaultRole.computeIfAbsent(ura.getDefaultRole(),
+                                                                                       k -> new HashSet<>());
+            roleResources.add(ura);
         }
 
         // Link new resources with existing roles
