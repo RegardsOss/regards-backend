@@ -32,7 +32,9 @@ import fr.cnes.regards.framework.s3.domain.StorageEntry;
 import fr.cnes.regards.framework.s3.domain.multipart.MultipartReport;
 import fr.cnes.regards.framework.s3.domain.multipart.ResponseAndStream;
 import fr.cnes.regards.framework.s3.domain.multipart.UploadedPart;
+import fr.cnes.regards.framework.s3.exception.ChecksumDoesntMatchException;
 import fr.cnes.regards.framework.s3.exception.MultipartException;
+import fr.cnes.regards.framework.s3.utils.BytesConverterUtils;
 import io.vavr.Tuple;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
@@ -51,6 +53,8 @@ import software.amazon.awssdk.services.s3.model.RestoreObjectResponse;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Function;
@@ -212,7 +216,9 @@ public class S3HighLevelReactiveClient {
                         .map(size -> storeSmallEntry(writeCmd))
                         .getOrElse(() -> storeMultipartEntry(writeCmd))
                         .log("storage.s3.write", Level.FINE)
-                        .flatMap(size -> Mono.<WriteResult>just(new WriteSuccess(writeCmd, size)))
+                        .flatMap(sizeAndChecksum -> Mono.<WriteResult>just(new WriteSuccess(writeCmd,
+                                                                                            sizeAndChecksum.size(),
+                                                                                            sizeAndChecksum.checksum())))
                         .transform(dealWithWriteEntryErrors(writeCmd));
         });
     }
@@ -223,7 +229,9 @@ public class S3HighLevelReactiveClient {
                                                                               t.getMessage(),
                                                                               t))
                                                  .onErrorResume(MultipartException.class,
-                                                                cme -> Mono.just(new WriteFailure(writeCmd)))
+                                                                t -> Mono.just(new WriteFailure(writeCmd, t)))
+                                                 .onErrorResume(ChecksumDoesntMatchException.class,
+                                                                t -> Mono.just(new WriteFailure(writeCmd, t)))
                                                  .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(
                                                      writeCmd,
                                                      t)))
@@ -234,7 +242,7 @@ public class S3HighLevelReactiveClient {
                                                       SignalType.ON_ERROR);
     }
 
-    protected Mono<Long> storeMultipartEntry(Write writeCmd) {
+    protected Mono<SizeAndChecksum> storeMultipartEntry(Write writeCmd) {
         StorageConfig config = writeCmd.getConfig();
         String bucket = config.getBucket();
         StorageEntry entry = writeCmd.getEntry();
@@ -245,34 +253,64 @@ public class S3HighLevelReactiveClient {
                                                                                                        config,
                                                                                                        bucket,
                                                                                                        key,
-                                                                                                       uploadId)))
+                                                                                                       uploadId,
+                                                                                                       writeCmd.getChecksum())))
                    .subscribeOn(scheduler);
     }
 
-    protected Mono<Long> uploadThenCompleteMultipartEntry(StorageEntry entry,
-                                                          StorageConfig config,
-                                                          String bucket,
-                                                          String key,
-                                                          String uploadId) {
-        return entry.getData()
-                    .limitRate(reactorPreFetch)
-                    .publishOn(scheduler)
-                    .transform(harmonize(maxBytesPerPart, reactorPreFetch))
-                    .zipWithIterable(Stream.range(1, Integer.MAX_VALUE))
-                    .concatMap(part -> uploadPart(config, bucket, key, uploadId, part), reactorPreFetch)
-                    .reduce(new MultipartReport(), MultipartReport::accumulate)
-                    .flatMap(report -> completeMultipartEntry(config, bucket, key, uploadId, report))
-                    .onErrorResume(t -> getClient(config).abortMultipartUpload(bucket, key, uploadId)
-                                                         .flatMap(any -> Mono.error(new MultipartException(t, entry))));
+    protected Mono<SizeAndChecksum> uploadThenCompleteMultipartEntry(StorageEntry entry,
+                                                                     StorageConfig config,
+                                                                     String bucket,
+                                                                     String key,
+                                                                     String uploadId,
+                                                                     String checksum) {
+        try {
+            /**
+             * WARNING : This does not in fact use parallel upload. To use parallel upload, we need to use ParallelFlux
+             */
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            return entry.getData()
+                        .limitRate(reactorPreFetch)
+                        .publishOn(scheduler)
+                        .transform(harmonize(maxBytesPerPart, reactorPreFetch))
+                        .zipWithIterable(Stream.range(1, Integer.MAX_VALUE))
+                        .concatMap(part -> uploadPartAndUpdateDigest(config, bucket, key, uploadId, part, digest),
+                                   reactorPreFetch)
+                        .reduce(new MultipartReport(), MultipartReport::accumulate)
+                        .map(report -> new ReportAndChecksum(report, digest))
+                        .flatMap(report -> {
+                            if (checksum != null && !report.getChecksum().equals(checksum)) {
+                                return Mono.error(new ChecksumDoesntMatchException(checksum, report.getChecksum()));
+                            }
+                            return Mono.just(report);
+                        })
+                        .flatMap(report -> completeMultipartEntry(config,
+                                                                  bucket,
+                                                                  key,
+                                                                  uploadId,
+                                                                  report.getReport(),
+                                                                  report.getChecksum()))
+                        .onErrorResume(t -> getClient(config).abortMultipartUpload(bucket, key, uploadId)
+                                                             .flatMap(any -> {
+                                                                 if (t instanceof ChecksumDoesntMatchException) {
+                                                                     return Mono.error(t);
+                                                                 }
+                                                                 return Mono.error(new MultipartException(t, entry));
+                                                             }));
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private Mono<Long> completeMultipartEntry(StorageConfig config,
-                                              String bucket,
-                                              String key,
-                                              String uploadId,
-                                              MultipartReport report) {
+    private Mono<SizeAndChecksum> completeMultipartEntry(StorageConfig config,
+                                                         String bucket,
+                                                         String key,
+                                                         String uploadId,
+                                                         MultipartReport report,
+                                                         String checksum) {
         return getClient(config).completeMultipartUpload(bucket, key, uploadId, report.getCompleted())
-                                .map(any -> report.getAccumulatedSize());
+                                .map(any -> new SizeAndChecksum(report.getAccumulatedSize(), checksum));
     }
 
     private Publisher<? extends UploadedPart> uploadPart(StorageConfig config,
@@ -285,14 +323,51 @@ public class S3HighLevelReactiveClient {
         return getClient(config).uploadMultipartFilePart(bucket, key, uploadId, partNum, partData);
     }
 
-    protected Mono<Long> storeSmallEntry(Write writeCmd) {
+    private Publisher<? extends UploadedPart> uploadPartAndUpdateDigest(StorageConfig config,
+                                                                        String bucket,
+                                                                        String key,
+                                                                        String uploadId,
+                                                                        Tuple2<ByteBuffer, Integer> part,
+                                                                        MessageDigest digest) {
+        int partNum = part.getT2();
+        byte[] partData = bufToArr(part.getT1());
+        return getClient(config).uploadMultipartFilePartWithDigest(bucket, key, uploadId, partNum, partData, digest);
+    }
+
+    protected Mono<SizeAndChecksum> storeSmallEntry(Write writeCmd) {
         StorageConfig config = writeCmd.getConfig();
         String bucket = config.getBucket();
         StorageEntry entry = writeCmd.getEntry();
         String key = entry.getFullPath();
 
-        return dataToByteArray(entry.getData()).flatMap(bytes -> getClient(config).putContent(bucket, key, bytes)
-                                                                                  .map(r -> (long) bytes.length));
+        return dataToByteArray(entry.getData()).map(bytes -> new BytesAndChecksum(bytes,
+                                                                                  computeSinglePartChecksum(bytes)))
+                                               .flatMap(bytesAndChecksum -> {
+                                                   if (writeCmd.getChecksum() != null && !bytesAndChecksum.checksum()
+                                                                                                          .equals(
+                                                                                                              writeCmd.getChecksum())) {
+                                                       return Mono.error(new ChecksumDoesntMatchException(writeCmd.getChecksum(),
+                                                                                                          bytesAndChecksum.checksum()));
+                                                   }
+                                                   return Mono.just(bytesAndChecksum);
+                                               })
+                                               .flatMap(bytesAndChecksum -> getClient(config).putContent(bucket,
+                                                                                                         key,
+                                                                                                         bytesAndChecksum.bytes())
+                                                                                             .map(r -> new SizeAndChecksum(
+                                                                                                 (long) bytesAndChecksum.bytes().length,
+                                                                                                 bytesAndChecksum.checksum())));
+    }
+
+    private String computeSinglePartChecksum(byte[] bytes) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(bytes);
+            return BytesConverterUtils.bytesToHex(messageDigest.digest());
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -369,6 +444,37 @@ public class S3HighLevelReactiveClient {
         byte[] arr = new byte[bb.remaining()];
         bb.get(arr);
         return arr;
+    }
+
+    private record SizeAndChecksum(Long size,
+                                   String checksum) {
+
+    }
+
+    private record BytesAndChecksum(byte[] bytes,
+                                    String checksum) {
+
+    }
+
+    private class ReportAndChecksum {
+
+        private MultipartReport report;
+
+        private String checksum;
+
+        private ReportAndChecksum(MultipartReport report, MessageDigest digest) {
+            this.report = report;
+            this.checksum = BytesConverterUtils.bytesToHex(digest.digest());
+        }
+
+        public MultipartReport getReport() {
+            return report;
+        }
+
+        public String getChecksum() {
+            return checksum;
+        }
+
     }
 
 }

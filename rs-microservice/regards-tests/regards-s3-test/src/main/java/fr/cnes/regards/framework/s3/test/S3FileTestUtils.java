@@ -107,7 +107,11 @@ public final class S3FileTestUtils {
                                                     .data(buffers)
                                                     .build();
 
-            StorageCommand.Write writeCmd = new StorageCommand.Write.Impl(storageConfig, cmdId, entryKey, storageEntry);
+            StorageCommand.Write writeCmd = new StorageCommand.Write.Impl(storageConfig,
+                                                                          cmdId,
+                                                                          entryKey,
+                                                                          storageEntry,
+                                                                          request.getMetaInfo().getChecksum());
 
             Scheduler scheduler = Schedulers.newParallel(THREAD_PREFIX, 10);
             int maxBytesPerPart = MULTIPART_THRESHOLD_MB * 1024 * 1024;
