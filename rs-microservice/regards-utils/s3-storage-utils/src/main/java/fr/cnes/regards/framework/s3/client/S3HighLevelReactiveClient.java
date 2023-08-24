@@ -279,7 +279,7 @@ public class S3HighLevelReactiveClient {
                         .reduce(new MultipartReport(), MultipartReport::accumulate)
                         .map(report -> new ReportAndChecksum(report, digest))
                         .flatMap(report -> {
-                            if (checksum != null && !report.getChecksum().equals(checksum)) {
+                            if (checksum != null && !report.getChecksum().equalsIgnoreCase(checksum)) {
                                 return Mono.error(new ChecksumDoesntMatchException(checksum, report.getChecksum()));
                             }
                             return Mono.just(report);
@@ -344,7 +344,7 @@ public class S3HighLevelReactiveClient {
                                                                                   computeSinglePartChecksum(bytes)))
                                                .flatMap(bytesAndChecksum -> {
                                                    if (writeCmd.getChecksum() != null && !bytesAndChecksum.checksum()
-                                                                                                          .equals(
+                                                                                                          .equalsIgnoreCase(
                                                                                                               writeCmd.getChecksum())) {
                                                        return Mono.error(new ChecksumDoesntMatchException(writeCmd.getChecksum(),
                                                                                                           bytesAndChecksum.checksum()));

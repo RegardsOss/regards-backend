@@ -236,6 +236,50 @@ public class S3HighLevelReactiveClientIT {
     }
 
     @Test
+    public void testWriteSmallNoChecksum() {
+        String rootPath = "some/root/path";
+
+        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
+                                            .bucket(bucket)
+                                            .rootPath(rootPath)
+                                            .build();
+
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10);
+
+        Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
+                                                        new DefaultDataBufferFactory(),
+                                                        1024).map(DataBuffer::asByteBuffer);
+        StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
+
+        String entryKey = config.entryKey("small.txt");
+        long size = 427L;
+        StorageEntry entry = StorageEntry.builder()
+                                         .config(config)
+                                         .size(Option.some(size))
+                                         .fullPath(entryKey)
+                                         .data(buffers)
+                                         .build();
+
+        client.check(StorageCommand.check(config, cmdId, entryKey)).block().matchCheckResult(present -> {
+            fail("Should be absent");
+            return false;
+        }, absent -> true, unreachableStorage -> {
+            fail("s3 unreachable");
+            return false;
+        });
+
+        client.write(StorageCommand.write(config, cmdId, entryKey, entry)).block().matchWriteResult(success -> {
+            return true;
+        }, unreachableStorage -> {
+            fail("s3 unreachable");
+            return false;
+        }, failure -> {
+            fail("write error");
+            return false;
+        });
+    }
+
+    @Test
     public void testWriteReadDeleteBig() throws IOException, NoSuchAlgorithmException {
         String rootPath = "some/root/path";
 
@@ -385,6 +429,50 @@ public class S3HighLevelReactiveClientIT {
                   assertThat(failure.getCause().getClass()).isEqualTo(ChecksumDoesntMatchException.class);
                   return true;
               });
+
+    }
+
+    @Test
+    public void testWriteBigNoChecksum() throws IOException, NoSuchAlgorithmException {
+        String rootPath = "some/root/path";
+
+        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
+                                            .bucket(bucket)
+                                            .rootPath(rootPath)
+                                            .build();
+
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
+
+        long size = 10L * 1024L * 1024L + 512L;
+
+        File tmpFile = tmp.newFile("big.txt");
+
+        Random random = new Random();
+        byte[] content = new byte[(int) size];
+        random.nextBytes(content);
+        Files.write(tmpFile.toPath(), content);
+        Flux<ByteBuffer> buffers = Flux.just(ByteBuffer.wrap(content));
+
+        StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
+
+        String entryKey = config.entryKey("big.txt");
+
+        StorageEntry entry = StorageEntry.builder()
+                                         .config(config)
+                                         .size(Option.some(size))
+                                         .fullPath(entryKey)
+                                         .data(buffers)
+                                         .build();
+
+        client.write(StorageCommand.write(config, cmdId, entryKey, entry)).block().matchWriteResult(success -> {
+            return true;
+        }, unreachableStorage -> {
+            fail("s3 unreachable");
+            return false;
+        }, failure -> {
+            fail("write failure");
+            return false;
+        });
 
     }
 
