@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.geojson;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,5 +67,11 @@ public class Feature extends AbstractFeature<Map<String, Object>, String> {
 
     public void setCreated(OffsetDateTime updated) {
         properties.put(CREATED_FIELD, updated);
+    }
+
+    @Schema(implementation = Map.class)
+    @Override
+    public Map<String, Object> getProperties() {
+        return super.getProperties();
     }
 }

@@ -111,4 +111,8 @@ public class LightRequest {
     public String getError() {
         return error;
     }
+
+    public Long getId() {
+        return id;
+    }
 }

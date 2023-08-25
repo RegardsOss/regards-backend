@@ -19,10 +19,12 @@
 package fr.cnes.regards.modules.ingest.dto.aip;
 
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
+import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotBlank;
@@ -171,5 +173,11 @@ public class AIP extends AbstractInformationPackage<OaisUniformResourceName> {
         aip.setProperties(sip.getProperties());
         aip.setVersion(version);
         return aip;
+    }
+
+    @Schema(implementation = InformationPackageProperties.class)
+    @Override
+    public InformationPackageProperties getProperties() {
+        return super.getProperties();
     }
 }

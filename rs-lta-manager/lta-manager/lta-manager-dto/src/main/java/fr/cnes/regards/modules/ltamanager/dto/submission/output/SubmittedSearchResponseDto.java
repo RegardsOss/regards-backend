@@ -104,6 +104,10 @@ public final class SubmittedSearchResponseDto {
         this.message = message;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public String getCorrelationId() {
         return correlationId;
     }

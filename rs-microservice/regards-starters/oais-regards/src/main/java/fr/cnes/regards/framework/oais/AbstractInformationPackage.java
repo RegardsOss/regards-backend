@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
@@ -211,6 +212,13 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         }
         @SuppressWarnings("rawtypes") AbstractInformationPackage other = (AbstractInformationPackage) obj;
         return ipType == other.ipType;
+    }
+
+    // Override needed for swagger. Cannot use generic type with swagger
+    @Schema(implementation = InformationPackageProperties.class)
+    @Override
+    public InformationPackageProperties getProperties() {
+        return super.getProperties();
     }
 
     // Fluent API

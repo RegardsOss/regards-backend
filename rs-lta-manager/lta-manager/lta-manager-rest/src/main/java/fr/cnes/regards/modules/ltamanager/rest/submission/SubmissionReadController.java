@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
@@ -112,6 +113,7 @@ public class SubmissionReadController extends AbstractSubmissionController
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterion.",
                                                               content = @Content(schema = @Schema(implementation = SearchSubmissionRequestParameters.class)))
         @RequestBody @Valid SearchSubmissionRequestParameters searchCriterion,
+        @PageableQueryParam
         @PageableDefault(sort = { "submissionStatus_statusDate", "correlationId" }, direction = Sort.Direction.DESC)
         Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<SubmittedSearchResponseDto> assembler) {

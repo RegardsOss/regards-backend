@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.lang.Nullable;
 
 import javax.validation.Valid;
@@ -56,6 +57,13 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
 
     @Valid
     protected List<FeatureFile> files = new ArrayList<>();
+
+    @Schema(implementation = Set.class)
+    @Override
+    // Override needed for swagger. Cannot use generic type with swagger
+    public Set<IProperty<?>> getProperties() {
+        return super.getProperties();
+    }
 
     private boolean last = false;
 

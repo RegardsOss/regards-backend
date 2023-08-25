@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -49,7 +50,6 @@ import java.util.*;
 public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, UniformResourceName> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityFeature.class);
-
 
     @ConfigIgnore
     protected UniformResourceName virtualId;
@@ -103,6 +103,13 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
         this.entityType = entityType;
         this.label = label;
         this.properties = new HashSet<>();
+    }
+
+    @Schema(implementation = Set.class)
+    @Override
+    // Override needed for swagger. Cannot use generic type with swagger
+    public Set<IProperty<?>> getProperties() {
+        return super.getProperties();
     }
 
     public void addProperty(IProperty<?> property) {
