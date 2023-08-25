@@ -603,7 +603,6 @@ public class IngestRequestService implements IIngestRequestService {
         String errorMessage = null;
         // Propagate errors
         request.setErrorType(IngestErrorType.GENERATION);
-        requestInfo.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
         if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
             // Update AIP and SIP with current error
             updateRequestWithErrors(request,
@@ -616,6 +615,7 @@ public class IngestRequestService implements IIngestRequestService {
             request.setStep(IngestRequestStep.REMOTE_STORAGE_ERROR);
 
         } else {
+            requestInfo.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
             errorMessage = String.format(UNEXPECTED_STEP_S_TEMPLATE, request.getStep());
         }
         // Keep track of the error
