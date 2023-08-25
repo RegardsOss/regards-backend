@@ -14,6 +14,10 @@ public interface StorageCommand {
         return new Write.Impl(config, cmdId, path, entry);
     }
 
+    static Write write(StorageConfig config, StorageCommandID cmdId, String path, StorageEntry entry, String checksum) {
+        return new Write.Impl(config, cmdId, path, entry, checksum);
+    }
+
     static Delete delete(StorageConfig config, StorageCommandID cmdId, String path) {
         return new Delete.Impl(config, cmdId, path);
     }
@@ -48,18 +52,38 @@ public interface StorageCommand {
 
         StorageEntry getEntry();
 
+        String getChecksum();
+
         class Impl extends Base implements Write {
 
             private final StorageEntry entry;
 
+            private final String checksum;
+
             public Impl(StorageConfig config, StorageCommandID cmdId, String path, StorageEntry entry) {
                 super(config, cmdId, path);
                 this.entry = entry;
+                this.checksum = null;
+            }
+
+            public Impl(StorageConfig config,
+                        StorageCommandID cmdId,
+                        String path,
+                        StorageEntry entry,
+                        String checksum) {
+                super(config, cmdId, path);
+                this.entry = entry;
+                this.checksum = checksum;
             }
 
             @Override
             public StorageEntry getEntry() {
                 return entry;
+            }
+
+            @Override
+            public String getChecksum() {
+                return checksum;
             }
         }
     }

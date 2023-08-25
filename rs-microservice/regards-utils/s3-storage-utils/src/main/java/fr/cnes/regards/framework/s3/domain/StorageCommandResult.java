@@ -118,13 +118,20 @@ public interface StorageCommandResult {
 
         private final long size;
 
-        public WriteSuccess(StorageCommand ioCmd, long size) {
+        private final String checksum;
+
+        public WriteSuccess(StorageCommand ioCmd, long size, String checksum) {
             super(ioCmd);
             this.size = size;
+            this.checksum = checksum;
         }
 
         public long getSize() {
             return size;
+        }
+
+        public String getChecksum() {
+            return checksum;
         }
     }
 
@@ -134,8 +141,15 @@ public interface StorageCommandResult {
      */
     class WriteFailure extends Base implements WriteResult {
 
-        public WriteFailure(StorageCommand ioCmd) {
+        private Throwable cause;
+
+        public WriteFailure(StorageCommand ioCmd, Throwable cause) {
             super(ioCmd);
+            this.cause = cause;
+        }
+
+        public Throwable getCause() {
+            return cause;
         }
     }
 

@@ -152,7 +152,8 @@ public final class S3BucketTestUtils {
         StorageCommandResult.WriteResult result = client.write(StorageCommand.write(storageConfig,
                                                                                     cmdId,
                                                                                     entryKey,
-                                                                                    entry)).block();
+                                                                                    entry,
+                                                                                    checksum)).block();
         if (result == null) {
             throw new S3ClientException(String.format("Invalid S3 write command result [bucket: %s] [endpoint: %s]",
                                                       s3Server.getBucket(),

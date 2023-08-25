@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.s3.client;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import fr.cnes.regards.framework.s3.domain.StorageConfig;
+import fr.cnes.regards.framework.s3.domain.StorageEntry;
 import fr.cnes.regards.framework.s3.domain.multipart.GetResponseAndStream;
 import fr.cnes.regards.framework.s3.domain.multipart.ResponseAndStream;
 import fr.cnes.regards.framework.s3.domain.multipart.UploadedPart;
@@ -50,6 +51,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Optional;
@@ -68,12 +70,12 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
     private static final Logger LOGGER = LoggerFactory.getLogger(S3AsyncClientReactorWrapper.class);
 
     static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("s3-async-client-%d")
-            .setUncaughtExceptionHandler((t, e) -> LOGGER.error(
-                    "Uncaught on thread {}: {}",
-                    t.getName(),
-                    e.getMessage(),
-                    e))
-            .build();
+                                                                         .setUncaughtExceptionHandler((t, e) -> LOGGER.error(
+                                                                             "Uncaught on thread {}: {}",
+                                                                             t.getName(),
+                                                                             e.getMessage(),
+                                                                             e))
+                                                                         .build();
 
     static final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
 
@@ -87,30 +89,30 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
 
     private static ClientOverrideConfiguration createRetryConfiguration(StorageConfig config) {
         BackoffStrategy backoffStrategy = EqualJitterBackoffStrategy.builder()
-                .baseDelay(Duration.ofSeconds(config.getRetryBackOffBaseDuration()))
-                .maxBackoffTime(Duration.ofSeconds(config.getRetryBackOffMaxDuration()))
-                .build();
+                                                                    .baseDelay(Duration.ofSeconds(config.getRetryBackOffBaseDuration()))
+                                                                    .maxBackoffTime(Duration.ofSeconds(config.getRetryBackOffMaxDuration()))
+                                                                    .build();
         return ClientOverrideConfiguration.builder()
-                .retryPolicy(RetryPolicy.builder()
-                        .backoffStrategy(backoffStrategy)
-                        .throttlingBackoffStrategy(backoffStrategy)
-                        .numRetries(config.getMaxRetriesNumber())
-                        .build())
-                .build();
+                                          .retryPolicy(RetryPolicy.builder()
+                                                                  .backoffStrategy(backoffStrategy)
+                                                                  .throttlingBackoffStrategy(backoffStrategy)
+                                                                  .numRetries(config.getMaxRetriesNumber())
+                                                                  .build())
+                                          .build();
     }
 
     private static S3AsyncClient createS3Client(StorageConfig config) {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(config.getKey(), config.getSecret());
 
         return S3AsyncClient.builder()
-                .endpointOverride(URI.create(config.getEndpoint()))
-                .region(Region.of(config.getRegion()))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .serviceConfiguration(S3Configuration.builder().build())
-                .asyncConfiguration(b -> b.advancedOption(SdkAdvancedAsyncClientOption.FUTURE_COMPLETION_EXECUTOR,
-                        executor))
-                .overrideConfiguration(createRetryConfiguration(config))
-                .build();
+                            .endpointOverride(URI.create(config.getEndpoint()))
+                            .region(Region.of(config.getRegion()))
+                            .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                            .serviceConfiguration(S3Configuration.builder().build())
+                            .asyncConfiguration(b -> b.advancedOption(SdkAdvancedAsyncClientOption.FUTURE_COMPLETION_EXECUTOR,
+                                                                      executor))
+                            .overrideConfiguration(createRetryConfiguration(config))
+                            .build();
     }
 
     @Override
@@ -134,8 +136,10 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
             return fromFutureSupplier(() -> client.headObject(request)).map(headResponse -> {
 
                 // Amazon S3 return null header for the Standard storage class
-                if (headResponse.storageClass() == null ||
-                        headResponse.storageClass().equals(standardStorageClass == null ? StorageClass.STANDARD : standardStorageClass)) {
+                if (headResponse.storageClass() == null || headResponse.storageClass()
+                                                                       .equals(standardStorageClass == null ?
+                                                                                   StorageClass.STANDARD :
+                                                                                   standardStorageClass)) {
                     LOGGER.debug("File ({}) in bucket ({}) is in STANDARD storage class", key, bucket);
                     return true;
                 } else {
@@ -152,14 +156,14 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
     @Override
     public Mono<Optional<String>> eTag(String bucket, String key) {
         return getHeadObjectResponse(bucket, key).flatMap(optional -> optional.map(headObjectResponse -> Mono.just(
-                // Etag specification indicates that the string is quoted so remove quotes to get eTag content value
-                Optional.of(headObjectResponse.eTag().replace("\"", "")))).orElse(Mono.just(Optional.empty())));
+            // Etag specification indicates that the string is quoted so remove quotes to get eTag content value
+            Optional.of(headObjectResponse.eTag().replace("\"", "")))).orElse(Mono.just(Optional.empty())));
     }
 
     @Override
     public Mono<Optional<Long>> contentLength(String bucket, String key) {
         return getHeadObjectResponse(bucket, key).flatMap(optional -> optional.map(headObjectResponse -> Mono.just(
-                Optional.of(headObjectResponse.contentLength()))).orElse(Mono.just(Optional.empty())));
+            Optional.of(headObjectResponse.contentLength()))).orElse(Mono.just(Optional.empty())));
     }
 
     private Mono<Optional<HeadObjectResponse>> getHeadObjectResponse(String bucket, String key) {
@@ -179,20 +183,20 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         return withClient(client -> {
             GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();
             return fromFutureSupplier(() -> client.getObject(request, new GetResponseAndStream())).onErrorMap(
-                    SdkClientException.class,
-                    S3ClientException::new);
+                SdkClientException.class,
+                S3ClientException::new);
         });
     }
 
     public Mono<RestoreObjectResponse> restore(String bucket, String key) {
         return withClient(client -> {
             RestoreObjectRequest request = RestoreObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(key)
-                    .restoreRequest(r -> r.days(1))
-                    .build();
+                                                               .bucket(bucket)
+                                                               .key(key)
+                                                               .restoreRequest(r -> r.days(1))
+                                                               .build();
             return fromFutureSupplier(() -> client.restoreObject(request)).onErrorMap(SdkClientException.class,
-                    S3ClientException::new);
+                                                                                      S3ClientException::new);
         });
     }
 
@@ -200,10 +204,10 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         ListObjectsV2Request request = ListObjectsV2Request.builder().bucket(bucket).prefix(prefix).build();
 
         return withClient(client -> Flux.from(client.listObjectsV2Paginator(request))
-                .onErrorMap(CompletionException.class, Throwable::getCause)
-                .concatMap(r -> Flux.fromIterable(r.contents()))
-                .map(S3Object::key)
-                .onErrorMap(S3Exception.class, this::wrapS3Exception));
+                                        .onErrorMap(CompletionException.class, Throwable::getCause)
+                                        .concatMap(r -> Flux.fromIterable(r.contents()))
+                                        .map(S3Object::key)
+                                        .onErrorMap(S3Exception.class, this::wrapS3Exception));
     }
 
     public Mono<PutObjectResponse> putContent(String bucket, String path, InputStream content) {
@@ -222,21 +226,21 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         LOGGER.debug("Writing to storage : bucket={} path={} length={} md5={}", bucket, path, length, md5b64);
 
         PutObjectRequest putRequest = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(path)
-                .contentMD5(md5b64)
-                .contentLength(length)
-                .build();
+                                                      .bucket(bucket)
+                                                      .key(path)
+                                                      .contentMD5(md5b64)
+                                                      .contentLength(length)
+                                                      .build();
         AsyncRequestBody requestBody = AsyncRequestBody.fromBytes(content);
 
         return withClient(client -> fromFutureSupplier(() -> client.putObject(putRequest, requestBody))).log(
-                        "putContent")
-                .onErrorMap(
-                        SdkClientException.class,
-                        S3ClientException::new)
-                .onErrorMap(
-                        S3Exception.class,
-                        this::wrapS3Exception);
+                                                                                                            "putContent")
+                                                                                                        .onErrorMap(
+                                                                                                            SdkClientException.class,
+                                                                                                            S3ClientException::new)
+                                                                                                        .onErrorMap(
+                                                                                                            S3Exception.class,
+                                                                                                            this::wrapS3Exception);
     }
 
     /**
@@ -252,16 +256,16 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         return withClient(client -> {
             LOGGER.debug("Initiating multipart upload to {}/{}...", bucket, path);
             CreateMultipartUploadRequest initRequest = CreateMultipartUploadRequest.builder()
-                    .bucket(bucket)
-                    .storageClass((String) null)
-                    .key(path)
-                    .build();
+                                                                                   .bucket(bucket)
+                                                                                   .storageClass((String) null)
+                                                                                   .key(path)
+                                                                                   .build();
             return fromFutureSupplier(() -> client.createMultipartUpload(initRequest)).map(resp -> resp.uploadId())
-                    .doOnNext(uploadId -> LOGGER.debug(
-                            "Multipart {} - Initiated multipart upload to {}/{}",
-                            uploadId,
-                            bucket,
-                            path));
+                                                                                      .doOnNext(uploadId -> LOGGER.debug(
+                                                                                          "Multipart {} - Initiated multipart upload to {}/{}",
+                                                                                          uploadId,
+                                                                                          bucket,
+                                                                                          path));
         });
     }
 
@@ -287,34 +291,94 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                                       int partId,
                                                       byte[] partBytes) {
         LOGGER.debug("Multipart {} - Uploading part {} of multipart upload to {}/{}...",
-                uploadId,
-                partId,
-                bucket,
-                path);
+                     uploadId,
+                     partId,
+                     bucket,
+                     path);
 
         byte[] md5 = DigestUtils.md5(partBytes);
         String md5b64 = new String(Base64.encodeBase64(md5));
 
         UploadPartRequest uploadRequest = UploadPartRequest.builder()
-                .bucket(bucket)
-                .contentMD5(md5b64)
-                .key(path)
-                .uploadId(uploadId)
-                .partNumber(partId)
-                .build();
+                                                           .bucket(bucket)
+                                                           .contentMD5(md5b64)
+                                                           .key(path)
+                                                           .uploadId(uploadId)
+                                                           .partNumber(partId)
+                                                           .build();
         AsyncRequestBody requestBody = AsyncRequestBody.fromBytes(partBytes);
 
         return withClient(client -> fromFutureSupplier(() -> client.uploadPart(uploadRequest,
-                requestBody)).map(resp -> new UploadedPart(
-                        CompletedPart.builder().eTag(resp.eTag()).partNumber(partId).build(),
-                        requestBody.contentLength().orElse(0L)))
-                .doOnNext(etag -> LOGGER.debug(
-                        "Multipart {} - Finished uploading part {} of multipart upload to {}/{}, got tag {}",
-                        uploadId,
-                        partId,
-                        bucket,
-                        path,
-                        etag)));
+                                                                               requestBody)).map(resp -> new UploadedPart(
+                                                                                                CompletedPart.builder().eTag(resp.eTag()).partNumber(partId).build(),
+                                                                                                requestBody.contentLength().orElse(0L)))
+                                                                                            .doOnNext(etag -> LOGGER.debug(
+                                                                                                "Multipart {} - Finished uploading part {} of multipart upload to {}/{}, got tag {}",
+                                                                                                uploadId,
+                                                                                                partId,
+                                                                                                bucket,
+                                                                                                path,
+                                                                                                etag)));
+    }
+
+    /**
+     * Upload a part to S3 and update the given MessageDigest with the part data in order to compute the checksum
+     * when the upload is complete.
+     * <p>
+     * This only work if the upload is done sequentially (the parts are sent in order), ie if parallel upload is not
+     * used. @see{{@link S3HighLevelReactiveClient#uploadThenCompleteMultipartEntry(StorageEntry, StorageConfig, String, String, String)}}
+     *
+     * @param bucket    the bucket the file is uploaded to
+     * @param path      the path in the bucket
+     * @param uploadId  the multipartId of the part for s3
+     * @param partId    the number of the part, this is used by S3 to order the part when building the file
+     * @param partBytes the data to upload
+     * @param digest    The MessageDigest to update in order to compute the file checksum
+     * @return the UploadedPart metadata
+     */
+    public Mono<UploadedPart> uploadMultipartFilePartWithDigest(String bucket,
+                                                                String path,
+                                                                String uploadId,
+                                                                int partId,
+                                                                byte[] partBytes,
+                                                                MessageDigest digest) {
+        LOGGER.debug("Multipart {} - Uploading part {} of multipart upload to {}/{}...",
+                     uploadId,
+                     partId,
+                     bucket,
+                     path);
+
+        byte[] md5 = DigestUtils.md5(partBytes);
+        String md5b64 = new String(Base64.encodeBase64(md5));
+
+        UploadPartRequest uploadRequest = UploadPartRequest.builder()
+                                                           .bucket(bucket)
+                                                           .contentMD5(md5b64)
+                                                           .key(path)
+                                                           .uploadId(uploadId)
+                                                           .partNumber(partId)
+                                                           .build();
+        AsyncRequestBody requestBody = AsyncRequestBody.fromBytes(partBytes);
+
+        /*
+         * WARNING : This only works because we don't use parallel upload. If we do parallel upload, the parts are
+         * then not sent sequentially, and it is then impossible to compute the checksum.
+         * If we change our reactor algorithm to use parallel upload (with ParallelFlux), it would not be possible to
+         * compute the checksum on the fly anymore.
+         */
+
+        digest.update(partBytes);
+        return withClient(client -> fromFutureSupplier(() -> client.uploadPart(uploadRequest,
+                                                                               requestBody)).map(resp -> new UploadedPart(
+                                                                                                CompletedPart.builder().eTag(resp.eTag()).partNumber(partId).build(),
+                                                                                                requestBody.contentLength().orElse(0L)))
+                                                                                            .doOnNext(etag -> LOGGER.debug(
+                                                                                                "Multipart {} - Finished uploading part {} of multipart upload to {}/{}, got tag {}",
+                                                                                                uploadId,
+                                                                                                partId,
+                                                                                                bucket,
+                                                                                                path,
+                                                                                                etag)));
     }
 
     /**
@@ -336,36 +400,36 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                                 List<CompletedPart> parts) {
         List<CompletedPart> sortedParts = parts.sorted(Comparator.comparing(CompletedPart::partNumber));
         CompleteMultipartUploadRequest completeRequest = CompleteMultipartUploadRequest.builder()
-                .bucket(bucket)
-                .key(path)
-                .uploadId(uploadId)
-                .multipartUpload(
-                        CompletedMultipartUpload.builder()
-                                .parts(
-                                        sortedParts.toJavaList())
-                                .build())
-                .build();
+                                                                                       .bucket(bucket)
+                                                                                       .key(path)
+                                                                                       .uploadId(uploadId)
+                                                                                       .multipartUpload(
+                                                                                           CompletedMultipartUpload.builder()
+                                                                                                                   .parts(
+                                                                                                                       sortedParts.toJavaList())
+                                                                                                                   .build())
+                                                                                       .build();
 
         LOGGER.debug("Multipart {} - Completing multipart upload for {}/{}...", uploadId, bucket, path);
         return withClient(client -> fromFutureSupplier(() -> client.completeMultipartUpload(completeRequest)).doOnNext(
-                resp -> LOGGER.debug("Multipart {} - Completed multipart upload for {}/{} ", uploadId, bucket, path))).map(
-                CompleteMultipartUploadResponse::eTag);
+            resp -> LOGGER.debug("Multipart {} - Completed multipart upload for {}/{} ", uploadId, bucket, path))).map(
+            CompleteMultipartUploadResponse::eTag);
     }
 
     public Mono<String> abortMultipartUpload(String bucket, String path, String uploadId) {
 
         AbortMultipartUploadRequest abortRequest = AbortMultipartUploadRequest.builder()
-                .bucket(bucket)
-                .key(path)
-                .uploadId(uploadId)
-                .build();
+                                                                              .bucket(bucket)
+                                                                              .key(path)
+                                                                              .uploadId(uploadId)
+                                                                              .build();
 
         LOGGER.debug("Multipart {} - Completing multipart upload for {}/{}...", uploadId, bucket, path);
         return withClient(client -> fromFutureSupplier(() -> client.abortMultipartUpload(abortRequest)).doOnNext(resp -> LOGGER.debug(
-                "Multipart {} - Aborted multipart upload for {}/{} ",
-                uploadId,
-                bucket,
-                path))).map(any -> uploadId);
+            "Multipart {} - Aborted multipart upload for {}/{} ",
+            uploadId,
+            bucket,
+            path))).map(any -> uploadId);
     }
 
     public Mono<DeleteObjectResponse> deleteContent(String bucket, String path) {
