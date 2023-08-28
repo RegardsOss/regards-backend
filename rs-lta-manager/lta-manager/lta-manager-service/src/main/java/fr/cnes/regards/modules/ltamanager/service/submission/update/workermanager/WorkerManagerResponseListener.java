@@ -128,6 +128,8 @@ public class WorkerManagerResponseListener
                                                       responseAndRequest.getRight(),
                                                       SubmissionResponseStatus.ERROR,
                                                       SubmissionResponseDtoUtils.buildErrorMessage(new HashSet<>(
-                                                          responseAndRequest.getLeft().getMessage())));
+                                                          responseAndRequest.getLeft().getMessage())),
+                                                      null,
+                                                      1);
     }
 }

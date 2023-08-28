@@ -252,6 +252,7 @@ public class SubmissionCreateServiceTest {
                                                                                       "sessionSimpleStore",
                                                                                       false);
         requestDtoWithSimpleStorePath.setOwner(OWNER);
+
         return requestDtoWithSimpleStorePath;
     }
 
@@ -278,6 +279,7 @@ public class SubmissionCreateServiceTest {
                                                                                  null,
                                                                                  false);
         requestDtoWithProperties.setOwner(OWNER);
+
         return requestDtoWithProperties;
     }
 

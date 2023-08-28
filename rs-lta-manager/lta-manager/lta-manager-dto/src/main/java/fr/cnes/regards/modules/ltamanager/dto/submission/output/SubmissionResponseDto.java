@@ -29,6 +29,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represent a submission request response.
@@ -63,24 +64,39 @@ public class SubmissionResponseDto {
     @Schema(description = "Possible error message.", nullable = true)
     private String message;
 
+    @Nullable
+    @Schema(description = "Origin request application identifier.", nullable = true)
+    private String originRequestAppId;
+
+    @Nullable
+    @Schema(description = "Origin request priority.", nullable = true)
+    private Integer originRequestPriority;
+
     public SubmissionResponseDto(String correlationId,
                                  SubmissionResponseStatus responseStatus,
                                  @Nullable String productId,
                                  @Nullable OffsetDateTime expires,
                                  @Nullable String session,
-                                 @Nullable String message) {
+                                 @Nullable String message,
+                                 @Nullable String originRequestAppId,
+                                 @Nullable Integer originRequestPriority) {
         Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied");
         Assert.notNull(responseStatus, "responseStatus is mandatory ! Make sure other constraints are satisfied");
+
         this.productId = productId;
         this.responseStatus = responseStatus;
         this.message = message;
         this.correlationId = correlationId;
         this.expires = expires;
         this.session = session;
+        this.originRequestAppId = originRequestAppId;
+        this.originRequestPriority = originRequestPriority;
     }
 
     public static SubmissionResponseDto buildDeniedSubmissionResponseDto(SubmissionRequestDto requestDto,
-                                                                         String message) {
+                                                                         @Nullable String message,
+                                                                         @Nullable String originRequestAppId,
+                                                                         @Nullable Integer originRequestPriority) {
         String productId = requestDto.getProductId();
         String correlationId = requestDto.getCorrelationId();
         LOGGER.error("SubmissionRequestDto with correlationId \"{}\" and productId \"{}\" was rejected (cause: {}).",
@@ -92,7 +108,9 @@ public class SubmissionResponseDto {
                                          productId,
                                          null,
                                          requestDto.getSession(),
-                                         message);
+                                         message,
+                                         originRequestAppId,
+                                         originRequestPriority);
     }
 
     public String getCorrelationId() {
@@ -137,6 +155,22 @@ public class SubmissionResponseDto {
 
     public void setMessage(@Nullable String message) {
         this.message = message;
+    }
+
+    public Optional<String> getOriginRequestAppId() {
+        return Optional.ofNullable(originRequestAppId);
+    }
+
+    public void setOriginRequestAppId(@Nullable String originRequestAppId) {
+        this.originRequestAppId = originRequestAppId;
+    }
+
+    public Optional<Integer> getOriginRequestPriority() {
+        return Optional.ofNullable(originRequestPriority);
+    }
+
+    public void setOriginRequestPriority(Integer originRequestPriority) {
+        this.originRequestPriority = originRequestPriority;
     }
 
     @Override

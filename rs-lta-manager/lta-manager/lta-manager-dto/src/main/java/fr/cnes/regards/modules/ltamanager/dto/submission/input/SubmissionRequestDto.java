@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ltamanager.dto.submission.input;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.util.Assert;
 
@@ -32,6 +33,7 @@ import java.beans.ConstructorProperties;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A submission request dto contains information to store a product in a long-term storage space.
@@ -97,8 +99,17 @@ public class SubmissionRequestDto {
     @Schema(description = "If true, overrides the product if it already exists.", defaultValue = "false")
     private boolean replaceMode;
 
+    @Schema(description = "Owner of submission request")
     // owner is set after the construction of the request
     private String owner;
+
+    @GsonIgnore
+    @Schema(description = "Origin request app_id in amqp message (header property of amqp message)")
+    private String originRequestAppId;
+
+    @GsonIgnore
+    @Schema(description = "Origin request priority in amqp message (header property of amqp message")
+    private Integer originRequestPriority;
 
     @ConstructorProperties({ "correlationId",
                              "productId",
@@ -123,6 +134,7 @@ public class SubmissionRequestDto {
                                 @Nullable String session,
                                 boolean replaceMode) {
         this(correlationId, productId, datatype, files);
+
         this.tags = tags;
         this.originUrn = originUrn;
         this.properties = properties;
@@ -229,6 +241,22 @@ public class SubmissionRequestDto {
         this.geometry = geometry;
     }
 
+    public Optional<String> getOriginRequestAppId() {
+        return Optional.ofNullable(originRequestAppId);
+    }
+
+    public void setOriginRequestAppId(String originRequestAppId) {
+        this.originRequestAppId = originRequestAppId;
+    }
+
+    public Optional<Integer> getOriginRequestPriority() {
+        return Optional.ofNullable(originRequestPriority);
+    }
+
+    public void setOriginRequestPriority(Integer originRequestPriority) {
+        this.originRequestPriority = originRequestPriority;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -280,6 +308,11 @@ public class SubmissionRequestDto {
                + ", owner='"
                + owner
                + '\''
+               + ", originalRequestAppId='"
+               + originRequestAppId
+               + '\''
+               + ", originalRequestPriority="
+               + originRequestPriority
                + '}';
     }
 }

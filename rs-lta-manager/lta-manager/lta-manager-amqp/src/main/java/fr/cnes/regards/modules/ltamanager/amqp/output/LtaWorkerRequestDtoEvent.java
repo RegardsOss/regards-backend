@@ -91,4 +91,8 @@ public class LtaWorkerRequestDtoEvent extends LtaWorkerRequestDto implements ISu
         return Objects.hash(super.hashCode(), messageProperties);
     }
 
+    @Override
+    public String toString() {
+        return "LtaWorkerRequestDtoEvent{" + "messageProperties=" + messageProperties + '}';
+    }
 }

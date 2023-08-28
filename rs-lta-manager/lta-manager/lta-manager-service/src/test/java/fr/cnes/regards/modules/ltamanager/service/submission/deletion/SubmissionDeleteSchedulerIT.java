@@ -185,6 +185,8 @@ public class SubmissionDeleteSchedulerIT extends AbstractMultitenantServiceWithJ
                                                                         false,
                                                                         status,
                                                                         product,
+                                                                        null,
+                                                                        null,
                                                                         null);
             submissionRequests.add(submissionRequest);
             creationDate = creationDate.plusHours(i);

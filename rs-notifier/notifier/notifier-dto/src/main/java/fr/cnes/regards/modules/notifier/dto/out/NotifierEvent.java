@@ -28,6 +28,9 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * A notification response event after a notification request event
+ * ({@link fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent})
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)

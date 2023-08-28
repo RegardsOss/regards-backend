@@ -93,7 +93,9 @@ public class SubmissionRequestHelper {
                                                             false,
                                                             status,
                                                             product,
-                                                            null));
+                                                            null,
+                                                            null,
+                                                            1));
     }
 
 }

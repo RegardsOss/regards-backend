@@ -74,6 +74,14 @@ public class SubmissionRequest {
     @Nullable
     private String originUrn;
 
+    @Column(name = "origin_request_appid", length = 128)
+    @Nullable
+    private String originRequestAppId;
+
+    @Column(name = "origin_request_priority")
+    @Nullable
+    private Integer originRequestPriority;
+
     @Embedded
     @Valid
     private SubmissionStatus submissionStatus;
@@ -92,7 +100,9 @@ public class SubmissionRequest {
                              boolean replaceMode,
                              SubmissionStatus submissionStatus,
                              SubmittedProduct submittedProduct,
-                             @Nullable String originUrn) {
+                             @Nullable String originUrn,
+                             @Nullable String originalRequestAppId,
+                             @Nullable Integer originRequestPriority) {
         Assert.notNull(correlationId, "correlationId is mandatory !");
         Assert.notNull(owner, "owner is mandatory !");
         Assert.notNull(session, "session is mandatory !");
@@ -106,12 +116,16 @@ public class SubmissionRequest {
         this.submissionStatus = submissionStatus;
         this.submittedProduct = submittedProduct;
         this.originUrn = originUrn;
+        this.originRequestAppId = originalRequestAppId;
+        this.originRequestPriority = originRequestPriority;
     }
 
     public static SubmissionRequest buildSubmissionRequest(SubmissionRequestDto requestDto,
                                                            DatatypeParameter datatypeConfig,
                                                            OffsetDateTime currentDateTime,
-                                                           Integer requestExpiresInHour) {
+                                                           Integer requestExpiresInHour,
+                                                           @Nullable String originRequestAppId,
+                                                           @Nullable Integer originRequestPriority) {
         String session = requestDto.getSession();
         String owner = requestDto.getOwner();
 
@@ -135,7 +149,9 @@ public class SubmissionRequest {
                                                           datatypeConfig.getModel(),
                                                           Paths.get(datatypeConfig.getStorePath()),
                                                           requestDto),
-                                     requestDto.getOriginUrn());
+                                     requestDto.getOriginUrn(),
+                                     originRequestAppId,
+                                     originRequestPriority);
     }
 
     public String getCorrelationId() {
@@ -212,6 +228,22 @@ public class SubmissionRequest {
         return id;
     }
 
+    public String getOriginRequestAppId() {
+        return originRequestAppId;
+    }
+
+    public void setOriginRequestAppId(String originRequestAppId) {
+        this.originRequestAppId = originRequestAppId;
+    }
+
+    public Integer getOriginRequestPriority() {
+        return originRequestPriority;
+    }
+
+    public void setOriginRequestPriority(Integer originRequestPriority) {
+        this.originRequestPriority = originRequestPriority;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -232,9 +264,8 @@ public class SubmissionRequest {
     @Override
     public String toString() {
         return "SubmissionRequest{"
-               + "id='"
+               + "id="
                + id
-               + '\''
                + ", correlationId='"
                + correlationId
                + '\''
@@ -249,11 +280,15 @@ public class SubmissionRequest {
                + ", originUrn='"
                + originUrn
                + '\''
+               + ", originRequestAppId='"
+               + originRequestAppId
+               + '\''
+               + ", originRequestPriority="
+               + originRequestPriority
                + ", submissionStatus="
                + submissionStatus
                + ", submittedProduct="
                + submittedProduct
                + '}';
     }
-
 }

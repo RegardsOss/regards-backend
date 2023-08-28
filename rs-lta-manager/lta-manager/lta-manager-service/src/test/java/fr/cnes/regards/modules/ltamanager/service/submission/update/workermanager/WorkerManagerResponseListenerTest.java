@@ -195,6 +195,8 @@ public class WorkerManagerResponseListenerTest {
                                                                                        "",
                                                                                        MimeType.valueOf(
                                                                                            "application/octet-stream"))))),
+                                     null,
+                                     null,
                                      null);
     }
 

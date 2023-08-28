@@ -102,7 +102,7 @@ public class SubmissionCreateService {
      * @return {@link SubmissionResponseDtoEvent}s containing the ids and the status of the submission requests created or
      * rejected.
      */
-    public List<SubmissionResponseDto> handleSubmissionRequestsCreation(List<? extends SubmissionRequestDto> requestDtos) {
+    public List<SubmissionResponseDto> handleSubmissionRequestsCreation(List<? extends SubmissionRequestDto> submissionRequestDtos) {
         List<SubmissionRequest> submissionRequestsToSave = new ArrayList<>();
         List<SubmissionResponseDto> responses = new ArrayList<>();
         // Get lta setting configuration from database
@@ -110,23 +110,31 @@ public class SubmissionCreateService {
 
         // 1) Prepare requests : create submission requests from requests dtos
         OffsetDateTime currentDateTime = OffsetDateTime.now();
-        for (SubmissionRequestDto requestDto : requestDtos) {
-            LOGGER.debug("---> Processing SubmissionRequestDto with correlationId \"{}\"",
-                         requestDto.getCorrelationId());
+        for (SubmissionRequestDto submissionRequestDto : submissionRequestDtos) {
+            LOGGER.debug("---> Processing SubmissionRequestDtoEvent with correlationId \"{}\"",
+                         submissionRequestDto.getCorrelationId());
+            String originRequestAppId = submissionRequestDto.getOriginRequestAppId().orElse(null);
+            Integer originRequestPriority = submissionRequestDto.getOriginRequestPriority().orElse(null);
+
             // Create a submission request only from a valid submission request dto
             try {
-                DatatypeParameter datatypeConfig = createDatatypeService.createValidConfiguration(requestDto,
+                DatatypeParameter datatypeConfig = createDatatypeService.createValidConfiguration(submissionRequestDto,
                                                                                                   settingService.getDatypesConfig(
                                                                                                       settings),
                                                                                                   currentDateTime);
                 Integer requestExpiresInHour = settingService.getRequestExpiresInHoursConfig(settingService.retrieve());
 
-                submissionRequestsToSave.add(SubmissionRequest.buildSubmissionRequest(requestDto,
+                submissionRequestsToSave.add(SubmissionRequest.buildSubmissionRequest(submissionRequestDto,
                                                                                       datatypeConfig,
                                                                                       currentDateTime,
-                                                                                      requestExpiresInHour));
+                                                                                      requestExpiresInHour,
+                                                                                      originRequestAppId,
+                                                                                      originRequestPriority));
             } catch (LtaSettingsException e) {
-                responses.add(SubmissionResponseDto.buildDeniedSubmissionResponseDto(requestDto, e.getMessage()));
+                responses.add(SubmissionResponseDto.buildDeniedSubmissionResponseDto(submissionRequestDto,
+                                                                                     e.getMessage(),
+                                                                                     originRequestAppId,
+                                                                                     originRequestPriority));
             }
         }
         // 2) Handle submission requests in success
@@ -144,15 +152,23 @@ public class SubmissionCreateService {
     private void handleSuccess(List<SubmissionRequest> submissionRequestsToSave,
                                List<SubmissionResponseDto> responses,
                                Set<DynamicTenantSetting> settings) {
-        // save requests in success in database
-        List<SubmissionRequest> savedRequests = requestRepository.saveAll(submissionRequestsToSave);
-        // handle responses
-        List<LtaWorkerRequestDtoEvent> workerRequests = new ArrayList<>();
-        for (SubmissionRequest successRequest : savedRequests) {
-            responses.add(SubmissionResponseDtoUtils.buildSuccessResponseDto(successRequest));
-            workerRequests.add(buildWorkerRequest(successRequest, settings));
+        // Save submission requests in success in database
+        List<SubmissionRequest> savedSubmissionRequests = requestRepository.saveAll(submissionRequestsToSave);
+        // Handle responses and LTA Worker Request events
+        List<LtaWorkerRequestDtoEvent> ltaWorkerRequestEvts = new ArrayList<>();
+        for (SubmissionRequest savedSubmissionRequest : savedSubmissionRequests) {
+            responses.add(SubmissionResponseDtoUtils.buildSuccessResponseDto(savedSubmissionRequest));
+            ltaWorkerRequestEvts.add(buildWorkerRequest(savedSubmissionRequest, settings));
         }
-        this.publisher.publish(workerRequests, "regards.broadcast." + RequestEvent.class.getName(), Optional.empty());
+        for (LtaWorkerRequestDtoEvent ltaWorkerRequestEvt : ltaWorkerRequestEvts) {
+            LOGGER.debug("Publish event in this regards.broadcast."
+                         + RequestEvent.class.getName()
+                         + " exchange :"
+                         + ltaWorkerRequestEvt.toString());
+        }
+        this.publisher.publish(ltaWorkerRequestEvts,
+                               "regards.broadcast." + RequestEvent.class.getName(),
+                               Optional.empty());
     }
 
     private LtaWorkerRequestDtoEvent buildWorkerRequest(SubmissionRequest requestSaved,
@@ -171,18 +187,19 @@ public class SubmissionCreateService {
             }
         }
 
-        LtaWorkerRequestDtoEvent workerRequest = new LtaWorkerRequestDtoEvent(settingService.getStorageConfig(settings),
-                                                                              datatypeStorePath,
-                                                                              requestSaved.getModel(),
-                                                                              requestSaved.getProduct(),
-                                                                              requestSaved.isReplaceMode());
-        workerRequest.setWorkerHeaders(LTA_CONTENT_TYPE,
-                                       this.tenantResolver.getTenant(),
-                                       requestSaved.getCorrelationId(),
-                                       requestSaved.getOwner(),
-                                       requestSaved.getSession());
+        LtaWorkerRequestDtoEvent workerRequestEvent = new LtaWorkerRequestDtoEvent(settingService.getStorageConfig(
+            settings),
+                                                                                   datatypeStorePath,
+                                                                                   requestSaved.getModel(),
+                                                                                   requestSaved.getProduct(),
+                                                                                   requestSaved.isReplaceMode());
+        workerRequestEvent.setWorkerHeaders(LTA_CONTENT_TYPE,
+                                            this.tenantResolver.getTenant(),
+                                            requestSaved.getCorrelationId(),
+                                            requestSaved.getOwner(),
+                                            requestSaved.getSession());
 
-        return workerRequest;
+        return workerRequestEvent;
     }
 
 }

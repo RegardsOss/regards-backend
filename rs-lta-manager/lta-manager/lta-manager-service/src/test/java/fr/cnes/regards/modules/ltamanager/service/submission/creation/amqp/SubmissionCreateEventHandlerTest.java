@@ -83,6 +83,8 @@ public class SubmissionCreateEventHandlerTest {
 
     private static final String STORE_PATH_CONFIG = "/pathExample";
 
+    private static final Integer DEFAULT_ORIGIN_REQUEST_PRIORITY = 1;
+
     @Mock
     private ISubmissionRequestRepository requestRepository;
 
@@ -106,7 +108,7 @@ public class SubmissionCreateEventHandlerTest {
 
     private AutoCloseable closable;
 
-    private final List<SubmissionRequestDtoEvent> requestDtos = new ArrayList<>();
+    private final List<SubmissionRequestDtoEvent> submissionRequestEvts = new ArrayList<>();
 
     @Before
     public void init() {
@@ -139,14 +141,15 @@ public class SubmissionCreateEventHandlerTest {
                                                                 "f016852239a8a919f05f6d2225c5aaca",
                                                                 MediaType.APPLICATION_OCTET_STREAM));
         for (int i = 0; i < NB_REQUEST_DTOS; i++) {
-            SubmissionRequestDtoEvent requestDto = new SubmissionRequestDtoEvent("Test RequestDto n°" + i,
-                                                                                 UUID.randomUUID().toString(),
-                                                                                 EntityType.DATA.toString(),
-                                                                                 files);
-            requestDto.setGeometry(IGeometry.point(IGeometry.position(10.0, 20.0)));
-            requestDto.setStorePath(STORE_PATH);
-            requestDto.setOwner(OWNER);
-            requestDtos.add(requestDto);
+            SubmissionRequestDtoEvent submissionRequestEvt = new SubmissionRequestDtoEvent("Test RequestDto n°" + i,
+                                                                                           UUID.randomUUID().toString(),
+                                                                                           EntityType.DATA.toString(),
+                                                                                           files);
+            submissionRequestEvt.setGeometry(IGeometry.point(IGeometry.position(10.0, 20.0)));
+            submissionRequestEvt.setStorePath(STORE_PATH);
+            submissionRequestEvt.setOwner(OWNER);
+
+            submissionRequestEvts.add(submissionRequestEvt);
         }
     }
 
@@ -163,41 +166,42 @@ public class SubmissionCreateEventHandlerTest {
         });
 
         // WHEN
-        requestHandler.handleBatch(requestDtos);
+        requestHandler.handleBatch(submissionRequestEvts);
 
         // THEN
         // check if responses are built as expected, ie, with information related to the submission requests saved
-        List<SubmissionResponseDtoEvent> expectedDtosResponses = new ArrayList<>();
-        List<LtaWorkerRequestDtoEvent> expectedWorkerRequests = new ArrayList<>();
+        List<SubmissionResponseDtoEvent> expectedSubmissionResponseEvts = new ArrayList<>();
+        List<LtaWorkerRequestDtoEvent> expectedWorkerRequestEvts = new ArrayList<>();
         for (SubmissionRequest requestCreated : refRequestsCreated.get()) {
-            // submission response dto
-
-            SubmissionResponseDtoEvent expectedResponse = new SubmissionResponseDtoEvent(requestCreated.getCorrelationId(),
-                                                                                         SubmissionResponseStatus.GRANTED,
-                                                                                         requestCreated.getProduct()
-                                                                                                       .getProductId(),
-                                                                                         requestCreated.getCreationDate()
-                                                                                                       .plusHours(
-                                                                                                           REQ_EXPIRES_IN_HOURS),
-                                                                                         OWNER
-                                                                                         + "-"
-                                                                                         + OffsetDateTime.now()
-                                                                                                         .format(
-                                                                                                             DateTimeFormatter.BASIC_ISO_DATE),
-                                                                                         null);
-            expectedDtosResponses.add(expectedResponse);
-            // worker request dto
-            LtaWorkerRequestDtoEvent expectedWorkerReq = new LtaWorkerRequestDtoEvent(STORAGE,
-                                                                                      Paths.get(STORE_PATH_CONFIG),
-                                                                                      MODEL,
-                                                                                      requestCreated.getProduct(),
-                                                                                      false);
-            expectedWorkerReq.setWorkerHeaders(LTA_CONTENT_TYPE,
-                                               tenantResolver.getTenant(),
-                                               requestCreated.getCorrelationId(),
-                                               requestCreated.getOwner(),
-                                               requestCreated.getSession());
-            expectedWorkerRequests.add(expectedWorkerReq);
+            // submission response event
+            SubmissionResponseDtoEvent expectedResponseEvt = new SubmissionResponseDtoEvent(requestCreated.getCorrelationId(),
+                                                                                            SubmissionResponseStatus.GRANTED,
+                                                                                            requestCreated.getProduct()
+                                                                                                          .getProductId(),
+                                                                                            requestCreated.getCreationDate()
+                                                                                                          .plusHours(
+                                                                                                              REQ_EXPIRES_IN_HOURS),
+                                                                                            OWNER
+                                                                                            + "-"
+                                                                                            + OffsetDateTime.now()
+                                                                                                            .format(
+                                                                                                                DateTimeFormatter.BASIC_ISO_DATE),
+                                                                                            null,
+                                                                                            OWNER,
+                                                                                            DEFAULT_ORIGIN_REQUEST_PRIORITY);
+            expectedSubmissionResponseEvts.add(expectedResponseEvt);
+            // worker request event
+            LtaWorkerRequestDtoEvent expectedWorkerRequestEvt = new LtaWorkerRequestDtoEvent(STORAGE,
+                                                                                             Paths.get(STORE_PATH_CONFIG),
+                                                                                             MODEL,
+                                                                                             requestCreated.getProduct(),
+                                                                                             false);
+            expectedWorkerRequestEvt.setWorkerHeaders(LTA_CONTENT_TYPE,
+                                                      tenantResolver.getTenant(),
+                                                      requestCreated.getCorrelationId(),
+                                                      requestCreated.getOwner(),
+                                                      requestCreated.getSession());
+            expectedWorkerRequestEvts.add(expectedWorkerRequestEvt);
         }
 
         // capture events sent
@@ -206,10 +210,15 @@ public class SubmissionCreateEventHandlerTest {
         Mockito.verify(publisher).publish(captorPublished.capture());
         List<List<ISubscribable>> capturedPublishedEvents = captorPublished.getAllValues();
         Assertions.assertThat(capturedPublishedEvents).hasSize(2);
-        // worker requests
-        Assertions.assertThat(capturedPublishedEvents.get(0)).hasSameElementsAs(expectedWorkerRequests);
-        // submission response dtos
-        Assertions.assertThat(capturedPublishedEvents.get(1)).hasSameElementsAs(expectedDtosResponses);
+        // worker request events
+        Assertions.assertThat(capturedPublishedEvents.get(0)).hasSameElementsAs(expectedWorkerRequestEvts);
+        // submission response events
+        Assertions.assertThat(capturedPublishedEvents.get(1)).hasSameElementsAs(expectedSubmissionResponseEvts);
+
+        Assertions.assertThat(capturedPublishedEvents.get(1).get(0).getOriginRequestAppId())
+                  .isEqualTo(expectedSubmissionResponseEvts.get(0).getOriginRequestAppId());
+        Assertions.assertThat(capturedPublishedEvents.get(1).get(0).getOriginRequestPriority())
+                  .isEqualTo(expectedSubmissionResponseEvts.get(0).getOriginRequestPriority());
     }
 
     @After

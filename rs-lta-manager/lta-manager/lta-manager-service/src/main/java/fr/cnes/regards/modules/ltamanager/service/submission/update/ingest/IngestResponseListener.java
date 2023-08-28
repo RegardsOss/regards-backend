@@ -112,7 +112,9 @@ public class IngestResponseListener implements IIngestClientListener {
         return SubmissionResponseDtoUtils.createEvent(info.getRequestId(),
                                                       requestRepository.findSubmissionRequestByCorrelationId(info.getRequestId()),
                                                       status,
-                                                      errorMessage);
+                                                      errorMessage,
+                                                      null,
+                                                      1);
     }
 
     @Override

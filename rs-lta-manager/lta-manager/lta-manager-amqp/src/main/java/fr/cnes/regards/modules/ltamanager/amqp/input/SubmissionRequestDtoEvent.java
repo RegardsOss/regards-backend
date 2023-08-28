@@ -23,13 +23,15 @@ import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.core.MessageProperties;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
- * See {@link SubmissionRequestDto}
+ * A submission request event {@link SubmissionRequestDto}
  *
  * @author Iliana Ghazali
  **/
@@ -43,14 +45,20 @@ public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements I
     @GsonIgnore
     private MessageProperties messageProperties;
 
-    public SubmissionRequestDtoEvent(String correlationId, String productId, String datatype, List<ProductFileDto> files) {
+    public SubmissionRequestDtoEvent(String correlationId,
+                                     String productId,
+                                     String datatype,
+                                     List<ProductFileDto> files) {
         super(correlationId, productId, datatype, files);
-        this.messageProperties = new MessageProperties();
     }
 
     @Override
     public MessageProperties getMessageProperties() {
+        if (messageProperties == null) {
+            messageProperties = new MessageProperties();
+        }
         return messageProperties;
+
     }
 
     @Override
@@ -66,6 +74,35 @@ public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements I
     @Override
     public void setOwner(String owner) {
         setHeader(AmqpConstants.REGARDS_REQUEST_OWNER_HEADER, owner);
+    }
+
+    @Override
+    public Optional<String> getOriginRequestAppId() {
+        String appId = this.getMessageProperties().getAppId();
+        if (StringUtils.isBlank(appId)) {
+            appId = this.getOwner();
+        }
+        return Optional.ofNullable(appId);
+    }
+
+    @Override
+    public void setOriginRequestAppId(String originRequestAppId) {
+        this.getMessageProperties().setAppId(originRequestAppId);
+    }
+
+    @Override
+    public Optional<Integer> getOriginRequestPriority() {
+        Integer priority = 1;
+        if (this.getMessageProperties().getPriority() != null
+            && this.getMessageProperties().getPriority() != MessageProperties.DEFAULT_PRIORITY) {
+            priority = this.getMessageProperties().getPriority();
+        }
+        return Optional.of(priority);
+    }
+
+    @Override
+    public void setOriginRequestPriority(Integer originRequestPriority) {
+        this.getMessageProperties().setPriority(originRequestPriority);
     }
 
     @Override

@@ -86,13 +86,13 @@ public class SubmissionCreateEventHandler
     @Override
     public void handleBatch(List<SubmissionRequestDtoEvent> events) {
         long start = System.currentTimeMillis();
-        LOGGER.debug("Handling {} submission request dto", events.size());
+        LOGGER.debug("Handling {} submission request events", events.size());
 
         // save submission requests to database and publish responses
         List<SubmissionResponseDto> responses = createService.handleSubmissionRequestsCreation(events);
         publisher.publish(responses.stream().map(SubmissionResponseDtoEvent::new).toList());
 
-        LOGGER.debug("{} submission responses created from {} submission events. Handled in {}ms.",
+        LOGGER.debug("{} submission responses created from {} submission request events. Handled in {}ms.",
                      responses.size(),
                      events.size(),
                      System.currentTimeMillis() - start);

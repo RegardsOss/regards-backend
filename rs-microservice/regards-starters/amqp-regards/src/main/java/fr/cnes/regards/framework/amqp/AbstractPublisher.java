@@ -393,10 +393,9 @@ public abstract class AbstractPublisher implements IPublisherContract {
         if (!eventsToNotifier.contains(event.getClass().getName())) {
             return;
         }
-        String requestId = "";
-        String requestOwner = "";
+        String requestId = UUID.randomUUID().toString();
+        String requestOwner = applicationId;
         if (AbstractRequestEvent.class.isAssignableFrom(event.getClass())) {
-            requestId = ((AbstractRequestEvent) event).getRequestId();
             requestOwner = ((AbstractRequestEvent) event).getRequestOwner();
         }
 
@@ -435,56 +434,45 @@ public abstract class AbstractPublisher implements IPublisherContract {
         ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.computeIfAbsent(channel.getExchangeName()
                                                                                          .orElse(channel.getEventType()
                                                                                                         .getName()),
-                                                                                  key -> {
-                                                                                      amqpAdmin.declareDeadLetter();
-
-                                                                                      // Declare exchange
-                                                                                      Exchange exchange = amqpAdmin.declareExchange(
-                                                                                          channel);
-
-                                                                                      if (WorkerMode.UNICAST.equals(
-                                                                                          channel.getWorkerMode())) {
-                                                                                          // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
-                                                                                          // specific routing key
-                                                                                          Queue queue = amqpAdmin.declareQueue(
-                                                                                              tenant,
-                                                                                              channel);
-                                                                                          if (purgeQueue) {
-                                                                                              amqpAdmin.purgeQueue(queue.getName(),
-                                                                                                                   false);
-                                                                                          }
-                                                                                          amqpAdmin.declareBinding(queue,
-                                                                                                                   exchange,
-                                                                                                                   channel.getWorkerMode(),
-                                                                                                                   Optional.empty());
-                                                                                          return ExchangeAndRoutingKey.of(
-                                                                                              exchange.getName(),
-                                                                                              amqpAdmin.getRoutingKey(
-                                                                                                  Optional.of(queue),
-                                                                                                  channel.getWorkerMode(),
-                                                                                                  Optional.empty()));
-                                                                                      } else if (WorkerMode.BROADCAST.equals(
-                                                                                          channel.getWorkerMode())) {
-                                                                                          // Routing key useless ... always skipped with a fanout exchange
-                                                                                          return ExchangeAndRoutingKey.of(
-                                                                                              exchange.getName(),
-                                                                                              amqpAdmin.getRoutingKey(
-                                                                                                  Optional.empty(),
-                                                                                                  channel.getWorkerMode(),
-                                                                                                  channel.getRoutingKey()));
-                                                                                      } else {
-                                                                                          String errorMessage = String.format(
-                                                                                              "Unexpected worker mode : %s.",
-                                                                                              channel.getWorkerMode());
-                                                                                          LOGGER.error(errorMessage);
-                                                                                          throw new IllegalArgumentException(
-                                                                                              errorMessage);
-                                                                                      }
-                                                                                  });
+                                                                                  key -> createExchangeAndRoutingKey(
+                                                                                      tenant,
+                                                                                      channel,
+                                                                                      purgeQueue));
 
         // Publish
         LOGGER.debug("Publishing message on {}/{}", er.exchange, er.routingKey);
         publishMessageByTenant(tenant, er.exchange, er.routingKey, event, priority, headers);
+    }
+
+    private ExchangeAndRoutingKey createExchangeAndRoutingKey(String tenant, AmqpChannel channel, boolean purgeQueue) {
+        amqpAdmin.declareDeadLetter();
+
+        // Declare exchange
+        Exchange exchange = amqpAdmin.declareExchange(channel);
+
+        if (WorkerMode.UNICAST.equals(channel.getWorkerMode())) {
+            // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
+            // specific routing key
+            Queue queue = amqpAdmin.declareQueue(tenant, channel);
+            if (purgeQueue) {
+                amqpAdmin.purgeQueue(queue.getName(), false);
+            }
+            amqpAdmin.declareBinding(queue, exchange, channel.getWorkerMode(), Optional.empty());
+            return ExchangeAndRoutingKey.of(exchange.getName(),
+                                            amqpAdmin.getRoutingKey(Optional.of(queue),
+                                                                    channel.getWorkerMode(),
+                                                                    Optional.empty()));
+        } else if (WorkerMode.BROADCAST.equals(channel.getWorkerMode())) {
+            // Routing key useless ... always skipped with a fanout exchange
+            return ExchangeAndRoutingKey.of(exchange.getName(),
+                                            amqpAdmin.getRoutingKey(Optional.empty(),
+                                                                    channel.getWorkerMode(),
+                                                                    channel.getRoutingKey()));
+        } else {
+            String errorMessage = String.format("Unexpected worker mode : %s.", channel.getWorkerMode());
+            LOGGER.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
     }
 
     /**

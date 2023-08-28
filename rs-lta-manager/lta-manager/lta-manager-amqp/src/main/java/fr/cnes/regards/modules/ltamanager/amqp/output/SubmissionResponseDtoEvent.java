@@ -30,7 +30,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 /**
- * See {@link SubmissionResponseDto}
+ * A submission response event {@link SubmissionResponseDto}. This is the response of submission request event.
  *
  * @author Iliana Ghazali
  **/
@@ -42,8 +42,17 @@ public class SubmissionResponseDtoEvent extends SubmissionResponseDto implements
                                       @Nullable String productId,
                                       @Nullable OffsetDateTime expires,
                                       @Nullable String session,
-                                      @Nullable String message) {
-        super(correlationId, responseStatus, productId, expires, session, message);
+                                      @Nullable String message,
+                                      @Nullable String originRequestAppId,
+                                      @Nullable Integer originRequestPriority) {
+        super(correlationId,
+              responseStatus,
+              productId,
+              expires,
+              session,
+              message,
+              originRequestAppId,
+              originRequestPriority);
     }
 
     public SubmissionResponseDtoEvent(SubmissionResponseDto responseDto) {
@@ -52,7 +61,9 @@ public class SubmissionResponseDtoEvent extends SubmissionResponseDto implements
              responseDto.getProductId(),
              responseDto.getExpires(),
              responseDto.getSession(),
-             responseDto.getMessage());
+             responseDto.getMessage(),
+             responseDto.getOriginRequestAppId().orElse(null),
+             responseDto.getOriginRequestPriority().orElse(null));
     }
 
     @Override

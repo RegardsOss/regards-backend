@@ -58,7 +58,9 @@ public final class SubmissionResponseDtoUtils {
     public static SubmissionResponseDtoEvent createEvent(String requestId,
                                                          Optional<SubmissionRequest> request,
                                                          SubmissionResponseStatus status,
-                                                         @Nullable String errorMessage) {
+                                                         @Nullable String errorMessage,
+                                                         @Nullable String originRequestAppId,
+                                                         @Nullable Integer originRequestPriority) {
 
         String productId = null;
         String session = null;
@@ -71,7 +73,14 @@ public final class SubmissionResponseDtoUtils {
             expiryDate = request.get().getExpiryDate();
         }
 
-        return new SubmissionResponseDtoEvent(requestId, status, productId, expiryDate, session, errorMessage);
+        return new SubmissionResponseDtoEvent(requestId,
+                                              status,
+                                              productId,
+                                              expiryDate,
+                                              session,
+                                              errorMessage,
+                                              originRequestAppId,
+                                              originRequestPriority);
     }
 
     /**
@@ -106,7 +115,9 @@ public final class SubmissionResponseDtoUtils {
                                          request.getProduct().getProductId(),
                                          request.getExpiryDate(),
                                          request.getSession(),
-                                         null);
+                                         null,
+                                         request.getOriginRequestAppId(),
+                                         request.getOriginRequestPriority());
     }
 
 }

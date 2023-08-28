@@ -51,6 +51,8 @@ public interface SubmissionRequestMapper {
                                          submissionRequest.getProduct().getProductId(),
                                          submissionRequest.getExpiryDate(),
                                          submissionRequest.getSession(),
-                                         submissionRequest.getMessage());
+                                         submissionRequest.getMessage(),
+                                         submissionRequest.getOriginRequestAppId(),
+                                         submissionRequest.getOriginRequestPriority());
     }
 }
