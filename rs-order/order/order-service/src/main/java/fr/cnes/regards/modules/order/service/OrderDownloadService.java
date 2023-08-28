@@ -389,7 +389,9 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                 filename += suffix;
             }
         }
-        zos.putArchiveEntry(new ZipArchiveEntry(filename));
+        ZipArchiveEntry ze = new ZipArchiveEntry(filename);
+        realContentLength.ifPresent(ze::setSize);
+        zos.putArchiveEntry(ze);
         long copiedBytes = ByteStreams.copy(is, zos);
         zos.closeArchiveEntry();
         // We can only check copied bytes if we know expected size (ie if file is internal)
@@ -453,13 +455,16 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
             ResourcesType xmlResources = factory.createResourcesType();
             ResourcesType.Url xmlUrl = factory.createResourcesTypeUrl();
             // Build URL to publicdownloadFile
-            StringBuilder buff = new StringBuilder();
-            buff.append(host);
-            buff.append(orderHelperService.buildUrl());
-            buff.append(OrderControllerEndpointConfiguration.ORDERS_PUBLIC_FILES_MAPPING);
-            buff.append("/").append(file.getId()).append("?").append(tokenRequestParam);
-            buff.append("&").append(scopeRequestParam);
-            xmlUrl.setValue(buff.toString());
+            String buff = host
+                          + orderHelperService.buildUrl()
+                          + OrderControllerEndpointConfiguration.ORDERS_PUBLIC_FILES_MAPPING
+                          + "/"
+                          + file.getId()
+                          + "?"
+                          + tokenRequestParam
+                          + "&"
+                          + scopeRequestParam;
+            xmlUrl.setValue(buff);
             xmlResources.getUrl().add(xmlUrl);
             xmlFile.setResources(xmlResources);
             xmlFiles.getFile().add(xmlFile);
