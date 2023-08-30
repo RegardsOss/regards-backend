@@ -57,14 +57,20 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
         try {
             long startTime = System.currentTimeMillis();
             IStorageLocation storagePlugin = pluginService.getPlugin(storageLocation);
-            PeriodicActionProgressManager progressManager = new PeriodicActionProgressManager(fileRefService,
-                                                                                              storageLocationService);
-            storagePlugin.runPeriodicAction(progressManager);
-            progressManager.bulkSavePendings();
-            progressManager.notifyPendingActionErrors();
-            logger.info("Periodic task on storage {} done in {}ms",
-                        storageLocation,
-                        System.currentTimeMillis() - startTime);
+            if (storagePlugin.hasPeriodicAction()) {
+                PeriodicActionProgressManager progressManager = new PeriodicActionProgressManager(fileRefService,
+                                                                                                  storageLocationService);
+                storagePlugin.runPeriodicAction(progressManager);
+                storagePlugin.runCheckPendingAction(progressManager,
+                                                    fileRefService.searchPendingActionsRemaining(storageLocation));
+                progressManager.bulkSavePendings();
+                progressManager.notifyPendingActionErrors();
+                logger.info("Periodic task on storage {} done in {}ms",
+                            storageLocation,
+                            System.currentTimeMillis() - startTime);
+            } else {
+                logger.debug("No periodic location defined for storage {}s", storageLocation);
+            }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             throw new RuntimeException(e);
         }

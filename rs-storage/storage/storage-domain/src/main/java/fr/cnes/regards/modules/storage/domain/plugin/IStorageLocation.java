@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.domain.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
@@ -76,8 +77,17 @@ public interface IStorageLocation {
      */
     void store(FileStorageWorkingSubset workingSet, IStorageProgressManager progressManager);
 
+    default boolean hasPeriodicAction() {
+        return false;
+    }
+
     default void runPeriodicAction(IPeriodicActionProgressManager progressManager) {
         LOG.debug("No periodic action defined for {} storage location", this.getClass().getName());
+    }
+
+    default void runCheckPendingAction(IPeriodicActionProgressManager progressManager,
+                                       Set<FileReference> filesWithPendingActions) {
+        LOG.debug("No check pending action defined for {} storage location", this.getClass().getName());
     }
 
     /**

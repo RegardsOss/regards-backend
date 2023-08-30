@@ -88,6 +88,9 @@ public interface IFileReferenceRepository
 
     FileReference findOneById(Long id);
 
+    Set<FileReference> findByLocationStorageAndLocationPendingActionRemaining(String storage,
+                                                                              boolean pendingActionRemaining);
+
     Set<FileReference> findByLocationPendingActionRemainingAndLocationUrlIn(boolean pendingActionRemaining,
                                                                             Set<String> urls);
 }
