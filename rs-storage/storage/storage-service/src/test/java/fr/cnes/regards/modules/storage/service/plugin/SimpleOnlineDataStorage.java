@@ -241,4 +241,9 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     public Optional<Path> getRootPath() {
         return Optional.ofNullable(Paths.get(baseStorageLocationAsString));
     }
+
+    @Override
+    public boolean hasPeriodicAction() {
+        return true;
+    }
 }

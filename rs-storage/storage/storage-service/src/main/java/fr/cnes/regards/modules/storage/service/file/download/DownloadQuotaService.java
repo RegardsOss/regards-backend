@@ -6,6 +6,7 @@ import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -270,11 +271,13 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
 
     @VisibleForTesting
     protected Try<DownloadQuotaLimits> cacheUserQuota(String userEmail, QuotaKey key) {
-        DefaultDownloadQuotaLimits defaults = getDefaultLimits();
-        return Try.of(() -> cache.get(key,
-                                      __ -> self.findOrCreateDownloadQuota(userEmail,
-                                                                           defaults.getMaxQuota(),
-                                                                           defaults.getRateLimit())));
+        return Try.of(() -> {
+            DefaultDownloadQuotaLimits finalDefaults = getDefaultLimits();
+            return cache.get(key,
+                             value -> self.findOrCreateDownloadQuota(userEmail,
+                                                                     finalDefaults.getMaxQuota(),
+                                                                     finalDefaults.getRateLimit()));
+        });
     }
 
     /**
@@ -392,9 +395,11 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
                                                             rateLimit));
     }
 
-    private DefaultDownloadQuotaLimits getDefaultLimits() {
+    private DefaultDownloadQuotaLimits getDefaultLimits() throws ModuleException {
         // default limit for a new tenant should have been initialized by DynamicTenantSetting logic handling new tenant creation
-        return defaultLimits.get().get(runtimeTenantResolver.getTenant()).get();
+        return defaultLimits.get()
+                            .get(runtimeTenantResolver.getTenant())
+                            .getOrElseThrow(() -> new ModuleException("Defaults quota configuration not loaded yet."));
     }
 
     @VisibleForTesting

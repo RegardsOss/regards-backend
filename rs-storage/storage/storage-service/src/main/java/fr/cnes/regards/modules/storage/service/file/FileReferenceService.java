@@ -316,6 +316,16 @@ public class FileReferenceService {
     }
 
     /**
+     * Search for all {@link FileReference}s with pending action remaining on the given storage location.
+     *
+     * @return {@link FileReference}s
+     */
+    @Transactional(readOnly = true)
+    public Set<FileReference> searchPendingActionsRemaining(String storage) {
+        return fileRefRepo.findByLocationStorageAndLocationPendingActionRemaining(storage, true);
+    }
+
+    /**
      * Update the given fileReference
      */
     public FileReference update(String checksum, String storage, FileReference updatedFile) {

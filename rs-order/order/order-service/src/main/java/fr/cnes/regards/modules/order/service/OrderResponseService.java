@@ -85,14 +85,30 @@ public class OrderResponseService {
         OrderRequestStatus responseStatus = order.getStatus() == OrderStatus.DONE ?
             OrderRequestStatus.DONE :
             OrderRequestStatus.FAILED;
-        OrderResponseDtoEvent orderResponseDtoEvent = new OrderResponseDtoEvent(responseStatus,
-                                                                                order.getId(),
-                                                                                order.getCorrelationId(),
-                                                                                "Order of user "
-                                                                                + order.getOwner()
-                                                                                + " is finished",
-                                                                                computeDownloadLink(order.getId()));
-        publisher.publish(orderResponseDtoEvent);
+        String message;
+        String downloadLink = null;
+        switch (order.getStatus()) {
+            case FAILED -> {
+                message = String.format("Order of user %s is finished with errors. One or many files could not be "
+                                        + "retrieved.", order.getOwner());
+            }
+            case DONE -> {
+                downloadLink = computeDownloadLink(order.getId());
+                message = String.format("Order of user %s is finished", order.getOwner());
+            }
+            case DONE_WITH_WARNING -> {
+                downloadLink = computeDownloadLink(order.getId());
+                message = String.format("Order of user %s is finished with some warnings.", order.getOwner());
+            }
+            default -> {
+                throw new RsRuntimeException("Invalid status for order finished to notify");
+            }
+        }
+        publisher.publish(new OrderResponseDtoEvent(responseStatus,
+                                                    order.getId(),
+                                                    order.getCorrelationId(),
+                                                    message,
+                                                    downloadLink));
     }
 
     public void notifySuborderDone(FilesTask filesTask) {

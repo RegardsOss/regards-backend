@@ -275,4 +275,8 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
         return true;
     }
 
+    @Override
+    public boolean hasPeriodicAction() {
+        return true;
+    }
 }
