@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
@@ -94,6 +95,14 @@ public class OrderDataFileServiceIT extends AbstractOrderServiceIT {
         // check if all productIds of features are stored in orderDataFile
         Assertions.assertTrue(availableFilesByOrder.stream()
                                                    .allMatch(orderDataFileDTO -> dirNames.contains(orderDataFileDTO.getProductId())));
+        // check if download url has been computed
+        Assertions.assertTrue(availableFilesByOrder.stream()
+                                                   .allMatch(orderDataFileDTO -> orderDataFileDTO.getDownloadUrl()
+                                                                                                 .contains(
+                                                                                                     OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID.replace(
+                                                                                                         "{dataFileId}",
+                                                                                                         orderDataFileDTO.getId()
+                                                                                                                         .toString()))));
     }
 
     protected void waitForStatus(Long orderId, OrderStatus status) throws InterruptedException {

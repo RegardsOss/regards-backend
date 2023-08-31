@@ -38,11 +38,13 @@ public class OrderDataFileDTO {
     private final String productId;
 
     /**
-     * Required file reference
+     * Download link. This DTO is used to download files with API rest.
+     * Entity OrderDAtaFile url does not update correctly fields at downloading, thus we use this attribute to send a
+     * better download link
      */
-    @Schema(description = "URI of the file represented by this dto.", maxLength = 255)
-    @NotBlank(message = "URI is required")
-    private final String uri;
+    @Schema(description = "downloadUrl of the file represented by this dto.", maxLength = 255)
+    @NotBlank(message = "downloadUrl is required")
+    private String downloadUrl;
 
     /**
      * Required {@link MimeType}
@@ -72,14 +74,14 @@ public class OrderDataFileDTO {
 
     public OrderDataFileDTO(Long id,
                             @Nullable String productId,
-                            String uri,
+                            String downloadUrl,
                             MimeType mimeType,
                             @Nullable String checksum,
                             @Nullable Long filesize,
                             String filename) {
         this.id = id;
         this.productId = productId;
-        this.uri = uri;
+        this.downloadUrl = downloadUrl;
         this.mimeType = mimeType;
         this.checksum = checksum;
         this.filesize = filesize;
@@ -94,8 +96,12 @@ public class OrderDataFileDTO {
         return productId;
     }
 
-    public String getUri() {
-        return uri;
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
     }
 
     public MimeType getMimeType() {

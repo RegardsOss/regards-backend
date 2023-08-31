@@ -143,7 +143,7 @@ public class OrderResponseService {
     /**
      * Lazy loading of project host
      */
-    private String getProjectHost() {
+    public String getProjectHost() {
         return projectHostCache.get(runtimeTenantResolver.getTenant(), t -> {
             FeignSecurityManager.asSystem();
             Project project = ResponseEntityUtils.extractContentOrThrow(projectClient.retrieveProject(
