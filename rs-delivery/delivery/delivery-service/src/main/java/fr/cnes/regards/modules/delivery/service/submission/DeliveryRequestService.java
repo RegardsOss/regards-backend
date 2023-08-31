@@ -21,8 +21,13 @@ package fr.cnes.regards.modules.delivery.service.submission;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.delivery.dao.IDeliveryRequestRepository;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
+import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
+import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,6 +47,14 @@ public class DeliveryRequestService {
     }
 
     // ------------
+    // -- SEARCH --
+    // ------------
+
+    public Page<Long> findExpiredDeliveryRequest(OffsetDateTime limitExpiryDate, Pageable pageable) {
+        return deliveryRequestRepository.findByDeliveryStatusExpiryDateBefore(limitExpiryDate, pageable);
+    }
+
+    // ------------
     // -- UPDATE --
     // ------------
 
@@ -51,6 +64,15 @@ public class DeliveryRequestService {
 
     public List<DeliveryRequest> saveAllRequests(Collection<DeliveryRequest> requestsToSave) {
         return deliveryRequestRepository.saveAll(requestsToSave);
+    }
+
+    public void updateExpiredRequests(List<Long> requestIdsToUpdate, OffsetDateTime expiredDate) {
+        deliveryRequestRepository.updateByIdIn(requestIdsToUpdate,
+                                               DeliveryRequestStatus.ERROR,
+                                               DeliveryErrorType.EXPIRED,
+                                               String.format("The request"
+                                                             + " date has reached the "
+                                                             + "expiration limit '%s'", expiredDate));
     }
 
     // ------------

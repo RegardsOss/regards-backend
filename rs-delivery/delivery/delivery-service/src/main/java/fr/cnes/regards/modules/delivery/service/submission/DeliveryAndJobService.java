@@ -19,11 +19,16 @@
 package fr.cnes.regards.modules.delivery.service.submission;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.delivery.dao.IDeliveryAndJobRepository;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryAndJob;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,6 +52,12 @@ public class DeliveryAndJobService {
     // ------------
     public Optional<DeliveryRequest> findDeliveryRequestByJobId(UUID jobId) {
         return deliveryAndJobRepository.findDeliveryRequestByJobId(jobId);
+    }
+
+    public Page<JobInfo> findJobInfoByDeliveryRequestIdsAndStatus(List<Long> deliveryRequestIds,
+                                                                  JobStatus status,
+                                                                  Pageable pageable) {
+        return deliveryAndJobRepository.findJobInfoByDeliveryRequestIdsAndStatus(deliveryRequestIds, status, pageable);
     }
 
     // ------------

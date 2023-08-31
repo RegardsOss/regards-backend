@@ -23,6 +23,7 @@ create index idx_delivery_correlation_id on t_delivery_request (correlation_id v
 create index idx_delivery_requests_owner on t_delivery_request (user_name varchar_ops);
 create index idx_delivery_requests_status on t_delivery_request (status);
 create index idx_delivery_requests_status_date on t_delivery_request (status_date);
+create index idx_delivery_requests_expiry_date on t_delivery_request (expiry_date);
 
 
 -- ASSOCIATION TABLE BETWEEN DELIVERY REQUEST / JOB_INFO

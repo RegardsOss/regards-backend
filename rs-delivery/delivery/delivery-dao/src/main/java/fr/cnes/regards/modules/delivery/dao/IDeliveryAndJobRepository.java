@@ -18,12 +18,17 @@
  */
 package fr.cnes.regards.modules.delivery.dao;
 
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryAndJob;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,8 +43,14 @@ public interface IDeliveryAndJobRepository extends JpaRepository<DeliveryAndJob,
     // -- SEARCH --
     // ------------
 
-    @Query("select dj.deliveryRequest from DeliveryAndJob dj where dj.jobInfo.id = :jobId ")
+    @Query("SELECT dj.deliveryRequest FROM DeliveryAndJob dj WHERE dj.jobInfo.id = :jobId ")
     Optional<DeliveryRequest> findDeliveryRequestByJobId(@Param("jobId") UUID jobInfoId);
+
+    @Query("SELECT dj.jobInfo FROM DeliveryAndJob dj WHERE dj.deliveryRequest.id IN (:ids) AND dj.jobInfo.status"
+           + ".status = :status")
+    Page<JobInfo> findJobInfoByDeliveryRequestIdsAndStatus(@Param("ids") List<Long> deliveryRequestIds,
+                                                           @Param("status") JobStatus jobStatus,
+                                                           Pageable pageable);
 
     // ------------
     // -- DELETE --

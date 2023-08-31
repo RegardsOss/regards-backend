@@ -118,6 +118,14 @@ public interface IJobInfoService {
     void stopJob(UUID id);
 
     /**
+     * Ask for multiple jobs to be stopped (asynchronous method)
+     *
+     * @param pageJobInfo jobs to stop
+     * @return number of stop job events published
+     */
+    int stopJobs(List<JobInfo> pageJobInfo);
+
+    /**
      * Update jobInfos completion ie percentCompleted and estimatedCompletion date
      */
     void updateJobInfosCompletion(Iterable<JobInfo> jobInfos);

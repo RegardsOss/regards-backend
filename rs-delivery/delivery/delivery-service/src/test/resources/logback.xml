@@ -23,6 +23,13 @@
 
     <logger name="fr.cnes.regards.modules.delivery" level="TRACE"/>
 
+<!--
+    <logger name="org.springframework.transaction" level="DEBUG"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>
+    <logger name="org.hibernate.event.internal" level="TRACE"/>
+    <logger name="org.hibernate.persister.entity" level="TRACE"/>-->
+
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>

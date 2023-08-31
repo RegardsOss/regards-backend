@@ -214,6 +214,13 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
+    public int stopJobs(List<JobInfo> jobsInfo) {
+        List<StopJobEvent> jobStopEvents = jobsInfo.stream().map(jobInfo -> new StopJobEvent(jobInfo.getId())).toList();
+        publisher.publish(jobStopEvents);
+        return jobStopEvents.size();
+    }
+
+    @Override
     public void updateJobInfosCompletion(Iterable<JobInfo> jobInfos) {
         for (JobInfo jobInfo : jobInfos) {
             JobStatusInfo status = jobInfo.getStatus();
