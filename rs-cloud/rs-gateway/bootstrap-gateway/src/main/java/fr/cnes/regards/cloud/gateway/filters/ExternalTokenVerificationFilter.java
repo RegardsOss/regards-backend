@@ -118,19 +118,23 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
 
             return Mono.fromCallable(() -> jwtService.parseToken(authentication))
                        .map(JWTAuthentication::getJwt)
-                       .onErrorResume(JwtException.class,
-                                      e -> externalAuthenticationVerifier.verifyAndAuthenticate(jwtKey,
-                                                                                                authentication.getTenant())
-                                                                         .map(Authentication::getAccessToken)
-                                                                         .onErrorResume(t -> {
-                                                                             LOGGER.info(
-                                                                                 "Token verification failed (token={}).",
-                                                                                 jwtKey,
-                                                                                 t);
-                                                                             // If not resolved, mark token as invalid.
-                                                                             invalid.put(jwtKey, jwtKey);
-                                                                             return Mono.empty();
-                                                                         }))
+                       .onErrorResume(JwtException.class, e -> {
+                           if (authentication.getTenant() == null) {
+                               LOGGER.error("Cannot external authenticate without scope param (header or queryParam)");
+                               return Mono.empty();
+                           }
+                           return externalAuthenticationVerifier.verifyAndAuthenticate(jwtKey,
+                                                                                       authentication.getTenant())
+                                                                .map(Authentication::getAccessToken)
+                                                                .onErrorResume(t -> {
+                                                                    LOGGER.info("Token verification failed (token={}).",
+                                                                                jwtKey,
+                                                                                t);
+                                                                    // If not resolved, mark token as invalid.
+                                                                    invalid.put(jwtKey, jwtKey);
+                                                                    return Mono.empty();
+                                                                });
+                       })
                        // If resolved, it's supposed to be a valid REGARDS token in any case:
                        // 1) either because it was already a valid Regards token
                        // 2) or because it was a valid external token which was traded against a valid Regards token by the external "resolver".

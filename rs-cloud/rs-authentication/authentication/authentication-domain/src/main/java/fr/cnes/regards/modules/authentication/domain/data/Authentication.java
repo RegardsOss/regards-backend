@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.authentication.domain.data;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.Objects;
@@ -29,27 +27,26 @@ import java.util.Objects;
  */
 public class Authentication {
 
-    @SerializedName("token_type")
     private static final String TOKEN_TYPE = "bearer";
 
     private static final String JTI = "bearer";
 
-    private final String project;
+    private String project;
 
-    private final String scope;
+    private String scope;
 
-    private final String role;
+    private String role;
 
-    private final String sub;
+    private String sub;
 
-    @SerializedName("service_provider_name")
-    private final String serviceProviderName;
+    private String serviceProviderName;
 
-    @SerializedName("access_token")
-    private final String accessToken;
+    private String accessToken;
 
-    @SerializedName("expires_in")
-    private final Long expiresIn;
+    private Long expiresIn;
+
+    public Authentication() {
+    }
 
     public Authentication(String tenant,
                           String email,
