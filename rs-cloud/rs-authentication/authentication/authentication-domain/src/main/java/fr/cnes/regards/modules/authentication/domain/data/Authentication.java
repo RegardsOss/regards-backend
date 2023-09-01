@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.authentication.domain.data;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.Objects;
@@ -39,10 +41,13 @@ public class Authentication {
 
     private String sub;
 
+    @SerializedName("service_provider_name")
     private String serviceProviderName;
 
+    @SerializedName("access_token")
     private String accessToken;
-
+    
+    @SerializedName("expires_in")
     private Long expiresIn;
 
     public Authentication() {
