@@ -74,10 +74,11 @@ public class OrderDataFileDTO {
      */
     @NotBlank(message = "Filename is required")
     @Schema(description = "Name of the file represented by this dto.", maxLength = 255)
-    private String filename;
+    private final String filename;
 
     public OrderDataFileDTO(Long id,
                             @Nullable String productId,
+                            @Nullable Integer version,
                             String downloadUrl,
                             MimeType mimeType,
                             @Nullable String checksum,
@@ -85,6 +86,7 @@ public class OrderDataFileDTO {
                             String filename) {
         this.id = id;
         this.productId = productId;
+        this.version = version;
         this.downloadUrl = downloadUrl;
         this.mimeType = mimeType;
         this.checksum = checksum;
@@ -149,8 +151,8 @@ public class OrderDataFileDTO {
                + '\''
                + ", version="
                + version
-               + ", uri='"
-               + uri
+               + ", downloadUrl='"
+               + downloadUrl
                + '\''
                + ", mimeType="
                + mimeType
