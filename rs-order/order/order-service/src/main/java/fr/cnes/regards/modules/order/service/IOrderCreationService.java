@@ -31,11 +31,17 @@ public interface IOrderCreationService {
      * to proxyfication and thread-context execution) so it @see {@link IOrderCreationService#completeOrderCreation} calls next one after forcing given tenant
      *
      * @param basket  basket used to create order (removed at the end of the method)
+     * @param owner   username of the order owner
      * @param orderId created order to be completed
      * @param role    current user role
      * @param tenant  current tenant
      */
-    void asyncCompleteOrderCreation(Basket basket, Long orderId, int subOrderDuration, String role, String tenant);
+    void asyncCompleteOrderCreation(Basket basket,
+                                    String owner,
+                                    Long orderId,
+                                    int subOrderDuration,
+                                    String role,
+                                    String tenant);
 
     /**
      * Transactional completeOrderCreation method (must be called AFTER forcing tenant)

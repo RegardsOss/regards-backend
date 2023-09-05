@@ -45,12 +45,14 @@ import fr.cnes.regards.modules.order.exception.AutoOrderException;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventTestHandler;
 import fr.cnes.regards.modules.order.service.commons.OrderResponseEventHandler;
+import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -179,6 +181,11 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // check completed event
         assertThat(completedEventTestHandler.getEvents()).hasSize(nbOrders);
+
+        // After orders created, there should be a maximum of configured sub orders to be run (aka job queued).
+        Assert.assertEquals(2L,
+                            jobInfoRepository.countByClassNameAndStatusStatusIn(StorageFilesJob.class.getName(),
+                                                                                JobStatus.QUEUED).longValue());
 
         // check basket was successfully created
         checkOrderBaskets(nbOrders, firstOrderId);

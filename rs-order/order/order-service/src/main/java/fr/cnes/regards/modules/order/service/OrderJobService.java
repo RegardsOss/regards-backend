@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockServiceResponse;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -63,25 +65,29 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
     @Value("${regards.order.max.storage.files.jobs.per.user:2}")
     private int maxJobsPerUser;
 
-    private IJobInfoRepository jobInfoRepository;
+    private final IJobInfoRepository jobInfoRepository;
 
-    private IFilesTasksRepository filesTasksRepository;
+    private final IFilesTasksRepository filesTasksRepository;
 
-    private ISubscriber subscriber;
+    private final ISubscriber subscriber;
 
-    private IOrderJobService self;
+    private final IOrderJobService self;
 
-    private IRuntimeTenantResolver tenantResolver;
+    private final LockService lockService;
+
+    private final IRuntimeTenantResolver tenantResolver;
 
     public OrderJobService(IJobInfoRepository jobInfoRepository,
                            IFilesTasksRepository filesTasksRepository,
                            ISubscriber subscriber,
                            IOrderJobService orderJobService,
-                           IRuntimeTenantResolver tenantResolver) {
+                           IRuntimeTenantResolver tenantResolver,
+                           LockService lockService) {
         this.jobInfoRepository = jobInfoRepository;
         this.filesTasksRepository = filesTasksRepository;
         this.subscriber = subscriber;
         this.self = orderJobService;
+        this.lockService = lockService;
         this.tenantResolver = tenantResolver;
     }
 
@@ -110,7 +116,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
         // Total running and future jobs of user
         long currentUser = jobInfoRepository.countUserFutureAndRunningJobs(user);
         // rate : current user jobs / current total jobs
-        double rate = currentTotal == 0l ? 1. : (double) currentUser / (double) currentTotal;
+        double rate = currentTotal == 0L ? 1. : (double) currentUser / (double) currentTotal;
         // a user PUBLIC cannot be here so there are two cases : REGISTERED_USER and all ADMIN roles (near a thousand)
         if (role.equals(DefaultRole.REGISTERED_USER.toString())) {
             // User : Priority between 0 and 80 depending on rate
@@ -118,30 +124,6 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
         }
         // Admin : Priority between 80 and 100 depending on rate
         return (int) (100 - 20 * (1 - rate));
-    }
-
-    @Override
-    public void manageUserOrderStorageFilesJobInfos(String user) {
-        // Current count of user jobs running, planned or to be run
-        int currentJobsCount = (int) jobInfoRepository.countUserPlannedAndRunningJobs(user);
-
-        // Current Waiting for user jobs
-        int finishedJobsWithFilesToBeDownloadedCount = (int) filesTasksRepository.countWaitingForUserFilesTasks(user);
-
-        // There is room for several jobs to be executed for this user if sum of theses 2 values is less than maximum
-        // defined one
-        if (currentJobsCount + finishedJobsWithFilesToBeDownloadedCount < maxJobsPerUser) {
-            int count = maxJobsPerUser - currentJobsCount - finishedJobsWithFilesToBeDownloadedCount;
-            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user,
-                                                                              StorageFilesJob.class.getName(),
-                                                                              count);
-            if (!jobInfos.isEmpty()) {
-                for (JobInfo jobInfo : jobInfos) {
-                    jobInfo.updateStatus(JobStatus.QUEUED);
-                }
-                jobInfoRepository.saveAll(jobInfos);
-            }
-        }
     }
 
     /**
@@ -164,6 +146,48 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
                 tenantResolver.clearTenant();
                 break;
             default:
+        }
+    }
+
+    private Void doManageUserOrderStorageFilesJobInfos(String user) {
+        int currentJobsCount = (int) jobInfoRepository.countUserPlannedAndRunningJobs(user);
+
+        // Current Waiting for user jobs
+        int finishedJobsWithFilesToBeDownloadedCount = (int) filesTasksRepository.countWaitingForUserFilesTasks(user);
+
+        // There is room for several jobs to be executed for this user if sum of theses 2 values is less than maximum
+        // defined one
+        if (currentJobsCount + finishedJobsWithFilesToBeDownloadedCount < maxJobsPerUser) {
+            int count = maxJobsPerUser - currentJobsCount - finishedJobsWithFilesToBeDownloadedCount;
+            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user,
+                                                                              StorageFilesJob.class.getName(),
+                                                                              count);
+            if (!jobInfos.isEmpty()) {
+                for (JobInfo jobInfo : jobInfos) {
+                    jobInfo.updateStatus(JobStatus.QUEUED);
+                }
+                jobInfoRepository.saveAll(jobInfos);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void manageUserOrderStorageFilesJobInfos(String user) {
+        // Current count of user jobs running, planned or to be run
+        if (user != null) {
+            try {
+                LockServiceResponse<Object> lockResponse = lockService.runWithLock(String.format("run-suborders-%s",
+                                                                                                 user),
+                                                                                   () -> doManageUserOrderStorageFilesJobInfos(
+                                                                                       user));
+                if (!lockResponse.isExecuted()) {
+                    LOGGER.error(String.format("Wait too long for a lock to run suborders of user %s.", user));
+                }
+            } catch (InterruptedException e) {
+                LOGGER.error(String.format("Thread interrupted while waiting for lock to run new suborders. Cause : %s",
+                                           e.getMessage()), e);
+            }
         }
     }
 

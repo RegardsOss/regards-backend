@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockServiceResponse;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -104,6 +106,8 @@ public class OrderCreationService implements IOrderCreationService {
 
     private final IOrderCreationService self;
 
+    private final LockService lockService;
+
     public OrderCreationService(IOrderRepository orderRepository,
                                 IOrderDataFileService dataFileService,
                                 IOrderJobService orderJobService,
@@ -119,7 +123,8 @@ public class OrderCreationService implements IOrderCreationService {
                                 TemplateService templateService,
                                 OrderResponseService orderResponseService,
                                 OrderAttachmentDataSetService orderAttachmentDataSetService,
-                                IOrderCreationService orderCreationService) {
+                                IOrderCreationService orderCreationService,
+                                LockService lockeService) {
         this.orderRepository = orderRepository;
         this.dataFileService = dataFileService;
         this.orderJobService = orderJobService;
@@ -135,6 +140,7 @@ public class OrderCreationService implements IOrderCreationService {
         this.templateService = templateService;
         this.orderResponseService = orderResponseService;
         this.orderAttachmentDataSetService = orderAttachmentDataSetService;
+        this.lockService = lockeService;
         this.self = orderCreationService;
     }
 
@@ -142,6 +148,7 @@ public class OrderCreationService implements IOrderCreationService {
     @Async
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void asyncCompleteOrderCreation(Basket basket,
+                                           String owner,
                                            Long orderId,
                                            int subOrderDuration,
                                            String role,
@@ -150,11 +157,34 @@ public class OrderCreationService implements IOrderCreationService {
         try {
             // Set log correlation id
             CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + orderId);
-
-            self.completeOrderCreation(basket, orderId, role, subOrderDuration, tenant);
+            // Lock with username to avoid modifying same jobs associated to a given user for different orders
+            LockServiceResponse<Object> lockResult = lockService.runWithLock(String.format("order-completion-%s",
+                                                                                           owner), () -> {
+                self.completeOrderCreation(basket, orderId, role, subOrderDuration, tenant);
+                return null;
+            });
+            if (!lockResult.isExecuted()) {
+                computeOrderFailure(orderId,
+                                    String.format(
+                                        "Order computation failed, an other order for user %s is still computing. "
+                                        + "Retry later.",
+                                        owner));
+            }
+        } catch (InterruptedException e) {
+            computeOrderFailure(orderId, String.format(e.getMessage(), owner));
         } finally {
             CorrelationIdUtils.clearCorrelationId();
         }
+    }
+
+    /**
+     * Update order with the given id with failure status and given error cause.
+     */
+    public void computeOrderFailure(Long orderId, String cause) {
+        Order order = orderRepository.getById(orderId);
+        order.setStatus(OrderStatus.FAILED);
+        order.setMessage(cause);
+        orderRepository.save(order);
     }
 
     @Override

@@ -5,6 +5,7 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.geometry.*;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.crawler.test.CrawlerConfiguration;
 import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRepository;
@@ -733,5 +734,38 @@ public class GeometryIT implements InitializingBean {
         esRepos.save(TENANT, coll);
 
         esRepos.refresh(TENANT);
+    }
+
+    @Test
+    @Purpose("Check insert a polygon with exterior ring coordinates are reversed. Helper should reverse polygin "
+             + "before insertion in ES.")
+    public void testClockWisedPolygon() {
+        // Reverse polygon can be done, only if pole are not handled.
+        Mockito.when(geoSettings.getShouldManagePolesOnGeometries()).thenReturn(false);
+        Mockito.when(geoSettings.checkPolygonOrientation()).thenReturn(true);
+        Mockito.when(geoSettings.getCrs()).thenReturn(Crs.WGS_84);
+        IGeometry polygon = IGeometry.simplePolygon(-178.0,
+                                                    -11.63981,
+                                                    -90,
+                                                    0,
+                                                    2.52712,
+                                                    25.05425,
+                                                    63.49712,
+                                                    5.40407,
+                                                    57.89664,
+                                                    -8.90495,
+                                                    -9.21352,
+                                                    11.28747,
+                                                    -178.0,
+                                                    -27.05465);
+
+        polygon.setCrs("WGS84");
+        System.out.println(gson.toJson(polygon, IGeometry.class));
+        Collection coll = new Collection(collectionModel, TENANT, "ReversePolygon", "ReversePolygonTest");
+        coll.setWgs84(GeoHelper.normalize(polygon));
+        System.out.println(gson.toJson(coll.getWgs84(), IGeometry.class));
+        esRepos.save(TENANT, coll);
+        esRepos.refresh(TENANT);
+
     }
 }

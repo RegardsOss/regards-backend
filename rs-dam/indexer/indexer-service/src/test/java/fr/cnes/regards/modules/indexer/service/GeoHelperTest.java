@@ -326,7 +326,7 @@ public class GeoHelperTest {
                                                                  { -180, 87.62686029625328 },
                                                                  { -146.33, 74.64 } } };
 
-        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonFailingOnThor);
+        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonFailingOnThor, false, false);
         Assert.assertEquals(1, polygonNormalized.size());
 
         List<double[]> expectedPolygon2 = Lists.newArrayList(new double[] { -180.0, 87.62686029625328 },
@@ -343,23 +343,29 @@ public class GeoHelperTest {
 
                                                                           { 170, 30 },
                                                                           { 170, 15 },
+                                                                          { 175, 15 },
                                                                           { -170, 15 },
                                                                           { -170, 30 },
+                                                                          { -175, 30 },
                                                                           { 170, 30 } } };
-        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted);
+        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted, false, false);
 
         Assert.assertEquals(2, polygonNormalized.size());
+        Assert.assertEquals(6, polygonNormalized.get(0)[0].length);
         Assert.assertArrayEquals(new double[] { 180.0, 15.0 }, polygonNormalized.get(0)[0][0], 0);
         Assert.assertArrayEquals(new double[] { 180.0, 30.0 }, polygonNormalized.get(0)[0][1], 0);
         Assert.assertArrayEquals(new double[] { 170.0, 30.0 }, polygonNormalized.get(0)[0][2], 0);
         Assert.assertArrayEquals(new double[] { 170.0, 15.0 }, polygonNormalized.get(0)[0][3], 0);
-        Assert.assertArrayEquals(new double[] { 180.0, 15.0 }, polygonNormalized.get(0)[0][4], 0);
+        Assert.assertArrayEquals(new double[] { 175.0, 15.0 }, polygonNormalized.get(0)[0][4], 0);
+        Assert.assertArrayEquals(new double[] { 180.0, 15.0 }, polygonNormalized.get(0)[0][5], 0);
 
+        Assert.assertEquals(6, polygonNormalized.get(1)[0].length);
         Assert.assertArrayEquals(new double[] { -180.0, 30.0 }, polygonNormalized.get(1)[0][0], 0);
         Assert.assertArrayEquals(new double[] { -180.0, 15.0 }, polygonNormalized.get(1)[0][1], 0);
         Assert.assertArrayEquals(new double[] { -170.0, 15.0 }, polygonNormalized.get(1)[0][2], 0);
         Assert.assertArrayEquals(new double[] { -170.0, 30.0 }, polygonNormalized.get(1)[0][3], 0);
-        Assert.assertArrayEquals(new double[] { -180.0, 30.0 }, polygonNormalized.get(1)[0][4], 0);
+        Assert.assertArrayEquals(new double[] { -175.0, 30.0 }, polygonNormalized.get(1)[0][4], 0);
+        Assert.assertArrayEquals(new double[] { -180.0, 30.0 }, polygonNormalized.get(1)[0][5], 0);
 
     }
 
@@ -634,7 +640,7 @@ public class GeoHelperTest {
                                                                         { -114.46, -60.92 },
                                                                         { -62.14, -68.97 } } };
 
-        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted);
+        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted, false, false);
 
         Assert.assertEquals(1, polygonNormalized.size());
     }
@@ -918,7 +924,7 @@ public class GeoHelperTest {
 
         };
 
-        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted);
+        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted, false, false);
 
         Assert.assertEquals(1, polygonNormalized.size());
     }
@@ -1176,7 +1182,7 @@ public class GeoHelperTest {
                                                                         { -176.75, -38.86 },
                                                                         { -176.8, -55.64 } } };
 
-        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted);
+        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted, false, false);
 
         Assert.assertEquals(1, polygonNormalized.size());
 
@@ -1444,7 +1450,7 @@ public class GeoHelperTest {
                                                                         { -133.11, -51.92 },
                                                                         { -94.75, -57.86 } } };
 
-        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted);
+        List<double[][][]> polygonNormalized = GeoHelper.sanitizePolygon(polygonThatShouldBeSplitted, false, false);
 
         Assert.assertEquals(1, polygonNormalized.size());
 

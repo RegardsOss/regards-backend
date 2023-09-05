@@ -56,19 +56,19 @@ public class FileReferenceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceService.class);
 
-    private IFileReferenceRepository fileRefRepo;
+    private final IFileReferenceRepository fileRefRepo;
 
-    private IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
+    private final IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
 
-    private RequestsGroupService requInfoService;
+    private final RequestsGroupService requInfoService;
 
-    private FileReferenceEventPublisher fileRefEventPublisher;
+    private final FileReferenceEventPublisher fileRefEventPublisher;
 
-    private SessionNotifier sessionNotifier;
+    private final SessionNotifier sessionNotifier;
 
-    private INotificationClient notificationClient;
+    private final INotificationClient notificationClient;
 
-    private ITemplateService templateService;
+    private final ITemplateService templateService;
 
     public FileReferenceService(IFileReferenceRepository fileRefRepo,
                                 IFileReferenceWithOwnersRepository fileRefWithOwnersRepo,
@@ -193,7 +193,9 @@ public class FileReferenceService {
             try {
                 notification = templateService.render(StorageTemplatesConf.ACTION_REMAINING_TEMPLATE_NAME, data);
             } catch (TemplateException e) {
-                notification = String.format("Error during remaining pending actions for : {}",
+                LOGGER.trace(e.getMessage(), e);
+                LOGGER.error(e.getMessage());
+                notification = String.format("Error during remaining pending actions for : %s",
                                              pendingActionErrorPaths);
             }
             notificationClient.notifyRoles(notification,

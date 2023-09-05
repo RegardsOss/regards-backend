@@ -74,9 +74,9 @@ public final class GeoHelper {
     /**
      * Geodetic calculator map
      */
-    private static EnumMap<Crs, GeodeticCalculator> calcMap = new EnumMap<>(Crs.class);
+    private static final EnumMap<Crs, GeodeticCalculator> calcMap = new EnumMap<>(Crs.class);
 
-    private static EnumMap<Crs, CoordinateReferenceSystem> crsMap = new EnumMap<>(Crs.class);
+    private static final EnumMap<Crs, CoordinateReferenceSystem> crsMap = new EnumMap<>(Crs.class);
 
     /**
      * Geodetic calculator map initializer
@@ -537,6 +537,7 @@ public final class GeoHelper {
         ProjectGeoSettings settings = SpringContext.getBean(ProjectGeoSettings.class);
         boolean northPoleIn = false;
         boolean southPoleIn = false;
+
         if (settings.getShouldManagePolesOnGeometries()) {
             SphericalPolygonsSet sphericalPolygon = toSphericalPolygonSet(inPolygon[0]);
             // Is North Pole inside polygon
@@ -550,7 +551,9 @@ public final class GeoHelper {
         }
 
         // Let's submit the polygon to the ES java library in order to clean it
-        List<double[][][]> normalizedMultiPolygon = sanitizePolygon(inPolygon);
+        List<double[][][]> normalizedMultiPolygon = sanitizePolygon(inPolygon,
+                                                                    settings.getShouldManagePolesOnGeometries(),
+                                                                    settings.checkPolygonOrientation());
 
         // Second normalization phase only if pole management is asked to be done
         if (settings.getShouldManagePolesOnGeometries()) {
@@ -561,10 +564,6 @@ public final class GeoHelper {
             }
         }
 
-        // Case of last longitude as 359.999999999 and first 0.0 for example, or -90 and 270, ...
-        //        if (exteriorRing[exteriorRing.length - 1] != exteriorRing[0]) {
-        //            exteriorRing[exteriorRing.length - 1] = exteriorRing[0];
-        //        }
         return normalizedMultiPolygon;
     }
 
@@ -634,12 +633,16 @@ public final class GeoHelper {
         return sb.toString();
     }
 
-    private static List<double[][][]> sanitizeMultiPolygon(double[][][][] multiPolygon) {
+    private static List<double[][][]> sanitizeMultiPolygon(double[][][][] multiPolygon,
+                                                           boolean shouldManagePoleGeometries,
+                                                           boolean checkPolygonOrientation) {
         List<double[][][]> outMultipolygons = new ArrayList<>();
         // iterate over outMultipolygons in this multipolygon
         for (int i = 0; i < multiPolygon.length; i++) {
             // Any polygon can be splited into several polygons
-            outMultipolygons.addAll(sanitizePolygon(multiPolygon[i]));
+            outMultipolygons.addAll(sanitizePolygon(multiPolygon[i],
+                                                    shouldManagePoleGeometries,
+                                                    checkPolygonOrientation));
         }
         return outMultipolygons;
     }
@@ -649,10 +652,15 @@ public final class GeoHelper {
      * We also simplify polygons and removes any holes
      * We can split a polygon into several polygons if they cross the date line
      *
-     * @param polygon a single polygon
+     * @param polygon                    a single polygon
+     * @param shouldManagePoleGeometries if true, polygon is calculated on spherical plan to detect antimeridian.
+     * @param checkPolygonOrientation    if true reverse polygon orientation if it is not counterclockwise.
      * @return one or more polygon
      */
-    public static List<double[][][]> sanitizePolygon(double[][][] polygon) {
+    public static List<double[][][]> sanitizePolygon(double[][][] polygon,
+                                                     boolean shouldManagePoleGeometries,
+                                                     boolean checkPolygonOrientation) {
+
         List<double[][][]> outMultipolygons = new ArrayList<>();
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING));
 
@@ -660,8 +668,17 @@ public final class GeoHelper {
         double[][] inExteriorRing = polygon[0];
         // Build the ES coordinates builder
         CoordinatesBuilder coordinatesBuilder = new CoordinatesBuilder();
-        for (int i = 0; i < inExteriorRing.length; i++) {
-            coordinatesBuilder.coordinate(new Coordinate(inExteriorRing[i][0], inExteriorRing[i][1]));
+        if (shouldManagePoleGeometries
+            || !checkPolygonOrientation
+            || getPolygonOrientation(inExteriorRing) == Orientation.COUNTER_CLOCKWISE) {
+            for (double[] doubles : inExteriorRing) {
+                coordinatesBuilder.coordinate(new Coordinate(doubles[0], doubles[1]));
+            }
+        } else {
+            // If pole management is disabled and polygon coordinates are not in counterclockwise, reverse coordinates.
+            for (int i = inExteriorRing.length - 1; i >= 0; i--) {
+                coordinatesBuilder.coordinate(new Coordinate(inExteriorRing[i][0], inExteriorRing[i][1]));
+            }
         }
         // ES will split polygon into several polygons if that's easier to read
         Geometry geometry = new PolygonBuilder(coordinatesBuilder, Orientation.COUNTER_CLOCKWISE).buildS4JGeometry(
@@ -683,7 +700,45 @@ public final class GeoHelper {
     }
 
     /**
-     * Create a polygon that is ecuadorian symetric to given one
+     * Calculates, polygon orientation. Can be {@link Orientation#CLOCKWISE} or {@link Orientation#COUNTER_CLOCKWISE}
+     */
+    private static Orientation getPolygonOrientation(double[][] inCoordinates) {
+        List<Coordinate> coordinates = new ArrayList<>();
+        for (double[] inCoordinate : inCoordinates) {
+            coordinates.add(new Coordinate(inCoordinate[0], inCoordinate[1]));
+        }
+        // If polygon should be eventually reversed
+        // Find southest coordinate index
+        int iSouthest = 0;
+        for (int i = 1; i < coordinates.size(); i++) {
+            if (coordinates.get(i).getY() < coordinates.get(iSouthest).getY()) {
+                iSouthest = i;
+            }
+        }
+        // Find previous and next coordinates
+        Coordinate previousPoint = (iSouthest == 0) ?
+            coordinates.get(coordinates.size() - 1) :
+            coordinates.get(iSouthest - 1);
+        Coordinate nextPoint = (iSouthest == coordinates.size() - 1) ?
+            coordinates.get(0) :
+            coordinates.get(iSouthest + 1);
+        Coordinate southestPoint = coordinates.get(iSouthest);
+        // Compute determinant between previous vector (the one finishing at southest point) and next vector (the one starting at southest point)
+        Coordinate previousVector = new Coordinate(southestPoint.getX() - previousPoint.getX(),
+                                                   southestPoint.getY() - previousPoint.getY());
+        Coordinate nextVector = new Coordinate(nextPoint.getX() - southestPoint.getX(),
+                                               nextPoint.getY() - southestPoint.getY());
+        double det = previousVector.getX() * nextVector.getY() - previousVector.getY() * nextVector.getX();
+
+        if (det < 0) {
+            return Orientation.CLOCKWISE;
+        } else {
+            return Orientation.COUNTER_CLOCKWISE;
+        }
+    }
+
+    /**
+     * Create a polygon that is ecuadorian symmetric to given one
      */
     private static double[][] getSymetricPolygon(double[][] exteriorRing) {
         double[][] symetricPolygon = new double[exteriorRing.length][2];

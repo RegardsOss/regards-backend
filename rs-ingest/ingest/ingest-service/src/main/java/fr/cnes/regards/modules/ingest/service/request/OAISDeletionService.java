@@ -114,6 +114,12 @@ public class OAISDeletionService implements IOAISDeletionService {
     }
 
     @Override
+    public void handleRemoteDeleteError(Set<RequestInfo> requestInfos) {
+        // Do not handle storage deletion errors in ingest process. Storage errors will be handled in storage process.
+        handleRemoteDeleteSuccess(requestInfos);
+    }
+
+    @Override
     public boolean handleJobCrash(JobInfo jobInfo) {
         if (OAISDeletionsCreatorJob.class.getName().equals(jobInfo.getClassName())) {
             try {
@@ -125,6 +131,11 @@ public class OAISDeletionService implements IOAISDeletionService {
                 request.ifPresent(r -> {
                     r.setState(InternalRequestState.ERROR);
                     r.setErrors(IngestErrorType.DELETE, Set.of(jobInfo.getStatus().getStackTrace()));
+                    LOGGER.warn("OAIS Deletion creator request with id {} is now in {} state at {}",
+                                r.getId(),
+                                r.getState(),
+                                r.getLastUpdate());
+                    creatorRepository.save(r);
                 });
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 LOGGER.error(String.format("OAISDeletionsCreatorJob request job with id \"%s\" fails with status \"%s\"",
@@ -141,11 +152,18 @@ public class OAISDeletionService implements IOAISDeletionService {
                                                       OAISDeletionJob.OAIS_DELETION_REQUEST_IDS,
                                                       type);
 
-                List<OAISDeletionRequest> requests = requestRepository.findAllById(requestIds);
-                requests.forEach(r -> {
-                    r.setState(InternalRequestState.ERROR);
-                    r.setErrors(IngestErrorType.DELETE, Set.of(jobInfo.getStatus().getStackTrace()));
-                });
+                if (requestIds != null && !requestIds.isEmpty()) {
+                    List<OAISDeletionRequest> requests = requestRepository.findAllById(requestIds);
+                    requests.forEach(r -> {
+                        r.setState(InternalRequestState.ERROR);
+                        r.setErrors(IngestErrorType.DELETE, Set.of(jobInfo.getStatus().getStackTrace()));
+                        LOGGER.warn("OAIS Deletion request with id {} is now in {} state at {}",
+                                    r.getId(),
+                                    r.getState(),
+                                    r.getLastUpdate());
+                    });
+                    requestRepository.saveAll(requests);
+                }
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 LOGGER.error(String.format("OAISDeletionJob request job with id \"%s\" fails with status \"%s\"",
                                            jobInfo.getId(),
@@ -154,12 +172,6 @@ public class OAISDeletionService implements IOAISDeletionService {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void handleRemoteDeleteError(Set<RequestInfo> requestInfos) {
-        // Do not handle storage deletion errors in ingest process. Storage errors will be handled in storage process.
-        handleRemoteDeleteSuccess(requestInfos);
     }
 
     @Override

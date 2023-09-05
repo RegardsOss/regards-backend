@@ -257,6 +257,7 @@ public class OrderService implements IOrderService {
 
             // Asynchronous operation
             orderCreationService.asyncCompleteOrderCreation(newBasket,
+                                                            order.getOwner(),
                                                             order.getId(),
                                                             subOrderDuration,
                                                             orderHelperService.getRole(user),

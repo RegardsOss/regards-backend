@@ -52,7 +52,7 @@ import org.springframework.util.MimeType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -112,6 +112,12 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     private String noProxyHostsString;
 
     private Proxy proxy;
+
+    @Value("${prefix.path}")
+    private String prefixPath;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     public OrderDataFileService(IOrderDataFileRepository orderDataFileRepository,
                                 IOrderJobService orderJobService,
@@ -284,11 +290,15 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     }
 
     @Override
-    public Page<OrderDataFileDTO> findAvailableDataFiles(Long orderId, @Nullable Long filesTaskId, Pageable page) {
-        Page<OrderDataFile> availableByOrderId = orderDataFileRepository.findAvailableDataFiles(orderId,
-                                                                                                filesTaskId,
-                                                                                                page);
-        return new PageImpl<>(availableByOrderId.stream().map(OrderDataFileDTO::fromOrderDataFile).toList(),
+    public Page<OrderDataFileDTO> findAvailableFilesByOrder(Order order, Pageable page) {
+        Page<OrderDataFile> availableByOrderId = orderDataFileRepository.findAvailableByOrderId(order.getId(), page);
+        return new PageImpl<>(availableByOrderId.stream()
+                                                .map(OrderDataFileDTO::fromOrderDataFile)
+                                                .peek(orderDataFileDTO -> orderDataFileDTO.setDownloadUrl(
+                                                    computeDownloadLink(orderDataFileDTO.getId()))) //we need to
+                                                // compute an
+                                                // effective download link of the order data file
+                                                .toList(),
                               availableByOrderId.getPageable(),
                               availableByOrderId.getTotalElements());
     }
@@ -510,4 +520,15 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     public boolean hasDownloadErrors(Long orderId) {
         return orderDataFileRepository.countByOrderIdAndStateIn(orderId, FileState.DOWNLOAD_ERROR) > 0L;
     }
+
+    public String computeDownloadLink(Long orderDatafileId) {
+        return orderResponseService.getProjectHost()
+               + prefixPath
+               + File.separator
+               + applicationName
+               + File.separator
+               + OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID.replace("{dataFileId}",
+                                                                                        orderDatafileId.toString());
+    }
+
 }

@@ -24,11 +24,13 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 
@@ -36,6 +38,8 @@ import java.util.Map;
  * Storage Job to trigger periodic actions on a given store location.
  * Some storage location (aka plugin) needs to do some asynchronous action(s) at periodic times.
  * This job allow each storage plugin to define a periodic action to do.
+ *
+ * @author Sébastien Binda
  */
 public class PeriodicStorageLocationJob extends AbstractJob<Void> {
 
@@ -52,27 +56,39 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
     @Autowired
     private FileReferenceService fileRefService;
 
+    @Value("${regards.storage.check.periodic.action.enabled:true}")
+    private boolean checkPeriodicActionEnabled;
+
     @Override
     public void run() {
         try {
+            logger.debug("[PERIODIC STORAGE LOCATION JOB] Running job for location {}", storageLocation);
             long startTime = System.currentTimeMillis();
             IStorageLocation storagePlugin = pluginService.getPlugin(storageLocation);
             if (storagePlugin.hasPeriodicAction()) {
                 PeriodicActionProgressManager progressManager = new PeriodicActionProgressManager(fileRefService,
                                                                                                   storageLocationService);
                 storagePlugin.runPeriodicAction(progressManager);
-                storagePlugin.runCheckPendingAction(progressManager,
-                                                    fileRefService.searchPendingActionsRemaining(storageLocation));
+                // Save remaining pending action status for run step.
                 progressManager.bulkSavePendings();
+                if (checkPeriodicActionEnabled) {
+                    storagePlugin.runCheckPendingAction(progressManager,
+                                                        fileRefService.searchPendingActionsRemaining(storageLocation));
+                    // Save remaining pending action status for check step.
+                    progressManager.bulkSavePendings();
+                }
+                // Notify errors for both steps.
                 progressManager.notifyPendingActionErrors();
-                logger.info("Periodic task on storage {} done in {}ms",
+                logger.info("[PERIODIC STORAGE LOCATION JOB] Periodic task on storage {} done in {}ms",
                             storageLocation,
                             System.currentTimeMillis() - startTime);
             } else {
-                logger.debug("No periodic location defined for storage {}s", storageLocation);
+                logger.debug("[PERIODIC STORAGE LOCATION JOB] No periodic location defined for storage {}",
+                             storageLocation);
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-            throw new RuntimeException(e);
+            logger.error(e.getMessage(), e);
+            throw new RsRuntimeException(e);
         }
     }
 

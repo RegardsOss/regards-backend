@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +51,13 @@ public class ProjectGeoSettings {
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
+
+    /**
+     * WARNING : The algorithm beneath this property is not 100% valid. This property should always be false. Use it
+     * only for tests.
+     */
+    @Value("${regards.geometry.check.polygon.orientation:false}")
+    private boolean checkPolygonOrientation = false;
 
     /**
      * Using a cache to manage projects values and to be refreshed every 1 minute in case project properties have
@@ -106,6 +114,15 @@ public class ProjectGeoSettings {
      */
     public Boolean getShouldManagePolesOnGeometries() {
         return settingsCache.getUnchecked(tenantResolver.getTenant()).getLeft();
+    }
+
+    /**
+     * Check polygon orientation in geometry calculation to revert points if not counterclockwise.
+     * WARNING : The algorithm beneath this property is not 100% valid. This property should always be false. Use it
+     * only for tests.
+     */
+    public boolean checkPolygonOrientation() {
+        return checkPolygonOrientation;
     }
 
     /**

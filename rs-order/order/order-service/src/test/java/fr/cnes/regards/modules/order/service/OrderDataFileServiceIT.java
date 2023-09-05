@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
@@ -97,8 +98,16 @@ public class OrderDataFileServiceIT extends AbstractOrderServiceIT {
         File testDir = new File("src/test/resources/files");
         List<String> dirNames = Arrays.stream(Objects.requireNonNull(testDir.listFiles())).map(File::getName).toList();
         // check if all productIds of features are stored in orderDataFile
-        Assert.assertTrue(availableFilesByOrder.stream()
-                                               .allMatch(orderDataFileDTO -> dirNames.contains(orderDataFileDTO.getProductId())));
+        Assertions.assertTrue(availableFilesByOrder.stream()
+                                                   .allMatch(orderDataFileDTO -> dirNames.contains(orderDataFileDTO.getProductId())));
+        // check if download url has been computed
+        Assertions.assertTrue(availableFilesByOrder.stream()
+                                                   .allMatch(orderDataFileDTO -> orderDataFileDTO.getDownloadUrl()
+                                                                                                 .contains(
+                                                                                                     OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID.replace(
+                                                                                                         "{dataFileId}",
+                                                                                                         orderDataFileDTO.getId()
+                                                                                                                         .toString()))));
     }
 
     /**
