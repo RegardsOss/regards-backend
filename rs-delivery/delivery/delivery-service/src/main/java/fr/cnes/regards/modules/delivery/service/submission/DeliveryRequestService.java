@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service to handle a {@link DeliveryRequest}.
@@ -49,6 +50,10 @@ public class DeliveryRequestService {
     // ------------
     // -- SEARCH --
     // ------------
+
+    public Optional<DeliveryRequest> findDeliveryRequest(long deliveryRequestId) {
+        return deliveryRequestRepository.findById(deliveryRequestId);
+    }
 
     public Page<Long> findExpiredDeliveryRequest(OffsetDateTime limitExpiryDate, Pageable pageable) {
         return deliveryRequestRepository.findByDeliveryStatusExpiryDateBefore(limitExpiryDate, pageable);

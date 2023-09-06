@@ -1,7 +1,5 @@
 package fr.cnes.regards.framework.modules.jobs.domain.event;
 
-import java.util.List;
-
 /**
  * Type of event that occured on a job.
  *
@@ -9,10 +7,22 @@ import java.util.List;
  */
 public enum JobEventType {
 
-    ABORTED, FAILED, RUNNING, SUCCEEDED;
+    ABORTED(true),
 
-    public static List<JobEventType> runnings() {
-        return List.of(ABORTED, FAILED, SUCCEEDED);
+    FAILED(true),
+
+    RUNNING(false),
+
+    SUCCEEDED(true);
+
+    private final boolean finalState;
+
+    JobEventType(boolean finalState) {
+        this.finalState = finalState;
+    }
+
+    public boolean isFinalState() {
+        return finalState;
     }
 
 }

@@ -14,6 +14,7 @@ create table t_delivery_request
     origin_request_priority int4         not null default 1,
     error_type              varchar(100),
     error_cause             text,
+    version                 int4         not null default 0,
     constraint delivery_unique unique (correlation_id)
 );
 

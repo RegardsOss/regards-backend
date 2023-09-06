@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.modules.session.commons.service.jobs;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import org.slf4j.Logger;
@@ -51,7 +50,7 @@ public class SnapshotJobEventService {
      */
     public void updateSnapshotProcess(List<JobEvent> events) {
         List<UUID> terminatedJobIds = events.stream()
-                                            .filter(event -> JobEventType.runnings().contains(event.getJobEventType()))
+                                            .filter(event -> event.getJobEventType().isFinalState())
                                             .map(JobEvent::getJobId)
                                             .toList();
         this.snapshotRepo.removeTerminatedJobsById(terminatedJobIds);

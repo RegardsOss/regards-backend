@@ -68,6 +68,10 @@ public class DeliveryRequest {
     @Column(name = "origin_request_priority", updatable = false)
     private Integer originRequestPriority;
 
+    // attribute to handle concurrency
+    @Version
+    private int version;
+
     public DeliveryRequest() {
         // no-args constructor for jpa
     }
@@ -206,11 +210,13 @@ public class DeliveryRequest {
                + orderId
                + ", totalSubOrders="
                + totalSubOrders
-               + ", originAppId='"
+               + ", originRequestAppId='"
                + originRequestAppId
                + '\''
                + ", originRequestPriority="
                + originRequestPriority
+               + ", version="
+               + version
                + '}';
     }
 }
