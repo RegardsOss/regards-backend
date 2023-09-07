@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.order.client.env.config.OrderClientTestConfiguration;
@@ -29,9 +30,12 @@ import fr.cnes.regards.modules.order.client.env.utils.OrderTestUtilsService;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -73,6 +77,9 @@ public class OrderDataFileAvailableClientIT extends AbstractRegardsWebIT {
     private FeignSecurityManager feignSecurityManager;
 
     @Autowired
+    private IProjectsClient projectClient;
+
+    @Autowired
     private Gson gson;
 
     @Value("${server.address}")
@@ -101,6 +108,9 @@ public class OrderDataFileAvailableClientIT extends AbstractRegardsWebIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Order order = orderTestService.createOrder();
         List<FilesTask> filesTasks = orderTestService.getAllFilesTasks();
+        Mockito.when(projectClient.retrieveProject(Mockito.any()))
+               .thenReturn(new ResponseEntity<>(HateoasUtils.wrap(new Project("desc", "icone", true, "toto")),
+                                                HttpStatus.OK));
         Assert.assertEquals("Unexpected number of suborders created", 3, filesTasks.size());
 
         // WHEN
