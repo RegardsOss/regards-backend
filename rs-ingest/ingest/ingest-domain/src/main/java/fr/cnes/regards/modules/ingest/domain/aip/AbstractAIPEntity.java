@@ -34,6 +34,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -89,6 +90,15 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
 
     @Column
     private boolean last = false;
+
+    @Column(name = "dissemination_infos", columnDefinition = "jsonb")
+    @Type(type = "jsonb")
+    private List<DisseminationInfo> disseminationInfos;
+
+    @NotNull
+    @Column(name = "dissemination_status", nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private DisseminationStatus disseminationStatus;
 
     public Long getId() {
         return id;
@@ -150,6 +160,14 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
         this.last = last;
     }
 
+    public List<DisseminationInfo> getDisseminationInfos() {
+        return disseminationInfos;
+    }
+
+    public void setDisseminationInfos(List<DisseminationInfo> disseminationInfos) {
+        this.disseminationInfos = disseminationInfos;
+    }
+
     public static AIPEntity build(AIPState state, AIP aip) {
         AIPEntity aipEntity = new AIPEntity();
         aipEntity.setAip(aip);
@@ -158,10 +176,18 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
         aipEntity.setCreationDate(OffsetDateTime.now());
         aipEntity.setOriginUrn(aip.getProperties().getPdi().getProvenanceInformation().getOriginUrn());
         aipEntity.setLastUpdate(aipEntity.getCreationDate());
+        aipEntity.setDisseminationStatus(DisseminationStatus.NONE);
 
         // Extracted from AIP for search purpose
         aipEntity.setTags(new HashSet<>(aip.getTags()));
         return aipEntity;
     }
 
+    public DisseminationStatus getDisseminationStatus() {
+        return disseminationStatus;
+    }
+
+    public void setDisseminationStatus(DisseminationStatus disseminationStatus) {
+        this.disseminationStatus = disseminationStatus;
+    }
 }
