@@ -206,51 +206,28 @@ public class OAISDeletionService implements IOAISDeletionService {
         // Handle deletion requests
         while (requestIter.hasNext() && !interrupted) {
             OAISDeletionRequest request = requestIter.next();
-            if (!requestService.shouldDelayRequest(request)) {
-                AIPEntity aipToDelete = request.getAip();
-                SIPEntity sipToDelete = aipToDelete.getSip();
-                try {
-                    if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
-                        aipDeleteService.scheduleLinkedFilesDeletion(request);
-                    } else {
-                        // delete first the request so the aip can be deleted (the aip is a foreign key in the request)
-                        requestService.deleteRequest(request);
-                        aipDeleteService.processDeletion(sipToDelete.getSipId(),
-                                                         request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
-                        sipService.processDeletion(sipToDelete.getSipId(),
-                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
-                        // if notifications are required
-                        if (isToNotify) {
-                            // break the link between request and aip (the aip does not exist anymore)
-                            request.setAip(null);
-                            // add aip content to the payload (the aip does not exist anymore but its content is still
-                            // required to notify its deletion, so it is added in the request payload)
-                            request.setAipToNotify(aipToDelete);
-                            // save again the request and add it to the list of requests successfully processed
-                            OAISDeletionRequest registeredRequest = deletionRequestRepository.save(request);
-                            success.add(registeredRequest);
-                        }
-                    }
-                } catch (Exception e) {
-                    String errorMsg = String.format("Deletion request %s of AIP %s could not be executed",
-                                                    request.getId(),
-                                                    request.getAip().getAipId());
-                    LOGGER.error(errorMsg, e);
-                    request.setState(InternalRequestState.ERROR);
-                    request.setErrorType(IngestErrorType.DELETE);
-                    request.addError(errorMsg);
-                    errors.add(request);
-                }
+            AIPEntity aipToDelete = request.getAip();
+            SIPEntity sipToDelete = aipToDelete.getSip();
+            if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
+                aipDeleteService.scheduleLinkedFilesDeletion(request);
             } else {
-                String errorMsg = String.format(
-                    "Deletion request %s of AIP %s could not be executed cause other requests reference same AIPs. Request is blocked.",
-                    request.getId(),
-                    request.getAip().getAipId());
-                LOGGER.warn(errorMsg);
-                request.setState(InternalRequestState.BLOCKED);
-                request.setErrorType(IngestErrorType.DELETE);
-                request.addError(errorMsg);
-                errors.add(request);
+                // delete first the request so the aip can be deleted (the aip is a foreign key in the request)
+                requestService.deleteRequest(request);
+                aipDeleteService.processDeletion(sipToDelete.getSipId(),
+                                                 request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                sipService.processDeletion(sipToDelete.getSipId(),
+                                           request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                // if notifications are required
+                if (isToNotify) {
+                    // break the link between request and aip (the aip does not exist anymore)
+                    request.setAip(null);
+                    // add aip content to the payload (the aip does not exist anymore but its content is still
+                    // required to notify its deletion, so it is added in the request payload)
+                    request.setAipToNotify(aipToDelete);
+                    // save again the request and add it to the list of requests successfully processed
+                    OAISDeletionRequest registeredRequest = deletionRequestRepository.save(request);
+                    success.add(registeredRequest);
+                }
             }
             oaisDeletionJob.advanceCompletion();
             interrupted = Thread.currentThread().isInterrupted();
