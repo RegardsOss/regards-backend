@@ -33,7 +33,9 @@ import io.github.resilience4j.feign.FeignDecorators;
 import io.github.resilience4j.feign.Resilience4jFeign;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.context.annotation.Bean;
@@ -51,6 +53,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Configuration
 public class FeignClientConfiguration {
+
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FeignClientConfiguration.class);
 
     /**
      * Basic log
@@ -114,23 +118,29 @@ public class FeignClientConfiguration {
      * @return Feign Builder
      */
     @Bean
-    public Feign.Builder builder() {
-        // configure feign with custom rate limiter
-        RateLimiter rateLimitConfig = RateLimiter.of("customRateLimiter",
-                                                     RateLimiterConfig.custom()
-                                                                      .limitRefreshPeriod(Duration.ofMillis(1L))
-                                                                      .limitForPeriod(50)
-                                                                      .timeoutDuration(Duration.ofSeconds(60L))
-                                                                      .build());
-        // configure feign with semaphore-based bulkhead
-        Bulkhead bulkhead = Bulkhead.of("customBulkhead", BulkheadConfig.custom().build());
-        FeignDecorators feignDecorators = FeignDecorators.builder()
-                                                         .withRateLimiter(rateLimitConfig)
-                                                         .withBulkhead(bulkhead)
-                                                         .build();
+    public Feign.Builder builder(@Value("${regards.enable.feign.bulkhead:true}") boolean bulkhead,
+                                 @Value("${regards.enable.feign.rateLimiter:true}") boolean rateLimiter) {
+
+        LOGGER.info("Initialization of feign configuration with bulkhead={}, rateLimiter={}", bulkhead, rateLimiter);
+        FeignDecorators.Builder feignDecoratorBuilder = FeignDecorators.builder();
+        if (rateLimiter) {
+            // configure feign with custom rate limiter
+            RateLimiter rateLimitConfig = RateLimiter.of("customRateLimiter",
+                                                         RateLimiterConfig.custom()
+                                                                          .limitRefreshPeriod(Duration.ofMillis(1L))
+                                                                          .limitForPeriod(50)
+                                                                          .timeoutDuration(Duration.ofSeconds(60L))
+                                                                          .build());
+            feignDecoratorBuilder.withRateLimiter(rateLimitConfig);
+        }
+
+        if (bulkhead) {
+            // configure feign with semaphore-based bulkhead
+            feignDecoratorBuilder.withBulkhead(Bulkhead.of("customBulkhead", BulkheadConfig.custom().build()));
+        }
 
         // return custom feign builder and allow 404 responses to be processed without errors
-        Resilience4jFeign.Builder builder = Resilience4jFeign.builder(feignDecorators);
+        Resilience4jFeign.Builder builder = Resilience4jFeign.builder(feignDecoratorBuilder.build());
         builder.decode404();
         builder.options(new Request.Options(5000, TimeUnit.MILLISECONDS, 60000, TimeUnit.MILLISECONDS, false));
         return builder;
