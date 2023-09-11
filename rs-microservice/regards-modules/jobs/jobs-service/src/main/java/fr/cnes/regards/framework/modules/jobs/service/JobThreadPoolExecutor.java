@@ -135,7 +135,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         jobInfo.updateStatus(JobStatus.RUNNING);
         jobInfo.setLastHeartbeatDate(OffsetDateTime.now());
         jobInfoService.save(jobInfo);
-        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.RUNNING));
+        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.RUNNING, jobInfo.getClassName()));
         super.beforeExecute(t, r);
     }
 
@@ -164,7 +164,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                     runtimeTenantResolver.forceTenant(jobInfo.getTenant());
                     jobInfo.updateStatus(JobStatus.ABORTED);
                     jobInfoService.save(jobInfo);
-                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
+                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
                 });
             } catch (ExecutionException ee) {
                 t = ee.getCause();
@@ -177,7 +177,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                     jobInfo.getStatus().setStackTrace(sw.toString());
                     jobInfoService.save(jobInfo);
 
-                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
+                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED, jobInfo.getClassName()));
                 });
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt(); // ignore/reset
@@ -189,7 +189,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             jobInfo.setResult(jobInfo.getJob().getResult());
             jobInfoService.save(jobInfo);
 
-            publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.SUCCEEDED));
+            publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.SUCCEEDED, jobInfo.getClassName()));
         }
         // Delete complete workspace dir if job has one
         if (jobInfo.getJob().needWorkspace()) {

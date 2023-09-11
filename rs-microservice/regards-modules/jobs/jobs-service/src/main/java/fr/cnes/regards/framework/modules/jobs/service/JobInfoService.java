@@ -286,7 +286,7 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
                                 job.getId(),
                                 job.getClassName(),
                                 deadAfter);
-                    failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
+                    failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED, job.getClassName()));
                 }
             }
             publisher.publish(failEvents);

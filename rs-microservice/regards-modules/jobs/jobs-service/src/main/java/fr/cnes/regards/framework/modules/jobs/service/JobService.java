@@ -262,7 +262,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 jobInfo.updateStatus(JobStatus.FAILED);
                 jobInfo.getStatus().setStackTrace("Expiration date reached");
                 jobInfoService.save(jobInfo);
-                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
+                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED, jobInfo.getClassName()));
                 return null;
             }
             // Case job aborted before its execution
@@ -270,7 +270,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 runtimeTenantResolver.forceTenant(jobInfo.getTenant());
                 jobInfo.updateStatus(JobStatus.ABORTED);
                 jobInfoService.save(jobInfo);
-                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
+                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
                 return null;
             }
             // First, instantiate job
@@ -350,7 +350,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
         jobInfo.updateStatus(JobStatus.FAILED);
         printStackTrace(jobInfo.getStatus(), e);
         jobInfoService.save(jobInfo);
-        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
+        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED, jobInfo.getClassName()));
     }
 
     /**
@@ -382,7 +382,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                     // set it at QUEUED
                     jobInfo.updateStatus(JobStatus.ABORTED);
                     jobInfoService.save(jobInfo);
-                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
+                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
                 }
                 case TO_BE_RUN ->
                     // Job not yet running
