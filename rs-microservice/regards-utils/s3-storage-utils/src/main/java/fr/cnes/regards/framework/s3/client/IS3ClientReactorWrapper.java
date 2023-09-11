@@ -43,7 +43,7 @@ public interface IS3ClientReactorWrapper {
      * @param standardStorageClass the Stantard storage class if the server doesn't use the default one
      * @return true if the file is in Standard storage class
      */
-    Mono<Boolean> isStandardStorageClass(String bucket, String key, @Nullable String standardStorageClass);
+    Mono<GlacierFileStatus> isFileAvailable(String bucket, String key, @Nullable String standardStorageClass);
 
     /**
      * Return the etag of the given file, which may or may not be the md5 of the file

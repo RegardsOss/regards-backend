@@ -53,10 +53,20 @@ import java.io.InputStream;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.format.TextStyle;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * An asynchronous storage client wrapper. This client is a wrapper of S3 asynchronous {@link S3AsyncClient} that
@@ -76,6 +86,20 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                                                              e.getMessage(),
                                                                              e))
                                                                          .build();
+
+    public static final Pattern headResponseRestoreOnGoingPattern = Pattern.compile("^.*ongoing-request=\"([^\"]*)\""
+                                                                                    + ".*$");
+
+    public static final Pattern headResponseRestoreExpirePattern = Pattern.compile("^.*expiry-date=\"([^\"]*)\".*$");
+
+    private static final Set<ZoneId> PREFERRED_ZONES = Set.of(ZoneId.of("Europe/Paris"), ZoneId.of("America/Havana"));
+
+    public static final DateTimeFormatter PARSER = new DateTimeFormatterBuilder().appendPattern("E, dd MMM yyyy "
+                                                                                                + "HH:mm:ss [")
+                                                                                 .appendZoneText(TextStyle.SHORT,
+                                                                                                 PREFERRED_ZONES)
+                                                                                 .appendPattern("]")
+                                                                                 .toFormatter(Locale.ENGLISH);
 
     static final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
 
@@ -130,27 +154,107 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
     }
 
     @Override
-    public Mono<Boolean> isStandardStorageClass(String bucket, String key, @Nullable String standardStorageClass) {
+    public Mono<GlacierFileStatus> isFileAvailable(String bucket, String key, @Nullable String standardStorageClass) {
         return withClient(client -> {
             HeadObjectRequest request = HeadObjectRequest.builder().bucket(bucket).key(key).build();
-            return fromFutureSupplier(() -> client.headObject(request)).map(headResponse -> {
-
-                // Amazon S3 return null header for the Standard storage class
-                if (headResponse.storageClass() == null || headResponse.storageClass()
-                                                                       .equals(standardStorageClass == null ?
-                                                                                   StorageClass.STANDARD :
-                                                                                   standardStorageClass)) {
-                    LOGGER.debug("File ({}) in bucket ({}) is in STANDARD storage class", key, bucket);
-                    return true;
-                } else {
-                    LOGGER.debug("File ({}) in bucket ({}) isn't in STANDARD storage class", key, bucket);
-                    return false;
-                }
-            }).onErrorResume(NoSuchKeyException.class, t -> {
+            return fromFutureSupplier(() -> client.headObject(request)).map(headResponse -> checkHeadRestoreState(
+                headResponse,
+                standardStorageClass,
+                key,
+                bucket)).onErrorResume(NoSuchKeyException.class, t -> {
                 LOGGER.debug("File ({}) in bucket ({}) does not exist", key, bucket);
                 return Mono.error(t);
             }).onErrorMap(SdkClientException.class, S3ClientException::new);
         });
+    }
+
+    /**
+     * Check if the S3 head request response indicates that the file is restored and available for download.
+     */
+    public static GlacierFileStatus checkHeadRestoreState(HeadObjectResponse response,
+                                                          String standardStorageClass,
+                                                          String key,
+                                                          String bucket) {
+        GlacierFileStatus status = GlacierFileStatus.NOT_AVAILABLE;
+        if (checkIfFileIsInStandardStorageClass(response, standardStorageClass)) {
+            LOGGER.debug("File ({}) in bucket ({}) is in STANDARD storage class", key, bucket);
+            status = GlacierFileStatus.AVAILABLE;
+        } else {
+            LOGGER.debug("File ({}) in bucket ({}) is in GLACIER storage class", key, bucket);
+            // Check if a restoration request is running.
+            Boolean restoreRequestPending = checkRestoreRequestOnGoingStatus(response);
+
+            // If restoration request is done, check expiration date.
+            Boolean restoreRequestExpired = checkRestoreRequestExpiration(response);
+
+            if (restoreRequestPending != null && restoreRequestExpired != null) {
+                if (!restoreRequestPending && !restoreRequestExpired) {
+                    // If restore request exists, is not pending and not expired, file is available for download.
+                    status = GlacierFileStatus.AVAILABLE;
+                } else if (!restoreRequestPending) {
+                    // If restore request exists, is not pending and expired, file is no longer available for
+                    // download.
+                    status = GlacierFileStatus.EXPIRED;
+                } else {
+                    // If restore request exists and is pending, file is not yet available for download.
+                    status = GlacierFileStatus.RESTORE_PENDING;
+                }
+            }
+        }
+        LOGGER.info("File ({}) in bucket ({}) restore status = {}", key, bucket, status);
+        return status;
+    }
+
+    /**
+     * Check from the given s3 head response, if a restore request exists, is running or is done.
+     *
+     * @return Returns null if no restoration request exists, return True if a request exists and is pending else
+     * return False.
+     */
+    private static Boolean checkRestoreRequestOnGoingStatus(HeadObjectResponse response) {
+        if (response.restore() != null) {
+            Matcher matcher = headResponseRestoreOnGoingPattern.matcher(response.restore().toLowerCase());
+            if (matcher.find() && matcher.group(1) != null) {
+                return Boolean.parseBoolean(matcher.group(1));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Check from the given S3 head response, if the restoration requests is expired.
+     *
+     * @return Returns null if date is not wellformed in response. Returns True if restoration request exists and is
+     * expired,
+     * else return False.
+     */
+    private static Boolean checkRestoreRequestExpiration(HeadObjectResponse response) {
+        if (response.restore() != null) {
+            Matcher matcher = headResponseRestoreExpirePattern.matcher(response.restore());
+            if (matcher.find() && matcher.group(1) != null) {
+                try {
+                    ZonedDateTime zdt = ZonedDateTime.parse(matcher.group(1), PARSER);
+                    return zdt.isBefore(ZonedDateTime.now());
+                } catch (DateTimeParseException e) {
+                    LOGGER.error("Head response from S3 Server is malformed. Date format for expiration date is not "
+                                 + "in expected format", e);
+                    return null;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check from the given S3 head response, if file is stored on a STANDARD storage class.
+     */
+    private static Boolean checkIfFileIsInStandardStorageClass(HeadObjectResponse response,
+                                                               @Nullable String standardStorageClass) {
+        return response.storageClass() == null || response.storageClass()
+                                                          .name()
+                                                          .equals(standardStorageClass == null ?
+                                                                      StorageClass.STANDARD.name() :
+                                                                      standardStorageClass);
     }
 
     @Override

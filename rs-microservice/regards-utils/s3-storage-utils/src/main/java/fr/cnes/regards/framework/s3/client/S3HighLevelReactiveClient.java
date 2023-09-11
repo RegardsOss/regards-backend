@@ -156,10 +156,10 @@ public class S3HighLevelReactiveClient {
                                                                                                           t)));
     }
 
-    public Mono<Boolean> isStandardStorageClass(StorageConfig config,
-                                                String key,
-                                                @Nullable String standardStorageClass) {
-        return getClient(config).isStandardStorageClass(config.getBucket(), key, standardStorageClass);
+    public Mono<GlacierFileStatus> isFileAvailable(StorageConfig config,
+                                                   String key,
+                                                   @Nullable String standardStorageClass) {
+        return getClient(config).isFileAvailable(config.getBucket(), key, standardStorageClass);
     }
 
     public Mono<Optional<String>> eTag(Check checkCmd) {
@@ -458,9 +458,9 @@ public class S3HighLevelReactiveClient {
 
     private class ReportAndChecksum {
 
-        private MultipartReport report;
+        private final MultipartReport report;
 
-        private String checksum;
+        private final String checksum;
 
         private ReportAndChecksum(MultipartReport report, MessageDigest digest) {
             this.report = report;
