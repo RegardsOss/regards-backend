@@ -151,7 +151,7 @@ public class DeliveryResponseDto {
                && Objects.equals(this.url, that.url)
                && Objects.equals(this.md5, that.md5)
                && Objects.equals(this.originRequestAppId, that.originRequestAppId)
-               && this.originRequestPriority == that.originRequestPriority;
+               && Objects.equals(this.originRequestPriority, that.originRequestPriority);
     }
 
     @Override

@@ -456,11 +456,11 @@ public class S3HighLevelReactiveClient {
 
     }
 
-    private class ReportAndChecksum {
+    private static class ReportAndChecksum {
 
-        private MultipartReport report;
+        private final MultipartReport report;
 
-        private String checksum;
+        private final String checksum;
 
         private ReportAndChecksum(MultipartReport report, MessageDigest digest) {
             this.report = report;

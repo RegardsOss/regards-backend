@@ -131,6 +131,8 @@ public class SubmissionCreateService {
                                                                                       originRequestAppId,
                                                                                       originRequestPriority));
             } catch (LtaSettingsException e) {
+                LOGGER.error(e.getMessage());
+                LOGGER.debug(e.getMessage(), e);
                 responses.add(SubmissionResponseDto.buildDeniedSubmissionResponseDto(submissionRequestDto,
                                                                                      e.getMessage(),
                                                                                      originRequestAppId,
