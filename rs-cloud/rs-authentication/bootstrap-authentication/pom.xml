@@ -45,7 +45,9 @@
         <!-- Enable microservice features -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>microservice-regards-starter</artifactId>
+            <artifactId>microservice-core-starter</artifactId>
+            <version>${revision}</version>
+            <type>pom</type>
         </dependency>
         <!-- Enable spring bootstrap -->
         <dependency>

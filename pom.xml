@@ -133,6 +133,7 @@
         <org.geolatte.geolatte.geojson.version>1.8.2</org.geolatte.geolatte.geojson.version>
         <!-- json -->
         <com.jsoniter.version>0.9.23</com.jsoniter.version>
+		<logstash.logback.version>7.0.1</logstash.logback.version>
         <com.networknt.json.schema.validation>1.0.49</com.networknt.json.schema.validation>
         <!-- google -->
         <com.google.guava.version>31.1-jre</com.google.guava.version>
@@ -1894,6 +1895,12 @@
                 <artifactId>jsoniter</artifactId>
                 <version>${com.jsoniter.version}</version>
             </dependency>
+			<!-- JSON encoder for logback -->
+			<dependency>
+				<groupId>net.logstash.logback</groupId>
+				<artifactId>logstash-logback-encoder</artifactId>
+				<version>${logstash.logback.version}</version>
+			</dependency>
             <!-- Maven plugins -->
             <dependency>
                 <groupId>org.apache.maven</groupId>
