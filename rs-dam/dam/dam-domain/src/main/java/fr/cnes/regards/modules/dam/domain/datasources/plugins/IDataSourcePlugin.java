@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.dam.domain.datasources.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursorMode;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 
 import java.time.OffsetDateTime;
@@ -72,6 +73,14 @@ public interface IDataSourcePlugin {
      */
     default long getOverlap() {
         return 0;
+    }
+
+    /**
+     * @return the mode of crawling cursor. It used to determine how to crawl next pages of datasource, in case of
+     * external bd crawling.
+     */
+    default CrawlingCursorMode getCrawlingCursorMode() {
+        return CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE;
     }
 
 }

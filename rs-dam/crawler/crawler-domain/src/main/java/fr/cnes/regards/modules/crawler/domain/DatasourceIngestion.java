@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.crawler.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import org.hibernate.annotations.Type;
 
@@ -87,17 +88,18 @@ public class DatasourceIngestion {
     private String stackTrace;
 
     public DatasourceIngestion() {
+        super();
     }
 
     public DatasourceIngestion(String id) {
-        super();
+        this();
         this.id = id;
     }
 
-    public DatasourceIngestion(String id, OffsetDateTime nextPlannedIngestDate, String label) {
-        this(id);
+    public DatasourceIngestion(PluginConfiguration pluginConfiguration, OffsetDateTime nextPlannedIngestDate) {
+        this(pluginConfiguration.getBusinessId());
         this.nextPlannedIngestDate = nextPlannedIngestDate;
-        this.label = label;
+        this.label = pluginConfiguration.getLabel();
     }
 
     public String getId() {
@@ -228,5 +230,16 @@ public class DatasourceIngestion {
             cursor.setLastEntityDate(lastEntityDate);
         }
         cursor.setPreviousLastEntityDate(penultimateLastEntityDate);
+    }
+
+    /**
+     * Set last id for next ingestion
+     */
+    public void setLastId(Long lastId, Long previousLastId) {
+        if (cursor == null) {
+            cursor = new CrawlingCursor();
+        }
+        cursor.setLastId(lastId);
+        cursor.setPreviousLastId(previousLastId);
     }
 }

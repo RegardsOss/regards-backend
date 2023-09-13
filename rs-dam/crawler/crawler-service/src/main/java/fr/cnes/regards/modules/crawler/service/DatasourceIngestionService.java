@@ -111,11 +111,10 @@ public class DatasourceIngestionService {
         // Add DatasourceIngestion for unmanaged datasource with immediate next planned ingestion date
         pluginConfs.stream()
                    .filter(pluginConf -> !dsIngestionRepos.existsById(pluginConf.getBusinessId()))
-                   .map(pluginConf -> dsIngestionRepos.save(new DatasourceIngestion(pluginConf.getBusinessId(),
+                   .map(pluginConf -> dsIngestionRepos.save(new DatasourceIngestion(pluginConf,
                                                                                     OffsetDateTime.now()
                                                                                                   .withOffsetSameInstant(
-                                                                                                      ZoneOffset.UTC),
-                                                                                    pluginConf.getLabel())))
+                                                                                                      ZoneOffset.UTC))))
                    .forEach(dsIngestion -> dsIngestionsMap.put(dsIngestion.getId(), dsIngestion));
         // Remove DatasourceIngestion for removed datasources and plan data objects deletion from Elasticsearch
         dsIngestionsMap.keySet()
@@ -172,9 +171,12 @@ public class DatasourceIngestionService {
             dsIngestion.setLastIngestDate(summary.getDate());
             // To avoid redoing an ingestion in this "do...while" (must be at next call to manage)
             dsIngestion.setNextPlannedIngestDate(null);
-            // To avoid redoing an ingestion from beginning in case where plugin are date optimized
+            // To avoid redoing an ingestion from beginning in case where plugin are date optimized (or id optimized)
             if (summary.getLastEntityDate() != null) {
                 dsIngestion.setLastEntityDate(summary.getLastEntityDate(), summary.getPenultimateLastEntityDate());
+            }
+            if (summary.getLastId() != null) {
+                dsIngestion.setLastId(summary.getLastId(), summary.getPreviousLastId());
             }
             // Save ingestion status
             sendNotificationSummary(dsIngestionRepos.save(dsIngestion));

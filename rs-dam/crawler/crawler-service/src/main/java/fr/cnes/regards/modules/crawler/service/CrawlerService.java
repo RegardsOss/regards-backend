@@ -225,7 +225,9 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                                                    saveResult.getSavedDocsCount(),
                                                    saveResult.getInErrorDocsCount(),
                                                    dsi.getCursor().getCurrentLastEntityDate(),
-                                                   dsi.getCursor().getPreviousLastEntityDate()));
+                                                   dsi.getCursor().getPreviousLastEntityDate(),
+                                                   dsi.getCursor().getCurrentLastId(),
+                                                   dsi.getCursor().getPreviousLastId()));
         }
         return Optional.empty();
     }
@@ -259,7 +261,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                                                    saveResult);
             cursor = dsi.getCursor();
             while (cursor.hasNext()) {
-                cursor.next();
+                cursor.next(crawlingParameters.dsPlugin().getCrawlingCursorMode());
                 isFirstFind = false;
                 sendMessage(String.format("  Searching page of %d records from datasource...", cursor.getSize()),
                             dsiId);

@@ -63,6 +63,12 @@ public class CrawlingCursor {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastEntityDate;
 
+    @Column(name = "cursor_last_id")
+    private Long lastId;
+
+    @Column(name = "previous_cursor_last_id")
+    private Long previousLastId;
+
     @Transient
     private int size;
 
@@ -70,25 +76,29 @@ public class CrawlingCursor {
     private boolean hasNext;
 
     @Transient
+    private Long currentLastId;
+
+    @Transient
     private OffsetDateTime currentLastEntityDate;
 
     public CrawlingCursor() {
         // for hibernate
-        this(0, 1, null, null);
+        this(0, 1, null, null, null);
     }
 
     public CrawlingCursor(int position, int size) {
-        this(position, size, null, null);
+        this(position, size, null, null, null);
     }
 
     public CrawlingCursor(OffsetDateTime lastEntityDate) {
-        this(0, 1, null, lastEntityDate);
+        this(0, 1, null, lastEntityDate, null);
     }
 
     private CrawlingCursor(int position,
                            int size,
                            OffsetDateTime currentLastEntityDate,
-                           OffsetDateTime lastEntityDate) {
+                           OffsetDateTime lastEntityDate,
+                           Long lastId) {
         Assert.isTrue(size > 0, "Cursor size should be greater than 0");
         Assert.isTrue(position >= 0, "Position should be greater than 0");
         this.hasNext = false;
@@ -96,6 +106,15 @@ public class CrawlingCursor {
         this.position = position;
         this.currentLastEntityDate = currentLastEntityDate;
         this.lastEntityDate = lastEntityDate;
+        this.lastId = lastId;
+    }
+
+    public CrawlingCursor(Long lastId) {
+        this(0, 1, null, null, lastId);
+    }
+
+    public void next() {
+        next(CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE);
     }
 
     /**
@@ -111,23 +130,47 @@ public class CrawlingCursor {
      *   <li>else increment the page number if the current max update date is equal to the previous one</li>
      * </ul>
      */
-    public void next() {
+    public void next(CrawlingCursorMode mode) {
         if (hasNext) {
-            if (currentLastEntityDate == null) {
-                position++;
-            } else {
-                if (lastEntityDate == null || !currentLastEntityDate.isEqual(lastEntityDate)) {
-                    position = 0;
-                } else {
-                    position++;
-                }
-                lastEntityDate = currentLastEntityDate;
-                currentLastEntityDate = null;
+            switch (mode) {
+                case CRAWL_EVERYTHING -> position++;
+                case CRAWL_SINCE_LAST_UPDATE -> nextFromDate();
+                case CRAWL_FROM_LAST_ID -> nextFromIncrement();
+                default -> throw new IllegalStateException("Unexpected crawling mode: " + mode);
             }
-            LOGGER.debug("Next crawling cursor : {}", this);
         } else {
             throw new IllegalStateException("This cursor does not have a next position!");
         }
+    }
+
+    private void nextFromIncrement() {
+        if (currentLastId == null) {
+            position++;
+        } else {
+            if (!currentLastId.equals(lastId)) {
+                position = 0;
+            } else {
+                position++;
+            }
+            lastId = currentLastId;
+            currentLastId = null;
+        }
+        LOGGER.debug("Next crawling cursor : {}", this);
+    }
+
+    private void nextFromDate() {
+        if (currentLastEntityDate == null) {
+            position++;
+        } else {
+            if (lastEntityDate == null || !currentLastEntityDate.isEqual(lastEntityDate)) {
+                position = 0;
+            } else {
+                position++;
+            }
+            lastEntityDate = currentLastEntityDate;
+            currentLastEntityDate = null;
+        }
+        LOGGER.debug("Next crawling cursor : {}", this);
     }
 
     /**
@@ -154,6 +197,16 @@ public class CrawlingCursor {
                              overlapInSecond,
                              this);
             }
+
+        } else if (lastId != null) {
+            if (previousLastId != null && previousLastId.equals(lastId)) {
+                // Harvesting loops on same id
+                // Advance by one in order not to eternally harvest the last element(s)
+                lastId += 1;
+                LOGGER.debug("Previous id advanced by one in current crawling cursor : {}", this);
+            } else {
+                previousLastId = lastId;
+            }
         } else {
             LOGGER.debug("Overlap not applicable to current crawling cursor : {}", this);
         }
@@ -175,6 +228,22 @@ public class CrawlingCursor {
 
     public OffsetDateTime getPreviousLastEntityDate() {
         return previousLastEntityDate;
+    }
+
+    public Long getLastId() {
+        return lastId;
+    }
+
+    public void setLastId(Long lastId) {
+        this.lastId = lastId;
+    }
+
+    public Long getCurrentLastId() {
+        return currentLastId;
+    }
+
+    public void setCurrentLastId(Long currentLastId) {
+        this.currentLastId = currentLastId;
     }
 
     public void setPreviousLastEntityDate(OffsetDateTime previousLastEntityDate) {
@@ -208,25 +277,46 @@ public class CrawlingCursor {
         this.hasNext = hasNext;
     }
 
+    public Long getPreviousLastId() {
+        return previousLastId;
+    }
+
+    public void setPreviousLastId(Long previousLastId) {
+        this.previousLastId = previousLastId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof CrawlingCursor that)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
+        CrawlingCursor that = (CrawlingCursor) o;
         return position == that.position
                && size == that.size
-               && previousLastEntityDate.isEqual(that.previousLastEntityDate)
-               && lastEntityDate.isEqual(that.lastEntityDate)
-               && currentLastEntityDate.isEqual(that.currentLastEntityDate);
+               && hasNext == that.hasNext
+               && Objects.equals(previousLastEntityDate,
+                                 that.previousLastEntityDate)
+               && Objects.equals(lastEntityDate, that.lastEntityDate)
+               && Objects.equals(lastId, that.lastId)
+               && Objects.equals(previousLastId, that.previousLastId)
+               && Objects.equals(currentLastId, that.currentLastId)
+               && Objects.equals(currentLastEntityDate, that.currentLastEntityDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(position, size, previousLastEntityDate, lastEntityDate, currentLastEntityDate);
+        return Objects.hash(position,
+                            previousLastEntityDate,
+                            lastEntityDate,
+                            lastId,
+                            previousLastId,
+                            size,
+                            hasNext,
+                            currentLastId,
+                            currentLastEntityDate);
     }
 
     @Override
@@ -234,14 +324,21 @@ public class CrawlingCursor {
         return "CrawlingCursor{"
                + "position="
                + position
-               + ", size="
-               + size
-               + ", hasNext="
-               + hasNext
                + ", previousLastEntityDate="
                + previousLastEntityDate
                + ", lastEntityDate="
                + lastEntityDate
+               + ", lastId="
+               + lastId
+               + ", previousLastId="
+               + previousLastId
+               + '\''
+               + ", size="
+               + size
+               + ", hasNext="
+               + hasNext
+               + ", currentLastId="
+               + currentLastId
                + ", currentLastEntityDate="
                + currentLastEntityDate
                + '}';

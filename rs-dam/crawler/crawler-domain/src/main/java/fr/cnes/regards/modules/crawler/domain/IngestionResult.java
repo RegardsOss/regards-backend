@@ -18,6 +18,10 @@ public class IngestionResult {
 
     private OffsetDateTime date;
 
+    private final Long lastId;
+
+    private final Long previousLastId;
+
     private final int savedObjectsCount;
 
     private final int inErrorObjectsCount;
@@ -26,13 +30,17 @@ public class IngestionResult {
                            int saveObjectsCount,
                            int inErrorObjectsCount,
                            OffsetDateTime lastEntityDate,
-                           OffsetDateTime penultimateLastEntityDate) {
+                           OffsetDateTime penultimateLastEntityDate,
+                           Long lastId,
+                           Long previousLastId) {
         super();
         this.date = date;
         this.savedObjectsCount = saveObjectsCount;
         this.inErrorObjectsCount = inErrorObjectsCount;
         this.lastEntityDate = lastEntityDate;
         this.penultimateLastEntityDate = penultimateLastEntityDate;
+        this.lastId = lastId;
+        this.previousLastId = previousLastId;
     }
 
     public OffsetDateTime getDate() {
@@ -57,5 +65,13 @@ public class IngestionResult {
 
     public OffsetDateTime getPenultimateLastEntityDate() {
         return penultimateLastEntityDate;
+    }
+
+    public Long getLastId() {
+        return lastId;
+    }
+
+    public Long getPreviousLastId() {
+        return previousLastId;
     }
 }

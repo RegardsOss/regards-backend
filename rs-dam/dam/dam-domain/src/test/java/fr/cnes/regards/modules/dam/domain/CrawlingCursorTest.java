@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.dam.domain;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursorMode;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -140,7 +142,11 @@ class CrawlingCursorTest {
 
         // Crawling from scratch : 3 elements returned
         CrawlingCursor cursor = simulateDatabaseNextCursor(null, false);
-        List<DataObject> results = doCrawlWithOverlap(listData, cursor, "iteration 0 (from scratch)", true);
+        List<DataObject> results = doCrawlWithOverlap(listData,
+                                                      cursor,
+                                                      "iteration 0 (from scratch)",
+                                                      true,
+                                                      CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE);
         Assert.assertEquals(3, results.size());
         Assert.assertNull(cursor.getPreviousLastEntityDate());
         Assert.assertNotNull(cursor.getLastEntityDate());
@@ -192,6 +198,94 @@ class CrawlingCursorTest {
         Assert.assertNotNull(cursor.getLastEntityDate());
     }
 
+    @Test
+    void crawl_page_with_id_and_with_overlap() {
+        // Init data (date is not important here, cause cursor is based on ids)
+        OffsetDateTime referenceDate = OffsetDateTime.of(2020, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
+        List<DataObject> listData = initData(3, referenceDate, true);
+
+        // Crawling from scratch : 3 elements returned
+        CrawlingCursor cursor = simulateDatabaseNextCursorId(null, false);
+        List<DataObject> results = doCrawlWithOverlap(listData,
+                                                      cursor,
+                                                      "iteration 0 (from scratch)",
+                                                      true,
+                                                      CrawlingCursorMode.CRAWL_FROM_LAST_ID);
+        Assertions.assertEquals(3, results.size());
+        Assertions.assertNull(cursor.getPreviousLastId());
+        Assertions.assertNotNull(cursor.getLastId());
+
+        // Crawling another time with same data : last element is returned another time
+        cursor = simulateDatabaseNextCursorId(cursor, results.isEmpty());
+        results = doCrawlWithOverlap(listData,
+                                     cursor,
+                                     "iteration 1 (overlap)",
+                                     false,
+                                     CrawlingCursorMode.CRAWL_FROM_LAST_ID);
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertNotNull(cursor.getPreviousLastId());
+        Assertions.assertNotNull(cursor.getLastId());
+
+        // Crawling another time with same data : no data
+        cursor = simulateDatabaseNextCursorId(cursor, results.isEmpty());
+        results = doCrawlWithOverlap(listData,
+                                     cursor,
+                                     "iteration 2 (no data)",
+                                     false,
+                                     CrawlingCursorMode.CRAWL_FROM_LAST_ID);
+        Assertions.assertTrue(results.isEmpty());
+        Assertions.assertNotNull(cursor.getPreviousLastId());
+        Assertions.assertNotNull(cursor.getLastId());
+
+        // Crawling another time with same data : no data
+        cursor = simulateDatabaseNextCursorId(cursor, results.isEmpty());
+        results = doCrawlWithOverlap(listData,
+                                     cursor,
+                                     "iteration 3 (no data)",
+                                     false,
+                                     CrawlingCursorMode.CRAWL_FROM_LAST_ID);
+        Assertions.assertTrue(results.isEmpty());
+        Assertions.assertNotNull(cursor.getPreviousLastId());
+        Assertions.assertNotNull(cursor.getLastId());
+
+        // New data arrive (date is not important here, cause cursor is based on ids)
+        OffsetDateTime newReferenceDate = OffsetDateTime.of(2019, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
+        listData.addAll(initData(4, 5, newReferenceDate, true));
+
+        // Crawling with new data : 5 elements returned
+        cursor = simulateDatabaseNextCursorId(cursor, results.isEmpty());
+        results = doCrawlWithOverlap(listData,
+                                     cursor,
+                                     "iteration 4 (new data)",
+                                     false,
+                                     CrawlingCursorMode.CRAWL_FROM_LAST_ID);
+        Assertions.assertEquals(5, results.size());
+        Assertions.assertNotNull(cursor.getPreviousLastId());
+        Assertions.assertNotNull(cursor.getLastId());
+
+        // Crawling another time with same data : last element is returned another time
+        cursor = simulateDatabaseNextCursorId(cursor, results.isEmpty());
+        results = doCrawlWithOverlap(listData,
+                                     cursor,
+                                     "iteration 5 (overlap)",
+                                     false,
+                                     CrawlingCursorMode.CRAWL_FROM_LAST_ID);
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertNotNull(cursor.getPreviousLastId());
+        Assertions.assertNotNull(cursor.getLastId());
+
+        // Crawling another time with same data : no data
+        cursor = simulateDatabaseNextCursorId(cursor, results.isEmpty());
+        results = doCrawlWithOverlap(listData,
+                                     cursor,
+                                     "iteration 6 (no data)",
+                                     false,
+                                     CrawlingCursorMode.CRAWL_FROM_LAST_ID);
+        Assertions.assertTrue(results.isEmpty());
+        Assertions.assertNotNull(cursor.getPreviousLastId());
+        Assertions.assertNotNull(cursor.getLastId());
+    }
+
     private CrawlingCursor simulateDatabaseNextCursor(CrawlingCursor previousCrawlingCursor, boolean noData) {
         CrawlingCursor nextCursor = new CrawlingCursor(0, 10);
         if (previousCrawlingCursor == null) {
@@ -214,32 +308,66 @@ class CrawlingCursorTest {
         return nextCursor;
     }
 
+    private CrawlingCursor simulateDatabaseNextCursorId(CrawlingCursor previousCrawlingCursor, boolean noData) {
+        CrawlingCursor nextCursor = new CrawlingCursor(0, 10);
+        if (previousCrawlingCursor == null) {
+            // No previous cursor, harvesting is starting from scratch
+            return nextCursor;
+        } else {
+            // Propagate previous date, previous date is only mutated in overlap case so result cannot be empty
+            // and database is always updated
+            // See {@link CrawlingCursor#tryApplyOverlap(long)}
+            nextCursor.setPreviousLastId(previousCrawlingCursor.getPreviousLastId());
+            if (noData) {
+                // If no data found, last entity date is not updated in database
+                // Reset last date to unchanged previous one
+                nextCursor.setLastId(previousCrawlingCursor.getLastId());
+            } else {
+                // Update date from previous cursor one
+                nextCursor.setLastId(previousCrawlingCursor.getLastId());
+            }
+        }
+        return nextCursor;
+    }
+
     private List<DataObject> doCrawlWithOverlap(List<DataObject> listData, CrawlingCursor cursor, String message) {
-        return this.doCrawlWithOverlap(listData, cursor, message, false);
+        return this.doCrawlWithOverlap(listData, cursor, message, false, CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE);
     }
 
     private List<DataObject> doCrawlWithOverlap(List<DataObject> listData,
                                                 CrawlingCursor cursor,
                                                 String message,
-                                                boolean start) {
+                                                boolean start,
+                                                CrawlingCursorMode mode) {
         LOGGER.info("Cursor start {} : {}", message, cursor);
         AtomicInteger iterationCounter = new AtomicInteger(0);
         // Simulate applying overlap
         if (!start) {
             cursor.tryApplyOverlap(30);
         }
-        List<DataObject> iterationList = getAllElementsFromPage(listData, cursor, iterationCounter, true);
+        List<DataObject> iterationList = getAllElementsFromPage(listData, cursor, iterationCounter, true, mode);
         // Simulate crawling manager
         if (!iterationList.isEmpty()) {
-            cursor.setLastEntityDate(cursor.getCurrentLastEntityDate());
+            if (mode == CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE) {
+                cursor.setLastEntityDate(cursor.getCurrentLastEntityDate());
+            } else if (mode == CrawlingCursorMode.CRAWL_FROM_LAST_ID) {
+                cursor.setLastId(cursor.getCurrentLastId());
+            }
         }
         LOGGER.info("Cursor end {} : {}", message, cursor);
         return iterationList;
     }
 
     private List<DataObject> initData(int numElements, OffsetDateTime referenceDate, boolean differentDates) {
+        return initData(0, numElements, referenceDate, differentDates);
+    }
+
+    private List<DataObject> initData(int startIdentifier,
+                                      int numElements,
+                                      OffsetDateTime referenceDate,
+                                      boolean differentDates) {
         List<DataObject> listData = new ArrayList<>(numElements);
-        for (int i = 0; i < numElements; i++) {
+        for (int i = startIdentifier; i < numElements + startIdentifier; i++) {
             if (referenceDate != null && differentDates) {
                 referenceDate = referenceDate.plusMinutes(i);
             }
@@ -252,14 +380,30 @@ class CrawlingCursorTest {
                                                     CrawlingCursor cursor,
                                                     AtomicInteger iterationCounter,
                                                     boolean lastUpdateDatePresent) {
-        listData.sort(Comparator.comparing(DataObject::lastUpdateDate,
-                                           Comparator.nullsLast(Comparator.naturalOrder())));
+        return getAllElementsFromPage(listData,
+                                      cursor,
+                                      iterationCounter,
+                                      lastUpdateDatePresent,
+                                      CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE);
+    }
 
-        List<DataObject> allElements = new ArrayList<>(getPage(listData, cursor, lastUpdateDatePresent));
+    private List<DataObject> getAllElementsFromPage(List<DataObject> listData,
+                                                    CrawlingCursor cursor,
+                                                    AtomicInteger iterationCounter,
+                                                    boolean lastUpdateDatePresent,
+                                                    CrawlingCursorMode mode) {
+        if (mode == CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE) {
+            listData.sort(Comparator.comparing(DataObject::lastUpdateDate,
+                                               Comparator.nullsLast(Comparator.naturalOrder())));
+        } else if (mode == CrawlingCursorMode.CRAWL_FROM_LAST_ID) {
+            listData.sort(Comparator.comparing(DataObject::identifier));
+        }
+
+        List<DataObject> allElements = new ArrayList<>(getPage(listData, cursor, lastUpdateDatePresent, mode));
 
         while (cursor.hasNext()) {
             cursor.next();
-            allElements.addAll(getPage(listData, cursor, lastUpdateDatePresent));
+            allElements.addAll(getPage(listData, cursor, lastUpdateDatePresent, mode));
             iterationCounter.incrementAndGet();
         }
 
@@ -269,7 +413,10 @@ class CrawlingCursorTest {
     /**
      * Algorithm to simulate the result of a requested page
      */
-    public List<DataObject> getPage(List<DataObject> listData, CrawlingCursor cursor, boolean lastUpdateDatePresent) {
+    public List<DataObject> getPage(List<DataObject> listData,
+                                    CrawlingCursor cursor,
+                                    boolean lastUpdateDatePresent,
+                                    CrawlingCursorMode mode) {
         // in order to get the page requested, simulate the indexes of sublist extracted from the list which contains all data
         int offset = (cursor.getPosition()) * cursor.getSize();
         int maxSublist = Math.min(offset + cursor.getSize(), listData.size());
@@ -279,6 +426,13 @@ class CrawlingCursorTest {
             subListElements = listData.stream()
                                       .filter(data -> (data.lastUpdateDate().isAfter(cursor.getLastEntityDate())
                                                        || data.lastUpdateDate().isEqual(cursor.getLastEntityDate())))
+                                      .toList();
+
+            subListElements = subListElements.subList(offset, Math.min(subListElements.size(), maxSublist));
+        } else if (cursor.getLastId() != null) {
+            subListElements = listData.stream()
+                                      .filter(data -> (Long.parseLong(data.identifier()) > cursor.getLastId())
+                                                      || Long.parseLong(data.identifier()) == (cursor.getLastId()))
                                       .toList();
 
             subListElements = subListElements.subList(offset, Math.min(subListElements.size(), maxSublist));
@@ -293,7 +447,11 @@ class CrawlingCursorTest {
         // SIMULATE computations from plugins
         // lastUpdateDate
         if (lastUpdateDatePresent) {
-            cursor.setCurrentLastEntityDate(getMaxLastUpdateDate(subListElements));
+            if (mode == CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE) {
+                cursor.setCurrentLastEntityDate(getMaxLastUpdateDate(subListElements));
+            } else if (mode == CrawlingCursorMode.CRAWL_FROM_LAST_ID) {
+                cursor.setCurrentLastId(getMaxId(subListElements));
+            }
         }
         // hasNext()
         cursor.setHasNext(subListElements.size() != 0 && (subListElements.get(subListElements.size() - 1)
@@ -308,6 +466,11 @@ class CrawlingCursorTest {
                                                 Comparator.nullsLast(Comparator.naturalOrder())))
                       .map(DataObject::lastUpdateDate)
                       .orElse(null);
+    }
+
+    private Long getMaxId(List<DataObject> subList) {
+        OptionalLong max = subList.stream().map(DataObject::identifier).mapToLong(Long::parseLong).max();
+        return max.isPresent() ? max.getAsLong() : null;
     }
 
     private record DataObject(String identifier,

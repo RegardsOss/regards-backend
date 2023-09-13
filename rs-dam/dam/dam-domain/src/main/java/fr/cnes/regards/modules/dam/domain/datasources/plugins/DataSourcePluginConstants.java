@@ -89,4 +89,8 @@ public final class DataSourcePluginConstants {
      * The table parameter name
      */
     public static final String TABLE_PARAM = "table";
+
+    public static final String COLUMN_ID = "columnId";
+
+    public static final String UNIQUE_ID = "uniqueId";
 }
