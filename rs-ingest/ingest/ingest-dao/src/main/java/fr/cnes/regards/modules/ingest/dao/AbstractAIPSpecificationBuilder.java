@@ -56,6 +56,11 @@ public abstract class AbstractAIPSpecificationBuilder<T>
             specifications.add(useValuesRestriction("aipId", parameters.getAipIds()));
 
             specifications.add(equals("originUrn", parameters.getOriginUrn()));
+
+            specifications.add(useValuesRestriction("disseminationStatus", parameters.getDisseminationStatus()));
+
+            specifications.add(after("creationDate", parameters.getCreationDate().getAfter()));
+            specifications.add(before("creationDate", parameters.getCreationDate().getBefore()));
         }
     }
 

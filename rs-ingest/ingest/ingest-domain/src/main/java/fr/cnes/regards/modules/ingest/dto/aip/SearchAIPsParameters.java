@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.aip.DisseminationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.Valid;
@@ -49,6 +50,9 @@ public class SearchAIPsParameters implements AbstractSearchParameters {
     @Schema(description = "Filter on range of date for last update")
     private DatesRangeRestriction lastUpdate = new DatesRangeRestriction();
 
+    @Schema(description = "Filter on range of date for creation date")
+    private DatesRangeRestriction creationDate = new DatesRangeRestriction();
+
     @Valid
     @Schema(description = "Filter on provider id")
     private ValuesRestriction<String> providerIds;
@@ -73,6 +77,10 @@ public class SearchAIPsParameters implements AbstractSearchParameters {
 
     @Schema(description = "Filter on last")
     private Boolean last = null;
+
+    @Valid
+    @Schema(description = "Filter on status of the dissemination")
+    private ValuesRestriction<DisseminationStatus> disseminationStatus;
 
     /**
      * URN of the AIP(s) to preserve or remove in the specified session
@@ -285,6 +293,42 @@ public class SearchAIPsParameters implements AbstractSearchParameters {
 
     public SearchAIPsParameters withAipIdsIncluded(Collection<String> aipIds) {
         this.aipIds = new ValuesRestriction<String>().withInclude(aipIds);
+        return this;
+    }
+
+    public DatesRangeRestriction getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(DatesRangeRestriction creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public SearchAIPsParameters withCreationDateAfter(OffsetDateTime after) {
+        this.creationDate.setAfter(after);
+        return this;
+    }
+
+    public SearchAIPsParameters withCreationDateBefore(OffsetDateTime before) {
+        this.creationDate.setBefore(before);
+        return this;
+    }
+
+    public ValuesRestriction<DisseminationStatus> getDisseminationStatus() {
+        return disseminationStatus;
+    }
+
+    public void setDisseminationStatus(ValuesRestriction<DisseminationStatus> status) {
+        this.disseminationStatus = status;
+    }
+
+    public SearchAIPsParameters withDisseminationStatusIncluded(Collection<DisseminationStatus> status) {
+        this.disseminationStatus = new ValuesRestriction<DisseminationStatus>().withInclude(status);
+        return this;
+    }
+
+    public SearchAIPsParameters withDisseminationStatusExcluded(Collection<DisseminationStatus> status) {
+        this.disseminationStatus = new ValuesRestriction<DisseminationStatus>().withExclude(status);
         return this;
     }
 }

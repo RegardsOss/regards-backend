@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.aip.DisseminationStatus;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -49,6 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -348,6 +350,62 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         // Tests storages
         results = aipService.findStorages(filters);
         Assert.assertEquals(2, results.size());
+    }
+
+    @Test
+    public void testSearchAIPEntityWithDisseminationInfos() throws InterruptedException {
+        // Given
+        storageClient.setBehavior(true, true);
+        long nbSIP = 7;
+        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
+        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
+        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
+        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        SIP sip = create("provider 7", TAG_2);
+        sip.withAdditionalProvenanceInformation(ORIGIN_URN_ADDITIONAL_INFORMATION, TEST_ORIGIN_URN);
+        publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        // Wait
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+
+        // When search with DisseminationStatus to NONE
+        Page<AIPEntity> results = aipService.findByFilters(new SearchAIPsParameters().withDisseminationStatusIncluded(
+            List.of(DisseminationStatus.NONE)), PageRequest.of(0, 100));
+        // Then all aip are returned
+        Assert.assertEquals(nbSIP, results.getTotalElements());
+
+        // Given, change disseminationStatus
+        List<AIPEntity> all = aipRepository.findAll();
+        for (AIPEntity aipEntity : all) {
+            if (Objects.equals(aipEntity.getSessionOwner(), SESSION_OWNER_0)) {
+                // 4 aip with session 0
+                aipEntity.setDisseminationStatus(DisseminationStatus.PENDING);
+            } else {
+                // 3 aip with session 1
+                aipEntity.setDisseminationStatus(DisseminationStatus.DONE);
+            }
+        }
+        aipRepository.saveAll(all);
+
+        // When search PENDING dissemination status
+        results = aipService.findByFilters(new SearchAIPsParameters().withDisseminationStatusIncluded(List.of(
+            DisseminationStatus.PENDING)), PageRequest.of(0, 100));
+        // Then 4 aip are returned
+        Assert.assertEquals(4, results.getTotalElements());
+
+        // When search PENDING and DONE dissemination status
+        results = aipService.findByFilters(new SearchAIPsParameters().withDisseminationStatusIncluded(List.of(
+            DisseminationStatus.PENDING,
+            DisseminationStatus.DONE)), PageRequest.of(0, 100));
+        // Then all aip (7) are returned
+        Assert.assertEquals(7, results.getTotalElements());
+
+        // When search with DisseminationStatus to NONE
+        results = aipService.findByFilters(new SearchAIPsParameters().withDisseminationStatusIncluded(List.of(
+            DisseminationStatus.NONE)), PageRequest.of(0, 100));
+        // Then no aip returned
+        Assert.assertEquals(0, results.getTotalElements());
     }
 
 }
