@@ -56,7 +56,6 @@
     <properties>
         <fr.cnes.regards.docker.image.name>rs-dam</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9035</docker.guest.port>
-        <microservice.heap.size>1500m</microservice.heap.size>
     </properties>
 
     <dependencies>

@@ -54,9 +54,9 @@
     </parent>
 
     <properties>
-        <microservice.heap.size>256m</microservice.heap.size>
+        <microservice.heap.size.percent>75</microservice.heap.size.percent>
         <!-- Default entrypoint for microservices, it should be overridden if needed -->
-        <docker.entryPoint>["./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]
+        <docker.entryPoint>["./start.sh","${project.build.finalName}.${project.packaging}","-XX:MaxRAMPercentage=${microservice.heap.size.percent}"]
         </docker.entryPoint>
     </properties>
 

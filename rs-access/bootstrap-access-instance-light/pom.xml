@@ -54,7 +54,6 @@
     </parent>
 
     <properties>
-        <microservice.heap.size>512m</microservice.heap.size>
         <fr.cnes.regards.docker.image.name>rs-access-instance-light</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9040</docker.guest.port>
     </properties>

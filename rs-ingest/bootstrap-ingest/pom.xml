@@ -54,7 +54,6 @@
     </parent>
 
     <properties>
-        <microservice.heap.size>3072m</microservice.heap.size>
         <fr.cnes.regards.docker.image.name>rs-ingest</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9044</docker.guest.port>
     </properties>

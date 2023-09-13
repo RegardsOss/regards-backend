@@ -55,7 +55,6 @@
     <properties>
         <fr.cnes.regards.docker.image.name>rs-delivery</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9049</docker.guest.port>
-        <microservice.heap.size>512m</microservice.heap.size>
     </properties>
 
     <dependencies>

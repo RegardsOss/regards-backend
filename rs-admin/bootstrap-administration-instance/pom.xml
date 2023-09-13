@@ -32,7 +32,6 @@
     </parent>
 
     <properties>
-        <microservice.heap.size>512m</microservice.heap.size>
         <fr.cnes.regards.docker.image.name>rs-admin-instance</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9037</docker.guest.port>
     </properties>

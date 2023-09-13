@@ -56,7 +56,6 @@
     <properties>
         <fr.cnes.regards.docker.image.name>rs-catalog</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9036</docker.guest.port>
-        <microservice.heap.size>1g</microservice.heap.size>
     </properties>
 
     <dependencies>

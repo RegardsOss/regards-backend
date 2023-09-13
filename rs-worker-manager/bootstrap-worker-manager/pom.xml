@@ -56,7 +56,6 @@
     <properties>
         <fr.cnes.regards.docker.image.name>rs-worker-manager</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9046</docker.guest.port>
-        <microservice.heap.size>2048m</microservice.heap.size>
     </properties>
 
     <dependencies>

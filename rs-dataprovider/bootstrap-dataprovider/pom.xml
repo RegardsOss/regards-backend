@@ -54,7 +54,6 @@
     </parent>
 
     <properties>
-        <microservice.heap.size>1024m</microservice.heap.size>
         <fr.cnes.regards.docker.image.name>rs-dataprovider</fr.cnes.regards.docker.image.name>
         <docker.guest.port>9045</docker.guest.port>
     </properties>
