@@ -104,4 +104,11 @@ public class SchedulerConstant {
     public static final String SIP_BODY_DELETION_REQUEST_LOCK = "scheduledSipBodyDeletion";
 
     public static final String SIP_BODY_DELETION_TITLE = "SIP body deletion scheduling";
+
+    /**
+     * For Aip Dissemination
+     */
+    public static final String AIP_DISSEMINATION_REQUEST = "AIP DELETION REQUESTS";
+
+    public static final String AIP_DISSEMINATION_REQUEST_LOCK = "AIP dissemination request";
 }

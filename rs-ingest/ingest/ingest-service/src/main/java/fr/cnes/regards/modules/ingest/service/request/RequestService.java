@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.dissemination.AipDisseminationCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
@@ -206,6 +207,14 @@ public class RequestService implements IRequestService {
                                   jobParameters,
                                   authResolver.getUser(),
                                   AIPUpdatesCreatorJob.class.getName());
+        } else if (request instanceof AipDisseminationCreatorRequest) {
+            // Schedule Dissemination Creator job
+            jobParameters.add(new JobParameter(AipDisseminationCreatorJob.REQUEST_ID, request.getId()));
+            jobInfo = new JobInfo(false,
+                                  IngestJobPriority.AIP_DISSEMINATION_JOB_PRIORITY,
+                                  jobParameters,
+                                  authResolver.getUser(),
+                                  AipDisseminationCreatorJob.class.getName());
         } else {
             throw new IllegalArgumentException(String.format(
                 "You should not use this method for requests having [%s] type",
@@ -515,6 +524,12 @@ public class RequestService implements IRequestService {
             case RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingOAISDeletionCreator(sessionOwnerOp,
                                                                                               sessionOp);
+                break;
+            case RequestTypeConstant.AIP_DISSEMINATION_CREATOR_VALUE:
+                spec = AbstractRequestSpecifications.searchRequestBlockingAipDisseminationCreator();
+                break;
+            case RequestTypeConstant.AIP_DISSEMINATION_VALUE:
+                spec = AbstractRequestSpecifications.searchRequestBlockingAipDissemination(sessionOwnerOp, sessionOp);
                 break;
             case RequestTypeConstant.OAIS_DELETION_VALUE:
                 if (((OAISDeletionRequest) request).getStep() != DeletionRequestStep.REMOTE_NOTIFICATION_ERROR) {

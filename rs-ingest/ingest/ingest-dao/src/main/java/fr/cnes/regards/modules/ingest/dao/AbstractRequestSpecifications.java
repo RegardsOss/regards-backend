@@ -71,6 +71,9 @@ public final class AbstractRequestSpecifications {
             Set<Predicate> predicates = Sets.newHashSet();
 
             predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
+                                                                          AbstractRequestSpecifications.searchAipDisseminationCreator(
+                                                                              root,
+                                                                              cb),
                                                                           AbstractRequestSpecifications.searchOAISDeletionCreator(
                                                                               root,
                                                                               cb)));
@@ -87,6 +90,9 @@ public final class AbstractRequestSpecifications {
             Set<Predicate> predicates = Sets.newHashSet();
 
             predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
+                                                                          AbstractRequestSpecifications.searchAipDisseminationCreator(
+                                                                              root,
+                                                                              cb),
                                                                           AbstractRequestSpecifications.searchOAISDeletion(
                                                                               root,
                                                                               cb,
@@ -113,6 +119,9 @@ public final class AbstractRequestSpecifications {
             Set<Predicate> predicates = Sets.newHashSet();
 
             predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
+                                                                          AbstractRequestSpecifications.searchAipDisseminationCreator(
+                                                                              root,
+                                                                              cb),
                                                                           AbstractRequestSpecifications.searchUpdate(
                                                                               root,
                                                                               cb,
@@ -142,6 +151,9 @@ public final class AbstractRequestSpecifications {
             Set<Predicate> predicates = Sets.newHashSet();
 
             predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
+                                                                          AbstractRequestSpecifications.searchAipDisseminationCreator(
+                                                                              root,
+                                                                              cb),
                                                                           AbstractRequestSpecifications.searchUpdate(
                                                                               root,
                                                                               cb,
@@ -241,6 +253,12 @@ public final class AbstractRequestSpecifications {
                                                                 RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE);
     }
 
+    public static Predicate searchAipDisseminationCreator(Root<AbstractRequest> root, CriteriaBuilder cb) {
+        return AbstractRequestSpecifications.searchMacroRequest(root,
+                                                                cb,
+                                                                RequestTypeConstant.AIP_DISSEMINATION_CREATOR_VALUE);
+    }
+
     public static Predicate searchMicroRequest(Root<AbstractRequest> root,
                                                CriteriaBuilder cb,
                                                Optional<String> sessionOwner,
@@ -276,5 +294,57 @@ public final class AbstractRequestSpecifications {
     public static Predicate aggregateRequest(CriteriaBuilder cb, Predicate... predicates) {
         // Use the OR operator between each state
         return cb.or(predicates);
+    }
+
+    public static Specification<AbstractRequest> searchRequestBlockingAipDisseminationCreator() {
+        return (root, query, cb) -> {
+            Set<Predicate> predicates = Sets.newHashSet();
+            predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
+                                                                          AbstractRequestSpecifications.searchAipDisseminationCreator(
+                                                                              root,
+                                                                              cb),
+                                                                          AbstractRequestSpecifications.searchOAISDeletionCreator(
+                                                                              root,
+                                                                              cb),
+                                                                          AbstractRequestSpecifications.searchAipUpdatesCreator(
+                                                                              root,
+                                                                              cb),
+                                                                          AbstractRequestSpecifications.searchUpdate(
+                                                                              root,
+                                                                              cb,
+                                                                              Optional.empty(),
+                                                                              Optional.empty()),
+                                                                          AbstractRequestSpecifications.searchOAISDeletion(
+                                                                              root,
+                                                                              cb,
+                                                                              Optional.empty(),
+                                                                              Optional.empty())));
+
+            predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
+
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+    public static Specification<AbstractRequest> searchRequestBlockingAipDissemination(Optional<String> sessionOwnerOp,
+                                                                                       Optional<String> sessionOp) {
+        return (root, query, cb) -> {
+            Set<Predicate> predicates = Sets.newHashSet();
+            predicates.add(AbstractRequestSpecifications.aggregateRequest(cb,
+                                                                          AbstractRequestSpecifications.searchUpdate(
+                                                                              root,
+                                                                              cb,
+                                                                              sessionOwnerOp,
+                                                                              sessionOp),
+                                                                          AbstractRequestSpecifications.searchOAISDeletion(
+                                                                              root,
+                                                                              cb,
+                                                                              sessionOwnerOp,
+                                                                              sessionOp)));
+
+            predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
+
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
     }
 }

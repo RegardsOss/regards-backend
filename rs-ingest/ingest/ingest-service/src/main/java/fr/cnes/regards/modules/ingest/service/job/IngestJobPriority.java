@@ -48,6 +48,8 @@ public final class IngestJobPriority {
 
     public static final int DELETE_SIP_BODY_JOB_PRIORITY = 0;
 
+    public static final int AIP_DISSEMINATION_JOB_PRIORITY = 0;
+
     private IngestJobPriority() {
     }
 }

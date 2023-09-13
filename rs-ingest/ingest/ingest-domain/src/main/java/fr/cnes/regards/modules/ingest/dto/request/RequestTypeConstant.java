@@ -44,4 +44,8 @@ public class RequestTypeConstant {
     public static final String AIP_POST_PROCESS_VALUE = "AIP_POST_PROCESS";
 
     public static final String AIP_SAVE_METADATA_VALUE = "AIP_SAVE_METADATA";
+
+    public static final String AIP_DISSEMINATION_CREATOR_VALUE = "AIP_DISSEMINATION_CREATOR";
+
+    public static final String AIP_DISSEMINATION_VALUE = "AIP_DISSEMINATION";
 }

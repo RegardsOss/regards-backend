@@ -28,7 +28,9 @@ import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.ingest.dto.request.dissemination.AIPDisseminationRequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import fr.cnes.regards.modules.ingest.service.AipDisseminationService;
 import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
@@ -133,6 +135,11 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     public static final String OAIS_DELETE_PATH = "/delete";
 
     /**
+     * Controller path to disseminate AIPs to another Regards instance
+     */
+    private static final String AIP_DISSEMINATION_PATH = "/dissemination";
+
+    /**
      * {@link IResourceService} instance
      */
     @Autowired
@@ -143,6 +150,9 @@ public class AIPController implements IResourceController<AIPEntityLight> {
 
     @Autowired
     private OAISDeletionService oaisDeletionRequestService;
+
+    @Autowired
+    private AipDisseminationService aipDisseminationService;
 
     /**
      * Retrieve a page of AIPs metadata according to the given filters
@@ -162,6 +172,18 @@ public class AIPController implements IResourceController<AIPEntityLight> {
 
         return new ResponseEntity<>(toPagedResources(aipService.findLightByFilters(filters, pageable), assembler),
                                     HttpStatus.OK);
+    }
+
+    @PostMapping(value = AIP_DISSEMINATION_PATH)
+    @Operation(summary = "Create dissemination creator job")
+    @ResourceAccess(description = "Endpoint to create a dissemination job. A scheduler will soon launch these requests",
+                    role = DefaultRole.ADMIN)
+    public void createDisseminationRequest(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+                                                              content = @Content(schema = @Schema(implementation = AIPDisseminationRequestDto.class)))
+        @Parameter(description = "Body contains filter criterias for AIPs, and dissemination recipient list")
+        @RequestBody AIPDisseminationRequestDto disseminationRequestDto) {
+        aipDisseminationService.registerDisseminationCreator(disseminationRequestDto);
     }
 
     /**

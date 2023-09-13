@@ -126,7 +126,7 @@ public class JobTestUtils {
                                                JobStatus.SUCCEEDED,
                                                JobStatus.ABORTED);
         }
-        return jobInfoService.retrieveJobs(aClass.getName(), page);
+        return jobInfoService.retrieveJobs(aClass.getName(), page, statuses);
     }
 
     public List<JobInfo> retrieveFullJobInfos(Class aClass, JobStatus... statuses) {
