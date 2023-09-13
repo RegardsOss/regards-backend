@@ -29,8 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Optional;
-
 /**
  * Test for {@link fr.cnes.regards.modules.delivery.service.settings.customizers.DeliveryBucketCustomizer}
  *
@@ -47,7 +45,8 @@ public class DeliveryBucketCustomizerTest extends AbstractDeliveryCustomizerTest
                                                                              DeliverySettings.DELIVERY_BUCKET,
                                                                              "delivery bucket",
                                                                              DeliverySettings.DEFAULT_DELIVERY_BUCKET,
-                                                                             "delivery-bucket");
+                                                                             "delivery-bucket",
+                                                                             false);
         // WHEN
         DynamicTenantSetting savedDeliveryBucket = dynamicTenantSettingService.create(testedDeliveryBucket);
         // THEN
@@ -55,7 +54,8 @@ public class DeliveryBucketCustomizerTest extends AbstractDeliveryCustomizerTest
                                                                                DeliverySettings.DELIVERY_BUCKET,
                                                                                "delivery bucket",
                                                                                DeliverySettings.DEFAULT_DELIVERY_BUCKET,
-                                                                               "delivery-bucket");
+                                                                               "delivery-bucket",
+                                                                               false);
         Assertions.assertThat((String) savedDeliveryBucket.getValue())
                   .as("Unexpected saved delivery bucket value.")
                   .isEqualTo(expectedDeliveryBucket.getValue());
@@ -68,7 +68,8 @@ public class DeliveryBucketCustomizerTest extends AbstractDeliveryCustomizerTest
                                                                              DeliverySettings.DELIVERY_BUCKET,
                                                                              "delivery bucket",
                                                                              DeliverySettings.DEFAULT_DELIVERY_BUCKET,
-                                                                             null);
+                                                                             null,
+                                                                             false);
         // WHEN
         Assertions.assertThatExceptionOfType(EntityInvalidException.class)
                   .isThrownBy(() -> dynamicTenantSettingService.create(testedDeliveryBucket));
@@ -78,12 +79,14 @@ public class DeliveryBucketCustomizerTest extends AbstractDeliveryCustomizerTest
     public void givenValidDeliveryBucket_whenUpdate_thenUpdated()
         throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         // GIVEN
-        Mockito.when(settingRepository.findByName(DeliverySettings.DELIVERY_BUCKET))
-               .thenReturn(Optional.of(new DynamicTenantSetting(1L,
-                                                                DeliverySettings.DELIVERY_BUCKET,
-                                                                "delivery bucket",
-                                                                DeliverySettings.DEFAULT_DELIVERY_BUCKET,
-                                                                "updated-delivery-bucket")));
+        Mockito.when(dynamicTenantSettingRepositoryService.findByNameWithExceptionOnNotFound(DeliverySettings.DELIVERY_BUCKET,
+                                                                                             false))
+               .thenReturn(new DynamicTenantSetting(1L,
+                                                    DeliverySettings.DELIVERY_BUCKET,
+                                                    "delivery bucket",
+                                                    DeliverySettings.DEFAULT_DELIVERY_BUCKET,
+                                                    "updated-delivery-bucket",
+                                                    false));
         // WHEN
         DynamicTenantSetting updatedDeliveryBucket = dynamicTenantSettingService.update(DeliverySettings.DELIVERY_BUCKET,
                                                                                         "updated-delivery-bucket");
@@ -92,7 +95,8 @@ public class DeliveryBucketCustomizerTest extends AbstractDeliveryCustomizerTest
                                                                                DeliverySettings.DELIVERY_BUCKET,
                                                                                "delivery bucket",
                                                                                DeliverySettings.DEFAULT_DELIVERY_BUCKET,
-                                                                               "updated-delivery-bucket");
+                                                                               "updated-delivery-bucket",
+                                                                               false);
         Assertions.assertThat((String) updatedDeliveryBucket.getValue())
                   .as("Unexpected updated delivery bucket value")
                   .isEqualTo(expectedDeliveryBucket.getValue());

@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService
+fr.cnes.regards.framework.modules.tenant.settings.service.configuration.DynamicSettingsAutoConfiguration

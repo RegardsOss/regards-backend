@@ -25,6 +25,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Warning: Do not use this repository directly because encryption/decryption of settings is handled in
+ * DynamicTenantSettingRepositoryService. Use this service instead.
+ */
 @Repository
 public interface IDynamicTenantSettingRepository extends JpaRepository<DynamicTenantSetting, Long> {
 

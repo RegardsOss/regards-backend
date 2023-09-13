@@ -20,6 +20,8 @@ package fr.cnes.regards.framework.encryption.sensitive;
 
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
@@ -31,7 +33,7 @@ import java.lang.reflect.Field;
  **/
 public class StringSensitiveAnnotationEncryptionService implements ISensitiveAnnotationEncryptionService {
 
-    public static final String CLASS_IN_REGARDS_PACKAGE_STARTS = "fr.cnes.regards.";
+    private static final Logger LOGGER = LoggerFactory.getLogger(StringSensitiveAnnotationEncryptionService.class);
 
     private final IEncryptionService encryptionService;
 
@@ -41,35 +43,55 @@ public class StringSensitiveAnnotationEncryptionService implements ISensitiveAnn
 
     @Override
     public Object encryptObjectWithSensitiveValues(Object objectWithSensitiveValues,
-                                                   @Nullable Object oldObjectWithSensitiveValues)
-        throws EncryptionException {
+                                                   @Nullable Object oldObjectWithSensitiveValues) {
         Field[] fields = objectWithSensitiveValues.getClass().getDeclaredFields();
         for (Field field : fields) {
-            // update string field to encrypt
-            if (field.isAnnotationPresent(StringSensitive.class) && String.class.isAssignableFrom(field.getType())) {
-                encryptStringSensitiveField(objectWithSensitiveValues, field, oldObjectWithSensitiveValues);
-            } else if (field.getType().getName().startsWith(CLASS_IN_REGARDS_PACKAGE_STARTS)) {
-                // recursively find field to encrypt
-                encryptObjectWithSensitiveValues(getField(objectWithSensitiveValues, field),
-                                                 oldObjectWithSensitiveValues != null ?
-                                                     getField(oldObjectWithSensitiveValues, field) :
-                                                     null);
+            try {
+                // update string field to encrypt
+                if (field.isAnnotationPresent(StringSensitive.class)
+                    && String.class.isAssignableFrom(field.getType())) {
+                    encryptStringSensitiveField(objectWithSensitiveValues, field, oldObjectWithSensitiveValues);
+                } else if (field.getType().getName().startsWith(CLASS_IN_REGARDS_PACKAGE_STARTS)) {
+                    // recursively find field to encrypt
+                    encryptObjectWithSensitiveValues(getField(objectWithSensitiveValues, field),
+                                                     oldObjectWithSensitiveValues != null ?
+                                                         getField(oldObjectWithSensitiveValues, field) :
+                                                         null);
+                }
+            } catch (EncryptionException e) {
+                String errorMsg = String.format("Error encrypting sensitive parameter '%s'. Cause : %s",
+                                                field.getName(),
+                                                e.getMessage());
+                LOGGER.error(errorMsg, e);
+                updateField(objectWithSensitiveValues,
+                            field,
+                            ISensitiveAnnotationEncryptionService.DEFAULT_ERROR_ENCODING_VALUE);
             }
         }
         return objectWithSensitiveValues;
     }
 
     @Override
-    public Object decryptOrMaskObjectWithSensitiveValues(Object objectWithSensitiveValues, boolean maskValues)
-        throws EncryptionException {
+    public Object decryptOrMaskObjectWithSensitiveValues(Object objectWithSensitiveValues, boolean maskValues) {
         Field[] fields = objectWithSensitiveValues.getClass().getDeclaredFields();
         for (Field field : fields) {
-            // update string field to decrypt
-            if (field.isAnnotationPresent(StringSensitive.class) && String.class.isAssignableFrom(field.getType())) {
-                decryptOrMaskStringSensitiveField(objectWithSensitiveValues, field, maskValues);
-            } else if (field.getType().getName().startsWith(CLASS_IN_REGARDS_PACKAGE_STARTS)) {
-                // recursively find field to decrypt
-                decryptOrMaskObjectWithSensitiveValues(getField(objectWithSensitiveValues, field), maskValues);
+            try {
+                // update string field to decrypt
+                if (field.isAnnotationPresent(StringSensitive.class)
+                    && String.class.isAssignableFrom(field.getType())) {
+                    decryptOrMaskStringSensitiveField(objectWithSensitiveValues, field, maskValues);
+                } else if (field.getType().getName().startsWith(CLASS_IN_REGARDS_PACKAGE_STARTS)) {
+                    // recursively find field to decrypt
+                    decryptOrMaskObjectWithSensitiveValues(getField(objectWithSensitiveValues, field), maskValues);
+                }
+            } catch (EncryptionException e) {
+                String errorMsg = String.format("Error decrypting sensitive parameter '%s'. Cause : %s",
+                                                field.getName(),
+                                                e.getMessage());
+                LOGGER.error(errorMsg, e);
+                updateField(objectWithSensitiveValues,
+                            field,
+                            ISensitiveAnnotationEncryptionService.DEFAULT_ERROR_ENCODING_VALUE);
             }
         }
         return objectWithSensitiveValues;
@@ -96,21 +118,22 @@ public class StringSensitiveAnnotationEncryptionService implements ISensitiveAnn
 
     private void decryptOrMaskStringSensitiveField(Object objectWithSensitiveValues, Field field, boolean maskValues)
         throws EncryptionException {
-        String decryptedOrMaskedValue = maskValues ?
-            MASK_PATTERN :
-            encryptionService.decrypt((String) getField(objectWithSensitiveValues, field));
+        String decryptedOrMaskedValue;
+        if (maskValues) {
+            decryptedOrMaskedValue = MASK_PATTERN;
+        } else {
+            decryptedOrMaskedValue = encryptionService.decrypt((String) getField(objectWithSensitiveValues, field));
+        }
         updateField(objectWithSensitiveValues, field, decryptedOrMaskedValue);
 
     }
 
-    private void updateField(Object objectWithSensitiveValues, Field field, String fieldValue)
-        throws EncryptionException {
+    private void updateField(Object objectWithSensitiveValues, Field field, String fieldValue) {
         try {
             field.setAccessible(true);
             field.set(objectWithSensitiveValues, fieldValue);
         } catch (IllegalAccessException e) {
-            throw new EncryptionException(String.format("Could not update field '%s' by reflection.", field.getName()),
-                                          e);
+            LOGGER.error("Could not update field '{}' by reflection.", field.getName(), e);
         }
     }
 

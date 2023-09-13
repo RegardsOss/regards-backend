@@ -60,4 +60,9 @@ public class FeatureConfigurationManager extends AbstractModuleManagerWithTenant
         return ModuleConfiguration.build(info, true, configuration);
     }
 
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
 }

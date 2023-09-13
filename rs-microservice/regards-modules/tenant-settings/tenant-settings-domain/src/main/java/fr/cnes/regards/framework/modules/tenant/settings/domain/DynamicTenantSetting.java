@@ -61,22 +61,35 @@ public class DynamicTenantSetting {
     @Column(name = "class_name")
     private String className;
 
+    @Column(name = "contains_sensitive_params")
+    private boolean containsSensitiveParameters;
+
     public DynamicTenantSetting() {
     }
 
-    public <T> DynamicTenantSetting(Long id, String name, String description, T defaultValue, T value) {
-        this.id = id;
+    public <T> DynamicTenantSetting(Long id,
+                                    String name,
+                                    String description,
+                                    T defaultValue,
+                                    T value,
+                                    boolean containsSensitiveParameters) {
+        this.id = id; // do not remove this field it is used to update entity
         this.name = name;
         this.description = description;
         setDefaultValue(defaultValue);
         setValue(value);
+        this.containsSensitiveParameters = containsSensitiveParameters;
     }
 
     public <T> DynamicTenantSetting(String name, String description, T defaultValue) {
-        this.name = name;
-        this.description = description;
-        setDefaultValue(defaultValue);
-        setValue(defaultValue);
+        this(null, name, description, defaultValue, defaultValue, false);
+    }
+
+    public <T> DynamicTenantSetting(String name,
+                                    String description,
+                                    T defaultValue,
+                                    boolean containsSensitiveParameters) {
+        this(null, name, description, defaultValue, defaultValue, containsSensitiveParameters);
     }
 
     public <T> T getDefaultValue() {
@@ -144,6 +157,25 @@ public class DynamicTenantSetting {
     public DynamicTenantSetting setDescription(String description) {
         this.description = description;
         return this;
+    }
+
+    public boolean isContainsSensitiveParameters() {
+        return containsSensitiveParameters;
+    }
+
+    public void setContainsSensitiveParameters(boolean containsSensitiveParameters) {
+        this.containsSensitiveParameters = containsSensitiveParameters;
+    }
+
+    public <T> DynamicTenantSettingDto<T> toDto() {
+        return new DynamicTenantSettingDto<>(this.getName(),
+                                             this.getDescription(),
+                                             this.getDefaultValue(),
+                                             this.getValue());
+    }
+
+    public String getClassName() {
+        return className;
     }
 
     @Override

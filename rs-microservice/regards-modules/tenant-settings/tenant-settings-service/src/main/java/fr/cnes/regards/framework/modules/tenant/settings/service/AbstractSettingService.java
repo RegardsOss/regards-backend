@@ -57,7 +57,7 @@ public abstract class AbstractSettingService {
 
     private void createSetting(DynamicTenantSetting dynamicTenantSetting)
         throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
-        if (!dynamicTenantSettingService.read(dynamicTenantSetting.getName()).isPresent()) {
+        if (dynamicTenantSettingService.read(dynamicTenantSetting.getName()).isEmpty()) {
             dynamicTenantSettingService.create(dynamicTenantSetting);
         }
     }

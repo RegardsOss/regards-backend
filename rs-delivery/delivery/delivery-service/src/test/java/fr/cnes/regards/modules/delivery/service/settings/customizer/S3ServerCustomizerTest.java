@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Optional;
-
 /**
  * Test for {@link fr.cnes.regards.modules.delivery.service.settings.customizers.S3ServerCustomizer}
  *
@@ -53,7 +51,8 @@ public class S3ServerCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                                             9000,
                                                                                             "fr-regards-1",
                                                                                             "regards",
-                                                                                            "secret"));
+                                                                                            "secret"),
+                                                                       false);
         // WHEN
         DynamicTenantSetting savedS3Server = dynamicTenantSettingService.create(testedS3Server);
         // THEN
@@ -66,7 +65,8 @@ public class S3ServerCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                                               9000,
                                                                                               "fr-regards-1",
                                                                                               "regards",
-                                                                                              "secret"));
+                                                                                              "secret"),
+                                                                         false);
         Assertions.assertThat((S3DeliveryServer) savedS3Server.getValue())
                   .as("Unexpected saved s3Server value.")
                   .isEqualTo(expectedS3Server.getValue());
@@ -76,17 +76,19 @@ public class S3ServerCustomizerTest extends AbstractDeliveryCustomizerTest {
     public void givenValidS3Server_whenUpdate_thenUpdated()
         throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         // GIVEN
-        Mockito.when(settingRepository.findByName(DeliverySettings.S3_SERVER))
-               .thenReturn(Optional.of(new DynamicTenantSetting(1L,
-                                                                DeliverySettings.S3_SERVER,
-                                                                "s3 server",
-                                                                DeliverySettings.DEFAULT_S3_SERVER,
-                                                                new S3DeliveryServer("http",
-                                                                                     "rs-s3-server",
-                                                                                     9000,
-                                                                                     "fr-regards-1",
-                                                                                     "regards",
-                                                                                     "secret"))));
+        Mockito.when(dynamicTenantSettingRepositoryService.findByNameWithExceptionOnNotFound(DeliverySettings.S3_SERVER,
+                                                                                             false))
+               .thenReturn(new DynamicTenantSetting(1L,
+                                                    DeliverySettings.S3_SERVER,
+                                                    "s3 server",
+                                                    DeliverySettings.DEFAULT_S3_SERVER,
+                                                    new S3DeliveryServer("http",
+                                                                         "rs-s3-server",
+                                                                         9000,
+                                                                         "fr-regards-1",
+                                                                         "regards",
+                                                                         "secret"),
+                                                    false));
         // WHEN
         DynamicTenantSetting updatedS3Server = dynamicTenantSettingService.update(DeliverySettings.S3_SERVER,
                                                                                   new S3DeliveryServer("http",
@@ -105,7 +107,8 @@ public class S3ServerCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                                               9000,
                                                                                               "fr-regards-2",
                                                                                               "regards",
-                                                                                              "secret"));
+                                                                                              "secret"),
+                                                                         false);
         Assertions.assertThat((S3DeliveryServer) updatedS3Server.getValue())
                   .as("Unexpected updated s3Server value.")
                   .isEqualTo(expectedS3Server.getValue());

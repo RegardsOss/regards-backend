@@ -112,6 +112,7 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
             try {
                 pluginService.savePluginConfiguration(plgConf);
             } catch (EntityInvalidException | EncryptionException | EntityNotFoundException e) {
+                LOGGER.error("Cannot import dam settings", e);
                 errors.add(e.getMessage());
             }
         }
@@ -137,6 +138,11 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
         configurations.addAll(exportDatasets());
 
         return ModuleConfiguration.build(info, configurations);
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     private Set<String> importDatasets(Set<DatasetConfiguration> datasetConfigurations) {

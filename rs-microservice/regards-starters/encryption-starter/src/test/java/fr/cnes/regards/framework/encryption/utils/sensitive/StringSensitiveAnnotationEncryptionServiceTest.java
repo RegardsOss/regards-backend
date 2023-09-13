@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.encryption.utils.sensitive;
 
 import fr.cnes.regards.framework.encryption.AESEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
-import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.encryption.sensitive.ISensitiveAnnotationEncryptionService;
 import fr.cnes.regards.framework.encryption.sensitive.StringSensitiveAnnotationEncryptionService;
 import org.assertj.core.api.Assertions;
@@ -53,7 +52,7 @@ public class StringSensitiveAnnotationEncryptionServiceTest {
     }
 
     @Test
-    public void givenNotEncrypted_whenEncryptSensitive_thenEncrypted() throws EncryptionException {
+    public void givenNotEncrypted_whenEncryptSensitive_thenEncrypted() {
         // GIVEN
         Person person = new Person("Neil Armstrong",
                                    "1234",
@@ -73,7 +72,7 @@ public class StringSensitiveAnnotationEncryptionServiceTest {
     }
 
     @Test
-    public void givenEncrypted_whenDecryptSensitive_thenDecrypted() throws EncryptionException {
+    public void givenEncrypted_whenDecryptSensitive_thenDecrypted() {
         // GIVEN
         Person person = new Person("Neil Armstrong",
                                    "v7LIsTELkDzB2dWQD7aSKg==",
@@ -95,7 +94,7 @@ public class StringSensitiveAnnotationEncryptionServiceTest {
     }
 
     @Test
-    public void givenEncrypted_whenMaskSensitive_thenMasked() throws EncryptionException {
+    public void givenEncrypted_whenMaskSensitive_thenMasked() {
         // GIVEN
         Person person = new Person("Neil Armstrong",
                                    "v7LIsTELkDzB2dWQD7aSKg==",
@@ -116,7 +115,7 @@ public class StringSensitiveAnnotationEncryptionServiceTest {
     }
 
     @Test
-    public void givenAlreadyEncrypted_whenEncryptSensitive_thenDoNothing() throws EncryptionException {
+    public void givenAlreadyEncrypted_whenEncryptSensitive_thenDoNothing() {
         // GIVEN
         Person previousPerson = new Person("Neil Armstrong",
                                            "v7LIsTELkDzB2dWQD7aSKg==",
@@ -146,7 +145,7 @@ public class StringSensitiveAnnotationEncryptionServiceTest {
     }
 
     @Test
-    public void givenAlreadyEncrypted_whenPartialEncryptSensitive_thenEncryptToUpdate() throws EncryptionException {
+    public void givenAlreadyEncrypted_whenPartialEncryptSensitive_thenEncryptToUpdate() {
         // GIVEN
         Person previousPerson = new Person("Neil Armstrong",
                                            "v7LIsTELkDzB2dWQD7aSKg==",
@@ -176,7 +175,7 @@ public class StringSensitiveAnnotationEncryptionServiceTest {
     }
 
     @Test
-    public void givenAlreadyMasked_whenEncryptSensitive_thenUpdateWithAlreadyEncrypted() throws EncryptionException {
+    public void givenAlreadyMasked_whenEncryptSensitive_thenUpdateWithAlreadyEncrypted() {
         // GIVEN
         Person previousPerson = new Person("Neil Armstrong",
                                            "v7LIsTELkDzB2dWQD7aSKg==",

@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.delivery.service.config;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractModuleManagerWithTenantSettings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,6 +36,8 @@ import java.util.Set;
 @Service
 public class DeliveryConfigurationManager extends AbstractModuleManagerWithTenantSettings<Void> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeliveryConfigurationManager.class);
+
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration, Set<String> importErrors) {
         // nothing to do this microservice only imports DynamicTenantSettings
@@ -43,6 +47,11 @@ public class DeliveryConfigurationManager extends AbstractModuleManagerWithTenan
     @Override
     public ModuleConfiguration exportConfiguration(List<ModuleConfigurationItem<?>> configuration) {
         return ModuleConfiguration.build(info, true, configuration);
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

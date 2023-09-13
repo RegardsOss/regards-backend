@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.access.services.rest.user;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -44,7 +45,11 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void updateAccessSettings() {
         String api = AccessSettingsController.REQUEST_MAPPING_ROOT + AccessSettingsController.NAME_PATH;
-        DynamicTenantSettingDto<String> dto = new DynamicTenantSettingDto<>(AccessSettings.MODE_SETTING);
+        DynamicTenantSetting defaultAccessSetting = AccessSettings.MODE_SETTING;
+        DynamicTenantSettingDto<String> dto = new DynamicTenantSettingDto<>(defaultAccessSetting.getName(),
+                                                                            defaultAccessSetting.getDescription(),
+                                                                            defaultAccessSetting.getDefaultValue(),
+                                                                            defaultAccessSetting.getValue());
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         performDefaultPut(api, dto, customizer, "Failed to update access settings", dto.getName());
     }

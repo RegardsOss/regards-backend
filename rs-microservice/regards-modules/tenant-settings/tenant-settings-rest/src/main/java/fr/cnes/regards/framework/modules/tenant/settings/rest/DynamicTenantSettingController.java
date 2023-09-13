@@ -7,11 +7,12 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpStatus;
@@ -34,11 +35,16 @@ public class DynamicTenantSettingController implements IResourceController<Dynam
 
     public static final String NAME_PATH = "/{name}";
 
-    @Autowired
-    private IDynamicTenantSettingService dynamicTenantSettingService;
+    private final IDynamicTenantSettingService dynamicTenantSettingService;
 
-    @Autowired
-    private IResourceService resourceService;
+    private final IResourceService resourceService;
+
+    public DynamicTenantSettingController(
+        @Qualifier("dynamicTenantSettingServiceWithMask") IDynamicTenantSettingService dynamicTenantSettingService,
+        IResourceService resourceService) {
+        this.dynamicTenantSettingService = dynamicTenantSettingService;
+        this.resourceService = resourceService;
+    }
 
     @PutMapping(path = NAME_PATH)
     @ResponseBody
@@ -46,8 +52,7 @@ public class DynamicTenantSettingController implements IResourceController<Dynam
     public ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(@PathVariable(name = "name") String name,
                                                                        @RequestBody DynamicTenantSettingDto setting)
         throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
-        return new ResponseEntity<>(toResource(new DynamicTenantSettingDto(dynamicTenantSettingService.update(name,
-                                                                                                              setting.getValue()))),
+        return new ResponseEntity<>(toResource(dynamicTenantSettingService.update(name, setting.getValue()).toDto()),
                                     HttpStatus.OK);
     }
 
@@ -56,8 +61,7 @@ public class DynamicTenantSettingController implements IResourceController<Dynam
     @ResourceAccess(description = "Allows to reset a dynamic tenant setting", role = DefaultRole.ADMIN)
     public ResponseEntity<EntityModel<DynamicTenantSettingDto>> reset(@PathVariable(name = "name") String name)
         throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
-        return new ResponseEntity<>(toResource(new DynamicTenantSettingDto(dynamicTenantSettingService.reset(name))),
-                                    HttpStatus.OK);
+        return new ResponseEntity<>(toResource(dynamicTenantSettingService.reset(name).toDto()), HttpStatus.OK);
     }
 
     @GetMapping
@@ -68,13 +72,13 @@ public class DynamicTenantSettingController implements IResourceController<Dynam
         if (names == null || names.isEmpty()) {
             return new ResponseEntity<>(toResources(dynamicTenantSettingService.readAll()
                                                                                .stream()
-                                                                               .map(DynamicTenantSettingDto::new)
+                                                                               .map(DynamicTenantSetting::toDto)
                                                                                .collect(Collectors.toSet())),
                                         HttpStatus.OK);
         } else {
             return new ResponseEntity<>(toResources(dynamicTenantSettingService.readAll(names)
                                                                                .stream()
-                                                                               .map(DynamicTenantSettingDto::new)
+                                                                               .map(DynamicTenantSetting::toDto)
                                                                                .collect(Collectors.toSet())),
                                         HttpStatus.OK);
         }

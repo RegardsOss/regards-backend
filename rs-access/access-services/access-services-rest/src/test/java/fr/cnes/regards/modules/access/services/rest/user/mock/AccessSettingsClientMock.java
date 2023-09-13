@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.hateoas.*;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
@@ -52,7 +53,7 @@ public class AccessSettingsClientMock
                                              AccessSettings.DEFAULT_ROLE_SETTING,
                                              AccessSettings.MODE_SETTING)
                                      .stream()
-                                     .map(DynamicTenantSettingDto::new)
+                                     .map(DynamicTenantSetting::toDto)
                                      .collect(Collectors.toList());
     }
 

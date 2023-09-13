@@ -20,7 +20,8 @@ package fr.cnes.regards.modules.delivery.service.settings.customizer;
 
 import fr.cnes.regards.framework.gson.GsonCustomizer;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
-import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingRepositoryService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
 import fr.cnes.regards.modules.delivery.service.settings.customizers.BuildBucketCustomizer;
 import fr.cnes.regards.modules.delivery.service.settings.customizers.DeliveryBucketCustomizer;
@@ -39,16 +40,16 @@ import java.util.Optional;
  **/
 public abstract class AbstractDeliveryCustomizerTest {
 
+    protected DynamicTenantSettingService dynamicTenantSettingService;
+
     @Mock
-    protected IDynamicTenantSettingRepository settingRepository;
+    protected DynamicTenantSettingRepositoryService dynamicTenantSettingRepositoryService;
 
     @Mock
     protected Validator validator;
 
-    protected DynamicTenantSettingService dynamicTenantSettingService;
-
     @Before
-    public void init() {
+    public void init() throws EntityNotFoundException {
         // INIT
         // init gson
         GsonUtil.setGson(GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty()).create());
@@ -64,9 +65,10 @@ public abstract class AbstractDeliveryCustomizerTest {
                                                                               s3Customizer,
                                                                               buildBucketCustomizer,
                                                                               deliveryBucketCustomizer),
-                                                                      settingRepository);
+                                                                      dynamicTenantSettingRepositoryService);
         // MOCK BEHAVIOURS
         // mock setting repo
-        Mockito.when(settingRepository.save(Mockito.any())).thenAnswer(ans -> ans.getArgument(0));
+        Mockito.when(dynamicTenantSettingRepositoryService.save(Mockito.any(), Mockito.any()))
+               .thenAnswer(ans -> ans.getArgument(0));
     }
 }

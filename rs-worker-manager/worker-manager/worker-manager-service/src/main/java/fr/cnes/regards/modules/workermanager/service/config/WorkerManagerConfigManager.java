@@ -101,6 +101,11 @@ public class WorkerManagerConfigManager extends AbstractModuleManagerWithTenantS
         return errors;
     }
 
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
     private Set<WorkerConfigDto> getWorkerConfigs(Collection<ModuleConfigurationItem<?>> items) {
         return items.stream()
                     .filter(i -> WorkerConfigDto.class.isAssignableFrom(i.getKey()))

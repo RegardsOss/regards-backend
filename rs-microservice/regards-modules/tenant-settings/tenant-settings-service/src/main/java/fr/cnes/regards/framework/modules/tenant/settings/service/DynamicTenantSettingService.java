@@ -22,15 +22,18 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
-@Service
+/**
+ * Main service to handle CRUD operations on {@link DynamicTenantSetting}s.
+ */
 @RegardsTransactional
 public class DynamicTenantSettingService implements IDynamicTenantSettingService {
 
@@ -38,72 +41,91 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
 
     private final List<IDynamicTenantSettingCustomizer> dynamicTenantSettingCustomizerList;
 
-    private final IDynamicTenantSettingRepository dynamicTenantSettingRepository;
+    private final DynamicTenantSettingRepositoryService dynamicTenantSettingRepositoryService;
 
     public DynamicTenantSettingService(List<IDynamicTenantSettingCustomizer> dynamicTenantSettingCustomizerList,
-                                       IDynamicTenantSettingRepository dynamicTenantSettingRepository) {
+                                       DynamicTenantSettingRepositoryService dynamicTenantSettingRepositoryService) {
         this.dynamicTenantSettingCustomizerList = dynamicTenantSettingCustomizerList;
-        this.dynamicTenantSettingRepository = dynamicTenantSettingRepository;
+        this.dynamicTenantSettingRepositoryService = dynamicTenantSettingRepositoryService;
     }
 
     @Override
     public DynamicTenantSetting create(DynamicTenantSetting dynamicTenantSetting)
         throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         dynamicTenantSetting.setId(null);
-        IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting, false);
-        DynamicTenantSetting savedDynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
-        customizer.doRightNow(dynamicTenantSetting);
-        LOGGER.info("Created Tenant Setting {}", savedDynamicTenantSetting);
+        IDynamicTenantSettingCustomizer settingCustomizer = getCustomizer(dynamicTenantSetting);
+        checkModelValidity(settingCustomizer, dynamicTenantSetting);
+        DynamicTenantSetting savedDynamicTenantSetting = dynamicTenantSettingRepositoryService.save(dynamicTenantSetting,
+                                                                                                    null);
+        settingCustomizer.doRightNow(dynamicTenantSetting);
         return savedDynamicTenantSetting;
     }
 
     @Override
     public Optional<DynamicTenantSetting> read(String name) {
-        return dynamicTenantSettingRepository.findByName(name);
+        return dynamicTenantSettingRepositoryService.findByName(name, true);
     }
 
     @Override
     public Set<DynamicTenantSetting> readAll(Set<String> nameList) {
-        return dynamicTenantSettingRepository.findAllByNameIn(nameList);
+        return dynamicTenantSettingRepositoryService.findAllByNameIn(nameList, true);
     }
 
     @Override
     public Set<DynamicTenantSetting> readAll() {
-        return new HashSet<>(dynamicTenantSettingRepository.findAll());
+        return dynamicTenantSettingRepositoryService.findAll(true);
     }
 
     @Override
     public <T> DynamicTenantSetting update(String name, T value)
         throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
-        DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
-        if (!Objects.equals(value, dynamicTenantSetting.getValue())) {
-            dynamicTenantSetting.setValue(value);
-            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting, true);
-            dynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
-            customizer.doRightNow(dynamicTenantSetting);
-            LOGGER.info("Updated Tenant Setting {}", dynamicTenantSetting);
+        DynamicTenantSetting dynamicTenantSettingFound = dynamicTenantSettingRepositoryService.findByNameWithExceptionOnNotFound(
+            name,
+            false);
+        IDynamicTenantSettingCustomizer settingCustomizer = getCustomizer(dynamicTenantSettingFound);
+        checkAllowedUpdateOperation(settingCustomizer, dynamicTenantSettingFound);
+        DynamicTenantSetting updateDynamicTenantSetting;
+        if (!Objects.equals(value, dynamicTenantSettingFound.getValue())) {
+            updateDynamicTenantSetting = new DynamicTenantSetting(dynamicTenantSettingFound.getId(),
+                                                                  dynamicTenantSettingFound.getName(),
+                                                                  dynamicTenantSettingFound.getDescription(),
+                                                                  dynamicTenantSettingFound.getDefaultValue(),
+                                                                  value,
+                                                                  dynamicTenantSettingFound.isContainsSensitiveParameters());
+            checkModelValidity(settingCustomizer, updateDynamicTenantSetting);
+            updateDynamicTenantSetting = dynamicTenantSettingRepositoryService.save(updateDynamicTenantSetting,
+                                                                                    dynamicTenantSettingFound);
+            settingCustomizer.doRightNow(updateDynamicTenantSetting);
+        } else {
+            updateDynamicTenantSetting = dynamicTenantSettingFound;
         }
-        return dynamicTenantSetting;
+        return updateDynamicTenantSetting;
     }
 
     @Override
     public void delete(String name) throws EntityNotFoundException {
-        DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
-        dynamicTenantSettingRepository.delete(dynamicTenantSetting);
-        LOGGER.info("Deleted Tenant Setting {}", name);
+        DynamicTenantSetting dynamicTenantSetting = dynamicTenantSettingRepositoryService.findByNameWithExceptionOnNotFound(
+            name,
+            false);
+        dynamicTenantSettingRepositoryService.delete(dynamicTenantSetting);
+        LOGGER.info("Deleted tenant setting '{}'.", name);
     }
 
     @Override
     public DynamicTenantSetting reset(String name)
         throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException {
-        DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
+        DynamicTenantSetting dynamicTenantSetting = dynamicTenantSettingRepositoryService.findByNameWithExceptionOnNotFound(
+            name,
+            false);
+        IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
+        checkAllowedUpdateOperation(customizer, dynamicTenantSetting);
         if (!dynamicTenantSetting.getDefaultValue().equals(dynamicTenantSetting.getValue())) {
             dynamicTenantSetting.setValue(dynamicTenantSetting.getDefaultValue());
-            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting, true);
-            dynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
+            checkModelValidity(customizer, dynamicTenantSetting);
+            dynamicTenantSetting = dynamicTenantSettingRepositoryService.save(dynamicTenantSetting, null);
             customizer.doRightNow(dynamicTenantSetting);
         }
-        LOGGER.info("Reset Tenant Setting {}", dynamicTenantSetting);
+        LOGGER.info("Reset tenant setting '{}'.", dynamicTenantSetting.getName());
         return dynamicTenantSetting;
     }
 
@@ -111,12 +133,15 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     public boolean canUpdate(String name) {
         try {
             // we are using getCustomizer exception so we do not have to duplicate research logic
-            DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
-            getCustomizer(dynamicTenantSetting, true);
+            DynamicTenantSetting dynamicTenantSetting = dynamicTenantSettingRepositoryService.findByNameWithExceptionOnNotFound(
+                name,
+                false);
+            checkAllowedUpdateOperation(getCustomizer(dynamicTenantSetting), dynamicTenantSetting);
             return true;
         } catch (EntityInvalidException e) {
             // even if value is invalid(which is highly improbable at this point because we are looking for DB value),
             // we can update the setting
+            LOGGER.error(e.getMessage(), e);
             return true;
         } catch (EntityNotFoundException e) {
             // If this occurs it most probably means we could not find the customizer which means we could not update the parameter anyway
@@ -129,31 +154,28 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
         }
     }
 
-    private DynamicTenantSetting getDynamicTenantSetting(String name) throws EntityNotFoundException {
-        return read(name).orElseThrow(() -> new EntityNotFoundException(name, DynamicTenantSetting.class));
+    private IDynamicTenantSettingCustomizer getCustomizer(DynamicTenantSetting dynamicTenantSetting)
+        throws EntityInvalidException, EntityOperationForbiddenException, EntityNotFoundException {
+        return dynamicTenantSettingCustomizerList.stream()
+                                                 .filter(customizer -> customizer.appliesTo(dynamicTenantSetting))
+                                                 .findFirst()
+                                                 .orElseThrow(() -> new EntityNotFoundException(dynamicTenantSetting.getName(),
+                                                                                                IDynamicTenantSettingCustomizer.class));
+
     }
 
-    private IDynamicTenantSettingCustomizer getCustomizer(DynamicTenantSetting dynamicTenantSetting,
-                                                          boolean checkModification)
-        throws EntityInvalidException, EntityOperationForbiddenException, EntityNotFoundException {
-
-        IDynamicTenantSettingCustomizer settingCustomizer = dynamicTenantSettingCustomizerList.stream()
-                                                                                              .filter(customizer -> customizer.appliesTo(
-                                                                                                  dynamicTenantSetting))
-                                                                                              .findAny()
-                                                                                              .orElseThrow(() -> new EntityNotFoundException(
-                                                                                                  dynamicTenantSetting.getName(),
-                                                                                                  IDynamicTenantSettingCustomizer.class));
-
-        if (checkModification && !settingCustomizer.canBeModified(dynamicTenantSetting)) {
+    private void checkAllowedUpdateOperation(IDynamicTenantSettingCustomizer settingCustomizer,
+                                             DynamicTenantSetting dynamicTenantSetting)
+        throws EntityOperationForbiddenException {
+        if (!settingCustomizer.canBeModified(dynamicTenantSetting)) {
             throw new EntityOperationForbiddenException("Tenant Setting Modification not allowed");
         }
+    }
 
+    private void checkModelValidity(IDynamicTenantSettingCustomizer settingCustomizer,
+                                    DynamicTenantSetting dynamicTenantSetting) throws EntityInvalidException {
         if (!settingCustomizer.isValid(dynamicTenantSetting)) {
             throw new EntityInvalidException(String.format("Invalid Tenant Setting: %s", dynamicTenantSetting));
         }
-
-        return settingCustomizer;
     }
-
 }

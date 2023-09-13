@@ -64,6 +64,11 @@ public class StorageModuleManager extends AbstractModuleManagerWithTenantSetting
         return importErrors;
     }
 
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
     private Set<String> importStorageLocationConfigs(Set<StorageLocationConfiguration> storageLocationConfigs) {
         Set<String> importErrors = Sets.newHashSet();
         for (StorageLocationConfiguration conf : storageLocationConfigs) {

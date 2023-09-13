@@ -29,8 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Optional;
-
 /**
  * Test for {@link fr.cnes.regards.modules.delivery.service.settings.customizers.BuildBucketCustomizer}
  *
@@ -47,7 +45,8 @@ public class BuildBucketCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                           DeliverySettings.BUILD_BUCKET,
                                                                           "build bucket",
                                                                           DeliverySettings.DEFAULT_BUILD_BUCKET,
-                                                                          "build-bucket");
+                                                                          "build-bucket",
+                                                                          false);
         // WHEN
         DynamicTenantSetting savedBuildBucket = dynamicTenantSettingService.create(testedBuildBucket);
         // THEN
@@ -55,7 +54,8 @@ public class BuildBucketCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                             DeliverySettings.BUILD_BUCKET,
                                                                             "build bucket",
                                                                             DeliverySettings.DEFAULT_BUILD_BUCKET,
-                                                                            "build-bucket");
+                                                                            "build-bucket",
+                                                                            false);
         Assertions.assertThat((String) savedBuildBucket.getValue())
                   .as("Unexpected saved build bucket value.")
                   .isEqualTo(expectedBuildBucket.getValue());
@@ -68,7 +68,8 @@ public class BuildBucketCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                           DeliverySettings.BUILD_BUCKET,
                                                                           "build bucket",
                                                                           DeliverySettings.DEFAULT_BUILD_BUCKET,
-                                                                          null);
+                                                                          null,
+                                                                          false);
         // WHEN
         Assertions.assertThatExceptionOfType(EntityInvalidException.class)
                   .isThrownBy(() -> dynamicTenantSettingService.create(testedBuildBucket));
@@ -78,12 +79,14 @@ public class BuildBucketCustomizerTest extends AbstractDeliveryCustomizerTest {
     public void givenValidBuildBucket_whenUpdate_thenUpdated()
         throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         // GIVEN
-        Mockito.when(settingRepository.findByName(DeliverySettings.BUILD_BUCKET))
-               .thenReturn(Optional.of(new DynamicTenantSetting(1L,
-                                                                DeliverySettings.BUILD_BUCKET,
-                                                                "build bucket",
-                                                                DeliverySettings.DEFAULT_BUILD_BUCKET,
-                                                                "updated-build-bucket")));
+        Mockito.when(dynamicTenantSettingRepositoryService.findByNameWithExceptionOnNotFound(DeliverySettings.BUILD_BUCKET,
+                                                                                             false))
+               .thenReturn(new DynamicTenantSetting(1L,
+                                                    DeliverySettings.BUILD_BUCKET,
+                                                    "build bucket",
+                                                    DeliverySettings.DEFAULT_BUILD_BUCKET,
+                                                    "updated-build-bucket",
+                                                    false));
         // WHEN
         DynamicTenantSetting updatedBuildBucket = dynamicTenantSettingService.update(DeliverySettings.BUILD_BUCKET,
                                                                                      "updated-build-bucket");
@@ -92,7 +95,8 @@ public class BuildBucketCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                             DeliverySettings.BUILD_BUCKET,
                                                                             "build bucket",
                                                                             DeliverySettings.DEFAULT_BUILD_BUCKET,
-                                                                            "updated-build-bucket");
+                                                                            "updated-build-bucket",
+                                                                            false);
         Assertions.assertThat((String) updatedBuildBucket.getValue())
                   .as("Unexpected updated build bucket value")
                   .isEqualTo(expectedBuildBucket.getValue());

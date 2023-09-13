@@ -29,8 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Optional;
-
 /**
  * Test for {@link fr.cnes.regards.modules.delivery.service.settings.customizers.RequestTtlCustomizer}
  *
@@ -47,7 +45,8 @@ public class RequestTtlCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                          DeliverySettings.REQUEST_TTL_HOURS,
                                                                          "request time to live",
                                                                          DeliverySettings.DEFAULT_REQUEST_TTL_HOURS,
-                                                                         23);
+                                                                         23,
+                                                                         false);
         // WHEN
         DynamicTenantSetting savedRequestTtl = dynamicTenantSettingService.create(testedRequestTtl);
         // THEN
@@ -55,7 +54,8 @@ public class RequestTtlCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                            DeliverySettings.REQUEST_TTL_HOURS,
                                                                            "request time to live",
                                                                            DeliverySettings.DEFAULT_REQUEST_TTL_HOURS,
-                                                                           23);
+                                                                           23,
+                                                                           false);
         Assertions.assertThat((Integer) savedRequestTtl.getValue())
                   .as("Unexpected saved requestTtl value.")
                   .isEqualTo(expectedRequestTtl.getValue());
@@ -68,7 +68,8 @@ public class RequestTtlCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                          DeliverySettings.REQUEST_TTL_HOURS,
                                                                          "request time to live",
                                                                          DeliverySettings.DEFAULT_REQUEST_TTL_HOURS,
-                                                                         -1);
+                                                                         -1,
+                                                                         false);
         // WHEN
         Assertions.assertThatExceptionOfType(EntityInvalidException.class)
                   .isThrownBy(() -> dynamicTenantSettingService.create(testedRequestTtl));
@@ -78,12 +79,14 @@ public class RequestTtlCustomizerTest extends AbstractDeliveryCustomizerTest {
     public void givenValidRequestTtl_whenUpdate_thenUpdated()
         throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         // GIVEN
-        Mockito.when(settingRepository.findByName(DeliverySettings.REQUEST_TTL_HOURS))
-               .thenReturn(Optional.of(new DynamicTenantSetting(1L,
-                                                                DeliverySettings.REQUEST_TTL_HOURS,
-                                                                "request time to live",
-                                                                DeliverySettings.DEFAULT_REQUEST_TTL_HOURS,
-                                                                2)));
+        Mockito.when(dynamicTenantSettingRepositoryService.findByNameWithExceptionOnNotFound(DeliverySettings.REQUEST_TTL_HOURS,
+                                                                                             false))
+               .thenReturn(new DynamicTenantSetting(1L,
+                                                    DeliverySettings.REQUEST_TTL_HOURS,
+                                                    "request time to live",
+                                                    DeliverySettings.DEFAULT_REQUEST_TTL_HOURS,
+                                                    2,
+                                                    false));
         // WHEN
         DynamicTenantSetting updatedRequestTtl = dynamicTenantSettingService.update(DeliverySettings.REQUEST_TTL_HOURS,
                                                                                     1);
@@ -92,7 +95,8 @@ public class RequestTtlCustomizerTest extends AbstractDeliveryCustomizerTest {
                                                                            DeliverySettings.REQUEST_TTL_HOURS,
                                                                            "request time to live",
                                                                            DeliverySettings.DEFAULT_REQUEST_TTL_HOURS,
-                                                                           1);
+                                                                           1,
+                                                                           false);
         Assertions.assertThat((Integer) updatedRequestTtl.getValue())
                   .as("Unexpected updated requestTtl value.")
                   .isEqualTo(expectedRequestTtl.getValue());

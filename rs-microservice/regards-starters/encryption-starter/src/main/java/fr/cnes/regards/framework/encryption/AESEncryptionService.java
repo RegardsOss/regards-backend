@@ -48,12 +48,10 @@ public class AESEncryptionService implements IEncryptionService {
         } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException |
                  NoSuchPaddingException e) {
             //those two exception should never occur
-            LOG.error("There was an issue with encryption using Blowfish", e);
+            LOG.error("There was an issue with encryption.", e);
             throw new RsRuntimeException(e);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
-            throw new EncryptionException(String.format("\"%s\" could not be encrypted using %s",
-                                                        toEncrypt,
-                                                        AES_INSTANCE), e);
+            throw new EncryptionException("Secret value could not be encrypted.", e);
         }
     }
 
@@ -70,12 +68,10 @@ public class AESEncryptionService implements IEncryptionService {
         } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException |
                  NoSuchPaddingException e) {
             //those two exception should never occur
-            LOG.error("There was an issue with encryption using Blowfish", e);
+            LOG.error("There was an issue with encryption.", e);
             throw new RsRuntimeException(e);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
-            throw new EncryptionException(String.format("\"%s\" could not be decrypted using %s",
-                                                        toDecrypt,
-                                                        AES_INSTANCE), e);
+            throw new EncryptionException("Secret value could not be decrypted.", e);
         }
     }
 

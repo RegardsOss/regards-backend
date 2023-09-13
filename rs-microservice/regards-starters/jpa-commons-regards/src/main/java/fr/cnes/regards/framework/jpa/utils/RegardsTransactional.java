@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.jpa.utils;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.annotation.*;
@@ -25,5 +26,9 @@ public @interface RegardsTransactional {
      * Defaults to ModuleException and runtimes
      */
     @AliasFor(annotation = Transactional.class) Class<? extends Throwable>[] rollbackFor() default { ModuleException.class };
+
+    @AliasFor(annotation = Transactional.class) boolean readOnly() default false;
+
+    @AliasFor(annotation = Transactional.class) Propagation propagation() default Propagation.REQUIRED;
 
 }

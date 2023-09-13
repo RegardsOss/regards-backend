@@ -9,15 +9,15 @@ public class DynamicTenantSettingDto<T> {
 
     private String description;
 
-    private T value;
-
     private T defaultValue;
 
-    public DynamicTenantSettingDto(DynamicTenantSetting setting) {
-        this.name = setting.getName();
-        this.description = setting.getDescription();
-        this.value = setting.getValue();
-        this.defaultValue = setting.getDefaultValue();
+    private T value;
+
+    public DynamicTenantSettingDto(String name, String description, T defaultValue, T value) {
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.value = value;
     }
 
     /**

@@ -294,9 +294,9 @@ public class CacheService {
      */
     public Path getTenantCachePath() {
         return dynamicTenantSettingService.read(StorageSetting.CACHE_PATH_NAME)
+                                          .map(settingDto -> (Path) settingDto.getValue())
                                           .orElseThrow(() -> new RsRuntimeException(
-                                              "Tenant cache path has not been initialized"))
-                                          .getValue();
+                                              "Tenant cache path has not been initialized"));
     }
 
     /**
@@ -340,9 +340,9 @@ public class CacheService {
 
     private Long getMaxCacheSizeKo() {
         return dynamicTenantSettingService.read(StorageSetting.CACHE_MAX_SIZE_NAME)
+                                          .map(settingDto -> (Long) settingDto.getValue())
                                           .orElseThrow(() -> new RsRuntimeException(
-                                              "Max cache size setting has not been initialized"))
-                                          .getValue();
+                                              "Max cache size setting has not been initialized"));
     }
 
     public long getTotalCachedFiles() {

@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.access.services.rest.user.mock;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
@@ -36,7 +37,7 @@ public class StorageSettingClientMock implements IStorageSettingClient {
                                                                                    StorageSetting.RATE_LIMIT.setValue(
                                                                                        DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT))
                                                                            .stream()
-                                                                           .map(DynamicTenantSettingDto::new)
+                                                                           .map(DynamicTenantSetting::toDto)
                                                                            .collect(Collectors.toList());
         return new ResponseEntity<>(HateoasUtils.wrapList(DEFAULT_STORAGE_SETTING_STUB), HttpStatus.OK);
     }

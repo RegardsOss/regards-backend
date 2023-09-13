@@ -24,10 +24,11 @@ import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ import java.util.Set;
 public abstract class AbstractModuleManagerWithTenantSettings<S> extends AbstractModuleManager<S> {
 
     @Autowired
+    @Qualifier("dynamicTenantSettingServiceWithMask")
     private IDynamicTenantSettingService dynamicTenantSettingService;
 
     @Override
@@ -50,11 +52,9 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
-        Set<String> importErrors = new HashSet<>();
         Set<DynamicTenantSetting> dynamicTenantSettings = getConfigurationSettingsByClass(configuration,
                                                                                           DynamicTenantSetting.class);
-        importErrors.addAll(importDynamicTenantSettingsConfiguration(dynamicTenantSettings));
-        return importConfiguration(configuration, importErrors);
+        return importConfiguration(configuration, importDynamicTenantSettingsConfiguration(dynamicTenantSettings));
     }
 
     @Override
@@ -69,10 +69,15 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
      */
     private void resetDynamicTenantSettingService(Set<String> errors) {
         for (DynamicTenantSetting dynamicTenantSetting : dynamicTenantSettingService.readAll()) {
+            String settingName = dynamicTenantSetting.getName();
             try {
-                dynamicTenantSettingService.reset(dynamicTenantSetting.getName());
+                dynamicTenantSettingService.reset(settingName);
             } catch (ModuleException e) {
-                errors.add(e.getMessage());
+                String errorMsg = String.format("Could not reset dynamic setting with name '%s'. Cause: %s",
+                                                settingName,
+                                                e.getMessage());
+                getLogger().error(errorMsg, e);
+                errors.add(errorMsg);
             }
         }
     }
@@ -91,13 +96,15 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
     private Set<String> importDynamicTenantSettingsConfiguration(Set<DynamicTenantSetting> dynamicTenantSettings) {
         Set<String> errors = Sets.newHashSet();
         for (DynamicTenantSetting dynamicTenantSetting : dynamicTenantSettings) {
+            String settingName = dynamicTenantSetting.getName();
             try {
-                dynamicTenantSettingService.update(dynamicTenantSetting.getName(), dynamicTenantSetting.getValue());
+                dynamicTenantSettingService.update(settingName, dynamicTenantSetting.getValue());
             } catch (ModuleException e) {
-                String error = String.format("Failed to import dynamic tenant settings %s : %s",
-                                             dynamicTenantSetting.getName(),
-                                             e.getMessage());
-                errors.add(error);
+                String errorMsg = String.format("Failed to import dynamic tenant setting with name '%s'. Cause: %s",
+                                                settingName,
+                                                e.getMessage());
+                getLogger().error(errorMsg, e);
+                errors.add(errorMsg);
             }
         }
         return errors;
@@ -122,5 +129,7 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
     protected Set<String> resetConfiguration(Set<String> errors) {
         return errors;
     }
+
+    abstract protected Logger getLogger();
 
 }

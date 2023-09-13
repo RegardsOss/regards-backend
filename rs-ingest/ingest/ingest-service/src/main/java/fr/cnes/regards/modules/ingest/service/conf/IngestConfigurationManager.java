@@ -74,6 +74,7 @@ public class IngestConfigurationManager extends AbstractModuleManagerWithTenantS
                 try {
                     processingService.createNewChain(ipc);
                 } catch (ModuleException e) {
+                    LOGGER.error("Cannot import ingest settings.", e);
                     errors.add(String.format("Skipping import of IngestProcessingChain %s: %s",
                                              ipc.getName(),
                                              e.getMessage()));
@@ -93,5 +94,10 @@ public class IngestConfigurationManager extends AbstractModuleManagerWithTenantS
     protected Set<String> resetConfiguration(Set<String> errors) {
         // Ingest chains cannot be removed easily
         return errors;
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 }
