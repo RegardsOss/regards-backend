@@ -115,58 +115,54 @@ public final class S3FileTestUtils {
 
             Scheduler scheduler = Schedulers.newParallel(THREAD_PREFIX, 10);
             int maxBytesPerPart = MULTIPART_THRESHOLD_MB * 1024 * 1024;
-            S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
-                                                                             maxBytesPerPart,
-                                                                             MULTIPART_UPLOAD_PREFETCH);
+            try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
+                                                                                  maxBytesPerPart,
+                                                                                  MULTIPART_UPLOAD_PREFETCH)) {
 
-            return client.write(writeCmd)
-                         .flatMap(writeResult -> writeResult.matchWriteResult(Mono::just,
-                                                                              unreachable -> Mono.error(new RuntimeException(
-                                                                                  "Unreachable endpoint")),
-                                                                              failure -> Mono.error(new RuntimeException(
-                                                                                  "Write failure in S3 storage"))))
-                         .doOnError(t -> {
-                             LOGGER.error("End storing {}", request.getOriginUrl(), t);
-                         })
-                         .doOnSuccess(success -> {
-                             LOGGER.info("End storing {}", request.getOriginUrl());
-                         })
-                         .block();
+                return client.write(writeCmd)
+                             .flatMap(writeResult -> writeResult.matchWriteResult(Mono::just,
+                                                                                  unreachable -> Mono.error(new RuntimeException(
+                                                                                      "Unreachable endpoint")),
+                                                                                  failure -> Mono.error(new RuntimeException(
+                                                                                      "Write failure in S3 storage"))))
+                             .doOnError(t -> {
+                                 LOGGER.error("End storing {}", request.getOriginUrl(), t);
+                             })
+                             .doOnSuccess(success -> {
+                                 LOGGER.info("End storing {}", request.getOriginUrl());
+                             })
+                             .block();
+            }
         }));
     }
 
     public static void deleteAllFilesFromRoot(StorageConfig s3Server, String rootPath) {
-        S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
-        StorageCommandResult.DeleteResult result = client.deleteWithPrefix(StorageCommand.delete(s3Server,
-                                                                                                 new StorageCommandID("",
-                                                                                                                      UUID.randomUUID()),
-                                                                                                 rootPath))
-                                                         .flatMap(r -> r.matchDeleteResult(Mono::just,
-                                                                                           unreachable -> Mono.error(new RuntimeException(
-                                                                                               String.format(
-                                                                                                   "Unreachable [endpoint: %s] : %s [bucket: %s]",
-                                                                                                   s3Server.getEndpoint(),
-                                                                                                   unreachable.getThrowable()
-                                                                                                              .getMessage(),
-                                                                                                   s3Server.getBucket()))),
-                                                                                           failure -> Mono.error(new RuntimeException(
-                                                                                               String.format(
-                                                                                                   "Delete failure [bucket: %s] [endpoint: %s]",
-                                                                                                   s3Server.getBucket(),
-                                                                                                   s3Server.getEndpoint())))))
+        try (S3HighLevelReactiveClient client = getS3HighLevelReactiveClient()) {
+            client.deleteWithPrefix(StorageCommand.delete(s3Server,
+                                                          new StorageCommandID("", UUID.randomUUID()),
+                                                          rootPath))
+                  .flatMap(r -> r.matchDeleteResult(Mono::just,
+                                                    unreachable -> Mono.error(new RuntimeException(String.format(
+                                                        "Unreachable [endpoint: %s] : %s [bucket: %s]",
+                                                        s3Server.getEndpoint(),
+                                                        unreachable.getThrowable().getMessage(),
+                                                        s3Server.getBucket()))),
+                                                    failure -> Mono.error(new RuntimeException(String.format(
+                                                        "Delete failure [bucket: %s] [endpoint: %s]",
+                                                        s3Server.getBucket(),
+                                                        s3Server.getEndpoint())))))
 
-                                                         .doOnError(t -> LOGGER.error(
-                                                             "Failed [bucket: {}] to delete file {} [endpoint: {}]:",
-                                                             s3Server.getBucket(),
-                                                             rootPath,
-                                                             s3Server.getEndpoint(),
-                                                             t))
-                                                         .doOnSuccess(success -> LOGGER.info(
-                                                             "Success [bucket: {}] end deleting of file {} [endpoint: {}]",
-                                                             s3Server.getBucket(),
-                                                             rootPath,
-                                                             s3Server.getEndpoint()))
-                                                         .block();
+                  .doOnError(t -> LOGGER.error("Failed [bucket: {}] to delete file {} [endpoint: {}]:",
+                                               s3Server.getBucket(),
+                                               rootPath,
+                                               s3Server.getEndpoint(),
+                                               t))
+                  .doOnSuccess(success -> LOGGER.info("Success [bucket: {}] end deleting of file {} [endpoint: {}]",
+                                                      s3Server.getBucket(),
+                                                      rootPath,
+                                                      s3Server.getEndpoint()))
+                  .block();
+        }
     }
 
     private static Option<Long> entrySize(FileStorageRequest request) {

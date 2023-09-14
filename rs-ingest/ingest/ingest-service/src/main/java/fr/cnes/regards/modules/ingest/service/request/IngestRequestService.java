@@ -58,6 +58,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
@@ -521,6 +522,8 @@ public class IngestRequestService implements IIngestRequestService {
         Map<IngestProcessingChain, Set<AIPEntity>> postProcessToSchedule = Maps.newHashMap();
         List<IngestRequestEvent> listIngestRequestEvents = new ArrayList<>();
 
+        Set<String> aipIdsToDelete = new HashSet<>();
+
         for (IngestRequest request : requests) {
 
             List<AIPEntity> aips = request.getAips();
@@ -529,10 +532,11 @@ public class IngestRequestService implements IIngestRequestService {
             for (AIPEntity aipEntity : aips) {
                 aipEntity.setState(AIPState.STORED);
                 // Find if this is the last version and set last flag accordingly
-                aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode(), lastVersions);
+                aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode(), lastVersions)
+                          .ifPresent(aipIdsToDelete::add);
                 aipService.save(aipEntity);
 
-                // Manage post processing
+                // Manage post-processing
                 Optional<IngestProcessingChain> chain = chains.get(request.getMetadata().getIngestChain());
                 if (chain.isPresent() && chain.get().getPostProcessingPlugin().isPresent()) {
                     if (postProcessToSchedule.get(chain.get()) != null) {
@@ -567,6 +571,11 @@ public class IngestRequestService implements IIngestRequestService {
                             request.getRequestId(),
                             request.getId());
             }
+        }
+
+        // Run deletion of replaced aips versions
+        if (!aipIdsToDelete.isEmpty()) {
+            aipService.deleteByIds(aipIdsToDelete, SessionDeletionMode.BY_STATE);
         }
 
         // NOTIFICATIONS

@@ -18,10 +18,14 @@
  */
 package fr.cnes.regards.framework.s3.utils;
 
+import fr.cnes.regards.framework.s3.client.GlacierFileStatus;
+import fr.cnes.regards.framework.s3.client.S3AsyncClientReactorWrapper;
 import fr.cnes.regards.framework.s3.domain.S3Server;
 import fr.cnes.regards.framework.s3.domain.StorageConfig;
 import fr.cnes.regards.framework.s3.exception.PatternSyntaxS3Exception;
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.StorageClass;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,6 +102,84 @@ public class S3ServerUtilsTest {
         assertThrows(PatternSyntaxS3Exception.class, () -> {
             S3ServerUtils.getKeyAndStorage(url, s3Server);
         });
+    }
+
+    @Test
+    public void test_head_restore_response() {
+
+        // Given head response indicates that restore request is not running and restoration is not expired
+        HeadObjectResponse responseMock = HeadObjectResponse.builder()
+                                                            .storageClass(StorageClass.DEEP_ARCHIVE)
+                                                            .restore("ongoing-request=\"False\", "
+                                                                     + "expiry-date=\"Wed, 07 Sep "
+                                                                     + "2033 09:45:14 GMT\"")
+                                                            .build();
+        // Then
+        assertEquals(GlacierFileStatus.AVAILABLE,
+                     S3AsyncClientReactorWrapper.checkHeadRestoreState(responseMock,
+                                                                       StorageClass.STANDARD.name(),
+                                                                       "file_key",
+                                                                       "bucket"));
+
+        // Given head response indicates that restore request is running
+        responseMock = HeadObjectResponse.builder()
+                                         .storageClass(StorageClass.DEEP_ARCHIVE)
+                                         .restore("ongoing-request=\"True\"")
+                                         .build();
+        // Then
+        assertEquals(GlacierFileStatus.RESTORE_PENDING,
+                     S3AsyncClientReactorWrapper.checkHeadRestoreState(responseMock,
+                                                                       StorageClass.STANDARD.name(),
+                                                                       "file_key",
+                                                                       "bucket"));
+
+        // Given head response indicates that restore request is not running and restoration is expired
+        responseMock = HeadObjectResponse.builder()
+                                         .storageClass(StorageClass.DEEP_ARCHIVE)
+                                         .restore("ongoing-request=\"False\", "
+                                                  + "expiry-date=\"Sat, 07 Sep "
+                                                  + "2019 "
+                                                  + "09:45:14 GMT\"")
+                                         .build();
+        // Then
+        assertEquals(GlacierFileStatus.EXPIRED,
+                     S3AsyncClientReactorWrapper.checkHeadRestoreState(responseMock,
+                                                                       StorageClass.STANDARD.name(),
+                                                                       "file_key",
+                                                                       "bucket"));
+
+        // Given head response indicates that file stored on glacier storage class and no restoration request exists
+        responseMock = HeadObjectResponse.builder().storageClass(StorageClass.DEEP_ARCHIVE).build();
+        // Then
+        assertEquals(GlacierFileStatus.NOT_AVAILABLE,
+                     S3AsyncClientReactorWrapper.checkHeadRestoreState(responseMock,
+                                                                       StorageClass.STANDARD.name(),
+                                                                       "file_key",
+                                                                       "bucket"));
+
+        // Given head response indicates that file is stored on standard class (no need restoration)
+        responseMock = HeadObjectResponse.builder().storageClass(StorageClass.STANDARD).build();
+        // Then
+        assertEquals(GlacierFileStatus.AVAILABLE,
+                     S3AsyncClientReactorWrapper.checkHeadRestoreState(responseMock,
+                                                                       StorageClass.STANDARD.name(),
+                                                                       "file_key",
+                                                                       "bucket"));
+
+        // Given head response with invalid date format
+        responseMock = HeadObjectResponse.builder()
+                                         .storageClass(StorageClass.DEEP_ARCHIVE)
+                                         .restore("ongoing-request=\"False\", "
+                                                  + "expiry-date=\"Sat, Sep 07"
+                                                  + "2019 "
+                                                  + "09:45:14 GMT\"")
+                                         .build();
+        // Then
+        assertEquals(GlacierFileStatus.NOT_AVAILABLE,
+                     S3AsyncClientReactorWrapper.checkHeadRestoreState(responseMock,
+                                                                       StorageClass.STANDARD.name(),
+                                                                       "file_key",
+                                                                       "bucket"));
     }
 
     private void verify(S3ServerUtils.KeyAndStorage keyAndStorage, String pathFile, StorageConfig storageConfig) {

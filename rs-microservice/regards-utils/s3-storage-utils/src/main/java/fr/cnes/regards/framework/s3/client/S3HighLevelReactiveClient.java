@@ -63,7 +63,7 @@ import java.util.logging.Level;
 import static fr.cnes.regards.framework.s3.utils.FluxByteBufferHarmonizer.harmonize;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class S3HighLevelReactiveClient {
+public class S3HighLevelReactiveClient implements AutoCloseable {
 
     private static final Logger LOGGER = getLogger(S3HighLevelReactiveClient.class);
 
@@ -156,10 +156,10 @@ public class S3HighLevelReactiveClient {
                                                                                                           t)));
     }
 
-    public Mono<Boolean> isStandardStorageClass(StorageConfig config,
-                                                String key,
-                                                @Nullable String standardStorageClass) {
-        return getClient(config).isStandardStorageClass(config.getBucket(), key, standardStorageClass);
+    public Mono<GlacierFileStatus> isFileAvailable(StorageConfig config,
+                                                   String key,
+                                                   @Nullable String standardStorageClass) {
+        return getClient(config).isFileAvailable(config.getBucket(), key, standardStorageClass);
     }
 
     public Mono<Optional<String>> eTag(Check checkCmd) {
@@ -477,5 +477,10 @@ public class S3HighLevelReactiveClient {
 
     }
 
+    @Override
+    public void close() {
+        this.scheduler.dispose();
+        configManagers.asMap().forEach((key, value) -> value.close());
+    }
 }
 

@@ -52,6 +52,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -159,10 +160,11 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void handleVersioning(AIPEntity aipEntity,
-                                 VersioningMode versioningMode,
-                                 Map<String, AIPEntity> lastVersions) {
+    public Optional<String> handleVersioning(AIPEntity aipEntity,
+                                             VersioningMode versioningMode,
+                                             Map<String, AIPEntity> lastVersions) {
 
+        Optional<String> aipIdToDelete = Optional.empty();
         // lets get the old last version
         AIPEntity dbLatest = lastVersions.get(aipEntity.getProviderId());
 
@@ -186,17 +188,24 @@ public class AIPService implements IAIPService {
             // But in case it is REPLACE...
             if (versioningMode == VersioningMode.REPLACE) {
                 sessionNotifier.incrementProductReplace(aipEntity);
-                OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
                 if (aipEntity.isLast()) {
                     // we are the last aip so we need to delete the old latest
-                    dto.withAipIdsIncluded(List.of(dbLatest.getAipId()));
+                    aipIdToDelete = Optional.of(dbLatest.getAipId());
                 } else {
                     //we are not the last aip but we have been added at the same time than the latest, so we need to be removed
-                    dto.withAipIdsIncluded(List.of(aipEntity.getAipId()));
+                    aipIdToDelete = Optional.of(aipEntity.getAipId());
                 }
-                oaisDeletionRequestService.registerOAISDeletionCreator(dto);
             }
         }
+        return aipIdToDelete;
+    }
+
+    @Override
+    public void deleteByIds(Collection<String> aipIdsToDelete, SessionDeletionMode mode) {
+        Assert.notEmpty(aipIdsToDelete, "list of aips to delete should not be empty");
+        OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(mode);
+        dto.withAipIdsIncluded(aipIdsToDelete);
+        oaisDeletionRequestService.registerOAISDeletionCreator(dto);
     }
 
     @Override

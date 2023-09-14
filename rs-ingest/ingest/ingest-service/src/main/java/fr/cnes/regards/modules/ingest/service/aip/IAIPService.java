@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -132,7 +133,15 @@ public interface IAIPService {
 
     Set<AIPEntity> findLastByProviderIds(Collection<String> providerIds);
 
-    void handleVersioning(AIPEntity aipEntity,
-                          VersioningMode versioningMode,
-                          Map<String, AIPEntity> currentLatestPerProviderId);
+    /**
+     * Returns entity id to delete for replace mode after version incrementation if any.
+     */
+    Optional<String> handleVersioning(AIPEntity aipEntity,
+                                      VersioningMode versioningMode,
+                                      Map<String, AIPEntity> currentLatestPerProviderId);
+
+    /**
+     * Schedule deletion job for given ids.
+     */
+    void deleteByIds(Collection<String> aipIdsToDelete, SessionDeletionMode mode);
 }
