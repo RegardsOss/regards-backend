@@ -46,8 +46,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * This post processing plugin allows to optionally :
@@ -204,31 +204,40 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
         if (ackFilePath == null) {
             return false;
         }
-        boolean success = true;
+        boolean success = false;
+        int maxLoop = 30;
         int loopCount = 0;
         do {
             try {
                 if (loopCount > 0) {
                     // Hack to handle possible nfs write error of file on disk, retry ack write with time delay
                     // between each try.
-                    Thread.sleep(loopCount * 5_000L);
+                    Thread.sleep(loopCount * 500L);
                 }
                 // Create acknowledgement directory (if necessary)
-                Files.createDirectories(ackFilePath.getParent());
+                if (!Files.exists(ackFilePath.getParent())) {
+                    Files.createDirectories(ackFilePath.getParent());
+                }
                 // Create acknowledgement
                 Files.createFile(ackFilePath);
+                success = true;
             } catch (FileAlreadyExistsException e) {
                 LOGGER.warn(e.getMessage(), e);
-            } catch (IOException | InterruptedException e) {
+            } catch (InterruptedException e) {
+                loopCount = maxLoop;
+            } catch (IOException e) {
                 String msg = String.format("%sCannot create acknowledgement for  file \"%s\" because %s",
                                            loopCount > 0 ? "[Retry] " : "",
                                            ackFilePath,
                                            e.getClass().getSimpleName());
-                LOGGER.warn(msg, e);
-                success = false;
+                if (loopCount == maxLoop) {
+                    LOGGER.warn(msg, e);
+                } else {
+                    LOGGER.debug(msg);
+                }
             }
             loopCount++;
-        } while (!success && loopCount <= 3);
+        } while (!success && loopCount <= maxLoop);
         return success;
     }
 
