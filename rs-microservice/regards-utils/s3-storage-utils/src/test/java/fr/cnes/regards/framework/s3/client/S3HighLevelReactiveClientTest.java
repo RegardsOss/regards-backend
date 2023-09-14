@@ -10,10 +10,7 @@ import fr.cnes.regards.framework.s3.domain.StorageEntry;
 import io.vavr.Tuple;
 import io.vavr.control.Option;
 import org.apache.http.HttpHeaders;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Flux;
@@ -137,6 +134,11 @@ public class S3HighLevelReactiveClientTest {
                               .retryBackOffMaxDuration(2)
                               .build();
         client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
+    }
+
+    @After
+    public void dispose() throws Exception {
+        client.close();
     }
 
     @Test

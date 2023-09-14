@@ -145,36 +145,33 @@ public final class S3BucketTestUtils {
 
         Scheduler scheduler = Schedulers.newParallel(THREAD_PREFIX, 10);
         int maxBytesPerPart = MULTIPART_THRESHOLD_MB * 1024 * 1024;
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
-                                                                         maxBytesPerPart,
-                                                                         MULTIPART_UPLOAD_PREFETCH);
+        StorageCommandResult.WriteResult result;
+        try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
+                                                                              maxBytesPerPart,
+                                                                              MULTIPART_UPLOAD_PREFETCH)) {
 
-        StorageCommandResult.WriteResult result = client.write(StorageCommand.write(storageConfig,
-                                                                                    cmdId,
-                                                                                    entryKey,
-                                                                                    entry,
-                                                                                    checksum)).block();
-        if (result == null) {
-            throw new S3ClientException(String.format("Invalid S3 write command result [bucket: %s] [endpoint: %s]",
-                                                      s3Server.getBucket(),
-                                                      s3Server.getEndpoint()));
+            result = client.write(StorageCommand.write(storageConfig, cmdId, entryKey, entry)).block();
+            if (result == null) {
+                throw new S3ClientException(String.format("Invalid S3 write command result [bucket: %s] [endpoint: %s]",
+                                                          s3Server.getBucket(),
+                                                          s3Server.getEndpoint()));
+            }
+            result.matchWriteResult(success -> {
+                LOGGER.info("Success [bucket: {}] end writing of file {} [endpoint: {}]",
+                            s3Server.getBucket(),
+                            sourceFile,
+                            s3Server.getEndpoint());
+                return true;
+            }, unreachableStorage -> {
+                throw new S3ClientException(String.format("Unreachable storage [bucket: %s] [endpoint: %s]",
+                                                          s3Server.getBucket(),
+                                                          s3Server.getEndpoint()));
+            }, failure -> {
+                throw new S3ClientException(String.format("Write failure [bucket: %s] [endpoint: %s]",
+                                                          s3Server.getBucket(),
+                                                          s3Server.getEndpoint()));
+            });
         }
-        result.matchWriteResult(success -> {
-            LOGGER.info("Success [bucket: {}] end writing of file {} [endpoint: {}]",
-                        s3Server.getBucket(),
-                        sourceFile,
-                        s3Server.getEndpoint());
-            return true;
-        }, unreachableStorage -> {
-            throw new S3ClientException(String.format("Unreachable storage [bucket: %s] [endpoint: %s]",
-                                                      s3Server.getBucket(),
-                                                      s3Server.getEndpoint()));
-        }, failure -> {
-            throw new S3ClientException(String.format("Write failure [bucket: %s] [endpoint: %s]",
-                                                      s3Server.getBucket(),
-                                                      s3Server.getEndpoint()));
-        });
-
     }
 
     public static boolean isPresent(String sourceFile, String rootPath, S3Server s3Server) {
@@ -186,12 +183,13 @@ public final class S3BucketTestUtils {
 
         Scheduler scheduler = Schedulers.newParallel(THREAD_PREFIX, 10);
         int maxBytesPerPart = MULTIPART_THRESHOLD_MB * 1024 * 1024;
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
-                                                                         maxBytesPerPart,
-                                                                         MULTIPART_UPLOAD_PREFETCH);
+        StorageCommandResult.CheckResult result;
+        try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
+                                                                              maxBytesPerPart,
+                                                                              MULTIPART_UPLOAD_PREFETCH)) {
 
-        StorageCommandResult.CheckResult result = client.check(StorageCommand.check(storageConfig, cmdId, entryKey))
-                                                        .block();
+            result = client.check(StorageCommand.check(storageConfig, cmdId, entryKey)).block();
+        }
         if (result == null) {
             throw new S3ClientException(String.format("Invalid S3 write command result [bucket: %s] [endpoint: %s]",
                                                       s3Server.getBucket(),
@@ -203,7 +201,7 @@ public final class S3BucketTestUtils {
                                                       s3Server.getEndpoint()));
         });
     }
-
+    
     private static StorageConfig buildStorageConfiguration(String rootPath, S3Server s3Server) {
         return StorageConfig.builder(s3Server)
                             .rootPath(rootPath)

@@ -80,109 +80,120 @@ public class S3HighLevelReactiveClientIT {
                                             .rootPath(rootPath)
                                             .build();
 
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10);
+        try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10)) {
+            Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
+                                                            new DefaultDataBufferFactory(),
+                                                            1024).map(DataBuffer::asByteBuffer);
+            StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
 
-        Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
-                                                        new DefaultDataBufferFactory(),
-                                                        1024).map(DataBuffer::asByteBuffer);
-        StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
+            String checksum = "706126bf6d8553708227dba90694e81c";
 
-        String checksum = "706126bf6d8553708227dba90694e81c";
+            String entryKey = config.entryKey("small.txt");
+            long size = 427L;
+            StorageEntry entry = StorageEntry.builder()
+                                             .checksum(Option.of(Tuple.of("MD5", checksum)))
+                                             .config(config)
+                                             .size(Option.some(size))
+                                             .fullPath(entryKey)
+                                             .data(buffers)
+                                             .build();
 
-        String entryKey = config.entryKey("small.txt");
-        long size = 427L;
-        StorageEntry entry = StorageEntry.builder()
-                                         .checksum(Option.of(Tuple.of("MD5", checksum)))
-                                         .config(config)
-                                         .size(Option.some(size))
-                                         .fullPath(entryKey)
-                                         .data(buffers)
-                                         .build();
+            client.check(StorageCommand.check(config, cmdId, entryKey)).block().matchCheckResult(present -> {
+                fail("Should be absent");
+                return false;
+            }, absent -> true, unreachableStorage -> {
+                fail("s3 unreachable");
+                return false;
+            });
 
-        client.check(StorageCommand.check(config, cmdId, entryKey)).block().matchCheckResult(present -> {
-            fail("Should be absent");
-            return false;
-        }, absent -> true, unreachableStorage -> {
-            fail("s3 unreachable");
-            return false;
-        });
+            client.write(StorageCommand.write(config, cmdId, entryKey, entry)).block().matchWriteResult(success -> {
+                assertThat(success.getSize()).isEqualTo(size);
+                return true;
+            }, unreachableStorage -> {
+                fail("s3 unreachable");
+                return false;
+            }, failure -> {
+                fail(failure.toString());
+                return false;
+            });
 
-        client.write(StorageCommand.write(config, cmdId, entryKey, entry, checksum))
-              .block()
-              .matchWriteResult(success -> {
-                  assertThat(success.getSize()).isEqualTo(size);
-                  assertThat(success.getChecksum()).isEqualTo(checksum);
-                  return true;
-              }, unreachableStorage -> {
-                  fail("s3 unreachable");
-                  return false;
-              }, failure -> {
-                  fail(failure.toString());
-                  return false;
-              });
+            client.write(StorageCommand.write(config, cmdId, entryKey, entry, checksum))
+                  .block()
+                  .matchWriteResult(success -> {
+                      assertThat(success.getSize()).isEqualTo(size);
+                      assertThat(success.getChecksum()).isEqualTo(checksum);
+                      return true;
+                  }, unreachableStorage -> {
+                      fail("s3 unreachable");
+                      return false;
+                  }, failure -> {
+                      fail(failure.toString());
+                      return false;
+                  });
 
-        client.check(StorageCommand.check(config, cmdId, entryKey))
-              .block()
-              .matchCheckResult(present -> true, absent -> {
-                  fail("Should be present");
-                  return false;
-              }, unreachableStorage -> {
-                  fail("s3 unreachable");
-                  return false;
-              });
+            Optional<String> eTag = client.eTag(StorageCommand.check(config, cmdId, entryKey)).block();
+            Assert.assertTrue("Missing etag property", eTag.isPresent());
+            Assert.assertEquals("Invalid etag. Does not match expected checksum", checksum, eTag.get());
 
-        Optional<String> eTag = client.eTag(StorageCommand.check(config, cmdId, entryKey)).block();
-        Assert.assertTrue("Missing etag property", eTag.isPresent());
-        Assert.assertEquals("Invalid etag. Does not match expected checksum", checksum, eTag.get());
+            Optional<Long> contentLength = client.contentLength(StorageCommand.check(config, cmdId, entryKey)).block();
+            Assert.assertTrue("Missing contentLength property", contentLength.isPresent());
+            Assert.assertEquals("Invalid contentLength. Does not match expected contentLength",
+                                size,
+                                contentLength.get().longValue());
 
-        Optional<Long> contentLength = client.contentLength(StorageCommand.check(config, cmdId, entryKey)).block();
-        Assert.assertTrue("Missing contentLength property", contentLength.isPresent());
-        Assert.assertEquals("Invalid contentLength. Does not match expected contentLength",
-                            size,
-                            contentLength.get().longValue());
+            client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
+                pipe.getEntry().doOnNext(e -> LOGGER.info("entry: {}", readBytes(e))).block();
+                return true;
+            }, unreachableStorage -> {
+                fail("s3 unreachable");
+                return false;
+            }, failure -> {
+                fail(failure.toString());
+                return false;
+            });
 
-        client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
-            pipe.getEntry().doOnNext(e -> {
-                byte[] readContent = readBytes(e);
-                LOGGER.info("entry: {}", readContent.length);
-                assertThat(readContent).hasSize((int) size);
+            client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
+                pipe.getEntry().doOnNext(e -> {
+                    byte[] readContent = readBytes(e);
+                    LOGGER.info("entry: {}", readContent.length);
+                    assertThat(readContent).hasSize((int) size);
 
-                MessageDigest readDigest = null;
-                try {
-                    readDigest = MessageDigest.getInstance("MD5");
-                } catch (NoSuchAlgorithmException ex) {
-                    fail();
-                }
-                readDigest.update(readContent);
-                assertThat(BytesConverterUtils.bytesToHex(readDigest.digest())).isEqualTo(checksum);
-            }).block();
-            return true;
-        }, unreachableStorage -> {
-            fail("s3 unreachable");
-            return false;
-        }, failure -> {
-            fail(failure.toString());
-            return false;
-        });
+                    MessageDigest readDigest = null;
+                    try {
+                        readDigest = MessageDigest.getInstance("MD5");
+                    } catch (NoSuchAlgorithmException ex) {
+                        fail();
+                    }
+                    readDigest.update(readContent);
+                    assertThat(BytesConverterUtils.bytesToHex(readDigest.digest())).isEqualTo(checksum);
+                }).block();
+                return true;
+            }, unreachableStorage -> {
+                fail("s3 unreachable");
+                return false;
+            }, failure -> {
+                fail(failure.toString());
+                return false;
+            });
 
-        client.delete(StorageCommand.delete(config, cmdId, entryKey))
-              .block()
-              .matchDeleteResult(success -> true, unreachable -> {
-                  fail("Delete failed: Unreachable");
-                  return false;
-              }, failure -> {
-                  fail("Delete failed");
-                  return false;
-              });
+            client.delete(StorageCommand.delete(config, cmdId, entryKey))
+                  .block()
+                  .matchDeleteResult(success -> true, unreachable -> {
+                      fail("Delete failed: Unreachable");
+                      return false;
+                  }, failure -> {
+                      fail("Delete failed");
+                      return false;
+                  });
 
-        client.check(StorageCommand.check(config, cmdId, entryKey)).block().matchCheckResult(present -> {
-            fail("Should be absent");
-            return false;
-        }, absent -> true, unreachableStorage -> {
-            fail("s3 unreachable");
-            return false;
-        });
-
+            client.check(StorageCommand.check(config, cmdId, entryKey)).block().matchCheckResult(present -> {
+                fail("Should be absent");
+                return false;
+            }, absent -> true, unreachableStorage -> {
+                fail("s3 unreachable");
+                return false;
+            });
+        }
     }
 
     @Test
@@ -380,7 +391,6 @@ public class S3HighLevelReactiveClientIT {
             fail("s3 unreachable");
             return false;
         });
-
     }
 
     @Test

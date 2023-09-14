@@ -61,6 +61,13 @@ public final class DownloadUtils {
 
     public static final int PIPE_SIZE = 1024 * 10;
 
+    public static final int CLIENT_THREAD_CAP = 100;
+
+    /**
+     * Client singleton for usage in the DownloadUtils
+     */
+    private static S3HighLevelReactiveClient client;
+
     private DownloadUtils() {
     }
 
@@ -150,6 +157,7 @@ public final class DownloadUtils {
         StorageCommandID cmdId = new StorageCommandID(key, UUID.randomUUID());
         StorageCommand.Check check = StorageCommand.check(storageConfig, cmdId, key);
         return client.contentLength(check).block().orElseThrow(FileNotFoundException::new); // NOSONAR impossible npe
+
     }
 
     /**
@@ -333,10 +341,9 @@ public final class DownloadUtils {
     public static InputStream getInputStreamFromS3Source(String entryKey,
                                                          StorageConfig storageConfig,
                                                          StorageCommandID cmdId) throws FileNotFoundException {
-        S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
-
-        StorageCommand.Read readCmd = StorageCommand.read(storageConfig, cmdId, entryKey);
         try {
+            S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
+            StorageCommand.Read readCmd = StorageCommand.read(storageConfig, cmdId, entryKey);
             return client.read(readCmd)
                          .flatMap(readResult -> readResult.matchReadResult(r -> toInputStream(r),
                                                                            unreachable -> Mono.error(new S3ClientException(
@@ -359,14 +366,19 @@ public final class DownloadUtils {
     }
 
     /**
-     * Build the s3 client
+     * Build the s3 client if needed
      *
      * @return the s3 client
      */
-    private static S3HighLevelReactiveClient getS3HighLevelReactiveClient() {
-        Scheduler scheduler = Schedulers.newParallel("s3-reactive-client", 10);
-        int maxBytesPerPart = 5 * 1024 * 1024;
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
+    private synchronized static S3HighLevelReactiveClient getS3HighLevelReactiveClient() {
+        if (client == null) {
+            Scheduler scheduler = Schedulers.newBoundedElastic(CLIENT_THREAD_CAP,
+                                                               Integer.MAX_VALUE,
+                                                               "s3-download-utils-reactive-client",
+                                                               5);
+            int maxBytesPerPart = 5 * 1024 * 1024;
+            client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
+        }
         return client;
     }
 
