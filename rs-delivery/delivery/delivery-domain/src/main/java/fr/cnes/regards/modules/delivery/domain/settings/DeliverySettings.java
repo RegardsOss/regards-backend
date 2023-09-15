@@ -68,7 +68,8 @@ public final class DeliverySettings {
 
     public static final DynamicTenantSetting S3_SERVER_SETTING = new DynamicTenantSetting(S3_SERVER,
                                                                                           "S3 server to place orders.",
-                                                                                          DEFAULT_S3_SERVER);
+                                                                                          DEFAULT_S3_SERVER,
+                                                                                          true);
 
     public static final DynamicTenantSetting BUILD_BUCKET_SETTING = new DynamicTenantSetting(BUILD_BUCKET,
                                                                                              "Temporary bucket on which available files will "

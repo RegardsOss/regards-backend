@@ -75,13 +75,13 @@ public class DeliveryS3ManagerService {
         String s3DeliveryBucket = settingService.getValue(DeliverySettings.DELIVERY_BUCKET);
 
         try {
-            return StorageConfig.builder(new URI(s3Config.scheme(),
+            return StorageConfig.builder(new URI(s3Config.getScheme(),
                                                  null,
-                                                 s3Config.host(),
-                                                 s3Config.port(),
+                                                 s3Config.getHost(),
+                                                 s3Config.getPort(),
                                                  null,
                                                  null,
-                                                 null).toString(), s3Config.region(), s3Config.key(), s3Config.secret())
+                                                 null).toString(), s3Config.getRegion(), s3Config.getKey(), s3Config.getSecret())
                                 .rootPath(deliveryRoot)
                                 .bucket(s3DeliveryBucket)
                                 .build();
