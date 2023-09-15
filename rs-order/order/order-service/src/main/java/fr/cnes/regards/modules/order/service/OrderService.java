@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -49,10 +50,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -189,8 +190,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public Page<Order> searchOrders(SearchRequestParameters filters, Pageable pageRequest) {
-        return orderRepository.findAll(new RequestSpecificationsBuilder().withParameters(filters).build(),
-                                             pageRequest);
+        return orderRepository.findAll(new RequestSpecificationsBuilder().withParameters(filters).build(), pageRequest);
     }
 
     @Override
@@ -461,7 +461,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public boolean isActionAvailable(long orderId, Action action) {
-        return StringUtils.isEmpty(getErrorMessageOnAction(orderRepository.findSimpleById(orderId), action));
+        return StringUtils.isBlank(getErrorMessageOnAction(orderRepository.findSimpleById(orderId), action));
     }
 
     @Override
@@ -479,7 +479,7 @@ public class OrderService implements IOrderService {
             throw new EntityNotFoundException(orderId, Order.class);
         }
         String message = getErrorMessageOnAction(order, action);
-        if (!StringUtils.isEmpty(message)) {
+        if (!StringUtils.isBlank(message)) {
             throw action.getException(message);
         }
     }
@@ -538,6 +538,19 @@ public class OrderService implements IOrderService {
             }
         }
         return message;
+    }
+
+    public List<Order> findByCorrelationIds(List<String> correlationIds) {
+        return orderRepository.findByCorrelationIdIn(correlationIds);
+    }
+
+    public void updateErrorWithMessageIfNecessary(Long orderId, @Nullable String msg) {
+        Order order = orderRepository.findSimpleById(orderId);
+
+        order.setStatus(OrderStatus.ERROR);
+        order.setMessage(msg);
+
+        orderRepository.save(order);
     }
 
     @AllArgsConstructor

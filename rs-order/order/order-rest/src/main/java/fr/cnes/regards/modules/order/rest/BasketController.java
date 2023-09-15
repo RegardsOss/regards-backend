@@ -71,7 +71,7 @@ public class BasketController implements IResourceController<BasketDto> {
     public static final String ORDER_BASKET = "/order/basket";
 
     public static final String DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS = "/dataset/{datasetSelectionId}/updateFileFilters";
-    
+
     private final IResourceService resourceService;
 
     private final IBasketService basketService;
@@ -97,8 +97,11 @@ public class BasketController implements IResourceController<BasketDto> {
     public ResponseEntity<EntityModel<BasketDto>> addSelection(@Valid @RequestBody
                                                                BasketSelectionRequest basketSelectionRequest)
         throws TooManyItemsSelectedInBasketException, EmptySelectionException, CatalogSearchException {
+
         Basket basket = basketService.findOrCreate(authResolver.getUser());
+
         basket = basketService.addSelection(basket.getId(), basketSelectionRequest);
+
         return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(basket)));
     }
 

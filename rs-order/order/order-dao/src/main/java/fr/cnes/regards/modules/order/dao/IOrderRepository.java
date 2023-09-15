@@ -56,6 +56,8 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     Order findSimpleById(Long id);
 
+    List<Order> findByCorrelationIdIn(List<String> correlationIds);
+
     /**
      * Find owner by orderId
      */

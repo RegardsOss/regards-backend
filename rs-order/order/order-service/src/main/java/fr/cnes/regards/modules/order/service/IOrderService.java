@@ -27,10 +27,12 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.Nullable;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface IOrderService {
@@ -141,7 +143,8 @@ public interface IOrderService {
     void resume(Long id) throws ModuleException;
 
     /**
-     * Delete an order. Order must be PAUSED and effectiveley paused (ie all associated jobs must be compatible with a
+     * Delete an order (set only the {@link OrderStatus.DELETED} status). Order must be PAUSED and effectiveley paused (ie all associated
+     * jobs must be compatible with a
      * PAUSED status (not running nor planned to be run))
      * Only associated data files are removed from database (stats are still available)
      */
@@ -182,4 +185,8 @@ public interface IOrderService {
      * @return false if none of these conditions are validated
      */
     boolean hasCurrentUserAccessTo(String owner);
+
+    List<Order> findByCorrelationIds(List<String> correlationIds);
+
+    void updateErrorWithMessageIfNecessary(Long orderId, @Nullable String msg);
 }

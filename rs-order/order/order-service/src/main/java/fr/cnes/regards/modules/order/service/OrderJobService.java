@@ -28,10 +28,13 @@ import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
+import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
+import fr.cnes.regards.modules.order.service.request.CancelOrderJob;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -46,7 +49,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Order jobs specific behavior, like priority computation or job enqueue user business rules management
@@ -120,10 +122,10 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
         // a user PUBLIC cannot be here so there are two cases : REGISTERED_USER and all ADMIN roles (near a thousand)
         if (role.equals(DefaultRole.REGISTERED_USER.toString())) {
             // User : Priority between 0 and 80 depending on rate
-            return (int) (80 * (1 - rate));
+            return (int) (OrderJobPriority.PROCESS_ORDER_MIN_JOB_PRIORITY * (1 - rate));
         }
         // Admin : Priority between 80 and 100 depending on rate
-        return (int) (100 - 20 * (1 - rate));
+        return (int) (OrderJobPriority.PROCESS_ORDER_MAX_JOB_PRIORITY - 20 * (1 - rate));
     }
 
     /**
@@ -132,20 +134,22 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
     @Override
     public void handle(TenantWrapper<JobEvent> wrapper) {
         JobEvent event = wrapper.getContent();
-        switch (event.getJobEventType()) {
-            // If job is ended
-            case ABORTED:
-            case FAILED:
-            case SUCCEEDED:
-                UUID jobId = event.getJobId();
-                tenantResolver.forceTenant(wrapper.getTenant());
-                Optional<JobInfo> endedJobInfo = jobInfoRepository.findById(jobId);
-                if (endedJobInfo.isPresent()) {
-                    self.manageUserOrderStorageFilesJobInfos(endedJobInfo.get().getOwner());
+        if (event.getJobEventType().isFinalState()) {
+            tenantResolver.forceTenant(wrapper.getTenant());
+
+            Optional<JobInfo> endedJobInfo = jobInfoRepository.findById(event.getJobId());
+            if (endedJobInfo.isPresent()) {
+                if (JobEventType.FAILED == event.getJobEventType() && CancelOrderJob.class.getName()
+                                                                                          .equals(endedJobInfo.get()
+                                                                                                              .getClassName())) {
+                    LOGGER.info("[{}] cancel order job is in failed status. Initialize in queued status again");
+                    endedJobInfo.get().updateStatus(JobStatus.QUEUED);
+                    jobInfoRepository.save(endedJobInfo.get());
                 }
-                tenantResolver.clearTenant();
-                break;
-            default:
+
+                self.manageUserOrderStorageFilesJobInfos(endedJobInfo.get().getOwner());
+            }
+            tenantResolver.clearTenant();
         }
     }
 

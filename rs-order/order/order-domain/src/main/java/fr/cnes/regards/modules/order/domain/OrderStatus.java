@@ -62,7 +62,12 @@ public enum OrderStatus {
      * Only a {@link OrderStatus#PAUSED}, {@link OrderStatus#DONE}, {@link OrderStatus#DONE_WITH_WARNING},
      * {@link OrderStatus#FAILED} order can be {@link OrderStatus#DELETED} (with no running jobs)
      */
-    DELETED;
+    DELETED,
+
+    /**
+     * Order is in error, associated jobs are in error, problem during the deleting of order.
+     */
+    ERROR;
 
     public boolean isOneOfStatuses(OrderStatus... status) {
         Stream<OrderStatus> orderStatuses = Arrays.stream(status);

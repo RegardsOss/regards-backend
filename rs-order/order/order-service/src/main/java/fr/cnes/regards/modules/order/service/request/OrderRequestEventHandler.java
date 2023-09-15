@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -125,7 +126,7 @@ public class OrderRequestEventHandler
         }
         if (!validEvents.isEmpty()) {
             JobInfo jobInfo = new JobInfo(false,
-                                          0,
+                                          OrderJobPriority.CREATE_ORDER_JOB_PRIORITY,
                                           Set.of(new JobParameter(CreateOrderJob.ORDER_REQUEST_EVENT, validEvents)),
                                           null,
                                           CreateOrderJob.class.getName());

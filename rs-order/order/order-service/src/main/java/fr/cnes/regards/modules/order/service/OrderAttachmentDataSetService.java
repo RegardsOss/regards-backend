@@ -67,7 +67,7 @@ public class OrderAttachmentDataSetService {
     }
 
     /**
-     * Create required sub orders containing dataset attached files. Do nothing if no files attached.
+     * Create required sub-orders containing dataset attached files. Do nothing if no files attached.
      */
     public void createSubOrderOfDataSetFiles(Order order,
                                              String owner,
