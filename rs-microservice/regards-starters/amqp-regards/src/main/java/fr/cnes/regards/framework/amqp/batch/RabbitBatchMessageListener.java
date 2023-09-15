@@ -251,8 +251,8 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                                                 Channel channel) {
         List<BatchMessage> validMessages = new ArrayList<>();
         if (!tenantResolver.getAllActiveTenants().contains(tenant)) {
-            LOGGER.debug("[AMQP MESSAGE - INVALID TENANT] Current microservice is not configured for tenant {}. {} "
-                         + "messages ignored", tenant, convertedMessages.size());
+            LOGGER.info("[AMQP MESSAGE - INVALID TENANT] Current microservice is not configured for tenant {}. {} "
+                        + "messages ignored", tenant, convertedMessages.size());
             // Do not send to DLQ, it is possible that a service is not available for a given tenant. In this case,
             // just ignore messages.
         } else {
