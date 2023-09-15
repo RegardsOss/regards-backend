@@ -129,8 +129,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         if (errors.hasErrors()) {
             Set<String> err = new HashSet<>();
             errors.getAllErrors().forEach(error -> {
-                if (error instanceof FieldError) {
-                    FieldError fieldError = (FieldError) error;
+                if (error instanceof FieldError fieldError) {
                     err.add(String.format("%s at %s: rejected value [%s].",
                                           fieldError.getDefaultMessage(),
                                           fieldError.getField(),
@@ -200,22 +199,6 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     }
 
     /**
-     * Check if message tenant is associated to a current active tenant.
-     *
-     * @return true if valid
-     */
-    private boolean handleInvalidMessageTentant(BatchMessage message, String tenant, Channel channel) {
-        boolean isValid = tenantResolver.getAllActiveTenants().contains(tenant);
-        if (!isValid) {
-            // Propagate errors
-            Errors errors = new MapBindingResult(new HashMap<>(), message.getClass().getName());
-            errors.reject(INVALID_TENANT_CODE, String.format("Unknown or inactive tenant %s", tenant));
-            handleInvalidMessage(null, message, channel, errors);
-        }
-        return isValid;
-    }
-
-    /**
      * Validate message with handler delegated function
      *
      * @return true if valid
@@ -267,17 +250,23 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                                                 String tenant,
                                                 Channel channel) {
         List<BatchMessage> validMessages = new ArrayList<>();
-        for (BatchMessage message : convertedMessages) {
-            try {
-                boolean isValid = handleInvalidMessageFromDLQ(message, tenant, channel);
-                isValid &= handleInvalidMessageTentant(message, tenant, channel);
-                isValid &= validateMessage(message, tenant, channel);
-                if (isValid) {
-                    validMessages.add(message);
+        if (!tenantResolver.getAllActiveTenants().contains(tenant)) {
+            LOGGER.debug("[AMQP MESSAGE - INVALID TENANT] Current microservice is not configured for tenant {}. {} "
+                         + "messages ignored", tenant, convertedMessages.size());
+            // Do not send to DLQ, it is possible that a service is not available for a given tenant. In this case,
+            // just ignore messages.
+        } else {
+            for (BatchMessage message : convertedMessages) {
+                try {
+                    boolean isValid = handleInvalidMessageFromDLQ(message, tenant, channel);
+                    isValid &= validateMessage(message, tenant, channel);
+                    if (isValid) {
+                        validMessages.add(message);
+                    }
+                } catch (Throwable e) {
+                    LOGGER.error(e.getMessage(), e);
+                    handleInvalidMessage(tenant, message, channel, e.getMessage());
                 }
-            } catch (Throwable e) {
-                LOGGER.error(e.getMessage(), e);
-                handleInvalidMessage(tenant, message, channel, e.getMessage());
             }
         }
         return validMessages;
@@ -530,7 +519,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                                                                     title,
                                                                     NotificationLevel.ERROR,
                                                                     microserviceName);
-        Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
+        Set<String> roles = new HashSet<>(Collections.singletonList(DefaultRole.EXPLOIT.toString()));
         NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
 
         if (tenant != null) {
