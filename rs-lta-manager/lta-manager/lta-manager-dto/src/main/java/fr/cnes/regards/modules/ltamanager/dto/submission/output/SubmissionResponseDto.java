@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ltamanager.dto.submission.output;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
@@ -29,7 +30,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Represent a submission request response.
@@ -65,12 +65,14 @@ public class SubmissionResponseDto {
     private String message;
 
     @Nullable
-    @Schema(description = "Origin request application identifier.", nullable = true)
-    private String originRequestAppId;
+    @GsonIgnore
+    @Schema(description = "Request application identifier.", nullable = true)
+    private String requestAppId;
 
     @Nullable
-    @Schema(description = "Origin request priority.", nullable = true)
-    private Integer originRequestPriority;
+    @GsonIgnore
+    @Schema(description = "Request priority.", nullable = true)
+    private Integer requestPriority;
 
     public SubmissionResponseDto(String correlationId,
                                  SubmissionResponseStatus responseStatus,
@@ -78,8 +80,8 @@ public class SubmissionResponseDto {
                                  @Nullable OffsetDateTime expires,
                                  @Nullable String session,
                                  @Nullable String message,
-                                 @Nullable String originRequestAppId,
-                                 @Nullable Integer originRequestPriority) {
+                                 @Nullable String requestAppId,
+                                 @Nullable Integer requestPriority) {
         Assert.notNull(correlationId, "correlationId is mandatory ! Make sure other constraints are satisfied");
         Assert.notNull(responseStatus, "responseStatus is mandatory ! Make sure other constraints are satisfied");
 
@@ -89,8 +91,8 @@ public class SubmissionResponseDto {
         this.correlationId = correlationId;
         this.expires = expires;
         this.session = session;
-        this.originRequestAppId = originRequestAppId;
-        this.originRequestPriority = originRequestPriority;
+        this.requestAppId = requestAppId;
+        this.requestPriority = requestPriority;
     }
 
     public static SubmissionResponseDto buildDeniedSubmissionResponseDto(SubmissionRequestDto requestDto,
@@ -157,20 +159,20 @@ public class SubmissionResponseDto {
         this.message = message;
     }
 
-    public Optional<String> getOriginRequestAppId() {
-        return Optional.ofNullable(originRequestAppId);
+    public String getRequestAppId() {
+        return requestAppId;
     }
 
-    public void setOriginRequestAppId(@Nullable String originRequestAppId) {
-        this.originRequestAppId = originRequestAppId;
+    public void setRequestAppId(@Nullable String requestAppId) {
+        this.requestAppId = requestAppId;
     }
 
-    public Optional<Integer> getOriginRequestPriority() {
-        return Optional.ofNullable(originRequestPriority);
+    public Integer getRequestPriority() {
+        return requestPriority;
     }
 
-    public void setOriginRequestPriority(Integer originRequestPriority) {
-        this.originRequestPriority = originRequestPriority;
+    public void setRequestPriority(Integer requestPriority) {
+        this.requestPriority = requestPriority;
     }
 
     @Override
@@ -201,11 +203,11 @@ public class SubmissionResponseDto {
                + "correlationId='"
                + correlationId
                + '\''
+               + ", responseStatus="
+               + responseStatus
                + ", productId='"
                + productId
                + '\''
-               + ", responseStatus="
-               + responseStatus
                + ", expires="
                + expires
                + ", session='"
@@ -214,7 +216,11 @@ public class SubmissionResponseDto {
                + ", message='"
                + message
                + '\''
+               + ", requestAppId='"
+               + requestAppId
+               + '\''
+               + ", requestPriority="
+               + requestPriority
                + '}';
     }
-
 }

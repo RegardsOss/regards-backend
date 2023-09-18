@@ -215,10 +215,10 @@ public class SubmissionCreateEventHandlerTest {
         // submission response events
         Assertions.assertThat(capturedPublishedEvents.get(1)).hasSameElementsAs(expectedSubmissionResponseEvts);
 
-        Assertions.assertThat(capturedPublishedEvents.get(1).get(0).getOriginRequestAppId())
-                  .isEqualTo(expectedSubmissionResponseEvts.get(0).getOriginRequestAppId());
-        Assertions.assertThat(capturedPublishedEvents.get(1).get(0).getOriginRequestPriority())
-                  .isEqualTo(expectedSubmissionResponseEvts.get(0).getOriginRequestPriority());
+        Assertions.assertThat(capturedPublishedEvents.get(1).get(0).getOriginRequestAppId().orElse(null))
+                  .isEqualTo(expectedSubmissionResponseEvts.get(0).getRequestAppId());
+        Assertions.assertThat(capturedPublishedEvents.get(1).get(0).getOriginRequestPriority().orElse(null))
+                  .isEqualTo(expectedSubmissionResponseEvts.get(0).getRequestPriority());
     }
 
     @After

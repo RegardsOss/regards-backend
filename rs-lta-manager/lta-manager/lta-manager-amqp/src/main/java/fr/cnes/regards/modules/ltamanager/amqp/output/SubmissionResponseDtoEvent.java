@@ -62,12 +62,22 @@ public class SubmissionResponseDtoEvent extends SubmissionResponseDto implements
              responseDto.getExpires(),
              responseDto.getSession(),
              responseDto.getMessage(),
-             responseDto.getOriginRequestAppId().orElse(null),
-             responseDto.getOriginRequestPriority().orElse(null));
+             responseDto.getRequestAppId(),
+             responseDto.getRequestPriority());
     }
 
     @Override
     public Optional<String> getMessageCorrelationId() {
         return Optional.ofNullable(this.getCorrelationId());
+    }
+
+    @Override
+    public Optional<String> getOriginRequestAppId() {
+        return Optional.ofNullable(this.getRequestAppId());
+    }
+
+    @Override
+    public Optional<Integer> getOriginRequestPriority() {
+        return Optional.ofNullable(this.getRequestPriority());
     }
 }
