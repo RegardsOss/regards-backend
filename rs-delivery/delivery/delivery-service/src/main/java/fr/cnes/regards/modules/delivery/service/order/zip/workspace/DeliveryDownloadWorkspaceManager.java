@@ -90,6 +90,10 @@ public class DeliveryDownloadWorkspaceManager {
         }
     }
 
+    public boolean isDeliveryTmpFolderPathExists() {
+        return deliveryTmpFolderPath.toFile().exists();
+    }
+
     public String getCorrelationId() {
         return correlationId;
     }
