@@ -1711,11 +1711,6 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.delivery</groupId>
-                <artifactId>delivery-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.delivery</groupId>
                 <artifactId>delivery-amqp</artifactId>
                 <version>${revision}</version>
             </dependency>

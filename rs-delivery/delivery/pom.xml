@@ -57,7 +57,6 @@
         <module>delivery-domain</module>
         <module>delivery-dao</module>
         <module>delivery-dto</module>
-        <module>delivery-rest</module>
         <module>delivery-amqp</module>
         <module>delivery-service</module>
     </modules>

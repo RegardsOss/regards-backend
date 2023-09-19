@@ -19,13 +19,12 @@
 package fr.cnes.regards.modules.delivery.service.order.zip.job;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.delivery.amqp.output.DeliveryResponseDtoEvent;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryStatus;
-import fr.cnes.regards.modules.delivery.domain.zip.ZipDeliveryInfo;
+import fr.cnes.regards.modules.delivery.domain.order.zip.ZipDeliveryInfo;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import fr.cnes.regards.modules.delivery.service.submission.DeliveryAndJobService;
@@ -44,7 +43,6 @@ import java.util.UUID;
  *
  * @author Iliana Ghazali
  **/
-@MultitenantTransactional
 @Service
 public class OrderDeliveryZipJobProgressManager {
 

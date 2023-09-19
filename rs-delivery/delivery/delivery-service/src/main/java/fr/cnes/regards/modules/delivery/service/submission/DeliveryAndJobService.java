@@ -37,7 +37,6 @@ import java.util.UUID;
  *
  * @author Iliana Ghazali
  **/
-@MultitenantTransactional
 @Service
 public class DeliveryAndJobService {
 
@@ -50,10 +49,12 @@ public class DeliveryAndJobService {
     // ------------
     // -- SEARCH --
     // ------------
+    @MultitenantTransactional(readOnly = true)
     public Optional<DeliveryRequest> findDeliveryRequestByJobId(UUID jobId) {
         return deliveryAndJobRepository.findDeliveryRequestByJobId(jobId);
     }
 
+    @MultitenantTransactional(readOnly = true)
     public Page<JobInfo> findJobInfoByDeliveryRequestIdsAndStatus(List<Long> deliveryRequestIds,
                                                                   JobStatus status,
                                                                   Pageable pageable) {
@@ -64,6 +65,7 @@ public class DeliveryAndJobService {
     // -- DELETE --
     // ------------
 
+    @MultitenantTransactional
     public void deleteByDeliveryRequestId(Long deliveryRequestId) {
         deliveryAndJobRepository.deleteByDeliveryRequestId(deliveryRequestId);
     }

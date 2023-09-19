@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
@@ -53,7 +52,6 @@ import java.util.Collection;
  *
  * @author Iliana Ghazali
  **/
-@MultitenantTransactional
 @Service
 public class DeliveryDownloadService {
 

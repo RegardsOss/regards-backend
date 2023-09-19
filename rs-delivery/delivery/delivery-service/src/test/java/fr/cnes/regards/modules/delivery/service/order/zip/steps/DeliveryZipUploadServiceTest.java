@@ -16,15 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.zip.steps;
+package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 
 import fr.cnes.regards.framework.s3.domain.*;
 import fr.cnes.regards.framework.s3.exception.ChecksumDoesntMatchException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
-import fr.cnes.regards.modules.delivery.domain.zip.ZipDeliveryInfo;
+import fr.cnes.regards.modules.delivery.domain.order.zip.ZipDeliveryInfo;
 import fr.cnes.regards.modules.delivery.service.order.s3.DeliveryS3ManagerService;
-import fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryZipUploadService;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -43,7 +42,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.UUID;
 
-import static fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils.*;
+import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils.*;
 import static org.mockito.ArgumentMatchers.any;
 
 /**

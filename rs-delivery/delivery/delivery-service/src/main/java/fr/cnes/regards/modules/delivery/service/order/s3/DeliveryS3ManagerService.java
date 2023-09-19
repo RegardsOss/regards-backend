@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.s3;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
@@ -41,7 +40,6 @@ import java.util.UUID;
  * @author Iliana Ghazali
  **/
 
-@MultitenantTransactional
 @Service
 public class DeliveryS3ManagerService {
 

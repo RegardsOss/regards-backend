@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
-import fr.cnes.regards.modules.delivery.domain.zip.ZipDeliveryInfo;
+import fr.cnes.regards.modules.delivery.domain.order.zip.ZipDeliveryInfo;
 import fr.cnes.regards.modules.delivery.service.order.zip.OrderDeliveryZipService;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.domain.zip;
+package fr.cnes.regards.modules.delivery.domain.order.zip;
 
 /**
  * Metadata about a zip to deliver.

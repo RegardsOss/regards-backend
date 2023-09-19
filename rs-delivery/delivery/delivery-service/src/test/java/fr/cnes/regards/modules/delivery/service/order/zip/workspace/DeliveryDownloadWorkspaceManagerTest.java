@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.zip.workspace;
+package fr.cnes.regards.modules.delivery.service.order.zip.workspace;
 
 import fr.cnes.regards.framework.modules.workspace.service.WorkspaceService;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
-import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
+import fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -32,8 +32,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import static fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils.WORKSPACE_PATH;
 
 /**
  * Test for {@link DeliveryDownloadWorkspaceManager}
@@ -58,8 +56,8 @@ public class DeliveryDownloadWorkspaceManagerTest {
 
     @Before
     public void init() throws IOException {
-        FileUtils.deleteDirectory(WORKSPACE_PATH.toFile());
-        Files.createDirectories(WORKSPACE_PATH);
+        FileUtils.deleteDirectory(DeliveryStepUtils.WORKSPACE_PATH.toFile());
+        Files.createDirectories(DeliveryStepUtils.WORKSPACE_PATH);
     }
 
     @Test
@@ -69,13 +67,13 @@ public class DeliveryDownloadWorkspaceManagerTest {
 
         // WHEN
         DeliveryDownloadWorkspaceManager downloadWorkspaceManager = new DeliveryDownloadWorkspaceManager(corrId,
-                                                                                                         WORKSPACE_PATH);
+                                                                                                         DeliveryStepUtils.WORKSPACE_PATH);
         downloadWorkspaceManager.createDeliveryFolder();
 
         // THEN
         // expect created delivery workspace
         Assertions.assertThat(downloadWorkspaceManager).isNotNull();
-        Path expectedDeliveryWorkspace = WORKSPACE_PATH.resolve(corrId);
+        Path expectedDeliveryWorkspace = DeliveryStepUtils.WORKSPACE_PATH.resolve(corrId);
         Assertions.assertThat(Files.exists(expectedDeliveryWorkspace))
                   .as(String.format("Expected creation of delivery workspace at '%s'.", expectedDeliveryWorkspace))
                   .isTrue();
@@ -86,7 +84,7 @@ public class DeliveryDownloadWorkspaceManagerTest {
         // GIVEN
         String corrId = "test-delete";
         DeliveryDownloadWorkspaceManager downloadWorkspaceManager = new DeliveryDownloadWorkspaceManager(corrId,
-                                                                                                         WORKSPACE_PATH);
+                                                                                                         DeliveryStepUtils.WORKSPACE_PATH);
         downloadWorkspaceManager.createDeliveryFolder();
         Assertions.assertThat(Files.exists(downloadWorkspaceManager.getDeliveryTmpFolderPath())).isTrue();
 

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.zip.job.event;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
@@ -35,7 +34,6 @@ import org.springframework.stereotype.Service;
  * @author Iliana Ghazali
  **/
 @Service
-@MultitenantTransactional
 public class OrderDeliveryZipJobEventService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderDeliveryZipJobEventService.class);

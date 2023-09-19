@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.zip;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
-import fr.cnes.regards.modules.delivery.domain.zip.ZipDeliveryInfo;
+import fr.cnes.regards.modules.delivery.domain.order.zip.ZipDeliveryInfo;
 import fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryDownloadService;
 import fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryZipCreateService;
 import fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryZipUploadService;
@@ -41,7 +40,6 @@ import java.io.IOException;
  *
  * @author Iliana Ghazali
  **/
-@MultitenantTransactional
 @Service
 public class OrderDeliveryZipService {
 

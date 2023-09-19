@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.zip.job.event;
+package fr.cnes.regards.modules.delivery.service.order.zip.job.event;
 
 import fr.cnes.regards.framework.integration.test.job.AbstractMultitenantServiceWithJobIT;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -29,10 +29,9 @@ import fr.cnes.regards.modules.delivery.domain.input.DeliveryAndJob;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import fr.cnes.regards.modules.delivery.service.config.OrderDeliveryTestConfiguration;
+import fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils;
 import fr.cnes.regards.modules.delivery.service.order.zip.job.OrderDeliveryZipJob;
-import fr.cnes.regards.modules.delivery.service.order.zip.job.event.OrderDeliveryZipJobEventHandler;
 import fr.cnes.regards.modules.delivery.service.submission.DeliveryRequestService;
-import fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;

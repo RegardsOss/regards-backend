@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.zip.job;
+package fr.cnes.regards.modules.delivery.service.order.zip.job;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.integration.test.job.AbstractMultitenantServiceWithJobIT;
@@ -47,9 +47,8 @@ import fr.cnes.regards.modules.delivery.domain.settings.S3DeliveryServer;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import fr.cnes.regards.modules.delivery.service.config.OrderDeliveryTestConfiguration;
-import fr.cnes.regards.modules.delivery.service.order.zip.job.OrderDeliveryZipJob;
-import fr.cnes.regards.modules.delivery.service.zip.env.config.TestDeliveryServerProperties;
-import fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils;
+import fr.cnes.regards.modules.delivery.service.order.zip.env.config.TestDeliveryServerProperties;
+import fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -71,8 +70,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils.DELIVERY_CORRELATION_ID;
-import static fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils.MULTIPLE_FILES_ZIP_NAME_PATTERN;
+import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils.DELIVERY_CORRELATION_ID;
+import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils.MULTIPLE_FILES_ZIP_NAME_PATTERN;
 
 /**
  * Test for {@link OrderDeliveryZipJob}.

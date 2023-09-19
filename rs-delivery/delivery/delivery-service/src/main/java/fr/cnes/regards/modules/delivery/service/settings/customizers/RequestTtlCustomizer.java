@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.delivery.service.settings.customizers;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
 import fr.cnes.regards.modules.delivery.domain.settings.DeliverySettings;
@@ -32,7 +31,6 @@ import org.springframework.stereotype.Service;
  * @author Iliana Ghazali
  **/
 @Service
-@MultitenantTransactional
 public class RequestTtlCustomizer implements IDynamicTenantSettingCustomizer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestTtlCustomizer.class);

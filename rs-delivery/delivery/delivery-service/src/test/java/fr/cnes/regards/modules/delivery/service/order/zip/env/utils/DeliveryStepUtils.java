@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.zip.env.utils;
+package fr.cnes.regards.modules.delivery.service.order.zip.env.utils;
 
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;

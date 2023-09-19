@@ -81,7 +81,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.delivery</groupId>
-            <artifactId>delivery-rest</artifactId>
+            <artifactId>delivery-service</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>

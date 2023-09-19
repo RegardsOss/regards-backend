@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.s3.domain.StorageCommandResult;
 import fr.cnes.regards.framework.s3.domain.StorageConfig;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
-import fr.cnes.regards.modules.delivery.domain.zip.ZipDeliveryInfo;
+import fr.cnes.regards.modules.delivery.domain.order.zip.ZipDeliveryInfo;
 import fr.cnes.regards.modules.delivery.service.order.s3.DeliveryS3ManagerService;
 import io.vavr.Tuple;
 import io.vavr.control.Option;
@@ -49,7 +48,6 @@ import java.util.List;
  *
  * @author Iliana Ghazali
  **/
-@MultitenantTransactional
 @Service
 public class DeliveryZipUploadService {
 

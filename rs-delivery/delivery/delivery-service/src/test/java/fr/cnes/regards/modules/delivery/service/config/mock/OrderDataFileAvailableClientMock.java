@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.delivery.service.config.mock;
 
-import fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils;
+import fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileAvailableClient;
 import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
 import org.springframework.data.domain.Pageable;

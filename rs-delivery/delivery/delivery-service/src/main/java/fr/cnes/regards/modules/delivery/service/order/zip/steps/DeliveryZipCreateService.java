@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.file.CompressToZipUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
-import fr.cnes.regards.modules.delivery.domain.zip.ZipDeliveryInfo;
+import fr.cnes.regards.modules.delivery.domain.order.zip.ZipDeliveryInfo;
 import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

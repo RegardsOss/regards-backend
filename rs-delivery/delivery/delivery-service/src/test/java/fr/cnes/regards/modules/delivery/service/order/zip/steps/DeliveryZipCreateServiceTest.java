@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.zip.steps;
+package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 
 import fr.cnes.regards.framework.modules.workspace.service.WorkspaceService;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
-import fr.cnes.regards.modules.delivery.domain.zip.ZipDeliveryInfo;
-import fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryZipCreateService;
+import fr.cnes.regards.modules.delivery.domain.order.zip.ZipDeliveryInfo;
+import fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils;
 import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
@@ -38,8 +38,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
-
-import static fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils.*;
 
 /**
  * Test for {@link DeliveryZipCreateService}.
@@ -69,10 +67,11 @@ public class DeliveryZipCreateServiceTest {
     @Before
     public void init() throws IOException, DeliveryOrderException {
         // clean workspace directory if it already exists
-        FileUtils.deleteDirectory(WORKSPACE_PATH.toFile());
-        Files.createDirectories(WORKSPACE_PATH);
+        FileUtils.deleteDirectory(DeliveryStepUtils.WORKSPACE_PATH.toFile());
+        Files.createDirectories(DeliveryStepUtils.WORKSPACE_PATH);
         // init services
-        deliveryWorkspaceManager = new DeliveryDownloadWorkspaceManager(DELIVERY_CORRELATION_ID, WORKSPACE_PATH);
+        deliveryWorkspaceManager = new DeliveryDownloadWorkspaceManager(DeliveryStepUtils.DELIVERY_CORRELATION_ID,
+                                                                        DeliveryStepUtils.WORKSPACE_PATH);
         deliveryWorkspaceManager.createDeliveryFolder();
         zipService = new DeliveryZipCreateService();
     }
@@ -81,7 +80,7 @@ public class DeliveryZipCreateServiceTest {
     public void givenMultipleDeliveryFiles_whenZip_thenZipMultipleTypeCreated()
         throws IOException, DeliveryOrderException, NoSuchAlgorithmException {
         // GIVEN
-        FileUtils.copyDirectory(TEST_FILES_ORDER_RESOURCES.toFile(),
+        FileUtils.copyDirectory(DeliveryStepUtils.TEST_FILES_ORDER_RESOURCES.toFile(),
                                 deliveryWorkspaceManager.getDownloadSubfolder().toFile());
 
         // WHEN
@@ -89,12 +88,12 @@ public class DeliveryZipCreateServiceTest {
 
         // THEN
         // compare expected zip to actual zip that was created by zip service
-        Path srcMultipleZipLocation = Objects.requireNonNull(TEST_MULTIPLE_ZIP_ORDER_RESOURCE.toFile()
-                                                                                             .listFiles())[0].toPath();
+        Path srcMultipleZipLocation = Objects.requireNonNull(DeliveryStepUtils.TEST_MULTIPLE_ZIP_ORDER_RESOURCE.toFile()
+                                                                                                               .listFiles())[0].toPath();
         Path expectedCreatedZipPath = deliveryWorkspaceManager.getDeliveryTmpFolderPath()
-                                                              .resolve(String.format(MULTIPLE_FILES_ZIP_NAME_PATTERN,
-                                                                                     DELIVERY_CORRELATION_ID));
-        ZipDeliveryInfo expectedCreatedZipInfo = new ZipDeliveryInfo(DELIVERY_CORRELATION_ID,
+                                                              .resolve(String.format(DeliveryStepUtils.MULTIPLE_FILES_ZIP_NAME_PATTERN,
+                                                                                     DeliveryStepUtils.DELIVERY_CORRELATION_ID));
+        ZipDeliveryInfo expectedCreatedZipInfo = new ZipDeliveryInfo(DeliveryStepUtils.DELIVERY_CORRELATION_ID,
                                                                      srcMultipleZipLocation.getFileName().toString(),
                                                                      srcMultipleZipLocation.toFile().length(),
                                                                      ChecksumUtils.computeHexChecksum(
@@ -109,9 +108,9 @@ public class DeliveryZipCreateServiceTest {
     public void givenSingleDeliveryFile_whenZip_thenZipSingleTypeCreated()
         throws IOException, DeliveryOrderException, NoSuchAlgorithmException {
         // GIVEN
-        File srcFileFolder = Objects.requireNonNull(TEST_FILES_ORDER_RESOURCES.toFile()
-                                                                              .listFiles((dir, name) -> name.equals(
-                                                                                  "data-0")))[0];
+        File srcFileFolder = Objects.requireNonNull(DeliveryStepUtils.TEST_FILES_ORDER_RESOURCES.toFile()
+                                                                                                .listFiles((dir, name) -> name.equals(
+                                                                                                    "data-0")))[0];
         FileUtils.copyDirectory(srcFileFolder, deliveryWorkspaceManager.getDownloadSubfolder().toFile());
 
         // WHEN
@@ -119,11 +118,11 @@ public class DeliveryZipCreateServiceTest {
 
         // THEN
         // compare expected zip to actual zip that was created by zip service
-        Path srcSingleZipLocation = Objects.requireNonNull(TEST_SINGLE_ZIP_ORDER_RESOURCE.toFile()
-                                                                                         .listFiles())[0].toPath();
+        Path srcSingleZipLocation = Objects.requireNonNull(DeliveryStepUtils.TEST_SINGLE_ZIP_ORDER_RESOURCE.toFile()
+                                                                                                           .listFiles())[0].toPath();
         String expectedZipName = "file-0.zip";
         Path expectedCreatedZipPath = deliveryWorkspaceManager.getDeliveryTmpFolderPath().resolve(expectedZipName);
-        ZipDeliveryInfo expectedCreatedZipInfo = new ZipDeliveryInfo(DELIVERY_CORRELATION_ID,
+        ZipDeliveryInfo expectedCreatedZipInfo = new ZipDeliveryInfo(DeliveryStepUtils.DELIVERY_CORRELATION_ID,
                                                                      expectedZipName,
                                                                      srcSingleZipLocation.toFile().length(),
                                                                      ChecksumUtils.computeHexChecksum(

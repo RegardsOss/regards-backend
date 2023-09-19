@@ -26,7 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 
-import static fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils.TEST_FILES_ORDER_RESOURCES;
+import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils.TEST_FILES_ORDER_RESOURCES;
 
 /**
  * Bean to mock rs-order {@link IOrderDataFileClient} behaviour.

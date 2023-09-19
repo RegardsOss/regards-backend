@@ -37,7 +37,6 @@ import java.util.Optional;
  *
  * @author Iliana Ghazali
  **/
-@MultitenantTransactional
 @Service
 public class DeliveryRequestService {
 
@@ -51,10 +50,12 @@ public class DeliveryRequestService {
     // -- SEARCH --
     // ------------
 
+    @MultitenantTransactional(readOnly = true)
     public Optional<DeliveryRequest> findDeliveryRequest(long deliveryRequestId) {
         return deliveryRequestRepository.findById(deliveryRequestId);
     }
 
+    @MultitenantTransactional(readOnly = true)
     public Page<Long> findExpiredDeliveryRequest(OffsetDateTime limitExpiryDate, Pageable pageable) {
         return deliveryRequestRepository.findByDeliveryStatusExpiryDateBefore(limitExpiryDate, pageable);
     }
@@ -63,14 +64,17 @@ public class DeliveryRequestService {
     // -- UPDATE --
     // ------------
 
+    @MultitenantTransactional
     public DeliveryRequest saveRequest(DeliveryRequest requestToSave) {
         return deliveryRequestRepository.save(requestToSave);
     }
 
+    @MultitenantTransactional
     public List<DeliveryRequest> saveAllRequests(Collection<DeliveryRequest> requestsToSave) {
         return deliveryRequestRepository.saveAll(requestsToSave);
     }
 
+    @MultitenantTransactional
     public void updateExpiredRequests(List<Long> requestIdsToUpdate, OffsetDateTime expiredDate) {
         deliveryRequestRepository.updateByIdIn(requestIdsToUpdate,
                                                DeliveryRequestStatus.ERROR,
@@ -83,7 +87,7 @@ public class DeliveryRequestService {
     // ------------
     // -- DELETE --
     // ------------
-
+    @MultitenantTransactional
     public void deleteRequest(DeliveryRequest deliveryRequestToDelete) {
         deliveryRequestRepository.delete(deliveryRequestToDelete);
     }

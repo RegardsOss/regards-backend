@@ -61,15 +61,15 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.delivery</groupId>
+            <artifactId>delivery-dao</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.delivery</groupId>
             <artifactId>delivery-domain</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.delivery</groupId>
             <artifactId>delivery-dto</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.delivery</groupId>
-            <artifactId>delivery-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.delivery</groupId>

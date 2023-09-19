@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.delivery.service.submission.update;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
@@ -38,7 +37,6 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @Service
-@MultitenantTransactional
 public class StopDeliveryExpiredJobsService {
 
     private final DeliveryAndJobService deliveryAndJobService;

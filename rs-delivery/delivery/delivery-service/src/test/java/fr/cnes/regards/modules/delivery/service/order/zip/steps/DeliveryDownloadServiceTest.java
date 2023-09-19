@@ -16,15 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.zip.steps;
+package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 
 import fr.cnes.regards.framework.modules.workspace.service.WorkspaceService;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
-import fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryDownloadService;
+import fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils;
 import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
-import fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileAvailableClient;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileClient;
 import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
@@ -48,7 +47,6 @@ import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import static fr.cnes.regards.modules.delivery.service.zip.env.utils.DeliveryStepUtils.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 
@@ -90,11 +88,12 @@ public class DeliveryDownloadServiceTest {
     @Before
     public void init() throws IOException, DeliveryOrderException {
         // clean workspace directory if it already exists
-        FileUtils.deleteDirectory(WORKSPACE_PATH.toFile());
-        Files.createDirectories(WORKSPACE_PATH);
+        FileUtils.deleteDirectory(DeliveryStepUtils.WORKSPACE_PATH.toFile());
+        Files.createDirectories(DeliveryStepUtils.WORKSPACE_PATH);
         // init services
         deliveryDownloadService = new DeliveryDownloadService(orderClient, dataFileClient, 2);
-        deliveryWorkspaceManager = new DeliveryDownloadWorkspaceManager(DELIVERY_CORRELATION_ID, WORKSPACE_PATH);
+        deliveryWorkspaceManager = new DeliveryDownloadWorkspaceManager(DeliveryStepUtils.DELIVERY_CORRELATION_ID,
+                                                                        DeliveryStepUtils.WORKSPACE_PATH);
         deliveryWorkspaceManager.createDeliveryFolder();
     }
 
@@ -113,10 +112,8 @@ public class DeliveryDownloadServiceTest {
         // simulate download of file
         Mockito.when(dataFileClient.downloadFile(anyLong())).thenAnswer(ans -> {
             long dataFileId = ans.getArgument(0);
-            return ResponseEntity.ok(new InputStreamResource(new FileInputStream(Path.of(String.format(
-                TEST_FILES_ORDER_RESOURCES.resolve("data-%d").resolve("file-%d.txt").toString(),
-                dataFileId,
-                dataFileId)).toFile())));
+            return ResponseEntity.ok(new InputStreamResource(new FileInputStream(Path.of(String.format(DeliveryStepUtils.TEST_FILES_ORDER_RESOURCES.resolve(
+                "data-%d").resolve("file-%d.txt").toString(), dataFileId, dataFileId)).toFile())));
         });
 
         // --- WHEN ---
@@ -126,7 +123,7 @@ public class DeliveryDownloadServiceTest {
         // check files were successfully downloaded in tmp delivery workspace
         for (OrderDataFileDTO dataFile : simulatedOrderDataFiles) {
             Path expectedDownloadedFilePath = deliveryWorkspaceManager.getDownloadSubfolder()
-                                                                      .resolve(String.format(PRODUCT_FOLDER_PATTERN,
+                                                                      .resolve(String.format(DeliveryStepUtils.PRODUCT_FOLDER_PATTERN,
                                                                                              dataFile.getProductId(),
                                                                                              dataFile.getVersion()))
                                                                       .resolve(dataFile.getFilename());

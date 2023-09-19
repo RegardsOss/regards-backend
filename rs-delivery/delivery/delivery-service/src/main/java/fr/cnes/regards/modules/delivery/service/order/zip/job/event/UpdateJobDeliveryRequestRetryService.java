@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.zip.job.event;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.service.order.zip.job.OrderDeliveryZipJobProgressManager;
@@ -30,7 +29,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.UUID;
@@ -67,7 +65,6 @@ public class UpdateJobDeliveryRequestRetryService {
     @Retryable(value = { OptimisticLockingFailureException.class },
                maxAttemptsExpression = "${regards.delivery.request.update.error.retries:50}",
                backoff = @Backoff(delay = 1000))
-    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     public void updateRequestToErrorWithRetry(UUID jobId, long deliveryRequestId) {
         DeliveryRequest deliveryRequest = deliveryRequestService.findDeliveryRequest(deliveryRequestId)
                                                                 .orElseThrow(() -> new EntityNotFoundException(String.format(
