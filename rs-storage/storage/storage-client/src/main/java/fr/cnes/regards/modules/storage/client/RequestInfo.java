@@ -37,6 +37,8 @@ public class RequestInfo {
 
     private Collection<RequestResultInfoDTO> errorRequests = Sets.newHashSet();
 
+    private String message;
+
     public String getGroupId() {
         return groupId;
     }
@@ -47,6 +49,15 @@ public class RequestInfo {
 
     public Collection<RequestResultInfoDTO> getErrorRequests() {
         return errorRequests;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public RequestInfo withMessage(String message) {
+        this.message = message;
+        return this;
     }
 
     public static RequestInfo build() {

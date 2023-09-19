@@ -115,6 +115,14 @@ public class RequestResultInfoDTO {
         return dto;
     }
 
+    public static RequestResultInfoDTO build(String groupId,
+                                             String errorCause) {
+        RequestResultInfoDTO dto = new RequestResultInfoDTO();
+        dto.groupId = groupId;
+        dto.errorCause = errorCause;
+        return dto;
+    }
+
     public String getGroupId() {
         return groupId;
     }

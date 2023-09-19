@@ -31,10 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +56,12 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Override
     public void onRequestDenied(Set<RequestInfo> requests) {
-        // FIXME
+        // Only groupId is available on request denied
+        Collection<RequestResultInfoDTO> errorRequests = requests.stream()
+                                                                 .map(r -> RequestResultInfoDTO.build(r.getGroupId(),
+                                                                                                      r.getMessage()))
+                                                                 .collect(Collectors.toSet());
+        this.featureRequestService.handleStorageError(errorRequests);
     }
 
     @Override

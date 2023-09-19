@@ -118,7 +118,8 @@ public class FileRequestGroupEventHandler
     private void handleDenied(Set<FileRequestsGroupEvent> denied) {
         if ((denied != null) && !denied.isEmpty()) {
             listener.onRequestDenied(denied.stream()
-                                           .map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
+                                           .map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors())
+                                                                .withMessage(e.getMessage()))
                                            .collect(Collectors.toSet()));
         }
     }
