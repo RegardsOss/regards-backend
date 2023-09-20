@@ -141,7 +141,6 @@ public class AIPService implements IAIPService {
     @Override
     public Page<AIPEntity> findByFilters(SearchAIPsParameters filters, Pageable pageable) {
         long start = System.currentTimeMillis();
-
         Page<AIPEntity> response = aipRepository.findAll(new AIPSpecificationsBuilder().withParameters(filters).build(),
                                                          pageable);
 

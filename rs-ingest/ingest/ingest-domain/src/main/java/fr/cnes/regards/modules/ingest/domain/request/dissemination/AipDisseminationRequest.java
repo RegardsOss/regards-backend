@@ -52,7 +52,7 @@ public class AipDisseminationRequest extends AbstractRequest {
     private AIPEntity aip;
 
     /**
-     * request configuration
+     * List of dissemination destination
      */
     @Column(columnDefinition = "jsonb", name = "payload")
     @Type(type = "jsonb",

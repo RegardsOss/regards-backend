@@ -104,7 +104,8 @@ public class AipDisseminationCreatorJob extends AbstractJob<Void> {
                                                   numberOfAipMaxPerPage);
         // Delete the creator request when all dissemination requests are created
         requestService.deleteRequest(disseminationCreatorRequest);
-        logger.info("[AIP DISSEMINATION JOB]: end creating requests in {} ms", System.currentTimeMillis() - start);
+        logger.info("[AIP DISSEMINATION CREATOR JOB]: end creating requests in {} ms",
+                    System.currentTimeMillis() - start);
     }
 
     private void setAndSaveCreatorRequestToRunningState() {
@@ -116,14 +117,15 @@ public class AipDisseminationCreatorJob extends AbstractJob<Void> {
                                                            List<String> recipients,
                                                            Integer numberOfAipMaxPerPage) {
         Pageable pageRequest = PageRequest.of(0, numberOfAipMaxPerPage, Sort.Direction.ASC, "id");
-        Page<AIPEntity> aipsPage;
-        do {
+        Page<AIPEntity> aipsPage = aipService.findByFilters(filters, pageRequest);
+        createAndScheduleDisseminationRequestFor(aipsPage.getContent(), recipients);
+        totalPages = aipsPage.getTotalPages();
+        while (aipsPage.hasNext()) {
+            pageRequest = aipsPage.nextPageable();
             aipsPage = aipService.findByFilters(filters, pageRequest);
             createAndScheduleDisseminationRequestFor(aipsPage.getContent(), recipients);
-            totalPages = aipsPage.getTotalPages();
             advanceCompletion();
-            pageRequest = aipsPage.nextPageable();
-        } while (aipsPage.hasNext());
+        }
     }
 
     private void createAndScheduleDisseminationRequestFor(List<AIPEntity> aips, List<String> recipients) {

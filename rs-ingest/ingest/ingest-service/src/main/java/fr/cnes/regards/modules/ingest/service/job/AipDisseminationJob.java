@@ -18,14 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.ingest.dao.IAipDisseminationRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dissemination.AipDisseminationRequest;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.service.AipDisseminationService;
+import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Type;
@@ -33,7 +39,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO Doc in next odin task
+ * This job is used to send an amqp message to notify by {@link AipDisseminationRequest} in parameter.
+ * Every dissemination request state are updated to a special state. This state means that ingest has just send a
+ * request to notifier, and is now waiting for notifier response.
  *
  * @author Thomas GUILLOU
  **/
@@ -41,13 +49,19 @@ public class AipDisseminationJob extends AbstractJob<Void> {
 
     public static final String AIP_DISSEMINATION_REQUEST_IDS = "AIP_DISSEMINATION_REQUEST_IDS";
 
-    @Autowired
-    private AipDisseminationService aipDisseminationService;
-
     private List<AipDisseminationRequest> disseminationRequests;
 
     @Autowired
-    private IAipDisseminationRequestRepository disseminationRequestRepository;
+    private AipDisseminationService aipDisseminationService;
+
+    @Autowired
+    private IAipDisseminationRequestRepository aipDisseminationRequestRepository;
+
+    @Autowired
+    private IPublisher publisher;
+
+    @Autowired
+    private Gson gson;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -63,8 +77,23 @@ public class AipDisseminationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.info("start aipDisseminationJob for {} aips", disseminationRequests.size());
-        // TODO to implement
+        long start = System.currentTimeMillis();
+        logger.debug("[AIP DISSEMINATION JOB] Start dissemination notification for {} aips",
+                     disseminationRequests.size());
+        for (AipDisseminationRequest disseminationRequest : disseminationRequests) {
+            publisher.publish(new NotificationRequestEvent(gson.toJsonTree(disseminationRequest.getAip())
+                                                               .getAsJsonObject(),
+                                                           gson.toJsonTree(new AIPNotificationService.NotificationActionEventMetadata(
+                                                                   RequestTypeConstant.AIP_DISSEMINATION_VALUE))
+                                                               .getAsJsonObject(),
+                                                           disseminationRequest.getAip().getSession(),
+                                                           disseminationRequest.getAip().getSessionOwner()));
+            disseminationRequest.setState(InternalRequestState.WAITING_NOTIFIER_DISSEMINATION_RESPONSE);
+        }
+        aipDisseminationRequestRepository.saveAll(disseminationRequests);
+        logger.debug("[AIP DISSEMINATION JOB] End, {} dissemination notification send in {} ms",
+                     disseminationRequests.size(),
+                     System.currentTimeMillis() - start);
     }
 
 }

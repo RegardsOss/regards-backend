@@ -42,6 +42,11 @@ public enum InternalRequestState {
     WAITING_REMOTE_STORAGE,
 
     /**
+     * The request is waiting for a notifier response, about an aip dissemination
+     */
+    WAITING_NOTIFIER_DISSEMINATION_RESPONSE,
+
+    /**
      * When the request cannot be processed for now
      */
     BLOCKED,

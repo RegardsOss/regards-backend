@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.integration.test.job.JobTestUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -33,6 +34,8 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.dissemination.AipDisseminationRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -47,7 +50,9 @@ import fr.cnes.regards.modules.ingest.service.job.AipDisseminationJob;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -167,6 +172,28 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         Optional<JobInfo> jobInfo2 = aipDisseminationService.scheduleDisseminationJobs();
         // THEN no job is created because all dissemination request have job associated
         Assertions.assertTrue(jobInfo2.isEmpty());
+    }
+
+    @Test
+    public void testDisseminationJobSendToNotifier() throws ExecutionException, InterruptedException {
+        // GIVEN 201 AipDisseminationRequest, inside 3 AipDisseminationJob.
+        testDisseminationPagination();
+        // WHEN I schedule these 3 job
+        List<JobInfo> jobInfosFound = jobTestUtils.retrieveFullJobInfos(AipDisseminationJob.class, JobStatus.QUEUED);
+        for (JobInfo jobInfo : jobInfosFound) {
+            jobService.runJob(jobInfo, getDefaultTenant()).get();
+        }
+        // THEN
+        Page<AipDisseminationRequest> allRequests = aipDisseminationService.getAllRequests(PageRequest.of(0, 1000));
+        Assertions.assertEquals(201, allRequests.getTotalElements());
+        // All dissemination is in state Waiting notifier dissemination response
+        Assertions.assertTrue(allRequests.stream()
+                                         .allMatch(req -> InternalRequestState.WAITING_NOTIFIER_DISSEMINATION_RESPONSE.equals(
+                                             req.getState())),
+                              "Dissemination requests are supposed to be in "
+                              + "WAITING_NOTIFIER state after scheduling");
+        // And 201 AMQP notification are send to notifier
+        Mockito.verify(publisher, Mockito.times(201)).publish(Mockito.any(NotificationRequestEvent.class));
     }
 
     private void scheduleDisseminationCreatorJob(AIPDisseminationRequestDto disseminationDto)
