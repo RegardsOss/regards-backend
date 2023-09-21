@@ -35,7 +35,7 @@ import java.util.Map;
  **/
 public class CleanOrderJob extends AbstractJob<Void> {
 
-    private static final String CORRELATION_IDS = "correlationIds";
+    public static final String CORRELATION_IDS = "correlationIds";
 
     private List<String> correlationIds;
 

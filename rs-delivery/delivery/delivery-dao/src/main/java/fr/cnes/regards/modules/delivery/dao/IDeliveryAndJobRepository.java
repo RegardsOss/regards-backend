@@ -25,10 +25,11 @@ import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,7 +49,7 @@ public interface IDeliveryAndJobRepository extends JpaRepository<DeliveryAndJob,
 
     @Query("SELECT dj.jobInfo FROM DeliveryAndJob dj WHERE dj.deliveryRequest.id IN (:ids) AND dj.jobInfo.status"
            + ".status = :status")
-    Page<JobInfo> findJobInfoByDeliveryRequestIdsAndStatus(@Param("ids") List<Long> deliveryRequestIds,
+    Page<JobInfo> findJobInfoByDeliveryRequestIdsAndStatus(@Param("ids") Collection<Long> deliveryRequestIds,
                                                            @Param("status") JobStatus jobStatus,
                                                            Pageable pageable);
 
@@ -57,4 +58,9 @@ public interface IDeliveryAndJobRepository extends JpaRepository<DeliveryAndJob,
     // ------------
 
     void deleteByDeliveryRequestId(Long deliveryId);
+
+    @Modifying
+    @Query(value = "DELETE FROM DeliveryAndJob dj WHERE dj.deliveryRequest.id IN (:ids)")
+    void deleteByDeliveryRequestIdIn(@Param("ids") Collection<Long> requestsToDeleteIds);
+
 }

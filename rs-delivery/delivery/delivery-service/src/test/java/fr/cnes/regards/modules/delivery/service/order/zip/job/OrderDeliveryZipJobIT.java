@@ -176,12 +176,6 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
         DeliveryRequest requestInError = requests.get(0);
         Assertions.assertThat(requestInError.getStatus()).isEqualTo(DeliveryRequestStatus.ERROR);
         Assertions.assertThat(requestInError.getErrorType()).isEqualTo(DeliveryErrorType.INTERNAL_ERROR);
-        // check error message was sent
-        ArgumentCaptor<ISubscribable> captorPublished = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(publisher, Mockito.times(3)).publish(captorPublished.capture());
-        List<ISubscribable> eventsSent = captorPublished.getAllValues();
-        checkDeliveryResponseSent(eventsSent, DeliveryRequestStatus.ERROR);
-        checkJobEventSent(eventsSent, JobEventType.FAILED);
     }
 
     private void checkDeliveryResponseSent(List<ISubscribable> eventsSent, DeliveryRequestStatus finalReqStatus) {

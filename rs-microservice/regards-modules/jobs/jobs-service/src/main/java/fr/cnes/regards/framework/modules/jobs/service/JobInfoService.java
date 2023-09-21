@@ -156,6 +156,11 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
+    public List<JobInfo> createAsQueued(Collection<JobInfo> jobsInfo) {
+        return jobsInfo.stream().map(this::createAsQueued).toList();
+    }
+
+    @Override
     public JobInfo createPendingTriggerJob(JobInfo jobInfo, OffsetDateTime dateToTriggerJob) {
         if (jobInfo.getId() != null) {
             throw new IllegalArgumentException(ERROR_CREATE_JOB_INFO);

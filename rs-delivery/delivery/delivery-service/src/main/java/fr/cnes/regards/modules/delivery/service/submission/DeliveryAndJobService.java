@@ -28,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,16 +50,26 @@ public class DeliveryAndJobService {
     // ------------
     // -- SEARCH --
     // ------------
+
     @MultitenantTransactional(readOnly = true)
     public Optional<DeliveryRequest> findDeliveryRequestByJobId(UUID jobId) {
         return deliveryAndJobRepository.findDeliveryRequestByJobId(jobId);
     }
 
     @MultitenantTransactional(readOnly = true)
-    public Page<JobInfo> findJobInfoByDeliveryRequestIdsAndStatus(List<Long> deliveryRequestIds,
+    public Page<JobInfo> findJobInfoByDeliveryRequestIdsAndStatus(Collection<Long> deliveryRequestIds,
                                                                   JobStatus status,
                                                                   Pageable pageable) {
         return deliveryAndJobRepository.findJobInfoByDeliveryRequestIdsAndStatus(deliveryRequestIds, status, pageable);
+    }
+
+    // ------------
+    // -- UPDATE --
+    // ------------
+
+    @MultitenantTransactional
+    public List<DeliveryAndJob> saveAllRequests(Collection<DeliveryAndJob> requestsToSave) {
+        return deliveryAndJobRepository.saveAll(requestsToSave);
     }
 
     // ------------
@@ -68,6 +79,11 @@ public class DeliveryAndJobService {
     @MultitenantTransactional
     public void deleteByDeliveryRequestId(Long deliveryRequestId) {
         deliveryAndJobRepository.deleteByDeliveryRequestId(deliveryRequestId);
+    }
+
+    @MultitenantTransactional
+    public void deleteByDeliveryRequestIdIn(Collection<Long> deliveryRequestIds) {
+        deliveryAndJobRepository.deleteByDeliveryRequestIdIn(deliveryRequestIds);
     }
 
 }

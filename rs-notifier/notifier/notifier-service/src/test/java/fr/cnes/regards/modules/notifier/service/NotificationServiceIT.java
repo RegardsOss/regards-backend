@@ -949,7 +949,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                     latch.await(3, TimeUnit.MINUTES));
             }
             return invocation.callRealMethod();
-        }).when(jobInfoService).createAsQueued(Mockito.any());
+        }).when(jobInfoService).createAsQueued(Mockito.any(JobInfo.class));
 
         recipientService.scheduleNotificationJobs();
         // As we are simulating actions so that rule2 is matched while recipientR1_1 is being scheduled, requests might be in state SCHEDULED or TO_SCHEDULE
@@ -1429,7 +1429,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                     latch.await(3, TimeUnit.MINUTES));
             }
             return invocation.callRealMethod();
-        }).when(jobInfoService).createAsQueued(Mockito.any());
+        }).when(jobInfoService).createAsQueued(Mockito.any(JobInfo.class));
         recipientService.scheduleNotificationJobs();
         // As we are simulating actions so that requests are being retried while recipientR1_1 is being scheduled, requests should be in state GRANTED(retry on rule to match)
         List<NotificationRequest> scheduledNRetriedRequests = notificationRequestRepository.findAllById(beingScheduled.stream()
@@ -1643,7 +1643,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                     latch.await(3, TimeUnit.MINUTES));
             }
             return invocation.callRealMethod();
-        }).when(jobInfoService).createAsQueued(Mockito.any());
+        }).when(jobInfoService).createAsQueued(Mockito.any(JobInfo.class));
         recipientService.scheduleNotificationJobs();
         // requests should be in state SCHEDULED, recipientR1_1 should be in error, event to API callers have been send to say that there was an error
         // recipientR1_2 is still scheduled, recipientR2_1 is scheduled, rulesToMatch is empty, no more recipients to schedule

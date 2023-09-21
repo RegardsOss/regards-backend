@@ -66,6 +66,8 @@ public interface IJobInfoService {
      */
     JobInfo createAsQueued(JobInfo jobInfo);
 
+    List<JobInfo> createAsQueued(Collection<JobInfo> jobInfo);
+
     JobInfo enqueueJobForId(UUID jobInfoId);
 
     /**

@@ -60,6 +60,13 @@ public class DeliveryRequestService {
         return deliveryRequestRepository.findByDeliveryStatusExpiryDateBefore(limitExpiryDate, pageable);
     }
 
+    @MultitenantTransactional(readOnly = true)
+    public Page<DeliveryRequest> findDeliveryRequestByStatus(Collection<DeliveryRequestStatus> finishedRequests,
+                                                             Pageable pageable) {
+        return deliveryRequestRepository.findDeliveryRequestByDeliveryStatusStatusIn(finishedRequests, pageable);
+
+    }
+
     // ------------
     // -- UPDATE --
     // ------------
@@ -75,7 +82,7 @@ public class DeliveryRequestService {
     }
 
     @MultitenantTransactional
-    public void updateExpiredRequests(List<Long> requestIdsToUpdate, OffsetDateTime expiredDate) {
+    public void updateExpiredRequests(Collection<Long> requestIdsToUpdate, OffsetDateTime expiredDate) {
         deliveryRequestRepository.updateByIdIn(requestIdsToUpdate,
                                                DeliveryRequestStatus.ERROR,
                                                DeliveryErrorType.EXPIRED,
@@ -88,8 +95,13 @@ public class DeliveryRequestService {
     // -- DELETE --
     // ------------
     @MultitenantTransactional
-    public void deleteRequest(DeliveryRequest deliveryRequestToDelete) {
-        deliveryRequestRepository.delete(deliveryRequestToDelete);
+    public void deleteRequestById(Long deliveryRequestToDeleteId) {
+        deliveryRequestRepository.deleteById(deliveryRequestToDeleteId);
+    }
+
+    @MultitenantTransactional
+    public void deleteRequests(Collection<Long> deliveryRequestsToDeleteIds) {
+        deliveryRequestRepository.deleteAllByIdsIn(deliveryRequestsToDeleteIds);
     }
 
 }

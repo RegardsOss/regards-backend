@@ -114,6 +114,7 @@ public class UpdateExpiredSchedulerIT extends AbstractMultitenantServiceIT {
     }
 
     private void cleanRepositories() {
+        deliveryAndJobRepository.deleteAll();
         deliveryRequestRepository.deleteAll();
         jobInfoRepository.deleteAll();
     }

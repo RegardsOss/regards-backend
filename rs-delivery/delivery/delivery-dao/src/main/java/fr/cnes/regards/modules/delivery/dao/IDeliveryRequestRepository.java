@@ -31,7 +31,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Repository for {@link DeliveryRequest}.
@@ -48,6 +48,9 @@ public interface IDeliveryRequestRepository extends JpaRepository<DeliveryReques
     Page<Long> findByDeliveryStatusExpiryDateBefore(@Param("limitDate") OffsetDateTime limitExpirationDate,
                                                     Pageable pageable);
 
+    Page<DeliveryRequest> findDeliveryRequestByDeliveryStatusStatusIn(Collection<DeliveryRequestStatus> deliveryRequestStatuses,
+                                                                      Pageable pageable);
+
     // ------------
     // -- UPDATE --
     // ------------
@@ -58,9 +61,16 @@ public interface IDeliveryRequestRepository extends JpaRepository<DeliveryReques
                    + "    req.deliveryStatus.errorCause = :updateMessage, "
                    + "    req.deliveryStatus.errorType = :updateType "
                    + "WHERE req.id IN (:ids)")
-    void updateByIdIn(@Param("ids") List<Long> requestIdsToUpdate,
+    void updateByIdIn(@Param("ids") Collection<Long> requestIdsToUpdate,
                       @Param("updateStatus") DeliveryRequestStatus updateRequestStatus,
                       @Param("updateType") DeliveryErrorType updateErrorType,
                       @Param("updateMessage") String updateMessage);
 
+    // ------------
+    // -- DELETE --
+    // ------------
+
+    @Modifying
+    @Query("DELETE FROM DeliveryRequest req WHERE req.id IN (:ids)")
+    void deleteAllByIdsIn(@Param("ids") Collection<Long> requestsToDeleteIds);
 }

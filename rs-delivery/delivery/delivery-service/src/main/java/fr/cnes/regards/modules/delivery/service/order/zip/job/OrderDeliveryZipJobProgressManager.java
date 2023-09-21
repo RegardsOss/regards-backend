@@ -85,7 +85,7 @@ public class OrderDeliveryZipJobProgressManager {
                         """, deliveryRequest.getCorrelationId(), zipUploadedInfo);
         publisher.publish(buildDeliverySuccessResponse(deliveryRequest, zipUploadedInfo));
         deliveryAndJobService.deleteByDeliveryRequestId(deliveryRequest.getId());
-        deliveryRequestService.deleteRequest(deliveryRequest);
+        deliveryRequestService.deleteRequestById(deliveryRequest.getId());
     }
 
     /**
@@ -96,8 +96,11 @@ public class OrderDeliveryZipJobProgressManager {
         LOGGER.error("Delivery with correlation id '{}' ended in error.",
                      deliveryRequest.getCorrelationId(),
                      exception);
-        updateDeliveryRequestInError(deliveryRequest, exception);
-        publisher.publish(buildDeliveryErrorResponse(deliveryRequest, exception));
+        DeliveryStatus deliveryStatus = deliveryRequest.getDeliveryStatus();
+        deliveryStatus.setStatusDate(OffsetDateTime.now());
+        deliveryStatus.setStatus(DeliveryRequestStatus.ERROR);
+        deliveryStatus.setError(DeliveryErrorType.INTERNAL_ERROR, exception.getMessage());
+        deliveryRequestService.saveRequest(deliveryRequest);
     }
 
     // ------------
@@ -111,26 +114,6 @@ public class OrderDeliveryZipJobProgressManager {
                                             null,
                                             zipUploadedInfo.uri(),
                                             zipUploadedInfo.md5Checksum(),
-                                            deliveryRequest.getOriginRequestAppId(),
-                                            deliveryRequest.getOriginRequestPriority());
-    }
-
-    private void updateDeliveryRequestInError(DeliveryRequest deliveryRequest, DeliveryOrderException exception) {
-        DeliveryStatus deliveryStatus = deliveryRequest.getDeliveryStatus();
-        deliveryStatus.setStatusDate(OffsetDateTime.now());
-        deliveryStatus.setStatus(DeliveryRequestStatus.ERROR);
-        deliveryStatus.setError(DeliveryErrorType.INTERNAL_ERROR, exception.getMessage());
-        deliveryRequestService.saveRequest(deliveryRequest);
-    }
-
-    private DeliveryResponseDtoEvent buildDeliveryErrorResponse(DeliveryRequest deliveryRequest,
-                                                                DeliveryOrderException exception) {
-        return new DeliveryResponseDtoEvent(deliveryRequest.getCorrelationId(),
-                                            DeliveryRequestStatus.ERROR,
-                                            DeliveryErrorType.INTERNAL_ERROR,
-                                            exception.getMessage(),
-                                            null,
-                                            null,
                                             deliveryRequest.getOriginRequestAppId(),
                                             deliveryRequest.getOriginRequestPriority());
     }
