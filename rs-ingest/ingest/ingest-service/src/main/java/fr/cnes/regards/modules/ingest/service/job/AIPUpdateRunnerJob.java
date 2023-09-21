@@ -37,10 +37,7 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.job.step.IUpdateStep;
-import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPLocation;
-import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPSimpleProperty;
-import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPStorage;
+import fr.cnes.regards.modules.ingest.service.job.step.*;
 import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.ingest.service.settings.IngestSettingsService;
@@ -117,11 +114,10 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
         // UPDATE RETRY
         // filter out requests with notification step (in case of retry)
-        Set<AbstractRequest> notificationRetryRequests;
-        notificationRetryRequests = requests.stream()
-                                            .filter(req -> req.getStep()
-                                                           == AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR)
-                                            .collect(Collectors.toSet());
+        Set<AbstractRequest> notificationRetryRequests = requests.stream()
+                                                                 .filter(req -> req.getStep()
+                                                                                == AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR)
+                                                                 .collect(Collectors.toSet());
         if (!notificationRetryRequests.isEmpty()) {
             // remove notifications from requests to process and send them again
             this.requests.removeAll(notificationRetryRequests);
@@ -252,6 +248,10 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         IUpdateStep updateAIPStorage = new UpdateAIPStorage();
         beanFactory.autowireBean(updateAIPStorage);
 
+        // Update AIP dissemination info bean
+        IUpdateStep updateAIPDisseminationInfo = new UpdateAIPDisseminationInfo();
+        beanFactory.autowireBean(updateAIPDisseminationInfo);
+
         // END initializing update steps
 
         AIPEntityUpdateWrapper aip = AIPEntityUpdateWrapper.build(updateRequests.get(0).getAip());
@@ -273,6 +273,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                             break;
                         case REMOVE_STORAGE:
                             aip = updateAIPStorage.run(aip, updateTask);
+                            break;
+                        case UDPATE_DISSEMINATION:
+                            aip = updateAIPDisseminationInfo.run(aip, updateTask);
                             break;
                     }
                 } catch (ModuleException e) {

@@ -129,6 +129,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList(),
+                                                                       Lists.newArrayList(),
                                                                        Lists.newArrayList()));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
@@ -165,6 +166,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Create aip update requests
         aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(SESSION),
                                                                        Lists.newArrayList("ADDED_TAG"),
+                                                                       Lists.newArrayList(),
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList(),

@@ -113,7 +113,8 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                                                                                                                CATEGORIES_2,
                                                                                                                CATEGORIES_0,
                                                                                                                Lists.newArrayList(
-                                                                                                                   STORAGE_3)));
+                                                                                                                   STORAGE_3),
+                                                                                                               new ArrayList<>()));
             aipUpdatesCreatorRepository.save(someRequest);
         }
 

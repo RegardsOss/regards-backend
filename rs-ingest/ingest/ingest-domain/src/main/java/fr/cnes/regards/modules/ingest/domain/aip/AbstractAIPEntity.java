@@ -92,7 +92,9 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
     private boolean last = false;
 
     @Column(name = "dissemination_infos", columnDefinition = "jsonb")
-    @Type(type = "jsonb")
+    @Type(type = "jsonb",
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+                                    value = "fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo") })
     private List<DisseminationInfo> disseminationInfos;
 
     @NotNull

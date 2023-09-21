@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
@@ -100,6 +101,14 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
     private static final String SESSION_0 = OffsetDateTime.now().toString();
 
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
+
+    private static final String LABEL_0 = "LABEL0";
+
+    private static final String LABEL_1 = "LABEL1";
+
+    private static final String LABEL_2 = "LABEL2";
+
+    private static final OffsetDateTime INITIAL_DATE = OffsetDateTime.now();
 
     boolean isToNotify;
 
@@ -176,6 +185,14 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         // Check init datas contains the storage to remove in this test
         Page<AIPEntity> aips = aipService.findByFilters(new SearchAIPsParameters(), PageRequest.of(0, 200));
         List<AIPEntity> aipsContent = aips.getContent();
+
+        ArrayList<DisseminationInfo> disseminationInfo = Lists.newArrayList(new DisseminationInfo(LABEL_0,
+                                                                                                  INITIAL_DATE,
+                                                                                                  null),
+                                                                            new DisseminationInfo(LABEL_1,
+                                                                                                  INITIAL_DATE,
+                                                                                                  null));
+
         for (AIPEntity aip : aipsContent) {
             LOGGER.info("Intial AIP {}/{} tags : {}, categories : {}, storages : {}",
                         aip.getProviderId(),
@@ -183,6 +200,8 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
                         aip.getTags(),
                         aip.getCategories(),
                         aip.getStorages());
+            aip.setDisseminationInfos(disseminationInfo);
+            aipService.save(aip);
         }
     }
 
@@ -214,6 +233,20 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         LOGGER.info("TAGS ADD : {}, REMOVE {}", TAG_2, TAG_3);
         LOGGER.info("CATEGORIES ADD : {}, REMOVE {}", CATEGORIES_2, CATEGORIES_0);
         LOGGER.info("STORAGES REMOVE : {}", STORAGE_3);
+        LOGGER.info("DISSEMINATION INFO UPDATED FOR LABEL : {}", LABEL_0);
+
+        OffsetDateTime firstAckDate = OffsetDateTime.now();
+
+        List<DisseminationInfo> disseminationInfos = Lists.newArrayList(new DisseminationInfo(LABEL_0,
+                                                                                              null,
+                                                                                              firstAckDate),
+                                                                        new DisseminationInfo(LABEL_1,
+                                                                                              OffsetDateTime.now(),
+                                                                                              null),
+                                                                        new DisseminationInfo(LABEL_2,
+                                                                                              OffsetDateTime.now(),
+                                                                                              null));
+
         aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(SESSION_0)
                                                                                                  .withSessionOwner(
                                                                                                      SESSION_OWNER_0),
@@ -221,9 +254,10 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
                                                                        TAG_3,
                                                                        CATEGORIES_2,
                                                                        CATEGORIES_0,
-                                                                       Lists.newArrayList(STORAGE_3)));
+                                                                       Lists.newArrayList(STORAGE_3),
+                                                                       disseminationInfos));
         long nbSipConcerned = 2;
-        long nbTasksPerSip = 5;
+        long nbTasksPerSip = 6;
         waitForUpdateTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
         // Wait job scheduled
         JobInfo updateJob = aipUpdateRequestScheduler.scheduleJob();
@@ -243,6 +277,29 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
             Assert.assertEquals(CATEGORIES_2.get(0), aip.getCategories().iterator().next());
             // No more STORAGE_3
             Assert.assertFalse(aip.getStorages().contains(STORAGE_3));
+
+            // Dissemination infos are updated
+            Assert.assertEquals(aip.getDisseminationInfos().size(), 3);
+            DisseminationInfo disseminationInfo0 = aip.getDisseminationInfos()
+                                                      .stream()
+                                                      .filter(aipInfo -> aipInfo.getLabel().equals(LABEL_0))
+                                                      .findFirst()
+                                                      .get();
+            DisseminationInfo disseminationInfo1 = aip.getDisseminationInfos()
+                                                      .stream()
+                                                      .filter(aipInfo -> aipInfo.getLabel().equals(LABEL_1))
+                                                      .findFirst()
+                                                      .get();
+            DisseminationInfo disseminationInfo2 = aip.getDisseminationInfos()
+                                                      .stream()
+                                                      .filter(aipInfo -> aipInfo.getLabel().equals(LABEL_2))
+                                                      .findFirst()
+                                                      .get();
+            Assert.assertFalse(disseminationInfo0.getAckDate() == null);
+            Assert.assertTrue(disseminationInfo1.getAckDate() == null);
+            Assert.assertFalse(disseminationInfo0.getDate().isAfter(INITIAL_DATE));
+            Assert.assertTrue(disseminationInfo1.getDate().isAfter(INITIAL_DATE));
+            Assert.assertFalse(disseminationInfo2.getDate() == null);
         }
     }
 
@@ -326,4 +383,5 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
                                  new FileReferenceMetaInfo(checksum, "MD5", "file.name", 10L, MediaType.TEXT_PLAIN),
                                  new FileLocation("somewhere", "file:///somewhere/file.name", false));
     }
+
 }

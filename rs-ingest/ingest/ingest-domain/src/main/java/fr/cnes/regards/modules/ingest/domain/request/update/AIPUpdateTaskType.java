@@ -54,7 +54,11 @@ public enum AIPUpdateTaskType {
     /**
      * Task to remove a file location
      */
-    REMOVE_FILE_LOCATION;
+    REMOVE_FILE_LOCATION,
+    /**
+     * Task to update a dissemination info
+     */
+    UDPATE_DISSEMINATION;
 
     /**
      * Get the comparator between two tasks, as some task must be executed before others

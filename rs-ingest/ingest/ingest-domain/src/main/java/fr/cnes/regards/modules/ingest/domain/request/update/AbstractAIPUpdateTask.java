@@ -98,6 +98,11 @@ public abstract class AbstractAIPUpdateTask {
                                                   AIPUpdateState.READY,
                                                   updateTaskDto.getRemoveStorages()));
         }
+        if (!updateTaskDto.getUpdateDisseminationInfo().isEmpty()) {
+            result.add(AIPUpdateDisseminationTask.build(AIPUpdateTaskType.UDPATE_DISSEMINATION,
+                                                        AIPUpdateState.READY,
+                                                        updateTaskDto.getUpdateDisseminationInfo()));
+        }
         return result;
     }
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request.update;
 
+import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 
 import javax.validation.Valid;
@@ -56,6 +57,11 @@ public class AIPUpdateParametersDto {
      * Categories to remove on each AIPs
      */
     private List<String> removeCategories;
+
+    /**
+     * Dissemination info to update on each AIPs
+     */
+    private List<DisseminationInfo> updateDisseminationInfo;
 
     /**
      * Storage business id to remove on each AIP dataobject
@@ -110,12 +116,21 @@ public class AIPUpdateParametersDto {
         this.removeStorages = removeStorages;
     }
 
+    public List<DisseminationInfo> getUpdateDisseminationInfo() {
+        return updateDisseminationInfo;
+    }
+
+    public void setUpdateDisseminationInfo(List<DisseminationInfo> updateDisseminationInfo) {
+        this.updateDisseminationInfo = updateDisseminationInfo;
+    }
+
     public static AIPUpdateParametersDto build(SearchAIPsParameters aipsParameters,
                                                List<String> addTags,
                                                List<String> removeTags,
                                                List<String> addCategories,
                                                List<String> removeCategories,
-                                               List<String> removeStorages) {
+                                               List<String> removeStorages,
+                                               List<DisseminationInfo> disseminationInfoUpdates) {
         AIPUpdateParametersDto params = new AIPUpdateParametersDto();
         params.setCriteria(aipsParameters);
         params.setAddTags(addTags);
@@ -123,6 +138,7 @@ public class AIPUpdateParametersDto {
         params.setAddCategories(addCategories);
         params.setRemoveCategories(removeCategories);
         params.setRemoveStorages(removeStorages);
+        params.setUpdateDisseminationInfo(disseminationInfoUpdates);
         return params;
     }
 
@@ -134,6 +150,7 @@ public class AIPUpdateParametersDto {
         params.setAddCategories(new ArrayList<>());
         params.setRemoveCategories(new ArrayList<>());
         params.setRemoveStorages(new ArrayList<>());
+        params.setUpdateDisseminationInfo(new ArrayList<>());
         return params;
     }
 

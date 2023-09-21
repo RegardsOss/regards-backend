@@ -49,7 +49,7 @@ public class AipDisseminationJob extends AbstractJob<Void> {
 
     public static final String AIP_DISSEMINATION_REQUEST_IDS = "AIP_DISSEMINATION_REQUEST_IDS";
 
-    private List<AipDisseminationRequest> disseminationRequests;
+    private List<AipDisseminationRequest> aipDisseminationRequests;
 
     @Autowired
     private AipDisseminationService aipDisseminationService;
@@ -72,15 +72,15 @@ public class AipDisseminationJob extends AbstractJob<Void> {
         }.getType();
         List<Long> aipRequestIds = getValue(parameters, AIP_DISSEMINATION_REQUEST_IDS, type);
         // Retrieve list of AIP save metadata requests to handle
-        disseminationRequests = aipDisseminationService.searchRequests(aipRequestIds);
+        aipDisseminationRequests = aipDisseminationService.searchRequests(aipRequestIds);
     }
 
     @Override
     public void run() {
         long start = System.currentTimeMillis();
         logger.debug("[AIP DISSEMINATION JOB] Start dissemination notification for {} aips",
-                     disseminationRequests.size());
-        for (AipDisseminationRequest disseminationRequest : disseminationRequests) {
+                     aipDisseminationRequests.size());
+        for (AipDisseminationRequest disseminationRequest : aipDisseminationRequests) {
             publisher.publish(new NotificationRequestEvent(gson.toJsonTree(disseminationRequest.getAip())
                                                                .getAsJsonObject(),
                                                            gson.toJsonTree(new AIPNotificationService.NotificationActionEventMetadata(
@@ -90,9 +90,9 @@ public class AipDisseminationJob extends AbstractJob<Void> {
                                                            disseminationRequest.getAip().getSessionOwner()));
             disseminationRequest.setState(InternalRequestState.WAITING_NOTIFIER_DISSEMINATION_RESPONSE);
         }
-        aipDisseminationRequestRepository.saveAll(disseminationRequests);
+        aipDisseminationRequestRepository.saveAll(aipDisseminationRequests);
         logger.debug("[AIP DISSEMINATION JOB] End, {} dissemination notification send in {} ms",
-                     disseminationRequests.size(),
+                     aipDisseminationRequests.size(),
                      System.currentTimeMillis() - start);
     }
 

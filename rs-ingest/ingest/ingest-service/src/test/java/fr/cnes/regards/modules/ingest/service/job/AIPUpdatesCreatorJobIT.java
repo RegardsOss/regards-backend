@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.*;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -96,6 +97,10 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
     private static final String SESSION_OWNER_0 = "NASA";
 
     private static final String SESSION_OWNER_1 = "CNES";
+
+    private static final List<DisseminationInfo> DISSEMINATION_INFO = Lists.newArrayList(new DisseminationInfo("label",
+                                                                                                               null,
+                                                                                                               OffsetDateTime.now()));
 
     private static final String SESSION_0 = OffsetDateTime.now().toString();
 
@@ -182,9 +187,10 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
                                                                        TAG_1,
                                                                        CATEGORIES_2,
                                                                        CATEGORIES_1,
-                                                                       Lists.newArrayList(STORAGE_3)));
+                                                                       Lists.newArrayList(STORAGE_3),
+                                                                       DISSEMINATION_INFO));
         long nbSipConcerned = 2;
-        long nbTasksPerSip = 5;
+        long nbTasksPerSip = 6;
         waitForTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
     }
 
@@ -201,10 +207,11 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
                                                                        TAG_1,
                                                                        CATEGORIES_2,
                                                                        CATEGORIES_1,
-                                                                       Lists.newArrayList(STORAGE_3)));
+                                                                       Lists.newArrayList(STORAGE_3),
+                                                                       DISSEMINATION_INFO));
         long nbInitialTasks = 6;
         long nbSipConcerned = 2;
-        long nbTasksPerSip = 5;
+        long nbTasksPerSip = 6;
         long expectedRequests = nbSipConcerned * nbTasksPerSip;
         waitForTaskCreated(expectedRequests + nbInitialTasks, 10_000);
 

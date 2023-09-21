@@ -19,24 +19,88 @@
 package fr.cnes.regards.modules.ingest.domain.aip;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 /**
- * This record contains information about the dissemination of an AIP from a Regards instance to another one
+ * This class contains information about the dissemination of an AIP from a Regards instance to another one
  *
  * @author Thomas GUILLOU
  **/
-public record DisseminationInfo(
+public class DisseminationInfo {
+
     /**
      * Name of the Regards destination
      */
-    String label,
+    private String label;
+
     /**
      * Date of the dissemination request
      */
-    OffsetDateTime date,
+    private OffsetDateTime date;
+
     /**
      * Date of acknowledge of the dissemination request
      */
-    OffsetDateTime ackDate) {
+    private OffsetDateTime ackDate;
 
+    public DisseminationInfo(String label, OffsetDateTime date, OffsetDateTime ackDate) {
+        this.label = label;
+        this.date = date;
+        this.ackDate = ackDate;
+    }
+
+    public boolean hasReceivedAck() {
+        return ackDate != null;
+    }
+
+    public boolean hasInitialDate() {
+        return date != null;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public void setDate(OffsetDateTime date) {
+        this.date = date;
+    }
+
+    public void setAckDate(OffsetDateTime ackDate) {
+        this.ackDate = ackDate;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public OffsetDateTime getDate() {
+        return date;
+    }
+
+    public OffsetDateTime getAckDate() {
+        return ackDate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DisseminationInfo that = (DisseminationInfo) o;
+        return Objects.equals(label, that.label) && Objects.equals(date, that.date) && Objects.equals(ackDate,
+                                                                                                      that.ackDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(label, date, ackDate);
+    }
+
+    @Override
+    public String toString() {
+        return "DisseminationInfo{" + "label='" + label + '\'' + ", date=" + date + ", ackDate=" + ackDate + '}';
+    }
 }

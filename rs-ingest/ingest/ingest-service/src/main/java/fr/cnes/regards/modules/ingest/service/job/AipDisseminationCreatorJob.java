@@ -94,10 +94,10 @@ public class AipDisseminationCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.info("[AIP DISSEMINATION CREATOR JOB]: start creating requests");
         long start = System.currentTimeMillis();
-        logger.info("[AIP DISSEMINATION CREATOR JOB]: request recipients {}",
+        logger.info("[AIP DISSEMINATION CREATOR JOB]: start creating requests with recipients {}",
                     disseminationCreatorRequest.getRequest().recipients());
+
         setAndSaveCreatorRequestToRunningState();
         createDisseminationRequestForAipsMatching(disseminationCreatorRequest.getRequest().filters(),
                                                   disseminationCreatorRequest.getRequest().recipients(),

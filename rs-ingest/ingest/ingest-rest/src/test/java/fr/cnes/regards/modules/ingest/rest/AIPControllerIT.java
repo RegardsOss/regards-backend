@@ -341,7 +341,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.documentRequestBody(documentUpdateAIPRequestParameters());
 
         AIPUpdateParametersDto body = AIPUpdateParametersDto.build(new SearchAIPsParameters().withSessionOwner(
-            sessionOwner).withSession(session), null, null, null, Lists.newArrayList("CAT 1"), null);
+            sessionOwner).withSession(session), null, null, null, Lists.newArrayList("CAT 1"), null, null);
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.AIP_UPDATE_PATH,
                            body,
