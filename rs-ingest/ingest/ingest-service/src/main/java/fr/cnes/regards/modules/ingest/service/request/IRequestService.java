@@ -150,7 +150,7 @@ public interface IRequestService {
 
     void switchRequestState(AbstractRequest request);
 
-    void deleteRequests(Collection<AbstractRequest> requests);
+    void deleteRequests(Collection<? extends AbstractRequest> requests);
 
     /**
      * Delete the provided {@link AbstractRequest}, ensure related jobs are unlocked

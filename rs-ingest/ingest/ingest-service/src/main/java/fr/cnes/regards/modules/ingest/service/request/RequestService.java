@@ -401,7 +401,7 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    public void deleteRequests(Collection<AbstractRequest> requests) {
+    public void deleteRequests(Collection<? extends AbstractRequest> requests) {
         for (AbstractRequest request : requests) {
             deleteRequest(request);
         }

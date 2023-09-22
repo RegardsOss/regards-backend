@@ -222,6 +222,13 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
+    public List<IngestRequest> findErrorRequestsByProviderId(String providerId) {
+        return ingestRequestRepository.findByProviderIdInAndStateIn(List.of(providerId),
+                                                                    List.of(InternalRequestState.ERROR,
+                                                                            InternalRequestState.ABORTED));
+    }
+
+    @Override
     public void handleRequestGranted(IngestRequest request) {
         // Keep track of the request
         saveRequest(request);

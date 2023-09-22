@@ -35,8 +35,8 @@ import javax.persistence.Enumerated;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -81,6 +81,9 @@ public class IngestMetadata {
     @Column(name = "versioning_mode")
     @Enumerated(EnumType.STRING)
     private VersioningMode versioningMode = VersioningMode.INC_VERSION;
+
+    @Column(name = "replace_errors")
+    private boolean replaceErrors = false;
 
     @Column(length = 128, name = "model")
     private String model;
@@ -151,6 +154,14 @@ public class IngestMetadata {
 
     public void setSubmissionDate(OffsetDateTime submissionDate) {
         this.submissionDate = submissionDate;
+    }
+
+    public boolean getReplaceErrors() {
+        return replaceErrors;
+    }
+
+    public void setReplaceErrors(Boolean replaceErrors) {
+        this.replaceErrors = replaceErrors;
     }
 
     /**

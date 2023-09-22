@@ -70,6 +70,8 @@ public class IngestMetadataDto {
     @NotNull(message = IngestValidationMessages.MISSING_VERSIONING_MODE)
     private VersioningMode versioningMode = VersioningMode.INC_VERSION;
 
+    private Boolean replaceErrors = Boolean.FALSE;
+
     @Size(max = 128)
     private String model;
 
@@ -194,5 +196,13 @@ public class IngestMetadataDto {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public Boolean getReplaceErrors() {
+        return replaceErrors;
+    }
+
+    public void setReplaceErrors(Boolean replaceErrors) {
+        this.replaceErrors = replaceErrors;
     }
 }

@@ -45,17 +45,17 @@ import java.util.stream.Collectors;
 @MultitenantTransactional
 public class RequestDeletionService {
 
-    private IAIPDeleteService aipDeleteService;
+    private final IAIPDeleteService aipDeleteService;
 
-    private ISIPService sipService;
+    private final ISIPService sipService;
 
-    private IAIPService aipService;
+    private final IAIPService aipService;
 
-    private IRequestService requestService;
+    private final IRequestService requestService;
 
-    private IIngestRequestService ingestRequestService;
+    private final IIngestRequestService ingestRequestService;
 
-    private IPublisher publisher;
+    private final IPublisher publisher;
 
     public RequestDeletionService(IAIPDeleteService aipDeleteService,
                                   ISIPService sipService,
@@ -71,13 +71,13 @@ public class RequestDeletionService {
         this.publisher = publisher;
     }
 
-    public void deleteRequests(Collection<AbstractRequest> requests) {
+    public void deleteRequests(Collection<? extends AbstractRequest> requests) {
         // Retrieve complete ingest requests before deletion
         List<IngestRequest> ingestRequests = ingestRequestService.findByIds(requests.stream()
                                                                                     .filter(r -> r.getDtype()
                                                                                                   .equals(
                                                                                                       RequestTypeConstant.INGEST_VALUE))
-                                                                                    .map(r -> r.getId())
+                                                                                    .map(AbstractRequest::getId)
                                                                                     .collect(Collectors.toSet()));
         // Delete requests
         requestService.deleteRequests(requests);

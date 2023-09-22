@@ -72,6 +72,11 @@ public interface IIngestRequestService {
     List<IngestRequest> findByProviderId(String providerId);
 
     /**
+     * Load all requests in error state with the given providerId
+     */
+    List<IngestRequest> findErrorRequestsByProviderId(String providerId);
+
+    /**
      * Load all requests with {@link InternalRequestState#TO_SCHEDULE} status
      */
     Page<IngestRequest> findToSchedule(Pageable pageable);

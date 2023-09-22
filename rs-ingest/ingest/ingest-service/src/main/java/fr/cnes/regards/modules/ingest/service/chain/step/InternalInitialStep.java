@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.info.ErrorModeHandling;
 import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.request.RequestDeletionService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,6 +52,9 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
     @Autowired
     private ISIPService sipService;
 
+    @Autowired
+    private RequestDeletionService requestDeletionService;
+
     public InternalInitialStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
     }
@@ -63,6 +67,11 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
 
         //remove null tags because they have no use!
         sip.getTags().remove(null);
+
+        // If replace error mode is activated, first delete old request/sip/aip in error state for the same providerId
+        if (request.getMetadata().getReplaceErrors()) {
+            requestDeletionService.deleteRequests(ingestRequestService.findErrorRequestsByProviderId(request.getProviderId()));
+        }
 
         // Compute checksum
         String checksum;
