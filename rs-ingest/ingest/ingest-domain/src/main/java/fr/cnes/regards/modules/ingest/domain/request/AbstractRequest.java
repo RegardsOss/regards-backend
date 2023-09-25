@@ -102,19 +102,31 @@ public abstract class AbstractRequest {
     @Column(length = 128, name = "provider_id")
     private String providerId;
 
+    @Column(length = 36, name = "correlation_id")
+    private String correlationId;
+
     @NotNull(message = "Request state is required")
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
     private InternalRequestState state;
 
-    public AbstractRequest() {
+    /**
+     * Never use this constructor : use instead {@link #AbstractRequest(String)}
+     * This is a no-args constructor for jpa
+     */
+    protected AbstractRequest() {
+    }
+
+    public AbstractRequest(String correlationId) {
+        this.correlationId = correlationId;
     }
 
     public AbstractRequest(String sessionOwner,
                            String session,
                            OffsetDateTime submissionDate,
                            String providerId,
-                           String dtype) {
+                           String dtype,
+                           String correlationId) {
         this.creationDate = OffsetDateTime.now();
         this.lastUpdate = OffsetDateTime.now();
         this.sessionOwner = sessionOwner;
@@ -123,6 +135,7 @@ public abstract class AbstractRequest {
         this.providerId = providerId;
         this.dtype = dtype;
         this.state = InternalRequestState.TO_SCHEDULE;
+        this.correlationId = correlationId;
     }
 
     @Column(length = 128, name = "dtype", insertable = false, updatable = false)
@@ -130,6 +143,14 @@ public abstract class AbstractRequest {
 
     public Long getId() {
         return id;
+    }
+
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
     }
 
     public void setId(Long id) {

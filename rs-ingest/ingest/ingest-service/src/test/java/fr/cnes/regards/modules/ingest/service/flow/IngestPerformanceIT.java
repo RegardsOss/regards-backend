@@ -49,6 +49,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Test SIP flow handling
@@ -181,7 +182,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         // 3. Simulate an update request in error
         String sipToUpdate = sipRepository.findTopByProviderIdOrderByCreationDateDesc(PROVIDER_PREFIX + 0).getSipId();
         AIPEntity aip = aipService.findBySipId(sipToUpdate).iterator().next();
-        AIPUpdateRequest updateRequest = new AIPUpdateRequest();
+        AIPUpdateRequest updateRequest = new AIPUpdateRequest(UUID.randomUUID().toString());
         updateRequest.setUpdateTask(null);
         updateRequest.setAip(aip);
         updateRequest.setCreationDate(OffsetDateTime.now());

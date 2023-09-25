@@ -33,6 +33,7 @@ import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * Request to postprocess aips
@@ -59,8 +60,18 @@ public class AIPPostProcessRequest extends AbstractRequest {
                 foreignKey = @ForeignKey(name = "fk_postprocessing_request_aip"))
     private AIPEntity aip;
 
+    public AIPPostProcessRequest(String correlationId) {
+        super(correlationId);
+    }
+
+    /**
+     * This is a no-args constructor for jpa, don't use it
+     */
+    protected AIPPostProcessRequest() {
+    }
+
     public static AIPPostProcessRequest build(AIPEntity aipToProcess, String postProcessingPluginBusinessId) {
-        AIPPostProcessRequest appr = new AIPPostProcessRequest();
+        AIPPostProcessRequest appr = new AIPPostProcessRequest(UUID.randomUUID().toString());
         appr.aip = aipToProcess;
         appr.config = AIPPostProcessPayload.build(postProcessingPluginBusinessId);
         appr.setCreationDate(OffsetDateTime.now());

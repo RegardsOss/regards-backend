@@ -134,7 +134,7 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
             case HANDLE_ONLY_REQUEST_ERROR -> handleRequestError(stepErrorInfo.errorType(), stepErrorInfo.errorMsg());
             case NOTHING_TO_DO -> LOGGER.debug("An error occurred during the processing of request with id \"{}\". "
                                                + "Waiting for admin action to handle this case.",
-                                               job.getCurrentRequest().getRequestId());
+                                               job.getCurrentRequest().getCorrelationId());
         }
     }
 

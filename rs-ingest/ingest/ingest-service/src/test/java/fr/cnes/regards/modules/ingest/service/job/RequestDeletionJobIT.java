@@ -187,7 +187,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
                                                           aips.get(0).getSip().getSip());
         ingestRequest.setAips(List.of(aips.get(0)));
         ingestRequestRepository.save(ingestRequest);
-        OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
+        OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest(UUID.randomUUID().toString());
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionCreatorRepository.save(deletionRequest);

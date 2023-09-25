@@ -234,7 +234,7 @@ public class IngestRequestService implements IIngestRequestService {
         saveRequest(request);
 
         // Publish
-        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+        publisher.publish(IngestRequestEvent.build(request.getCorrelationId(),
                                                    request.getSip() != null ? request.getSip().getId() : null,
                                                    null,
                                                    RequestState.GRANTED,
@@ -245,7 +245,7 @@ public class IngestRequestService implements IIngestRequestService {
     public void handleRequestDenied(IngestRequest request) {
         // Do not keep track of the request
         // Publish DENIED request
-        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+        publisher.publish(IngestRequestEvent.build(request.getCorrelationId(),
                                                    request.getSip() != null ? request.getSip().getId() : null,
                                                    null,
                                                    RequestState.DENIED,
@@ -568,14 +568,14 @@ public class IngestRequestService implements IIngestRequestService {
                 sipService.updateState(sipEntity, SIPState.STORED);
 
                 // add ingest request event to list of ingest request events to publish
-                listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
+                listIngestRequestEvents.add(IngestRequestEvent.build(request.getCorrelationId(),
                                                                      request.getSip().getId(),
                                                                      sipEntity.getSipId(),
                                                                      RequestState.SUCCESS));
             } else {
                 // Should never happen.  A successfully ingest request is always associated to at least one AIP.
                 LOGGER.warn("Finalized IngestRequest ({} / {}) is not associated to any AIP",
-                            request.getRequestId(),
+                            request.getCorrelationId(),
                             request.getId());
             }
         }
@@ -748,7 +748,7 @@ public class IngestRequestService implements IIngestRequestService {
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
         // Mutate request
         request.addError(String.format("The ingest request with id \"%s\" and SIP provider id \"%s\" failed",
-                                       request.getRequestId(),
+                                       request.getCorrelationId(),
                                        request.getSip().getId()));
         request.setState(InternalRequestState.ERROR);
         // set default error code if none was provided
@@ -762,7 +762,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Keep track of the error
         saveRequestAndCheck(request);
         // Publish
-        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+        publisher.publish(IngestRequestEvent.build(request.getCorrelationId(),
                                                    request.getSip() != null ? request.getSip().getId() : null,
                                                    null,
                                                    RequestState.ERROR,

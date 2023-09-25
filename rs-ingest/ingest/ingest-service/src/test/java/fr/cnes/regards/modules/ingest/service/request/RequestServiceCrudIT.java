@@ -191,7 +191,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
                                                          aips.get(0).getSip().getSip(),
                                                          Set.of("generation error"),
                                                          IngestErrorType.GENERATION));
-        OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
+        OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest(UUID.randomUUID().toString());
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
         deletionRequest.setErrors(IngestErrorType.DELETE, Set.of("delete creator error"));

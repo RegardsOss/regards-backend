@@ -32,6 +32,7 @@ import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * Request to handle deletion of an OAIS product (sip/aips)
@@ -57,10 +58,20 @@ public class OAISDeletionRequest extends AbstractRequest {
     @JoinColumn(name = "aip_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_update_request_aip"))
     private AIPEntity aip;
 
+    /**
+     * This is a no-args constructor for jpa, don't use it
+     */
+    protected OAISDeletionRequest() {
+    }
+
+    public OAISDeletionRequest(String correlationId) {
+        super(correlationId);
+    }
+
     public static OAISDeletionRequest build(AIPEntity aipToDelete,
                                             SessionDeletionMode deletionMode,
                                             boolean deleteFiles) {
-        OAISDeletionRequest odr = new OAISDeletionRequest();
+        OAISDeletionRequest odr = new OAISDeletionRequest(UUID.randomUUID().toString());
         odr.aip = aipToDelete;
         odr.config = OAISDeletionPayload.build(deletionMode, deleteFiles);
         odr.setCreationDate(OffsetDateTime.now());

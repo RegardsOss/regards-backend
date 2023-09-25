@@ -32,6 +32,7 @@ import org.hibernate.annotations.TypeDefs;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * @author Léo Mieulet
@@ -47,6 +48,16 @@ public class AIPUpdatesCreatorRequest extends AbstractRequest {
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private AIPUpdateParametersDto config;
 
+    /**
+     * This is a no-args constructor for jpa, don't use it
+     */
+    protected AIPUpdatesCreatorRequest() {
+    }
+
+    public AIPUpdatesCreatorRequest(String correlationId) {
+        super(correlationId);
+    }
+
     public AIPUpdateParametersDto getConfig() {
         return config;
     }
@@ -56,7 +67,7 @@ public class AIPUpdatesCreatorRequest extends AbstractRequest {
     }
 
     public static AIPUpdatesCreatorRequest build(AIPUpdateParametersDto params) {
-        AIPUpdatesCreatorRequest result = new AIPUpdatesCreatorRequest();
+        AIPUpdatesCreatorRequest result = new AIPUpdatesCreatorRequest(UUID.randomUUID().toString());
         result.setCreationDate(OffsetDateTime.now());
         result.setState(InternalRequestState.TO_SCHEDULE);
         result.setConfig(params);

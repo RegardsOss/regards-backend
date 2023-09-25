@@ -109,7 +109,7 @@ public class RequestDeletionService {
 
             // Publish request canceled
             for (IngestRequest request : requests) {
-                publisher.publish(IngestRequestEvent.build(request.getRequestId(),
+                publisher.publish(IngestRequestEvent.build(request.getCorrelationId(),
                                                            request.getProviderId(),
                                                            null,
                                                            RequestState.DELETED,

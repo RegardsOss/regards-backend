@@ -163,7 +163,7 @@ public class RequestService implements IRequestService {
         requests.forEach(r -> {
             sessionNotifier.ingestRequestErrorDeleted(r);
             // Inform request canceled
-            publisher.publish(IngestRequestEvent.build(r.getRequestId(),
+            publisher.publish(IngestRequestEvent.build(r.getCorrelationId(),
                                                        r.getProviderId(),
                                                        null,
                                                        RequestState.DELETED,
@@ -374,7 +374,7 @@ public class RequestService implements IRequestService {
         if (oldestRequest.isEmpty()) {
             return false;
         }
-        return oldestRequest.get().getRequestId().equals(requestToCheck.getRequestId());
+        return oldestRequest.get().getCorrelationId().equals(requestToCheck.getCorrelationId());
     }
 
     /**

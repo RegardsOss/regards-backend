@@ -189,7 +189,7 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
         ir.setAips(aips);
         ingestRequestRepository.save(ir);
         ingestRequestSchedulerService.scheduleRequests();
-        OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
+        OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest(UUID.randomUUID().toString());
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionCreatorRepository.save(deletionRequest);

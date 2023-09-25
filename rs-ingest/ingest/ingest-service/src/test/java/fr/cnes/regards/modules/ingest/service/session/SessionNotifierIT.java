@@ -112,7 +112,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         clearPublishedEvents();
 
         // init ingest request
-        ingestRequest = new IngestRequest();
+        ingestRequest = new IngestRequest(UUID.randomUUID().toString());
         ingestRequest.setSessionOwner(sessionOwner);
         ingestRequest.setSession(session);
         ingestRequest.setAips(aips);

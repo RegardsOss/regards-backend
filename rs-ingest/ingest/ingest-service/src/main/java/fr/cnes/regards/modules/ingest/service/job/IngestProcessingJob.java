@@ -215,9 +215,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                     && request.getState() != InternalRequestState.IGNORED) {
                     logger.error("SIP \"{}\" ingestion error", request.getSip().getId());
                     sipInError++;
-                    String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
+                    String msg = String.format("Error while ingesting SIP \"%s\" in request with correlation id \"%s\"",
                                                request.getSip().getId(),
-                                               request.getRequestId());
+                                               request.getCorrelationId());
                     notifMsg.add(msg);
                     logger.error(msg);
                     logger.error("Ingestion step error", e);

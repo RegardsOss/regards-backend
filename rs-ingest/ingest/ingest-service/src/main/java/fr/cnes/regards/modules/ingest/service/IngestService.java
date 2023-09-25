@@ -194,7 +194,7 @@ public class IngestService implements IIngestService {
                                                     sip);
         ingestRequestService.handleRequestGranted(request);
         // Trace granted request
-        info.addGrantedRequest(sip.getId(), request.getRequestId());
+        info.addGrantedRequest(sip.getId(), request.getCorrelationId());
         // Add to granted request collection
         grantedRequests.add(request);
         return request;

@@ -192,7 +192,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                                                                                                   .collect(Collectors.toSet()));
         for (IngestRequest request : tmpRequests) {
             sipId = request.getAips().get(0).getSip().getSipId();
-            ingestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
+            ingestRequestEvents.add(IngestRequestEvent.build(request.getCorrelationId(),
                                                              request.getSip().getId(),
                                                              sipId,
                                                              RequestState.SUCCESS));

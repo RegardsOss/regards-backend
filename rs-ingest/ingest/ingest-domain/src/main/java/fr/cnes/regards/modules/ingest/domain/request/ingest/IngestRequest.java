@@ -62,8 +62,14 @@ public class IngestRequest extends AbstractRequest {
                inverseForeignKey = @ForeignKey(name = "fk_ingest_request_aip_aip_id"))
     private List<AIPEntity> aips;
 
-    public static String generateRequestId() {
-        return UUID.randomUUID().toString();
+    /**
+     * This is a no-args constructor for jpa, don't use it
+     */
+    protected IngestRequest() {
+    }
+
+    public IngestRequest(String correlationId) {
+        super(correlationId);
     }
 
     public static IngestRequest build(String requestId,
@@ -81,9 +87,8 @@ public class IngestRequest extends AbstractRequest {
                                       SIP sip,
                                       @Nullable Set<String> errors,
                                       @Nullable IngestErrorType errorType) {
-        IngestRequest request = new IngestRequest();
+        IngestRequest request = new IngestRequest(requestId != null ? requestId : UUID.randomUUID().toString());
         request.setConfig(new IngestPayload());
-        request.setRequestId(requestId == null ? generateRequestId() : requestId);
         request.setDtype(RequestTypeConstant.INGEST_VALUE);
         request.setMetadata(metadata);
         request.setSubmissionDate(metadata.getSubmissionDate());
@@ -105,14 +110,6 @@ public class IngestRequest extends AbstractRequest {
 
     public void setConfig(IngestPayload config) {
         this.config = config;
-    }
-
-    public String getRequestId() {
-        return config.getRequestId();
-    }
-
-    public void setRequestId(String requestId) {
-        config.setRequestId(requestId);
     }
 
     public IngestMetadata getMetadata() {

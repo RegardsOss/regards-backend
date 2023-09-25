@@ -27,6 +27,7 @@ import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * Request to save aip metadata
@@ -47,12 +48,19 @@ public class AIPSaveMetadataRequest extends AbstractRequest {
     public AIPSaveMetadataRequest(OffsetDateTime previousDumpDate, String dumpLocation) {
         // session information are specific to AIP subset defined by users, the same goes for session owner. ProviderId is aip specific.
         // AIPSaveMetadataRequests are not related to sessions
-        super(null, null, null, null, RequestTypeConstant.AIP_SAVE_METADATA_VALUE);
+        super(null, null, null, null, RequestTypeConstant.AIP_SAVE_METADATA_VALUE, UUID.randomUUID().toString());
         this.previousDumpDate = previousDumpDate;
         this.dumpLocation = dumpLocation;
     }
 
-    public AIPSaveMetadataRequest() {
+    /**
+     * This is a no-args constructor for jpa, don't use it
+     */
+    protected AIPSaveMetadataRequest() {
+    }
+
+    public AIPSaveMetadataRequest(String correlationId) {
+        super(correlationId);
     }
 
     public OffsetDateTime getPreviousDumpDate() {

@@ -30,6 +30,7 @@ import org.hibernate.annotations.TypeDefs;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * Macro request that keeps info about a "massive" suppression of OAIS entities
@@ -49,7 +50,7 @@ public class OAISDeletionCreatorRequest extends AbstractRequest {
     private OAISDeletionCreatorPayload config;
 
     public static OAISDeletionCreatorRequest build(OAISDeletionCreatorPayload deletionPayload) {
-        OAISDeletionCreatorRequest request = new OAISDeletionCreatorRequest();
+        OAISDeletionCreatorRequest request = new OAISDeletionCreatorRequest(UUID.randomUUID().toString());
         request.config = deletionPayload;
         request.setCreationDate(OffsetDateTime.now());
         request.setDtype(RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE);
@@ -63,7 +64,14 @@ public class OAISDeletionCreatorRequest extends AbstractRequest {
         return request;
     }
 
-    public OAISDeletionCreatorRequest() {
+    /**
+     * This is a no-args constructor for jpa, don't use it
+     */
+    protected OAISDeletionCreatorRequest() {
+    }
+
+    public OAISDeletionCreatorRequest(String correlationId) {
+        super(correlationId);
         this.config = new OAISDeletionCreatorPayload();
     }
 

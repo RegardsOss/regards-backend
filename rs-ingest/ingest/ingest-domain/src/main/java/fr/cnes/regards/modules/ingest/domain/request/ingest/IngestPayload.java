@@ -38,8 +38,6 @@ public class IngestPayload {
 
     private IngestMetadata metadata;
 
-    private String requestId;
-
     @NotNull(message = "Ingest request state is required")
     private RequestState state;
 
@@ -50,14 +48,6 @@ public class IngestPayload {
     private IngestRequestStep step;
 
     private SIP sip;
-
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
 
     public RequestState getState() {
         return state;

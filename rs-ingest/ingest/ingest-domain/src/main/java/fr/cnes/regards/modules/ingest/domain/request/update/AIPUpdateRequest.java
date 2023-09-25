@@ -37,6 +37,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Keep info about an AIP update request
@@ -67,6 +68,16 @@ public class AIPUpdateRequest extends AbstractRequest {
     @ManyToOne
     @JoinColumn(name = "aip_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_update_request_aip"))
     private AIPEntity aip;
+
+    public AIPUpdateRequest(String correlationId) {
+        super(correlationId);
+    }
+
+    /**
+     * This is a no-args constructor for jpa, don't use it
+     */
+    protected AIPUpdateRequest() {
+    }
 
     public AbstractAIPUpdateTask getUpdateTask() {
         return updateTask;
@@ -109,7 +120,7 @@ public class AIPUpdateRequest extends AbstractRequest {
                                                boolean pending) {
         List<AIPUpdateRequest> result = new ArrayList<>();
         for (AbstractAIPUpdateTask updateTask : updateTasks) {
-            AIPUpdateRequest updateRequest = new AIPUpdateRequest();
+            AIPUpdateRequest updateRequest = new AIPUpdateRequest(UUID.randomUUID().toString());
             updateRequest.config = AIPUpdatePayload.build();
             updateRequest.setUpdateTask(updateTask);
             updateRequest.setAip(aip);
