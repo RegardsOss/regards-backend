@@ -264,7 +264,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                 if (existingEntityUrns.contains(urn)) {
                     if (sessionMetadata.isUpdateIfExists()) {
                         // if updateIfExists option is enabled, register an update request instead of a creation one.
-                        newUpdateRequests.add(buidUpdateEventFromCreationEvent(item));
+                        newUpdateRequests.add(buildUpdateEventFromCreationEvent(item));
                         return;
                     } else {
                         errors.rejectValue("urn", "feature.urn.already.exists.error.message", "URN already exists");
@@ -344,9 +344,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
      * Creates a {@link FeatureUpdateRequestEvent} from a {@link FeatureCreationRequestEvent}. Useful to update an already existing feature
      * when a creationEvent is received with a given urn and updateIfExists option enabled.
      */
-    private FeatureUpdateRequestEvent buidUpdateEventFromCreationEvent(FeatureCreationRequestEvent creationEvent) {
+    private FeatureUpdateRequestEvent buildUpdateEventFromCreationEvent(FeatureCreationRequestEvent creationEvent) {
         FeatureUpdateRequestEvent updateEvent = new FeatureUpdateRequestEvent();
-        updateEvent.setMetadata(FeatureMetadata.build(creationEvent.getMetadata().getPriority()));
+        updateEvent.setMetadata(creationEvent.getMetadata());
         updateEvent.setRequestId(creationEvent.getRequestId());
         updateEvent.setFeature(creationEvent.getFeature());
         updateEvent.getMessageProperties()
