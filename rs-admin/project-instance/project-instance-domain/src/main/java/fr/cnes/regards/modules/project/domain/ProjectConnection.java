@@ -74,7 +74,7 @@ public class ProjectConnection implements IIdentifiable<Long> {
     /**
      * Database username
      */
-    @Column(name = "userName", nullable = false, length = 30)
+    @Column(name = "userName", nullable = false, length = 63)
     @NotNull
     private String userName;
 
