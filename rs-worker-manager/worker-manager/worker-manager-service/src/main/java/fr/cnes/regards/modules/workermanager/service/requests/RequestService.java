@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
 import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.amqp.events.RawMessageBuilder;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
@@ -404,7 +405,7 @@ public class RequestService {
         SessionsRequestsInfo newRequestInfo = new SessionsRequestsInfo();
         // Retrieve requests matching worker responses
         List<Request> requests = requestRepository.findByRequestIdIn(events.stream()
-                                                                           .map(e -> e.getRequestIdHeader())
+                                                                           .map(WorkerResponseEvent::getRequestIdHeader)
                                                                            .collect(Collectors.toList()));
         requestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         // For each worker response update matching request status
@@ -421,16 +422,16 @@ public class RequestService {
                              workerResponseEvent.getStatus());
                 // update request according to response status
                 switch (workerResponseEvent.getStatus()) {
-                    case RUNNING -> request.setStatus(RequestStatus.RUNNING);
-                    case INVALID_CONTENT -> {
-                        request.setStatus(RequestStatus.INVALID_CONTENT);
-                        request.setError(String.join(",", workerResponseEvent.getMessages()));
+                    case RUNNING, INVALID_CONTENT, ERROR -> {
+                        request.setStatus(fromWorkerResponseStatus(workerResponseEvent.getStatus()));
+                        if (workerResponseEvent.getMessages() != null && !workerResponseEvent.getMessages().isEmpty()) {
+                            request.setError(String.join(",", workerResponseEvent.getMessages()));
+                        } else {
+                            // Invalidate error if no message is provided
+                            request.setError(null);
+                        }
                     }
                     case SUCCESS -> handleRequestSuccess(request, workerResponseEvent);
-                    case ERROR -> {
-                        request.setStatus(RequestStatus.ERROR);
-                        request.setError(String.join(",", workerResponseEvent.getMessages()));
-                    }
                 }
             } else {
                 LOGGER.warn("Request id {} from worker {} does not match ay known request on manager.",
@@ -459,6 +460,15 @@ public class RequestService {
                                                    .toList());
 
         return newRequestInfo;
+    }
+
+    private RequestStatus fromWorkerResponseStatus(WorkerResponseStatus status) {
+        return switch (status) {
+            case RUNNING -> RequestStatus.RUNNING;
+            case SUCCESS -> RequestStatus.SUCCESS;
+            case INVALID_CONTENT -> RequestStatus.INVALID_CONTENT;
+            case ERROR -> RequestStatus.ERROR;
+        };
     }
 
     /**
@@ -607,11 +617,11 @@ public class RequestService {
                                         SessionsRequestsInfo requestInfo) {
         List<String> errors = Lists.newArrayList();
         // Check owner is not empty
-        if (!EventHeadersHelper.getOwnerHeader(event).isPresent()) {
+        if (EventHeadersHelper.getOwnerHeader(event).isEmpty()) {
             errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.OWNER_HEADER));
         }
         // Check content type is not empty and do not match a content type to skipp
-        if (!EventHeadersHelper.getContentTypeHeader(event).isPresent()) {
+        if (EventHeadersHelper.getContentTypeHeader(event).isEmpty()) {
             errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.CONTENT_TYPE_HEADER));
         } else if (contentTypesToSkip.contains(EventHeadersHelper.getContentTypeHeader(event).get())) {
             errors.add(String.format(SKIPP_CONTENT_TYPE_MESSAGE,
@@ -619,7 +629,7 @@ public class RequestService {
                                      runtimeTenantResolver.getTenant()));
         }
         // Check session is not empty
-        if (!EventHeadersHelper.getSessionHeader(event).isPresent()) {
+        if (EventHeadersHelper.getSessionHeader(event).isEmpty()) {
             errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.SESSION_HEADER));
         }
         // Check requestId does not exist already.
@@ -765,7 +775,7 @@ public class RequestService {
 
     public LightRequest retrieveLightRequest(String requestId) throws EntityNotFoundException {
         Optional<LightRequest> lightRequestOpt = requestRepository.findLightByRequestId(requestId);
-        if (!lightRequestOpt.isPresent()) {
+        if (lightRequestOpt.isEmpty()) {
             throw new EntityNotFoundException(requestId, LightRequest.class);
         }
         return lightRequestOpt.get();
@@ -773,7 +783,7 @@ public class RequestService {
 
     public Request retrieveRequest(String requestId) throws EntityNotFoundException {
         Optional<Request> requestOpt = requestRepository.findOneByRequestId(requestId);
-        if (!requestOpt.isPresent()) {
+        if (requestOpt.isEmpty()) {
             throw new EntityNotFoundException(requestId, Request.class);
         }
         return requestOpt.get();
