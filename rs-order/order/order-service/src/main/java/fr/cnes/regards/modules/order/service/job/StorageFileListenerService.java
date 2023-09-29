@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.order.service.job;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
@@ -28,10 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -52,7 +48,7 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
 
     private final Set<StorageFilesJob> subscribers = ConcurrentHashMap.newKeySet();
 
-    private StorageFileListenerService self;
+    private final StorageFileListenerService self;
 
     private final ApplicationContext applicationContext;
 
@@ -67,10 +63,7 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
         Set<String> availableChecksums = available.stream()
                                                   .map(FileReferenceEventDTO::getChecksum)
                                                   .collect(Collectors.toSet());
-        subscribers.forEach(subscriber -> this.changeFilesStateWithRetry(availableChecksums,
-                                                                         FileState.AVAILABLE,
-                                                                         subscriber,
-                                                                         5));
+        subscribers.forEach(subscriber -> subscriber.notifyFilesAvailable(availableChecksums));
     }
 
     @Override
@@ -78,10 +71,7 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
         Set<String> inErrorChecksum = availabilityError.stream()
                                                        .map(FileReferenceEventDTO::getChecksum)
                                                        .collect(Collectors.toSet());
-        subscribers.forEach(subscriber -> this.changeFilesStateWithRetry(inErrorChecksum,
-                                                                         FileState.ERROR,
-                                                                         subscriber,
-                                                                         5));
+        subscribers.forEach(subscriber -> subscriber.notifyFilesUnavailable(inErrorChecksum));
     }
 
     @Override
@@ -112,31 +102,5 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
     @Override
     public void onFileUpdated(List<FileReferenceUpdateDTO> updatedReferences) {
         // Do nothing because message is of no importance for rs-order
-    }
-
-    private void changeFilesStateWithRetry(Set<String> checksums,
-                                           FileState state,
-                                           StorageFilesJob jobSubscriber,
-                                           int nbRetry) {
-        try {
-            self.changeFilesState(checksums, state, jobSubscriber);
-        } catch (ObjectOptimisticLockingFailureException e) {
-            if (nbRetry > 0) {
-                LOGGER.trace(
-                    "Another schedule has updated some of the order files handled by this method while it was running.",
-                    e);
-                // we retry until it succeed because if it does not succeed on first time it is most likely because of
-                // another scheduled method that would then most likely happen at next invocation because execution delays are fixed
-                // Moreover, we cannot retry on the same content as it has to be reloaded from DB
-                this.changeFilesStateWithRetry(checksums, state, jobSubscriber, nbRetry - 1);
-            } else {
-                throw e;
-            }
-        }
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void changeFilesState(Set<String> checksums, FileState state, StorageFilesJob jobSubscriber) {
-        jobSubscriber.changeFilesState(checksums, state);
     }
 }

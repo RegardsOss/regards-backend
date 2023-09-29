@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -88,7 +89,9 @@ public class StorageFilesJob extends AbstractJob<Void> {
      * Set of file checksums already handled by a DataStorageEvent.
      * Used in order to avoid listening on two same available events from storage.
      */
-    protected final Set<String> alreadyHandledFiles = Sets.newHashSet();
+    protected final Set<String> availableHandledFiles = Sets.newHashSet();
+
+    protected final Set<String> unavailableHandledFiles = Sets.newHashSet();
 
     /**
      * The user.
@@ -151,7 +154,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
                                                               f.getFilename(),
                                                               cs));
             // Wait for remaining files availability from storage
-            this.semaphore.acquire();
+            // Wait maximum 2 hours for storage restitution.
+            this.semaphore.tryAcquire(2, TimeUnit.HOURS);
             logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
         } catch (RuntimeException e) { // Feign or network or ... exception
             // Put All data files in ERROR and propagate exception to make job fail
@@ -163,35 +167,41 @@ public class StorageFilesJob extends AbstractJob<Void> {
         } finally {
             // All files have been treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);
-
-            processJobInfoId
+            if (processJobInfoId.isEmpty()) {
                 // NO PROCESSING
-                .onEmpty(() ->
-                             // All order data files statuses are updated into database (if there is no process to launch)
-                             dataFileService.save(dataFilesMultimap.values()))
-                // PROCESSING TO BE LAUNCHED
-                .peek(id -> processingService.enqueuedProcessingJob(id, dataFilesMultimap.values(), user));
+                dataFilesMultimap.entries()
+                                 .stream()
+                                 .filter(e -> availableHandledFiles.contains(e.getKey()))
+                                 .forEach(e -> e.getValue().setState(FileState.AVAILABLE));
+                dataFilesMultimap.entries()
+                                 .stream()
+                                 .filter(e -> unavailableHandledFiles.contains(e.getKey()))
+                                 .forEach(e -> e.getValue().setState(FileState.ERROR));
+                dataFileService.save(dataFilesMultimap.values());
+            } else {
+                // With PROCESSING
+                processingService.enqueuedProcessingJob(processJobInfoId.get(), dataFilesMultimap.values(), user);
+            }
         }
     }
 
-    public void changeFilesState(Set<String> checksumsAvailable, FileState fileState) {
-        Set<String> availableFilesOrderedByThisJob = new HashSet<>(checksumsAvailable);
-        availableFilesOrderedByThisJob.retainAll(dataFilesMultimap.keySet());
-        availableFilesOrderedByThisJob.removeAll(alreadyHandledFiles);
-        List<OrderDataFile> handledOrderDataFiles = new ArrayList<>(availableFilesOrderedByThisJob.size());
-        for (String available : availableFilesOrderedByThisJob) {
-            Collection<OrderDataFile> dataFiles = dataFilesMultimap.get(available);
-            for (OrderDataFile df : dataFiles) {
-                logger.debug("File {} - {} is now in state: {}.", df.getFilename(), df.getChecksum(), fileState);
-                df.setState(fileState);
-                handledOrderDataFiles.add(df);
-            }
-            alreadyHandledFiles.add(available);
+    public void notifyFilesAvailable(Collection<String> availableFilesChecksum) {
+        notifyFiles(availableFilesChecksum, availableHandledFiles);
+    }
+
+    public void notifyFilesUnavailable(Collection<String> unavailableFilesChecksum) {
+        notifyFiles(unavailableFilesChecksum, unavailableHandledFiles);
+    }
+
+    private void notifyFiles(Collection<String> notifiedFiles, Collection<String> alreadyNotifiedFiles) {
+        Set<String> unavailableFilesOrderedByThisJob = new HashSet<>(notifiedFiles);
+        unavailableFilesOrderedByThisJob.retainAll(dataFilesMultimap.keySet());
+        unavailableFilesOrderedByThisJob.removeAll(alreadyNotifiedFiles);
+        for (String unavailable : unavailableFilesOrderedByThisJob) {
+            alreadyNotifiedFiles.add(unavailable);
             this.advanceCompletion();
         }
-
-        orderDataFileRepository.saveAll(handledOrderDataFiles);
         // Release as much semaphore permits as there is available files
-        this.semaphore.release(availableFilesOrderedByThisJob.size());
+        this.semaphore.release(unavailableFilesOrderedByThisJob.size());
     }
 }
