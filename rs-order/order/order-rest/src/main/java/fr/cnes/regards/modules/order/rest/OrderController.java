@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -320,17 +318,13 @@ public class OrderController implements IResourceController<OrderDto> {
                                                   orderDtoPagedResourcesAssembler));
     }
 
+    @PostMapping(value = ADMIN_ROOT_PATH + CSV, produces = "text/csv")
     @ResourceAccess(description = "Generate a CSV file with all orders", role = DefaultRole.EXPLOIT)
-    @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH + CSV, produces = "text/csv")
-    public void generateCsv(@RequestParam(name = "status", required = false) OrderStatus status,
-                            @RequestParam(name = "from", required = false) String fromParam,
-                            @RequestParam(name = "to", required = false) String toParam,
-                            HttpServletResponse response) throws IOException {
-        OffsetDateTime from = Strings.isNullOrEmpty(fromParam) ? null : OffsetDateTimeAdapter.parse(fromParam);
-        OffsetDateTime to = Strings.isNullOrEmpty(toParam) ? null : OffsetDateTimeAdapter.parse(toParam);
+    public void generateCsv(@Valid @RequestBody SearchRequestParameters filters, HttpServletResponse response)
+        throws IOException {
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=orders.csv");
         response.setContentType("text/csv");
-        orderService.writeAllOrdersInCsv(new BufferedWriter(response.getWriter()), status, from, to);
+        orderService.writeAllOrdersInCsv(new BufferedWriter(response.getWriter()), filters);
     }
 
     @ResourceAccess(description = "Find all user current orders", role = DefaultRole.REGISTERED_USER)

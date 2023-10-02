@@ -31,7 +31,6 @@ import org.springframework.lang.Nullable;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -170,8 +169,7 @@ public interface IOrderService {
     /**
      * Write all orders in CSV format
      */
-    void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
-        throws IOException;
+    void writeAllOrdersInCsv(BufferedWriter writer, SearchRequestParameters filters) throws IOException;
 
     boolean isActionAvailable(long orderId, OrderService.Action action);
 

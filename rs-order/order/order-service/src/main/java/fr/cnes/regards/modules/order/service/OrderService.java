@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.dao.OrderSpecifications;
 import fr.cnes.regards.modules.order.dao.RequestSpecificationsBuilder;
 import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
@@ -432,10 +431,10 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
-        throws IOException {
-        List<Order> orders = orderRepository.findAll(OrderSpecifications.search(status, from, to),
+    public void writeAllOrdersInCsv(BufferedWriter writer, SearchRequestParameters filters) throws IOException {
+        List<Order> orders = orderRepository.findAll(new RequestSpecificationsBuilder().withParameters(filters).build(),
                                                      Sort.by(Sort.Direction.ASC, "id"));
+
         writer.append(
             "ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR;FILES_SIZE;FILES_COUNT");
         writer.newLine();
