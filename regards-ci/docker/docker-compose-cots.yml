@@ -40,8 +40,8 @@ services:
     networks:
       - regards_IT_network
   
-  rs-s3-minio:
-    image: 172.26.46.158/regards-s3-minio
+  rs-minio:
+    image: 172.26.46.158/regards-minio
     networks:
       - regards_IT_network
 

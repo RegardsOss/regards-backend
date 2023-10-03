@@ -243,7 +243,7 @@ pipeline {
                 && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-second', returnStatus: true
 
             sh label: "POST-FAILURE-TASK -- Print S3 Minio logs", script: 'cd ' + CI_DIR + ' \
-                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-s3-minio', returnStatus: true
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-minio', returnStatus: true
 
         }
         cleanup {
@@ -283,10 +283,10 @@ def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst
                         -e REGARDS_MS="' + regardsMs + '"                                                      '
     if (isRequiringCots) {
         def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
-        dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432 rs-s3-minio:9000"   \
+        dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432 rs-minio:9000"   \
                          --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq             \
                          --link ' + dockerProject + '_rs-elasticsearch_1:rs-elasticsearch                      \
-                         --link ' + dockerProject + '_rs-s3-minio_1:rs-s3-minio                                \
+                         --link ' + dockerProject + '_rs-minio_1:rs-minio                                \
                          --link ' + dockerProject + '_rs-postgres_1:rs-postgres                                '
     }
     dockerCommand += ' --network="regards_IT_network"                                                       \
