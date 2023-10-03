@@ -41,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MimeType;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -363,6 +364,7 @@ public class FeatureFilesService {
     public FeatureEntity updateFeatureLocations(FeatureEntity originalFeature,
                                                 List<RequestResultInfoDto> storageResponses,
                                                 List<FeatureFile> requestedFiles) {
+        originalFeature.setLastUpdate(OffsetDateTime.now());
         // For each feature, handle each request info from storage
         for (RequestResultInfoDto info : storageResponses) {
             String checksum = info.getResultFile().getMetaInfo().getChecksum();
