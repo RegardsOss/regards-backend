@@ -31,6 +31,8 @@ import org.springframework.lang.Nullable;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -184,7 +186,7 @@ public interface IOrderService {
      */
     boolean hasCurrentUserAccessTo(String owner);
 
-    List<Order> findByCorrelationIds(List<String> correlationIds);
+    List<Order> findByCorrelationIdsAndStatus(Collection<String> correlationIds, Collection<OrderStatus> orderStatuses);
 
     void updateErrorWithMessageIfNecessary(Long orderId, @Nullable String msg);
 }

@@ -58,6 +58,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -539,8 +540,9 @@ public class OrderService implements IOrderService {
         return message;
     }
 
-    public List<Order> findByCorrelationIds(List<String> correlationIds) {
-        return orderRepository.findByCorrelationIdIn(correlationIds);
+    public List<Order> findByCorrelationIdsAndStatus(Collection<String> correlationIds,
+                                                     Collection<OrderStatus> orderStatuses) {
+        return orderRepository.findByCorrelationIdInAndStatusIn(correlationIds, orderStatuses);
     }
 
     public void updateErrorWithMessageIfNecessary(Long orderId, @Nullable String msg) {

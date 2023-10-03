@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.order.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,12 +66,18 @@ public class CancelOrderJob extends AbstractJob<Void> {
         logger.debug("[{}] Cancel order job starts. Handle {} Orders.", jobInfoId, orders.size());
         long start = System.currentTimeMillis();
 
+        List<Long> ordersInWaitingPause = new ArrayList<>();
+        List<Long> ordersToDeleted = new ArrayList<>();
+
         if (orders != null) {
-            //1. pause each order
+            //1. pause each order if its state is PENDING or RUNNING
             orders.forEach(order -> {
                 try {
-                    if (order.getStatus() == OrderStatus.RUNNING) {
+                    if (order.getStatus().isOneOfStatuses(OrderStatus.PENDING, OrderStatus.RUNNING)) {
                         orderService.pause(order.getId());
+                        ordersInWaitingPause.add(order.getId());
+                    } else {
+                        ordersToDeleted.add(order.getId());
                     }
                 } catch (ModuleException e) {
                     manageOrderInError(order.getId(),
@@ -79,23 +86,31 @@ public class CancelOrderJob extends AbstractJob<Void> {
                                                      e.getMessage()));
                 }
             });
-            //2. ask if each order is in pause state before delete it
-            orders.forEach(order -> {
+            //2. delete order with right state
+            ordersToDeleted.forEach(orderId -> {
+                try {
+                    orderService.delete(orderId);
+                } catch (ModuleException e) {
+                    manageOrderInError(orderId, e.getMessage());
+                }
+            });
+            //3. ask if each order is in pause state before delete it
+            ordersInWaitingPause.forEach(orderId -> {
                 try {
                     int loop = 0;
-                    while (!orderService.isPaused(order.getId()) && (loop < NB_LOOP)) {
+                    while (!orderService.isPaused(orderId) && (loop < NB_LOOP)) {
                         Thread.sleep(loopDuration);
                         loop++;
                     }
                     if (loop == NB_LOOP) {
                         throw new ModuleException("Timeout during canceling of order with identifier ["
-                                                  + order.getId()
+                                                  + orderId
                                                   + "]");
                     }
-                    orderService.delete(order.getId());
+                    orderService.delete(orderId);
                     this.advanceCompletion();
                 } catch (ModuleException | InterruptedException e) {
-                    manageOrderInError(order.getId(), e.getMessage());
+                    manageOrderInError(orderId, e.getMessage());
                 }
             });
         }

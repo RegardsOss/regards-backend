@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.order.amqp.input.OrderCancelRequestDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,10 +39,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This handler creates {@link CancelOrderJob} from the receiving of {@link OrderCancelRequestDtoEvent}s
@@ -105,7 +103,10 @@ public class OrderCancelRequestEventHandler
         List<String> validCorrelationIds = validateEvents(events);
 
         if (!validCorrelationIds.isEmpty()) {
-            List<Order> orders = orderService.findByCorrelationIds(validCorrelationIds);
+            // Find all orders in db with list of correlation identifiers and
+            // with all status of order, except deleted status.
+            List<Order> orders = orderService.findByCorrelationIdsAndStatus(validCorrelationIds,
+                                                                            EnumSet.complementOf(EnumSet.of(OrderStatus.DELETED)));
 
             JobInfo jobInfo = new JobInfo(false,
                                           OrderJobPriority.CANCEL_ORDER_JOB_PRIORITY,
