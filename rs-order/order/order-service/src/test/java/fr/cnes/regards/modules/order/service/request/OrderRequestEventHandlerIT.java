@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
 import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeException;
+import fr.cnes.regards.modules.order.dto.OrderErrorCode;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.exception.AutoOrderException;
@@ -109,7 +110,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
      * Class under test
      */
     @SpyBean
-    private OrderRequestEventHandler requestHandler;
+    private OrderRequestEventHandler orderRequestEventHandler;
 
     @Autowired
     private IJobInfoRepository jobInfoRepository;
@@ -159,7 +160,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // --- WHEN ---
         publisher.publish(validOrderRequests);
-        Mockito.verify(requestHandler, Mockito.timeout(10000)).handleBatch(any());
+        Mockito.verify(orderRequestEventHandler, Mockito.timeout(10000)).handleBatch(any());
 
         // --- THEN ---
         // Wait for jobs to be executed and for orders taken into account (in RUNNING state @see
@@ -209,7 +210,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // --- WHEN ---
         publisher.publish(validOrderRequests);
-        Mockito.verify(requestHandler, Mockito.timeout(100000)).handleBatch(any());
+        Mockito.verify(orderRequestEventHandler, Mockito.timeout(100000)).handleBatch(any());
 
         // --- THEN ---
         // Wait for job and order to be executed / completed in fail status
@@ -241,7 +242,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // --- WHEN ---
         publisher.publish(validOrderRequests);
-        Mockito.verify(requestHandler, Mockito.timeout(100000)).handleBatch(any());
+        Mockito.verify(orderRequestEventHandler, Mockito.timeout(100000)).handleBatch(any());
         Thread.sleep(1_000);
 
         // THEN
@@ -250,9 +251,11 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         checkOrderRequestResponsesEvents(List.of(responseCaptor.getAllValues().get(1)),
                                          1,
                                          OrderRequestStatus.DENIED,
-                                         String.format("Error detected on field \"user\". Cause: \"Unknown user : "
-                                                       + "%s\".", TEST_USER_UNKNOWN_ORDER),
-                                         null);
+                                         String.format(
+                                             "[FORBIDDEN] Unknown user : unknownUser at user: rejected value [null]."),
+                                         null,
+                                         OrderErrorCode.FORBIDDEN,
+                                         Integer.valueOf(1));
 
         // check no mail was sent
         Mockito.verifyNoInteractions(emailClient);
@@ -267,7 +270,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // --- WHEN ---
         publisher.publish(validOrderRequests);
-        Mockito.verify(requestHandler, Mockito.timeout(100000)).handleBatch(any());
+        Mockito.verify(orderRequestEventHandler, Mockito.timeout(100000)).handleBatch(any());
         Thread.sleep(1_000);
 
         // --- THEN ---
@@ -312,10 +315,10 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // --- WHEN ---
         publisher.publish(validOrderRequests);
-        Mockito.verify(requestHandler, Mockito.timeout(100000)).handleBatch(any());
-        Thread.sleep(2_000);
+        Mockito.verify(orderRequestEventHandler, Mockito.timeout(100000)).handleBatch(any());
+        Thread.sleep(1_000);
 
-        // THEN
+        // --- THEN ---
         ArgumentCaptor<ISubscribable> responseCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(responseCaptor.capture());
         List<OrderResponseDtoEvent> responses = responseCaptor.getAllValues()
@@ -327,8 +330,10 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         checkOrderRequestResponsesEvents(responses,
                                          1,
                                          OrderRequestStatus.DENIED,
-                                         "Error detected on field \"user\". Cause: \"User should be present\".",
-                                         null);
+                                         "[INVALID_CONTENT] User should be present at user: rejected value [null].",
+                                         null,
+                                         OrderErrorCode.INTERNAL_ERROR,
+                                         Integer.valueOf(1));
 
         // check no mail was sent
         Mockito.verifyNoInteractions(emailClient);
@@ -343,7 +348,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // --- WHEN ---
         publisher.publish(invalidRequests);
-        Mockito.verify(requestHandler, Mockito.timeout(10000).times(nbOrders)).validate(any());
+        Mockito.verify(orderRequestEventHandler, Mockito.timeout(10000).times(nbOrders)).validate(any());
 
         // --- THEN ---
         // check that OrderRequestResponseDtoEvents are sent with denied status

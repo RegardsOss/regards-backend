@@ -49,6 +49,9 @@ public class OrderRetryService implements IOrderRetryService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderRetryService.class);
 
+    /**
+     * List of states in error : ERROR and DOWNLOAD_ERROR.
+     */
     private static final List<String> ERROR_STATE_LIST = Arrays.asList(FileState.ERROR.name(),
                                                                        FileState.DOWNLOAD_ERROR.name());
 
@@ -72,6 +75,8 @@ public class OrderRetryService implements IOrderRetryService {
 
     private final SuborderSizeCounter suborderSizeCounter;
 
+    private final OrderResponseService orderResponseService;
+
     public OrderRetryService(IOrderDataFileRepository orderDataFileRepository,
                              IOrderRepository orderRepository,
                              IRuntimeTenantResolver runtimeTenantResolver,
@@ -79,7 +84,8 @@ public class OrderRetryService implements IOrderRetryService {
                              IDatasetTaskService datasetTaskService,
                              OrderHelperService orderHelperService,
                              SuborderSizeCounter suborderSizeCounter,
-                             IOrderRetryService orderRetryService) {
+                             IOrderRetryService orderRetryService,
+                             OrderResponseService orderResponseService) {
         this.orderDataFileRepository = orderDataFileRepository;
         this.orderRepository = orderRepository;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -87,6 +93,7 @@ public class OrderRetryService implements IOrderRetryService {
         this.datasetTaskService = datasetTaskService;
         this.orderHelperService = orderHelperService;
         this.suborderSizeCounter = suborderSizeCounter;
+        this.orderResponseService = orderResponseService;
         this.self = orderRetryService;
     }
 
@@ -121,7 +128,7 @@ public class OrderRetryService implements IOrderRetryService {
                                                                order.getCorrelationId()));
 
             // Update Order expiration date and JobInfo expiration date
-            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(orderCounts.getSubOrderCount(),
+            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(orderCounts.getInternalSubOrderCount(),
                                                                                           subOrderDuration);
             order.setExpirationDate(expirationDate);
             orderHelperService.updateJobInfosExpirationDate(expirationDate, orderCounts.getJobInfoIdSet());
@@ -129,6 +136,19 @@ public class OrderRetryService implements IOrderRetryService {
             order.setStatus(OrderStatus.RUNNING);
 
             orderJobService.manageUserOrderStorageFilesJobInfos(owner);
+
+            for (DatasetTask datasetTask : order.getDatasetTasks()) {
+                for (FilesTask subOrder : datasetTask.getReliantTasks()) {
+                    if (subOrder.isEnded()) {
+                        orderResponseService.notifySuborderDone(order.getCorrelationId(),
+                                                                order.getOwner(),
+                                                                order.getId(),
+                                                                subOrder.getId(),
+                                                                orderCounts.getInternalSubOrderCount()
+                                                                + orderCounts.getInternalSubOrderCount());
+                    }
+                }
+            }
 
         } catch (Exception e) {
             LOGGER.error("Error while retrying order", e);
@@ -185,6 +205,7 @@ public class OrderRetryService implements IOrderRetryService {
         } while (orderDataFiles.size() >= LIMIT);
 
         manageExternalBucket(externalBucketFiles, true, datasetTask, orderCounts, orderId, owner, correlationId);
+
         manageStorageBucket(storageBucketFiles,
                             true,
                             datasetTask,
@@ -216,7 +237,7 @@ public class OrderRetryService implements IOrderRetryService {
                                                         role,
                                                         priority);
             counts.addJobInfoId(jobInfoId);
-            counts.incrSubOrderCount();
+            counts.incrInternalSubOrderCount();
             bucket.clear();
         }
     }
@@ -232,7 +253,7 @@ public class OrderRetryService implements IOrderRetryService {
                                   || bucket.size() >= MAX_BUCKET_FILE_COUNT
                                   || suborderSizeCounter.externalBucketTooBig(bucket))) {
             self.createExternalSubOrder(datasetTask, bucket, orderId, owner, correlationId);
-            counts.incrSubOrderCount();
+            counts.incrExternalSubOrderCount();
             bucket.clear();
         }
     }

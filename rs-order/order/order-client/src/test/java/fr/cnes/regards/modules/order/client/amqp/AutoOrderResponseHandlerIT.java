@@ -97,6 +97,10 @@ public class AutoOrderResponseHandlerIT extends AbstractMultitenantServiceIT {
                                                         orderId,
                                                         String.valueOf("corr-" + i + "-" + status),
                                                         "random",
+                                                        null,
+                                                        null,
+                                                        null,
+                                                        null,
                                                         null));
             }
         });

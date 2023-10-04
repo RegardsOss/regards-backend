@@ -62,7 +62,7 @@ public class OrderAttachmentDataServiceTest {
 
     @Before
     public void before() {
-        OrderHelperService orderHelperService = new OrderHelperService(null, null, null, null, null, null, null, null);
+        OrderHelperService orderHelperService = new OrderHelperService(null, null, null, null, null, null, null);
         datasetClient = Mockito.mock(IDatasetClient.class);
         orderAttachmentDataSetService = new OrderAttachmentDataSetService(datasetClient, orderHelperService, null);
     }
@@ -84,10 +84,7 @@ public class OrderAttachmentDataServiceTest {
         // WHEN
         Set<OrderDataFile> storageBucket = new HashSet<>();
         Set<OrderDataFile> externalBucket = new HashSet<>();
-        orderAttachmentDataSetService.fillBucketsWithDataSetFiles(order,
-                                                                  dsSel,
-                                                                  storageBucket,
-                                                                  externalBucket);
+        orderAttachmentDataSetService.fillBucketsWithDataSetFiles(order, dsSel, storageBucket, externalBucket);
 
         // THEN
         Assertions.assertEquals(2, externalBucket.size());

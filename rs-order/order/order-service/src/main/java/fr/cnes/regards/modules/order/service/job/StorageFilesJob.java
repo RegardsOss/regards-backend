@@ -44,7 +44,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * Job  to ensure with storage microservice that order files are availables to download.
+ * Job to ensure with storage microservice that order files are availables to download.
  * <p>
  * When using processing, this job launches the {@link ProcessExecutionJob} referenced in
  * the {@link #processJobInfoId} field.

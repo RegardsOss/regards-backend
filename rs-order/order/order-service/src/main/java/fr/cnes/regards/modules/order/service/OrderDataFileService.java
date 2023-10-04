@@ -232,6 +232,9 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         }
     }
 
+    /**
+     * Compute states for a sub-order. Notify a sub-order done notification.
+     */
     private void computeFilesTaskStates(FilesTask filesTask) {
         filesTask.computeTaskEnded();
         boolean wasWaitingForUser = filesTask.isWaitingForUser();
@@ -509,7 +512,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                 } else { // DONE_WITH_WARNING
                     order.setStatus(OrderStatus.DONE_WITH_WARNING);
                 }
-                orderResponseService.notifyOrderFinished(order);
+                orderResponseService.notifyFinishedOrder(order);
             }
         }
     }

@@ -118,7 +118,8 @@ public class FilesTask extends LeafTask {
      */
     public void computeWaitingForUser() {
         boolean anyPending = files.stream().anyMatch(file -> file.getState() == FileState.PENDING);
-        boolean anyAvailable = files.stream().anyMatch(f -> f.getState() == FileState.AVAILABLE);
+        boolean anyAvailable = files.stream().anyMatch(file -> file.getState() == FileState.AVAILABLE);
+
         this.waitingForUser = !anyPending && anyAvailable;
     }
 

@@ -83,8 +83,6 @@ public class OrderHelperService {
 
     private final IOrderSettingsService orderSettingsService;
 
-    private final OrderResponseService orderResponseService;
-
     private final IOrderDataFileService dataFileService;
 
     @Value("${regards.order.secret}")
@@ -110,7 +108,6 @@ public class OrderHelperService {
                               IRuntimeTenantResolver runtimeTenantResolver,
                               IProjectUsersClient projectUsersClient,
                               IOrderSettingsService orderSettingsService,
-                              OrderResponseService orderResponseService,
                               IOrderDataFileService dataFileService) {
         this.jwtService = jwtService;
         this.jobInfoService = jobInfoService;
@@ -118,7 +115,6 @@ public class OrderHelperService {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.projectUsersClient = projectUsersClient;
         this.orderSettingsService = orderSettingsService;
-        this.orderResponseService = orderResponseService;
         this.dataFileService = dataFileService;
     }
 
@@ -170,7 +166,7 @@ public class OrderHelperService {
     /**
      * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      *
-     * @return JobInfo Id
+     * @return the identifier of created {@link JobInfo} setting its state as PENDING
      */
     @MultitenantTransactional
     public UUID createStorageSubOrder(DatasetTask datasetTask,
@@ -184,7 +180,6 @@ public class OrderHelperService {
                     orderDataFiles.size(),
                     orderId,
                     owner);
-
         try {
             // Set log correlation id
             CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + orderId);
@@ -205,10 +200,11 @@ public class OrderHelperService {
             storageJobInfo.setOwner(owner);
             storageJobInfo.setClassName(StorageFilesJob.class.getName());
             storageJobInfo.setPriority(priority);
-
             JobInfo jobInfo = jobInfoService.createAsPending(storageJobInfo);
+
             currentFilesTask.setJobInfo(jobInfo);
             datasetTask.addReliantTask(currentFilesTask);
+
             LOGGER.info("Storage sub-order of {} files created (Order: {} - Owner: {})",
                         orderDataFiles.size(),
                         orderId,
@@ -226,11 +222,15 @@ public class OrderHelperService {
     @MultitenantTransactional
     public void createExternalSubOrder(DatasetTask datasetTask, Set<OrderDataFile> orderDataFiles, Order order) {
         dataFileService.create(orderDataFiles);
+
         createExternalSubOrder(datasetTask, orderDataFiles, order.getId(), order.getOwner(), order.getCorrelationId());
     }
 
     /**
-     * Create an external sub-order ie a FilesTask, and add it to DatasetTask
+     * Create an external sub-order ie a FilesTask, and add it to DatasetTask.
+     * An external sub-order is ended just after its creating (no waiting of job for an external suborder).
+     *
+     * @return the identifier of created sub-order in database
      */
     @MultitenantTransactional
     public void createExternalSubOrder(DatasetTask datasetTask,
@@ -243,12 +243,14 @@ public class OrderHelperService {
                     orderDataFiles.size(),
                     orderId,
                     owner);
-        FilesTask currentFilesTask = new FilesTask();
-        currentFilesTask.setOrderId(orderId);
-        currentFilesTask.setOwner(owner);
-        currentFilesTask.addAllFiles(orderDataFiles);
-        datasetTask.addReliantTask(currentFilesTask);
-        orderResponseService.notifySuborderDone(correlationId, owner, orderId);
+        FilesTask newSubOrder = new FilesTask();
+        newSubOrder.setOrderId(orderId);
+        newSubOrder.setEnded(true);
+        newSubOrder.setOwner(owner);
+
+        newSubOrder.addAllFiles(orderDataFiles);
+
+        datasetTask.addReliantTask(newSubOrder);
     }
 
     @MultitenantTransactional

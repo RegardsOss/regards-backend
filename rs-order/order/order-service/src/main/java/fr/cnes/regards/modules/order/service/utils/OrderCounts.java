@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Allows to count internal/external files and suborders during the order creation.
+ * Allows to count internal/external files and sub-orders during the order creation.
  * <p>
  * {@link #add(OrderCounts, OrderCounts)} allows to combine easily two instances.
  *
@@ -34,17 +34,28 @@ import java.util.UUID;
  */
 public final class OrderCounts {
 
-    // Count of files managed by Storage (internal)
+    /**
+     * Count of files managed by Storage (internal)
+     */
     private int internalFilesCount;
 
-    // External files count
+    /**
+     * Count of external files
+     */
     private int externalFilesCount;
 
-    // Count number of subOrder created to compute expiration date
-    private int subOrderCount;
+    /**
+     * Count of internal subOrder created to compute expiration date
+     */
+    private int internalSubOrderCount;
 
     /**
-     * Count number of features concerned by the order
+     * Count of external subOrder created to compute expiration date
+     */
+    private int externalSubOrderCount;
+
+    /**
+     * Count of features concerned by the order
      */
     private int featuresCount;
 
@@ -57,41 +68,45 @@ public final class OrderCounts {
 
     public OrderCounts(int internalFilesCount,
                        int externalFilesCount,
-                       int subOrderCount,
+                       int internalSubOrderCount,
                        int featuresCount,
                        long totalFilesSize) {
         this.internalFilesCount = internalFilesCount;
         this.externalFilesCount = externalFilesCount;
-        this.subOrderCount = subOrderCount;
+        this.internalSubOrderCount = internalSubOrderCount;
         this.featuresCount = featuresCount;
         this.totalFilesSize = totalFilesSize;
     }
 
     public OrderCounts(int internalFilesCount,
                        int externalFilesCount,
-                       int subOrderCount,
+                       int internalSubOrderCount,
+                       int externalSubOrderCount,
                        int featuresCount,
                        long totalFilesSize,
                        Set<UUID> jobInfoIdSet) {
         this.internalFilesCount = internalFilesCount;
         this.externalFilesCount = externalFilesCount;
-        this.subOrderCount = subOrderCount;
+        this.internalSubOrderCount = internalSubOrderCount;
+        this.externalSubOrderCount = externalSubOrderCount;
         this.featuresCount = featuresCount;
         this.totalFilesSize = totalFilesSize;
         this.jobInfoIdSet = jobInfoIdSet;
     }
 
-    public OrderCounts(int internalFilesCount, int externalFilesCount, int subOrderCount, Set<UUID> jobInfoIdSet) {
+    public OrderCounts(int internalFilesCount,
+                       int externalFilesCount,
+                       int internalSubOrderCount,
+                       Set<UUID> jobInfoIdSet) {
         this.internalFilesCount = internalFilesCount;
         this.externalFilesCount = externalFilesCount;
-        this.subOrderCount = subOrderCount;
+        this.internalSubOrderCount = internalSubOrderCount;
         this.jobInfoIdSet = jobInfoIdSet;
         this.totalFilesSize = 0l;
         this.featuresCount = 0;
     }
 
     public OrderCounts() {
-        this(0, 0, 0, 0, 0);
     }
 
     public OrderCounts addToInternalFilesCount(int add) {
@@ -104,8 +119,13 @@ public final class OrderCounts {
         return this;
     }
 
-    public OrderCounts addToSubOrderCount(int add) {
-        this.subOrderCount += add;
+    public OrderCounts addToInternalSubOrderCount(int add) {
+        this.internalSubOrderCount += add;
+        return this;
+    }
+
+    public OrderCounts addToExternalSubOrderCount(int add) {
+        this.externalSubOrderCount += add;
         return this;
     }
 
@@ -133,8 +153,12 @@ public final class OrderCounts {
         return addFileSize(sum);
     }
 
-    public void incrSubOrderCount() {
-        this.addToSubOrderCount(1);
+    public void incrInternalSubOrderCount() {
+        this.addToInternalSubOrderCount(1);
+    }
+
+    public void incrExternalSubOrderCount() {
+        this.addToExternalSubOrderCount(1);
     }
 
     public int getInternalFilesCount() {
@@ -149,8 +173,12 @@ public final class OrderCounts {
         return totalFilesSize;
     }
 
-    public int getSubOrderCount() {
-        return subOrderCount;
+    public int getInternalSubOrderCount() {
+        return internalSubOrderCount;
+    }
+
+    public int getExternalSubOrderCount() {
+        return externalSubOrderCount;
     }
 
     public Set<UUID> getJobInfoIdSet() {
@@ -170,7 +198,8 @@ public final class OrderCounts {
         mergedSet.addAll(two.getJobInfoIdSet());
         return new OrderCounts(one.internalFilesCount + two.internalFilesCount,
                                one.externalFilesCount + two.externalFilesCount,
-                               one.subOrderCount + two.subOrderCount,
+                               one.internalSubOrderCount + two.internalSubOrderCount,
+                               one.externalSubOrderCount + two.externalSubOrderCount,
                                one.featuresCount + two.featuresCount,
                                one.totalFilesSize + two.totalFilesSize,
                                mergedSet);

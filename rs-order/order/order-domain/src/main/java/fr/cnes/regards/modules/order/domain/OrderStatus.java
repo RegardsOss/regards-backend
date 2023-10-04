@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.order.domain;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * Order status
@@ -70,7 +69,6 @@ public enum OrderStatus {
     ERROR;
 
     public boolean isOneOfStatuses(OrderStatus... status) {
-        Stream<OrderStatus> orderStatuses = Arrays.stream(status);
-        return orderStatuses.anyMatch(this::equals);
+        return Arrays.stream(status).anyMatch(this::equals);
     }
 }

@@ -563,7 +563,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void retry() throws ModuleException, InterruptedException {
+    public void test_retry() throws ModuleException, InterruptedException {
 
         int creationTasksCount = 2;
         int retryTasksCount = 3;

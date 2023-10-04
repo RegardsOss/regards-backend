@@ -22,26 +22,39 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
+import fr.cnes.regards.modules.order.dto.OrderErrorCode;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
+import org.springframework.validation.Errors;
 
 import java.util.Optional;
 
 /**
- * See {@link OrderRequestDto}
+ * AMQP message of order response for the AMQP message of order request (See
+ * {@link fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent})
  *
  * @author Iliana Ghazali
  **/
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class OrderResponseDtoEvent extends OrderResponseDto implements ISubscribable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderResponseDtoEvent.class);
+
     public OrderResponseDtoEvent(OrderRequestStatus status,
-                                 Long createdOrderId,
+                                 @Nullable Long orderId,
                                  String correlationId,
-                                 String message,
-                                 String downloadLink) {
-        super(status, createdOrderId, correlationId, message, downloadLink);
+                                 @Nullable String message,
+                                 @Nullable String downloadLink,
+                                 @Nullable OrderErrorCode errorCode,
+                                 @Nullable Integer errors,
+                                 @Nullable Integer totalSubOrders,
+                                 @Nullable Long subOrderId) {
+        super(status, orderId, correlationId, message, downloadLink, errorCode, errors, totalSubOrders, subOrderId);
     }
 
     public OrderResponseDtoEvent(OrderResponseDto orderResponse) {
@@ -49,7 +62,33 @@ public class OrderResponseDtoEvent extends OrderResponseDto implements ISubscrib
               orderResponse.getOrderId(),
               orderResponse.getCorrelationId(),
               orderResponse.getMessage(),
-              orderResponse.getDownloadLink());
+              orderResponse.getDownloadLink(),
+              orderResponse.getErrorCode(),
+              orderResponse.getErrors(),
+              orderResponse.getTotalSubOrders(),
+              orderResponse.getSubOrderId());
+    }
+
+    public static OrderResponseDtoEvent buildDeniedResponse(OrderRequestDto orderRequest,
+                                                            Errors errors,
+                                                            OrderErrorCode errorCode) {
+        String errorsFormatted = ErrorTranslator.getErrorsAsString(errors);
+        LOGGER.error("""
+                         Errors were detected while validating OrderRequestDtoEvent with correlation id [{}].
+                         The request is therefore DENIED and will not be processed.
+                         Refer to the OrderResponseDtoEvent response for more information.
+                         List of errors detected:
+                         {}""", orderRequest.getCorrelationId(), errorsFormatted);
+
+        return new OrderResponseDtoEvent(OrderRequestStatus.DENIED,
+                                         null,
+                                         orderRequest.getCorrelationId(),
+                                         errorsFormatted,
+                                         null,
+                                         errorCode,
+                                         errors.getAllErrors().size(),
+                                         null,
+                                         null);
     }
 
     @Override

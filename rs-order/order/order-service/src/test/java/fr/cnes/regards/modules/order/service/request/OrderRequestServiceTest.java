@@ -98,7 +98,8 @@ public class OrderRequestServiceTest {
         List<OrderRequestDto> orderRequests = createValidOrderRequests(nbReq);
 
         // WHEN
-        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequestsWithSizeLimit(orderRequests, null);
+        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequestsWithSizeLimit(orderRequests,
+                                                                                                    null);
 
         // THEN
         checkOrderRequestResponses(responses, nbReq, OrderRequestStatus.GRANTED, null, 0L);
@@ -115,7 +116,8 @@ public class OrderRequestServiceTest {
         Mockito.when(basketService.addSelection(any(), any(), any(), any())).thenThrow(expectedException);
 
         // WHEN
-        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequestsWithSizeLimit(orderRequests, null);
+        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequestsWithSizeLimit(orderRequests,
+                                                                                                    null);
 
         // THEN
         checkOrderRequestResponses(responses,

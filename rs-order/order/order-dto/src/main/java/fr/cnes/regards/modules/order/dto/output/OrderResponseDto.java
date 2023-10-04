@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.dto.output;
 
+import fr.cnes.regards.modules.order.dto.OrderErrorCode;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import org.springframework.lang.Nullable;
 
@@ -25,7 +26,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**
- * Indicates the progress of a {@link fr.cnes.regards.modules.order.dto.input.OrderRequestDto}
+ * Indicates the response/progress of a {@link fr.cnes.regards.modules.order.dto.input.OrderRequestDto}
  *
  * @author Iliana Ghazali
  **/
@@ -37,7 +38,7 @@ public class OrderResponseDto {
     @Nullable
     private Long orderId;
 
-    @Nullable
+    @NotNull(message = "correlation identifier should be present")
     private String correlationId;
 
     @Nullable
@@ -46,40 +47,72 @@ public class OrderResponseDto {
     @Nullable
     private String downloadLink;
 
+    @Nullable
+    private OrderErrorCode errorCode;
+
+    /**
+     * Errors of order or sub-order
+     */
+    @Nullable
+    private Integer errors;
+
+    @Nullable
+    private Integer totalSubOrders;
+
+    @Nullable
+    private Long subOrderId;
+
     public OrderResponseDto(OrderRequestStatus status,
                             @Nullable Long orderId,
-                            @Nullable String correlationId,
+                            String correlationId,
                             @Nullable String message,
-                            @Nullable String downloadLink) {
+                            @Nullable String downloadLink,
+                            @Nullable OrderErrorCode errorCode,
+                            @Nullable Integer errors,
+                            @Nullable Integer totalSubOrders,
+                            @Nullable Long subOrderId) {
         this.status = status;
         this.orderId = orderId;
         this.correlationId = correlationId;
         this.message = message;
         this.downloadLink = downloadLink;
+        this.errorCode = errorCode;
+        this.errors = errors;
+        this.totalSubOrders = totalSubOrders;
+        this.subOrderId = subOrderId;
     }
 
     public static OrderResponseDto buildErrorResponse(OrderRequestDto orderRequest,
-                                                      Exception e,
-                                                      OrderRequestStatus responseStatus) {
+                                                      String message,
+                                                      OrderRequestStatus responseStatus,
+                                                      OrderErrorCode errorCode) {
         return new OrderResponseDto(responseStatus,
                                     null,
                                     orderRequest.getCorrelationId(),
-                                    String.format("%s: '%s'", e.getClass().getSimpleName(), e.getMessage()),
+                                    message,
+                                    null,
+                                    errorCode,
+                                    null,
+                                    null,
                                     null);
     }
 
     public static OrderResponseDto buildSuccessResponse(OrderRequestDto orderRequest,
                                                         Long createdOrderId,
                                                         OrderRequestStatus responseStatus) {
-        return new OrderResponseDto(responseStatus, createdOrderId, orderRequest.getCorrelationId(), null, null);
+        return new OrderResponseDto(responseStatus,
+                                    createdOrderId,
+                                    orderRequest.getCorrelationId(),
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null);
     }
 
     public OrderRequestStatus getStatus() {
         return status;
-    }
-
-    public void setStatus(OrderRequestStatus status) {
-        this.status = status;
     }
 
     @Nullable
@@ -87,17 +120,9 @@ public class OrderResponseDto {
         return orderId;
     }
 
-    public void setOrderId(@Nullable Long orderId) {
-        this.orderId = orderId;
-    }
-
     @Nullable
     public String getCorrelationId() {
         return correlationId;
-    }
-
-    public void setCorrelationId(@Nullable String correlationId) {
-        this.correlationId = correlationId;
     }
 
     @Nullable
@@ -105,17 +130,29 @@ public class OrderResponseDto {
         return message;
     }
 
-    public void setMessage(@Nullable String message) {
-        this.message = message;
-    }
-
     @Nullable
     public String getDownloadLink() {
         return downloadLink;
     }
 
-    public void setDownloadLink(@Nullable String downloadLink) {
-        this.downloadLink = downloadLink;
+    @Nullable
+    public OrderErrorCode getErrorCode() {
+        return errorCode;
+    }
+
+    @Nullable
+    public Integer getErrors() {
+        return errors;
+    }
+
+    @Nullable
+    public Integer getTotalSubOrders() {
+        return totalSubOrders;
+    }
+
+    @Nullable
+    public Long getSubOrderId() {
+        return subOrderId;
     }
 
     @Override
@@ -142,10 +179,10 @@ public class OrderResponseDto {
 
     @Override
     public String toString() {
-        return "OrderRequestResponseDto{"
+        return "OrderResponseDto{"
                + "status="
                + status
-               + ", createdOrderId="
+               + ", orderId="
                + orderId
                + ", correlationId='"
                + correlationId
@@ -156,6 +193,14 @@ public class OrderResponseDto {
                + ", downloadLink='"
                + downloadLink
                + '\''
+               + ", errorCode="
+               + errorCode
+               + ", errors="
+               + errors
+               + ", totalSubOrders="
+               + totalSubOrders
+               + ", subOrderId="
+               + subOrderId
                + '}';
     }
 }

@@ -44,7 +44,7 @@ public class CreateOrderJob extends AbstractJob<Void> {
     private List<OrderRequestDto> orderRequestDtos;
 
     @Autowired
-    private AutoOrderRequestService orderRequestService;
+    private AutoOrderRequestService autoOrderRequestService;
 
     @Autowired
     private IPublisher publisher;
@@ -61,9 +61,11 @@ public class CreateOrderJob extends AbstractJob<Void> {
     public void run() {
         logger.debug("[{}] Create order job starts. Handle {} OrderRequestDtos.", jobInfoId, orderRequestDtos.size());
         long start = System.currentTimeMillis();
-        List<OrderResponseDto> responses = orderRequestService.createOrderFromRequestsWithSizeLimit(orderRequestDtos,
-                                                                                                    null);
+
+        List<OrderResponseDto> responses = autoOrderRequestService.createOrderFromRequestsWithSizeLimit(orderRequestDtos,
+                                                                                                        null);
         publisher.publish(responses.stream().map(OrderResponseDtoEvent::new).toList());
+
         logger.debug("[{}] Create order job ended in {}ms. Handled {} OrderRequestResponseDtos.",
                      jobInfoId,
                      System.currentTimeMillis() - start,

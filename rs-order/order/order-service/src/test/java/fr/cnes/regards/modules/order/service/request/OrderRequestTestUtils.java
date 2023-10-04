@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.service.request;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
+import fr.cnes.regards.modules.order.dto.OrderErrorCode;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestFilters;
@@ -57,7 +58,8 @@ public class OrderRequestTestUtils {
                                                           new OrderRequestFilters(Set.of(DataTypeLight.RAWDATA),
                                                                                   FILENAME_FILTER),
                                                           String.valueOf(i),
-                                                          TEST_USER_ORDER, null));
+                                                          TEST_USER_ORDER,
+                                                          null));
         }
         return orderRequestDtos;
     }
@@ -69,7 +71,8 @@ public class OrderRequestTestUtils {
                                                                                 new OrderRequestFilters(Set.of(
                                                                                     DataTypeLight.RAWDATA), null),
                                                                                 String.valueOf(i),
-                                                                                TEST_USER_ORDER, null);
+                                                                                TEST_USER_ORDER,
+                                                                                null);
             invalidOrderRequest.setUser(RandomStringUtils.randomAlphanumeric(129));
             orderRequestDtos.add(invalidOrderRequest);
         }
@@ -102,6 +105,34 @@ public class OrderRequestTestUtils {
                                                             orderId,
                                                             String.valueOf(i),
                                                             expectedMessage,
+                                                            null,
+                                                            null,
+                                                            null,
+                                                            null,
+                                                            null));
+        }
+        Assertions.assertThat(actualResponseDtoEvents).hasSameElementsAs(expectedResponses);
+    }
+
+    static void checkOrderRequestResponsesEvents(List<OrderResponseDtoEvent> actualResponseDtoEvents,
+                                                 int expectedNbReq,
+                                                 OrderRequestStatus expectedStatus,
+                                                 String expectedMessage,
+                                                 Long firstOrderId,
+                                                 OrderErrorCode errorCode,
+                                                 Integer errors) {
+        List<OrderResponseDtoEvent> expectedResponses = new ArrayList<>();
+        for (int i = 0; i < expectedNbReq; i++) {
+            Long orderId = expectedStatus.equals(OrderRequestStatus.FAILED)
+                           || expectedStatus.equals(OrderRequestStatus.DENIED) ? null : firstOrderId + i;
+            expectedResponses.add(new OrderResponseDtoEvent(expectedStatus,
+                                                            orderId,
+                                                            String.valueOf(i),
+                                                            expectedMessage,
+                                                            null,
+                                                            errorCode,
+                                                            errors,
+                                                            null,
                                                             null));
         }
         Assertions.assertThat(actualResponseDtoEvents).hasSameElementsAs(expectedResponses);
@@ -120,8 +151,13 @@ public class OrderRequestTestUtils {
                                                        orderId,
                                                        String.valueOf(i),
                                                        expectedMessage,
+                                                       null,
+                                                       null,
+                                                       null,
+                                                       null,
                                                        null));
         }
+
         Assertions.assertThat(actualResponseDtos).hasSameElementsAs(expectedResponses);
     }
 

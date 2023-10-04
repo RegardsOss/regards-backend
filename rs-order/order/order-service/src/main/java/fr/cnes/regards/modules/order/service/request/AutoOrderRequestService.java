@@ -22,7 +22,10 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
+import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeException;
+import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
+import fr.cnes.regards.modules.order.dto.OrderErrorCode;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
@@ -87,26 +90,39 @@ public class AutoOrderRequestService {
                 responses.add(OrderResponseDto.buildSuccessResponse(orderRequest,
                                                                     createdOrder.getId(),
                                                                     OrderRequestStatus.GRANTED));
-                LOGGER.debug("Successfully created order with id '{}' in {}ms from {} request(s).",
+                LOGGER.debug("Successfully created order [id={}] in {}ms from {} request(s).",
                              createdOrder.getId(),
                              System.currentTimeMillis() - start,
                              orderRequests.size());
 
             } catch (AutoOrderException | CatalogSearchException e) {
-                LOGGER.error("Order request with correlationId {} has failed. Cause:",
+                LOGGER.error("Order request with correlationId {} has failed. Cause: {}",
                              orderRequest.getCorrelationId(),
                              e);
-                responses.add(OrderResponseDto.buildErrorResponse(orderRequest, e, getErrorStatus(e)));
+                responses.add(manageErrorOrderResponse(orderRequest, e));
             }
         }
         return responses;
     }
 
-    private OrderRequestStatus getErrorStatus(Exception e) {
-        if (e.getCause() != null && e.getCause().getClass() == ExceededBasketSizeException.class) {
-            return OrderRequestStatus.DENIED;
-        } else {
-            return OrderRequestStatus.FAILED;
+    private OrderResponseDto manageErrorOrderResponse(OrderRequestDto orderRequest, Exception exception) {
+        OrderRequestStatus orderRequestStatus = OrderRequestStatus.FAILED;
+        OrderErrorCode errorCode = OrderErrorCode.INTERNAL_ERROR;
+
+        String message = String.format("%s: '%s'", exception.getClass().getSimpleName(), exception.getMessage());
+
+        if (exception.getCause() != null) {
+            if (exception.getCause().getClass() == ExceededBasketSizeException.class
+                || exception.getCause().getClass() == TooManyItemsSelectedInBasketException.class) {
+                orderRequestStatus = OrderRequestStatus.DENIED;
+                errorCode = OrderErrorCode.ORDER_LIMIT_REACHED;
+            }
+            if (exception.getCause().getClass() == EmptySelectionException.class) {
+                orderRequestStatus = OrderRequestStatus.FAILED;
+                errorCode = OrderErrorCode.EMPTY_ORDER;
+            }
         }
+
+        return OrderResponseDto.buildErrorResponse(orderRequest, message, orderRequestStatus, errorCode);
     }
 }

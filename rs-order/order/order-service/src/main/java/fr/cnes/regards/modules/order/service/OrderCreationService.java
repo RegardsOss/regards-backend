@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.dao.IDatasetTaskRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
@@ -75,6 +76,8 @@ public class OrderCreationService implements IOrderCreationService {
     private static final int MAX_BUCKET_FILE_COUNT = 5_000;
 
     private final IOrderRepository orderRepository;
+
+    private final IDatasetTaskRepository datasetTaskRepository;
 
     private final IOrderDataFileService dataFileService;
 
@@ -124,7 +127,8 @@ public class OrderCreationService implements IOrderCreationService {
                                 OrderResponseService orderResponseService,
                                 OrderAttachmentDataSetService orderAttachmentDataSetService,
                                 IOrderCreationService orderCreationService,
-                                LockService lockeService) {
+                                LockService lockeService,
+                                IDatasetTaskRepository datasetTaskRepository) {
         this.orderRepository = orderRepository;
         this.dataFileService = dataFileService;
         this.orderJobService = orderJobService;
@@ -141,6 +145,7 @@ public class OrderCreationService implements IOrderCreationService {
         this.orderResponseService = orderResponseService;
         this.orderAttachmentDataSetService = orderAttachmentDataSetService;
         this.lockService = lockeService;
+        this.datasetTaskRepository = datasetTaskRepository;
         this.self = orderCreationService;
     }
 
@@ -190,6 +195,7 @@ public class OrderCreationService implements IOrderCreationService {
     @Override
     public void completeOrderCreation(Basket basket, Long orderId, String role, int subOrderDuration, String tenant) {
         boolean hasProcessing = false;
+
         Order order = orderRepository.findCompleteById(orderId);
         OrderCounts orderCounts = new OrderCounts();
         try {
@@ -223,7 +229,7 @@ public class OrderCreationService implements IOrderCreationService {
                 }
             }
 
-            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(orderCounts.getSubOrderCount(),
+            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(orderCounts.getInternalSubOrderCount(),
                                                                                           subOrderDuration);
             order.setExpirationDate(expirationDate);
             orderHelperService.updateJobInfosExpirationDate(expirationDate, orderCounts.getJobInfoIdSet());
@@ -246,10 +252,14 @@ public class OrderCreationService implements IOrderCreationService {
             order.setMessage(e.getMessage());
             order.setExpirationDate(orderHelperService.computeOrderExpirationDate(0, subOrderDuration));
         }
+        // Notify external sub-orders in DONE state
+        notifyFinishedSubOrder(order, orderCounts);
+
         manageOrderState(order, orderCounts);
-        notifyIfOrderIsDone(order);
         order = orderRepository.save(order);
         LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
+
+        notifyIfFinishedOrder(order);
 
         if (order.getStatus() != OrderStatus.FAILED && order.getStatus() != OrderStatus.DONE_WITH_WARNING) {
             if (order.getFrontendUrl() != null) {
@@ -260,9 +270,35 @@ public class OrderCreationService implements IOrderCreationService {
         applicationEventPublisher.publishEvent(new OrderCreationCompletedEvent(order));
     }
 
-    private void notifyIfOrderIsDone(Order order) {
+    /**
+     * Notify all sub-orders in D0NE state of order.
+     *
+     * @param order       the order
+     * @param orderCounts the count of order
+     */
+    private void notifyFinishedSubOrder(Order order, OrderCounts orderCounts) {
+        for (DatasetTask datasetTask : order.getDatasetTasks()) {
+            for (FilesTask subOrder : datasetTask.getReliantTasks()) {
+                if (subOrder.isEnded()) {
+                    orderResponseService.notifySuborderDone(order.getCorrelationId(),
+                                                            order.getOwner(),
+                                                            order.getId(),
+                                                            subOrder.getId(),
+                                                            orderCounts.getExternalSubOrderCount()
+                                                            + orderCounts.getInternalSubOrderCount());
+                }
+            }
+        }
+    }
+
+    /**
+     * Notify a notification if order status is : DONE, FAILED, DONE_WITH_WARNING.
+     *
+     * @param order order
+     */
+    private void notifyIfFinishedOrder(Order order) {
         if (order.getStatus().isOneOfStatuses(OrderStatus.DONE, OrderStatus.FAILED, OrderStatus.DONE_WITH_WARNING)) {
-            orderResponseService.notifyOrderFinished(order);
+            orderResponseService.notifyFinishedOrder(order);
         }
     }
 
@@ -301,6 +337,8 @@ public class OrderCreationService implements IOrderCreationService {
         // Bucket of external files (not managed by Storage, directly downloadable)
         Set<OrderDataFile> externalBucketFiles = new HashSet<>();
 
+        List<Long> externalSubOrderIds = new ArrayList<>();
+
         DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, DataTypeSelection.ALL.getFileTypes());
 
         // Firstly, get dataset attached rawdata files, and add them to buckets
@@ -337,7 +375,7 @@ public class OrderCreationService implements IOrderCreationService {
                                                                                                        subOrderDuration,
                                                                                                        role,
                                                                                                        priority));
-                    orderCounts.incrSubOrderCount();
+                    orderCounts.incrInternalSubOrderCount();
                     storageBucketFiles.clear();
                 }
                 // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
@@ -346,6 +384,7 @@ public class OrderCreationService implements IOrderCreationService {
                     orderCounts.addToExternalFilesCount(externalBucketFiles.size());
                     orderCounts.addTotalFileSizeOf(externalBucketFiles);
                     orderHelperService.createExternalSubOrder(dsTask, externalBucketFiles, order);
+                    orderCounts.incrExternalSubOrderCount();
                     externalBucketFiles.clear();
                 }
             }
@@ -362,12 +401,13 @@ public class OrderCreationService implements IOrderCreationService {
                                                                                                subOrderDuration,
                                                                                                role,
                                                                                                priority));
-            orderCounts.incrSubOrderCount();
+            orderCounts.incrInternalSubOrderCount();
         }
         if (!externalBucketFiles.isEmpty()) {
             orderCounts.addToExternalFilesCount(externalBucketFiles.size());
             orderCounts.addTotalFileSizeOf(externalBucketFiles);
             orderHelperService.createExternalSubOrder(dsTask, externalBucketFiles, order);
+            orderCounts.incrExternalSubOrderCount();
         }
 
         // Add dsTask ONLY IF it contains at least one FilesTask

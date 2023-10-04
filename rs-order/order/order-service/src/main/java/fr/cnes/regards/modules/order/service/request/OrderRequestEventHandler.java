@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
+import fr.cnes.regards.modules.order.dto.OrderErrorCode;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
@@ -120,6 +121,7 @@ public class OrderRequestEventHandler
     public void handleBatch(List<OrderRequestDtoEvent> events) {
         long start = System.currentTimeMillis();
         LOGGER.debug("Handling {} OrderRequestEvents", events.size());
+
         List<OrderRequestDtoEvent> validEvents = denyInvalidMessages(events);
         if (validEvents.size() != events.size()) {
             LOGGER.warn("{} OrderRequestEvents denied.", events.size() - validEvents.size());
@@ -131,7 +133,8 @@ public class OrderRequestEventHandler
                                           null,
                                           CreateOrderJob.class.getName());
             jobInfo = jobInfoService.createAsQueued(jobInfo);
-            LOGGER.debug("Created 1 CreateOrderJob with id {} from {} OrderRequestEvents. Handled in {}ms.",
+
+            LOGGER.debug("Created 1 CreateOrderJob with id {} from {} OrderRequestDtoEvents. Handled in {}ms.",
                          jobInfo.getId(),
                          validEvents.size(),
                          System.currentTimeMillis() - start);
@@ -139,10 +142,10 @@ public class OrderRequestEventHandler
     }
 
     @Override
-    public Errors validate(OrderRequestDtoEvent requestDto) {
-        Errors errors = new MapBindingResult(new HashMap<>(), requestDto.getClass().getName());
+    public Errors validate(OrderRequestDtoEvent event) {
+        Errors errors = new MapBindingResult(new HashMap<>(), event.getClass().getName());
         // Send message to DLQ if correlation id not provided
-        if (requestDto.getCorrelationId() == null) {
+        if (event.getCorrelationId() == null) {
             errors.rejectValue("correlationId",
                                "requestDto.correlationId.notnull.error.message",
                                "correlationId is mandatory!");
@@ -155,15 +158,16 @@ public class OrderRequestEventHandler
      */
     public List<OrderRequestDtoEvent> denyInvalidMessages(List<OrderRequestDtoEvent> events) {
         List<OrderRequestDtoEvent> validEvents = new ArrayList<>();
+
         events.forEach(event -> {
+            OrderErrorCode errorCode = OrderErrorCode.INTERNAL_ERROR;
             Errors errors = new MapBindingResult(new HashMap<>(), OrderRequestDtoEvent.class.getName());
             // Validate request
             validator.validate(event, errors);
 
             // With amqp api, user is mandatory and must be an existing user.
-            //
             if (event.getUser() == null) {
-                errors.rejectValue("user", "INVALID_CONTENT", "User should be present");
+                errors.rejectValue("user", OrderErrorCode.INVALID_CONTENT.name(), "User should be present");
             } else {
                 Boolean isValidUser = regardsUsers.get(event.getUser(), email -> {
                     FeignSecurityManager.asSystem();
@@ -179,13 +183,13 @@ public class OrderRequestEventHandler
                     }
                 });
                 if (!isValidUser) {
-                    errors.rejectValue("user", "FORBIDDEN", "Unknown user : " + event.getUser());
+                    errorCode = OrderErrorCode.FORBIDDEN;
+                    errors.rejectValue("user", OrderErrorCode.FORBIDDEN.name(), "Unknown user : " + event.getUser());
                 }
-
             }
 
             if (errors.hasErrors()) {
-                publisher.publish(buildDeniedResponse(event, errors));
+                publisher.publish(OrderResponseDtoEvent.buildDeniedResponse(event, errors, errorCode));
             } else {
                 validEvents.add(event);
             }
@@ -198,27 +202,4 @@ public class OrderRequestEventHandler
         return true;
     }
 
-    private OrderResponseDtoEvent buildDeniedResponse(OrderRequestDto orderRequest, Errors errors) {
-        List<String> errorsFormatted = errors.getFieldErrors()
-                                             .stream()
-                                             .map(error -> String.format("Error detected on field \"%s\". Cause: "
-                                                                         + "\"%s\".",
-                                                                         error.getField(),
-                                                                         error.getDefaultMessage()))
-                                             .toList();
-        String errorsConcat = String.join("\n", errorsFormatted);
-
-        LOGGER.error("""
-                         Errors were detected while validating OrderRequestDtoEvent with correlation id "{}".
-                         The request is therefore DENIED and will not be processed.
-                         Refer to the OrderRequestResponseDtoEvent response for more information.
-                         List of errors detected:
-                         {}""", orderRequest.getCorrelationId(), errorsConcat);
-
-        return new OrderResponseDtoEvent(OrderRequestStatus.DENIED,
-                                         null,
-                                         orderRequest.getCorrelationId(),
-                                         errorsConcat,
-                                         null);
-    }
 }

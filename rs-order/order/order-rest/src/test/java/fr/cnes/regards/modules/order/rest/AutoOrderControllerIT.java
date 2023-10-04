@@ -47,7 +47,8 @@ import java.util.Set;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "regards.tenant=order1", "spring.jpa.properties.hibernate.default_schema=auto_order_it" })
+@TestPropertySource(properties = { "regards.tenant=order1",
+                                   "spring.jpa.properties.hibernate.default_schema=auto_order_it" })
 public class AutoOrderControllerIT extends AbstractOrderControllerIT {
 
     @Test
@@ -86,6 +87,10 @@ public class AutoOrderControllerIT extends AbstractOrderControllerIT {
                                                                                                .getContent()
                                                                                                .get(0)
                                                                                                .getId(),
+                                                                                null,
+                                                                                null,
+                                                                                null,
+                                                                                null,
                                                                                 null,
                                                                                 null,
                                                                                 null);
