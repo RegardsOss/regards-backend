@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.integration.test.job.JobTestUtils;
+import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
@@ -59,8 +63,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import java.lang.reflect.Type;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -103,6 +109,8 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
     private JobTestUtils jobTestUtils;
 
     private static final String SESSION_NAME = "dissemination-session";
+
+    private static final String ERROR_MSG = "error message";
 
     @Before
     public void init() throws Exception {
@@ -249,5 +257,42 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         AIPEntity aipEntity = AIPEntity.build(sipEntity, AIPState.GENERATED, aip);
 
         aipRepository.save(aipEntity);
+    }
+
+    @Test
+    public void testDisseminationJobInError() throws ExecutionException, InterruptedException {
+
+        // GIVEN 5 AIP and a dissemination creator
+        createAIPs(5);
+        PageRequest pageable = PageRequest.of(0, 100);
+        AIPDisseminationRequestDto disseminationDto = new AIPDisseminationRequestDto(new SearchAIPsParameters().withSession(
+            SESSION_NAME), List.of("recipient1", "recipient2"));
+
+        scheduleDisseminationCreatorJob(disseminationDto);
+
+        // WHEN I schedule this job with an error message in the status
+        Assertions.assertEquals(5, aipDisseminationService.getAllRequests(pageable).getTotalElements());
+        Optional<JobInfo> jobInfo = aipDisseminationService.scheduleDisseminationJobs();
+        Assertions.assertTrue(jobInfo.isPresent());
+        jobInfo.get().getStatus().setStackTrace(ERROR_MSG);
+        aipDisseminationService.handleJobCrash(jobInfo.get());
+
+        // THEN requests are updated with message and error status
+        try {
+            Type type = new TypeToken<Set<Long>>() {
+
+            }.getType();
+            Set<Long> ids = IJob.getValue(jobInfo.get().getParametersAsMap(),
+                                          AipDisseminationJob.AIP_DISSEMINATION_REQUEST_IDS,
+                                          type);
+            List<AipDisseminationRequest> requests = aipDisseminationService.searchRequests(new ArrayList<>(ids));
+            Assertions.assertEquals(requests.size(), 5);
+            requests.forEach(r -> {
+                Assertions.assertEquals(r.getState(), InternalRequestState.ERROR);
+                Assertions.assertTrue(r.getErrors().contains(ERROR_MSG));
+            });
+        } catch (JobParameterMissingException | JobParameterInvalidException e) {
+            Assertions.fail("Error getting request ids from job");
+        }
     }
 }

@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.ingest.service.AipDisseminationService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import org.slf4j.Logger;
@@ -60,6 +61,9 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
     @Autowired
     private IJobInfoService jobInfoService;
 
+    @Autowired
+    private AipDisseminationService aipDisseminationService;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
@@ -83,7 +87,7 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                 // we receive here events when the job raises an exception on boot / end (issue with params, plugin init ...)
                 // so all requests are dead
                 boolean isHandled = ingestRequestService.handleJobCrash(jobInfo) || oaisDeletionService.handleJobCrash(
-                    jobInfo);
+                    jobInfo) || aipDisseminationService.handleJobCrash(jobInfo);
                 if (isHandled) {
                     nbJobError++;
                 }

@@ -19,9 +19,13 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Sets;
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAipDisseminationRequestRepository;
@@ -43,6 +47,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -142,4 +148,37 @@ public class AipDisseminationService {
     public Page<AipDisseminationRequest> getAllRequests(PageRequest pageable) {
         return aipDisseminationRequestRepository.findAll(pageable);
     }
+
+    /**
+     * For {@link AipDisseminationJob}s  and {@link AipDisseminationCreatorJob}s in error, update each requests'
+     * state to ERROR and add a message containing the error in each request
+     */
+    public boolean handleJobCrash(JobInfo jobInfo) {
+        boolean isDisseminationJob = AipDisseminationJob.class.getName().equals(jobInfo.getClassName());
+        boolean isDisseminationCreatorJob = AipDisseminationCreatorJob.class.getName().equals(jobInfo.getClassName());
+        if (isDisseminationJob || isDisseminationCreatorJob) {
+            try {
+                Type type = new TypeToken<Set<Long>>() {
+
+                }.getType();
+                Set<Long> ids = IJob.getValue(jobInfo.getParametersAsMap(),
+                                              isDisseminationCreatorJob ?
+                                                  AipDisseminationCreatorJob.REQUEST_ID :
+                                                  AipDisseminationJob.AIP_DISSEMINATION_REQUEST_IDS,
+                                              type);
+                List<AipDisseminationRequest> requests = searchRequests(new ArrayList<>(ids));
+                requests.forEach(r -> {
+                    r.addError(jobInfo.getStatus().getStackTrace());
+                    r.setState(InternalRequestState.ERROR);
+                    aipDisseminationRequestRepository.save(r);
+                });
+            } catch (JobParameterMissingException | JobParameterInvalidException e) {
+                LOGGER.error(String.format("Dissemination request job with id \"%s\" fails with status \"%s\"",
+                                           jobInfo.getId(),
+                                           jobInfo.getStatus().getStatus()));
+            }
+        }
+        return isDisseminationJob || isDisseminationCreatorJob;
+    }
+
 }
