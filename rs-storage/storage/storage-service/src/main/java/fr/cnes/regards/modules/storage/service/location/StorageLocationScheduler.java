@@ -19,11 +19,10 @@
 package fr.cnes.regards.modules.storage.service.location;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -76,7 +75,7 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
 
     private static boolean reset = false;
 
-    private final LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     private final Integer fullCalculationRatio;
 
@@ -87,14 +86,14 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
     private StorageLocationService storageLocationService;
 
     private final Task monitorTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long startTime = System.currentTimeMillis();
         storageLocationService.monitorStorageLocations(reset);
         LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
     };
 
     private final Task storagePeriodicActionTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long startTime = System.currentTimeMillis();
         storageLocationService.runPeriodicTasks();
         LOGGER.info("Periodic task on storages done in {}ms", System.currentTimeMillis() - startTime);
@@ -103,7 +102,7 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
     public StorageLocationScheduler(ITenantResolver tenantResolver,
                                     IRuntimeTenantResolver runtimeTenantResolver,
                                     StorageLocationService storageLocationService,
-                                    LockingTaskExecutors lockingTaskExecutors,
+                                    ILockingTaskExecutors lockingTaskExecutors,
                                     @Value("${regards.storage.location.full.calculation.ratio:20}")
                                     Integer fullCalculationRatio) {
         this.tenantResolver = tenantResolver;

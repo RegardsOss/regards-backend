@@ -19,11 +19,10 @@
 package fr.cnes.regards.modules.feature.service.request;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
@@ -71,17 +70,17 @@ public class FeatureUpdateDisseminationScheduler extends AbstractTaskScheduler {
     @Autowired
     private FeatureUpdateDisseminationService featureUpdateDisseminationService;
 
+    @Autowired
+    private ILockingTaskExecutors lockingTaskExecutors;
+
     private final LockingTaskExecutor.Task updateFeatureDisseminationTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         int nb = featureUpdateDisseminationService.handleRequests();
         if (nb != 0) {
             LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, UPDATE_REQUESTS, System.currentTimeMillis() - start);
         }
     };
-
-    @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
 
     @Scheduled(initialDelayString = "${regards.feature.update.dissemination.request.scheduling.initial.delay:"
                                     + DEFAULT_INITIAL_DELAY

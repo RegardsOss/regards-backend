@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.schedule;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
@@ -61,13 +61,13 @@ public class OAISDeletionJobScheduler extends AbstractTaskScheduler {
     private AIPDeletionRequestScheduler aipDeletionRequestScheduler;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     /**
      * OAIS Deletion Task
      */
     private final Task aipDeletionTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         aipDeletionRequestScheduler.scheduleJob();
         LOGGER.debug("[INGEST DELETION REQUEST TASK SCHEDULER] Scheduler handled in {} ms",

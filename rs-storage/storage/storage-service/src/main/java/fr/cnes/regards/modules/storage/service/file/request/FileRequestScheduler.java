@@ -20,11 +20,10 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.request.*;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -90,8 +89,11 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     @Autowired
     private RequestStatusService reqStatusService;
 
+    @Autowired
+    private ILockingTaskExecutors lockingTaskExecutors;
+
     private final Task handleRequestsTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         handleGroupRequests();
         handleExpiredCacheRequests();
         handleFileCacheRequests();
@@ -99,9 +101,6 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
         handleFileDeletionRequests();
         handleFileCopyRequests();
     };
-
-    @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
 
     public void handleFileStorageRequests() {
         reqStatusService.checkDelayedStorageRequests();
@@ -132,15 +131,15 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.storage.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.storage.schedule.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+               fixedDelayString = "${regards.storage.schedule.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, STORAGE_ACTIONS);
                 lockingTaskExecutors.executeWithLock(handleRequestsTask,
-                        new LockConfiguration(STORAGE_LOCK,
-                                Instant.now().plusSeconds(1200)));
+                                                     new LockConfiguration(STORAGE_LOCK,
+                                                                           Instant.now().plusSeconds(1200)));
             } catch (Throwable e) {
                 handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);
             } finally {

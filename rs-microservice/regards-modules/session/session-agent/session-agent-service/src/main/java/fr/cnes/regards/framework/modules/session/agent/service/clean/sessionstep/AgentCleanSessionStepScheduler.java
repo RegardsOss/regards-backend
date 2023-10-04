@@ -19,11 +19,10 @@
 package fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
@@ -56,7 +55,7 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
     private AgentCleanSessionStepJobService agentCleanSessionStepJobService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Value("${spring.application.name}")
     private String microserviceName;
@@ -75,7 +74,7 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
      * Snapshot task
      */
     private final LockingTaskExecutor.Task cleanProcessTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         agentCleanSessionStepJobService.scheduleJob();
     };
 

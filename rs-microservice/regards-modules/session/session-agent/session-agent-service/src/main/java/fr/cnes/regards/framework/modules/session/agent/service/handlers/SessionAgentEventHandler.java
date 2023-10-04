@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import org.slf4j.Logger;
@@ -55,7 +55,7 @@ public class SessionAgentEventHandler
     private SessionAgentHandlerService sessionAgentHandlerService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -85,7 +85,9 @@ public class SessionAgentEventHandler
      */
     public void createMissingSnapshotProcessesTask(Set<String> sources, boolean retryError) {
         try {
-            lockingTaskExecutors.executeWithLock(new CreateSnapshotProcessTask(sessionAgentHandlerService, sources),
+            lockingTaskExecutors.executeWithLock(new CreateSnapshotProcessTask(sessionAgentHandlerService,
+                                                                               sources,
+                                                                               lockingTaskExecutors),
                                                  new LockConfiguration(SNAPSHOT_CREATE_LOCK,
                                                                        Instant.now()
                                                                               .plusSeconds(MAX_TASK_WAIT_DURING_SCHEDULE)));

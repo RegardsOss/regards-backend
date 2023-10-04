@@ -24,14 +24,13 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.UUID;
 
 /**
- * Base class utilities for task schedulers based on {@link LockingTaskExecutors} locking.
+ * Base class utilities for task schedulers based on {@link ILockingTaskExecutors} locking.
  *
  * @author Marc SORDI
  */
 public abstract class AbstractTaskScheduler {
 
-    protected static final String INSTANCE_RANDOM_ID = "------------------------------> " + UUID.randomUUID()
-                                                                                                .toString();
+    protected static final String INSTANCE_RANDOM_ID = "------------------------------> " + UUID.randomUUID();
 
     @Value("${spring.application.name}")
     private String applicationName;

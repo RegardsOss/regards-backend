@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +93,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     private String storageLocationSourceId;
 
@@ -139,7 +138,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
      * Publish {@link CopyFlowItem}s for each {@link FileReference} to copy from one destination to an other one.
      */
     private final Task publishCopyFlowItemsTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         logger.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ...",
                     storageLocationSourceId,
@@ -230,7 +229,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             destinationFilePath = "";
         } else if (destinationPath.startsWith("/")) {
             // Make sure destination path is relative
-            destinationFilePath = destinationPath.substring(1, destinationPath.length());
+            destinationFilePath = destinationPath.substring(1);
         } else {
             destinationFilePath = destinationPath;
         }
@@ -255,7 +254,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             if (destinationFilePath.length() > FileLocation.URL_MAX_LENGTH) {
                 throw new ModuleException(String.format(
                     "Destination path <%s> legnth is too long (> %d). fileUrl=%s,sourcePathToCopy=%s,destinationPath=%s",
-                    destinationFilePath.toString(),
+                    destinationFilePath,
                     FileLocation.URL_MAX_LENGTH,
                     fileUrl,
                     resolvedSourcePathToCopy,

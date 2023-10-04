@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.workermanager.service.requests.scan;
 
 import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 import java.time.OffsetDateTime;
@@ -46,17 +46,21 @@ public class RequestScanTask implements Task {
 
     private final RequestStatus newStatus;
 
+    private final ILockingTaskExecutors lockingTaskExecutors;
+
     public RequestScanTask(RequestScanService requestScanService,
                            SearchRequestParameters filters,
-                           RequestStatus newStatus) {
+                           RequestStatus newStatus,
+                           ILockingTaskExecutors lockingTaskExecutors) {
         this.requestScanService = requestScanService;
         this.filters = filters;
         this.newStatus = newStatus;
+        this.lockingTaskExecutors = lockingTaskExecutors;
     }
 
     @Override
     public void call() throws Throwable {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         // Ensures filter cannot scan entities created after its launch, if not already done
         if (filters.getCreationDate().getBefore() == null) {
             filters.withCreationDateBefore(OffsetDateTime.now());

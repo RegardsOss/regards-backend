@@ -19,10 +19,9 @@
 package fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
@@ -54,7 +53,7 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
     private AgentCleanSnapshotProcessJobService agentCleanSnapshotProcessJobService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Value("${spring.application.name}")
     private String microserviceName;
@@ -79,12 +78,12 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
      * Snapshot task
      */
     private final LockingTaskExecutor.Task cleanSnapshotProcessTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         agentCleanSnapshotProcessJobService.scheduleJob();
     };
 
     private final LockingTaskExecutor.Task cleanDeadJobsTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         agentCleanSnapshotProcessJobService.cleanDeadJobs();
     };
 

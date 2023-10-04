@@ -19,12 +19,11 @@
 package fr.cnes.regards.modules.ingest.service.sip.scheduler;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.service.job.SIPBodyDeletionJob;
 import fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -60,7 +59,7 @@ public class SipBodyDeletetionScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Autowired
     private SIPBodyDeletionRequestScheduler sipBodyDeletionRequestScheduler;
@@ -69,7 +68,7 @@ public class SipBodyDeletetionScheduler extends AbstractTaskScheduler {
      * SIP Deletion Task
      */
     private final Task sipDeletionTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         sipBodyDeletionRequestScheduler.scheduleJob();
     };
 

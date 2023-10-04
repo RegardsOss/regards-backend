@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.flow;
 
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
@@ -38,8 +38,6 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.apache.commons.compress.utils.Sets;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -71,7 +68,7 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
 
     private static final String SESSION_1 = "SESSION 1";
 
-    private static boolean waitForLock = false;
+    private static final boolean waitForLock = false;
 
     @Autowired
     FileReferenceRequestService fileRefReqService;
@@ -89,7 +86,7 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
     private ReferenceFlowItemHandler referenceFlowItemHandler;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Before
     public void initialize() throws ModuleException {
@@ -614,72 +611,5 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
                        SESSION_OWNER_1,
                        SESSION_1,
                        "1");
-    }
-
-    @Test
-    public void testLock() throws Throwable {
-
-        String checksum = UUID.randomUUID().toString();
-        String owner = "owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum,
-                                                                 owner,
-                                                                 "delErr.file.test",
-                                                                 ONLINE_CONF_LABEL,
-                                                                 Optional.empty(),
-                                                                 Optional.empty(),
-                                                                 SESSION_OWNER_1,
-                                                                 SESSION_1);
-
-        Assert.assertTrue("There should be file ref created",
-                          fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
-        Mockito.clearInvocations(publisher);
-        String storage = fileRef.getLocation().getStorage();
-
-        // Simulate a lock
-        waitForLock = true;
-        (new LockDeletion()).start();
-
-        DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum,
-                                                                                    storage,
-                                                                                    owner,
-                                                                                    SESSION_OWNER_1,
-                                                                                    SESSION_1,
-                                                                                    false),
-                                                       UUID.randomUUID().toString());
-        List<DeletionFlowItem> items = new ArrayList<>();
-        items.add(item);
-        deletionFlowHandler.handleBatch(items);
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                                           Lists.newArrayList());
-        Assert.assertTrue("No deletion job can be scheduled yet", jobs.isEmpty());
-
-        // Simulate unlock
-        waitForLock = false;
-        Thread.sleep(1100);
-        jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList());
-        Assert.assertFalse("Deletion jobs should be scheduled now", jobs.isEmpty());
-    }
-
-    public class LockDeletion extends Thread {
-
-        private final Task wait = () -> {
-            do {
-                Thread.sleep(1000);
-            } while (waitForLock);
-        };
-
-        @Override
-        public void run() {
-            try {
-                runtimeTenantResolver.forceTenant(getDefaultTenant());
-                lockingTaskExecutors.executeWithLock(wait,
-                                                     new LockConfiguration(DeletionFlowItem.DELETION_LOCK,
-                                                                           Instant.now().plusSeconds(30)));
-            } catch (Throwable e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
     }
 }

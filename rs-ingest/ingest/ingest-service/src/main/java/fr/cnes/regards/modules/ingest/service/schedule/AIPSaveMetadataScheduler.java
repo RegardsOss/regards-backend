@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.service.schedule;
 
 import fr.cnes.regards.framework.modules.dump.service.scheduler.AbstractDumpScheduler;
 import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +50,7 @@ public class AIPSaveMetadataScheduler extends AbstractDumpScheduler {
     @Override
     protected Task getDumpTask() {
         return () -> {
-            LockAssert.assertLocked();
+            lockingTaskExecutors.assertLocked();
             long start = System.currentTimeMillis();
             aipSaveMetadataService.scheduleJobs();
             LOGGER.debug("[INGEST AIP DUMP TASK SCHEDULER] Scheduler handled in {} ms",

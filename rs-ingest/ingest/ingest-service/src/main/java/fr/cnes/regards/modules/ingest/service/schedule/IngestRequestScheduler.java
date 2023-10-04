@@ -19,17 +19,17 @@
 package fr.cnes.regards.modules.ingest.service.schedule;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -63,15 +63,17 @@ public class IngestRequestScheduler extends AbstractTaskScheduler {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private final LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     private IngestRequestSchedulerService ingestRequestSchedulerService;
+
+    private final Long schedlockTimoutSeconds;
 
     /**
      * Create Ingest Request Task
      */
     private final LockingTaskExecutor.Task createIngestRequestTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         // Only schedule first page of ingest request to avoid one tenant using all resources.
         ingestRequestSchedulerService.scheduleFirstPageRequests();
@@ -80,12 +82,14 @@ public class IngestRequestScheduler extends AbstractTaskScheduler {
 
     public IngestRequestScheduler(ITenantResolver tenantResolver,
                                   IRuntimeTenantResolver runtimeTenantResolver,
-                                  LockingTaskExecutors lockingTaskExecutors,
-                                  IngestRequestSchedulerService ingestRequestSchedulerService) {
+                                  ILockingTaskExecutors lockingTaskExecutors,
+                                  IngestRequestSchedulerService ingestRequestSchedulerService,
+                                  @Value("${regards.ingest.schedlock.timeout:120}") Long schedlockTimoutSeconds) {
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.lockingTaskExecutors = lockingTaskExecutors;
         this.ingestRequestSchedulerService = ingestRequestSchedulerService;
+        this.schedlockTimoutSeconds = schedlockTimoutSeconds;
     }
 
     @Scheduled(initialDelayString = "${regards.ingest.schedule.request.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
@@ -97,7 +101,8 @@ public class IngestRequestScheduler extends AbstractTaskScheduler {
                 traceScheduling(tenant, INGEST_REQUEST_CREATE);
                 lockingTaskExecutors.executeWithLock(createIngestRequestTask,
                                                      new LockConfiguration(INGEST_REQUEST_CREATE_LOCK,
-                                                                           Instant.now().plusSeconds(120)));
+                                                                           Instant.now()
+                                                                                  .plusSeconds(schedlockTimoutSeconds)));
             } catch (Throwable e) {
                 handleSchedulingError(INGEST_REQUEST_CREATE, INGEST_REQUEST_CREATE_LOCK, e);
             } finally {

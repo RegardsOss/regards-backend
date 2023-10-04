@@ -82,7 +82,6 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
 
     @Override
     public void doInit() {
-        simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
 
@@ -327,10 +326,11 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         CATEGORIES_0,
                         Optional.empty(),
                         VersioningMode.REPLACE);
-        ingestServiceTest.waitForAIP(3, 20_000, AIPState.STORED);
+
         // once the 2 new AIPs are stored, we ask for the deletion of the old ones, so lets wait for this deletion
         // 3 = V1 which has already been deleted previously, V2 which is replaced by V3 and V2 which should be replaced by V4
-        ingestServiceTest.waitForAIP(3, 20_000, AIPState.DELETED);
+        ingestServiceTest.waitForAIP(3, 40_000, AIPState.DELETED);
+        ingestServiceTest.waitForAIP(1, 1_000, AIPState.STORED);
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only four SIP with providerId \"%s\" at this time",

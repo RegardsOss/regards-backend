@@ -19,11 +19,10 @@
 package fr.cnes.regards.modules.feature.service.task;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.feature.service.*;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -87,8 +86,11 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     @Autowired
     private IFeatureCreationService featureService;
 
+    @Autowired
+    private ILockingTaskExecutors lockingTaskExecutors;
+
     private final Task createTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.featureService.scheduleRequests();
         if (nb != 0) {
@@ -100,7 +102,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     private IFeatureUpdateService featureUpdateService;
 
     private final Task updateTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         int nb = featureUpdateService.scheduleRequests();
         if (nb != 0) {
@@ -112,7 +114,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     private IFeatureDeletionService featureDeletionService;
 
     private final Task deleteTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         int nb = featureDeletionService.scheduleRequests();
         if (nb != 0) {
@@ -124,7 +126,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     private IFeatureCopyService featureCopyService;
 
     private final Task copyTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.featureCopyService.scheduleRequests();
         if (nb != 0) {
@@ -136,16 +138,13 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     private IFeatureNotificationService featureNotificationService;
 
     private final Task notificationRequestHandlingTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.featureNotificationService.sendToNotifier();
         if (nb != 0) {
             LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, NOTIFICATION_REQUESTS, System.currentTimeMillis() - start);
         }
     };
-
-    @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
 
     @Override
     protected Logger getLogger() {

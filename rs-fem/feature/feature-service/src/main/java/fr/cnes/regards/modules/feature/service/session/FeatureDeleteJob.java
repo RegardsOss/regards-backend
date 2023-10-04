@@ -1,13 +1,12 @@
 package fr.cnes.regards.modules.feature.service.session;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.feature.service.task.FeatureTaskScheduler;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,7 @@ public class FeatureDeleteJob extends AbstractJob<Void> {
     private FeatureDeleteService featureDeleteService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     public static Set<JobParameter> getParameters(String source, Optional<String> sessionOptional) {
         Set<JobParameter> parameters = Sets.newHashSet();
@@ -60,7 +59,7 @@ public class FeatureDeleteJob extends AbstractJob<Void> {
     }
 
     private final LockingTaskExecutor.Task deleteTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         featureDeleteService.scheduleDeleteRequests(sourceName, sessionName);
     };
 

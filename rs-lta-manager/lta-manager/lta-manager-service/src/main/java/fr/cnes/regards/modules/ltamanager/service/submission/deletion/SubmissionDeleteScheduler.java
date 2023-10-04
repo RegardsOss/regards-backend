@@ -19,11 +19,10 @@
 package fr.cnes.regards.modules.ltamanager.service.submission.deletion;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
@@ -64,12 +63,12 @@ public class SubmissionDeleteScheduler extends AbstractTaskScheduler {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private final LockingTaskExecutors lockingTaskExecutors;
+    private final ILockingTaskExecutors lockingTaskExecutors;
 
     public SubmissionDeleteScheduler(SubmissionDeleteExpiredService deleteExpiredService,
                                      ITenantResolver tenantResolver,
                                      IRuntimeTenantResolver runtimeTenantResolver,
-                                     LockingTaskExecutors lockingTaskExecutors) {
+                                     ILockingTaskExecutors lockingTaskExecutors) {
         this.deleteExpiredService = deleteExpiredService;
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -106,7 +105,7 @@ public class SubmissionDeleteScheduler extends AbstractTaskScheduler {
 
         @Override
         public JobInfo call() {
-            LockAssert.assertLocked();
+            lockingTaskExecutors.assertLocked();
             return deleteExpiredService.scheduleJob();
         }
     }

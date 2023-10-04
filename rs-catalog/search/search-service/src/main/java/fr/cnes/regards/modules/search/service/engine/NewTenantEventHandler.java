@@ -19,12 +19,11 @@
 package fr.cnes.regards.modules.search.service.engine;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -64,13 +63,13 @@ public class NewTenantEventHandler implements ApplicationListener<ApplicationRea
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Autowired
     private ITenantResolver resolver;
 
     private final Task initLegacySearchEngine = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         engineService.initDefaultSearchEngine(LegacySearchEngine.class);
     };
 

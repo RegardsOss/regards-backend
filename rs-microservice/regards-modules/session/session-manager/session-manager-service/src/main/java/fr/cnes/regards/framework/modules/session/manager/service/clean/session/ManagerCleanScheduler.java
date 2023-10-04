@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.modules.session.manager.service.clean.session;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotJob;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
@@ -67,7 +66,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
     private ManagerCleanJobService managerCleanJobService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Autowired
     private IJobInfoService jobService;
@@ -79,7 +78,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
      * Snapshot task
      */
     private final LockingTaskExecutor.Task cleanProcessTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         managerCleanJobService.scheduleJob();
     };
 

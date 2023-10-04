@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
@@ -113,7 +113,7 @@ public class FileDeletionRequestService {
 
     private final SessionNotifier sessionNotifier;
 
-    private final LockingTaskExecutors lockingTaskExecutors;
+    private final ILockingTaskExecutors lockingTaskExecutors;
 
     private final INotificationClient notificationClient;
 
@@ -136,7 +136,7 @@ public class FileDeletionRequestService {
                                       FileCopyRequestService fileCopyReqService,
                                       FileCacheRequestService fileCacheReqService,
                                       SessionNotifier sessionNotifier,
-                                      LockingTaskExecutors lockingTaskExecutors,
+                                      ILockingTaskExecutors lockingTaskExecutors,
                                       INotificationClient notificationClient) {
         this.fileDeletionRequestRepo = fileDeletionRequestRepo;
         this.pluginService = pluginService;

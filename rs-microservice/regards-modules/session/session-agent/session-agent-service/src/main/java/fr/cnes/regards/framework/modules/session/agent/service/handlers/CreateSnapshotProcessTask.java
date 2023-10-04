@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 
 import com.google.common.collect.Sets;
-import net.javacrumbs.shedlock.core.LockAssert;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 import java.util.Set;
@@ -39,8 +39,13 @@ public class CreateSnapshotProcessTask implements Task {
 
     private Set<String> sources = Sets.newHashSet();
 
-    public CreateSnapshotProcessTask(SessionAgentHandlerService sessionAgentService, Set<String> sources) {
+    private final ILockingTaskExecutors lockingTaskExecutors;
+
+    public CreateSnapshotProcessTask(SessionAgentHandlerService sessionAgentService,
+                                     Set<String> sources,
+                                     ILockingTaskExecutors lockingTaskExecutors) {
         this.sessionAgentService = sessionAgentService;
+        this.lockingTaskExecutors = lockingTaskExecutors;
         if (sources != null) {
             this.sources = sources;
         }
@@ -48,7 +53,7 @@ public class CreateSnapshotProcessTask implements Task {
 
     @Override
     public void call() throws Throwable {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         if (!sources.isEmpty()) {
             sessionAgentService.createMissingSnapshotProcesses(sources);
         }

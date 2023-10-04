@@ -19,11 +19,10 @@
 package fr.cnes.regards.framework.modules.jobs.task;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
@@ -66,7 +65,7 @@ public class JobInfoTaskScheduler extends AbstractTaskScheduler {
     private JobInfoService jobInfoService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
@@ -75,7 +74,7 @@ public class JobInfoTaskScheduler extends AbstractTaskScheduler {
      * Task to trigger pending jobs
      */
     private final LockingTaskExecutor.Task triggerPendingJobTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         // start searching pending jobs to be triggered
         OffsetDateTime currentDateTime = OffsetDateTime.now();
         LOGGER.debug("[{}] Search jobs with pending status and trigger date before {}",

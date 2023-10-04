@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -113,6 +114,9 @@ public class IngestServiceIT {
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     /**
      * Clean everything a test can use, to prepare the empty environment for the next test

@@ -19,17 +19,17 @@
 package fr.cnes.regards.modules.ingest.service.schedule;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -63,10 +63,13 @@ public class RequestPendingScheduler extends AbstractTaskScheduler {
     private IRequestService requestService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
+
+    @Value("${regards.ingest.schedlock.timeout:120}")
+    private Long schedlockTimoutSeconds;
 
     private final Task unlockRequestsTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         requestService.unblockRequests(RequestTypeEnum.AIP_UPDATES_CREATOR);
         requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
@@ -87,7 +90,8 @@ public class RequestPendingScheduler extends AbstractTaskScheduler {
                 traceScheduling(tenant, UNLOCK_ACTIONS);
                 lockingTaskExecutors.executeWithLock(unlockRequestsTask,
                                                      new LockConfiguration(UNLOCK_REQ_SCHEDULER_LOCK,
-                                                                           Instant.now().plusSeconds(120)));
+                                                                           Instant.now()
+                                                                                  .plusSeconds(schedlockTimoutSeconds)));
             } catch (Throwable e) {
                 handleSchedulingError(UNLOCK_ACTIONS, UNLOCK_TITLE, e);
             } finally {

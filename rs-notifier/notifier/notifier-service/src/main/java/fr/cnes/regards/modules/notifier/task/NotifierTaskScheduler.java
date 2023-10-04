@@ -19,13 +19,12 @@
 package fr.cnes.regards.modules.notifier.task;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
 import fr.cnes.regards.modules.notifier.service.NotificationMatchingService;
 import fr.cnes.regards.modules.notifier.service.NotificationProcessingService;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -84,11 +83,11 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
     private IRecipientService recipientService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     private final Task notificationMatchingTask = () -> {
 
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
 
         Pair<Integer, Integer> nbNotifNbRecipient = notificationMatchingService.matchRequestNRecipient();
@@ -103,7 +102,7 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
 
     private final Task notificationTask = () -> {
 
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
 
         int nb = recipientService.scheduleNotificationJobs();
@@ -115,7 +114,7 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
 
     private final Task notificationCheckCompletedTask = () -> {
 
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
 
         Pair<Integer, Integer> result = notificationProcessingService.checkCompletedRequests();

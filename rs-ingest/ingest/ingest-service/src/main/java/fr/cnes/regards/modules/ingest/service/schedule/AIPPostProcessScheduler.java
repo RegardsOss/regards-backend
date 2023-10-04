@@ -20,12 +20,11 @@
 package fr.cnes.regards.modules.ingest.service.schedule;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPPostProcessRequestScheduler;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -60,13 +59,13 @@ public class AIPPostProcessScheduler extends AbstractTaskScheduler {
     private AIPPostProcessRequestScheduler aipPostProcessRequestScheduler;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     /**
      * Post process task
      */
     private final Task postProcessTask = () -> {
-        LockAssert.assertLocked();
+        lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         aipPostProcessRequestScheduler.scheduleJob();
         LOGGER.debug("[INGEST POST PROCESS TASK SCHEDULER] Scheduler handled in {} ms",

@@ -22,7 +22,7 @@ package fr.cnes.regards.framework.modules.dump.service.scheduler;
 import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -60,7 +60,7 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
     private IDumpSettingsService dumpSettingsService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    protected ILockingTaskExecutors lockingTaskExecutors;
 
     private final Map<String, ScheduledFuture> schedulersByTenant = Maps.newHashMap();
 

@@ -19,10 +19,7 @@
 package fr.cnes.regards.framework.jpa.multitenant.lock;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import net.javacrumbs.shedlock.core.*;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskWithResult;
@@ -34,9 +31,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Service to get a shared lock in database before running a given {@link Task}.
+ * With method #executeWithLock(Task, LockConfiguration) you can run a task when the lock is available or fail after
+ * timeout.
+ *
  * @author Marc SORDI
  */
-public class LockingTaskExecutors {
+public class LockingTaskExecutors implements ILockingTaskExecutors {
 
     /**
      * List of {@link LockingTaskExecutor} for execution action with lock.
@@ -59,27 +60,37 @@ public class LockingTaskExecutors {
             tenant));
     }
 
+    @Override
     public void registerLockingTaskExecutor(String tenant, DataSource datasource) {
         LockProvider lockProvider = new JdbcTemplateLockProvider(datasource);
         taskExecutors.put(tenant, new DefaultLockingTaskExecutor(lockProvider));
     }
 
+    @Override
     public void removeLockingTaskExecutor(String tenant) {
         taskExecutors.remove(tenant);
     }
 
+    @Override
     public void executeWithLock(Runnable task, LockConfiguration lockConfig) {
         // Delegate to schedlock
         getTaskExecutor().executeWithLock(task, lockConfig);
     }
 
+    @Override
     public void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable {
         // Delegate to schedlock
         getTaskExecutor().executeWithLock(task, lockConfig);
     }
 
+    @Override
     public <T> TaskResult<T> executeWithLock(TaskWithResult<T> task, LockConfiguration lockConfig) throws Throwable {
         // Delegate to schedlock
         return getTaskExecutor().executeWithLock(task, lockConfig);
+    }
+
+    @Override
+    public void assertLocked() {
+        LockAssert.assertLocked();
     }
 }

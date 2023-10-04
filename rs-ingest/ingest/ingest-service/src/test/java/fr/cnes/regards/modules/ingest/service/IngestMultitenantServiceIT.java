@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -80,7 +81,7 @@ import static fr.cnes.regards.modules.ingest.service.TestData.*;
  *
  * @author Marc SORDI
  */
-@TestPropertySource(properties = { "eureka.client.enabled=false" },
+@TestPropertySource(properties = { "eureka.client.enabled=false", "regards.ingest.schedlock.timeout=1" },
                     locations = { "classpath:application-test.properties" })
 public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServiceIT {
 
@@ -133,6 +134,9 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
 
     @Autowired
     protected IAbstractRequestRepository abstractRequestRepository;
+
+    @Autowired
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Autowired
     protected IJobService jobService;

@@ -24,8 +24,8 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
@@ -81,7 +81,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
      */
     private final Map<String, DataSource> dataSources;
 
-    private final LockingTaskExecutors lockingTaskExecutors;
+    private final ILockingTaskExecutors lockingTaskExecutors;
 
     /**
      * Microservice global configuration
@@ -104,7 +104,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     public MultitenantJpaEventHandler(String microserviceName,
                                       Map<String, DataSource> dataSources,
-                                      LockingTaskExecutors lockingTaskExecutors,
+                                      ILockingTaskExecutors lockingTaskExecutors,
                                       MultitenantDaoProperties daoProperties,
                                       IDatasourceSchemaHelper datasourceSchemaHelper,
                                       IInstanceSubscriber instanceSubscriber,

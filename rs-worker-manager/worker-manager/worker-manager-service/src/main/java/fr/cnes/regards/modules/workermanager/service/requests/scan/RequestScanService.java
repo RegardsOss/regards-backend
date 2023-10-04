@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.workermanager.service.requests.scan;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -74,21 +74,21 @@ public class RequestScanService {
 
     private static final int DEFAULT_SCAN_PAGE_SIZE = 400;
 
-    private IJobInfoService jobInfoService;
+    private final IJobInfoService jobInfoService;
 
-    private IAuthenticationResolver authResolver;
+    private final IAuthenticationResolver authResolver;
 
-    private RequestService requestService;
+    private final RequestService requestService;
 
-    private WorkerCacheService workerCacheService;
+    private final WorkerCacheService workerCacheService;
 
-    private IWorkerConfigRepository workerConfigRepo;
+    private final IWorkerConfigRepository workerConfigRepo;
 
-    private LockingTaskExecutors lockingTaskExecutors;
+    private final ILockingTaskExecutors lockingTaskExecutors;
 
-    private SessionService sessionService;
+    private final SessionService sessionService;
 
-    private RequestScanService self;
+    private final RequestScanService self;
 
     @Value("${regards.workermanager.scan.page.size:" + DEFAULT_SCAN_PAGE_SIZE + "}")
     public int scanPageSize;
@@ -98,7 +98,7 @@ public class RequestScanService {
                               RequestService requestService,
                               WorkerCacheService workerCacheService,
                               IWorkerConfigRepository workerConfigRepo,
-                              LockingTaskExecutors lockingTaskExecutors,
+                              ILockingTaskExecutors lockingTaskExecutors,
                               SessionService sessionService,
                               RequestScanService requestScanService) {
         this.jobInfoService = jobInfoService;
@@ -135,7 +135,7 @@ public class RequestScanService {
 
     public void scanUsingFilters(SearchRequestParameters filters, RequestStatus newStatus, Long lockAtMostUntilSec)
         throws Throwable {
-        lockingTaskExecutors.executeWithLock(new RequestScanTask(this, filters, newStatus),
+        lockingTaskExecutors.executeWithLock(new RequestScanTask(this, filters, newStatus, lockingTaskExecutors),
                                              new LockConfiguration(RequestScanService.REQUEST_SCAN_LOCK,
                                                                    Instant.now().plusSeconds(lockAtMostUntilSec)));
     }

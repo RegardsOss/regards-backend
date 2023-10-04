@@ -28,8 +28,10 @@ import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventHandler;
 import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutorsMock;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
@@ -54,6 +56,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import javax.persistence.Entity;
 import javax.sql.DataSource;
@@ -147,8 +150,19 @@ public class DataSourcesAutoConfiguration {
      * Lock is used for locking scheduler activation on a single instance
      */
     @Bean
-    public LockingTaskExecutors lockingTaskExecutors() {
+    @Profile("!test")
+    public ILockingTaskExecutors lockingTaskExecutors() {
         return new LockingTaskExecutors();
+    }
+
+    /**
+     * Mock lock is use in test context to avoid usage of scheduler locks. In test context, tests can be stopped before
+     * lock is released.
+     */
+    @Bean
+    @Profile("test")
+    public ILockingTaskExecutors lockingTaskExecutorsMock() {
+        return new LockingTaskExecutorsMock();
     }
 
     /**
@@ -159,7 +173,7 @@ public class DataSourcesAutoConfiguration {
      */
     @Bean(name = { DATA_SOURCE_BEAN_NAME })
     public Map<String, DataSource> getDataSources(ITenantConnectionResolver tenantConnectionResolver,
-                                                  LockingTaskExecutors lockingTaskExecutors,
+                                                  ILockingTaskExecutors lockingTaskExecutors,
                                                   LockService lockService)
         throws JpaMultitenantException, EncryptionException {
         ConcurrentMap<String, DataSource> datasources = new ConcurrentHashMap<>();
@@ -218,7 +232,7 @@ public class DataSourcesAutoConfiguration {
                                                                  IDatasourceSchemaHelper datasourceSchemaHelper,
                                                                  @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME)
                                                                  Map<String, DataSource> dataSources,
-                                                                 LockingTaskExecutors lockingTaskExecutors,
+                                                                 ILockingTaskExecutors lockingTaskExecutors,
                                                                  LockService lockService) {
         return new MultitenantJpaEventHandler(microserviceName,
                                               dataSources,
@@ -250,7 +264,7 @@ public class DataSourcesAutoConfiguration {
                                  List<TenantConnection> connections,
                                  boolean needRegistration,
                                  ITenantConnectionResolver tenantConnectionResolver,
-                                 LockingTaskExecutors lockingTaskExecutors,
+                                 ILockingTaskExecutors lockingTaskExecutors,
                                  LockService lockService) {
 
         for (TenantConnection tenantConnection : connections) {
