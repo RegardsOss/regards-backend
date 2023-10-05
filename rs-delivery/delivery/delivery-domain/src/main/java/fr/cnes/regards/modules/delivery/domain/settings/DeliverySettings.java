@@ -41,6 +41,8 @@ public final class DeliverySettings {
 
     public static final String DELIVERY_BUCKET = "delivery_bucket";
 
+    public static final String DELIVERY_ORDER_SIZE_LIMIT_BYTES = "order_size_limit_bytes";
+
     //-----------------------
     // SETTING DEFAULT VALUES
     //-----------------------
@@ -57,6 +59,8 @@ public final class DeliverySettings {
     public static final String DEFAULT_BUILD_BUCKET = "default-build-bucket";
 
     public static final String DEFAULT_DELIVERY_BUCKET = "default-delivery-bucket";
+
+    public static final Long DEFAULT_DELIVERY_ORDER_SIZE_LIMIT_BYTES = 5L * 1024 * 1024 * 1024;
 
     //-----------------------
     // SETTINGS INIT
@@ -83,10 +87,17 @@ public final class DeliverySettings {
                                                                                                 + "once orders have been completed.",
                                                                                                 DEFAULT_DELIVERY_BUCKET);
 
+    public static final DynamicTenantSetting DELIVERY_ORDER_SIZE_LIMIT_BYTES_SETTING = new DynamicTenantSetting(
+        DELIVERY_ORDER_SIZE_LIMIT_BYTES,
+        "Maximum size in octets allowed for a delivery order. This value should not be greater than a suborder size "
+        + "in order microservice as delivery does not allow order with multiple suborders.",
+        DEFAULT_DELIVERY_ORDER_SIZE_LIMIT_BYTES);
+
     public static final List<DynamicTenantSetting> SETTING_LIST = List.of(REQUEST_TTL_HOURS_SETTING,
                                                                           S3_SERVER_SETTING,
                                                                           BUILD_BUCKET_SETTING,
-                                                                          DELIVERY_BUCKET_SETTING);
+                                                                          DELIVERY_BUCKET_SETTING,
+                                                                          DELIVERY_ORDER_SIZE_LIMIT_BYTES_SETTING);
 
     private DeliverySettings() {
         throw new IllegalStateException("Utility class to declare delivery settings.");

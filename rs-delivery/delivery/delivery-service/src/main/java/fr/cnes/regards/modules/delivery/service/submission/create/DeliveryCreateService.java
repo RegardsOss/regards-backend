@@ -89,7 +89,8 @@ public class DeliveryCreateService {
                                                                                      originRequestPriority));
         }
         // create orders from events
-        orderClient.createOrderFromRequests(orderRequestDtos);
+        orderClient.publishOrderRequestEvents(orderRequestDtos,
+                                              settingService.getValue(DeliverySettings.DELIVERY_ORDER_SIZE_LIMIT_BYTES));
         // save delivery requests
         deliveryRequestService.saveAllRequests(deliveryRequests);
 

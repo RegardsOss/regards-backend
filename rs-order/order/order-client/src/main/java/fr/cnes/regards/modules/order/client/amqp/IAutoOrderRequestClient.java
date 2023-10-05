@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.order.client.amqp;
 
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -30,10 +31,12 @@ import java.util.List;
 public interface IAutoOrderRequestClient {
 
     /**
-     * Create order from {@link OrderRequestDto}s requests
+     * Create {@link fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent} from given {@link OrderRequestDto}.
      *
-     * @param orderRequests requests containing metadata to create an order
+     * @param orderSizeLimitOverride If orderSizeLimitOverride parameter is provided, the value is overridden in all
+     *                               OrderRequestDtoEvent created.
+     * @param orderRequests          requests containing metadata to create an order
      */
-    void createOrderFromRequests(List<OrderRequestDto> orderRequests);
+    void publishOrderRequestEvents(List<OrderRequestDto> orderRequests, @Nullable Long orderSizeLimitOverride);
 
 }

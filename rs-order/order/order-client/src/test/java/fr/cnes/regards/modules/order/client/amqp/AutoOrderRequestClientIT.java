@@ -62,7 +62,7 @@ public class AutoOrderRequestClientIT extends AbstractMultitenantServiceIT {
         List<OrderRequestDto> orderRequests = simulateOrderRequests(nbRequests);
 
         // WHEN
-        autoOrderRequestClient.createOrderFromRequests(orderRequests);
+        autoOrderRequestClient.publishOrderRequestEvents(orderRequests, 200L);
 
         // THEN
         // check that OrderRequestDtoEvents were sent from OrderRequestDtos
@@ -79,7 +79,7 @@ public class AutoOrderRequestClientIT extends AbstractMultitenantServiceIT {
                                                   new OrderRequestFilters(Set.of(DataTypeLight.RAWDATA), null),
                                                   corrId,
                                                   user,
-                                                  200L));
+                                                  null));
         }
         return orderRequests;
     }

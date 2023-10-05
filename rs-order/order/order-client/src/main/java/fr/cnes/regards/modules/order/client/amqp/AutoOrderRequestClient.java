@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -42,14 +43,16 @@ public class AutoOrderRequestClient implements IAutoOrderRequestClient {
     }
 
     @Override
-    public void createOrderFromRequests(List<OrderRequestDto> orderRequests) {
+    public void publishOrderRequestEvents(List<OrderRequestDto> orderRequests, @Nullable Long orderSizeLimitOverride) {
         List<OrderRequestDtoEvent> orderRequestEvents = orderRequests.stream()
                                                                      .map(orderRequestDto -> new OrderRequestDtoEvent(
                                                                          orderRequestDto.getQueries(),
                                                                          orderRequestDto.getFilters(),
                                                                          orderRequestDto.getCorrelationId(),
                                                                          orderRequestDto.getUser(),
-                                                                         orderRequestDto.getSizeLimitInBytes()))
+                                                                         orderSizeLimitOverride != null ?
+                                                                             orderSizeLimitOverride :
+                                                                             orderRequestDto.getSizeLimitInBytes()))
                                                                      .toList();
         publisher.publish(orderRequestEvents);
     }
