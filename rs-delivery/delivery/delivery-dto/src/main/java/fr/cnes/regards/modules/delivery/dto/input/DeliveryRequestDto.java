@@ -40,8 +40,8 @@ public class DeliveryRequestDto {
     /**
      * Identifier provided by the user. Used to monitor the request.
      */
-    @Size(message = "provided correlationId must not exceed 255 characters.", max = 255)
-    @NotBlank(message = "correlationId is mandatory")
+    @Size(message = "provided correlation identifier must not exceed 255 characters.", max = 255)
+    @NotBlank(message = "correlation identifier is required to track this delivery.")
     private final String correlationId;
 
     /**
@@ -52,9 +52,10 @@ public class DeliveryRequestDto {
 
     /**
      * Metadata about the order to create.
+     * Order request correlation identifier must be the same as the delivery request.
      */
     @Valid
-    private final OrderRequestDto order;
+    private OrderRequestDto order;
 
     @GsonIgnore
     @Schema(description = "Origin request app_id in amqp message (header property of amqp message)")

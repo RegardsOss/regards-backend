@@ -78,6 +78,8 @@ public class DeliveryCreateService {
             String originRequestAppId = deliveryEvent.getOriginRequestAppId().orElse(null);
             Integer originRequestPriority = deliveryEvent.getOriginRequestPriority().orElse(null);
 
+            // force order.correlationId with the same delivery request correlationId
+            deliveryEvent.getOrder().setCorrelationId(deliveryEvent.getCorrelationId());
             orderRequestDtos.add(deliveryEvent.getOrder());
 
             deliveryRequests.add(DeliveryRequest.buildGrantedDeliveryRequest(deliveryEvent,
