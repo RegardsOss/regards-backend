@@ -51,7 +51,7 @@ public class OrderResponseDto {
     private OrderErrorCode errorCode;
 
     /**
-     * Errors of order or sub-order
+     * Number of errors of order or sub-order
      */
     @Nullable
     private Integer errors;
@@ -143,6 +143,13 @@ public class OrderResponseDto {
     @Nullable
     public Integer getErrors() {
         return errors;
+    }
+
+    public boolean hasErrors() {
+        if (this.errors == null) {
+            return false;
+        }
+        return this.errors > 0;
     }
 
     @Nullable

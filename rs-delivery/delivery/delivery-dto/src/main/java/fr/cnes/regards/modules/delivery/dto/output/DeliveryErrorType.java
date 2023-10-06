@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.delivery.dto.output;
 
+import fr.cnes.regards.modules.order.dto.OrderErrorCode;
+
+import javax.annotation.Nullable;
+
 /**
  * Type of delivery errors
  *
@@ -47,5 +51,25 @@ public enum DeliveryErrorType {
     /**
      * Internal error occurred during the retrieval of the order
      */
-    INTERNAL_ERROR
+    INTERNAL_ERROR;
+
+    /**
+     * Convert a error code of rs-order {@link OrderErrorCode} to error type of rs-delivery {@link DeliveryErrorType}.
+     *
+     * @param orderErrorCode error code of rs-order.
+     * @return error type of rs-delivery
+     */
+    public static DeliveryErrorType convert(@Nullable OrderErrorCode orderErrorCode) {
+        if (orderErrorCode == null) {
+            return null;
+        }
+        return switch (orderErrorCode) {
+            case FORBIDDEN -> DeliveryErrorType.FORBIDDEN;
+            case INTERNAL_ERROR -> DeliveryErrorType.INTERNAL_ERROR;
+            case EMPTY_ORDER -> DeliveryErrorType.EMPTY_ORDER;
+            case INVALID_CONTENT -> DeliveryErrorType.INVALID_CONTENT;
+            case ORDER_LIMIT_REACHED -> DeliveryErrorType.ORDER_LIMIT_REACHED;
+            default -> DeliveryErrorType.INTERNAL_ERROR;
+        };
+    }
 }

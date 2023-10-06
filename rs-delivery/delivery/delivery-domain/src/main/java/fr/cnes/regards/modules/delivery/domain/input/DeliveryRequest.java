@@ -68,7 +68,7 @@ public class DeliveryRequest {
     @Column(name = "origin_request_priority", updatable = false)
     private Integer originRequestPriority;
 
-    // attribute to handle concurrency
+    // attribute to handle concurrency with optiminic lock
     @Version
     private int version;
 
@@ -114,6 +114,22 @@ public class DeliveryRequest {
                                    null,
                                    originRequestAppId,
                                    originRequestPriority);
+    }
+
+    public void update(Long orderId,
+                       Integer totalSubOrders,
+                       DeliveryRequestStatus status,
+                       @Nullable DeliveryErrorType errorType,
+                       @Nullable String errorCause) {
+        this.orderId = orderId;
+        this.totalSubOrders = totalSubOrders;
+        this.deliveryStatus.setStatus(status);
+        this.deliveryStatus.setStatusDate(OffsetDateTime.now());
+        this.deliveryStatus.setError(errorType, errorCause);
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 
     public String getCorrelationId() {
@@ -174,6 +190,10 @@ public class DeliveryRequest {
 
     public Long getId() {
         return id;
+    }
+
+    public int getVersion() {
+        return version;
     }
 
     @Override

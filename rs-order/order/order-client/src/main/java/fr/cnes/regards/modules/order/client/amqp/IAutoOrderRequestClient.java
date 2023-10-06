@@ -31,7 +31,8 @@ import java.util.List;
 public interface IAutoOrderRequestClient {
 
     /**
-     * Create {@link fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent} from given {@link OrderRequestDto}.
+     * Create orders from {@link OrderRequestDto}s requests in publishing amqp events (@link
+     * {@link fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent}.
      *
      * @param orderSizeLimitOverride If orderSizeLimitOverride parameter is provided, the value is overridden in all
      *                               OrderRequestDtoEvent created.

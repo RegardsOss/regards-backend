@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -67,6 +68,11 @@ public class DeliveryRequestService {
 
     }
 
+    @MultitenantTransactional(readOnly = true)
+    public List<DeliveryRequest> findDeliveryRequestByCorrelationIds(Collection<String> correlationIds) {
+        return deliveryRequestRepository.findByCorrelationIdIn(correlationIds);
+    }
+
     // ------------
     // -- UPDATE --
     // ------------
@@ -79,6 +85,32 @@ public class DeliveryRequestService {
     @MultitenantTransactional
     public List<DeliveryRequest> saveAllRequests(Collection<DeliveryRequest> requestsToSave) {
         return deliveryRequestRepository.saveAll(requestsToSave);
+    }
+
+    /**
+     * Update the {@link DeliveryRequest} in database. Update the following information if the delivery request is not
+     * in ERROR status :
+     * <ul>
+     * <li>order identifier</li>
+     * <li>total number of sub-orders</li>
+     * <li>status of the delivery request</li>
+     * <li>error type if an error exists</li>
+     * <li>error cause if an error exiists</li>
+     * </ul>
+     */
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateRequest(Long deliveryRequestId,
+                              Long orderId,
+                              Integer totalSubOrders,
+                              DeliveryRequestStatus status,
+                              DeliveryErrorType errorType,
+                              String errorCause) {
+        DeliveryRequest deliveryRequest = deliveryRequestRepository.findByIdOptimisticLock(deliveryRequestId);
+        if (DeliveryRequestStatus.ERROR == deliveryRequest.getDeliveryStatus().getStatus()) {
+            return;
+        }
+        deliveryRequest.update(orderId, totalSubOrders, status, errorType, errorCause);
+        deliveryRequestRepository.save(deliveryRequest);
     }
 
     @MultitenantTransactional
