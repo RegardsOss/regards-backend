@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.order.client.feign;
 
+import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -34,6 +33,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RestClient(name = "rs-order", contextId = "rs-order.order.data.file.client")
 public interface IOrderDataFileClient {
 
-    @GetMapping(path = OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID, produces = MediaType.ALL_VALUE)
-    ResponseEntity<InputStreamResource> downloadFile(@PathVariable("dataFileId") Long dataFileId);
+    /**
+     * Usage of response raw object to be able to read InputStreamResource.
+     */
+    @GetMapping(path = OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
+                produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    Response downloadFile(@PathVariable("dataFileId") Long dataFileId);
 }

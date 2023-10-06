@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 
+import feign.Response;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
@@ -29,7 +33,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -38,6 +41,8 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
@@ -68,13 +73,17 @@ public class DeliveryDownloadService {
 
     private final IOrderDataFileClient dataFileClient;
 
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final int availablePageSize;
 
     public DeliveryDownloadService(IOrderDataFileAvailableClient orderClient,
                                    IOrderDataFileClient dataFileClient,
+                                   IRuntimeTenantResolver runtimeTenantResolver,
                                    @Value("${regards.delivery.available.files.bulk.size:100}") int availablePageSize) {
         this.orderClient = orderClient;
         this.dataFileClient = dataFileClient;
+        this.runtimeTenantResolver = runtimeTenantResolver;
         this.availablePageSize = availablePageSize;
     }
 
@@ -90,20 +99,26 @@ public class DeliveryDownloadService {
         String correlationId = deliveryRequest.getCorrelationId();
         long start = System.currentTimeMillis();
         LOGGER.debug("Starting downloading files requested in delivery with correlation id '{}'.", correlationId);
+
+        // Order parameters
         Long orderId = deliveryRequest.getOrderId();
         Assert.notNull(orderId,
                        String.format("An unexpected error occurred orderId should not be null for "
                                      + "delivery request with correlation id '%s'!", correlationId));
+        String tenant = runtimeTenantResolver.getTenant();
+        String user = deliveryRequest.getUserName();
 
+        // Page parameters
         int nbFilesProcessed = 0;
         Pageable pageable = PageRequest.of(0, availablePageSize, Sort.by("id"));
         PagedModel<EntityModel<OrderDataFileDTO>> pageAvailableFiles;
         boolean hasNextPage = true;
+
         while (hasNextPage) {
             // 1. Get available files by page
-            pageAvailableFiles = retrieveAvailableFilePage(orderId, correlationId, pageable);
+            pageAvailableFiles = retrieveAvailableFilePage(orderId, correlationId, pageable, tenant, user);
             // 2. Download files in the unique microservice workspace
-            nbFilesProcessed += downloadPageOfFiles(correlationId, pageAvailableFiles, downloadWorkspace);
+            nbFilesProcessed += downloadPageOfFiles(correlationId, pageAvailableFiles, downloadWorkspace, tenant, user);
             hasNextPage = pageAvailableFiles.getNextLink().isPresent();
             if (hasNextPage) {
                 pageable = pageable.next();
@@ -126,28 +141,39 @@ public class DeliveryDownloadService {
      * @param orderId       order reference identifier
      * @param correlationId unique identifier to monitor the request
      * @param pageable      page requested
+     * @param tenant        current tenant to identify the project
+     * @param user          email address of the user who initiated the request
      * @return page model of {@link OrderDataFileDTO}
      * @throws DeliveryOrderException if files could not be retrieved.
      */
     @NotNull
     private PagedModel<EntityModel<OrderDataFileDTO>> retrieveAvailableFilePage(Long orderId,
                                                                                 String correlationId,
-                                                                                Pageable pageable)
+                                                                                Pageable pageable,
+                                                                                String tenant,
+                                                                                String user)
         throws DeliveryOrderException {
-
-        ResponseEntity<PagedModel<EntityModel<OrderDataFileDTO>>> availableFilesResponse = orderClient.getAvailableFilesInOrder(
-            orderId,
-            pageable);
-        if (availableFilesResponse == null
-            || !availableFilesResponse.getStatusCode().is2xxSuccessful()
-            || availableFilesResponse.getBody() == null) {
-            throw new DeliveryOrderException(String.format("Could not retrieve available files from "
-                                                           + "delivery with correlation id '%s'. Got response '%s'.",
-                                                           correlationId,
-                                                           availableFilesResponse));
+        try {
+            runtimeTenantResolver.forceTenant(tenant);
+            FeignSecurityManager.asUser(user, DefaultRole.REGISTERED_USER.toString());
+            ResponseEntity<PagedModel<EntityModel<OrderDataFileDTO>>> availableFilesResponse = orderClient.getAvailableFilesInOrder(
+                orderId,
+                pageable);
+            if (availableFilesResponse == null
+                || !availableFilesResponse.getStatusCode().is2xxSuccessful()
+                || availableFilesResponse.getBody() == null) {
+                String errorMsg = String.format("Could not retrieve available files from delivery with correlation id"
+                                                + " '%s'.", correlationId);
+                LOGGER.error(errorMsg + " Got response : {}", availableFilesResponse);
+                throw new DeliveryOrderException(errorMsg + " Refer to the logs for more information.");
+            }
+            return availableFilesResponse.getBody();
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            throw new DeliveryOrderException("Not able to reach rs-order.", e);
+        } finally {
+            FeignSecurityManager.reset();
+            runtimeTenantResolver.forceTenant(tenant);
         }
-
-        return availableFilesResponse.getBody();
     }
 
     /**
@@ -156,12 +182,16 @@ public class DeliveryDownloadService {
      * @param correlationId      unique identifier to monitor the request
      * @param pageAvailableFiles metadata containing information about the files to download
      * @param downloadWorkspace  where to download files
+     * @param tenant             current tenant to identify the project
+     * @param user               email address of the user who initiated the request
      * @return number of files downloaded
      * @throws DeliveryOrderException if files could not be downloaded.
      */
     private int downloadPageOfFiles(String correlationId,
                                     PagedModel<EntityModel<OrderDataFileDTO>> pageAvailableFiles,
-                                    DeliveryDownloadWorkspaceManager downloadWorkspace) throws DeliveryOrderException {
+                                    DeliveryDownloadWorkspaceManager downloadWorkspace,
+                                    String tenant,
+                                    String user) throws DeliveryOrderException {
         int nbDownloadedFiles = 0;
         Collection<EntityModel<OrderDataFileDTO>> availableFiles = pageAvailableFiles.getContent();
         LOGGER.debug("Starting downloading {} files for page {}.",
@@ -174,7 +204,7 @@ public class DeliveryDownloadService {
                 throw new DeliveryOrderException(String.format("Could not extract available file from delivery with "
                                                                + "correlation id '%s'", correlationId));
             }
-            downloadFile(availableFile, downloadWorkspace);
+            downloadFile(availableFile, downloadWorkspace, tenant, user);
             nbDownloadedFiles++;
         }
 
@@ -187,66 +217,76 @@ public class DeliveryDownloadService {
      *
      * @param availableFile     metadata about the file to download
      * @param downloadWorkspace where to download the file
+     * @param tenant            current tenant to identify the project
+     * @param user              email address of the user who initiated the request
      */
-    private void downloadFile(OrderDataFileDTO availableFile, DeliveryDownloadWorkspaceManager downloadWorkspace)
-        throws DeliveryOrderException {
+    private void downloadFile(OrderDataFileDTO availableFile,
+                              DeliveryDownloadWorkspaceManager downloadWorkspace,
+                              String tenant,
+                              String user) throws DeliveryOrderException {
         LOGGER.trace("Starting downloading file with name '{}' and md5Checksum '{}'.",
                      availableFile.getFilename(),
                      availableFile.getChecksum());
-
-        InputStreamResource fileStreamResource = getInputStreamResource(availableFile);
-        Path downloadedPath = writeFileToWorkspace(availableFile, downloadWorkspace, fileStreamResource);
-
-        LOGGER.trace("Successfully downloaded file with name '{}' and md5Checksum '{}' at '{}'.",
-                     availableFile.getFilename(),
-                     availableFile.getChecksum(),
-                     downloadedPath);
+        try (InputStream fileStreamResource = getFileInputStream(availableFile, tenant, user)) {
+            Path downloadedPath = writeFileToWorkspace(availableFile, downloadWorkspace, fileStreamResource);
+            LOGGER.trace("Successfully downloaded file with name '{}' and md5Checksum '{}' at '{}'.",
+                         availableFile.getFilename(),
+                         availableFile.getChecksum(),
+                         downloadedPath);
+        } catch (IOException e) {
+            throw new DeliveryOrderException(String.format("Could not download file with name '%s'",
+                                                           availableFile.getFilename()), e);
+        }
     }
 
     /**
      * Get the file to download by requesting rs-order, which will return the file input stream.
-     * Linked to {@link this#downloadFile}
+     * Linked to {@link this#downloadFile(OrderDataFileDTO, DeliveryDownloadWorkspaceManager, String, String)}
      *
      * @param availableFile metadata about the file to stream
+     * @param tenant        current tenant to identify the project
+     * @param user          email address of the user who initiated the request
      */
-    @NotNull
-    private InputStreamResource getInputStreamResource(OrderDataFileDTO availableFile) throws DeliveryOrderException {
-        ResponseEntity<InputStreamResource> inputStreamRes = dataFileClient.downloadFile(availableFile.getId());
-        if (inputStreamRes == null
-            || !inputStreamRes.getStatusCode().is2xxSuccessful()
-            || inputStreamRes.getBody() == null) {
-            throw new DeliveryOrderException(String.format("Could not retrieve file with name '%s' from order service"
-                                                           + ". Got response '%s'.",
-                                                           availableFile.getFilename(),
-                                                           inputStreamRes));
+    private InputStream getFileInputStream(OrderDataFileDTO availableFile, String tenant, String user)
+        throws DeliveryOrderException, IOException {
+        try {
+            runtimeTenantResolver.forceTenant(tenant);
+            FeignSecurityManager.asUser(user, DefaultRole.REGISTERED_USER.toString());
+            Response inputStreamRes = dataFileClient.downloadFile(availableFile.getId());
+            if (inputStreamRes == null || inputStreamRes.body() == null) {
+                String errorMsg = String.format("Could not retrieve file with name '%s' from order service.",
+                                                availableFile.getFilename());
+                LOGGER.error(errorMsg + "Got response : {}", inputStreamRes);
+
+                throw new DeliveryOrderException(errorMsg + " Refer to the logs for more information.");
+            }
+            return inputStreamRes.body().asInputStream();
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            throw new DeliveryOrderException("Not able to reach rs-order.", e);
+        } finally {
+            FeignSecurityManager.reset();
+            runtimeTenantResolver.forceTenant(tenant);
         }
-        return inputStreamRes.getBody();
     }
 
     /**
      * Write the file in a local directory provided by the delivery workspace manager.
-     * Linked to {@link this#downloadFile}
+     * Linked to {@link this#downloadFile(OrderDataFileDTO, DeliveryDownloadWorkspaceManager, String, String)}
      */
     private Path writeFileToWorkspace(OrderDataFileDTO availableFile,
                                       DeliveryDownloadWorkspaceManager deliveryWorkspace,
-                                      InputStreamResource fileStreamResource) throws DeliveryOrderException {
+                                      InputStream fileInputStream) throws DeliveryOrderException, IOException {
         Path fileDownloadPath = deliveryWorkspace.getDownloadSubfolder()
                                                  .resolve(String.format(PRODUCT_FOLDER_PATTERN,
                                                                         availableFile.getProductId(),
                                                                         availableFile.getVersion()))
                                                  .resolve(availableFile.getFilename());
-        try (InputStream fileInputStream = fileStreamResource.getInputStream()) {
-            Files.createDirectories(fileDownloadPath.getParent());
-            Files.createFile(fileDownloadPath);
-            // copy the input stream to the file
-            FileUtils.copyInputStreamToFile(fileInputStream, fileDownloadPath.toFile());
-            checkFileIntegrity(availableFile, fileDownloadPath);
-            return fileDownloadPath;
-        } catch (IOException e) {
-            throw new DeliveryOrderException(String.format("Could not write file with name '%s' at '%s'.",
-                                                           availableFile.getFilename(),
-                                                           fileDownloadPath), e);
-        }
+        Files.createDirectories(fileDownloadPath.getParent());
+        Files.createFile(fileDownloadPath);
+        // copy the input stream to the file
+        FileUtils.copyInputStreamToFile(fileInputStream, fileDownloadPath.toFile());
+        checkFileIntegrity(availableFile, fileDownloadPath);
+        return fileDownloadPath;
     }
 
     /**

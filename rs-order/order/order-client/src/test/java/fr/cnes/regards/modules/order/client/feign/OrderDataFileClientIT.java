@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.client.feign;
 
 import com.google.gson.Gson;
+import feign.Response;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -33,9 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -100,11 +99,13 @@ public class OrderDataFileClientIT extends AbstractRegardsWebIT {
         Assert.assertEquals("Unexpected created data files.", 2, pendingFiles.size());
 
         // WHEN
-        ResponseEntity<InputStreamResource> response = availableClient.downloadFile(pendingFiles.get(0).getId());
-
-        // THEN
-        // Only test that download endpoint is accessible
-        Assert.assertEquals("Unexpected response status.", HttpStatus.ACCEPTED, response.getStatusCode());
+        try (Response response = availableClient.downloadFile(pendingFiles.get(0).getId())) {
+            // THEN
+            // Only test that download endpoint is accessible
+            Assert.assertEquals("Unexpected response status.", HttpStatus.ACCEPTED.value(), response.status());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

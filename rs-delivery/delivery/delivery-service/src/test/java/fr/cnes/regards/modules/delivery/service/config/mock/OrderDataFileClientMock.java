@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.delivery.service.config.mock;
 
+import feign.Request;
+import feign.RequestTemplate;
+import feign.Response;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileClient;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.util.HashMap;
 
 import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils.TEST_FILES_ORDER_RESOURCES;
 
@@ -36,12 +39,22 @@ import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.Deliv
 public class OrderDataFileClientMock implements IOrderDataFileClient {
 
     @Override
-    public ResponseEntity<InputStreamResource> downloadFile(Long dataFileId) {
+    public Response downloadFile(Long dataFileId) {
         try {
-            return ResponseEntity.ok(new InputStreamResource(new FileInputStream(Path.of(String.format(
-                TEST_FILES_ORDER_RESOURCES.resolve("data-%d").resolve("file-%d.txt").toString(),
-                dataFileId,
-                dataFileId)).toFile())));
+            return Response.builder()
+                           .status(HttpStatus.OK.value())
+                           .request(Request.create(Request.HttpMethod.GET,
+                                                   "url",
+                                                   new HashMap<>(),
+                                                   Request.Body.empty(),
+                                                   new RequestTemplate()))
+                           .body(new FileInputStream(Path.of(String.format(TEST_FILES_ORDER_RESOURCES.resolve("data-%d")
+                                                                                                     .resolve(
+                                                                                                         "file-%d.txt")
+                                                                                                     .toString(),
+                                                                           dataFileId,
+                                                                           dataFileId)).toFile()), 100)
+                           .build();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.delivery.service.order.zip.job.event;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.delivery.service.order.zip.job.OrderDeliveryZipJob;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -42,9 +43,14 @@ public class OrderDeliveryZipJobEventHandler implements ApplicationListener<Appl
 
     private final OrderDeliveryZipJobEventService jobEventService;
 
-    public OrderDeliveryZipJobEventHandler(ISubscriber subscriber, OrderDeliveryZipJobEventService jobEventService) {
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    public OrderDeliveryZipJobEventHandler(ISubscriber subscriber,
+                                           OrderDeliveryZipJobEventService jobEventService,
+                                           IRuntimeTenantResolver runtimeTenantResolver) {
         this.subscriber = subscriber;
         this.jobEventService = jobEventService;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -54,6 +60,7 @@ public class OrderDeliveryZipJobEventHandler implements ApplicationListener<Appl
         long start = System.currentTimeMillis();
         if (OrderDeliveryZipJob.class.getName().equals(jobEvent.getJobClassName()) && jobEvent.getJobEventType()
                                                                                               .isFinalState()) {
+            runtimeTenantResolver.forceTenant(tenant);
             jobEventService.handleFinishedOrderDeliveryZipJobEvent(jobEvent);
         }
         LOGGER.debug("[ORDER DELIVERY ZIP JOB EVENT HANDLER] event with job id '{}' handled in {} ms",

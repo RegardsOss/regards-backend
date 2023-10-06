@@ -18,7 +18,11 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 
+import feign.Request;
+import feign.RequestTemplate;
+import feign.Response;
 import fr.cnes.regards.framework.modules.workspace.service.WorkspaceService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
@@ -35,8 +39,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.ByteArrayInputStream;
@@ -45,6 +49,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -83,6 +88,9 @@ public class DeliveryDownloadServiceTest {
     @Mock
     private WorkspaceService workspaceService;
 
+    @Mock
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     private DeliveryDownloadWorkspaceManager deliveryWorkspaceManager;
 
     @Before
@@ -91,7 +99,7 @@ public class DeliveryDownloadServiceTest {
         FileUtils.deleteDirectory(DeliveryStepUtils.WORKSPACE_PATH.toFile());
         Files.createDirectories(DeliveryStepUtils.WORKSPACE_PATH);
         // init services
-        deliveryDownloadService = new DeliveryDownloadService(orderClient, dataFileClient, 2);
+        deliveryDownloadService = new DeliveryDownloadService(orderClient, dataFileClient, runtimeTenantResolver, 2);
         deliveryWorkspaceManager = new DeliveryDownloadWorkspaceManager(DeliveryStepUtils.DELIVERY_CORRELATION_ID,
                                                                         DeliveryStepUtils.WORKSPACE_PATH);
         deliveryWorkspaceManager.createDeliveryFolder();
@@ -112,8 +120,16 @@ public class DeliveryDownloadServiceTest {
         // simulate download of file
         Mockito.when(dataFileClient.downloadFile(anyLong())).thenAnswer(ans -> {
             long dataFileId = ans.getArgument(0);
-            return ResponseEntity.ok(new InputStreamResource(new FileInputStream(Path.of(String.format(DeliveryStepUtils.TEST_FILES_ORDER_RESOURCES.resolve(
-                "data-%d").resolve("file-%d.txt").toString(), dataFileId, dataFileId)).toFile())));
+            return Response.builder()
+                           .status(HttpStatus.OK.value())
+                           .request(Request.create(Request.HttpMethod.GET,
+                                                   "url",
+                                                   new HashMap<>(),
+                                                   Request.Body.empty(),
+                                                   new RequestTemplate()))
+                           .body(new FileInputStream(Path.of(String.format(DeliveryStepUtils.TEST_FILES_ORDER_RESOURCES.resolve(
+                               "data-%d").resolve("file-%d.txt").toString(), dataFileId, dataFileId)).toFile()), 100)
+                           .build();
         });
 
         // --- WHEN ---
@@ -144,10 +160,17 @@ public class DeliveryDownloadServiceTest {
                                                                                       page.getPageSize(),
                                                                                       simulatedOrderDataFiles));
         });
-        // simulate download of file
-        // return only first simulated file to make checksum verification fail for other files
+        // simulate download of file and make checksum verification fail
         Mockito.when(dataFileClient.downloadFile(anyLong()))
-               .thenReturn(ResponseEntity.ok(new InputStreamResource(new ByteArrayInputStream("error-download".getBytes()))));
+               .thenReturn(Response.builder()
+                                   .status(HttpStatus.OK.value())
+                                   .request(Request.create(Request.HttpMethod.GET,
+                                                           "url",
+                                                           new HashMap<>(),
+                                                           Request.Body.empty(),
+                                                           new RequestTemplate()))
+                                   .body(new ByteArrayInputStream(("error-download").getBytes()), 100)
+                                   .build());
 
         // --- WHEN / THEN ---
         Assertions.assertThatThrownBy(() -> deliveryDownloadService.getAndDownloadFiles(DeliveryStepUtils.buildDeliveryRequest(),
@@ -167,7 +190,7 @@ public class DeliveryDownloadServiceTest {
         Assertions.assertThatThrownBy(() -> deliveryDownloadService.getAndDownloadFiles(DeliveryStepUtils.buildDeliveryRequest(),
                                                                                         deliveryWorkspaceManager))
                   .isInstanceOf(DeliveryOrderException.class)
-                  .hasMessageContaining("INTERNAL_SERVER_ERROR");
+                  .hasMessageContaining("Could not retrieve");
     }
 
 }
