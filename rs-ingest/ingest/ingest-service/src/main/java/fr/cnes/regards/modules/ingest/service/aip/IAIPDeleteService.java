@@ -70,4 +70,9 @@ public interface IAIPDeleteService {
      * Delete all given {@link AIPEntity}s
      */
     void deleteAll(Set<AIPEntity> aipIds);
+
+    /**
+     * Delete pointer to last version of given aip
+     */
+    void removeLastFlag(AIPEntity aip);
 }

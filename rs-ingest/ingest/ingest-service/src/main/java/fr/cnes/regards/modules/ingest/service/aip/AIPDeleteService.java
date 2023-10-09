@@ -185,14 +185,13 @@ public class AIPDeleteService implements IAIPDeleteService {
                 aipRepository.saveAll(aipsRelatedToSip);
             }
             // Remove last flag entry
-            aipsRelatedToSip.forEach(aip -> removeLastFlag(aip));
-
+            aipsRelatedToSip.forEach(this::removeLastFlag);
             // Send notification to data mangement for feature deleted
             aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));
         }
     }
 
-    private void removeLastFlag(AIPEntity aip) {
+    public void removeLastFlag(AIPEntity aip) {
         lastAipRepository.deleteByAipId(aip.getId());
     }
 

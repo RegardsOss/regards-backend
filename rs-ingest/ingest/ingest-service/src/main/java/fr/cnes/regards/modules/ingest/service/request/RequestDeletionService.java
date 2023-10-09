@@ -97,6 +97,8 @@ public class RequestDeletionService {
                                                  .filter(r -> r.getAips() != null && !r.getAips().isEmpty())
                                                  .flatMap(r -> r.getAips().stream())
                                                  .collect(Collectors.toSet());
+
+            aipToDelete.forEach(aipDeleteService::removeLastFlag);
             Set<String> sipToDelete = aipToDelete.stream().map(a -> a.getSip().getSipId()).collect(Collectors.toSet());
             aipDeleteService.sendLinkedFilesDeletionRequest(aipToDelete);
             aipDeleteService.cancelStorageRequests(requests);

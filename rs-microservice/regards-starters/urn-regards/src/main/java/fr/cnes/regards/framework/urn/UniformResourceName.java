@@ -215,7 +215,7 @@ public class UniformResourceName {
      * @return whether the given string is a urn or not
      */
     public static boolean isValidUrn(String urn) {
-        return PATTERN.matcher(urn).matches();
+        return urn != null && PATTERN.matcher(urn).matches();
     }
 
     /**
