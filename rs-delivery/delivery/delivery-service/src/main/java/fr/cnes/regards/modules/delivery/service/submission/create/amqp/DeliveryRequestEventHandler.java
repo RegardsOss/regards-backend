@@ -111,13 +111,10 @@ public class DeliveryRequestEventHandler
     public void handleBatch(List<DeliveryRequestDtoEvent> events) {
         long start = System.currentTimeMillis();
         LOGGER.debug("Handling {} delivery request events...", events.size());
-        // handle valid delivery requests
         List<DeliveryRequestDtoEvent> validEvents = validateBatchEventsAndHandleInvalid(events);
-        List<DeliveryResponseDtoEvent> responses = createService.handleDeliveryRequestsCreation(validEvents);
-        // publish responses
-        publisher.publish(responses);
+        int nbDeliveryRequestsCreated = createService.handleDeliveryRequestsCreation(validEvents);
         LOGGER.debug("{} delivery responses created from {} delivery request events. Handled in {}ms.",
-                     responses.size(),
+                     nbDeliveryRequestsCreated,
                      events.size(),
                      System.currentTimeMillis() - start);
     }

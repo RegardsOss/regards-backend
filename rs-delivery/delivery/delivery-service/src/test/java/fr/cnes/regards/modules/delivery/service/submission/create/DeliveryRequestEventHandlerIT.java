@@ -164,28 +164,16 @@ public class DeliveryRequestEventHandlerIT extends AbstractMultitenantServiceIT 
         handler.handleBatch(simulateRequests(nbRequests));
         // THEN
         // check events were handled with granted status
-        // published events are DeliveryResponseDtoEvents and OrderRequestDtoEvents from DeliveryRequestDtoEvents
+        // published events are OrderRequestDtoEvents from DeliveryRequestDtoEvents
         ArgumentCaptor<ISubscribable> responseCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(publisher, timeout(2000).times(nbRequests * 2)).publish(responseCaptor.capture());
-        List<ISubscribable> eventsSent = responseCaptor.getAllValues();
-
-        // check delivery responses
-        List<DeliveryResponseDtoEvent> deliveryResponses = eventsSent.stream()
-                                                                     .filter(event -> event instanceof DeliveryResponseDtoEvent)
-                                                                     .map(deliveryEvent -> (DeliveryResponseDtoEvent) deliveryEvent)
-                                                                     .toList();
-        Assertions.assertThat(deliveryResponses.size()).isEqualTo(nbRequests);
-        for (int i = 0; i < nbRequests; i++) {
-            DeliveryResponseDtoEvent response = deliveryResponses.get(i);
-            Assertions.assertThat(response.getCorrelationId()).isEqualTo("corr-" + i + "-delivery");
-            Assertions.assertThat(response.getStatus()).isEqualTo(DeliveryRequestStatus.GRANTED);
-        }
+        Mockito.verify(publisher, timeout(2000).times(nbRequests)).publish(responseCaptor.capture());
 
         // check order responses
-        List<OrderRequestDtoEvent> orderEvents = eventsSent.stream()
-                                                           .filter(event -> event instanceof OrderRequestDtoEvent)
-                                                           .map(orderEvent -> (OrderRequestDtoEvent) orderEvent)
-                                                           .toList();
+        List<OrderRequestDtoEvent> orderEvents = responseCaptor.getAllValues()
+                                                               .stream()
+                                                               .filter(event -> event instanceof OrderRequestDtoEvent)
+                                                               .map(orderEvent -> (OrderRequestDtoEvent) orderEvent)
+                                                               .toList();
         Assertions.assertThat(orderEvents.size()).isEqualTo(nbRequests);
         for (int i = 0; i < nbRequests; i++) {
             OrderRequestDtoEvent orderEvent = orderEvents.get(i);

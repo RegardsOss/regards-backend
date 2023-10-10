@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.delivery.service.submission.create;
 
 import fr.cnes.regards.modules.delivery.amqp.input.DeliveryRequestDtoEvent;
-import fr.cnes.regards.modules.delivery.amqp.output.DeliveryResponseDtoEvent;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.domain.settings.DeliverySettings;
 import fr.cnes.regards.modules.delivery.dto.input.DeliveryRequestDto;
@@ -63,13 +62,12 @@ public class DeliveryCreateService {
      * monitoring purposes.
      *
      * @param deliveryEvents containing metadata to create orders.
-     * @return status responses.
+     * @return number of delivery requests created.
      */
-    public List<DeliveryResponseDtoEvent> handleDeliveryRequestsCreation(List<? extends DeliveryRequestDto> deliveryEvents) {
+    public int handleDeliveryRequestsCreation(List<? extends DeliveryRequestDto> deliveryEvents) {
         int nbDeliveryEvents = deliveryEvents.size();
         List<OrderRequestDto> orderRequestDtos = new ArrayList<>(nbDeliveryEvents);
         List<DeliveryRequest> deliveryRequests = new ArrayList<>(nbDeliveryEvents);
-        List<DeliveryResponseDtoEvent> responses = new ArrayList<>(nbDeliveryEvents);
 
         for (DeliveryRequestDto deliveryEvent : deliveryEvents) {
             LOGGER.debug("---> Processing DeliveryResponseDtoEvent with correlationId \"{}\"",
@@ -86,9 +84,6 @@ public class DeliveryCreateService {
                                                                              settingService.getValue(DeliverySettings.REQUEST_TTL_HOURS),
                                                                              originRequestAppId,
                                                                              originRequestPriority));
-            responses.add(DeliveryResponseDtoEvent.buildGrantedDeliveryResponseEvent(deliveryEvent,
-                                                                                     originRequestAppId,
-                                                                                     originRequestPriority));
         }
         // save delivery requests
         deliveryRequestService.saveAllRequests(deliveryRequests);
@@ -96,6 +91,7 @@ public class DeliveryCreateService {
         // create orders from events
         orderClient.publishOrderRequestEvents(orderRequestDtos,
                                               settingService.getValue(DeliverySettings.DELIVERY_ORDER_SIZE_LIMIT_BYTES));
-        return responses;
+
+        return deliveryRequests.size();
     }
 }
