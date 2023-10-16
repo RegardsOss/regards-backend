@@ -331,7 +331,9 @@ public class PluginService implements IPluginService, InitializingBean {
 
     @Override
     public boolean exists(String businessId) {
-        return repos.existsByBusinessId(businessId);
+        boolean exists = repos.existsByBusinessId(businessId);
+        LOGGER.trace(exists ? "Plugin [businessId={}] exists" : "Plugin [businessId={}] does not exist", businessId);
+        return exists;
     }
 
     @Override

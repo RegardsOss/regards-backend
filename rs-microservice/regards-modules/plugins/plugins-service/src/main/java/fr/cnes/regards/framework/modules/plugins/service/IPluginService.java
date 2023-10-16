@@ -166,6 +166,21 @@ public interface IPluginService {
     PluginConfiguration updatePluginConfiguration(PluginConfiguration plugin) throws ModuleException;
 
     /**
+     * Update a {@link PluginConfiguration}.
+     *
+     * @param plugin the {@link PluginConfiguration} to create or update
+     * @return the updated {@link PluginConfiguration}
+     * @throws ModuleException if an error occurs
+     */
+    default PluginConfiguration createOrUpdatePluginConfiguration(PluginConfiguration plugin) throws ModuleException {
+        if (exists(plugin.getBusinessId())) {
+            return updatePluginConfiguration(plugin);
+        } else {
+            return savePluginConfiguration(plugin);
+        }
+    }
+
+    /**
      * Get the {@link PluginConfiguration}.
      *
      * @param businessId business identifier of the {@link PluginConfiguration}.

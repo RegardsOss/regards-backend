@@ -21,11 +21,8 @@
 package fr.cnes.regards.modules.dam.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -110,8 +107,8 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
 
         for (PluginConfiguration plgConf : pluginConfigurations) {
             try {
-                pluginService.savePluginConfiguration(plgConf);
-            } catch (EntityInvalidException | EncryptionException | EntityNotFoundException e) {
+                pluginService.createOrUpdatePluginConfiguration(plgConf);
+            } catch (ModuleException e) {
                 LOGGER.error("Cannot import dam settings", e);
                 errors.add(e.getMessage());
             }
