@@ -51,7 +51,11 @@ public enum DeliveryErrorType {
     /**
      * Internal error occurred during the retrieval of the order
      */
-    INTERNAL_ERROR;
+    INTERNAL_ERROR,
+    /**
+     * Order returns more than 1 sub-order for a given Delivery request
+     */
+    TOO_MANY_SUBORDERS;
 
     /**
      * Convert a error code of rs-order {@link OrderErrorCode} to error type of rs-delivery {@link DeliveryErrorType}.

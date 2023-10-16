@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.delivery.service.submission.update;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockServiceTask;
+import fr.cnes.regards.modules.delivery.service.schedulers.UpdateExpiredDeliveryRequestScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

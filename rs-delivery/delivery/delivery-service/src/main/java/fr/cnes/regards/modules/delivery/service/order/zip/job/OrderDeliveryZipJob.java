@@ -41,9 +41,11 @@ public class OrderDeliveryZipJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.info("[{}] OrderDeliveryZipJob starts...", jobInfoId);
         long start = System.currentTimeMillis();
         DeliveryRequest deliveryRequest = deliveryJobProgressManager.findDeliveryRequestToProcess(jobInfoId);
+        logger.info("[{}] OrderDeliveryZipJob of request '{}' starts...",
+                    jobInfoId,
+                    deliveryRequest.getCorrelationId());
         try {
             ZipDeliveryInfo uploadedZipInfo = deliveryZipService.makeDelivery(deliveryRequest);
             deliveryJobProgressManager.handleDeliverySuccess(deliveryRequest, uploadedZipInfo);
@@ -52,7 +54,8 @@ public class OrderDeliveryZipJob extends AbstractJob<Void> {
             // send RsRuntimeException to make the job fail
             throw new RsRuntimeException(e);
         }
-        logger.info("[{}] OrderDeliveryZipJob has ended successfully in {} ms.", jobInfoId,
+        logger.info("[{}] OrderDeliveryZipJob has ended successfully in {} ms.",
+                    jobInfoId,
                     System.currentTimeMillis() - start);
     }
 

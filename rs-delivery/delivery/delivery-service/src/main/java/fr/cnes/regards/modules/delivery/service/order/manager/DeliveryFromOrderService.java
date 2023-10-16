@@ -105,8 +105,11 @@ public class DeliveryFromOrderService {
             case GRANTED -> {
                 deliveryResponseEvt = updateWithGrantedOrder(orderResponseEvent, deliveryRequest);
             }
-            case SUBORDER_DONE, DONE -> {
-                this.updateWithDoneOrderSuborder(orderResponseEvent, deliveryRequest);
+            case SUBORDER_DONE -> {
+                deliveryResponseEvt = updateWithSuborderDone(orderResponseEvent, deliveryRequest);
+            }
+            case DONE -> {
+                this.updateWithOrderDone(orderResponseEvent, deliveryRequest);
             }
             case DENIED -> {
                 deliveryResponseEvt = updateWithDeniedOrder(orderResponseEvent, deliveryRequest);
@@ -117,6 +120,22 @@ public class DeliveryFromOrderService {
             default -> LOGGER.warn("Unknown state from order response event : {}", orderResponseEvent.getStatus());
         }
         return deliveryResponseEvt;
+    }
+
+    private void updateWithOrderDone(OrderResponseDtoEvent orderResponseEvent, DeliveryRequest deliveryRequest) {
+        if (deliveryRequest.getStatus() != DeliveryRequestStatus.ERROR) {
+            DeliveryRequestStatus deliveryRequestStatus = orderResponseEvent.hasErrors() ?
+                DeliveryRequestStatus.ERROR :
+                DeliveryRequestStatus.DONE;
+            // Update deliver request in db
+            deliveryFromOrderRetryService.saveRequestWithRetryWithOptimisticLock(deliveryRequest.getId(),
+                                                                                 orderResponseEvent.getOrderId(),
+                                                                                 orderResponseEvent.getTotalSubOrders(),
+                                                                                 deliveryRequestStatus,
+                                                                                 DeliveryErrorType.convert(
+                                                                                     orderResponseEvent.getErrorCode()),
+                                                                                 orderResponseEvent.getMessage());
+        }
     }
 
     private DeliveryResponseDtoEvent updateWithGrantedOrder(OrderResponseDtoEvent orderResponseEvent,
@@ -138,20 +157,37 @@ public class DeliveryFromOrderService {
                                             deliveryRequest.getOriginRequestPriority());
     }
 
-    private void updateWithDoneOrderSuborder(OrderResponseDtoEvent orderResponseEvent,
-                                             DeliveryRequest deliveryRequest) {
-        if (deliveryRequest.getStatus() != DeliveryRequestStatus.ERROR) {
-            DeliveryRequestStatus deliveryRequestStatus = orderResponseEvent.hasErrors() ?
-                DeliveryRequestStatus.ERROR :
-                DeliveryRequestStatus.DONE;
+    private DeliveryResponseDtoEvent updateWithSuborderDone(OrderResponseDtoEvent orderResponseEvent,
+                                                            DeliveryRequest deliveryRequest) {
+        if (deliveryRequest.getStatus() == DeliveryRequestStatus.ERROR) {
+            return null;
+        }
+        DeliveryRequestStatus deliveryRequestStatus;
+        DeliveryErrorType errorType;
+        String message;
+        // Reject delivery if more than one suborder is detected
+        if (orderResponseEvent.getTotalSubOrders() != null && orderResponseEvent.getTotalSubOrders() > 1) {
+            deliveryRequestStatus = DeliveryRequestStatus.ERROR;
+            errorType = DeliveryErrorType.TOO_MANY_SUBORDERS;
+            message = String.format("Cannot deliver request %s : this implementation does not support more than 1 sub-order",
+                                    deliveryRequest.getCorrelationId());
+        } else {
+            deliveryRequestStatus = orderResponseEvent.hasErrors() ? DeliveryRequestStatus.ERROR : null;
+            errorType = DeliveryErrorType.convert(orderResponseEvent.getErrorCode());
+            message = orderResponseEvent.getMessage();
+        }
+        if (deliveryRequestStatus == DeliveryRequestStatus.ERROR) {
             // Update deliver request in db
             deliveryFromOrderRetryService.saveRequestWithRetryWithOptimisticLock(deliveryRequest.getId(),
                                                                                  orderResponseEvent.getOrderId(),
                                                                                  orderResponseEvent.getTotalSubOrders(),
                                                                                  deliveryRequestStatus,
-                                                                                 DeliveryErrorType.convert(
-                                                                                     orderResponseEvent.getErrorCode()),
-                                                                                 orderResponseEvent.getMessage());
+                                                                                 errorType,
+                                                                                 message);
+            return null;
+        } else {
+            // do nothing if no error
+            return null;
         }
     }
 

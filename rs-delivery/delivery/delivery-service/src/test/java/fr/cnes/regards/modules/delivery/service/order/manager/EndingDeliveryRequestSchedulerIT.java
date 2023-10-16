@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import fr.cnes.regards.modules.delivery.service.order.clean.job.CleanOrderJob;
 import fr.cnes.regards.modules.delivery.service.order.zip.job.OrderDeliveryZipJob;
+import fr.cnes.regards.modules.delivery.service.schedulers.EndingDeliveryRequestScheduler;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;

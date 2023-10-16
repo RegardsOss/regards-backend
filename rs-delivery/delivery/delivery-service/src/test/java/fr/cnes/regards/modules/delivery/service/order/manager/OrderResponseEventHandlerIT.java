@@ -72,6 +72,9 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
     @Autowired
     private DeliveryRequestService deliveryRequestService;
 
+    @Autowired
+    private EndingDeliveryService endingDeliveryService;
+
     @Before
     public void init() {
         deliveryRequestRepository.deleteAll();
@@ -137,7 +140,6 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
                                                              2,
                                                              3,
                                                              12L));
-
         final ExecutorService executor = Executors.newFixedThreadPool(orderResponseDtoEvents.size());
 
         // When
@@ -154,12 +156,12 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         DeliveryRequest expectedDeliveryRequest = test_deliveryRequest_exists_in_database(savedDeliverySaved.getId());
 
         assertEquals(1L, expectedDeliveryRequest.getOrderId());
-        assertTrue(DeliveryRequestStatus.ERROR == expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryRequestStatus.ERROR, expectedDeliveryRequest.getDeliveryStatus().getStatus());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(3, expectedDeliveryRequest.getTotalSubOrders());
 
+        // expect 6 because 2 publish by amqp messages (3 amqp messages)
         Mockito.verify(publisher, timeout(100).times(6)).publish(Mockito.anyList());
-        Mockito.verify(publisher, timeout(100).times(0)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
     }
 
     /**
@@ -211,7 +213,8 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         DeliveryRequest expectedDeliveryRequest = test_deliveryRequest_exists_in_database(savedDeliverySaved.getId());
 
         assertEquals(1L, expectedDeliveryRequest.getOrderId());
-        assertTrue(DeliveryRequestStatus.ERROR == expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryRequestStatus.ERROR, expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryErrorType.TOO_MANY_SUBORDERS, expectedDeliveryRequest.getErrorType());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(3, expectedDeliveryRequest.getTotalSubOrders());
     }
@@ -265,7 +268,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
                                                                                                       nowMinusOneHour,
                                                                                                       DeliveryRequestStatus.GRANTED));
         // When
-        handler.handleBatch(Collections.singletonList(new OrderResponseDtoEvent(OrderRequestStatus.SUBORDER_DONE,
+        handler.handleBatch(Collections.singletonList(new OrderResponseDtoEvent(OrderRequestStatus.DONE,
                                                                                 1L,
                                                                                 correlationId,
                                                                                 null,
@@ -279,8 +282,9 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         DeliveryRequest expectedDeliveryRequest = test_deliveryRequest_exists_in_database(savedDeliverySaved.getId());
 
         assertEquals(1L, expectedDeliveryRequest.getOrderId());
-        assertTrue(DeliveryRequestStatus.DONE == expectedDeliveryRequest.getDeliveryStatus().getStatus(),
-                   "The status must be DONE");
+        assertEquals(DeliveryRequestStatus.DONE,
+                     expectedDeliveryRequest.getDeliveryStatus().getStatus(),
+                     "The status must be DONE");
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(1, expectedDeliveryRequest.getTotalSubOrders());
 
@@ -311,7 +315,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         DeliveryRequest expectedDeliveryRequest = test_deliveryRequest_exists_in_database(savedDeliverySaved.getId());
 
         assertEquals(1L, expectedDeliveryRequest.getOrderId());
-        assertTrue(DeliveryRequestStatus.ERROR == expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryRequestStatus.ERROR, expectedDeliveryRequest.getDeliveryStatus().getStatus());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(1, expectedDeliveryRequest.getTotalSubOrders());
 
@@ -343,12 +347,17 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
 
         assertEquals(1L, expectedDeliveryRequest.getOrderId());
         // In ERROR status because several sub-orders in the order response event
-        assertTrue(DeliveryRequestStatus.ERROR == expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryRequestStatus.ERROR, expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryErrorType.TOO_MANY_SUBORDERS, expectedDeliveryRequest.getErrorType());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(2, expectedDeliveryRequest.getTotalSubOrders());
 
         Mockito.verify(publisher, timeout(100).times(2)).publish(Mockito.anyList());
         Mockito.verify(publisher, timeout(100).times(0)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
+
+        Void run = new EndingDeliveryTask(endingDeliveryService, 5000).run();
+
+        Mockito.verify(publisher, timeout(100).times(1)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
     }
 
     @Test

@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.delivery.service.order.manager;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockServiceTask;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
-import fr.cnes.regards.modules.delivery.service.submission.update.UpdateExpiredDeliveryRequestScheduler;
+import fr.cnes.regards.modules.delivery.service.schedulers.UpdateExpiredDeliveryRequestScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;

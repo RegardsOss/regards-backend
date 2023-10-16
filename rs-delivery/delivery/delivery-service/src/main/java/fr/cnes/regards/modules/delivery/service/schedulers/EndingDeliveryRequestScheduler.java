@@ -16,13 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.delivery.service.order.manager;
+package fr.cnes.regards.modules.delivery.service.schedulers;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
+import fr.cnes.regards.modules.delivery.service.order.manager.EndingDeliveryService;
+import fr.cnes.regards.modules.delivery.service.order.manager.EndingDeliveryTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

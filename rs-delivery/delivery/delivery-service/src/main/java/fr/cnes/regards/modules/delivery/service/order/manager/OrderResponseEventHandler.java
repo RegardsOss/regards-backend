@@ -108,7 +108,7 @@ public class OrderResponseEventHandler
      */
     private List<OrderResponseDtoEvent> validateEvents(List<OrderResponseDtoEvent> events) {
         List<OrderResponseDtoEvent> orderResponseEvtsInError = new ArrayList<>();
-        List<DeliveryResponseDtoEvent> deliveryResponseEvts = new ArrayList<>();
+        List<DeliveryResponseDtoEvent> deliveryResponseEvtsInError = new ArrayList<>();
         // handle invalid events and send error responses
         events.forEach(event -> {
             Errors errors = new MapBindingResult(new HashMap<>(), event.getClass().getName());
@@ -125,17 +125,18 @@ public class OrderResponseEventHandler
                                  List of errors detected:
                                  {}""", event.getCorrelationId(), errorsFormatted);
 
-                deliveryResponseEvts.add(new DeliveryResponseDtoEvent(event.getCorrelationId(),
-                                                                      DeliveryRequestStatus.DENIED,
-                                                                      DeliveryErrorType.INTERNAL_ERROR,
-                                                                      errorsFormatted,
-                                                                      null,
-                                                                      null,
-                                                                      event.getOriginRequestAppId().orElse(null),
-                                                                      event.getOriginRequestPriority().orElse(null)));
+                deliveryResponseEvtsInError.add(new DeliveryResponseDtoEvent(event.getCorrelationId(),
+                                                                             DeliveryRequestStatus.DENIED,
+                                                                             DeliveryErrorType.INTERNAL_ERROR,
+                                                                             errorsFormatted,
+                                                                             null,
+                                                                             null,
+                                                                             event.getOriginRequestAppId().orElse(null),
+                                                                             event.getOriginRequestPriority()
+                                                                                  .orElse(null)));
             }
         });
-        publisher.publish(deliveryResponseEvts);
+        publisher.publish(deliveryResponseEvtsInError);
         // only keep valid events
         events.removeAll(orderResponseEvtsInError);
         return events;
