@@ -201,6 +201,12 @@ public class DeliveryRequestEventHandlerIT extends AbstractMultitenantServiceIT 
         }
     }
 
+    @Test
+    public void givenEventsWithDuplicatedCorrelationIds_whenSent_thenExpectIgnored() {
+        givenValidEvents_whenSent_thenExpectGranted();
+        givenValidEvents_whenSent_thenExpectGranted();
+    }
+
     private List<DeliveryRequestDtoEvent> simulateRequests(int nbRequests) {
         List<DeliveryRequestDtoEvent> responses = new ArrayList<>(nbRequests);
         for (int i = 0; i < nbRequests; i++) {

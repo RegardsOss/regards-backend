@@ -65,7 +65,6 @@ public class DeliveryRequestService {
     public Page<DeliveryRequest> findDeliveryRequestByStatus(Collection<DeliveryRequestStatus> finishedRequests,
                                                              Pageable pageable) {
         return deliveryRequestRepository.findDeliveryRequestByDeliveryStatusStatusIn(finishedRequests, pageable);
-
     }
 
     @MultitenantTransactional(readOnly = true)
