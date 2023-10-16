@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.dto.OrderErrorCode;
+import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -108,13 +108,13 @@ public class OrderResponseService {
         String message;
         String downloadLink = null;
         OrderRequestStatus responseStatus = OrderRequestStatus.DONE;
-        OrderErrorCode orderErrorCode = null;
+        OrderErrorType orderErrorType = null;
         switch (order.getStatus()) {
             case FAILED -> {
                 message = String.format("Order of user %s is finished with errors. One or many files could not be "
                                         + "retrieved.", order.getOwner());
                 responseStatus = OrderRequestStatus.FAILED;
-                orderErrorCode = OrderErrorCode.INTERNAL_ERROR;
+                orderErrorType = OrderErrorType.INTERNAL_ERROR;
             }
             case DONE -> {
                 downloadLink = computeDownloadLink(order.getId());
@@ -124,7 +124,7 @@ public class OrderResponseService {
                 downloadLink = computeDownloadLink(order.getId());
                 message = String.format("Order of user %s is finished with some warnings.", order.getOwner());
                 responseStatus = OrderRequestStatus.FAILED;
-                orderErrorCode = OrderErrorCode.INTERNAL_ERROR;
+                orderErrorType = OrderErrorType.INTERNAL_ERROR;
             }
             default -> {
                 throw new RsRuntimeException("Invalid status for order finished to notify");
@@ -134,8 +134,7 @@ public class OrderResponseService {
                                                     order.getId(),
                                                     order.getCorrelationId(),
                                                     message,
-                                                    downloadLink,
-                                                    orderErrorCode,
+                                                    downloadLink, orderErrorType,
                                                     errors == 0L ? null : errors.intValue(),
                                                     listSubOrders.size(),
                                                     null));
@@ -190,7 +189,7 @@ public class OrderResponseService {
                                                     correlationId,
                                                     message,
                                                     computeDownloadLink(orderId),
-                                                    errors == 0L ? null : OrderErrorCode.INTERNAL_ERROR,
+                                                    errors == 0L ? null : OrderErrorType.INTERNAL_ERROR,
                                                     errors == 0L ? null : errors.intValue(),
                                                     subOrderCount,
                                                     subOrderId));

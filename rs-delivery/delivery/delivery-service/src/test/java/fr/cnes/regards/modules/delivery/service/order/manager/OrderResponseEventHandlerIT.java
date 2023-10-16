@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import fr.cnes.regards.modules.delivery.service.submission.DeliveryRequestService;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
-import fr.cnes.regards.modules.order.dto.OrderErrorCode;
+import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -136,7 +136,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
                                                              correlationId,
                                                              "Error message",
                                                              null,
-                                                             OrderErrorCode.INTERNAL_ERROR,
+                                                             OrderErrorType.INTERNAL_ERROR,
                                                              2,
                                                              3,
                                                              12L));
@@ -192,7 +192,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
                                                              correlationId,
                                                              "Error message",
                                                              null,
-                                                             OrderErrorCode.INTERNAL_ERROR,
+                                                             OrderErrorType.INTERNAL_ERROR,
                                                              2,
                                                              3,
                                                              11L));
@@ -306,7 +306,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
                                                                                 correlationId,
                                                                                 "Error message",
                                                                                 null,
-                                                                                OrderErrorCode.INTERNAL_ERROR,
+                                                                                OrderErrorType.INTERNAL_ERROR,
                                                                                 1,
                                                                                 1,
                                                                                 10L)));
@@ -438,7 +438,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
                                                                                 correlationId,
                                                                                 "Error message",
                                                                                 null,
-                                                                                OrderErrorCode.EMPTY_ORDER,
+                                                                                OrderErrorType.EMPTY_ORDER,
                                                                                 1,
                                                                                 1,
                                                                                 10L)));
@@ -449,7 +449,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         assertEquals(1L, expectedDeliveryRequest.getOrderId());
         assertTrue(DeliveryRequestStatus.ERROR == expectedDeliveryRequest.getDeliveryStatus().getStatus());
         assertEquals("Error message", expectedDeliveryRequest.getDeliveryStatus().getErrorCause());
-        assertTrue(DeliveryErrorType.INTERNAL_ERROR == expectedDeliveryRequest.getDeliveryStatus().getErrorType());
+        assertTrue(DeliveryErrorType.EMPTY_ORDER == expectedDeliveryRequest.getDeliveryStatus().getErrorType());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(1, expectedDeliveryRequest.getTotalSubOrders());
 
@@ -473,7 +473,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
                                                                                 correlationId,
                                                                                 "Error message",
                                                                                 null,
-                                                                                OrderErrorCode.ORDER_LIMIT_REACHED,
+                                                                                OrderErrorType.ORDER_LIMIT_REACHED,
                                                                                 null,
                                                                                 null,
                                                                                 null)));

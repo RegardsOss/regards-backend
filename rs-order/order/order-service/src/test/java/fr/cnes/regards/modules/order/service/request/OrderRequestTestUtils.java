@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.order.service.request;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
-import fr.cnes.regards.modules.order.dto.OrderErrorCode;
+import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestFilters;
@@ -119,7 +119,7 @@ public class OrderRequestTestUtils {
                                                  OrderRequestStatus expectedStatus,
                                                  String expectedMessage,
                                                  Long firstOrderId,
-                                                 OrderErrorCode errorCode,
+                                                 OrderErrorType errorType,
                                                  Integer errors) {
         List<OrderResponseDtoEvent> expectedResponses = new ArrayList<>();
         for (int i = 0; i < expectedNbReq; i++) {
@@ -130,7 +130,7 @@ public class OrderRequestTestUtils {
                                                             String.valueOf(i),
                                                             expectedMessage,
                                                             null,
-                                                            errorCode,
+                                                            errorType,
                                                             errors,
                                                             null,
                                                             null));

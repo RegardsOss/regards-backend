@@ -32,9 +32,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.order.amqp.input.OrderRequestDtoEvent;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
-import fr.cnes.regards.modules.order.dto.OrderErrorCode;
-import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
-import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -160,14 +158,14 @@ public class OrderRequestEventHandler
         List<OrderRequestDtoEvent> validEvents = new ArrayList<>();
 
         events.forEach(event -> {
-            OrderErrorCode errorCode = OrderErrorCode.INTERNAL_ERROR;
+            OrderErrorType errorType = OrderErrorType.INTERNAL_ERROR;
             Errors errors = new MapBindingResult(new HashMap<>(), OrderRequestDtoEvent.class.getName());
             // Validate request
             validator.validate(event, errors);
 
             // With amqp api, user is mandatory and must be an existing user.
             if (event.getUser() == null) {
-                errors.rejectValue("user", OrderErrorCode.INVALID_CONTENT.name(), "User should be present");
+                errors.rejectValue("user", OrderErrorType.INVALID_CONTENT.name(), "User should be present");
             } else {
                 Boolean isValidUser = regardsUsers.get(event.getUser(), email -> {
                     FeignSecurityManager.asSystem();
@@ -183,13 +181,13 @@ public class OrderRequestEventHandler
                     }
                 });
                 if (!isValidUser) {
-                    errorCode = OrderErrorCode.FORBIDDEN;
-                    errors.rejectValue("user", OrderErrorCode.FORBIDDEN.name(), "Unknown user : " + event.getUser());
+                    errorType = OrderErrorType.FORBIDDEN;
+                    errors.rejectValue("user", OrderErrorType.FORBIDDEN.name(), "Unknown user : " + event.getUser());
                 }
             }
 
             if (errors.hasErrors()) {
-                publisher.publish(OrderResponseDtoEvent.buildDeniedResponse(event, errors, errorCode));
+                publisher.publish(OrderResponseDtoEvent.buildDeniedResponse(event, errors, errorType));
             } else {
                 validEvents.add(event);
             }

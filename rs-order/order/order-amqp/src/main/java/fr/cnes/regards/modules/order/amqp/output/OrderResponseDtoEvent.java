@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
-import fr.cnes.regards.modules.order.dto.OrderErrorCode;
+import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
@@ -50,11 +50,11 @@ public class OrderResponseDtoEvent extends OrderResponseDto implements ISubscrib
                                  String correlationId,
                                  @Nullable String message,
                                  @Nullable String downloadLink,
-                                 @Nullable OrderErrorCode errorCode,
+                                 @Nullable OrderErrorType errorType,
                                  @Nullable Integer errors,
                                  @Nullable Integer totalSubOrders,
                                  @Nullable Long subOrderId) {
-        super(status, orderId, correlationId, message, downloadLink, errorCode, errors, totalSubOrders, subOrderId);
+        super(status, orderId, correlationId, message, downloadLink, errorType, errors, totalSubOrders, subOrderId);
     }
 
     public OrderResponseDtoEvent(OrderResponseDto orderResponse) {
@@ -63,7 +63,7 @@ public class OrderResponseDtoEvent extends OrderResponseDto implements ISubscrib
               orderResponse.getCorrelationId(),
               orderResponse.getMessage(),
               orderResponse.getDownloadLink(),
-              orderResponse.getErrorCode(),
+              orderResponse.getErrorType(),
               orderResponse.getErrors(),
               orderResponse.getTotalSubOrders(),
               orderResponse.getSubOrderId());
@@ -71,7 +71,7 @@ public class OrderResponseDtoEvent extends OrderResponseDto implements ISubscrib
 
     public static OrderResponseDtoEvent buildDeniedResponse(OrderRequestDto orderRequest,
                                                             Errors errors,
-                                                            OrderErrorCode errorCode) {
+                                                            OrderErrorType errorType) {
         String errorsFormatted = ErrorTranslator.getErrorsAsString(errors);
         LOGGER.error("""
                          Errors were detected while validating OrderRequestDtoEvent with correlation id [{}].
@@ -85,7 +85,7 @@ public class OrderResponseDtoEvent extends OrderResponseDto implements ISubscrib
                                          orderRequest.getCorrelationId(),
                                          errorsFormatted,
                                          null,
-                                         errorCode,
+                                         errorType,
                                          errors.getAllErrors().size(),
                                          null,
                                          null);

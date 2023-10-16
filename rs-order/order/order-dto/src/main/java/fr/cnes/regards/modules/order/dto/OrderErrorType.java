@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.order.dto;
 /**
  * @author Stephane Cortine
  */
-public enum OrderErrorCode {
+public enum OrderErrorType {
     INVALID_CONTENT, FORBIDDEN, ORDER_LIMIT_REACHED, EMPTY_ORDER, INTERNAL_ERROR;
 
 }

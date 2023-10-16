@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
 import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeException;
-import fr.cnes.regards.modules.order.dto.OrderErrorCode;
+import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.exception.AutoOrderException;
@@ -253,7 +253,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
                                          OrderRequestStatus.DENIED,
                                          "[FORBIDDEN] Unknown user : unknownUser at user: rejected value [null].",
                                          null,
-                                         OrderErrorCode.FORBIDDEN,
+                                         OrderErrorType.FORBIDDEN,
                                          Integer.valueOf(1));
 
         // check no mail was sent
@@ -333,7 +333,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
                                          OrderRequestStatus.DENIED,
                                          "[INVALID_CONTENT] User should be present at user: rejected value [null].",
                                          null,
-                                         OrderErrorCode.INTERNAL_ERROR,
+                                         OrderErrorType.INTERNAL_ERROR,
                                          Integer.valueOf(1));
 
         // check no mail was sent

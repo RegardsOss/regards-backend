@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
-import fr.cnes.regards.modules.order.dto.OrderErrorCode;
+import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
@@ -105,7 +105,7 @@ public class AutoOrderRequestService {
 
     private OrderResponseDto manageErrorOrderResponse(OrderRequestDto orderRequest, Exception exception) {
         OrderRequestStatus orderRequestStatus = OrderRequestStatus.FAILED;
-        OrderErrorCode errorCode = OrderErrorCode.INTERNAL_ERROR;
+        OrderErrorType errorType = OrderErrorType.INTERNAL_ERROR;
 
         String message = String.format("%s: %s", exception.getClass().getSimpleName(), exception.getMessage());
 
@@ -113,14 +113,14 @@ public class AutoOrderRequestService {
             if (exception.getCause().getClass() == ExceededBasketSizeException.class
                 || exception.getCause().getClass() == TooManyItemsSelectedInBasketException.class) {
                 orderRequestStatus = OrderRequestStatus.DENIED;
-                errorCode = OrderErrorCode.ORDER_LIMIT_REACHED;
+                errorType = OrderErrorType.ORDER_LIMIT_REACHED;
             }
             if (exception.getCause().getClass() == EmptySelectionException.class) {
                 orderRequestStatus = OrderRequestStatus.FAILED;
-                errorCode = OrderErrorCode.EMPTY_ORDER;
+                errorType = OrderErrorType.EMPTY_ORDER;
             }
         }
 
-        return OrderResponseDto.buildErrorResponse(orderRequest, message, orderRequestStatus, errorCode);
+        return OrderResponseDto.buildErrorResponse(orderRequest, message, orderRequestStatus, errorType);
     }
 }

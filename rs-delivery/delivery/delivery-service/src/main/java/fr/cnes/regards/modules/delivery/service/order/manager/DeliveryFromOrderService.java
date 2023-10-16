@@ -133,7 +133,7 @@ public class DeliveryFromOrderService {
                                                                                  orderResponseEvent.getTotalSubOrders(),
                                                                                  deliveryRequestStatus,
                                                                                  DeliveryErrorType.convert(
-                                                                                     orderResponseEvent.getErrorCode()),
+                                                                                     orderResponseEvent.getErrorType()),
                                                                                  orderResponseEvent.getMessage());
         }
     }
@@ -169,11 +169,12 @@ public class DeliveryFromOrderService {
         if (orderResponseEvent.getTotalSubOrders() != null && orderResponseEvent.getTotalSubOrders() > 1) {
             deliveryRequestStatus = DeliveryRequestStatus.ERROR;
             errorType = DeliveryErrorType.TOO_MANY_SUBORDERS;
-            message = String.format("Cannot deliver request %s : this implementation does not support more than 1 sub-order",
-                                    deliveryRequest.getCorrelationId());
+            message = String.format(
+                "Cannot deliver request %s : this implementation does not support more than 1 sub-order",
+                deliveryRequest.getCorrelationId());
         } else {
             deliveryRequestStatus = orderResponseEvent.hasErrors() ? DeliveryRequestStatus.ERROR : null;
-            errorType = DeliveryErrorType.convert(orderResponseEvent.getErrorCode());
+            errorType = DeliveryErrorType.convert(orderResponseEvent.getErrorType());
             message = orderResponseEvent.getMessage();
         }
         if (deliveryRequestStatus == DeliveryRequestStatus.ERROR) {
@@ -197,7 +198,7 @@ public class DeliveryFromOrderService {
         deliveryRequestService.deleteRequestById(deliveryRequest.getId());
         return new DeliveryResponseDtoEvent(deliveryRequest.getCorrelationId(),
                                             DeliveryRequestStatus.DENIED,
-                                            DeliveryErrorType.convert(orderResponseEvent.getErrorCode()),
+                                            DeliveryErrorType.convert(orderResponseEvent.getErrorType()),
                                             orderResponseEvent.getMessage(),
                                             null,
                                             null,
@@ -211,7 +212,8 @@ public class DeliveryFromOrderService {
                                                                              orderResponseEvent.getOrderId(),
                                                                              orderResponseEvent.getTotalSubOrders(),
                                                                              DeliveryRequestStatus.ERROR,
-                                                                             DeliveryErrorType.INTERNAL_ERROR,
+                                                                             DeliveryErrorType.convert(
+                                                                                 orderResponseEvent.getErrorType()),
                                                                              orderResponseEvent.getMessage());
     }
 

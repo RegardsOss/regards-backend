@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.delivery.dto.output;
 
-import fr.cnes.regards.modules.order.dto.OrderErrorCode;
+import fr.cnes.regards.modules.order.dto.OrderErrorType;
 
 import javax.annotation.Nullable;
 
@@ -58,18 +58,17 @@ public enum DeliveryErrorType {
     TOO_MANY_SUBORDERS;
 
     /**
-     * Convert a error code of rs-order {@link OrderErrorCode} to error type of rs-delivery {@link DeliveryErrorType}.
+     * Convert a error code of rs-order {@link OrderErrorType} to error type of rs-delivery {@link DeliveryErrorType}.
      *
-     * @param orderErrorCode error code of rs-order.
+     * @param orderErrorType error type of rs-order.
      * @return error type of rs-delivery
      */
-    public static DeliveryErrorType convert(@Nullable OrderErrorCode orderErrorCode) {
-        if (orderErrorCode == null) {
+    public static DeliveryErrorType convert(@Nullable OrderErrorType orderErrorType) {
+        if (orderErrorType == null) {
             return null;
         }
-        return switch (orderErrorCode) {
+        return switch (orderErrorType) {
             case FORBIDDEN -> DeliveryErrorType.FORBIDDEN;
-            case INTERNAL_ERROR -> DeliveryErrorType.INTERNAL_ERROR;
             case EMPTY_ORDER -> DeliveryErrorType.EMPTY_ORDER;
             case INVALID_CONTENT -> DeliveryErrorType.INVALID_CONTENT;
             case ORDER_LIMIT_REACHED -> DeliveryErrorType.ORDER_LIMIT_REACHED;

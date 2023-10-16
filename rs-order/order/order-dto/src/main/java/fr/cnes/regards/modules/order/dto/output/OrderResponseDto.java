@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.order.dto.output;
 
-import fr.cnes.regards.modules.order.dto.OrderErrorCode;
+import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import org.springframework.lang.Nullable;
 
@@ -49,7 +49,7 @@ public class OrderResponseDto {
     private String downloadLink;
 
     @Nullable
-    private OrderErrorCode errorCode;
+    private OrderErrorType errorType;
 
     /**
      * Number of errors of order or sub-order
@@ -68,7 +68,7 @@ public class OrderResponseDto {
                             String correlationId,
                             @Nullable String message,
                             @Nullable String downloadLink,
-                            @Nullable OrderErrorCode errorCode,
+                            @Nullable OrderErrorType errorType,
                             @Nullable Integer errors,
                             @Nullable Integer totalSubOrders,
                             @Nullable Long subOrderId) {
@@ -77,7 +77,7 @@ public class OrderResponseDto {
         this.correlationId = correlationId;
         this.message = message;
         this.downloadLink = downloadLink;
-        this.errorCode = errorCode;
+        this.errorType = errorType;
         this.errors = errors;
         this.totalSubOrders = totalSubOrders;
         this.subOrderId = subOrderId;
@@ -86,13 +86,13 @@ public class OrderResponseDto {
     public static OrderResponseDto buildErrorResponse(OrderRequestDto orderRequest,
                                                       String message,
                                                       OrderRequestStatus responseStatus,
-                                                      OrderErrorCode errorCode) {
+                                                      OrderErrorType orderErrorType) {
         return new OrderResponseDto(responseStatus,
                                     null,
                                     orderRequest.getCorrelationId(),
                                     message,
                                     null,
-                                    errorCode,
+                                    orderErrorType,
                                     null,
                                     null,
                                     null);
@@ -137,8 +137,8 @@ public class OrderResponseDto {
     }
 
     @Nullable
-    public OrderErrorCode getErrorCode() {
-        return errorCode;
+    public OrderErrorType getErrorType() {
+        return errorType;
     }
 
     @Nullable
@@ -201,8 +201,8 @@ public class OrderResponseDto {
                + ", downloadLink='"
                + downloadLink
                + '\''
-               + ", errorCode="
-               + errorCode
+               + ", errorType="
+               + errorType
                + ", errors="
                + errors
                + ", totalSubOrders="
