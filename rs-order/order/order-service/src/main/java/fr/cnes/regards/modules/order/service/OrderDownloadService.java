@@ -232,7 +232,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                           Iterator<OrderDataFile> currentFileIterator,
                                           Multiset<String> fileNamesInZip,
                                           List<Pair<OrderDataFile, String>> downloadErrorFiles,
-                                          ZipArchiveOutputStream zos) throws IOException {
+                                          ZipArchiveOutputStream zos) {
         String errorPrefix = "Error while downloading file.";
         String aip = dataFile.getIpId().toString();
         dataFile.setDownloadError(null);
@@ -242,14 +242,17 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         if (responseOpt.isPresent()) {
             Response response = responseOpt.get();
             if (response.status() != HttpStatus.OK.value()) {
-                // Unable to download file from storage
-                downloadErrorFiles.add(Pair.of(dataFile, humanizeError(responseOpt)));
-                currentFileIterator.remove();
-                LOGGER.warn("Cannot retrieve data file (aip : {}, checksum : {})", aip, dataFile.getChecksum());
-                dataFile.setDownloadError("Cannot retrieve data file, feign downloadFile method returns "
-                                          + responseOpt.map(Response::toString).orElse("null"));
+                String adminErrorMessage = String.format("Cannot retrieve data file (aip : %s, checksum : %s). Feign "
+                                                         + "downloadFile method returns %s",
+                                                         aip,
+                                                         dataFile.getChecksum(),
+                                                         responseOpt.map(Response::toString).orElse("null"));
+                handleDownloadError(downloadErrorFiles,
+                                    currentFileIterator,
+                                    dataFile,
+                                    adminErrorMessage,
+                                    humanizeError(responseOpt));
             } else { // Download ok
-
                 Long contentLength = Long.parseLong(response.headers()
                                                             .get(OrderDataFileService.CONTENT_LENGTH_HEADER)
                                                             .iterator()
@@ -264,6 +267,13 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                                aip,
                                                is);
                     downloadOk = true;
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    handleDownloadError(downloadErrorFiles,
+                                        currentFileIterator,
+                                        dataFile,
+                                        String.format("Error while downloading internal file %s", dataFile.getUrl()),
+                                        "Error during file download");
                 }
             }
         }
@@ -316,24 +326,38 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                                                        noProxyHosts,
                                                                        10_000,
                                                                        Collections.emptyList())) {
+            // FIXME : If file is external (http url not stored by storage, file size of the dataFile can be null.
+            // In this case, if the real file size is over 4Gb The apache zip library is not available to use
+            // the right implementation (64bits).
             readInputStreamAndAddToZip(downloadErrorFiles,
                                        zos,
                                        fileNamesInZip,
                                        currentFileIterator,
                                        dataFile,
-                                       Optional.empty(),
+                                       Optional.ofNullable(dataFile.getFilesize()),
                                        dataObjectIpId,
                                        is);
             downloadOk = true;
         } catch (IOException e) {
-            String externalDlErrorPrefix = "Error while downloading external file";
-            String stack = getStack(e);
-            LOGGER.error(String.format("%s (url : %s)", externalDlErrorPrefix, dataFile.getUrl()), e);
-            dataFile.setDownloadError(String.format("%s\n%s", externalDlErrorPrefix, stack));
-            downloadErrorFiles.add(Pair.of(dataFile, "I/O error during external download"));
-            currentFileIterator.remove();
+            LOGGER.error(e.getMessage(), e);
+            handleDownloadError(downloadErrorFiles,
+                                currentFileIterator,
+                                dataFile,
+                                String.format("Error while downloading external file %s", dataFile.getUrl()),
+                                "Error during file download");
         }
         return downloadOk;
+    }
+
+    private void handleDownloadError(List<Pair<OrderDataFile, String>> downloadErrorFiles,
+                                     Iterator<OrderDataFile> currentFileIterator,
+                                     OrderDataFile dataFile,
+                                     String adminResponseErrorMessage,
+                                     String userResponseErrorMessage) {
+        LOGGER.error(adminResponseErrorMessage);
+        dataFile.setDownloadError(adminResponseErrorMessage);
+        downloadErrorFiles.add(Pair.of(dataFile, userResponseErrorMessage));
+        currentFileIterator.remove();
     }
 
     private String humanizeError(Optional<Response> response) {
@@ -377,8 +401,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
             filename = dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
         }
         fileNamesInZip.add(filename);
-        // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
-        // you dumb ass ! What do you thing it could be ?)
+        // If same file appears several times, add "(n)" juste before extension.
         int filenameCount = fileNamesInZip.count(filename);
         if (filenameCount > 1) {
             String suffix = " (" + (filenameCount - 1) + ")";
@@ -392,8 +415,13 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         ZipArchiveEntry ze = new ZipArchiveEntry(filename);
         realContentLength.ifPresent(ze::setSize);
         zos.putArchiveEntry(ze);
-        long copiedBytes = ByteStreams.copy(is, zos);
-        zos.closeArchiveEntry();
+        long copiedBytes = 0L;
+        try {
+            copiedBytes = ByteStreams.copy(is, zos);
+        } finally {
+            zos.closeArchiveEntry();
+        }
+
         // We can only check copied bytes if we know expected size (ie if file is internal)
         Long fileSize = realContentLength.orElse(dataFile.getFilesize());
         if (fileSize != null && copiedBytes != fileSize) {
