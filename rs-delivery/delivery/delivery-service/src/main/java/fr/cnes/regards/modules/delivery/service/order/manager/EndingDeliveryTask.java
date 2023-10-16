@@ -19,9 +19,19 @@
 package fr.cnes.regards.modules.delivery.service.order.manager;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockServiceTask;
+import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
+import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import fr.cnes.regards.modules.delivery.service.submission.update.UpdateExpiredDeliveryRequestScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Task linked to {@link UpdateExpiredDeliveryRequestScheduler} to handle
@@ -35,16 +45,60 @@ public class EndingDeliveryTask implements LockServiceTask<Void> {
 
     private final EndingDeliveryService endingDeliveryService;
 
-    public EndingDeliveryTask(EndingDeliveryService endingDeliveryService) {
+    private final int finishedRequestsPageSize;
+
+    public EndingDeliveryTask(EndingDeliveryService endingDeliveryService, int finishedRequestsPageSize) {
         this.endingDeliveryService = endingDeliveryService;
+        this.finishedRequestsPageSize = finishedRequestsPageSize;
     }
 
+    /**
+     * Schedule final tasks for finished {@link fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest}s, i.e.,
+     * in {@link DeliveryRequestStatus#ERROR} or {@link DeliveryRequestStatus#DONE} states, by page.
+     */
     @Override
     public Void run() {
         long start = System.currentTimeMillis();
         LOGGER.debug("Starting ending delivery task.");
-        endingDeliveryService.handleFinishedDeliveryRequests();
-        LOGGER.debug("End of update expired task. Took {}ms.", System.currentTimeMillis() - start);
+
+        PageRequest pageableRequests = PageRequest.of(0, finishedRequestsPageSize, Sort.by("id"));
+        int totalNbErrorRequests = 0;
+        int totalNbDoneRequests = 0;
+        boolean hasNext = false;
+        do {
+            // search expired requests
+            Page<DeliveryRequest> pageFinishedRequests = endingDeliveryService.findDeliveryRequestsToProcess(
+                pageableRequests);
+            if (pageFinishedRequests.hasContent()) {
+                Map<DeliveryRequestStatus, List<DeliveryRequest>> finishedRequests = pageFinishedRequests.getContent()
+                                                                                                         .stream()
+                                                                                                         .collect(
+                                                                                                             Collectors.groupingBy(
+                                                                                                                 DeliveryRequest::getStatus));
+                // handle requests according to their status
+                // ERROR requests
+                List<DeliveryRequest> errorRequests = finishedRequests.get(DeliveryRequestStatus.ERROR);
+                if (!CollectionUtils.isEmpty(errorRequests)) {
+                    endingDeliveryService.handleErrorRequests(errorRequests);
+                    totalNbErrorRequests += errorRequests.size();
+                }
+                // DONE requests
+                List<DeliveryRequest> doneRequests = finishedRequests.get(DeliveryRequestStatus.DONE);
+                if (!CollectionUtils.isEmpty(doneRequests)) {
+                    endingDeliveryService.handleDoneRequests(doneRequests);
+                    totalNbDoneRequests += doneRequests.size();
+                }
+
+                // iterate on next page
+                hasNext = pageFinishedRequests.hasNext();
+                if (hasNext) {
+                    pageableRequests = pageableRequests.next();
+                }
+            }
+        } while (hasNext);
+
+        LOGGER.debug("End of update expired task. Handled {} ERROR delivery requests and {} DONE delivery requests. "
+                     + "Took {}ms.", totalNbErrorRequests, totalNbDoneRequests, System.currentTimeMillis() - start);
         return null;
     }
 

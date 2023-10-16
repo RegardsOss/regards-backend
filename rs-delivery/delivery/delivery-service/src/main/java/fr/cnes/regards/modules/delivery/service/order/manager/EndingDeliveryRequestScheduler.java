@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -60,14 +61,19 @@ public class EndingDeliveryRequestScheduler extends AbstractTaskScheduler {
 
     private final EndingDeliveryService endingDeliveryService;
 
+    private final int finishedRequestsPageSize;
+
     public EndingDeliveryRequestScheduler(ITenantResolver tenantResolver,
                                           IRuntimeTenantResolver runtimeTenantResolver,
                                           LockService lockService,
-                                          EndingDeliveryService endingDeliveryService) {
+                                          EndingDeliveryService endingDeliveryService,
+                                          @Value("${regards.delivery.request.finished.bulk.size:100}")
+                                          int finishedRequestsPageSize) {
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.lockService = lockService;
         this.endingDeliveryService = endingDeliveryService;
+        this.finishedRequestsPageSize = finishedRequestsPageSize;
     }
 
     @Scheduled(initialDelayString = "${regards.delivery.schedule.ending.requests.initial.delay:"
@@ -82,7 +88,8 @@ public class EndingDeliveryRequestScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, LOCK_NAME);
-                lockService.runWithLock(LOCK_NAME, new EndingDeliveryTask(endingDeliveryService));
+                lockService.runWithLock(LOCK_NAME,
+                                        new EndingDeliveryTask(endingDeliveryService, finishedRequestsPageSize));
             } catch (InterruptedException e) {
                 handleSchedulingError(LOCK_NAME, LOCK_NAME, e);
             } finally {

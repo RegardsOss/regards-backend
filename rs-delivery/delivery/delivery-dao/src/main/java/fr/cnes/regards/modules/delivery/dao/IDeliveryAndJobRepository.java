@@ -53,6 +53,8 @@ public interface IDeliveryAndJobRepository extends JpaRepository<DeliveryAndJob,
                                                            @Param("status") JobStatus jobStatus,
                                                            Pageable pageable);
 
+    boolean existsByIdAndJobInfoClassName(Long deliveryRequestId, String jobClassName);
+
     // ------------
     // -- DELETE --
     // ------------

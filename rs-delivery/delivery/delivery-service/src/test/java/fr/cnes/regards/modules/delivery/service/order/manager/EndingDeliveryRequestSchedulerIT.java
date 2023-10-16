@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -97,6 +98,9 @@ public class EndingDeliveryRequestSchedulerIT extends AbstractMultitenantService
 
     @Autowired
     private LockService lockService;
+
+    @Value("${regards.delivery.request.finished.bulk.size}")
+    private int finishedRequestsPageSize;
 
     @Before
     public void init() {
@@ -214,7 +218,8 @@ public class EndingDeliveryRequestSchedulerIT extends AbstractMultitenantService
         endingDeliveryRequestScheduler = new EndingDeliveryRequestScheduler(tenantResolver,
                                                                             runtimeTenantResolver,
                                                                             lockService,
-                                                                            endingDeliveryService);
+                                                                            endingDeliveryService,
+                                                                            finishedRequestsPageSize);
     }
 
     private void cleanRepositories() {

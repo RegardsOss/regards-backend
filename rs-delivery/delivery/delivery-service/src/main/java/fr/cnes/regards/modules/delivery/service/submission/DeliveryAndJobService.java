@@ -63,6 +63,11 @@ public class DeliveryAndJobService {
         return deliveryAndJobRepository.findJobInfoByDeliveryRequestIdsAndStatus(deliveryRequestIds, status, pageable);
     }
 
+    @MultitenantTransactional(readOnly = true)
+    public boolean existsByIdAndJobInfoClassName(Long deliveryRequestId, String jobClassName) {
+        return deliveryAndJobRepository.existsByIdAndJobInfoClassName(deliveryRequestId, jobClassName);
+    }
+
     // ------------
     // -- UPDATE --
     // ------------
