@@ -96,9 +96,7 @@ public class AutoOrderRequestService {
                              orderRequests.size());
 
             } catch (AutoOrderException | CatalogSearchException e) {
-                LOGGER.error("Order request with correlationId {} has failed. Cause: {}",
-                             orderRequest.getCorrelationId(),
-                             e);
+                LOGGER.error("Order request with correlationId {} has failed.", orderRequest.getCorrelationId(), e);
                 responses.add(manageErrorOrderResponse(orderRequest, e));
             }
         }
@@ -109,7 +107,7 @@ public class AutoOrderRequestService {
         OrderRequestStatus orderRequestStatus = OrderRequestStatus.FAILED;
         OrderErrorCode errorCode = OrderErrorCode.INTERNAL_ERROR;
 
-        String message = String.format("%s: '%s'", exception.getClass().getSimpleName(), exception.getMessage());
+        String message = String.format("%s: %s", exception.getClass().getSimpleName(), exception.getMessage());
 
         if (exception.getCause() != null) {
             if (exception.getCause().getClass() == ExceededBasketSizeException.class

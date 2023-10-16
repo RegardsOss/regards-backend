@@ -63,7 +63,7 @@ public class AutoOrderCompletionService {
 
     private static final String DEFAULT_ACCESS_ROLE = DefaultRole.EXPLOIT.toString();
 
-    public static final String ERROR_RESPONSE_FORMAT = "%s: '%s'"; // Exception: "error cause"
+    public static final String ERROR_RESPONSE_FORMAT = "%s: %s"; // SimpleException.class: error cause
 
     /**
      * Services

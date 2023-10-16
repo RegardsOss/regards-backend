@@ -123,7 +123,7 @@ public class OrderRequestServiceTest {
         checkOrderRequestResponses(responses,
                                    nbReq,
                                    OrderRequestStatus.FAILED,
-                                   String.format("%s: '%s'",
+                                   String.format("%s: %s",
                                                  AutoOrderException.class.getSimpleName(),
                                                  String.format(AutoOrderCompletionService.ERROR_RESPONSE_FORMAT,
                                                                expectedException.getClass().getSimpleName(),

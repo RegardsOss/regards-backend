@@ -290,7 +290,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         checkOrderRequestResponsesEvents(responses,
                                          validOrderRequests.size(),
                                          OrderRequestStatus.DENIED,
-                                         String.format("%s: '%s'",
+                                         String.format("%s: %s",
                                                        AutoOrderException.class.getSimpleName(),
                                                        String.format(AutoOrderCompletionService.ERROR_RESPONSE_FORMAT,
                                                                      ExceededBasketSizeException.class.getSimpleName(),
