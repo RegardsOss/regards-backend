@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.dto.output;
 import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -72,6 +73,9 @@ public class OrderResponseDto {
                             @Nullable Integer errors,
                             @Nullable Integer totalSubOrders,
                             @Nullable Long subOrderId) {
+        Assert.notNull(correlationId, "correlation id is mandatory !");
+        Assert.notNull(status, "status is mandatory !");
+
         this.status = status;
         this.orderId = orderId;
         this.correlationId = correlationId;

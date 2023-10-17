@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.order.service.request;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
@@ -95,7 +94,7 @@ public class AutoOrderRequestService {
                              System.currentTimeMillis() - start,
                              orderRequests.size());
 
-            } catch (AutoOrderException | CatalogSearchException e) {
+            } catch (AutoOrderException e) {
                 LOGGER.error("Order request with correlationId {} has failed.", orderRequest.getCorrelationId(), e);
                 responses.add(manageErrorOrderResponse(orderRequest, e));
             }
@@ -106,8 +105,6 @@ public class AutoOrderRequestService {
     private OrderResponseDto manageErrorOrderResponse(OrderRequestDto orderRequest, Exception exception) {
         OrderRequestStatus orderRequestStatus = OrderRequestStatus.FAILED;
         OrderErrorType errorType = OrderErrorType.INTERNAL_ERROR;
-
-        String message = String.format("%s: %s", exception.getClass().getSimpleName(), exception.getMessage());
 
         if (exception.getCause() != null) {
             if (exception.getCause().getClass() == ExceededBasketSizeException.class
@@ -121,6 +118,6 @@ public class AutoOrderRequestService {
             }
         }
 
-        return OrderResponseDto.buildErrorResponse(orderRequest, message, orderRequestStatus, errorType);
+        return OrderResponseDto.buildErrorResponse(orderRequest, exception.getMessage(), orderRequestStatus, errorType);
     }
 }

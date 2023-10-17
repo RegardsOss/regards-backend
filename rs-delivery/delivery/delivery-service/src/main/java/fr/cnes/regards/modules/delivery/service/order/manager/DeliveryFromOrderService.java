@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.manager;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.delivery.amqp.output.DeliveryResponseDtoEvent;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
@@ -25,6 +26,7 @@ import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import fr.cnes.regards.modules.delivery.service.submission.DeliveryRequestService;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
+import fr.cnes.regards.modules.order.client.amqp.IAutoOrderResponseClient;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -40,27 +43,67 @@ import java.util.stream.Collectors;
  * @author Stephane Cortine
  */
 @Service
-public class DeliveryFromOrderService {
+public class DeliveryFromOrderService implements IAutoOrderResponseClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeliveryFromOrderService.class);
 
-    private final static int BULK_CHUNK_SIZE = 1000;
+    private static final int BULK_CHUNK_SIZE = 1000;
 
     private final DeliveryRequestService deliveryRequestService;
 
     private final DeliveryFromOrderRetryService deliveryFromOrderRetryService;
 
+    private final IPublisher publisher;
+
     public DeliveryFromOrderService(DeliveryRequestService deliveryRequestService,
-                                    DeliveryFromOrderRetryService deliveryFromOrderRetryService) {
+                                    DeliveryFromOrderRetryService deliveryFromOrderRetryService,
+                                    IPublisher publisher) {
         this.deliveryRequestService = deliveryRequestService;
         this.deliveryFromOrderRetryService = deliveryFromOrderRetryService;
+        this.publisher = publisher;
+    }
+
+    @Override
+    @MultitenantTransactional
+    public void onOrderDenied(List<OrderResponseDtoEvent> groupedEvents) {
+        List<DeliveryResponseDtoEvent> deliveryResponseEvents = updateDeliveryRequestFromOrderResponseEvt(groupedEvents,
+                                                                                                          this::updateWithDeniedOrder);
+        publisher.publish(deliveryResponseEvents);
+    }
+
+    @Override
+    @MultitenantTransactional
+    public void onOrderGranted(List<OrderResponseDtoEvent> groupedEvents) {
+        List<DeliveryResponseDtoEvent> deliveryResponseEvents = updateDeliveryRequestFromOrderResponseEvt(groupedEvents,
+                                                                                                          this::updateWithGrantedOrder);
+        publisher.publish(deliveryResponseEvents);
+    }
+
+    @Override
+    @MultitenantTransactional
+    public void onSubOrderDone(List<OrderResponseDtoEvent> groupedEvents) {
+        updateDeliveryRequestFromOrderResponseEvt(groupedEvents, this::updateWithSuborderDone);
+    }
+
+    @Override
+    @MultitenantTransactional
+    public void onOrderDone(List<OrderResponseDtoEvent> groupedEvents) {
+        updateDeliveryRequestFromOrderResponseEvt(groupedEvents, this::updateWithOrderDone);
+    }
+
+    @Override
+    @MultitenantTransactional
+    public void onOrderFailed(List<OrderResponseDtoEvent> groupedEvents) {
+        updateDeliveryRequestFromOrderResponseEvt(groupedEvents, this::updateWithFailedOrder);
     }
 
     /**
      * Update the given delivery request in database from the received order response event.
+     *
+     * @return the delivery response events if necessary (when status of order response event: GRANTED, DENIED)
      */
-    @MultitenantTransactional
-    public List<DeliveryResponseDtoEvent> updateDeliveryRequestFromOrderResponseEvt(List<OrderResponseDtoEvent> events) {
+    public List<DeliveryResponseDtoEvent> updateDeliveryRequestFromOrderResponseEvt(List<OrderResponseDtoEvent> events,
+                                                                                    BiFunction<OrderResponseDtoEvent, DeliveryRequest, DeliveryResponseDtoEvent> updateDeliveryRequestMethod) {
 
         List<DeliveryResponseDtoEvent> deliveryResponseEvts = new ArrayList<>();
 
@@ -80,9 +123,8 @@ public class DeliveryFromOrderService {
                                                                                                                                     orderResponseEvt.getCorrelationId()))
                                                                                      .toList();
                 orderResponseEvts.forEach(orderResponseEvt -> {
-                    DeliveryResponseDtoEvent deliveryResponseEvent = updateDeliveryRequestFromOrderResponseEvt(
-                        orderResponseEvt,
-                        deliveryRequest);
+                    DeliveryResponseDtoEvent deliveryResponseEvent = updateDeliveryRequestMethod.apply(orderResponseEvt,
+                                                                                                       deliveryRequest);
                     if (deliveryResponseEvent != null) {
                         deliveryResponseEvts.add(deliveryResponseEvent);
                     }
@@ -92,37 +134,8 @@ public class DeliveryFromOrderService {
         return deliveryResponseEvts;
     }
 
-    /**
-     * Update the given delivery request in database from the received order response event.
-     *
-     * @return the delivery response event if necessary (when status of order response event: GRANTED, DENIED)
-     */
-    private DeliveryResponseDtoEvent updateDeliveryRequestFromOrderResponseEvt(OrderResponseDtoEvent orderResponseEvent,
-                                                                               DeliveryRequest deliveryRequest) {
-        DeliveryResponseDtoEvent deliveryResponseEvt = null;
-        // Check status of order response event
-        switch (orderResponseEvent.getStatus()) {
-            case GRANTED -> {
-                deliveryResponseEvt = updateWithGrantedOrder(orderResponseEvent, deliveryRequest);
-            }
-            case SUBORDER_DONE -> {
-                deliveryResponseEvt = updateWithSuborderDone(orderResponseEvent, deliveryRequest);
-            }
-            case DONE -> {
-                this.updateWithOrderDone(orderResponseEvent, deliveryRequest);
-            }
-            case DENIED -> {
-                deliveryResponseEvt = updateWithDeniedOrder(orderResponseEvent, deliveryRequest);
-            }
-            case FAILED -> {
-                this.updateWithFailedOrder(orderResponseEvent, deliveryRequest);
-            }
-            default -> LOGGER.warn("Unknown state from order response event : {}", orderResponseEvent.getStatus());
-        }
-        return deliveryResponseEvt;
-    }
-
-    private void updateWithOrderDone(OrderResponseDtoEvent orderResponseEvent, DeliveryRequest deliveryRequest) {
+    private DeliveryResponseDtoEvent updateWithOrderDone(OrderResponseDtoEvent orderResponseEvent,
+                                                         DeliveryRequest deliveryRequest) {
         if (deliveryRequest.getStatus() != DeliveryRequestStatus.ERROR) {
             DeliveryRequestStatus deliveryRequestStatus = orderResponseEvent.hasErrors() ?
                 DeliveryRequestStatus.ERROR :
@@ -136,6 +149,7 @@ public class DeliveryFromOrderService {
                                                                                      orderResponseEvent.getErrorType()),
                                                                                  orderResponseEvent.getMessage());
         }
+        return null;
     }
 
     private DeliveryResponseDtoEvent updateWithGrantedOrder(OrderResponseDtoEvent orderResponseEvent,
@@ -159,37 +173,36 @@ public class DeliveryFromOrderService {
 
     private DeliveryResponseDtoEvent updateWithSuborderDone(OrderResponseDtoEvent orderResponseEvent,
                                                             DeliveryRequest deliveryRequest) {
-        if (deliveryRequest.getStatus() == DeliveryRequestStatus.ERROR) {
-            return null;
-        }
-        DeliveryRequestStatus deliveryRequestStatus;
-        DeliveryErrorType errorType;
-        String message;
-        // Reject delivery if more than one suborder is detected
-        if (orderResponseEvent.getTotalSubOrders() != null && orderResponseEvent.getTotalSubOrders() > 1) {
-            deliveryRequestStatus = DeliveryRequestStatus.ERROR;
-            errorType = DeliveryErrorType.TOO_MANY_SUBORDERS;
-            message = String.format(
-                "Cannot deliver request %s : this implementation does not support more than 1 sub-order",
-                deliveryRequest.getCorrelationId());
-        } else {
-            deliveryRequestStatus = orderResponseEvent.hasErrors() ? DeliveryRequestStatus.ERROR : null;
-            errorType = DeliveryErrorType.convert(orderResponseEvent.getErrorType());
-            message = orderResponseEvent.getMessage();
-        }
-        if (deliveryRequestStatus == DeliveryRequestStatus.ERROR) {
+        // update delivery request when suborder is done
+        // do nothing if request is already in error
+        if (deliveryRequest.getStatus() != DeliveryRequestStatus.ERROR) {
+            DeliveryRequestStatus deliveryRequestStatus;
+            DeliveryErrorType errorType;
+            String message;
+            // Reject delivery if more than one suborder is detected
+            if (orderResponseEvent.getTotalSubOrders() != null && orderResponseEvent.getTotalSubOrders() > 1) {
+                deliveryRequestStatus = DeliveryRequestStatus.ERROR;
+                errorType = DeliveryErrorType.TOO_MANY_SUBORDERS;
+                message = String.format(
+                    "Cannot deliver request %s : this implementation does not support more than 1 sub-order",
+                    deliveryRequest.getCorrelationId());
+            } else {
+                deliveryRequestStatus = orderResponseEvent.hasErrors() ? DeliveryRequestStatus.ERROR : null;
+                errorType = DeliveryErrorType.convert(orderResponseEvent.getErrorType());
+                message = orderResponseEvent.getMessage();
+            }
             // Update deliver request in db
-            deliveryFromOrderRetryService.saveRequestWithRetryWithOptimisticLock(deliveryRequest.getId(),
-                                                                                 orderResponseEvent.getOrderId(),
-                                                                                 orderResponseEvent.getTotalSubOrders(),
-                                                                                 deliveryRequestStatus,
-                                                                                 errorType,
-                                                                                 message);
-            return null;
-        } else {
             // do nothing if no error
-            return null;
+            if (deliveryRequestStatus == DeliveryRequestStatus.ERROR) {
+                deliveryFromOrderRetryService.saveRequestWithRetryWithOptimisticLock(deliveryRequest.getId(),
+                                                                                     orderResponseEvent.getOrderId(),
+                                                                                     orderResponseEvent.getTotalSubOrders(),
+                                                                                     deliveryRequestStatus,
+                                                                                     errorType,
+                                                                                     message);
+            }
         }
+        return null;
     }
 
     private DeliveryResponseDtoEvent updateWithDeniedOrder(OrderResponseDtoEvent orderResponseEvent,
@@ -206,15 +219,25 @@ public class DeliveryFromOrderService {
                                             deliveryRequest.getOriginRequestPriority());
     }
 
-    private void updateWithFailedOrder(OrderResponseDtoEvent orderResponseEvent, DeliveryRequest deliveryRequest) {
-        // Update delivery request in db
-        deliveryFromOrderRetryService.saveRequestWithRetryWithOptimisticLock(deliveryRequest.getId(),
-                                                                             orderResponseEvent.getOrderId(),
-                                                                             orderResponseEvent.getTotalSubOrders(),
-                                                                             DeliveryRequestStatus.ERROR,
-                                                                             DeliveryErrorType.convert(
-                                                                                 orderResponseEvent.getErrorType()),
-                                                                             orderResponseEvent.getMessage());
+    private DeliveryResponseDtoEvent updateWithFailedOrder(OrderResponseDtoEvent orderResponseEvent,
+                                                           DeliveryRequest deliveryRequest) {
+        if (deliveryRequest.getStatus() == DeliveryRequestStatus.ERROR) {
+            LOGGER.warn("An order event in error was received while the delivery request with correlation id '{}' is "
+                        + "already in error status. This event will be ignored. Order event : (type: '{}', cause: '{}').",
+                        deliveryRequest.getCorrelationId(),
+                        orderResponseEvent.getErrorType(),
+                        orderResponseEvent.getMessage());
+        } else {
+            // Update delivery request in db
+            deliveryFromOrderRetryService.saveRequestWithRetryWithOptimisticLock(deliveryRequest.getId(),
+                                                                                 orderResponseEvent.getOrderId(),
+                                                                                 orderResponseEvent.getTotalSubOrders(),
+                                                                                 DeliveryRequestStatus.ERROR,
+                                                                                 DeliveryErrorType.convert(
+                                                                                     orderResponseEvent.getErrorType()),
+                                                                                 orderResponseEvent.getMessage());
+        }
+        return null;
     }
 
 }

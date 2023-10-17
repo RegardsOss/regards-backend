@@ -30,7 +30,6 @@ import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBask
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
-import fr.cnes.regards.modules.order.exception.AutoOrderException;
 import fr.cnes.regards.modules.order.service.BasketService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import fr.cnes.regards.modules.order.service.settings.OrderSettingsService;
@@ -123,11 +122,9 @@ public class OrderRequestServiceTest {
         checkOrderRequestResponses(responses,
                                    nbReq,
                                    OrderRequestStatus.FAILED,
-                                   String.format("%s: %s",
-                                                 AutoOrderException.class.getSimpleName(),
-                                                 String.format(AutoOrderCompletionService.ERROR_RESPONSE_FORMAT,
-                                                               expectedException.getClass().getSimpleName(),
-                                                               expectedException.getMessage())),
+                                   String.format(AutoOrderCompletionService.ERROR_RESPONSE_FORMAT,
+                                                 expectedException.getClass().getSimpleName(),
+                                                 expectedException.getMessage()),
                                    0L);
     }
 

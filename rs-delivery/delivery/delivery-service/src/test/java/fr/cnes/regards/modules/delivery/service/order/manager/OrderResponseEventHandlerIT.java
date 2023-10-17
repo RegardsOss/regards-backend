@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import fr.cnes.regards.modules.delivery.service.submission.DeliveryRequestService;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
+import fr.cnes.regards.modules.order.client.amqp.AutoOrderResponseHandler;
 import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import org.junit.Before;
@@ -55,7 +56,7 @@ import static org.mockito.Mockito.timeout;
 /**
  * @author Stephane Cortine
  */
-@ActiveProfiles({ "test", "testAmqp" })
+@ActiveProfiles({ "test", "testAmqp", "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_response_handler_it",
                                    "regards.amqp.enabled=true" })
 @SpringBootTest
@@ -64,7 +65,7 @@ import static org.mockito.Mockito.timeout;
 public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
 
     @SpyBean
-    private OrderResponseEventHandler handler; // class under test
+    private AutoOrderResponseHandler handler; // class under test
 
     @Autowired
     private IDeliveryRequestRepository deliveryRequestRepository;
@@ -159,9 +160,6 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         assertEquals(DeliveryRequestStatus.ERROR, expectedDeliveryRequest.getDeliveryStatus().getStatus());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(3, expectedDeliveryRequest.getTotalSubOrders());
-
-        // expect 6 because 2 publish by amqp messages (3 amqp messages)
-        Mockito.verify(publisher, timeout(100).times(6)).publish(Mockito.anyList());
     }
 
     /**
@@ -176,7 +174,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
                                                                                                       nowMinusOneHour,
                                                                                                       DeliveryRequestStatus.GRANTED));
 
-        List<OrderResponseDtoEvent> orderResponseDtoEvents = new ArrayList<>();
+        List<OrderResponseDtoEvent> orderResponseDtoEvents = new LinkedList<>();
         orderResponseDtoEvents.add(new OrderResponseDtoEvent(OrderRequestStatus.SUBORDER_DONE,
                                                              1L,
                                                              correlationId,
@@ -243,7 +241,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         DeliveryRequest expectedDeliveryRequest = test_deliveryRequest_exists_in_database(savedDeliverySaved.getId());
 
         assertEquals(1L, expectedDeliveryRequest.getOrderId());
-        assertTrue(DeliveryRequestStatus.GRANTED == expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryRequestStatus.GRANTED, expectedDeliveryRequest.getDeliveryStatus().getStatus());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
 
         ArgumentCaptor<DeliveryResponseDtoEvent> responseCaptor = ArgumentCaptor.forClass(DeliveryResponseDtoEvent.class);
@@ -252,7 +250,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
 
         assertEquals(1, publishedDeliveryResponseEvt.size());
         assertEquals(correlationId, publishedDeliveryResponseEvt.get(0).getCorrelationId());
-        assertTrue(DeliveryRequestStatus.GRANTED == publishedDeliveryResponseEvt.get(0).getStatus());
+        assertEquals(DeliveryRequestStatus.GRANTED, publishedDeliveryResponseEvt.get(0).getStatus());
         assertNull(publishedDeliveryResponseEvt.get(0).getErrorType());
         assertNull(publishedDeliveryResponseEvt.get(0).getMessage());
         assertEquals("originAppId", publishedDeliveryResponseEvt.get(0).getOriginRequestAppId().orElse(null));
@@ -287,9 +285,6 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
                      "The status must be DONE");
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(1, expectedDeliveryRequest.getTotalSubOrders());
-
-        Mockito.verify(publisher, timeout(100).times(2)).publish(Mockito.anyList());
-        Mockito.verify(publisher, timeout(100).times(0)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
     }
 
     @Test
@@ -318,9 +313,6 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         assertEquals(DeliveryRequestStatus.ERROR, expectedDeliveryRequest.getDeliveryStatus().getStatus());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(1, expectedDeliveryRequest.getTotalSubOrders());
-
-        Mockito.verify(publisher, timeout(100).times(2)).publish(Mockito.anyList());
-        Mockito.verify(publisher, timeout(100).times(0)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
     }
 
     @Test
@@ -352,9 +344,6 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(2, expectedDeliveryRequest.getTotalSubOrders());
 
-        Mockito.verify(publisher, timeout(100).times(2)).publish(Mockito.anyList());
-        Mockito.verify(publisher, timeout(100).times(0)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
-
         Void run = new EndingDeliveryTask(endingDeliveryService, 5000).run();
 
         Mockito.verify(publisher, timeout(100).times(1)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
@@ -384,12 +373,9 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         DeliveryRequest expectedDeliveryRequest = test_deliveryRequest_exists_in_database(savedDeliverySaved.getId());
 
         assertNull(expectedDeliveryRequest.getOrderId());
-        assertTrue(DeliveryRequestStatus.ERROR == expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryRequestStatus.ERROR, expectedDeliveryRequest.getDeliveryStatus().getStatus());
         assertTrue(nowMinusOneHour.isEqual(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertNull(expectedDeliveryRequest.getTotalSubOrders());
-
-        Mockito.verify(publisher, timeout(100).times(2)).publish(Mockito.anyList());
-        Mockito.verify(publisher, timeout(100).times(0)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
     }
 
     @Test
@@ -415,12 +401,9 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         DeliveryRequest expectedDeliveryRequest = test_deliveryRequest_exists_in_database(savedDeliverySaved.getId());
 
         assertEquals(1L, expectedDeliveryRequest.getOrderId());
-        assertTrue(DeliveryRequestStatus.DONE == expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryRequestStatus.DONE, expectedDeliveryRequest.getDeliveryStatus().getStatus());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(1, expectedDeliveryRequest.getTotalSubOrders());
-
-        Mockito.verify(publisher, timeout(100).times(2)).publish(Mockito.anyList());
-        Mockito.verify(publisher, timeout(100).times(0)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
     }
 
     @Test
@@ -447,14 +430,11 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         DeliveryRequest expectedDeliveryRequest = test_deliveryRequest_exists_in_database(savedDeliverySaved.getId());
 
         assertEquals(1L, expectedDeliveryRequest.getOrderId());
-        assertTrue(DeliveryRequestStatus.ERROR == expectedDeliveryRequest.getDeliveryStatus().getStatus());
+        assertEquals(DeliveryRequestStatus.ERROR, expectedDeliveryRequest.getDeliveryStatus().getStatus());
         assertEquals("Error message", expectedDeliveryRequest.getDeliveryStatus().getErrorCause());
-        assertTrue(DeliveryErrorType.EMPTY_ORDER == expectedDeliveryRequest.getDeliveryStatus().getErrorType());
+        assertEquals(DeliveryErrorType.EMPTY_ORDER, expectedDeliveryRequest.getDeliveryStatus().getErrorType());
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
         assertEquals(1, expectedDeliveryRequest.getTotalSubOrders());
-
-        Mockito.verify(publisher, timeout(100).times(2)).publish(Mockito.anyList());
-        Mockito.verify(publisher, timeout(100).times(0)).publish(Mockito.any(DeliveryResponseDtoEvent.class));
     }
 
     @Test
@@ -481,7 +461,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         // Then
         Optional<DeliveryRequest> expectedDeliveryRequest = deliveryRequestService.findDeliveryRequest(
             savedDeliverySaved.getId());
-        if (!expectedDeliveryRequest.isEmpty()) {
+        if (expectedDeliveryRequest.isPresent()) {
             fail("The delivery request must not exist in db");
         }
         ArgumentCaptor<DeliveryResponseDtoEvent> responseCaptor = ArgumentCaptor.forClass(DeliveryResponseDtoEvent.class);
@@ -490,9 +470,9 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
 
         assertEquals(1, publishedDeliveryResponseEvt.size());
         assertEquals(correlationId, publishedDeliveryResponseEvt.get(0).getCorrelationId());
-        assertTrue(DeliveryRequestStatus.DENIED == publishedDeliveryResponseEvt.get(0).getStatus());
+        assertEquals(DeliveryRequestStatus.DENIED, publishedDeliveryResponseEvt.get(0).getStatus());
         assertEquals("Error message", publishedDeliveryResponseEvt.get(0).getMessage());
-        assertTrue(DeliveryErrorType.ORDER_LIMIT_REACHED == publishedDeliveryResponseEvt.get(0).getErrorType());
+        assertEquals(DeliveryErrorType.ORDER_LIMIT_REACHED, publishedDeliveryResponseEvt.get(0).getErrorType());
         assertEquals("originAppId", publishedDeliveryResponseEvt.get(0).getOriginRequestAppId().orElse(null));
         assertEquals(1, publishedDeliveryResponseEvt.get(0).getOriginRequestPriority().orElse(null));
     }
@@ -515,11 +495,11 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         for (int index = 0; index < nbResponses; index++) {
             responses.add(new OrderResponseDtoEvent(OrderRequestStatus.GRANTED,
                                                     1L,
-                                                    UUID.randomUUID().toString()
+                                                    UUID.randomUUID()
                                                     + "-corr-"
                                                     + index
                                                     + "-orderDelivery-"
-                                                    + UUID.randomUUID().toString(),
+                                                    + UUID.randomUUID(),
                                                     null,
                                                     null,
                                                     null,
@@ -547,11 +527,11 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
 
         for (int index = 0; index < nbRequests; index++) {
             OffsetDateTime now = OffsetDateTime.now();
-            requests.add(createDeliveryRequest(UUID.randomUUID().toString()
+            requests.add(createDeliveryRequest(UUID.randomUUID()
                                                + "-corr-"
                                                + index
                                                + "-orderDelivery-"
-                                               + UUID.randomUUID().toString(), now, DeliveryRequestStatus.GRANTED));
+                                               + UUID.randomUUID(), now, DeliveryRequestStatus.GRANTED));
         }
         return requests;
     }

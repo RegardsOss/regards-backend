@@ -90,7 +90,7 @@ public class AutoOrderCompletionService {
      * @throws AutoOrderException if the order could not be created
      */
     public Order generateOrder(OrderRequestDto orderRequestDto, String role, boolean checkSizeLimit)
-        throws AutoOrderException, CatalogSearchException {
+        throws AutoOrderException {
         try {
             Basket basket = createBasketFromRequest(orderRequestDto, role);
             if (checkSizeLimit) {
@@ -103,7 +103,7 @@ public class AutoOrderCompletionService {
                                             orderRequestDto.getUser(),
                                             orderRequestDto.getCorrelationId());
         } catch (ExceededBasketSizeException | TooManyItemsSelectedInBasketException | EmptySelectionException |
-                 EntityInvalidException e) {
+                 EntityInvalidException | CatalogSearchException e) {
             String errorMsg = String.format(ERROR_RESPONSE_FORMAT, e.getClass().getSimpleName(), e.getMessage());
             LOGGER.error(errorMsg, e);
             throw new AutoOrderException(errorMsg, e);

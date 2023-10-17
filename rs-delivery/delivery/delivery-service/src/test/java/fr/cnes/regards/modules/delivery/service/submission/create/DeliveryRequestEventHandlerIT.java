@@ -75,7 +75,7 @@ import static org.mockito.Mockito.timeout;
  *
  * @author Iliana Ghazali
  **/
-@ActiveProfiles({ "test", "testAmqp" })
+@ActiveProfiles({ "test", "testAmqp",  "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=delivery_request_handler_it",
                                    "regards.amqp.enabled=true" })
 @SpringBootTest

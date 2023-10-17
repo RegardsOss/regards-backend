@@ -34,7 +34,6 @@ import static fr.cnes.regards.modules.order.dto.output.OrderRequestStatus.*;
  **/
 public class AutoOrderResponseClientMock implements IAutoOrderResponseClient {
 
-
     private final Map<OrderRequestStatus, List<OrderResponseDtoEvent>> responsesByStatus;
 
     public AutoOrderResponseClientMock() {
@@ -44,7 +43,6 @@ public class AutoOrderResponseClientMock implements IAutoOrderResponseClient {
     @Override
     public void onOrderDenied(List<OrderResponseDtoEvent> stored) {
         addEventsToMap(DENIED, stored);
-
     }
 
     @Override
@@ -67,7 +65,6 @@ public class AutoOrderResponseClientMock implements IAutoOrderResponseClient {
         addEventsToMap(FAILED, groupedEvents);
     }
 
-
     private void addEventsToMap(OrderRequestStatus status, List<OrderResponseDtoEvent> stored) {
         responsesByStatus.computeIfAbsent(status, v -> new ArrayList<>()).addAll(stored);
     }
@@ -77,6 +74,7 @@ public class AutoOrderResponseClientMock implements IAutoOrderResponseClient {
         responsesByStatus.forEach((key, list) -> countMap.put(key, list.size()));
         return countMap;
     }
+
     public void reset() {
         responsesByStatus.clear();
     }

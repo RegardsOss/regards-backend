@@ -42,7 +42,6 @@ import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeExceptio
 import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
-import fr.cnes.regards.modules.order.exception.AutoOrderException;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventTestHandler;
 import fr.cnes.regards.modules.order.service.commons.OrderResponseEventHandler;
@@ -290,16 +289,14 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         checkOrderRequestResponsesEvents(responses,
                                          validOrderRequests.size(),
                                          OrderRequestStatus.DENIED,
-                                         String.format("%s: %s",
-                                                       AutoOrderException.class.getSimpleName(),
-                                                       String.format(AutoOrderCompletionService.ERROR_RESPONSE_FORMAT,
-                                                                     ExceededBasketSizeException.class.getSimpleName(),
-                                                                     String.format(
-                                                                         "The size of the basket ['%d bytes'] exceeds the maximum size allowed ['%d bytes']. Please review the"
-                                                                         + " order requested so that it does not exceed the maximum size "
-                                                                         + "configured.",
-                                                                         6033303,
-                                                                         1))),
+                                         String.format(AutoOrderCompletionService.ERROR_RESPONSE_FORMAT,
+                                                       ExceededBasketSizeException.class.getSimpleName(),
+                                                       String.format(
+                                                           "The size of the basket ['%d bytes'] exceeds the maximum size allowed ['%d bytes']. Please review the"
+                                                           + " order requested so that it does not exceed the maximum size "
+                                                           + "configured.",
+                                                           6033303,
+                                                           1)),
                                          null);
 
         // check no mail was sent
