@@ -25,6 +25,8 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.persistence.Convert;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -45,6 +47,10 @@ import java.util.regex.Pattern;
 @Convert(converter = OaisUrnConverter.class)
 @Schema(implementation = String.class)
 public class OaisUniformResourceName extends UniformResourceName {
+
+    private static final List<String> VALID_OAIS_IDENTIFIERS = Arrays.asList(OAISIdentifier.AIP.toString(),
+                                                                             OAISIdentifier.SIP.toString(),
+                                                                             OAISIdentifier.DIP.toString());
 
     /**
      * Constructor setting the given parameters as attributes
@@ -154,5 +160,9 @@ public class OaisUniformResourceName extends UniformResourceName {
                                            template.getVersion(),
                                            order,
                                            null);
+    }
+
+    public static boolean isValidUrn(String urn) {
+        return UniformResourceName.isValidUrn(urn) && VALID_OAIS_IDENTIFIERS.contains(urn.split(DELIMITER)[1]);
     }
 }

@@ -45,6 +45,7 @@ public class UniformResourceNameTest {
                                                                            null);
         final Pattern pattern = Pattern.compile(OaisUniformResourceName.URN_PATTERN);
         Assert.assertTrue(pattern.matcher(sipUrn.toString()).matches());
+        Assert.assertTrue(OaisUniformResourceName.isValidUrn(sipUrn.toString()));
     }
 
     @Test
@@ -60,6 +61,7 @@ public class UniformResourceNameTest {
                                                                            "3");
         final Pattern pattern = Pattern.compile(OaisUniformResourceName.URN_PATTERN);
         Assert.assertTrue(pattern.matcher(aipUrn.toString()).matches());
+        Assert.assertTrue(OaisUniformResourceName.isValidUrn(aipUrn.toString()));
     }
 
     @Test
@@ -75,6 +77,7 @@ public class UniformResourceNameTest {
                                                                            null);
         final Pattern pattern = Pattern.compile(OaisUniformResourceName.URN_PATTERN);
         Assert.assertTrue(pattern.matcher(aipUrn.toString()).matches());
+        Assert.assertTrue(OaisUniformResourceName.isValidUrn(aipUrn.toString()));
     }
 
     @Test
@@ -90,6 +93,7 @@ public class UniformResourceNameTest {
                                                                            "revision");
         final Pattern pattern = Pattern.compile(OaisUniformResourceName.URN_PATTERN);
         Assert.assertTrue(pattern.matcher(aipUrn.toString()).matches());
+        Assert.assertTrue(OaisUniformResourceName.isValidUrn(aipUrn.toString()));
     }
 
     @Test
@@ -105,6 +109,7 @@ public class UniformResourceNameTest {
                                                                            null);
         final Pattern pattern = Pattern.compile(OaisUniformResourceName.URN_PATTERN);
         Assert.assertTrue(pattern.matcher(aipUrn.toString()).matches());
+        Assert.assertTrue(OaisUniformResourceName.isValidUrn(aipUrn.toString()));
     }
 
     @Test
