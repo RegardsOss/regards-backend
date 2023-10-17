@@ -80,10 +80,10 @@ public class DataObjectMetadata {
     private final Multimap<String, String> modelNames = HashMultimap.create();
 
     /**
-     * @param dataAccessGranted true if data access is granted for (group, dataset ip id)
+     * @param fileAccessGranted true if data access is granted for (group, dataset ip id)
      */
-    public void addGroup(String groupName, String datasetIpId, boolean dataAccessGranted) {
-        groups.put(groupName, new DatasetAccessRight(datasetIpId, dataAccessGranted));
+    public void addGroup(String groupName, String datasetIpId, boolean fileAccessGranted) {
+        groups.put(groupName, new DatasetAccessRight(datasetIpId, fileAccessGranted));
     }
 
     public void removeGroup(String groupName, String datasetIpId) {

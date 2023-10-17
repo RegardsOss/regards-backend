@@ -77,7 +77,7 @@ public abstract class AbstractAccessRightControllerIT extends AbstractRegardsIT 
 
     protected final AccessLevel al = AccessLevel.FULL_ACCESS;
 
-    protected DataAccessLevel dal;
+    protected FileAccessLevel fal;
 
     protected Dataset ds1;
 
@@ -152,7 +152,7 @@ public abstract class AbstractAccessRightControllerIT extends AbstractRegardsIT 
         // Replace stubs by mocks
 
         qf = new QualityFilter(10, 0, QualityLevel.ACCEPTED);
-        dal = DataAccessLevel.NO_ACCESS;
+        fal = FileAccessLevel.NO_ACCESS;
 
         Model model = Model.build("model1", "desc", EntityType.DATASET);
         model = modelRepo.save(model);
@@ -171,18 +171,18 @@ public abstract class AbstractAccessRightControllerIT extends AbstractRegardsIT 
         ag1 = new AccessGroup(ag1Name);
         ag1 = agRepo.save(ag1);
         ar1 = new AccessRight(qf, al, ds1, ag1);
-        ar1.setDataAccessLevel(dal);
+        ar1.setFileAccessLevel(fal);
         ar1 = arRepo.save(ar1);
 
         ag2 = new AccessGroup(ag2Name);
         ag2 = agRepo.save(ag2);
 
         ar2 = new AccessRight(qf, al, ds2, ag2);
-        ar2.setDataAccessLevel(dal);
+        ar2.setFileAccessLevel(fal);
         ar2 = arRepo.save(ar2);
 
         ar3 = new AccessRight(qf, al, ds1, ag2);
-        ar3.setDataAccessLevel(dal);
+        ar3.setFileAccessLevel(fal);
 
         projectUser = new ProjectUser();
         projectUser.setEmail(email);

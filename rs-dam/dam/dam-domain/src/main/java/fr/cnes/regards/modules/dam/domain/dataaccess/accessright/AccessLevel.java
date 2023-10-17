@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.dam.domain.dataaccess.accessright;
 
 /**
- * Access level on a dataset and all its data or one of its subset
+ * Access level on a dataset and all its data objects or one of its subset
  *
  * @author Sylvain Vissiere-Guerinet
  */
@@ -29,7 +29,7 @@ public enum AccessLevel {
      */
     NO_ACCESS,
     /**
-     * only acces to meta data of the dataset but do not have access to its data at all(meta data and data)
+     * only access to metadata of the dataset but do not have access to its data at all(metadata and data)
      */
     RESTRICTED_ACCESS,
     /**
@@ -37,8 +37,8 @@ public enum AccessLevel {
      */
     CUSTOM_ACCESS,
     /**
-     * full access to the dataset(so the meta data of the dataset and the meta data of its data), the access to the
-     * physical data of the datum is constrained by the {@link DataAccessRight}
+     * full access to the dataset(so the metadata of the dataset and the metadata of its data), the access to the
+     * physical data of the datum is constrained by the {@link AccessRight}
      */
     FULL_ACCESS
 }

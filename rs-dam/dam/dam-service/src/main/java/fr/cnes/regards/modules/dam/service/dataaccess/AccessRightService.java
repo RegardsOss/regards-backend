@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.FileAccessLevel;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.event.AccessRightEvent;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.event.AccessRightEventType;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.IDataObjectAccessFilterPlugin;
@@ -160,44 +161,55 @@ public class AccessRightService implements IAccessRightService {
         DatasetMetadata metadata = new DatasetMetadata();
 
         retrieveAccessRightsByDataset(datasetIpId, PageRequest.of(0, Integer.MAX_VALUE)).getContent()
-                                                                                        .forEach(accessRight -> {
-                                                                                            String metadataPluginId = null;
-                                                                                            if (accessRight.getDataAccessPlugin()
-                                                                                                != null) {
-                                                                                                metadataPluginId = accessRight.getDataAccessPlugin()
-                                                                                                                              .getBusinessId();
-                                                                                            }
-
-                                                                                            boolean datasetAccess = false;
-                                                                                            boolean dataAccess = false;
-
-                                                                                            switch (accessRight.getAccessLevel()) {
-                                                                                                case CUSTOM_ACCESS, FULL_ACCESS -> {
-                                                                                                    datasetAccess = true;
-                                                                                                    dataAccess = true;
-                                                                                                }
-                                                                                                case RESTRICTED_ACCESS ->
-                                                                                                    datasetAccess = true;
-                                                                                                default -> {
-                                                                                                }
-                                                                                            }
-
-                                                                                            switch (accessRight.getDataAccessLevel()) {
-                                                                                                case NO_ACCESS ->
-                                                                                                    dataAccess = false;
-                                                                                                default -> {
-                                                                                                }
-                                                                                            }
-                                                                                            metadata.addDataObjectGroup(
-                                                                                                accessRight.getAccessGroup()
-                                                                                                           .getName(),
-                                                                                                datasetAccess,
-                                                                                                dataAccess,
-                                                                                                metadataPluginId,
-                                                                                                null);
-                                                                                        });
+                                                                                        .forEach(ar -> calculateAccessRights(
+                                                                                            ar,
+                                                                                            metadata));
         return metadata;
 
+    }
+
+    private void calculateAccessRights(AccessRight accessRight, DatasetMetadata metadata) {
+        String metadataPluginId = null;
+        if (accessRight.getDataAccessPlugin() != null) {
+            metadataPluginId = accessRight.getDataAccessPlugin().getBusinessId();
+        }
+
+        boolean datasetAccess;
+        boolean dataObjectAccess;
+        boolean fileAccess = getFileAccess(accessRight.getMetadataAccessLevel(), accessRight.getFileAccessLevel());
+
+        switch (accessRight.getMetadataAccessLevel()) {
+            case CUSTOM_ACCESS, FULL_ACCESS -> {
+                datasetAccess = true;
+                // NOTE CUSTOM_ACCESS :
+                // For the dataset metadata, access to data object is granted.
+                // Restriction on data object will be calculated for each object further with the custom access right
+                // plugin associated.
+                dataObjectAccess = true;
+            }
+            case RESTRICTED_ACCESS -> {
+                datasetAccess = true;
+                dataObjectAccess = false;
+            }
+            case NO_ACCESS -> {
+                datasetAccess = false;
+                dataObjectAccess = false;
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + accessRight.getMetadataAccessLevel());
+        }
+        metadata.addDataObjectGroup(accessRight.getAccessGroup().getName(),
+                                    datasetAccess,
+                                    fileAccess,
+                                    dataObjectAccess,
+                                    metadataPluginId,
+                                    null);
+    }
+
+    private boolean getFileAccess(AccessLevel dataAccessLevel, FileAccessLevel fileAccessLevel) {
+        if (fileAccessLevel.equals(FileAccessLevel.NO_ACCESS)) {
+            return false;
+        }
+        return dataAccessLevel.equals(AccessLevel.FULL_ACCESS) || dataAccessLevel.equals(AccessLevel.CUSTOM_ACCESS);
     }
 
     private Page<AccessRight> retrieveAccessRightsByAccessGroup(UniformResourceName pDatasetIpId,
@@ -256,13 +268,13 @@ public class AccessRightService implements IAccessRightService {
         String message = String.format("%sDataset %s access right has been modified.",
                                        LogConstants.SECURITY_MARKER,
                                        accessRight.getConstrained().getLabel());
-        switch (accessRight.getAccessLevel()) {
+        switch (accessRight.getMetadataAccessLevel()) {
             case FULL_ACCESS:
                 LOGGER.info(message
                             + " Users from group {} has access to this dataset metadata and its data metadata."
                             + " Access to physical data is: {}",
                             accessRight.getAccessGroup().getName(),
-                            accessRight.getDataAccessLevel());
+                            accessRight.getFileAccessLevel());
                 break;
             case RESTRICTED_ACCESS:
                 LOGGER.info(message
@@ -284,7 +296,7 @@ public class AccessRightService implements IAccessRightService {
             default:
                 throw new IllegalArgumentException(message
                                                    + " with an undocumented access level : "
-                                                   + accessRight.getAccessLevel());
+                                                   + accessRight.getMetadataAccessLevel());
         }
     }
 
@@ -384,7 +396,7 @@ public class AccessRightService implements IAccessRightService {
                 accessGroup,
                 dataset);
             if (accessRightOptional.isPresent() && !AccessLevel.NO_ACCESS.equals(accessRightOptional.get()
-                                                                                                    .getAccessLevel())) {
+                                                                                                    .getMetadataAccessLevel())) {
                 isAuthorised = true;
                 break;
             }

@@ -21,14 +21,14 @@ package fr.cnes.regards.modules.dam.domain.dataaccess.accessright;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.ICheckDataAccess;
 
 /**
- * describe the level of access to the physical data of a datum in a dataset
+ * Describe the level of access to the physical files.
  *
  * @author Sylvain Vissiere-Guerinet
  */
-public enum DataAccessLevel {
+public enum FileAccessLevel {
     /**
      * despite the full access on the dataset, we still do no have access to the physical data of the datum(still have
-     * access to the meta data of the datum)
+     * access to the metadata of the datum)
      */
     NO_ACCESS,
     /**

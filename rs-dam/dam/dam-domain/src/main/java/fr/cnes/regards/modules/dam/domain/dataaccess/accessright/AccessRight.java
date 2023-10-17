@@ -72,7 +72,7 @@ public class AccessRight implements IIdentifiable<Long> {
     @Column(length = 30, name = "access_level")
     @Enumerated(EnumType.STRING)
     @NotNull
-    protected AccessLevel accessLevel;
+    protected AccessLevel metadataAccessLevel;
 
     /**
      * Plugin configuration allowing to customize the data access level
@@ -82,12 +82,12 @@ public class AccessRight implements IIdentifiable<Long> {
     private PluginConfiguration dataAccessPlugin;
 
     /**
-     * Data access level
+     * File access level.
      */
-    @Column(length = 30, name = "data_access_level")
+    @Column(length = 30, name = "file_access_level")
     @Enumerated(EnumType.STRING)
     @NotNull
-    private DataAccessLevel dataAccessLevel;
+    private FileAccessLevel fileAccessLevel;
 
     /**
      * It is mandatory to have no cascade at all on Dataset (a Dataset CRUD must be done through DatasetService)
@@ -121,7 +121,7 @@ public class AccessRight implements IIdentifiable<Long> {
                        final AccessGroup pAccessGroup) {
         super();
         qualityFilter = pQualityFilter;
-        accessLevel = pAccessLevel;
+        metadataAccessLevel = pAccessLevel;
         dataset = pDataset;
         accessGroup = pAccessGroup;
     }
@@ -151,23 +151,23 @@ public class AccessRight implements IIdentifiable<Long> {
     /**
      * @return the access level
      */
-    public AccessLevel getAccessLevel() {
-        return accessLevel;
+    public AccessLevel getMetadataAccessLevel() {
+        return metadataAccessLevel;
     }
 
-    public void setAccessLevel(final AccessLevel pAccessLevel) {
-        accessLevel = pAccessLevel;
+    public void setMetadataAccessLevel(final AccessLevel pAccessLevel) {
+        metadataAccessLevel = pAccessLevel;
     }
 
     /**
      * @return the data access right
      */
-    public DataAccessLevel getDataAccessLevel() {
-        return dataAccessLevel;
+    public FileAccessLevel getFileAccessLevel() {
+        return fileAccessLevel;
     }
 
-    public void setDataAccessLevel(final DataAccessLevel dataAccessLevel) {
-        this.dataAccessLevel = dataAccessLevel;
+    public void setFileAccessLevel(final FileAccessLevel fileAccessLevel) {
+        this.fileAccessLevel = fileAccessLevel;
     }
 
     /**

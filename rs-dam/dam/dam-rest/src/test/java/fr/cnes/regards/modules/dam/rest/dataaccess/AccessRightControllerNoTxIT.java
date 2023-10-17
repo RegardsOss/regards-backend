@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.dam.rest.dataaccess;
 
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.DataAccessLevel;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.FileAccessLevel;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
@@ -36,24 +36,24 @@ public class AccessRightControllerNoTxIT extends AbstractAccessRightControllerIT
     public void testUpdateAccessRight() {
         // Change access level
         AccessRight garTmp = new AccessRight(qf, AccessLevel.RESTRICTED_ACCESS, ds1, ag1);
-        garTmp.setDataAccessLevel(DataAccessLevel.NO_ACCESS);
+        garTmp.setFileAccessLevel(FileAccessLevel.NO_ACCESS);
         garTmp.setId(ar1.getId());
 
         performDefaultPut(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_ACCESS_RIGHTS_ID,
                           garTmp,
                           customizer().expectStatusOk()
                                       .expectIsNotEmpty(JSON_PATH_ROOT)
-                                      .expectValue("$.content.accessLevel", "RESTRICTED_ACCESS"),
+                                      .expectValue("$.content.metadataAccessLevel", "RESTRICTED_ACCESS"),
                           ACCESS_RIGHTS_ERROR_MSG,
                           ar1.getId());
 
         // Save again garTmp (with ag1 as access group and FULL_ACCESS)
-        garTmp.setAccessLevel(AccessLevel.FULL_ACCESS);
+        garTmp.setMetadataAccessLevel(AccessLevel.FULL_ACCESS);
         performDefaultPut(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_ACCESS_RIGHTS_ID,
                           garTmp,
                           customizer().expectStatusOk()
                                       .expectIsNotEmpty(JSON_PATH_ROOT)
-                                      .expectValue("$.content.accessLevel", "FULL_ACCESS"),
+                                      .expectValue("$.content.metadataAccessLevel", "FULL_ACCESS"),
                           ACCESS_RIGHTS_ERROR_MSG,
                           ar1.getId());
 

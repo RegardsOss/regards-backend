@@ -95,7 +95,7 @@ public class AccessRightServiceIT extends AbstractMultitenantServiceIT {
         // Create access right
         QualityFilter filter = new QualityFilter(10, 1, QualityLevel.ACCEPTED);
         AccessRight ar = new AccessRight(filter, AccessLevel.FULL_ACCESS, dataset, group);
-        ar.setDataAccessLevel(DataAccessLevel.NO_ACCESS);
+        ar.setFileAccessLevel(FileAccessLevel.NO_ACCESS);
         accessRightService.createAccessRight(ar);
 
         // Update access right

@@ -21,6 +21,7 @@ public class DataObjectGroupJsoniterDecoder implements NullSafeDecoderBuilder {
         Any group = iter.readAny();
         return new DataObjectGroup(group.toString("groupName"),
                                    group.toBoolean("datasetAccess"),
+                                   group.toBoolean("dataFileAccess"),
                                    group.toBoolean("dataObjectAccess"),
                                    group.toString("metaDataObjectAccessFilterPluginId"),
                                    group.toString("dataObjectAccessFilterPluginId"));

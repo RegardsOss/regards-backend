@@ -94,12 +94,12 @@ public class AccessRightRepositoryIT extends AbstractDaoTransactionalIT {
         ag1 = new AccessGroup(ag1Name);
         ag1 = agRepo.save(ag1);
         ar1 = new AccessRight(qf, al, ds1, ag1);
-        ar1.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
+        ar1.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         ar1 = repo.save(ar1);
         ag2 = new AccessGroup(ag2Name);
         ag2 = agRepo.save(ag2);
         ar2 = new AccessRight(qf, al, ds2, ag2);
-        ar2.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
+        ar2.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         ar2 = repo.save(ar2);
     }
 

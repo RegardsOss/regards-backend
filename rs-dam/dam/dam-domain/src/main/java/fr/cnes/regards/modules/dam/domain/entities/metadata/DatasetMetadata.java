@@ -33,6 +33,11 @@ public class DatasetMetadata {
         /**
          * Does the group have access to data files ?
          */
+        private final Boolean dataFileAccess;
+
+        /**
+         * Does the groupe have access to the data objects ?
+         */
         private final Boolean dataObjectAccess;
 
         /**
@@ -53,11 +58,13 @@ public class DatasetMetadata {
 
         public DataObjectGroup(String groupName,
                                Boolean datasetAccess,
+                               Boolean dataFileAccess,
                                Boolean dataObjectAccess,
                                String metaDataObjectAccessFilterPlugin,
                                String dataObjectAccessFilterPlugin) {
             super();
             this.groupName = groupName;
+            this.dataFileAccess = dataFileAccess;
             this.dataObjectAccess = dataObjectAccess;
             this.datasetAccess = datasetAccess;
             this.metaDataObjectAccessFilterPluginBusinessId = metaDataObjectAccessFilterPlugin;
@@ -68,8 +75,8 @@ public class DatasetMetadata {
             return groupName;
         }
 
-        public Boolean getDataObjectAccess() {
-            return dataObjectAccess;
+        public Boolean getDataFileAccess() {
+            return dataFileAccess;
         }
 
         public String getDataObjectAccessFilterPluginBusinessId() {
@@ -84,6 +91,9 @@ public class DatasetMetadata {
             return metaDataObjectAccessFilterPluginBusinessId;
         }
 
+        public Boolean getDataObjectAccess() {
+            return dataObjectAccess;
+        }
     }
 
     /**
@@ -94,12 +104,14 @@ public class DatasetMetadata {
 
     public void addDataObjectGroup(String groupName,
                                    Boolean datasetAccess,
+                                   Boolean dataFileAccess,
                                    Boolean dataObjectAccess,
                                    String metaDataObjectAccessFilterPlugin,
                                    String dataObjectAccessFilterPlugin) {
         this.dataObjectsGroups.put(groupName,
                                    new DataObjectGroup(groupName,
                                                        datasetAccess,
+                                                       dataFileAccess,
                                                        dataObjectAccess,
                                                        metaDataObjectAccessFilterPlugin,
                                                        dataObjectAccessFilterPlugin));

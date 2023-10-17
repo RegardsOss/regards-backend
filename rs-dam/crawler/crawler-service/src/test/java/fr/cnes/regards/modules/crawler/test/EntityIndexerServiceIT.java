@@ -111,7 +111,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     private static final String SESSION = "SESSION 1";
 
-    private static String TENANT = "entity_indexer";
+    private static final String TENANT = "entity_indexer";
 
     private final List<DataObject> objects = Lists.newArrayList();
 
@@ -195,6 +195,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     private AccessGroup group4;
 
+    private AccessGroup group5;
+
     private AccessRight ar;
 
     private AccessRight ar2;
@@ -239,6 +241,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         group2 = createGroup("group2");
         group3 = createGroup("group3");
         group4 = createGroup("group4");
+        group5 = createGroup("group5");
         objects.add(createObject("DO1", "DataObject 1"));
         objects.add(createObject("DO2", "DataObject 2"));
         objects.add(createObject("DO3", "DataObject 3"));
@@ -338,7 +341,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                                          AccessLevel.CUSTOM_ACCESS,
                                          dataset,
                                          group1);
-        ar.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
+        ar.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         ar.setDataAccessPlugin(newPluginConf);
         ar = rightsService.createAccessRight(ar);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
@@ -361,7 +364,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // 1. Init method has created 1xDATASET and 6xDATA
 
         // -------------------------------------------------------------------------------
-        // 2. Check that no DATA are associated to GROUP1 as no AccessRighrs are created.
+        // 2. Check that no DATA are associated to GROUP1 as no AccessRights are created.
         // -------------------------------------------------------------------------------
         runtimeTenantResolver.forceTenant(TENANT);
         @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(
@@ -381,7 +384,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // -------------------------------------------------------------------------------
 
         ar = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED), AccessLevel.FULL_ACCESS, dataset, group1);
-        ar.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
+        ar.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         ar = rightsService.createAccessRight(ar);
         // All data should be only in group1
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
@@ -394,7 +397,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // 4. Create a second accessRight without filter and check that all dataObjects are associated to the GROUP1 and GROUP2
         // -------------------------------------------------------------------------------
         ar2 = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED), AccessLevel.FULL_ACCESS, dataset, group2);
-        ar2.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
+        ar2.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         rightsService.createAccessRight(ar2);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
         // All data should be only in group1 and group2
@@ -431,7 +434,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                               dataset,
                               group3);
         ar3.setDataAccessPlugin(dataAccessPlugin);
-        ar3.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
+        ar3.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         rightsService.createAccessRight(ar3);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
         // All data should be in group2 and only one (DO1) in group3
@@ -502,7 +505,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                               AccessLevel.FULL_ACCESS,
                               dataset2,
                               group4);
-        ar4.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
+        ar4.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         ar4 = rightsService.createAccessRight(ar4);
         indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), OffsetDateTime.now(), false);
         results = searchService.search(searchKey,
@@ -522,13 +525,46 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // -------------------------------------------------------------------------------
         // 10. Update third access right to no access and check that objects are no longer in GROUP3
         // -------------------------------------------------------------------------------
-        ar3.setAccessLevel(AccessLevel.NO_ACCESS);
+        ar3.setMetadataAccessLevel(AccessLevel.NO_ACCESS);
         ar3 = rightsService.updateAccessRight(ar3.getId(), ar3);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
         results = searchService.search(searchKey,
                                        100,
                                        ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
         Assert.assertEquals(0, results.getTotalElements());
+
+        // -------------------------------------------------------------------------------
+        // 11. Create an accessRight without data access level and check that dataObjects are not associated to the
+        // GROUP5
+        // -------------------------------------------------------------------------------
+
+        ar = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED),
+                             AccessLevel.RESTRICTED_ACCESS,
+                             dataset,
+                             group5);
+        ar.setFileAccessLevel(FileAccessLevel.NO_ACCESS);
+        ar = rightsService.createAccessRight(ar);
+        // All data should be only in group1
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.contains("groups", "group5", StringMatchType.KEYWORD));
+        Assert.assertEquals(0L, results.getTotalElements());
+
+        // -------------------------------------------------------------------------------
+        // 11. Update accessRight to full access to allow access to data objects and check objects are associated to
+        // group5.
+        // -------------------------------------------------------------------------------
+
+        ar.setMetadataAccessLevel(AccessLevel.FULL_ACCESS);
+        ar.setFileAccessLevel(FileAccessLevel.NO_ACCESS);
+        ar = rightsService.createAccessRight(ar);
+        // All data should be only in group1
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.contains("groups", "group5", StringMatchType.KEYWORD));
+        Assert.assertEquals(6L, results.getTotalElements());
 
     }
 

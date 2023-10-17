@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.DataAccessLevel;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.FileAccessLevel;
 
 /**
  * Access right event.
@@ -49,7 +49,7 @@ public class AccessRightEvent implements ISubscribable {
 
     private AccessLevel accessLevel;
 
-    private DataAccessLevel dataAccessLevel;
+    private FileAccessLevel fileAccessLevel;
 
     private String dataAccessPluginLabel;
 
@@ -66,8 +66,8 @@ public class AccessRightEvent implements ISubscribable {
         this.datasetIpId = accessRight.getConstrained().getIpId();
         this.datasetLabel = accessRight.getConstrained().getLabel();
         this.accessGroupName = accessRight.getAccessGroup().getName();
-        this.accessLevel = accessRight.getAccessLevel();
-        this.dataAccessLevel = accessRight.getDataAccessLevel();
+        this.accessLevel = accessRight.getMetadataAccessLevel();
+        this.fileAccessLevel = accessRight.getFileAccessLevel();
         this.dataAccessPluginLabel = accessRight.getDataAccessPlugin() == null ?
             null :
             accessRight.getDataAccessPlugin().getLabel();
@@ -91,8 +91,8 @@ public class AccessRightEvent implements ISubscribable {
         return accessLevel;
     }
 
-    public DataAccessLevel getDataAccessLevel() {
-        return dataAccessLevel;
+    public FileAccessLevel getDataAccessLevel() {
+        return fileAccessLevel;
     }
 
     public String getDataAccessPluginLabel() {
