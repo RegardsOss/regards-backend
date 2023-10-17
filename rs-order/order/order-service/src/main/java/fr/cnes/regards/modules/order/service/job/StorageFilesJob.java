@@ -155,8 +155,12 @@ public class StorageFilesJob extends AbstractJob<Void> {
                                                               cs));
             // Wait for remaining files availability from storage
             // Wait maximum 2 hours for storage restitution.
-            this.semaphore.tryAcquire(2, TimeUnit.HOURS);
-            logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
+            int nbHoursToWait = 2;
+            if (this.semaphore.tryAcquire(nbHoursToWait, TimeUnit.HOURS)) {
+                logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
+            } else {
+                logger.error("All files are not available after waiting for {} hours", nbHoursToWait);
+            }
         } catch (RuntimeException e) { // Feign or network or ... exception
             // Put All data files in ERROR and propagate exception to make job fail
             dataFilesMultimap.values().forEach(df -> df.setState(FileState.ERROR));
