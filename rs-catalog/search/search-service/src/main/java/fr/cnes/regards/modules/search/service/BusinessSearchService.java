@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,7 +24,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
@@ -32,13 +34,18 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.GeometryCriterionBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
+import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Business search service
@@ -52,12 +59,18 @@ public class BusinessSearchService implements IBusinessSearchService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BusinessSearchService.class);
 
     /**
+     * Service handling the access groups in criterion.
+     */
+    private final IAccessRightFilter accessRightFilter;
+
+    /**
      * Catalog search service (entity level search service)
      */
     protected ICatalogSearchService catalogSearchService;
 
-    public BusinessSearchService(ICatalogSearchService searchService) {
-        this.catalogSearchService = searchService;
+    public BusinessSearchService(ICatalogSearchService catalogSearchService, IAccessRightFilter accessRightFilter) {
+        this.catalogSearchService = catalogSearchService;
+        this.accessRightFilter = accessRightFilter;
     }
 
     @SuppressWarnings("unchecked")
@@ -69,12 +82,42 @@ public class BusinessSearchService implements IBusinessSearchService {
         throws SearchException, OpenSearchUnknownParameter {
         FacetPage<AbstractEntity<?>> facetPage = catalogSearchService.search(criterion, searchType, facets, pageable);
 
-        // Extract feature(s) from entity(ies)
-        List<F> features = new ArrayList<>();
-        facetPage.getContent().forEach(entity -> features.add((F) entity.getFeature()));
+        // Extract feature(s) and metadata from entity(ies)
+        List<F> features = facetPage.getContent().stream().peek(entity -> {
+            if (searchType.equals(SearchType.DATASETS)) {
+                Dataset dataset = (Dataset) entity;
+                boolean contentAccessGranted = false;
+                try {
+                    contentAccessGranted = isContentAccessGranted(dataset.getMetadata());
+                } catch (AccessRightFilterException e) {
+                    LOGGER.warn("Unable to calculate user right to order dataset \"{}\"..", entity.getLabel(), e);
+                }
+                dataset.getFeature().setContentAccessGranted(contentAccessGranted);
+            }
+        }).map(entity -> (F) entity.getFeature()).collect(Collectors.toList());
 
         // Build facet page with features
         return new FacetPage<>(features, facetPage.getFacets(), facetPage.getPageable(), facetPage.getTotalElements());
+    }
+
+    /**
+     * Check if current user has right to access to dataobjects of a dataset
+     *
+     * @return either true or false
+     */
+    private boolean isContentAccessGranted(DatasetMetadata metadata) throws AccessRightFilterException {
+        final Set<String> userAccessGroups = accessRightFilter.getUserAccessGroups();
+        Map<String, DatasetMetadata.DataObjectGroup> datasetObjectsGroupsMap = metadata.getDataObjectsGroups();
+        if (userAccessGroups == null) {
+            // access groups is null for admin users. Admin have always access
+            return true;
+        }
+        Stream<DatasetMetadata.DataObjectGroup> groupsOfUserThatAreInDataset = userAccessGroups.stream()
+                                                                                               .filter(
+                                                                                                   datasetObjectsGroupsMap::containsKey)
+                                                                                               .map(
+                                                                                                   datasetObjectsGroupsMap::get);
+        return groupsOfUserThatAreInDataset.anyMatch(DatasetMetadata.DataObjectGroup::getDataObjectAccess);
     }
 
     @Override

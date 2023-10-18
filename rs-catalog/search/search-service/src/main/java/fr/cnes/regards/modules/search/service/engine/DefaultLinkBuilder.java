@@ -19,8 +19,6 @@
 package fr.cnes.regards.modules.search.service.engine;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -40,14 +38,6 @@ public class DefaultLinkBuilder implements IEntityLinkBuilder {
 
     @Override
     public List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context, EntityFeature entity) {
-        return Lists.newArrayList();
-    }
-
-    @Override
-    public List<Link> buildEntityLinks(IResourceService resourceService,
-                                       SearchContext context,
-                                       EntityType entityType,
-                                       UniformResourceName id) {
         return Lists.newArrayList();
     }
 

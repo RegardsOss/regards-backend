@@ -181,8 +181,7 @@ public class LegacySearchEngine implements
             if (entityFeature != null) {
                 resource.add(linkBuilder.buildEntityLinks(resourceService,
                                                           context,
-                                                          entityFeature.getEntityType(),
-                                                          entityFeature.getId()));
+                                                          entityFeature));
             } else {
                 throw new ModuleException("An error occurred while add entity links: an entityFeature is null");
             }
@@ -234,7 +233,7 @@ public class LegacySearchEngine implements
         EntityFeature entity = searchService.get(context.getUrn().get());
         // Prepare resource
         EntityModel<EntityFeature> resource = resourceService.toResource(entity);
-        resource.add(linkBuilder.buildEntityLinks(resourceService, context, entity.getEntityType(), entity.getId()));
+        resource.add(linkBuilder.buildEntityLinks(resourceService, context, entity));
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 

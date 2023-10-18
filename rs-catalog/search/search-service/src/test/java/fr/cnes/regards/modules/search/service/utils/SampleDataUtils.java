@@ -309,6 +309,12 @@ public class SampleDataUtils {
     public static final Dataset DATASET = new Dataset(DATASET_MODEL, "tenant", "DS1", "DS1");
 
     /**
+     * A dummy page of dataset
+     */
+    public static final FacetPage<Dataset> FACET_PAGE_DATASET = new FacetPage<>(Lists.newArrayList(DATASET),
+            Sets.newHashSet());
+
+    /**
      * A dummy page of dataobjects
      */
     public static final Page<Dataset> PAGE_DATASET = new PageImpl<>(Lists.newArrayList(DATASET));

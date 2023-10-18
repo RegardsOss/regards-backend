@@ -19,8 +19,6 @@
 package fr.cnes.regards.modules.search.domain.plugin;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.hateoas.Link;
@@ -34,11 +32,6 @@ import java.util.List;
 public interface IEntityLinkBuilder {
 
     List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context, EntityFeature entity);
-
-    List<Link> buildEntityLinks(IResourceService resourceService,
-                                SearchContext context,
-                                EntityType entityType,
-                                UniformResourceName id);
 
     Link buildExtraLink(IResourceService resourceService, SearchContext context, LinkRelation rel, String extra);
 

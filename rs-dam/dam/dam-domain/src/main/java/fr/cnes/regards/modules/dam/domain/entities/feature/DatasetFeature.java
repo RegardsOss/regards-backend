@@ -37,6 +37,8 @@ public class DatasetFeature extends EntityFeature {
      */
     private String licence;
 
+    private Boolean contentAccessGranted = false;
+
     /**
      * Deserialization constructor
      */
@@ -65,5 +67,13 @@ public class DatasetFeature extends EntityFeature {
 
     public void setLicence(String licence) {
         this.licence = licence;
+    }
+
+    public Boolean getContentAccessGranted() {
+        return contentAccessGranted;
+    }
+
+    public void setContentAccessGranted(Boolean contentAccessGranted) {
+        this.contentAccessGranted = contentAccessGranted;
     }
 }

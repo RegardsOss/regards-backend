@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
@@ -698,67 +699,64 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @Override
     public List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context, EntityFeature entity) {
         if (entity != null) {
-            return buildEntityLinks(resourceService, context, entity.getEntityType(), entity.getId());
-        } else {
-            return Lists.newArrayList();
+            EntityType entityType = entity.getEntityType();
+            String idString = entity.getId().toString();
+            switch (entityType) {
+                case COLLECTION:
+                    return buildCollectionLinks(resourceService, context, idString);
+                case DATA:
+                    return buildDataLinks(resourceService, context, idString);
+                case DATASET:
+                    if (entity instanceof DatasetFeature datasetFeature) {
+                        return buildDatasetLinks(resourceService, context, idString, datasetFeature.getContentAccessGranted());
+                    }
+                    LOGGER.warn("Cannot cast entity to DatasetFeature");
+                    break;
+                default:
+                    // Nothing to do
+                    LOGGER.warn("Unknown entity type \"{}\"", entityType);
+            }
         }
+        return Lists.newArrayList();
     }
 
-    /**
-     * Build contextual entity links according to search context and entity type
-     */
-    @Override
-    public List<Link> buildEntityLinks(IResourceService resourceService,
-                                       SearchContext context,
-                                       EntityType entityType,
-                                       UniformResourceName id) {
+    private List<Link> buildDataLinks(IResourceService resourceService, SearchContext context, String idString) {
         List<Link> links = new ArrayList<>();
+        addEntitySelfLink(resourceService, context, links, idString, SearchEngineController.GET_DATAOBJECT_METHOD);
+        return links;
+    }
 
-        String idString = id.toString();
-        switch (entityType) {
-            case COLLECTION:
-                addLink(links,
-                        resourceService.buildLink(SearchEngineController.class,
-                                                  SearchEngineController.GET_COLLECTION_METHOD,
-                                                  LinkRels.SELF,
-                                                  MethodParamFactory.build(String.class, context.getEngineType()),
-                                                  MethodParamFactory.build(String.class, idString),
-                                                  MethodParamFactory.build(HttpHeaders.class)));
-                break;
-            case DATA:
-                addLink(links,
-                        resourceService.buildLink(SearchEngineController.class,
-                                                  SearchEngineController.GET_DATAOBJECT_METHOD,
-                                                  LinkRels.SELF,
-                                                  MethodParamFactory.build(String.class, context.getEngineType()),
-                                                  MethodParamFactory.build(String.class, idString),
-                                                  MethodParamFactory.build(HttpHeaders.class)));
-                break;
-            case DATASET:
-                addLink(links,
-                        resourceService.buildLink(SearchEngineController.class,
-                                                  SearchEngineController.GET_DATASET_METHOD,
-                                                  LinkRels.SELF,
-                                                  MethodParamFactory.build(String.class, context.getEngineType()),
-                                                  MethodParamFactory.build(String.class, idString),
-                                                  MethodParamFactory.build(HttpHeaders.class)));
-                // Add link to DATA OBJECTS
-                addLink(links,
-                        resourceService.buildLink(SearchEngineController.class,
-                                                  SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET,
-                                                  LINK_TO_DATAOBJECTS,
-                                                  MethodParamFactory.build(String.class, context.getEngineType()),
-                                                  MethodParamFactory.build(String.class, idString),
-                                                  MethodParamFactory.build(HttpHeaders.class),
-                                                  MethodParamFactory.build(MultiValueMap.class),
-                                                  MethodParamFactory.build(Pageable.class)));
-                break;
+    private List<Link> buildCollectionLinks(IResourceService resourceService, SearchContext context, String idString) {
+        List<Link> links = new ArrayList<>();
+        addEntitySelfLink(resourceService, context, links, idString, SearchEngineController.GET_COLLECTION_METHOD);
+        return links;
+    }
 
-            default:
-                // Nothing to do
-                LOGGER.warn("Unknown entity type \"{}\"", entityType);
-                break;
+    private List<Link> buildDatasetLinks(IResourceService resourceService, SearchContext context, String idString, Boolean contentAccessGranted) {
+        List<Link> links = new ArrayList<>();
+        addEntitySelfLink(resourceService, context, links, idString, SearchEngineController.GET_DATASET_METHOD);
+        if (contentAccessGranted) {
+            // Add link to DATA OBJECTS
+            addLink(links,
+                    resourceService.buildLink(SearchEngineController.class,
+                            SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET,
+                            LINK_TO_DATAOBJECTS,
+                            MethodParamFactory.build(String.class, context.getEngineType()),
+                            MethodParamFactory.build(String.class, idString),
+                            MethodParamFactory.build(HttpHeaders.class),
+                            MethodParamFactory.build(MultiValueMap.class),
+                            MethodParamFactory.build(Pageable.class)));
         }
         return links;
+    }
+
+    private void addEntitySelfLink(IResourceService resourceService, SearchContext context, List<Link> links, String idString, String methodName) {
+        addLink(links,
+                resourceService.buildLink(SearchEngineController.class,
+                        methodName,
+                        LinkRels.SELF,
+                        MethodParamFactory.build(String.class, context.getEngineType()),
+                        MethodParamFactory.build(String.class, idString),
+                        MethodParamFactory.build(HttpHeaders.class)));
     }
 }
