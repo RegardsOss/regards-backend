@@ -1,18 +1,20 @@
 package fr.cnes.regards.framework.utils.file;
 
 import com.google.common.collect.Sets;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.commons.io.FileUtils;
+import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
@@ -31,6 +33,9 @@ public class DownloadUtilsTests {
     private String proxyHost;
 
     private int proxyPort;
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
     public void initProxy() throws IOException {
@@ -120,6 +125,51 @@ public class DownloadUtilsTests {
         dis.close();
         // expected checksum was calculated thanks to md5sum after a wget of the file
         Assert.assertEquals("464530a4e23f4f831eeabf9678c43bdf", checksum);
+    }
+
+    @Test
+    public void testDownloadWithHttpProtocolThroughTmpFile() throws IOException, NoSuchAlgorithmException {
+        // Given
+
+        // expected checksum was calculated thanks to md5sum after a wget of the file
+        String checksum = "464530A4E23F4F831EEABF9678C43BDF";
+
+        URL source = new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-3");
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        Path tmpDirPath = temporaryFolder.newFolder("workspace").toPath();
+        Path downloadedFileDir = temporaryFolder.newFolder("targetDownload").toPath();
+
+        // When
+        InputStream is = DownloadUtils.getInputStreamThroughProxy(source,
+                                                                  proxy,
+                                                                  null,
+                                                                  Collections.emptyList(),
+                                                                  500L,
+                                                                  tmpDirPath);
+
+        // Then
+        Assert.assertEquals("There should be one and only one tmp file", 1, tmpDirPath.toFile().list().length);
+        File tmpFile = tmpDirPath.toFile().listFiles()[0];
+        byte[] data = Files.readAllBytes(tmpFile.toPath());
+        byte[] hash = MessageDigest.getInstance("MD5").digest(data);
+        String tmpFileChecksum = new BigInteger(1, hash).toString(16).toUpperCase();
+        Assert.assertEquals("The tmp file should have the sent file checksum", checksum, tmpFileChecksum);
+
+        // When
+        FileUtils.copyInputStreamToFile(is, downloadedFileDir.resolve("file").toFile());
+
+        // Then
+        Assert.assertEquals("There should be one and only one downloaded file",
+                            1,
+                            downloadedFileDir.toFile().list().length);
+        File downloadedFile = downloadedFileDir.toFile().listFiles()[0];
+        data = Files.readAllBytes(downloadedFile.toPath());
+        hash = MessageDigest.getInstance("MD5").digest(data);
+        String downloadedFileChecksum = new BigInteger(1, hash).toString(16).toUpperCase();
+
+        Assert.assertEquals("The downloaded file should have the sent file checksum", checksum, downloadedFileChecksum);
+        Assert.assertEquals("There should be no more tmp file", 0, tmpDirPath.toFile().list().length);
+
     }
 
     @Test

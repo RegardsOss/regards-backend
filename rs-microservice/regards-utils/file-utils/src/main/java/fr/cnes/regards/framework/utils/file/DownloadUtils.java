@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import fr.cnes.regards.framework.s3.utils.S3ServerUtils;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBufferFactory;
@@ -46,10 +47,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -169,6 +167,29 @@ public final class DownloadUtils {
      */
     public static InputStream getInputStream(URL source, List<S3Server> knownS3Server) throws IOException {
         return getInputStreamThroughProxy(source, Proxy.NO_PROXY, Sets.newHashSet(), knownS3Server);
+    }
+
+    /**
+     * Get an InputStream on a source URL with no proxy.
+     * The file will be downloaded locally and the returned InputStream bill be the one of the local file if the file is bigger than the size treshold.
+     *
+     * @param source           the source URL
+     * @param knownS3Server    the list of known s3 servers for s3 download, can be null
+     * @param maxContentLength Maximum content length of file to download to use true source to destination download.
+     *                         If the file size is bigger than this limit, a local temporary file will be created and the resulting InputStream will be from this temporary file.
+     * @param tmpWorkspacePath The workspace where the temporary file will be created and read
+     * @return an InputStream of the source or the local file
+     */
+    public static InputStream getInputStream(URL source,
+                                             List<S3Server> knownS3Servers,
+                                             Long maxContentLength,
+                                             Path tmpWorkspacePath) throws IOException {
+        return getInputStreamThroughProxy(source,
+                                          Proxy.NO_PROXY,
+                                          Sets.newHashSet(),
+                                          knownS3Servers,
+                                          maxContentLength,
+                                          tmpWorkspacePath);
     }
 
     /**
@@ -309,26 +330,78 @@ public final class DownloadUtils {
                                                          Proxy proxy,
                                                          Collection<String> nonProxyHosts,
                                                          List<S3Server> knownS3Servers) throws IOException {
-        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, null, knownS3Servers);
+        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, null, knownS3Servers, null, null);
     }
 
-    /**
-     * @param pConnectTimeout Sets a specified timeout value, in milliseconds, to be used when opening a communications link to the resource referenced by this URLConnection
-     */
+    public static InputStream getInputStreamThroughProxy(URL source,
+                                                         Proxy proxy,
+                                                         Collection<String> nonProxyHosts,
+                                                         List<S3Server> knownS3Servers,
+                                                         Long maxContentLength,
+                                                         Path tmpWorkspacePath) throws IOException {
+        return getInputStreamThroughProxy(source,
+                                          proxy,
+                                          nonProxyHosts,
+                                          null,
+                                          knownS3Servers,
+                                          maxContentLength,
+                                          tmpWorkspacePath);
+    }
+
     public static InputStream getInputStreamThroughProxy(URL source,
                                                          Proxy proxy,
                                                          Collection<String> nonProxyHosts,
                                                          Integer pConnectTimeout,
                                                          List<S3Server> knownS3Servers) throws IOException {
+        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, pConnectTimeout, knownS3Servers, null, null);
+
+    }
+
+    /**
+     * @param pConnectTimeout  Sets a specified timeout value, in milliseconds, to be used when opening a communications link to the resource referenced by this URLConnection
+     * @param maxContentLength Maximum content length of file to decide if the file can be downloaded directly or must be saved first to a local temporary file.
+     *                         If the file size is lower than this limit, download will use the original source while downloading.
+     *                         If the file size is bigger than this limit, a local temporary file will be created and the resulting InputStream will be from this temporary file.
+     * @param tmpWorkspacePath The workspace where the temporary file will be created and read
+     */
+    public static InputStream getInputStreamThroughProxy(URL source,
+                                                         Proxy proxy,
+                                                         Collection<String> nonProxyHosts,
+                                                         Integer pConnectTimeout,
+                                                         List<S3Server> knownS3Servers,
+                                                         Long maxContentLength,
+                                                         Path tmpWorkspacePath) throws IOException {
         Optional<S3Server> s3Server = S3ServerUtils.isUrlFromS3Server(source, knownS3Servers);
         if (s3Server.isPresent()) {
             S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(source, s3Server.get());
-            StorageCommandID cmdId = new StorageCommandID(keyAndStorage.key(), UUID.randomUUID());
-            return getInputStreamFromS3Source(keyAndStorage.key(), keyAndStorage.storageConfig(), cmdId);
+            Long contentLength = getContentLengthS3(keyAndStorage.key(), keyAndStorage.storageConfig());
+            UUID commandId = UUID.randomUUID();
+            StorageCommandID cmdId = new StorageCommandID(keyAndStorage.key(), commandId);
+            InputStream s3InputStream = getInputStreamFromS3Source(keyAndStorage.key(),
+                                                                   keyAndStorage.storageConfig(),
+                                                                   cmdId);
+            if (maxContentLength != null && maxContentLength < contentLength) {
+                return getInputStreamUsingTmpFile(tmpWorkspacePath, commandId, s3InputStream);
+            } else {
+                return s3InputStream;
+            }
         } else {
-            return getInputStreamThroughProxyFromRegularSource(source, proxy, nonProxyHosts, pConnectTimeout);
+            return getInputStreamThroughProxyFromRegularSource(source,
+                                                               proxy,
+                                                               nonProxyHosts,
+                                                               pConnectTimeout,
+                                                               maxContentLength,
+                                                               tmpWorkspacePath);
         }
 
+    }
+
+    private static AutoDeletingInputStream getInputStreamUsingTmpFile(Path tmpWorkspacePath,
+                                                                      UUID commandId,
+                                                                      InputStream inputStream) throws IOException {
+        Path tmpPath = tmpWorkspacePath.resolve(commandId.toString());
+        FileUtils.copyInputStreamToFile(inputStream, tmpPath.toFile());
+        return new AutoDeletingInputStream(tmpPath.toFile());
     }
 
     /**
@@ -501,19 +574,26 @@ public final class DownloadUtils {
     private static InputStream getInputStreamThroughProxyFromRegularSource(URL source,
                                                                            Proxy proxy,
                                                                            Collection<String> nonProxyHosts,
-                                                                           Integer pConnectTimeout) throws IOException {
+                                                                           Integer pConnectTimeout,
+                                                                           Long maxContentLength,
+                                                                           Path tmpWorkspacePath) throws IOException {
         URLConnection connection = getConnectionThroughProxy(source, proxy, nonProxyHosts, pConnectTimeout);
         connection.connect();
 
         // Handle specific case of HTTP URLs.
-        if (connection instanceof HttpURLConnection) {
-            HttpURLConnection conn = (HttpURLConnection) connection;
+        if (connection instanceof HttpURLConnection conn) {
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 conn.disconnect();
                 throw new FileNotFoundException(String.format(
                     "Error during http/https access for URL %s, got response code : %d",
                     source,
                     conn.getResponseCode()));
+            }
+            if (maxContentLength != null
+                && getContentLengthThroughProxy(source, proxy, nonProxyHosts, pConnectTimeout, new ArrayList<>())
+                   > maxContentLength) {
+                InputStream httpInputStream = connection.getInputStream();
+                return getInputStreamUsingTmpFile(tmpWorkspacePath, UUID.randomUUID(), httpInputStream);
             }
         }
 

@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInf
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -167,6 +169,8 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
 
     @Override
     public Path getMicroserviceWorkspace() throws IOException {
+        Assert.isTrue(!Strings.isEmpty(runtimeTenantResolver.getTenant()),
+                      "The tenant must be defined in the active thread in order to use the microservice workspace");
         Path path = Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant(), microserviceWorkspaceName);
         if (Files.notExists(path)) {
             Files.createDirectories(path);

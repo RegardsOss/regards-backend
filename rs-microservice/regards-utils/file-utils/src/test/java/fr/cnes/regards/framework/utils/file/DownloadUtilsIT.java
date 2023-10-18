@@ -39,16 +39,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.MimeType;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.xml.bind.DatatypeConverter;
+import java.io.*;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -278,6 +281,82 @@ public class DownloadUtilsIT {
         } catch (S3ClientException e) {
         }
 
+    }
+
+    @Test
+    public void testS3DownloadInputStreamUsingTmpFile() throws IOException, NoSuchAlgorithmException {
+        //Given
+        String fileName = "bigFile.txt";
+        Long sizeInKb = 10 * 1000L;
+        String checksum = createTestRandomFileOnServer(fileName, sizeInKb);
+
+        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/" + fileName);
+
+        Path tmpDirPath = temporaryFolder.newFolder("tmpDownload").toPath();
+        Path downloadedFileDir = temporaryFolder.newFolder("targetDownload").toPath();
+
+        // When
+        InputStream downloadedFileInputStream = DownloadUtils.getInputStreamThroughProxy(url,
+                                                                                         null,
+                                                                                         null,
+                                                                                         Arrays.asList(testServer),
+                                                                                         1 * 1000 * 1000L,
+                                                                                         tmpDirPath);
+
+        // Then
+        Assert.assertEquals("There should be one and only one tmp file", 1, tmpDirPath.toFile().list().length);
+        File tmpFile = tmpDirPath.toFile().listFiles()[0];
+        byte[] data = Files.readAllBytes(tmpFile.toPath());
+        byte[] hash = MessageDigest.getInstance("MD5").digest(data);
+        String tmpFileChecksum = new BigInteger(1, hash).toString(16).toUpperCase();
+        Assert.assertEquals("The tmp file should have the sent file checksum", checksum, tmpFileChecksum);
+
+        // When
+        FileUtils.copyInputStreamToFile(downloadedFileInputStream, downloadedFileDir.resolve(fileName).toFile());
+
+        // Then
+        Assert.assertEquals("There should be one and only one downloaded file",
+                            1,
+                            downloadedFileDir.toFile().list().length);
+        File downloadedFile = downloadedFileDir.toFile().listFiles()[0];
+        data = Files.readAllBytes(downloadedFile.toPath());
+        hash = MessageDigest.getInstance("MD5").digest(data);
+        String downloadedFileChecksum = new BigInteger(1, hash).toString(16).toUpperCase();
+
+        Assert.assertEquals("The downloaded file should have the sent file checksum", checksum, downloadedFileChecksum);
+        Assert.assertEquals("There should be no more tmp file", 0, tmpDirPath.toFile().list().length);
+    }
+
+    private String createTestRandomFileOnServer(String fileName, Long sizeInKb)
+        throws IOException, NoSuchAlgorithmException {
+        File file = temporaryFolder.newFile(fileName);
+
+        MessageDigest digest = MessageDigest.getInstance("MD5");
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            for (int i = 0; i < sizeInKb; i++) {
+                byte[] bytes = new byte[1024];
+                new SecureRandom().nextBytes(bytes);
+                out.write(bytes);
+                digest.update(bytes);
+            }
+        }
+
+        String checksum = DatatypeConverter.printHexBinary(digest.digest());
+
+        FileStorageRequest fileStorageRequest = new FileStorageRequest();
+        fileStorageRequest.setOriginUrl("file:" + file.getAbsolutePath());
+        fileStorageRequest.setStorageSubDirectory("");
+        FileReferenceMetaInfo fileReferenceMetaInfo = new FileReferenceMetaInfo();
+        fileReferenceMetaInfo.setFileName(fileName);
+        fileReferenceMetaInfo.setAlgorithm("MD5");
+        fileReferenceMetaInfo.setMimeType(MimeType.valueOf("text/plain"));
+        fileReferenceMetaInfo.setChecksum(checksum);
+        fileStorageRequest.setMetaInfo(fileReferenceMetaInfo);
+
+        S3FileTestUtils.store(new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest)),
+                              testServer,
+                              FileIdentificationEnum.FILENAME);
+        return checksum;
     }
 
     private void createTestFileOnServer() {

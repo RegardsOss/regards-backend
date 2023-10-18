@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.s3.domain.multipart.ResponseAndStream;
 import fr.cnes.regards.framework.s3.domain.multipart.UploadedPart;
 import fr.cnes.regards.framework.s3.exception.ChecksumDoesntMatchException;
 import fr.cnes.regards.framework.s3.exception.MultipartException;
+import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import fr.cnes.regards.framework.s3.utils.BytesConverterUtils;
 import io.vavr.Tuple;
 import io.vavr.collection.List;
@@ -166,14 +167,14 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         StorageConfig config = checkCmd.getConfig();
         String archivePath = checkCmd.getEntryKey();
         String bucket = config.getBucket();
-        return getClient(config).eTag(bucket, archivePath);
+        return getClient(config).eTag(bucket, archivePath).onErrorMap(S3ClientException::new);
     }
 
     public Mono<Optional<Long>> contentLength(Check checkCmd) {
         StorageConfig config = checkCmd.getConfig();
         String archivePath = checkCmd.getEntryKey();
         String bucket = config.getBucket();
-        return getClient(config).contentLength(bucket, archivePath);
+        return getClient(config).contentLength(bucket, archivePath).onErrorMap(S3ClientException::new);
     }
 
     private Mono<ReadResult> readingCallableMono(Read readCmd) {
