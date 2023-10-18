@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.delivery.amqp.output.DeliveryResponseDtoEvent;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryAndJob;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
-import fr.cnes.regards.modules.delivery.service.order.clean.job.CleanOrderJob;
+import fr.cnes.regards.modules.delivery.service.order.clean.job.CleanDeliveryOrderJob;
 import fr.cnes.regards.modules.delivery.service.order.zip.job.OrderDeliveryZipJob;
 import fr.cnes.regards.modules.delivery.service.submission.DeliveryAndJobService;
 import fr.cnes.regards.modules.delivery.service.submission.DeliveryRequestService;
@@ -93,22 +93,20 @@ public class EndingDeliveryService {
     public void handleErrorRequests(List<DeliveryRequest> requestsInError) {
         int nbRequestsInError = requestsInError.size();
         List<Long> requestIds = new ArrayList<>(nbRequestsInError);
-        List<String> correlationIds = new ArrayList<>(nbRequestsInError);
         List<DeliveryResponseDtoEvent> deliveryResponseEvents = new ArrayList<>(nbRequestsInError);
 
         for (DeliveryRequest request : requestsInError) {
             requestIds.add(request.getId());
-            correlationIds.add(request.getCorrelationId());
             deliveryResponseEvents.add(buildDeliveryErrorResponse(request));
         }
 
         // schedule a clean job to handle properly ending of requests in error
         jobInfoService.createAsQueued(new JobInfo(false,
                                                   DeliveryJobPriority.CLEAN_ORDER_JOB_PRIORITY,
-                                                  Set.of(new JobParameter(CleanOrderJob.CORRELATION_IDS,
-                                                                          correlationIds)),
+                                                  Set.of(new JobParameter(CleanDeliveryOrderJob.DELIVERY_REQUESTS_TO_CLEAN,
+                                                                          requestsInError)),
                                                   null,
-                                                  CleanOrderJob.class.getName()));
+                                                  CleanDeliveryOrderJob.class.getName()));
         // publish response events
         publisher.publish(deliveryResponseEvents);
         // delete error requests

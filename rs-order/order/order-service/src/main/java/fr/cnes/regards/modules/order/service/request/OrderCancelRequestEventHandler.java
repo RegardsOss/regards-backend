@@ -27,8 +27,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.order.amqp.input.OrderCancelRequestDtoEvent;
-import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.dto.OrderStatusDto;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import org.springframework.beans.factory.annotation.Value;
@@ -100,17 +100,17 @@ public class OrderCancelRequestEventHandler
         long start = System.currentTimeMillis();
         LOGGER.debug("Handling {} OrderCancelRequestDtoEvents", events.size());
 
-        List<String> validCorrelationIds = validateEvents(events);
+        List<Long> validOrderIds = validateEvents(events);
 
-        if (!validCorrelationIds.isEmpty()) {
-            // Find all orders in db with list of correlation identifiers and
+        if (!validOrderIds.isEmpty()) {
+            // Find all orders in db with list of order identifiers and
             // with all status of order, except deleted status.
-            List<Order> orders = orderService.findByCorrelationIdsAndStatus(validCorrelationIds,
-                                                                            EnumSet.complementOf(EnumSet.of(OrderStatus.DELETED)));
+            List<OrderStatusDto> orders = orderService.findByIdsAndStatus(validOrderIds,
+                                                                          EnumSet.complementOf(EnumSet.of(OrderStatus.DELETED)));
 
             JobInfo jobInfo = new JobInfo(false,
                                           OrderJobPriority.CANCEL_ORDER_JOB_PRIORITY,
-                                          Set.of(new JobParameter(CancelOrderJob.ORDER, orders)),
+                                          Set.of(new JobParameter(CancelOrderJob.ORDERS_TO_CANCEL, orders)),
                                           null,
                                           CancelOrderJob.class.getName());
             jobInfo = jobInfoService.createAsQueued(jobInfo);
@@ -122,8 +122,13 @@ public class OrderCancelRequestEventHandler
         }
     }
 
-    private List<String> validateEvents(List<OrderCancelRequestDtoEvent> events) {
-        List<String> validCorrelationIds = new ArrayList<>();
+    /**
+     * Valid the list of order cancel request events.
+     *
+     * @return the list of valid order identifiers
+     */
+    private List<Long> validateEvents(List<OrderCancelRequestDtoEvent> events) {
+        List<Long> validOrderIds = new ArrayList<>();
         events.forEach(event -> {
             Errors errors = new MapBindingResult(new HashMap<>(), OrderCancelRequestDtoEvent.class.getName());
             // Validate request
@@ -131,14 +136,13 @@ public class OrderCancelRequestEventHandler
 
             if (errors.hasErrors()) {
                 String errorsFormatted = ErrorTranslator.getErrorsAsString(errors);
-                LOGGER.error("Correlation identifier [] not valid. Cause : ",
-                             event.getCorrelationId(),
-                             errorsFormatted);
+                LOGGER.error("Errors were detected while validating OrderCancelRequestDtoEvent with correlation id "
+                             + "[{}]. Cause:  {}", event.getCorrelationId(), errorsFormatted);
             } else {
-                validCorrelationIds.add(event.getCorrelationId());
+                validOrderIds.add(event.getOrderId());
             }
         });
-        return validCorrelationIds;
+        return validOrderIds;
     }
 
     @Override

@@ -33,8 +33,9 @@ import org.springframework.util.Assert;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class OrderCancelRequestDtoEvent extends OrderCancelRequestDto implements ISubscribable {
 
-    public OrderCancelRequestDtoEvent(String correlationId) {
-        super(correlationId);
+    public OrderCancelRequestDtoEvent(Long orderId, String correlationId) {
+        super(orderId, correlationId);
+        Assert.notNull(orderId, "orderId is mandatory for OrderCancelRequestDtoEvent");
         Assert.notNull(correlationId, "correlationId is mandatory for OrderCancelRequestDtoEvent");
     }
 }

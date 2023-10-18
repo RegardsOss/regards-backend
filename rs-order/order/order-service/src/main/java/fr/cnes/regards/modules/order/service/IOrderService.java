@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.dto.OrderStatusDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +32,6 @@ import org.springframework.lang.Nullable;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -68,20 +68,20 @@ public interface IOrderService {
      * Load an order.
      * Order is simple loaded
      *
-     * @param id order id
+     * @param orderId order id
      * @return {@link Order}
      */
-    Order loadSimple(Long id);
+    Order loadSimple(Long orderId);
 
     /**
      * Load an order.
      * Order is completely loaded
      * <b>BEWARE : this method use systematically a new transaction</b>
      *
-     * @param id order id
+     * @param orderId order id
      * @return {@link Order}
      */
-    Order loadComplete(Long id);
+    Order loadComplete(Long orderId);
 
     /**
      * Find all orders sorted by descending date.
@@ -135,13 +135,13 @@ public interface IOrderService {
     /**
      * Pause an order (status is immediately updated but it's an async task)
      */
-    void pause(Long id) throws ModuleException;
+    void pause(Long orderId, boolean checkConnectedUser) throws ModuleException;
 
     /**
      * Resume a paused order.
      * All associated jobs must be compatible with a PAUSED status (not running nor planned to be run)
      */
-    void resume(Long id) throws ModuleException;
+    void resume(Long orderId) throws ModuleException;
 
     /**
      * Delete an order (set only the {@link OrderStatus.DELETED} status). Order must be PAUSED and effectiveley paused (ie all associated
@@ -149,7 +149,7 @@ public interface IOrderService {
      * PAUSED status (not running nor planned to be run))
      * Only associated data files are removed from database (stats are still available)
      */
-    void delete(Long id) throws ModuleException;
+    void delete(Long orderId, boolean checkConnectedUser) throws ModuleException;
 
     /**
      * Restart an order, using the same basket to create a new one with the exact same parameters
@@ -161,19 +161,19 @@ public interface IOrderService {
     /**
      * Retry failed files in an order.
      */
-    void retryErrors(long orderId) throws ModuleException;
+    void retryErrors(Long orderId) throws ModuleException;
 
     /**
      * Remove completely an order. Current order must not be RUNNING,
      */
-    void remove(Long id) throws ModuleException;
+    void remove(Long orderId) throws ModuleException;
 
     /**
      * Write all orders in CSV format
      */
     void writeAllOrdersInCsv(BufferedWriter writer, SearchRequestParameters filters) throws IOException;
 
-    boolean isActionAvailable(long orderId, OrderService.Action action);
+    boolean isActionAvailable(Long orderId, OrderService.Action action);
 
     /**
      * Check if current user has access to the order using order's owner.
@@ -186,7 +186,7 @@ public interface IOrderService {
      */
     boolean hasCurrentUserAccessTo(String owner);
 
-    List<Order> findByCorrelationIdsAndStatus(Collection<String> correlationIds, Collection<OrderStatus> orderStatuses);
+    List<OrderStatusDto> findByIdsAndStatus(Collection<Long> orderIds, Collection<OrderStatus> orderStatuses);
 
     void updateErrorWithMessageIfNecessary(Long orderId, @Nullable String msg);
 }

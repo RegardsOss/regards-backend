@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.order.dto.OrderErrorCode;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import org.springframework.lang.Nullable;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
@@ -38,7 +39,7 @@ public class OrderResponseDto {
     @Nullable
     private Long orderId;
 
-    @NotNull(message = "correlation identifier should be present")
+    @NotBlank(message = "correlation identifier is required to track this order.")
     private String correlationId;
 
     @Nullable

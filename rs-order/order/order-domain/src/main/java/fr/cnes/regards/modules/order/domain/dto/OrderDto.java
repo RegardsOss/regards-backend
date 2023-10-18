@@ -186,21 +186,20 @@ public class OrderDto {
      * Create OrderDto from Order
      */
     public static OrderDto fromOrder(Order order) {
-        OrderDto dto = new OrderDto(order.getId(),
-                                    order.getOwner(),
-                                    order.getLabel(),
-                                    order.getCreationDate(),
-                                    order.getExpirationDate(),
-                                    order.getPercentCompleted(),
-                                    order.getFilesInErrorCount(),
-                                    order.getAvailableFilesCount(),
-                                    order.getStatus(),
-                                    order.getStatusDate(),
-                                    order.isWaitingForUser(),
-                                    order.getDatasetTasks()
-                                         .stream()
-                                         .map(DatasetTaskDto::fromDatasetTask)
-                                         .collect(Collectors.toList()));
-        return dto;
+        return new OrderDto(order.getId(),
+                            order.getOwner(),
+                            order.getLabel(),
+                            order.getCreationDate(),
+                            order.getExpirationDate(),
+                            order.getPercentCompleted(),
+                            order.getFilesInErrorCount(),
+                            order.getAvailableFilesCount(),
+                            order.getStatus(),
+                            order.getStatusDate(),
+                            order.isWaitingForUser(),
+                            order.getDatasetTasks()
+                                 .stream()
+                                 .map(DatasetTaskDto::fromDatasetTask)
+                                 .collect(Collectors.toList()));
     }
 }

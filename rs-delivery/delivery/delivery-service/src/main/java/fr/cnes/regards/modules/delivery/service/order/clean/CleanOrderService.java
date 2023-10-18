@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.delivery.service.order.clean;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
-import fr.cnes.regards.modules.delivery.service.order.zip.OrderDeliveryZipService;
+import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
 import fr.cnes.regards.modules.order.amqp.input.OrderCancelRequestDtoEvent;
 import org.slf4j.Logger;
@@ -57,11 +57,12 @@ public class CleanOrderService {
      *     <li>Publish cancel event to interrupt on-going orders.</li>
      * </ul>
      */
-    public void cleanDeliveryOrder(List<String> correlationIds) {
-        List<OrderCancelRequestDtoEvent> cancelEvents = new ArrayList<>(correlationIds.size());
-        correlationIds.forEach(correlationId -> {
-            deleteDownloadWorkspaceIfNecessary(correlationId);
-            cancelEvents.add(new OrderCancelRequestDtoEvent(correlationId));
+    public void cleanDeliveryOrder(List<DeliveryRequest> deliveryRequests) {
+        List<OrderCancelRequestDtoEvent> cancelEvents = new ArrayList<>(deliveryRequests.size());
+        deliveryRequests.forEach(deliveryRequest -> {
+            deleteDownloadWorkspaceIfNecessary(deliveryRequest.getCorrelationId());
+            cancelEvents.add(new OrderCancelRequestDtoEvent(deliveryRequest.getOrderId(),
+                                                            deliveryRequest.getCorrelationId()));
         });
         // send events to cancel corresponding orders
         publisher.publish(cancelEvents);

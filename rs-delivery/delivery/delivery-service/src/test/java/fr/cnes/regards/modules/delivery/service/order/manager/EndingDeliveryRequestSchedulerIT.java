@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryStatus;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
-import fr.cnes.regards.modules.delivery.service.order.clean.job.CleanOrderJob;
+import fr.cnes.regards.modules.delivery.service.order.clean.job.CleanDeliveryOrderJob;
 import fr.cnes.regards.modules.delivery.service.order.zip.job.OrderDeliveryZipJob;
 import fr.cnes.regards.modules.delivery.service.schedulers.EndingDeliveryRequestScheduler;
 import org.assertj.core.api.Assertions;
@@ -126,11 +126,11 @@ public class EndingDeliveryRequestSchedulerIT extends AbstractMultitenantService
         List<JobInfo> jobsInfo = jobInfoService.retrieveJobs();
         Assertions.assertThat(jobsInfo).hasSize(1);
         JobInfo queudJobInfo = jobsInfo.get(0);
-        Assertions.assertThat(queudJobInfo.getClassName()).isEqualTo(CleanOrderJob.class.getName());
+        Assertions.assertThat(queudJobInfo.getClassName()).isEqualTo(CleanDeliveryOrderJob.class.getName());
         Assertions.assertThat(queudJobInfo.getStatus().getStatus()).isEqualTo(JobStatus.QUEUED);
 
         Assertions.assertThat(jobInfoService.retrieveJob(queudJobInfo.getId()).getParameters())
-                  .contains(new JobParameter(CleanOrderJob.CORRELATION_IDS,
+                  .contains(new JobParameter(CleanDeliveryOrderJob.DELIVERY_REQUESTS_TO_CLEAN,
                                              errorRequests.stream().map(DeliveryRequest::getCorrelationId).toList()));
 
         // delivery responses published

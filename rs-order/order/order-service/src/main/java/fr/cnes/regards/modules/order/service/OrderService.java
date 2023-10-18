@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.dao.RequestSpecificationsBuilder;
 import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.dto.OrderStatusDto;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import lombok.AllArgsConstructor;
@@ -162,8 +163,8 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public Order loadSimple(Long id) {
-        return orderRepository.findSimpleById(id);
+    public Order loadSimple(Long orderId) {
+        return orderRepository.findSimpleById(orderId);
     }
 
     @Override
@@ -278,10 +279,9 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void pause(Long id) throws ModuleException {
-
-        checkAction(id, Action.PAUSE);
-        Order order = orderRepository.findCompleteById(id);
+    public void pause(Long orderId, boolean checkConnectedUser) throws ModuleException {
+        checkOrder(orderId, Action.PAUSE, checkConnectedUser);
+        Order order = orderRepository.findCompleteById(orderId);
 
         try {
             // Set log correlation id
@@ -307,10 +307,9 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void resume(Long id) throws ModuleException {
-
-        checkAction(id, Action.RESUME);
-        Order order = orderRepository.findCompleteById(id);
+    public void resume(Long orderId) throws ModuleException {
+        checkOrder(orderId, Action.RESUME, true);
+        Order order = orderRepository.findCompleteById(orderId);
 
         try {
             // Set log correlation id
@@ -338,10 +337,9 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void delete(Long id) throws ModuleException {
-
-        checkAction(id, Action.DELETE);
-        Order order = orderRepository.findCompleteById(id);
+    public void delete(Long orderId, boolean checkConnectedUser) throws ModuleException {
+        checkOrder(orderId, Action.DELETE, checkConnectedUser);
+        Order order = orderRepository.findCompleteById(orderId);
 
         try {
             // Set log correlation id
@@ -370,11 +368,10 @@ public class OrderService implements IOrderService {
 
     @Override
     public Order restart(long oldOrderId, String label, String successUrl) throws ModuleException {
-
-        checkAction(oldOrderId, Action.RESTART);
+        checkOrder(oldOrderId, Action.RESTART, true);
         String oldOrderOwner = orderRepository.findSimpleById(oldOrderId).getOwner();
-        Basket oldBasket;
 
+        Basket oldBasket;
         try {
             oldBasket = basketService.find(BASKET_OWNER_PREFIX + oldOrderId);
         } catch (EmptyBasketException e) {
@@ -393,13 +390,11 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void retryErrors(long orderId) throws ModuleException {
-
-        checkAction(orderId, Action.RETRY);
+    public void retryErrors(Long orderId) throws ModuleException {
+        checkOrder(orderId, Action.RETRY, true);
         Order order = orderRepository.findSimpleById(orderId);
 
-        String orderOwner = order.getOwner();
-        String orderOwnerRole = orderHelperService.getRole(orderOwner);
+        String orderOwnerRole = orderHelperService.getRole(order.getOwner());
 
         try {
             // Set log correlation id
@@ -415,17 +410,16 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void remove(Long id) throws ModuleException {
-        checkAction(id, Action.REMOVE);
-        Order order = orderRepository.findCompleteById(id);
+    public void remove(Long orderId) throws ModuleException {
+        checkOrder(orderId, Action.REMOVE, true);
 
         try {
             // Set log correlation id
-            CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
+            CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + orderId);
 
             // Data files have already been deleted so there's only the basket and the order to remove
-            basketService.deleteIfExists(BASKET_OWNER_PREFIX + order.getId());
-            orderRepository.deleteById(order.getId());
+            basketService.deleteIfExists(BASKET_OWNER_PREFIX + orderId);
+            orderRepository.deleteById(orderId);
         } finally {
             CorrelationIdUtils.clearCorrelationId();
         }
@@ -460,7 +454,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public boolean isActionAvailable(long orderId, Action action) {
+    public boolean isActionAvailable(Long orderId, Action action) {
         return StringUtils.isBlank(getErrorMessageOnAction(orderRepository.findSimpleById(orderId), action));
     }
 
@@ -473,76 +467,120 @@ public class OrderService implements IOrderService {
                || owner.equals(user);
     }
 
-    private void checkAction(long orderId, Action action) throws ModuleException {
+    /**
+     * Check for the order:
+     * <ul>
+     *     <li>if the order exists in the database</li>
+     *     <li>the connected user of the order</li>
+     *     <li>if the action is available for the order</li>
+     * </ul>
+     */
+    private void checkOrder(Long orderId, Action action, boolean checkConnectedUser) throws ModuleException {
         Order order = orderRepository.findSimpleById(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId, Order.class);
         }
+        if (checkConnectedUser) {
+            checkConnectedUser(order, action);
+        }
+        checkAction(order, action);
+    }
+
+    /**
+     * Check if the action is available concerning the order.
+     * Check following actions :
+     * <ul>
+     *     <li>PAUSE</li>
+     *     <li>RESUME</li>
+     *     <li>DELETE</li>
+     *     <li>REMOVE</li>
+     *     <li>RESTART</li>
+     *     <li>RETRY</li>
+     *     <li>DOWNLOAD</li>
+     * </ul>
+     */
+    private void checkAction(Order order, Action action) throws ModuleException {
         String message = getErrorMessageOnAction(order, action);
         if (!StringUtils.isBlank(message)) {
             throw action.getException(message);
         }
     }
 
+    private void checkConnectedUser(Order order, Action action) throws ModuleException {
+        if (!orderHelperService.isCurrentUserOwnerOrAdmin(order.getOwner())) {
+            throw action.getException("USER_NOT_ALLOWED_TO_MANAGE_ORDER");
+        }
+    }
+
+    /**
+     * Return a error message if the action is not available for the given action; otherwise the message is null.
+     * Check following actions :
+     * <ul>
+     *     <li>PAUSE</li>
+     *     <li>RESUME</li>
+     *     <li>DELETE</li>
+     *     <li>REMOVE</li>
+     *     <li>RESTART</li>
+     *     <li>RETRY</li>
+     *     <li>DOWNLOAD</li>
+     * </ul>
+     */
     private String getErrorMessageOnAction(Order order, Action action) {
         String message = null;
-        if (!orderHelperService.isCurrentUserOwnerOrAdmin(order.getOwner())) {
-            message = "USER_NOT_ALLOWED_TO_MANAGE_ORDER";
-        } else {
-            switch (action) {
-                case PAUSE -> {
-                    if (!order.getStatus().isOneOfStatuses(OrderStatus.PENDING, OrderStatus.RUNNING)) {
-                        message = "ORDER_MUST_BE_PENDING_OR_RUNNING";
-                    }
+
+        switch (action) {
+            case PAUSE -> {
+                if (!order.getStatus().isOneOfStatuses(OrderStatus.PENDING, OrderStatus.RUNNING)) {
+                    message = "ORDER_MUST_BE_PENDING_OR_RUNNING";
                 }
-                case RESUME -> {
-                    if (!isPaused(order.getId())) {
-                        message = "ORDER_MUST_BE_PAUSED";
-                    }
+            }
+            case RESUME -> {
+                if (!isPaused(order.getId())) {
+                    message = "ORDER_MUST_BE_PAUSED";
                 }
-                case DELETE -> {
-                    if (!order.getStatus()
-                              .isOneOfStatuses(OrderStatus.DONE,
-                                               OrderStatus.DONE_WITH_WARNING,
-                                               OrderStatus.PAUSED,
-                                               OrderStatus.EXPIRED,
-                                               OrderStatus.FAILED)) {
-                        message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_PAUSED_OR_FAILED_OR_EXPIRED";
-                    }
+            }
+            case DELETE -> {
+                if (!order.getStatus()
+                          .isOneOfStatuses(OrderStatus.DONE,
+                                           OrderStatus.DONE_WITH_WARNING,
+                                           OrderStatus.PAUSED,
+                                           OrderStatus.EXPIRED,
+                                           OrderStatus.FAILED)) {
+                    message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_PAUSED_OR_FAILED_OR_EXPIRED";
                 }
-                case REMOVE -> {
-                    if (!orderHelperService.isAdmin()) {
-                        message = "USER_NOT_ALLOWED_TO_MANAGE_ORDER";
-                    } else if (!OrderStatus.DELETED.equals(order.getStatus())) {
-                        message = "ORDER_MUST_BE_DELETED";
-                    }
+            }
+            case REMOVE -> {
+                if (!orderHelperService.isAdmin()) {
+                    message = "USER_NOT_ALLOWED_TO_MANAGE_ORDER";
+                } else if (!OrderStatus.DELETED.equals(order.getStatus())) {
+                    message = "ORDER_MUST_BE_DELETED";
                 }
-                case RESTART -> {
-                    if (!order.getStatus()
-                              .isOneOfStatuses(OrderStatus.DONE, OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED)) {
-                        message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_FAILED";
-                    }
+            }
+            case RESTART -> {
+                if (!order.getStatus()
+                          .isOneOfStatuses(OrderStatus.DONE, OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED)) {
+                    message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_FAILED";
                 }
-                case RETRY -> {
-                    if (!order.getStatus().isOneOfStatuses(OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED)) {
-                        message = "ORDER_MUST_BE_DONE_WITH_WARNING_OR_FAILED";
-                    } else if (hasProcessing(order)) {
-                        message = "ORDER_HAS_PROCESSING";
-                    }
+            }
+            case RETRY -> {
+                if (!order.getStatus().isOneOfStatuses(OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED)) {
+                    message = "ORDER_MUST_BE_DONE_WITH_WARNING_OR_FAILED";
+                } else if (hasProcessing(order)) {
+                    message = "ORDER_HAS_PROCESSING";
                 }
-                case DOWNLOAD -> {
-                    if (OrderStatus.DELETED.equals(order.getStatus()) || order.getAvailableFilesCount() == 0) {
-                        message = "ORDER_MUST_HAVE_AVAILABLE_FILES";
-                    }
+            }
+            case DOWNLOAD -> {
+                if (OrderStatus.DELETED.equals(order.getStatus()) || order.getAvailableFilesCount() == 0) {
+                    message = "ORDER_MUST_HAVE_AVAILABLE_FILES";
                 }
             }
         }
         return message;
     }
 
-    public List<Order> findByCorrelationIdsAndStatus(Collection<String> correlationIds,
-                                                     Collection<OrderStatus> orderStatuses) {
-        return orderRepository.findByCorrelationIdInAndStatusIn(correlationIds, orderStatuses);
+    @MultitenantTransactional(readOnly = true)
+    public List<OrderStatusDto> findByIdsAndStatus(Collection<Long> orderIds, Collection<OrderStatus> orderStatuses) {
+        return orderRepository.findByIdInAndStatusIn(orderIds, orderStatuses);
     }
 
     public void updateErrorWithMessageIfNecessary(Long orderId, @Nullable String msg) {
@@ -554,6 +592,9 @@ public class OrderService implements IOrderService {
         orderRepository.save(order);
     }
 
+    /**
+     * Available actions to work with an order
+     */
     @AllArgsConstructor
     public enum Action {
 

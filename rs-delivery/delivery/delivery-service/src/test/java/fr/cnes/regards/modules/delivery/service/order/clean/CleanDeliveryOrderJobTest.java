@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.delivery.service.order.clean;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
-import fr.cnes.regards.modules.delivery.service.order.clean.job.CleanOrderJob;
+import fr.cnes.regards.modules.delivery.service.order.clean.job.CleanDeliveryOrderJob;
 import fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils;
 import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
 import fr.cnes.regards.modules.order.amqp.input.OrderCancelRequestDtoEvent;
@@ -43,13 +43,13 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Test for {@link CleanOrderJob}.
+ * Test for {@link CleanDeliveryOrderJob}.
  * <p>The purpose of this test is to verify that cleaning tasks are executed properly.</p>
  *
  * @author Iliana Ghazali
  **/
 @RunWith(MockitoJUnitRunner.class)
-public class CleanOrderJobTest {
+public class CleanDeliveryOrderJobTest {
 
     @Spy
     private IPublisher publisher;
@@ -66,9 +66,9 @@ public class CleanOrderJobTest {
     }
 
     @Test
-    public void givenCleanOrderJob_whenExecuted_thenCleanTasksPerformed() throws DeliveryOrderException {
+    public void givenCleanDeliveryOrderJob_whenExecuted_thenCleanTasksPerformed() throws DeliveryOrderException {
         // GIVEN
-        CleanOrderJob cleanOrderJob = initCleanOrderJob();
+        CleanDeliveryOrderJob cleanDeliveryOrderJob = initCleanDeliveryOrderJob();
         // create delivery workspace path
         DeliveryDownloadWorkspaceManager downloadWorkspaceManager = new DeliveryDownloadWorkspaceManager(
             DeliveryStepUtils.DELIVERY_CORRELATION_ID,
@@ -76,7 +76,7 @@ public class CleanOrderJobTest {
         downloadWorkspaceManager.createDeliveryFolder();
 
         // WHEN
-        cleanOrderJob.run();
+        cleanDeliveryOrderJob.run();
 
         // THEN
         Assertions.assertThat(downloadWorkspaceManager.isDeliveryTmpFolderPathExists()).isFalse();
@@ -86,18 +86,18 @@ public class CleanOrderJobTest {
                   .isEqualTo(DeliveryStepUtils.DELIVERY_CORRELATION_ID);
     }
 
-    private CleanOrderJob initCleanOrderJob() {
+    private CleanDeliveryOrderJob initCleanDeliveryOrderJob() {
         // init clean service
         CleanOrderService cleanOrderService = new CleanOrderService(workspaceService, publisher);
 
         // init job
-        CleanOrderJob cleanOrderJob = new CleanOrderJob();
-        ReflectionTestUtils.setField(cleanOrderJob,
-                                     "correlationIds",
-                                     List.of(DeliveryStepUtils.DELIVERY_CORRELATION_ID));
-        ReflectionTestUtils.setField(cleanOrderJob, "cleanOrderJobService", cleanOrderService);
-        ReflectionTestUtils.setField(cleanOrderJob, "jobInfoId", UUID.randomUUID());
+        CleanDeliveryOrderJob cleanDeliveryOrderJob = new CleanDeliveryOrderJob();
+        ReflectionTestUtils.setField(cleanDeliveryOrderJob,
+                                     "deliveryRequests",
+                                     List.of(DeliveryStepUtils.buildDeliveryRequest()));
+        ReflectionTestUtils.setField(cleanDeliveryOrderJob, "cleanOrderService", cleanOrderService);
+        ReflectionTestUtils.setField(cleanDeliveryOrderJob, "jobInfoId", UUID.randomUUID());
 
-        return cleanOrderJob;
+        return cleanDeliveryOrderJob;
     }
 }

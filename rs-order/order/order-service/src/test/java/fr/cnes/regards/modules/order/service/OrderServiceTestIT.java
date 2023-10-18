@@ -159,7 +159,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         waitForStatus(order.getId(), OrderStatus.RUNNING);
 
         Thread.sleep(1_500);
-        orderService.pause(order.getId());
+        orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
 
@@ -201,7 +201,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         Assert.assertFalse(orderService.loadComplete(order.getId()).isWaitingForUser());
 
         Thread.sleep(1_500);
-        orderService.pause(order.getId());
+        orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
 
@@ -243,11 +243,11 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         Assert.assertFalse(orderService.loadComplete(order.getId()).isWaitingForUser());
 
         Thread.sleep(1_500);
-        orderService.pause(order.getId());
+        orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
 
-        orderService.delete(order.getId());
+        orderService.delete(order.getId(), true);
         Assert.assertEquals(OrderStatus.DELETED, orderService.loadComplete(order.getId()).getStatus());
         LOGGER.info("Order has been deleted !!");
 
@@ -270,7 +270,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         waitForStatus(order.getId(), OrderStatus.RUNNING);
         Thread.sleep(1_500);
 
-        orderService.pause(order.getId());
+        orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
     }
 
@@ -287,7 +287,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         waitForStatus(order.getId(), OrderStatus.RUNNING);
         Thread.sleep(1_500);
 
-        orderService.pause(order.getId());
+        orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
 
         storageClientMock.setWaitMode(false);
@@ -309,7 +309,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         waitForStatus(order.getId(), OrderStatus.RUNNING);
         Thread.sleep(1_500);
 
-        orderService.pause(order.getId());
+        orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
 
         storageClientMock.setWaitMode(false);
@@ -346,7 +346,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
 
         Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(true));
         Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
-        orderService.delete(order.getId());
+        orderService.delete(order.getId(), true);
         orderService.remove(order.getId());
         Assert.assertNull(orderService.loadComplete(order.getId()));
         LOGGER.info("Order has been removed !!");
@@ -392,7 +392,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
                                 () -> orderService.restart(order.getId(), "restartWhenNotDone", URL));
 
         Thread.sleep(1_500);
-        orderService.pause(order.getId());
+        orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
 
         Assertions.assertThrows(CannotRestartOrderException.class,
@@ -632,7 +632,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         assertNotEquals(oldFilesTask, newFilesTask);
 
         // Pause and resume order to force job to actually complete
-        orderService.pause(orderId);
+        orderService.pause(orderId, true);
         waitForPausedStatus(orderId);
         storageClientMock.setWaitMode(false);
         orderService.resume(orderId);

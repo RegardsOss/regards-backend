@@ -273,7 +273,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Ask for an order to be paused", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.PUT, path = PAUSE_ORDER_PATH)
     public ResponseEntity<Void> pauseOrder(@PathVariable("orderId") Long orderId) throws ModuleException {
-        orderService.pause(orderId);
+        orderService.pause(orderId, true);
         return ResponseEntity.ok().build();
     }
 
@@ -296,7 +296,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Delete an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.DELETE, path = DELETE_ORDER_PATH)
     public ResponseEntity<Void> deleteOrder(@PathVariable("orderId") Long orderId) throws ModuleException {
-        orderService.delete(orderId);
+        orderService.delete(orderId, true);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

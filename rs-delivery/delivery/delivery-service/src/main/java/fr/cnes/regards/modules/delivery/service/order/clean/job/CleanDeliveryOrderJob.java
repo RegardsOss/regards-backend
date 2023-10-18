@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.delivery.service.order.clean.job;
 
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.service.order.clean.CleanOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,29 +35,35 @@ import java.util.Map;
  *
  * @author Iliana Ghazali
  **/
-public class CleanOrderJob extends AbstractJob<Void> {
+public class CleanDeliveryOrderJob extends AbstractJob<Void> {
 
-    public static final String CORRELATION_IDS = "correlationIds";
+    public static final String DELIVERY_REQUESTS_TO_CLEAN = "DELIVERY_REQUESTS_TO_CLEAN";
 
-    private List<String> correlationIds;
+    private List<DeliveryRequest> deliveryRequests;
 
     @Autowired
-    private CleanOrderService cleanOrderJobService;
+    private CleanOrderService cleanOrderService;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
-        this.correlationIds = getValue(parameters, CORRELATION_IDS);
+        this.deliveryRequests = getValue(parameters,
+                                         DELIVERY_REQUESTS_TO_CLEAN,
+                                         new TypeToken<List<DeliveryRequest>>() {
+
+                                         }.getType());
     }
 
     @Override
     public void run() {
-        logger.info("[{}] CleanOrderService starts...", jobInfoId);
+        logger.debug("[{}] Cancel delivery order job starts. Handle {} orders in its delivery.",
+                     jobInfoId,
+                     deliveryRequests.size());
         long start = System.currentTimeMillis();
-        cleanOrderJobService.cleanDeliveryOrder(correlationIds);
-        logger.info("[{}] CleanOrderService has ended successfully in {} ms.",
-                    jobInfoId,
-                    System.currentTimeMillis() - start);
+
+        cleanOrderService.cleanDeliveryOrder(deliveryRequests);
+
+        logger.info("[{}] Clean delivery order job has ended in {} ms.", jobInfoId, System.currentTimeMillis() - start);
     }
 
 }

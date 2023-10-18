@@ -53,7 +53,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -112,8 +111,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID)
     public ResponseEntity<InputStreamResource> testDownloadFile(@PathVariable("dataFileId") Long dataFileId,
                                                                 @RequestParam(name = IOrderService.ORDER_TOKEN)
-                                                                String token)
-        throws NoSuchElementException {
+                                                                String token) throws NoSuchElementException {
         return manageFile(Boolean.TRUE, dataFileId, Optional.ofNullable(token));
     }
 
@@ -123,8 +121,8 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID,
                     produces = MediaType.ALL_VALUE)
     public ResponseEntity<InputStreamResource> publicDownloadFile(@PathVariable("dataFileId") Long dataFileId,
-                                                                  @RequestParam(name = IOrderService.ORDER_TOKEN) String token)
-        throws NoSuchElementException {
+                                                                  @RequestParam(name = IOrderService.ORDER_TOKEN)
+                                                                  String token) throws NoSuchElementException {
         return manageFile(Boolean.FALSE, dataFileId, Optional.of(token));
     }
 
@@ -134,7 +132,8 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
      */
     private ResponseEntity<InputStreamResource> manageFile(Boolean headRequest,
                                                            Long dataFileId,
-                                                           Optional<String> validityToken) throws NoSuchElementException {
+                                                           Optional<String> validityToken)
+        throws NoSuchElementException {
         OrderDataFile dataFile;
         String user = null;
         if (validityToken.isPresent()) {
@@ -187,8 +186,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                                 this.getClass(),
                                 "downloadFile",
                                 LinkRels.SELF,
-                                MethodParamFactory.build(Long.class, dataFile.getId()),
-                                MethodParamFactory.build(HttpServletResponse.class));
+                                MethodParamFactory.build(Long.class, dataFile.getId()));
         return resource;
     }
 

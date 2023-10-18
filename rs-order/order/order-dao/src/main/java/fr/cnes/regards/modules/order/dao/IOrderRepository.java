@@ -19,6 +19,7 @@ package fr.cnes.regards.modules.order.dao;
 
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.dto.OrderStatusDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -56,8 +57,7 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     Order findSimpleById(Long id);
 
-    List<Order> findByCorrelationIdInAndStatusIn(Collection<String> correlationIds,
-                                                 Collection<OrderStatus> orderStatuses);
+    List<OrderStatusDto> findByIdInAndStatusIn(Collection<Long> orderIds, Collection<OrderStatus> orderStatuses);
 
     /**
      * Find owner by orderId

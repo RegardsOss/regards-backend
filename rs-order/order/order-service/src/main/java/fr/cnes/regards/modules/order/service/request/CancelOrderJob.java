@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.service.request;
 
 import com.google.gson.reflect.TypeToken;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -26,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.dto.OrderStatusDto;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,9 +43,12 @@ import java.util.Map;
  */
 public class CancelOrderJob extends AbstractJob<Void> {
 
-    public static final String ORDER = "ORDER";
+    public static final String ORDERS_TO_CANCEL = "ORDERS_TO_CANCEL";
 
     private static final int NB_LOOP = 20;
+
+    @Autowired
+    private IAuthenticationResolver authentificationResolver;
 
     @Autowired
     private IOrderService orderService;
@@ -51,19 +56,19 @@ public class CancelOrderJob extends AbstractJob<Void> {
     @Value("${regards.order.cancel.loop.duration:5000}")
     private long loopDuration;
 
-    private List<Order> orders;
+    private List<OrderStatusDto> orders;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
-        this.orders = getValue(parameters, ORDER, new TypeToken<List<Order>>() {
+        this.orders = getValue(parameters, ORDERS_TO_CANCEL, new TypeToken<List<OrderStatusDto>>() {
 
         }.getType());
     }
 
     @Override
     public void run() {
-        logger.debug("[{}] Cancel order job starts. Handle {} Orders.", jobInfoId, orders.size());
+        logger.debug("[{}] Cancel order job starts. Handle {} orders.", jobInfoId, orders.size());
         long start = System.currentTimeMillis();
 
         List<Long> ordersInWaitingPause = new ArrayList<>();
@@ -74,7 +79,7 @@ public class CancelOrderJob extends AbstractJob<Void> {
             orders.forEach(order -> {
                 try {
                     if (order.getStatus().isOneOfStatuses(OrderStatus.PENDING, OrderStatus.RUNNING)) {
-                        orderService.pause(order.getId());
+                        orderService.pause(order.getId(), false);
                         ordersInWaitingPause.add(order.getId());
                     } else {
                         ordersToDeleted.add(order.getId());
@@ -89,7 +94,8 @@ public class CancelOrderJob extends AbstractJob<Void> {
             //2. delete order with right state
             ordersToDeleted.forEach(orderId -> {
                 try {
-                    orderService.delete(orderId);
+                    orderService.delete(orderId, false);
+                    this.advanceCompletion();
                 } catch (ModuleException e) {
                     manageOrderInError(orderId, e.getMessage());
                 }
@@ -107,7 +113,7 @@ public class CancelOrderJob extends AbstractJob<Void> {
                                                   + orderId
                                                   + "]");
                     }
-                    orderService.delete(orderId);
+                    orderService.delete(orderId, false);
                     this.advanceCompletion();
                 } catch (ModuleException | InterruptedException e) {
                     manageOrderInError(orderId, e.getMessage());

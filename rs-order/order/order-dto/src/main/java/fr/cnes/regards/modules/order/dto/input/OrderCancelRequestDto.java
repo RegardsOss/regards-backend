@@ -29,11 +29,19 @@ import javax.validation.constraints.Size;
 public class OrderCancelRequestDto {
 
     @Size(message = "provided correlationId must not exceed 255 characters.", max = 255)
-    @NotNull(message = "correlationId is required to cancel this request.")
+    @NotNull(message = "correlationId is required to monitor this request.")
     private final String correlationId;
 
-    public OrderCancelRequestDto(String correlationId) {
+    @NotNull(message = "orderId is required to cancel an order.")
+    private final Long orderId;
+
+    public OrderCancelRequestDto(Long orderId, String correlationId) {
+        this.orderId = orderId;
         this.correlationId = correlationId;
+    }
+
+    public Long getOrderId() {
+        return orderId;
     }
 
     public String getCorrelationId() {
