@@ -42,7 +42,7 @@ public class AvailabilityFlowItemHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<AvailabilityFlowItem> {
 
     @Value("${regards.storage.availability.items.bulk.size:10}")
-    private static final int BULK_SIZE = 1000;
+    private final int BULK_SIZE = 1000;
 
     @Autowired
     private FileCacheRequestService fileCacheReqService;

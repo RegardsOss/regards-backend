@@ -43,7 +43,7 @@ public class CancelRequestGroupsEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<CancelRequestEvent> {
 
     @Value("${regards.storage.cancel.items.bulk.size:100}")
-    private static final int BULK_SIZE = 100;
+    private final int BULK_SIZE = 100;
 
     private RequestsGroupService requestsGroupService;
 
