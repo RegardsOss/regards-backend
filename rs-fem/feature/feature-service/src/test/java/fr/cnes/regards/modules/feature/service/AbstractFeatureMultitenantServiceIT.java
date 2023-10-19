@@ -82,6 +82,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MimeType;
 
@@ -102,6 +103,8 @@ import static org.junit.Assert.assertEquals;
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = { JobTestCleaner.class })
+@TestPropertySource(properties = { "regards.feature.request.scheduling.initial.delay=100",
+                                   "regards.storage.schedule.delay=100" })
 public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultitenantServiceIT {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeatureMultitenantServiceIT.class);
@@ -213,9 +216,9 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
 
     protected String mutationModelName;
 
-    private List<EntityModel<Model>> models = new ArrayList<>();
+    private final List<EntityModel<Model>> models = new ArrayList<>();
 
-    private Map<String, List<EntityModel<ModelAttrAssoc>>> modelResources = new HashMap<>();
+    private final Map<String, List<EntityModel<ModelAttrAssoc>>> modelResources = new HashMap<>();
 
     // ------------------------
     // TO CLEAN TESTS

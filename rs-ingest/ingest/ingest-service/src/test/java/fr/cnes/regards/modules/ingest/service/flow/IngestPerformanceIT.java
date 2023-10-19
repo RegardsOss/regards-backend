@@ -56,7 +56,7 @@ import java.util.UUID;
  *
  * @author Marc SORDI
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow_perf",
                                    "regards.amqp.enabled=true",
                                    "spring.task.scheduling.pool.size=4",
                                    "regards.ingest.maxBulkSize=100",

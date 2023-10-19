@@ -75,7 +75,7 @@ public class AIPPostProcessScheduler extends AbstractTaskScheduler {
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(initialDelayString = DEFAULT_INITIAL_DELAY,
+    @Scheduled(initialDelayString = "${regards.ingest.aip.post-process.bulk.delay.init:" + DEFAULT_INITIAL_DELAY + "}",
                fixedDelayString = "${regards.ingest.aip.post-process.bulk.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     protected void scheduleAIPPostProcessingJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {

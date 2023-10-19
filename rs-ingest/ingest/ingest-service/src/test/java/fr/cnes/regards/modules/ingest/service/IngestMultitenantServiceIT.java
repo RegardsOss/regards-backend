@@ -47,8 +47,10 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
+import fr.cnes.regards.modules.ingest.service.flow.IngestRequestFlowHandler;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
@@ -67,10 +69,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -81,7 +80,13 @@ import static fr.cnes.regards.modules.ingest.service.TestData.*;
  *
  * @author Marc SORDI
  */
-@TestPropertySource(properties = { "eureka.client.enabled=false", "regards.ingest.schedlock.timeout=1" },
+@TestPropertySource(properties = { "eureka.client.enabled=false",
+                                   "regards.ingest.schedlock.timeout=1",
+                                   "regards.ingest.schedule.request.initial.delay=100",
+                                   "regards.ingest.aip.post-process.bulk.delay.init=100",
+                                   "regards.ingest.aip.update.bulk.delay.init=100",
+                                   "regards.ingest.aip.delete.bulk.delay.init=100",
+                                   "regards.ingest.schedule.pending.initial.delay=100" },
                     locations = { "classpath:application-test.properties" })
 public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServiceIT {
 
@@ -141,6 +146,9 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     @Autowired
     protected IJobService jobService;
 
+    @Autowired
+    private IngestRequestFlowHandler requestFlowHandler;
+
     /**
      * Can be null if profile nojobs
      */
@@ -185,6 +193,26 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
      */
     protected void doAfter() throws Exception {
         // Override to init something
+    }
+
+    /**
+     * Creates a new {@link IngestRequestFlowItem}
+     */
+    protected IngestRequestFlowItem createSipEvent(String providerId,
+                                                   List<String> tags,
+                                                   String storage,
+                                                   String session,
+                                                   String sessionOwner,
+                                                   List<String> categories) {
+
+        SIP sip = create(providerId, tags);
+        return ingestServiceTest.createSipEvent(sip,
+                                                storage,
+                                                session,
+                                                sessionOwner,
+                                                categories,
+                                                Optional.empty(),
+                                                VersioningMode.INC_VERSION);
     }
 
     protected SIP create(String providerId, List<String> tags) {
@@ -239,6 +267,30 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                    String sessionOwner,
                                    List<String> categories) {
         publishSIPEvent(sip, Lists.newArrayList(storage), session, sessionOwner, categories, Optional.empty());
+    }
+
+    protected void handleSipEventsWithoutAmqp(Collection<SIP> sips,
+                                              List<String> storages,
+                                              String session,
+                                              String sessionOwner,
+                                              List<String> categories,
+                                              Optional<String> chainLabel) {
+
+        List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
+        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
+                                                        session,
+                                                        null,
+                                                        chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
+                                                        Sets.newHashSet(categories),
+                                                        VersioningMode.INC_VERSION,
+                                                        null,
+                                                        storagesMeta);
+
+        List<IngestRequestFlowItem> events = new ArrayList<>(sips.size());
+        for (SIP sip : sips) {
+            events.add(IngestRequestFlowItem.build(mtd, sip));
+        }
+        requestFlowHandler.handleBatch(events);
     }
 
     protected void publishSIPEvent(SIP sip,

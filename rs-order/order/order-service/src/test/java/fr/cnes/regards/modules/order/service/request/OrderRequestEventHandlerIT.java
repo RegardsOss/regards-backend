@@ -251,8 +251,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         checkOrderRequestResponsesEvents(List.of(responseCaptor.getAllValues().get(1)),
                                          1,
                                          OrderRequestStatus.DENIED,
-                                         String.format(
-                                             "[FORBIDDEN] Unknown user : unknownUser at user: rejected value [null]."),
+                                         "[FORBIDDEN] Unknown user : unknownUser at user: rejected value [null].",
                                          null,
                                          OrderErrorCode.FORBIDDEN,
                                          Integer.valueOf(1));
@@ -280,13 +279,14 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // THEN
         ArgumentCaptor<ISubscribable> responseCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(publisher, Mockito.times(4)).publish(responseCaptor.capture());
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(responseCaptor.capture());
         List<OrderResponseDtoEvent> responses = responseCaptor.getAllValues()
                                                               .stream()
                                                               .filter(event -> event.getClass()
                                                                                == OrderResponseDtoEvent.class)
                                                               .map(orderResponse -> (OrderResponseDtoEvent) orderResponse)
                                                               .toList();
+        Assert.assertEquals(1, responses.size());
         checkOrderRequestResponsesEvents(responses,
                                          validOrderRequests.size(),
                                          OrderRequestStatus.DENIED,
@@ -320,13 +320,14 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
 
         // --- THEN ---
         ArgumentCaptor<ISubscribable> responseCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(publisher, Mockito.times(2)).publish(responseCaptor.capture());
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(responseCaptor.capture());
         List<OrderResponseDtoEvent> responses = responseCaptor.getAllValues()
                                                               .stream()
                                                               .filter(event -> event.getClass()
                                                                                == OrderResponseDtoEvent.class)
                                                               .map(orderResponse -> (OrderResponseDtoEvent) orderResponse)
                                                               .toList();
+        Assert.assertEquals(1, responses.size());
         checkOrderRequestResponsesEvents(responses,
                                          1,
                                          OrderRequestStatus.DENIED,

@@ -60,6 +60,7 @@ public class LockingTaskExecutorsMock implements ILockingTaskExecutors {
 
     @Override
     public <T> TaskResult<T> executeWithLock(TaskWithResult<T> task, LockConfiguration lockConfig) throws Throwable {
-        return (TaskResult<T>) task.call();
+        task.call();
+        return null;
     }
 }

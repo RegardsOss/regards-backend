@@ -128,9 +128,9 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
         // Check that the SIP is STORED
         SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
         Assert.assertNotNull(entity);
-        Assert.assertTrue(providerId.equals(entity.getProviderId()));
-        Assert.assertTrue(entity.getVersion() == 1);
-        Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
+        Assert.assertEquals(providerId, entity.getProviderId());
+        Assert.assertEquals(1, (int) entity.getVersion());
+        Assert.assertEquals(SIPState.STORED, entity.getState());
 
         // wait for postprocessing job scheduling
         Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
@@ -163,9 +163,9 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
         // Check that the SIP is STORED
         SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
         Assert.assertNotNull(entity);
-        Assert.assertTrue(providerId.equals(entity.getProviderId()));
-        Assert.assertTrue(entity.getVersion() == 1);
-        Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
+        Assert.assertEquals(providerId, entity.getProviderId());
+        Assert.assertEquals(1, (int) entity.getVersion());
+        Assert.assertEquals(SIPState.STORED, entity.getState());
     }
 
     /**
@@ -198,22 +198,22 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
                 nbStorageRequested = nbStorageRequested + 1;
             }
         }
-        Assert.assertTrue(nbStorageRequested == requests.size());
+        Assert.assertEquals(nbStorageRequested, requests.size());
 
         // Check two versions of the SIP is persisted
         Collection<SIPEntity> sips = sipRepository.findAllByProviderIdOrderByVersionAsc(providerId);
-        Assert.assertTrue(sips.size() == 2);
+        Assert.assertEquals(2, sips.size());
 
         List<SIPEntity> list = new ArrayList<>(sips);
 
         SIPEntity first = list.get(0);
-        Assert.assertTrue(providerId.equals(first.getProviderId()));
-        Assert.assertTrue(first.getVersion() == 1);
-        Assert.assertTrue(SIPState.INGESTED.equals(first.getState()));
+        Assert.assertEquals(providerId, first.getProviderId());
+        Assert.assertEquals(1, (int) first.getVersion());
+        Assert.assertEquals(SIPState.INGESTED, first.getState());
 
         SIPEntity second = list.get(1);
-        Assert.assertTrue(providerId.equals(second.getProviderId()));
-        Assert.assertTrue(second.getVersion() == 2);
-        Assert.assertTrue(SIPState.INGESTED.equals(second.getState()));
+        Assert.assertEquals(providerId, second.getProviderId());
+        Assert.assertEquals(2, (int) second.getVersion());
+        Assert.assertEquals(SIPState.INGESTED, second.getState());
     }
 }

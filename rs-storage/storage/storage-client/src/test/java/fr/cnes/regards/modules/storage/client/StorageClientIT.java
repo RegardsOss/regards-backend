@@ -80,7 +80,8 @@ import java.util.stream.Collectors;
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
                                    "regards.amqp.enabled=true",
-                                   "regards.storage.schedule.delay=200" },
+                                   "regards.storage.schedule.initial.delay=100",
+                                   "regards.storage.schedule.delay=100" },
                     locations = { "classpath:application-test.properties" })
 public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
@@ -237,7 +238,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     public void storeBulk() throws NoSuchAlgorithmException, IOException, InterruptedException {
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        
+
         FileSystemUtils.deleteRecursively(Paths.get("target/store"));
         Files.createDirectory(Paths.get("target/store"));
         int nbGroups = 110;

@@ -73,7 +73,7 @@ public class AIPUpdateJobScheduler extends AbstractTaskScheduler {
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(initialDelayString = DEFAULT_INITIAL_DELAY,
+    @Scheduled(initialDelayString = "${regards.ingest.aip.update.bulk.delay.init:" + DEFAULT_INITIAL_DELAY + "}",
                fixedDelayString = "${regards.ingest.aip.update.bulk.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     protected void scheduleAIPUpdateJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {

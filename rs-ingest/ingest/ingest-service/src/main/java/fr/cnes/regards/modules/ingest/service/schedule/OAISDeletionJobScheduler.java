@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPDeletionRequestScheduler;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionsCreatorJob;
-import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -77,7 +76,7 @@ public class OAISDeletionJobScheduler extends AbstractTaskScheduler {
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(initialDelayString = DEFAULT_INITIAL_DELAY,
+    @Scheduled(initialDelayString = "${regards.ingest.aip.delete.bulk.delay.init:" + DEFAULT_INITIAL_DELAY + "}",
                fixedDelayString = "${regards.ingest.aip.delete.bulk.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     protected void scheduleOAISDeletionJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {

@@ -34,8 +34,11 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRep
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
@@ -50,6 +53,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @ActiveProfiles("test")
@@ -138,12 +142,20 @@ public class IngestServiceIT {
                 snapshotProcessRepository.deleteAllInBatch();
                 stepPropertyUpdateRequestRepository.deleteAllInBatch();
                 sessionStepRepository.deleteAllInBatch();
-                done = waitAllRequestsFinished();
+                done = checkAllRequestsFinished();
+                if (!done) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        done = true;
+                    }
+                }
             } catch (DataAccessException e) {
                 LOGGER.error(e.getMessage(), e);
             }
             loop++;
-        } while (done && (loop < 5));
+        } while (!done && (loop < 5));
     }
 
     public void waitForIngestion(long expectedSips) {
@@ -311,12 +323,7 @@ public class IngestServiceIT {
         long end = System.currentTimeMillis() + timeout;
         // Wait
         do {
-            long count = abstractRequestRepository.countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED,
-                                                                                  InternalRequestState.CREATED,
-                                                                                  InternalRequestState.RUNNING,
-                                                                                  InternalRequestState.TO_SCHEDULE));
-            LOGGER.info("{} Current request running", count);
-            if (count == 0) {
+            if (checkAllRequestsFinished()) {
                 break;
             }
             long now = System.currentTimeMillis();
@@ -327,24 +334,18 @@ public class IngestServiceIT {
                     Assert.fail("Thread interrupted");
                 }
             } else {
-                Assert.fail("Timeout waiting for all requests finished. Remaining " + count);
+                Assert.fail("Timeout waiting for all requests finished.");
             }
         } while (true);
     }
 
-    public boolean waitAllRequestsFinished() {
-        try {
-            Thread.sleep(1000);
-            // Wait
-            long count = abstractRequestRepository.countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED,
-                                                                                  InternalRequestState.CREATED,
-                                                                                  InternalRequestState.RUNNING,
-                                                                                  InternalRequestState.TO_SCHEDULE));
-            LOGGER.info("{} Current request running", count);
-            return count == 0;
-        } catch (InterruptedException e) {
-            return false;
-        }
+    public boolean checkAllRequestsFinished() {
+        long count = abstractRequestRepository.countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED,
+                                                                              InternalRequestState.CREATED,
+                                                                              InternalRequestState.RUNNING,
+                                                                              InternalRequestState.TO_SCHEDULE));
+        LOGGER.info("{} Current request running", count);
+        return count == 0;
     }
 
     public void waitDuring(long delay) {
@@ -368,6 +369,26 @@ public class IngestServiceIT {
             toSend.add(IngestRequestFlowItem.build(mtd, sip));
         }
         publisher.publish(toSend);
+    }
+
+    public IngestRequestFlowItem createSipEvent(SIP sip,
+                                                String storage,
+                                                String session,
+                                                String sessionOwner,
+                                                List<String> categories,
+                                                Optional<String> chainLabel,
+                                                VersioningMode versioningMode) {
+        // Create event
+        List<StorageMetadata> storagesMeta = List.of(StorageMetadata.build(storage));
+        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
+                                                        session,
+                                                        null,
+                                                        chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
+                                                        Sets.newHashSet(categories),
+                                                        versioningMode,
+                                                        null,
+                                                        storagesMeta);
+        return IngestRequestFlowItem.build(mtd, sip);
     }
 
     public void waitJobDone(JobInfo jobInfo, JobStatus status, long timeout) {

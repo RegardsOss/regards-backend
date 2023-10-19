@@ -65,6 +65,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import java.io.IOException;
@@ -82,6 +83,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author sbinda
  */
+@TestPropertySource(properties = { "regards.storage.schedule.initial.delay=100", "regards.storage.schedule.delay=100" })
 public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
     public static final String ONLINE_CONF_LABEL = "target";
