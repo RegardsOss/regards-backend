@@ -146,25 +146,32 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
             try {
                 if (!threadPool.isShutdown()) {
                     for (String tenant : tenantResolver.getAllActiveTenants()) {
-                        if (!MaintenanceManager.getMaintenance(tenant)) {
-                            runtimeTenantResolver.forceTenant(tenant);
-                            // Wait for availability of pool if it is overbooked
-                            while (threadPool.getActiveCount() >= threadPool.getMaximumPoolSize()) {
-                                Thread.sleep(scanDelay);
-                            }
-                            // Find highest priority job to execute
-                            JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
-                            if (jobInfo != null) {
-                                LOGGER.debug("Job found {}", jobInfo.getId());
-                                noJobAtAll = false;
-                                jobInfo.setTenant(tenant);
-                                this.execute(jobInfo);
+                        try {
+                            if (!MaintenanceManager.getMaintenance(tenant)) {
+                                runtimeTenantResolver.forceTenant(tenant);
+                                // Wait for availability of pool if it is overbooked
+                                while (threadPool.getActiveCount() >= threadPool.getMaximumPoolSize()) {
+                                    Thread.sleep(scanDelay);
+                                }
+                                // Find highest priority job to execute
+                                JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
+                                if (jobInfo != null) {
+                                    LOGGER.debug("Job found {}", jobInfo.getId());
+                                    noJobAtAll = false;
+                                    jobInfo.setTenant(tenant);
+                                    this.execute(jobInfo);
+                                } else {
+                                    LOGGER.debug("No job to run yet");
+                                }
                             } else {
-                                LOGGER.debug("No job to run yet");
+                                LOGGER.warn("Jobs are currently disabled for tenant {} cause maintenance mode is "
+                                            + "activated.", tenant);
                             }
-                        } else {
-                            LOGGER.warn("Jobs are currently disabled for tenant {} cause maintenance mode is "
-                                        + "activated.", tenant);
+                        } catch (Exception e) {
+                            // If an exception occurs (any kind of error), continue with other tenants.
+                            // If all tenants are in error, then the number of jobs to run is 0 and a sleep time
+                            // will be performed to avoid infinite loop with only errors.
+                            LOGGER.error(String.format("Error trying to schedule jobs for tenant %s.", tenant), e);
                         }
                     }
                 }
