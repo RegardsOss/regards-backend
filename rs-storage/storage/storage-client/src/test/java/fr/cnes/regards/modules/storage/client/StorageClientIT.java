@@ -145,8 +145,6 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() throws IOException, ModuleException {
-        // simulateApplicationReadyEvent();
-        // simulateApplicationStartedEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         storageReqRepo.deleteAll();
         copyReqRepo.deleteAll();
@@ -258,6 +256,8 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         String csCommon = ChecksumUtils.computeHexChecksum(fileCommon, "MD5");
 
         int cpt = 0;
+        // Clear listener if any requests
+        listener.reset();
         for (Path file : filesToStore) {
             cpt++;
             String owner = "owner-" + cpt;
@@ -297,7 +297,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         }
 
         Assert.assertEquals("All storage request groups should be done", nbGroups, listener.getNbRequestEnds());
-
+        listener.reset();
     }
 
     @Test
@@ -360,6 +360,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
                                               NEARLINE_CONF,
                                               null));
 
+        listener.reset();
         Collection<RequestInfo> infos = client.store(files);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
@@ -407,11 +408,13 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
         Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+        listener.reset();
     }
 
     @Test
     public void storeError_storagePluginError() throws MalformedURLException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        listener.reset();
         RequestInfo info = client.store(FileStorageRequestDTO.build("error.file.test",
                                                                     UUID.randomUUID().toString(),
                                                                     "UUID",
@@ -430,6 +433,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
         Assert.assertFalse("Request should not be successful", listener.getSuccess().containsKey(info));
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
+        listener.reset();
     }
 
     @Test
@@ -457,6 +461,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
                                               ONLINE_CONF,
                                               null));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        listener.reset();
         Collection<RequestInfo> infos = client.store(files);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
@@ -466,6 +471,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         Assert.assertEquals("Request should contains 1 success", 1, listener.getSuccess().get(info).size());
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
         Assert.assertEquals("Request should not be successful", 1, listener.getErrors().get(info).size());
+        listener.reset();
     }
 
     @Test
@@ -492,6 +498,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
                                               ONLINE_CONF,
                                               null));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        listener.reset();
         Collection<RequestInfo> infos = client.store(files);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
@@ -511,6 +518,8 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue("Request should be error", listener.getErrors().containsKey(info));
         Assert.assertEquals("Request should contains 1 error storage", 1, listener.getErrors().get(info).size());
 
+        listener.reset();
+
     }
 
     @Test
@@ -528,12 +537,14 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
                                                     "source1",
                                                     "session1"));
         }
+        listener.reset();
         Collection<RequestInfo> infos = client.reference(files);
         Assert.assertEquals("There should be two requests groups", 2, infos.size());
         waitRequestEnds(2, 60);
         for (RequestInfo info : infos) {
             Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
         }
+        listener.reset();
     }
 
     private void waitRequestEnds(int nbrequests, int maxDurationSec) throws InterruptedException {
@@ -594,6 +605,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
                                                 sessionOwner,
                                                 session));
 
+        listener.reset();
         Collection<RequestInfo> infos = client.reference(files);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
@@ -605,6 +617,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         referenceFileChecksums.add(cs1);
         referenceFileChecksums.add(cs2);
         referenceFileChecksums.add(cs3);
+        listener.reset();
     }
 
     @Test

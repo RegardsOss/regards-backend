@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.lock;
 
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskWithResult;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
 
 import javax.sql.DataSource;
+import javax.validation.constraints.NotNull;
+import java.util.Optional;
 
 /**
  * Mock class for LockingTaskExecutors for tests purpose to avoid usage of scheduler locks.
@@ -31,36 +33,27 @@ import javax.sql.DataSource;
  *
  * @author Sébastien Binda
  */
-public class LockingTaskExecutorsMock implements ILockingTaskExecutors {
+public class LockingTaskExecutorsMock extends LockingTaskExecutors {
+
+    private static final class SimpleLockMock implements SimpleLock {
+
+        @Override
+        public void unlock() {
+
+        }
+    }
+
+    private static final class MockLockProvider implements LockProvider {
+
+        @Override
+        public @NotNull Optional<SimpleLock> lock(@NotNull LockConfiguration lockConfiguration) {
+            return Optional.of(new SimpleLockMock());
+        }
+    }
 
     @Override
     public void registerLockingTaskExecutor(String tenant, DataSource datasource) {
-        // Nothing to do
+        taskExecutors.put(tenant, new DefaultLockingTaskExecutor(new MockLockProvider()));
     }
 
-    @Override
-    public void removeLockingTaskExecutor(String tenant) {
-        // Nothing to do
-    }
-
-    @Override
-    public void executeWithLock(Runnable task, LockConfiguration lockConfig) {
-        task.run();
-    }
-
-    @Override
-    public void executeWithLock(Task task, LockConfiguration lockConfig) throws Throwable {
-        task.call();
-    }
-
-    @Override
-    public void assertLocked() {
-        // Nothing to do
-    }
-
-    @Override
-    public <T> TaskResult<T> executeWithLock(TaskWithResult<T> task, LockConfiguration lockConfig) throws Throwable {
-        task.call();
-        return null;
-    }
 }

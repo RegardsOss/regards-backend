@@ -54,11 +54,11 @@ import java.util.UUID;
  */
 @ActiveProfiles(value = { "default", "test", "testAmqp", "storageTest" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests_perf",
                                    "regards.amqp.enabled=true",
-                                   "regards.storage.schedule.delay:1000",
-                                   "regards.storage.location.schedule.delay:600000",
-                                   "regards.storage.reference.items.bulk.size:10" },
+                                   "regards.storage.schedule.delay=1000",
+                                   "regards.storage.location.schedule.delay=600000",
+                                   "regards.storage.reference.items.bulk.size=10" },
                     locations = { "classpath:application-local.properties" })
 @Ignore("Performances tests")
 public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
@@ -150,7 +150,7 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
         int nbRrequests = 0;
         long start = System.currentTimeMillis();
         for (int i = 0; i < 5000; i++) {
-            String newOwner = "owner-" + UUID.randomUUID().toString();
+            String newOwner = "owner-" + UUID.randomUUID();
             String sessionOwner = "source-" + i;
             String session = "session-" + i;
 

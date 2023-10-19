@@ -42,7 +42,7 @@ public class LockingTaskExecutors implements ILockingTaskExecutors {
     /**
      * List of {@link LockingTaskExecutor} for execution action with lock.
      */
-    private final Map<String, LockingTaskExecutor> taskExecutors = new ConcurrentHashMap<>();
+    protected final Map<String, LockingTaskExecutor> taskExecutors = new ConcurrentHashMap<>();
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
