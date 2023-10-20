@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.rest;
 
 import com.google.common.io.ByteStreams;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -66,6 +67,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
 
 /**
  * @author oroussel
@@ -918,6 +921,8 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         order1.setLabel("order1");
         order1.setCreationDate(OffsetDateTime.now());
         order1.setExpirationDate(order1.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order1.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT,
+                                              OffsetDateTimeAdapter.format(order1.getCreationDate())));
         orderRepository.save(order1);
 
         Order order2 = new Order();
@@ -925,6 +930,8 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         order2.setLabel("order2");
         order2.setCreationDate(OffsetDateTime.now());
         order2.setExpirationDate(order2.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order2.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT,
+                                              OffsetDateTimeAdapter.format(order2.getCreationDate())));
         orderRepository.save(order2);
 
         Order order3 = new Order();
@@ -932,6 +939,8 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         order3.setLabel("order3");
         order3.setCreationDate(OffsetDateTime.now());
         order3.setExpirationDate(order3.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order3.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT,
+                                              OffsetDateTimeAdapter.format(order3.getCreationDate())));
         orderRepository.save(order3);
     }
 

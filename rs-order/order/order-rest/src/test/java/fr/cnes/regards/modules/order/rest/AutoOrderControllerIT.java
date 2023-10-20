@@ -87,7 +87,7 @@ public class AutoOrderControllerIT extends AbstractOrderControllerIT {
                                                                                                .getContent()
                                                                                                .get(0)
                                                                                                .getId(),
-                                                                                null,
+                                                                                "something-random",
                                                                                 null,
                                                                                 null,
                                                                                 null,
@@ -103,7 +103,6 @@ public class AutoOrderControllerIT extends AbstractOrderControllerIT {
                       .andExpect(MockMvcResultMatchers.jsonPath("$.content.orderId",
                                                                 Matchers.comparesEqualTo(expectedResponseEvent.getOrderId()),
                                                                 Long.class))
-                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId").doesNotExist())
                       .andExpect(MockMvcResultMatchers.jsonPath("$.content.message").doesNotExist());
     }
 
@@ -143,7 +142,6 @@ public class AutoOrderControllerIT extends AbstractOrderControllerIT {
                       .andExpect(MockMvcResultMatchers.jsonPath("$.content.status",
                                                                 Matchers.equalTo(OrderRequestStatus.FAILED.toString())))
                       .andExpect(MockMvcResultMatchers.jsonPath("$.content.createdOrderId").doesNotExist())
-                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId").doesNotExist())
                       .andExpect(MockMvcResultMatchers.jsonPath("$.content.message").exists());
     }
 
@@ -180,7 +178,6 @@ public class AutoOrderControllerIT extends AbstractOrderControllerIT {
                       .andExpect(MockMvcResultMatchers.jsonPath("$.content.status",
                                                                 Matchers.equalTo(OrderRequestStatus.FAILED.toString())))
                       .andExpect(MockMvcResultMatchers.jsonPath("$.content.createdOrderId").doesNotExist())
-                      .andExpect(MockMvcResultMatchers.jsonPath("$.content.correlationId").doesNotExist())
                       .andExpect(MockMvcResultMatchers.jsonPath("$.content.message").exists());
     }
 

@@ -41,8 +41,11 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
+import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
 import static fr.cnes.regards.modules.order.service.request.OrderRequestTestUtils.checkOrderRequestResponses;
 import static fr.cnes.regards.modules.order.service.request.OrderRequestTestUtils.createValidOrderRequests;
 import static org.mockito.ArgumentMatchers.*;
@@ -85,6 +88,8 @@ public class OrderRequestServiceTest {
         Mockito.when(orderService.createOrder(any(), any(), any(), anyInt(), any(), any())).thenAnswer(answer -> {
             Order order = new Order();
             order.setId(Long.valueOf(answer.getArgument(5)));
+            order.setCreationDate(OffsetDateTime.now());
+            order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
             return order;
         });
     }

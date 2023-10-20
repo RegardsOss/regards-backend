@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.test;
 import feign.Request;
 import feign.RequestTemplate;
 import feign.RetryableException;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 
+import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
 import static fr.cnes.regards.modules.order.test.FakeExceptions.*;
 import static fr.cnes.regards.modules.order.test.MailClientMocks.aMailClient;
 import static fr.cnes.regards.modules.order.test.TemplateServiceMocks.aTemplateService;
@@ -76,6 +78,9 @@ public class OrderCreationNotificationTest {
         Order givenOrder = new Order();
         givenOrder.setId(1L);
         givenOrder.setOwner("USER");
+        givenOrder.setCreationDate(OffsetDateTime.now());
+        givenOrder.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT,
+                                                  OffsetDateTimeAdapter.format(givenOrder.getCreationDate())));
         DatasetTask datasetTask = new DatasetTask();
         datasetTask.setDatasetLabel("DATASET");
         givenOrder.getDatasetTasks().add(datasetTask);

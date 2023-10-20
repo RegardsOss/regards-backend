@@ -39,10 +39,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeTypeUtils;
 
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
 
 /**
  * @author Thomas GUILLOU
@@ -72,6 +75,8 @@ public class OrderAttachmentDataServiceTest {
         // GIVEN
         Order order = new Order();
         order.setId(1L);
+        order.setCreationDate(OffsetDateTime.now());
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         Dataset dataset = createDataSet();
         dataset.getFeature().getFiles().get(DataType.RAWDATA).add(createDataFileStoredInDam());
         dataset.getFeature().getFiles().get(DataType.RAWDATA).add(createDataFileStoredInStorage());

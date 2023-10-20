@@ -29,12 +29,14 @@ import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
 import fr.cnes.regards.modules.order.exception.AutoOrderException;
+import fr.cnes.regards.modules.order.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * This service creates orders through the execution of a {@link CreateOrderJob}.
@@ -83,10 +85,11 @@ public class AutoOrderRequestService {
         List<OrderResponseDto> responses = new ArrayList<>();
         LOGGER.debug("Creating automatically order response from {} request(s).", orderRequests.size());
         long start = System.currentTimeMillis();
-        for (OrderRequestDto orderRequest : orderRequests) {
+        for (OrderRequestDto orderRequestDto : orderRequests) {
+            initCorrelationId(orderRequestDto);
             try {
-                Order createdOrder = autoOrderCompletionService.generateOrder(orderRequest, role, checkSizeLimit);
-                responses.add(OrderResponseDto.buildSuccessResponse(orderRequest,
+                Order createdOrder = autoOrderCompletionService.generateOrder(orderRequestDto, role, checkSizeLimit);
+                responses.add(OrderResponseDto.buildSuccessResponse(orderRequestDto,
                                                                     createdOrder.getId(),
                                                                     OrderRequestStatus.GRANTED));
                 LOGGER.debug("Successfully created order [id={}] in {}ms from {} request(s).",
@@ -95,8 +98,8 @@ public class AutoOrderRequestService {
                              orderRequests.size());
 
             } catch (AutoOrderException e) {
-                LOGGER.error("Order request with correlationId {} has failed.", orderRequest.getCorrelationId(), e);
-                responses.add(manageErrorOrderResponse(orderRequest, e));
+                LOGGER.error("Order request with correlationId {} has failed.", orderRequestDto.getCorrelationId(), e);
+                responses.add(manageErrorOrderResponse(orderRequestDto, e));
             }
         }
         return responses;
@@ -120,4 +123,12 @@ public class AutoOrderRequestService {
 
         return OrderResponseDto.buildErrorResponse(orderRequest, exception.getMessage(), orderRequestStatus, errorType);
     }
+
+    private void initCorrelationId(OrderRequestDto orderRequestDto) {
+        if (orderRequestDto.getCorrelationId() == null) {
+            orderRequestDto.setCorrelationId(String.format(OrderService.DEFAULT_CORRELATION_ID_FORMAT,
+                                                           UUID.randomUUID()));
+        }
+    }
+
 }

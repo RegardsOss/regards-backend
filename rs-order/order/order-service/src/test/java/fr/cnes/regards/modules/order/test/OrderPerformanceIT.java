@@ -73,6 +73,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
+
 /**
  * @author Sébastien Binda
  */
@@ -192,6 +194,7 @@ public class OrderPerformanceIT extends AbstractMultitenantServiceIT {
         order.setOwner(basket.getOwner());
         order.setFrontendUrl("plop");
         order.setStatus(OrderStatus.PENDING);
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         // expiration date is set during asyncCompleteOrderCreation execution
         // To generate orderId
         order = orderRepo.save(order);

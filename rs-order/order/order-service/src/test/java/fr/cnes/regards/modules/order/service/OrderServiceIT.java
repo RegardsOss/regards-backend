@@ -86,6 +86,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
 import static org.mockito.ArgumentMatchers.any;
 
 /**
@@ -218,7 +219,8 @@ public class OrderServiceIT {
         Mockito.reset(authResolver);
         Order order = new Order();
         order.setOwner(realOwner);
-
+        order.setCreationDate(OffsetDateTime.now());
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         // Nominal : user INSTANCE_ADMIN + not order owner
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.INSTANCE_ADMIN.toString());
         Mockito.when(authResolver.getUser()).thenReturn(fakeOwner);
@@ -253,6 +255,7 @@ public class OrderServiceIT {
         order.setStatus(OrderStatus.DONE);
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(OffsetDateTime.now().plus(3, ChronoUnit.DAYS));
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         orderRepos.save(order);
 
         PageRequest pr = PageRequest.of(0, 100);
@@ -361,6 +364,7 @@ public class OrderServiceIT {
         order.setLabel("ds1 order");
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(OffsetDateTime.now().plus(3, ChronoUnit.DAYS));
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         order = orderRepos.save(order);
 
         // Dataset order tasks
@@ -509,6 +513,7 @@ public class OrderServiceIT {
         order.setOwner(USER_EMAIL);
         order.setLabel("Ego");
         order.setStatus(OrderStatus.PENDING);
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         order = orderRepos.save(order);
 
         orderMaintenanceService.sendPeriodicNotifications();

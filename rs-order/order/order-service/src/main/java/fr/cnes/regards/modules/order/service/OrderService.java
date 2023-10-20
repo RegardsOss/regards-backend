@@ -62,6 +62,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static fr.cnes.regards.modules.order.domain.log.LogUtils.ORDER_ID_LOG_KEY;
 
@@ -82,6 +83,11 @@ public class OrderService implements IOrderService {
      */
     private static final DateTimeFormatter ORDER_GENERATED_LABEL_DATE_FORMAT = DateTimeFormatter.ofPattern(
         "yyyy/MM/dd 'at' HH:mm:ss");
+
+    /**
+     * Default correlation id formatter in case it is not provided by the client (auto-correlation-id-'randomUUID')
+     */
+    public static final String DEFAULT_CORRELATION_ID_FORMAT = "auto-correlation-id-%s";
 
     private final IOrderService self;
 
@@ -275,6 +281,9 @@ public class OrderService implements IOrderService {
         LOGGER.info("Creating order with owner {}", order.getOwner());
         order.setCreationDate(OffsetDateTime.now());
         order.setStatus(OrderStatus.PENDING);
+        if (order.getCorrelationId() == null) {
+            order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
+        }
         return orderRepository.save(order);
     }
 

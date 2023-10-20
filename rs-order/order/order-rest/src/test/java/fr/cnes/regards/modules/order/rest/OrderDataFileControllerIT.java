@@ -53,6 +53,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 
+import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
+
 /**
  * @author oroussel
  * @author Sébastien Binda
@@ -115,6 +117,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         order.setLabel(DateTime.now().toString());
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         order = orderRepository.save(order);
 
         // One dataset task
@@ -194,6 +197,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         order.setLabel(DateTime.now().toString());
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         order = orderRepository.save(order);
 
         // One dataset task

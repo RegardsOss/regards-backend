@@ -87,13 +87,13 @@ public class OrderResponseDto {
         this.subOrderId = subOrderId;
     }
 
-    public static OrderResponseDto buildErrorResponse(OrderRequestDto orderRequest,
+    public static OrderResponseDto buildErrorResponse(OrderRequestDto orderRequestDto,
                                                       String message,
                                                       OrderRequestStatus responseStatus,
                                                       OrderErrorType orderErrorType) {
         return new OrderResponseDto(responseStatus,
                                     null,
-                                    orderRequest.getCorrelationId(),
+                                    orderRequestDto.getCorrelationId(),
                                     message,
                                     null,
                                     orderErrorType,
@@ -102,12 +102,12 @@ public class OrderResponseDto {
                                     null);
     }
 
-    public static OrderResponseDto buildSuccessResponse(OrderRequestDto orderRequest,
+    public static OrderResponseDto buildSuccessResponse(OrderRequestDto orderRequestDto,
                                                         Long createdOrderId,
                                                         OrderRequestStatus responseStatus) {
         return new OrderResponseDto(responseStatus,
                                     createdOrderId,
-                                    orderRequest.getCorrelationId(),
+                                    orderRequestDto.getCorrelationId(),
                                     null,
                                     null,
                                     null,

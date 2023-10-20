@@ -14,8 +14,10 @@ import java.io.File;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 import static fr.cnes.regards.modules.order.client.env.utils.OrderTestConstants.*;
+import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
 
 @Service
 public class OrderTestUtilsService {
@@ -55,6 +57,7 @@ public class OrderTestUtilsService {
         order.setCreationDate(OffsetDateTime.now());
         order.setLabel("order2");
         order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         order = orderRepository.save(order);
 
         // create dataset task 1

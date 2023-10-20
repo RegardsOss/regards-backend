@@ -134,7 +134,8 @@ public class OrderResponseService {
                                                     order.getId(),
                                                     order.getCorrelationId(),
                                                     message,
-                                                    downloadLink, orderErrorType,
+                                                    downloadLink,
+                                                    orderErrorType,
                                                     errors == 0L ? null : errors.intValue(),
                                                     listSubOrders.size(),
                                                     null));

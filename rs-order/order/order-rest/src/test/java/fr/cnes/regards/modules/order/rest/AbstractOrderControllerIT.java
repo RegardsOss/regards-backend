@@ -75,6 +75,8 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
+
 /**
  * Abstract to test OrderController
  *
@@ -319,6 +321,7 @@ public abstract class AbstractOrderControllerIT extends AbstractRegardsIT {
         order.setCreationDate(OffsetDateTime.now());
         order.setLabel("order2");
         order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         order = orderRepository.save(order);
 
         // dataset task 1

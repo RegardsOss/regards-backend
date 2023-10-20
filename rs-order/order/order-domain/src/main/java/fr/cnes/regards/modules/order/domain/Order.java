@@ -115,7 +115,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Column(name = "url", columnDefinition = "text")
     private String frontendUrl;
 
-    @Column(name = "correlation_id")
+    @Column(name = "correlation_id", nullable = false)
     private String correlationId;
 
     @Override
