@@ -119,7 +119,8 @@ public class FeignClientConfiguration {
      */
     @Bean
     public Feign.Builder builder(@Value("${regards.enable.feign.bulkhead:true}") boolean bulkhead,
-                                 @Value("${regards.enable.feign.rateLimiter:true}") boolean rateLimiter) {
+                                 @Value("${regards.enable.feign.rateLimiter:true}") boolean rateLimiter,
+                                 @Value("${regards.enable.feign.readTimeout:60000}") int readTimeout) {
 
         LOGGER.info("Initialization of feign configuration with bulkhead={}, rateLimiter={}", bulkhead, rateLimiter);
         FeignDecorators.Builder feignDecoratorBuilder = FeignDecorators.builder();
@@ -129,7 +130,7 @@ public class FeignClientConfiguration {
                                                          RateLimiterConfig.custom()
                                                                           .limitRefreshPeriod(Duration.ofMillis(1L))
                                                                           .limitForPeriod(50)
-                                                                          .timeoutDuration(Duration.ofSeconds(60L))
+                                                                          .timeoutDuration(Duration.ofMillis(readTimeout))
                                                                           .build());
             feignDecoratorBuilder.withRateLimiter(rateLimitConfig);
         }
@@ -142,7 +143,7 @@ public class FeignClientConfiguration {
         // return custom feign builder and allow 404 responses to be processed without errors
         Resilience4jFeign.Builder builder = Resilience4jFeign.builder(feignDecoratorBuilder.build());
         builder.decode404();
-        builder.options(new Request.Options(5000, TimeUnit.MILLISECONDS, 60000, TimeUnit.MILLISECONDS, false));
+        builder.options(new Request.Options(5000, TimeUnit.MILLISECONDS, readTimeout, TimeUnit.MILLISECONDS, false));
         return builder;
     }
 }
