@@ -6,9 +6,9 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -150,9 +150,10 @@ public class DownloadUtilsTests {
         // Then
         Assert.assertEquals("There should be one and only one tmp file", 1, tmpDirPath.toFile().list().length);
         File tmpFile = tmpDirPath.toFile().listFiles()[0];
-        byte[] data = Files.readAllBytes(tmpFile.toPath());
-        byte[] hash = MessageDigest.getInstance("MD5").digest(data);
-        String tmpFileChecksum = new BigInteger(1, hash).toString(16).toUpperCase();
+        DigestInputStream dis = new DigestInputStream(new FileInputStream(tmpFile), MessageDigest.getInstance("MD5"));
+        while (dis.read() != -1) {
+        }
+        String tmpFileChecksum = ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest()).toUpperCase();
         Assert.assertEquals("The tmp file should have the sent file checksum", checksum, tmpFileChecksum);
 
         // When
@@ -163,9 +164,10 @@ public class DownloadUtilsTests {
                             1,
                             downloadedFileDir.toFile().list().length);
         File downloadedFile = downloadedFileDir.toFile().listFiles()[0];
-        data = Files.readAllBytes(downloadedFile.toPath());
-        hash = MessageDigest.getInstance("MD5").digest(data);
-        String downloadedFileChecksum = new BigInteger(1, hash).toString(16).toUpperCase();
+        dis = new DigestInputStream(new FileInputStream(downloadedFile), MessageDigest.getInstance("MD5"));
+        while (dis.read() != -1) {
+        }
+        String downloadedFileChecksum = ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest()).toUpperCase();
 
         Assert.assertEquals("The downloaded file should have the sent file checksum", checksum, downloadedFileChecksum);
         Assert.assertEquals("There should be no more tmp file", 0, tmpDirPath.toFile().list().length);

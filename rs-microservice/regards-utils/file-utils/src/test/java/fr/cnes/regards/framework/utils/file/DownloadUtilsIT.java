@@ -41,18 +41,16 @@ import org.springframework.util.MimeType;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -123,7 +121,7 @@ public class DownloadUtilsIT {
 
         URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
 
-        List<S3Server> knownStorages = Arrays.asList(testServer);
+        List<S3Server> knownStorages = Collections.singletonList(testServer);
 
         InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
 
@@ -136,7 +134,7 @@ public class DownloadUtilsIT {
     public void testS3DownloadThroughFileCopy() throws IOException, NoSuchAlgorithmException {
         URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
 
-        List<S3Server> knownStorages = Arrays.asList(testServer);
+        List<S3Server> knownStorages = Collections.singletonList(testServer);
 
         Path destination = Paths.get(temporaryFolder.getRoot().toString() + "/file1.txt");
         String checksum = DownloadUtils.download(url, destination, "MD5", knownStorages);
@@ -153,7 +151,7 @@ public class DownloadUtilsIT {
     public void testS3DownloadDeepFile() throws IOException {
         URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING_DEEP);
 
-        List<S3Server> knownStorages = Arrays.asList(testServer);
+        List<S3Server> knownStorages = Collections.singletonList(testServer);
 
         InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
         Assert.assertNotNull(stream);
@@ -177,7 +175,7 @@ public class DownloadUtilsIT {
                                                         + S3Server.REGEX_GROUP_PATHFILENAME
                                                         + ">.*)");
 
-        List<S3Server> knownStorages = Arrays.asList(testServerWithoutBucket);
+        List<S3Server> knownStorages = List.of(testServerWithoutBucket);
 
         URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
         InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
@@ -202,7 +200,7 @@ public class DownloadUtilsIT {
                                                         + S3Server.REGEX_GROUP_PATHFILENAME
                                                         + ">.*)");
 
-        List<S3Server> knownStorages = Arrays.asList(testServerWithoutBucket);
+        List<S3Server> knownStorages = List.of(testServerWithoutBucket);
 
         URL url = new URL(s3Protocol,
                           s3Host,
@@ -220,7 +218,7 @@ public class DownloadUtilsIT {
     @Test
     public void testS3Exists() throws IOException {
         URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
-        List<S3Server> knownStorages = Arrays.asList(testServer);
+        List<S3Server> knownStorages = Collections.singletonList(testServer);
         Assert.assertTrue(DownloadUtils.exists(url, Proxy.NO_PROXY, knownStorages, null, null));
 
         URL url2 = new URL(s3Protocol, s3Host, s3Port, FILE_NOT_EXISTING);
@@ -231,7 +229,7 @@ public class DownloadUtilsIT {
     public void testMissingS3File() throws IOException {
         URL url = new URL(s3Protocol, s3Host, s3Port, FILE_NOT_EXISTING);
 
-        List<S3Server> knownStorages = Arrays.asList(testServer);
+        List<S3Server> knownStorages = Collections.singletonList(testServer);
 
         try {
             InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
@@ -244,7 +242,7 @@ public class DownloadUtilsIT {
     public void testS3FileContentLengthFileNotFound() throws IOException {
         URL url = new URL(s3Protocol, s3Host, s3Port, FILE_NOT_EXISTING);
 
-        List<S3Server> knownStorages = Arrays.asList(testServer);
+        List<S3Server> knownStorages = Collections.singletonList(testServer);
 
         DownloadUtils.getContentLength(url, 60, knownStorages);
     }
@@ -253,7 +251,7 @@ public class DownloadUtilsIT {
     public void testS3FileContentLength() throws IOException {
         URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
 
-        List<S3Server> knownStorages = Arrays.asList(testServer);
+        List<S3Server> knownStorages = Collections.singletonList(testServer);
 
         long size = DownloadUtils.getContentLength(url, 60, knownStorages);
         Assert.assertEquals(31L, size);
@@ -272,7 +270,7 @@ public class DownloadUtilsIT {
                                                       + S3Server.REGEX_GROUP_PATHFILENAME
                                                       + ">.*)");
 
-        List<S3Server> knownStorages = Arrays.asList(testUnreachableServer);
+        List<S3Server> knownStorages = List.of(testUnreachableServer);
 
         URL url = new URL(s3Protocol, s3Host, s3Port, FILE_EXISTING);
         try {
@@ -288,7 +286,7 @@ public class DownloadUtilsIT {
         //Given
         String fileName = "bigFile.txt";
         Long sizeInKb = 10 * 1000L;
-        String checksum = createTestRandomFileOnServer(fileName, sizeInKb);
+        String checksum = createTestRandomFileOnServer(fileName, sizeInKb).toLowerCase();
 
         URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/" + fileName);
 
@@ -299,16 +297,18 @@ public class DownloadUtilsIT {
         InputStream downloadedFileInputStream = DownloadUtils.getInputStreamThroughProxy(url,
                                                                                          null,
                                                                                          null,
-                                                                                         Arrays.asList(testServer),
-                                                                                         1 * 1000 * 1000L,
+                                                                                         Collections.singletonList(
+                                                                                             testServer),
+                                                                                         1000 * 1000L,
                                                                                          tmpDirPath);
 
         // Then
         Assert.assertEquals("There should be one and only one tmp file", 1, tmpDirPath.toFile().list().length);
         File tmpFile = tmpDirPath.toFile().listFiles()[0];
-        byte[] data = Files.readAllBytes(tmpFile.toPath());
-        byte[] hash = MessageDigest.getInstance("MD5").digest(data);
-        String tmpFileChecksum = new BigInteger(1, hash).toString(16).toUpperCase();
+        DigestInputStream dis = new DigestInputStream(new FileInputStream(tmpFile), MessageDigest.getInstance("MD5"));
+        while (dis.read() != -1) {
+        }
+        String tmpFileChecksum = ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest()).toLowerCase();
         Assert.assertEquals("The tmp file should have the sent file checksum", checksum, tmpFileChecksum);
 
         // When
@@ -319,9 +319,10 @@ public class DownloadUtilsIT {
                             1,
                             downloadedFileDir.toFile().list().length);
         File downloadedFile = downloadedFileDir.toFile().listFiles()[0];
-        data = Files.readAllBytes(downloadedFile.toPath());
-        hash = MessageDigest.getInstance("MD5").digest(data);
-        String downloadedFileChecksum = new BigInteger(1, hash).toString(16).toUpperCase();
+        dis = new DigestInputStream(new FileInputStream(downloadedFile), MessageDigest.getInstance("MD5"));
+        while (dis.read() != -1) {
+        }
+        String downloadedFileChecksum = ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest()).toLowerCase();
 
         Assert.assertEquals("The downloaded file should have the sent file checksum", checksum, downloadedFileChecksum);
         Assert.assertEquals("There should be no more tmp file", 0, tmpDirPath.toFile().list().length);
