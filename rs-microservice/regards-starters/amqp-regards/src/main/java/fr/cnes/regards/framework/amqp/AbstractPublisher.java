@@ -85,7 +85,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
     /**
      * List of events which will also be sent to rs-notifier
      */
-    private List<String> eventsToNotifier;
+    private final List<String> eventsToNotifier;
 
     private final Gson gson;
 
@@ -390,9 +390,15 @@ public abstract class AbstractPublisher implements IPublisherContract {
                                                                    int priority,
                                                                    boolean purgeQueue,
                                                                    Map<String, Object> headers) {
+        if (!eventsToNotifier.isEmpty()) {
+            LOGGER.debug("List of events to send to notifier :");
+            eventsToNotifier.forEach(LOGGER::debug);
+        }
         if (!eventsToNotifier.contains(event.getClass().getName())) {
+            LOGGER.debug("Event {} not found in list of events to send to rs-notifier", event.getClass().getName());
             return;
         }
+        LOGGER.debug("Event {} found in list of events to send to rs-notifier", event.getClass().getName());
         String requestId = UUID.randomUUID().toString();
         String requestOwner = applicationId;
         if (AbstractRequestEvent.class.isAssignableFrom(event.getClass())) {
