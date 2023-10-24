@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -43,9 +44,8 @@ import org.springframework.test.context.junit4.SpringRunner;
                                    "regards.tenants=PROJECT, PROJECT1",
                                    "regards.tenant=PROJECT",
                                    "regards.amqp.internal.transaction=true",
-                                   "spring.jmx.enabled=false",
-                                   "regards.copied.events.to.notifier=fr.cnes.regards.framework.amqp.test.event.Info" },
-                    locations = "classpath:amqp.properties")
+                                   "spring.jmx.enabled=false" }, locations = "classpath:amqp.properties")
+@PropertySource("test-events.properties")
 public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
 
     @Autowired

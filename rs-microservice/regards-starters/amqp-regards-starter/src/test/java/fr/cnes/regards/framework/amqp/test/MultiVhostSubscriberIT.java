@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.amqp.test;
 
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -37,6 +38,7 @@ import org.springframework.test.context.junit4.SpringRunner;
                                    "spring.jmx.enabled=false",
                                    "regards.copied.events.to.notifier=fr.cnes.regards.framework.amqp.test.event.Info" },
                     locations = "classpath:amqp.properties")
+@PropertySource("test-events.properties")
 public class MultiVhostSubscriberIT extends AbstractSubscriberIT {
 
 }

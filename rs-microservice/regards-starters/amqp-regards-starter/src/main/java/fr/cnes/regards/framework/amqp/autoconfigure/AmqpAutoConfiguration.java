@@ -58,8 +58,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-
 /**
  * Automatic configuration class for RabbitMQ (amqp protocol)
  *
@@ -69,7 +67,8 @@ import java.util.List;
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties({ RabbitProperties.class,
                                  AmqpManagementProperties.class,
-                                 AmqpMicroserviceProperties.class })
+                                 AmqpMicroserviceProperties.class,
+                                 NotifierEventsProperties.class })
 @AutoConfigureAfter(name = { "fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration" })
 @EnableTransactionManagement
 public class AmqpAutoConfiguration {
@@ -122,8 +121,8 @@ public class AmqpAutoConfiguration {
     /**
      * List of events which will also be sent to rs-notifier after publishing the original event
      */
-    @Value("${regards.copied.events.to.notifier:#{T(java.util.Collections).emptyList()}}")
-    private List<String> eventsToNotifier;
+    @Autowired
+    private NotifierEventsProperties notifierEventsProperties;
 
     @Bean
     @ConditionalOnMissingBean(IRabbitVirtualHostAdmin.class)
@@ -214,7 +213,7 @@ public class AmqpAutoConfiguration {
                                  amqpAdmin,
                                  threadTenantResolver,
                                  gson,
-                                 eventsToNotifier);
+                                 notifierEventsProperties.getEvents());
         } else {
             return new SingleVhostPublisher(applicationId,
                                             rabbitTemplate,
@@ -223,7 +222,7 @@ public class AmqpAutoConfiguration {
                                             rabbitVirtualHostAdmin,
                                             threadTenantResolver,
                                             gson,
-                                            eventsToNotifier);
+                                            notifierEventsProperties.getEvents());
         }
     }
 
@@ -289,7 +288,7 @@ public class AmqpAutoConfiguration {
                                      amqpAdmin,
                                      rabbitVirtualHostAdmin,
                                      gson,
-                                     eventsToNotifier);
+                                     notifierEventsProperties.getEvents());
     }
 
     @Bean
