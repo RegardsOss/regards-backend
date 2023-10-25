@@ -47,7 +47,7 @@ import static org.mockito.Mockito.times;
  **/
 @ActiveProfiles({ "test", "testAmqp" })
 @ContextConfiguration(classes = { OrderClientTestConfiguration.class })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=auto_order_response_handler_it",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=auto_order_request_client_it",
                                    "regards.amqp.enabled=true" })
 @SpringBootTest
 public class AutoOrderRequestClientIT extends AbstractMultitenantServiceIT {
