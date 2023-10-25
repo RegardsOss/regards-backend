@@ -63,7 +63,10 @@ public class DaoTransactionIT {
      * User service
      */
     @Autowired
-    private DaoUserService service;
+    private DaoUserService daoUserService;
+
+    @Autowired
+    UserService userService;
 
     @Test
     @Ignore("FIXME, issue with hsqldb random fail")
@@ -71,10 +74,10 @@ public class DaoTransactionIT {
 
         // Given
         // Creates a user
-        service.deleteAll("test1");
-        service.addWithoutError("test1");
-        Long userId = service.getUsers("test1").get(0).getId();
-        ExecutorService threadpool = Executors.newFixedThreadPool(20);
+        daoUserService.deleteAll("test1");
+        daoUserService.addWithoutError("test1");
+        Long userId = daoUserService.getUsers("test1").get(0).getId();
+        ExecutorService threadPool = Executors.newFixedThreadPool(20);
 
         // With
         // Run concurrent updates of the user
@@ -82,14 +85,14 @@ public class DaoTransactionIT {
 
         List<Future<?>> allTasks = new ArrayList<>();
         for (int i = 0; i < nbIteration; i++) {
-            allTasks.add(threadpool.submit(() -> service.incrementUserCountWithRetryWithOptimistic(userId, "test1")));
+            allTasks.add(threadPool.submit(() -> userService.incrementUserCount(userId, "test1")));
         }
         Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(() -> allTasks.stream().allMatch(Future::isDone));
-        threadpool.shutdown();
+        threadPool.shutdown();
 
         // Then
         // User counter should be 1000
-        Assert.assertEquals(nbIteration, (int) service.getUsers("test1").get(0).getCount());
+        Assert.assertEquals(nbIteration, (int) daoUserService.getUsers("test1").get(0).getCount());
 
     }
 
@@ -98,30 +101,30 @@ public class DaoTransactionIT {
     public void test_pessimistic_lock() throws InterruptedException {
         // Given
         // Creates a user
-        service.deleteAll("test1");
-        service.addWithoutError("test1");
-        Long userId = service.getUsers("test1").get(0).getId();
+        daoUserService.deleteAll("test1");
+        daoUserService.addWithoutError("test1");
+        Long userId = daoUserService.getUsers("test1").get(0).getId();
         ExecutorService threadpool = Executors.newFixedThreadPool(10);
 
         // With
         // Run concurrent updates of the user
         int nbIteration = 200;
         for (int i = 0; i < nbIteration; i++) {
-            threadpool.submit(() -> service.incrementUserCountWithPessimisticLock(userId, "test1"));
+            threadpool.submit(() -> userService.incrementUserCountWithPessimisticLock(userId, "test1"));
         }
         Thread.sleep(5_000);
         threadpool.shutdown();
 
         // Then
         // User counter should be 1000
-        Assert.assertEquals(nbIteration, (int) service.getUsers("test1").get(0).getCount());
+        Assert.assertEquals(nbIteration, (int) daoUserService.getUsers("test1").get(0).getCount());
     }
 
     /**
      * Test for multitenant transactions.
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
-    @Purpose("Test multitenant transactions operations in database")
+    @Purpose("Test multi-tenant transactions operations in database")
     @Test
     public void transactionTest() {
 
@@ -132,60 +135,60 @@ public class DaoTransactionIT {
         List<User> users = new ArrayList<>();
 
         // Delete any datas
-        service.deleteAll(testTenant);
-        service.deleteAll(testTenant2);
+        daoUserService.deleteAll(testTenant);
+        daoUserService.deleteAll(testTenant2);
 
         // Add a user with transaction error. There must be a rollback and nothing commited.
         try {
             LOG.info("Adding users to first tenant with exception thrown ... ");
-            service.addWithError(testTenant);
+            daoUserService.addWithError(testTenant);
             Assert.fail(exceptionError);
         } catch (final DaoTestException e) {
             LOG.error(e.getMessage());
             users.clear();
-            users = service.getUsers(testTenant);
+            users = daoUserService.getUsers(testTenant);
             Assert.assertTrue("The first tenant should be empty !", users.isEmpty());
             LOG.info(rollbackSucceed);
         }
 
         // Add valid user
         LOG.info("Adding valid users to first tenant ... ");
-        service.addWithoutError(testTenant);
+        daoUserService.addWithoutError(testTenant);
         users.clear();
-        users = service.getUsers(testTenant);
+        users = daoUserService.getUsers(testTenant);
         Assert.assertEquals(1, users.size());
-        LOG.info("Insert correctly done and commited ! ");
+        LOG.info("Insert correctly done and committed ! ");
 
         // Test for second tenant
         users.clear();
-        users = service.getUsers(testTenant2);
+        users = daoUserService.getUsers(testTenant2);
         Assert.assertTrue("There must be 0 elements !", users.isEmpty());
 
         // Add a user with transaction error. There must be a rollback and nothing commited.
         try {
             LOG.info("Adding users to second tenant with exception thrown ... ");
-            service.addWithError(testTenant2);
+            daoUserService.addWithError(testTenant2);
             Assert.fail(exceptionError);
         } catch (final DaoTestException e) {
             LOG.error(e.getMessage());
             users.clear();
-            users = service.getUsers(testTenant2);
+            users = daoUserService.getUsers(testTenant2);
             Assert.assertTrue("The second tenant should be empty !", users.isEmpty());
             LOG.info(rollbackSucceed);
         }
 
         // Add valid users to second tenant
         LOG.info("Adding valid users to second tenant ... ");
-        service.addWithoutError(testTenant2);
-        service.addWithoutError(testTenant2);
+        daoUserService.addWithoutError(testTenant2);
+        daoUserService.addWithoutError(testTenant2);
         users.clear();
-        users = service.getUsers(testTenant2);
+        users = daoUserService.getUsers(testTenant2);
         Assert.assertEquals("There must be 2 elements !", 2, users.size());
-        LOG.info("Inserts correctly done and commited ! ");
+        LOG.info("Inserts correctly done and committed ! ");
 
         // Check that the first tenant hasn't changed.
         users.clear();
-        users = service.getUsers(testTenant);
+        users = daoUserService.getUsers(testTenant);
         Assert.assertEquals("There must be 1 element ! " + users.size(), 1, users.size());
     }
 

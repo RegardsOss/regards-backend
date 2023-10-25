@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transact
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.retry.annotation.EnableRetry;
 
 /**
  * Class MultiTenancyDaoTestConfiguration
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.PropertySource;
  */
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional" })
 @EnableAutoConfiguration
+@EnableRetry
 @PropertySource({ "classpath:dao-transaction.properties" })
 public class DaoTransactionTestConfiguration {
 

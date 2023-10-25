@@ -16,7 +16,8 @@ import org.springframework.context.annotation.PropertySource;
                excludeFilters = { @ComponentScan.Filter(value = DaoTestController.class,
                                                         type = FilterType.ASSIGNABLE_TYPE),
                                   @ComponentScan.Filter(value = DaoUserService.class,
-                                                        type = FilterType.ASSIGNABLE_TYPE) })
+                                                        type = FilterType.ASSIGNABLE_TYPE),
+                                  @ComponentScan.Filter(value = UserService.class, type = FilterType.ASSIGNABLE_TYPE) })
 @PropertySource("classpath:disable-dao.properties")
 public class DisableMultitenantDaoTestConfiguration {
 
