@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.order.client.env.mocks;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.client.amqp.IAutoOrderResponseClient;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +35,8 @@ import static fr.cnes.regards.modules.order.dto.output.OrderRequestStatus.*;
  * @author Iliana Ghazali
  **/
 public class AutoOrderResponseClientMock implements IAutoOrderResponseClient {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AutoOrderResponseClientMock.class);
 
     private final Map<OrderRequestStatus, List<OrderResponseDtoEvent>> responsesByStatus;
 
@@ -66,10 +70,12 @@ public class AutoOrderResponseClientMock implements IAutoOrderResponseClient {
     }
 
     private void addEventsToMap(OrderRequestStatus status, List<OrderResponseDtoEvent> stored) {
+        LOGGER.info("Adding event to mock responses {}", status);
         responsesByStatus.computeIfAbsent(status, v -> new ArrayList<>()).addAll(stored);
     }
 
     public Map<OrderRequestStatus, Integer> countEventsByStatus() {
+        LOGGER.info("Mock responses count : {}", responsesByStatus.keySet().size());
         Map<OrderRequestStatus, Integer> countMap = new HashMap<>();
         responsesByStatus.forEach((key, list) -> countMap.put(key, list.size()));
         return countMap;

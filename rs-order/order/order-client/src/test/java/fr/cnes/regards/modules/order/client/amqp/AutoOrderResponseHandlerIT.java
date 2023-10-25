@@ -28,6 +28,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -47,12 +49,14 @@ import static org.mockito.Mockito.timeout;
  *
  * @author Iliana Ghazali
  **/
-@ActiveProfiles({ "test", "testAmqp" })
+@ActiveProfiles({ "test", "testAmqp", "noscheduler", "nojobs" })
 @ContextConfiguration(classes = { OrderClientTestConfiguration.class })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=auto_order_response_handler_it",
                                    "regards.amqp.enabled=true" })
 @SpringBootTest
 public class AutoOrderResponseHandlerIT extends AbstractMultitenantServiceIT {
+
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @SpyBean
     private AutoOrderResponseHandler handler; // class under test
@@ -63,10 +67,12 @@ public class AutoOrderResponseHandlerIT extends AbstractMultitenantServiceIT {
     @Before
     public void init() {
         clientMock.reset();
+        simulateApplicationStartedEvent();
+        simulateApplicationReadyEvent();
     }
 
     @Test
-    public void givenResponses_whenPublished_thenReceiveEvents() {
+    public void givenResponses_whenPublished_thenReceiveEvents() throws InterruptedException {
         // GIVEN
         Map<OrderRequestStatus, Integer> expectedNbEventsByStatus = Map.of(GRANTED,
                                                                            1,
@@ -79,10 +85,13 @@ public class AutoOrderResponseHandlerIT extends AbstractMultitenantServiceIT {
                                                                            FAILED,
                                                                            8);
         // WHEN
+        logger.info("Running messages");
         publisher.publish(simulateResponses(expectedNbEventsByStatus));
         // THEN
         // check events were successfully received
-        Mockito.verify(handler, timeout(2000)).handleBatch(Mockito.any());
+        Mockito.verify(handler, timeout(5000)).handleBatch(Mockito.any());
+        // Wait for batch method hanle responses.
+        Thread.sleep(500L);
         // check events were handled correctly according to their status
         Assertions.assertThat(clientMock.countEventsByStatus())
                   .containsExactlyInAnyOrderEntriesOf(expectedNbEventsByStatus);
@@ -95,7 +104,7 @@ public class AutoOrderResponseHandlerIT extends AbstractMultitenantServiceIT {
             for (int i = 0; i < nb; i++) {
                 responses.add(new OrderResponseDtoEvent(status,
                                                         orderId,
-                                                        String.valueOf("corr-" + i + "-" + status),
+                                                        "corr-" + i + "-" + status,
                                                         "random",
                                                         null,
                                                         null,
