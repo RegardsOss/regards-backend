@@ -35,9 +35,9 @@ public class EmailRequestSchedulerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailRequestSchedulerService.class);
 
-    private final static String DEFAULT_INITIAL_DELAY = "300000"; //5min
+    private final static String DEFAULT_INITIAL_DELAY = "20000";
 
-    private final static String DEFAULT_SCHEDULING_DELAY = "5000"; //5sec
+    private final static String DEFAULT_SCHEDULING_DELAY = "5000";
 
     private final EmailRequestService emailRequestService;
 

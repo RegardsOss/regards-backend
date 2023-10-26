@@ -136,8 +136,8 @@ public class EndingDeliveryService {
         List<DeliveryAndJob> deliveryAndJobLinks = new ArrayList<>(nbRequestsInSuccess);
         for (DeliveryRequest request : requestsInSuccess) {
             // check if request is already associated to OrderDeliveryZipJob
-            if (!deliveryAndJobService.existsByIdAndJobInfoClassName(request.getId(),
-                                                                     OrderDeliveryZipJob.class.getName())) {
+            if (!deliveryAndJobService.existsByDeliveryRequestIdAndJobInfoClassName(request.getId(),
+                                                                                    OrderDeliveryZipJob.class.getName())) {
                 JobInfo jobInfo = new JobInfo(false,
                                               DeliveryJobPriority.ORDER_DELIVERY_ZIP_JOB_PRIORITY,
                                               Set.of(),

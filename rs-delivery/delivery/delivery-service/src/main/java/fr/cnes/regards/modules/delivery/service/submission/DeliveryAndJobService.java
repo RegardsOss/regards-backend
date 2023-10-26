@@ -64,8 +64,8 @@ public class DeliveryAndJobService {
     }
 
     @MultitenantTransactional(readOnly = true)
-    public boolean existsByIdAndJobInfoClassName(Long deliveryRequestId, String jobClassName) {
-        return deliveryAndJobRepository.existsByIdAndJobInfoClassName(deliveryRequestId, jobClassName);
+    public boolean existsByDeliveryRequestIdAndJobInfoClassName(Long deliveryRequestId, String jobClassName) {
+        return deliveryAndJobRepository.existsByDeliveryRequestIdAndJobInfoClassName(deliveryRequestId, jobClassName);
     }
 
     // ------------

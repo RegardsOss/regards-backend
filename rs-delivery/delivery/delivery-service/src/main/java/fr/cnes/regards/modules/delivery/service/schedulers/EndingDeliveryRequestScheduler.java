@@ -47,7 +47,7 @@ public class EndingDeliveryRequestScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndingDeliveryRequestScheduler.class);
 
-    private static final String DEFAULT_INITIAL_DELAY_IN_SEC = "300"; //5min
+    private static final String DEFAULT_INITIAL_DELAY_IN_SEC = "10";
 
     private static final String DEFAULT_SCHEDULING_DELAY_IN_SEC = "5";
 
