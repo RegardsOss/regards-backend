@@ -34,7 +34,7 @@ public class LuceneRuleMatcher implements IRuleMatcher {
 
     public static final String PLUGIN_ID = "LuceneRuleMatcher";
 
-    @PluginParameter(name = PAYLOAD_RULE_NAME, label = "lucene expression to match")
+    @PluginParameter(name = PAYLOAD_RULE_NAME, label = "lucene expression to match", optional = true)
     private String payloadRule;
 
     @PluginParameter(name = METADATA_RULE_NAME, label = "lucene expression to match", optional = true)
