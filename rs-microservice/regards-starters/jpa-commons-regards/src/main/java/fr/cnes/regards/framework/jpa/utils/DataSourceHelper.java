@@ -31,6 +31,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 /**
  * Class DataSourceHelper
  * <p>
@@ -73,7 +75,11 @@ public final class DataSourceHelper {
 
     private static final String HR = "####################################################";
 
-    private static final long CONNECTION_MAX_LIFE_TIME_MS = 600000L;
+    private static final long CONNECTION_MAX_LIFE_TIME_MS = MINUTES.toMillis(10);
+
+    private static final long CONNECTION_TIMEOUT_MS = MINUTES.toMillis(9);
+
+    private static final long CONNECTION_IDLE_TIMEOUT_MS = MINUTES.toMillis(8);
 
     /**
      * Static class
@@ -134,9 +140,12 @@ public final class DataSourceHelper {
             config.setMinimumIdle(minPoolSize);
             config.setMaximumPoolSize(maxPoolSize);
             config.setPoolName(String.format("Hikari-Pool-%s", tenant));
+            // Default value is 30seconds (-5 for validation) see HikariConfig#CONNECTION_TIMEOUT_MS
+            config.setConnectionTimeout(CONNECTION_TIMEOUT_MS);
+            // Default value is 10 minutes see HikariConfig#CONNECTION_IDLE_TIMEOUT_MS
+            config.setIdleTimeout(CONNECTION_IDLE_TIMEOUT_MS);
             // Docker Swarm / Kube workaround: https://github.com/brettwooldridge/HikariCP/issues/1237
             // maxLifetime should be 10mins to avoid stale postgres connections
-            config.setConnectionTimeout(CONNECTION_MAX_LIFE_TIME_MS);
             config.setMaxLifetime(CONNECTION_MAX_LIFE_TIME_MS);
             // Postgres schema configuration
             config.setConnectionInitSql("SET search_path to " + schemaIdentifier);
