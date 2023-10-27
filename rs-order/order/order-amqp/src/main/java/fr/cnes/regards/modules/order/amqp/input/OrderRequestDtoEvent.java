@@ -38,7 +38,7 @@ import java.util.List;
 public class OrderRequestDtoEvent extends OrderRequestDto implements ISubscribable {
 
     public OrderRequestDtoEvent(List<String> queries,
-                                OrderRequestFilters filters,
+                                @Nullable OrderRequestFilters filters,
                                 String correlationId,
                                 @Nullable String user,
                                 @Nullable Long sizeLimitInBytes) {

@@ -44,6 +44,7 @@ public class OrderRequestDto {
      * see {@link OrderRequestFilters}
      */
     @Valid
+    @Nullable
     private final OrderRequestFilters filters;
 
     /**
@@ -69,12 +70,11 @@ public class OrderRequestDto {
     private Long sizeLimitInBytes;
 
     public OrderRequestDto(List<String> queries,
-                           OrderRequestFilters filters,
+                           @Nullable OrderRequestFilters filters,
                            @Nullable String correlationId,
                            @Nullable String user,
                            @Nullable Long sizeLimitInBytes) {
         Assert.notEmpty(queries, "at least one query is mandatory!");
-        Assert.notNull(filters, "filters are mandatory!");
 
         this.queries = queries;
         this.filters = filters;
@@ -105,6 +105,7 @@ public class OrderRequestDto {
         this.user = user;
     }
 
+    @Nullable
     public OrderRequestFilters getFilters() {
         return filters;
     }

@@ -23,15 +23,18 @@ import fr.cnes.regards.modules.ingest.client.IIngestClientListener;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.IngestStatusResponseMapping;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
-import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
 import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -43,15 +46,12 @@ import java.util.Set;
 @Service
 public class IngestResponseListener implements IIngestClientListener {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestResponseListener.class);
+
     /**
      * Service class for ingest response
      */
     private final IngestResponseService ingestResponseService;
-
-    /**
-     * Service class for the reading of submission request
-     */
-    private final SubmissionReadService submissionReadService;
 
     private final IPublisher publisher;
 
@@ -59,10 +59,8 @@ public class IngestResponseListener implements IIngestClientListener {
 
     public IngestResponseListener(IngestResponseService responseService,
                                   ISubmissionRequestRepository requestRepository,
-                                  SubmissionReadService submissionReadService,
                                   IPublisher publisher) {
         this.ingestResponseService = responseService;
-        this.submissionReadService = submissionReadService;
         this.publisher = publisher;
         this.requestRepository = requestRepository;
     }
@@ -100,6 +98,7 @@ public class IngestResponseListener implements IIngestClientListener {
                                                                                 SubmissionResponseStatus.SUCCESS,
                                                                                 null))
                                                                             .toList();
+        submissionResponseDtoEvents.forEach(r -> LOGGER.debug(r.toString()));
         publisher.publish(submissionResponseDtoEvents);
     }
 
@@ -109,12 +108,15 @@ public class IngestResponseListener implements IIngestClientListener {
     private SubmissionResponseDtoEvent createSubmissionResponseDtoEvent(RequestInfo info,
                                                                         SubmissionResponseStatus status,
                                                                         @Nullable String errorMessage) {
+        Optional<SubmissionRequest> oRequest = requestRepository.findSubmissionRequestByCorrelationId(info.getRequestId());
         return SubmissionResponseDtoUtils.createEvent(info.getRequestId(),
-                                                      requestRepository.findSubmissionRequestByCorrelationId(info.getRequestId()),
+                                                      oRequest,
                                                       status,
                                                       errorMessage,
-                                                      null,
-                                                      1);
+                                                      oRequest.map(SubmissionRequest::getOriginRequestAppId)
+                                                              .orElse(null),
+                                                      oRequest.map(SubmissionRequest::getOriginRequestPriority)
+                                                              .orElse(1));
     }
 
     @Override

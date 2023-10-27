@@ -279,7 +279,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
             // Send message of IEvent type
             publishMessageByTenant(currentTenant,
                                    exchangeName,
-                                   RegardsAmqpAdmin.DEFAULT_ROUTING_KEY,
+                                   routingKey.orElse(RegardsAmqpAdmin.DEFAULT_ROUTING_KEY),
                                    message,
                                    priority,
                                    headers);

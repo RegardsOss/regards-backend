@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
-import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
 import fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.notification.SuccessLtaRequestNotification;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import org.apache.commons.lang3.StringUtils;
@@ -79,9 +78,6 @@ public class IngestResponseListenerTest {
     @Spy
     private IPublisher publisher;
 
-    @Mock
-    private SubmissionReadService submissionReadService;
-
     @Before
     public void init() {
         IngestResponseService responseService = new IngestResponseService(submissionRequestRepository,
@@ -89,10 +85,7 @@ public class IngestResponseListenerTest {
                                                                           runtimeTenantResolver,
                                                                           new Gson());
 
-        ingestResponseListener = new IngestResponseListener(responseService,
-                                                            submissionRequestRepository,
-                                                            submissionReadService,
-                                                            publisher);
+        ingestResponseListener = new IngestResponseListener(responseService, submissionRequestRepository, publisher);
     }
 
     @Test

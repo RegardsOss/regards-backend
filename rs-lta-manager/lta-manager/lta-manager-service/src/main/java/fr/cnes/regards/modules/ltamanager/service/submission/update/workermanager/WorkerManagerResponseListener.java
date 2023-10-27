@@ -94,6 +94,7 @@ public class WorkerManagerResponseListener
                                                                                        .map(this::buildErrorResponseFromResponseEvent)
                                                                                        .toList();
         if (!errorSubmissionResponseEvents.isEmpty()) {
+            errorSubmissionResponseEvents.forEach(r -> LOGGER.debug(r.toString()));
             publisher.publish(errorSubmissionResponseEvents);
         }
         LOGGER.trace("[LTA WORKER RESPONSE EVENT HANDLER] {} RequestEvents handled in {} ms...",
@@ -129,7 +130,11 @@ public class WorkerManagerResponseListener
                                                       SubmissionResponseStatus.ERROR,
                                                       SubmissionResponseDtoUtils.buildErrorMessage(new HashSet<>(
                                                           responseAndRequest.getLeft().getMessage())),
-                                                      null,
-                                                      1);
+                                                      responseAndRequest.getRight()
+                                                                        .map(SubmissionRequest::getOriginRequestAppId)
+                                                                        .orElse(null),
+                                                      responseAndRequest.getRight()
+                                                                        .map(SubmissionRequest::getOriginRequestPriority)
+                                                                        .orElse(1));
     }
 }
