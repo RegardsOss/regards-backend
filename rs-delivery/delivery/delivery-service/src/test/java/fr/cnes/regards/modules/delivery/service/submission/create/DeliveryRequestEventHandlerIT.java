@@ -75,7 +75,7 @@ import static org.mockito.Mockito.timeout;
  *
  * @author Iliana Ghazali
  **/
-@ActiveProfiles({ "test", "testAmqp",  "noscheduler" })
+@ActiveProfiles({ "test", "testAmqp", "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=delivery_request_handler_it",
                                    "regards.amqp.enabled=true" })
 @SpringBootTest
@@ -164,16 +164,28 @@ public class DeliveryRequestEventHandlerIT extends AbstractMultitenantServiceIT 
         handler.handleBatch(simulateRequests(nbRequests));
         // THEN
         // check events were handled with granted status
-        // published events are OrderRequestDtoEvents from DeliveryRequestDtoEvents
+        // published events are DeliveryResponseDtoEvents and OrderRequestDtoEvents from DeliveryRequestDtoEvents
         ArgumentCaptor<ISubscribable> responseCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(publisher, timeout(2000).times(nbRequests)).publish(responseCaptor.capture());
+        Mockito.verify(publisher, timeout(2000).times(nbRequests * 2)).publish(responseCaptor.capture());
+        List<ISubscribable> eventsSent = responseCaptor.getAllValues();
+
+        // check delivery responses
+        List<DeliveryResponseDtoEvent> deliveryResponses = eventsSent.stream()
+                                                                     .filter(event -> event instanceof DeliveryResponseDtoEvent)
+                                                                     .map(deliveryEvent -> (DeliveryResponseDtoEvent) deliveryEvent)
+                                                                     .toList();
+        Assertions.assertThat(deliveryResponses.size()).isEqualTo(nbRequests);
+        for (int i = 0; i < nbRequests; i++) {
+            DeliveryResponseDtoEvent response = deliveryResponses.get(i);
+            Assertions.assertThat(response.getCorrelationId()).isEqualTo("corr-" + i + "-delivery");
+            Assertions.assertThat(response.getStatus()).isEqualTo(DeliveryRequestStatus.GRANTED);
+        }
 
         // check order responses
-        List<OrderRequestDtoEvent> orderEvents = responseCaptor.getAllValues()
-                                                               .stream()
-                                                               .filter(event -> event instanceof OrderRequestDtoEvent)
-                                                               .map(orderEvent -> (OrderRequestDtoEvent) orderEvent)
-                                                               .toList();
+        List<OrderRequestDtoEvent> orderEvents = eventsSent.stream()
+                                                           .filter(event -> event instanceof OrderRequestDtoEvent)
+                                                           .map(orderEvent -> (OrderRequestDtoEvent) orderEvent)
+                                                           .toList();
         Assertions.assertThat(orderEvents.size()).isEqualTo(nbRequests);
         for (int i = 0; i < nbRequests; i++) {
             OrderRequestDtoEvent orderEvent = orderEvents.get(i);
@@ -204,7 +216,9 @@ public class DeliveryRequestEventHandlerIT extends AbstractMultitenantServiceIT 
     @Test
     public void givenEventsWithDuplicatedCorrelationIds_whenSent_thenExpectIgnored() {
         givenValidEvents_whenSent_thenExpectGranted();
-        givenValidEvents_whenSent_thenExpectGranted();
+        Mockito.reset(publisher);
+        handler.handleBatch(simulateRequests(4));
+        Mockito.verifyNoInteractions(publisher);
     }
 
     private List<DeliveryRequestDtoEvent> simulateRequests(int nbRequests) {

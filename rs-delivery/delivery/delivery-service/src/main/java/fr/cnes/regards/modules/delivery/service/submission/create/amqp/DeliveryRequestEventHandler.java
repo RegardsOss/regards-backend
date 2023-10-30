@@ -112,9 +112,9 @@ public class DeliveryRequestEventHandler
         long start = System.currentTimeMillis();
         LOGGER.debug("Handling {} delivery request events...", events.size());
         List<DeliveryRequestDtoEvent> validEvents = validateBatchEventsAndHandleInvalid(events);
-        int nbDeliveryRequestsCreated = createService.handleDeliveryRequestsCreation(validEvents);
+        List<DeliveryResponseDtoEvent> responses = createService.handleDeliveryRequestsCreation(validEvents);
         LOGGER.debug("{} delivery responses created from {} delivery request events. Handled in {}ms.",
-                     nbDeliveryRequestsCreated,
+                     responses.size(),
                      events.size(),
                      System.currentTimeMillis() - start);
     }
@@ -155,7 +155,9 @@ public class DeliveryRequestEventHandler
                                                                                              errorsFormatted));
             }
         });
-        publisher.publish(errorResponses);
+        if (!errorResponses.isEmpty()) {
+            publisher.publish(errorResponses);
+        }
         // only keep valid events
         events.removeAll(eventsInError);
         return events;

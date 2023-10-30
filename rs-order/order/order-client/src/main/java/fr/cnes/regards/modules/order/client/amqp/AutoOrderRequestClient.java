@@ -54,6 +54,8 @@ public class AutoOrderRequestClient implements IAutoOrderRequestClient {
                                                                              orderSizeLimitOverride :
                                                                              orderRequestDto.getSizeLimitInBytes()))
                                                                      .toList();
-        publisher.publish(orderRequestEvents);
+        if (!orderRequests.isEmpty()) {
+            publisher.publish(orderRequestEvents);
+        }
     }
 }

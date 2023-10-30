@@ -245,16 +245,8 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
         assertTrue(nowMinusOneHour.isBefore(expectedDeliveryRequest.getDeliveryStatus().getStatusDate()));
 
         ArgumentCaptor<DeliveryResponseDtoEvent> responseCaptor = ArgumentCaptor.forClass(DeliveryResponseDtoEvent.class);
-        Mockito.verify(publisher, timeout(100).times(1)).publish(responseCaptor.capture());
-        List<DeliveryResponseDtoEvent> publishedDeliveryResponseEvt = responseCaptor.getAllValues();
-
-        assertEquals(1, publishedDeliveryResponseEvt.size());
-        assertEquals(correlationId, publishedDeliveryResponseEvt.get(0).getCorrelationId());
-        assertEquals(DeliveryRequestStatus.GRANTED, publishedDeliveryResponseEvt.get(0).getStatus());
-        assertNull(publishedDeliveryResponseEvt.get(0).getErrorType());
-        assertNull(publishedDeliveryResponseEvt.get(0).getMessage());
-        assertEquals("originAppId", publishedDeliveryResponseEvt.get(0).getOriginRequestAppId().orElse(null));
-        assertEquals(1, publishedDeliveryResponseEvt.get(0).getOriginRequestPriority().orElse(null));
+        // handler do nothing when receiving GRANTED from order
+        Mockito.verify(publisher, timeout(100).times(0)).publish(responseCaptor.capture());
     }
 
     @Test
@@ -470,7 +462,7 @@ public class OrderResponseEventHandlerIT extends AbstractMultitenantServiceIT {
 
         assertEquals(1, publishedDeliveryResponseEvt.size());
         assertEquals(correlationId, publishedDeliveryResponseEvt.get(0).getCorrelationId());
-        assertEquals(DeliveryRequestStatus.DENIED, publishedDeliveryResponseEvt.get(0).getStatus());
+        assertEquals(DeliveryRequestStatus.ERROR, publishedDeliveryResponseEvt.get(0).getStatus());
         assertEquals("Error message", publishedDeliveryResponseEvt.get(0).getMessage());
         assertEquals(DeliveryErrorType.ORDER_LIMIT_REACHED, publishedDeliveryResponseEvt.get(0).getErrorType());
         assertEquals("originAppId", publishedDeliveryResponseEvt.get(0).getOriginRequestAppId().orElse(null));
