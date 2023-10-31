@@ -168,4 +168,5 @@ public interface ICatalogSearchService {
      * @return @link PropertyBound}s
      */
     List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion parse, SearchType type);
+
 }

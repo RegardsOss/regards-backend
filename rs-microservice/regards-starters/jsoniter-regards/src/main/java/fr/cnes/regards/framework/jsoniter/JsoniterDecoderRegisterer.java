@@ -25,6 +25,7 @@ public class JsoniterDecoderRegisterer {
                        DataObjectFeatureJsoniterDecoder.selfRegister(gson, propTypeFinder),
                        CollectionFeatureJsoniterDecoder.selfRegister(gson, propTypeFinder),
                        DatasetFeatureJsoniterDecoder.selfRegister(gson, propTypeFinder),
+                       DatasetMetadataJsoniterDecoder.selfRegister(),
                        DataObjectMetadataJsoniterDecoder.selfRegister(),
                        DataObjectGroupJsoniterDecoder.selfRegister(),
                        DataObjectJsoniterDecoder.selfRegister(),

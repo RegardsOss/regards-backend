@@ -61,6 +61,8 @@ public class IIndexableJsoniterParserTest {
             "URN:AIP:DATA:perf:35a8b1aa-7d90-3f34-bc94-646424f8cee3:V1");
         assertThat(dataobj.getFeature().getProperty("FileSize").getValue()).isEqualTo(3688L);
 
+        assertThat(dataobj.getMetadata().getGroups().size()).isEqualTo(1);
+
         LOGGER.info("parsed: {}", parsed);
     }
 
@@ -100,6 +102,8 @@ public class IIndexableJsoniterParserTest {
         assertThat(dataset.getId()).isEqualTo(402L);
         assertThat(dataset.getFeature().getId().toString()).isEqualTo(
             "URN:AIP:DATASET:perf:249a033b-2b61-44a8-b903-9805c2170654:V1");
+
+        assertThat(dataset.getMetadata().getDataObjectsGroups().size()).isEqualTo(1);
 
         LOGGER.info("parsed: {}", parsed);
     }

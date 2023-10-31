@@ -37,7 +37,9 @@ public class DatasetFeature extends EntityFeature {
      */
     private String licence;
 
-    private Boolean contentAccessGranted = false;
+    private Boolean dataObjectsFilesAccessGranted = false;
+
+    private Boolean dataObjectsAccessGranted = false;
 
     /**
      * Deserialization constructor
@@ -69,11 +71,19 @@ public class DatasetFeature extends EntityFeature {
         this.licence = licence;
     }
 
-    public Boolean getContentAccessGranted() {
-        return contentAccessGranted;
+    public Boolean getDataObjectsFilesAccessGranted() {
+        return dataObjectsFilesAccessGranted;
     }
 
-    public void setContentAccessGranted(Boolean contentAccessGranted) {
-        this.contentAccessGranted = contentAccessGranted;
+    public void setDataObjectsFilesAccessGranted(Boolean dataObjectsFilesAccessGranted) {
+        this.dataObjectsFilesAccessGranted = dataObjectsFilesAccessGranted;
+    }
+
+    public Boolean getDataObjectsAccessGranted() {
+        return dataObjectsAccessGranted;
+    }
+
+    public void setDataObjectsAccessGranted(Boolean dataObjectsAccessGranted) {
+        this.dataObjectsAccessGranted = dataObjectsAccessGranted;
     }
 }

@@ -40,7 +40,6 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.model.domain.Model;
-import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
@@ -63,8 +62,9 @@ import org.springframework.util.MultiValueMap;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -80,11 +80,6 @@ public class CatalogSearchServiceTest {
      * Class under test
      */
     private CatalogSearchService catalogSearchService;
-
-    /**
-     * The OpenSearch service building {@link ICriterion} from a request string
-     */
-    private OpenSearchService openSearchService;
 
     /**
      * Facet converter
@@ -119,7 +114,6 @@ public class CatalogSearchServiceTest {
     @Before
     public void setUp() throws AccessRightFilterException, OpenSearchUnknownParameter {
         // Declare mocks
-        openSearchService = Mockito.mock(OpenSearchService.class);
         accessRightFilter = Mockito.mock(IAccessRightFilter.class);
         searchService = Mockito.mock(ISearchService.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
@@ -140,7 +134,6 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService,
-                                                        openSearchService,
                                                         accessRightFilter,
                                                         facetConverter,
                                                         pageableConverter);
@@ -158,7 +151,7 @@ public class CatalogSearchServiceTest {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(SampleDataUtils.TENANT);
         MultiValueMap<String, String> q = new LinkedMultiValueMap<>();
-        q.add("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
+        q.add("q=", URLEncoder.encode(SampleDataUtils.QUERY, StandardCharsets.UTF_8));
 
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;
@@ -245,7 +238,7 @@ public class CatalogSearchServiceTest {
         QueryableAttribute geometryAttribute = new QueryableAttribute("geometry", null, true, 0, false);
         AbstractEntity<CollectionFeature> returnCollection = new Collection(new Model(), "perf", "provider", "label");
         ParsedStats parsedStats = new ParsedStats();
-        Aggregations value = new Aggregations(Arrays.asList(parsedStats));
+        Aggregations value = new Aggregations(List.of(parsedStats));
         Mockito.when(searchService.get(Mockito.any(UniformResourceName.class))).thenReturn(returnCollection);
         Mockito.when(searchService.getAggregations(Mockito.any(SimpleSearchKey.class),
                                                    Mockito.any(ICriterion.class),

@@ -22,12 +22,14 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -60,7 +62,7 @@ public interface IBusinessSearchService {
      * @param urn feature identifier
      */
     <F extends EntityFeature> F get(UniformResourceName urn)
-            throws EntityOperationForbiddenException, EntityNotFoundException;
+        throws EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
      * Compute summary for given request (delegate method to catalog search service)
@@ -90,11 +92,16 @@ public interface IBusinessSearchService {
                                                   String propertyPath,
                                                   int maxCount,
                                                   String partialText)
-            throws SearchException, OpenSearchUnknownParameter;
-
+        throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Validates that the given WKT Geometry is valid
      */
     Boolean isValidGeometry(String wktGeometry);
+
+    /**
+     * Check if the current logged in ser as access to the given entity
+     */
+    boolean isContentAccessGranted(AbstractEntity<?> entity) throws AccessRightFilterException;
+
 }
