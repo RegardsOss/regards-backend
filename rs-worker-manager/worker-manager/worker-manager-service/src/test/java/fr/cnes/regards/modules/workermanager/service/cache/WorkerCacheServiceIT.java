@@ -167,11 +167,11 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         // The cache will remove the last heartbeat
         //        Thread.sleep(workerCacheService.EXPIRE_IN_CACHE_DURATION * 1000);
 
-        Awaitility.await().atMost(workerCacheService.expireInCacheDuration * 2, TimeUnit.SECONDS).until(() -> {
-                                                                                                            runtimeTenantResolver.forceTenant(getDefaultTenant());
-                                                                                                            return Optional.empty()
-                                                                                                                           .equals(workerCacheService.getWorkerTypeByContentType(contentTypes1.iterator().next()));
-                                                                                                        }
+        Awaitility.await().atMost(workerCacheService.expireInCacheDurationInSeconds * 2, TimeUnit.SECONDS).until(() -> {
+                                                                                                                     runtimeTenantResolver.forceTenant(getDefaultTenant());
+                                                                                                                     return Optional.empty()
+                                                                                                                                    .equals(workerCacheService.getWorkerTypeByContentType(contentTypes1.iterator().next()));
+                                                                                                                 }
 
         );
 
