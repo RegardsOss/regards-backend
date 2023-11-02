@@ -127,13 +127,13 @@ public class AutoOrderCompletionService {
                                            .sum();
             if (basketSizeInBytes > maxSizeLimitInBytes) {
                 throw new ExceededBasketSizeException(String.format(
-                    "The size of the basket ['%d bytes'] exceeds the maximum size allowed ['%d bytes']. Please review the"
+                    "The size of the basket [%d bytes] exceeds the maximum size allowed [%d bytes]. Please review the"
                     + " order requested so that it does not exceed the maximum size configured.",
                     basketSizeInBytes,
                     maxSizeLimitInBytes));
             } else {
-                LOGGER.debug("Size successfully checked: the size of the basket ['{} bytes'] is below the maximum "
-                             + "size allowed ['{} bytes']", basketSizeInBytes, maxSizeLimitInBytes);
+                LOGGER.debug("Size successfully checked: the size of the basket [{} bytes] is below the maximum "
+                             + "size allowed [{} bytes]", basketSizeInBytes, maxSizeLimitInBytes);
             }
         }
     }
