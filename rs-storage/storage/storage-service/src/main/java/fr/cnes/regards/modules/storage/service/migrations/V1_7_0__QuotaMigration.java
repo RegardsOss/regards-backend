@@ -10,6 +10,7 @@ import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.EntityModel;
@@ -41,12 +42,22 @@ public class V1_7_0__QuotaMigration extends BaseJavaMigration {
 
     private final IProjectUsersClient projectUsersClient;
 
-    public V1_7_0__QuotaMigration(IProjectUsersClient projectUsersClient) {
+    private final boolean ignoreQuotaMigration;
+
+    public V1_7_0__QuotaMigration(IProjectUsersClient projectUsersClient,
+                                  @Value("${regards.migration.ignore_quota_migration:true}")
+                                  boolean ignoreQuotaMigration) {
         this.projectUsersClient = projectUsersClient;
+        this.ignoreQuotaMigration = ignoreQuotaMigration;
     }
 
     @Override
     public void migrate(Context context) throws InterruptedException {
+        if (ignoreQuotaMigration) {
+            LOGGER.info("Java migration of {} ignored by configuration", this.getClass().getSimpleName());
+            // stop migrating Quota on new tenant as there is nothing to do
+            return;
+        }
 
         LOGGER.info("Starting Java migration {}", this.getClass().getSimpleName());
 
