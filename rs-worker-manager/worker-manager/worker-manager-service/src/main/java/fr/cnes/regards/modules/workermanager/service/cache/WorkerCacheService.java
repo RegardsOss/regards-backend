@@ -23,15 +23,15 @@ public class WorkerCacheService implements InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkerCacheService.class);
 
-    private static final String DEFAULT_EXPIRE_IN_CACHE_DURATION = "15";
+    private static final String DEFAULT_EXPIRE_IN_CACHE_DURATION = "60";
 
     @Value("${regards.workermanager.cache.expiration.heartbeat:" + DEFAULT_EXPIRE_IN_CACHE_DURATION + "}")
-    public long expireInCacheDuration;
+    public long expireInCacheDurationInSeconds;
 
     /**
      * Cache to save worker heartbeats, the key is the workerType and the value {@link CacheEntry} contains
      * the workerInstance list related to this workerType
-     * This cache invalid automatically old workerType (that did not receive heartbeat since {@link WorkerCacheService#expireInCacheDuration} sec)
+     * This cache invalid automatically old workerType (that did not receive heartbeat since {@link WorkerCacheService#expireInCacheDurationInSeconds} sec)
      * And the CacheEntry removes old heartbeat when method {@link CacheEntry#addWorkers(Set requests)} called
      */
     private Cache<String, CacheEntry> cache;
@@ -51,8 +51,8 @@ public class WorkerCacheService implements InitializingBean {
         return cache;
     }
 
-    public long getExpireInCacheDuration() {
-        return expireInCacheDuration;
+    public long getExpireInCacheDurationInSeconds() {
+        return expireInCacheDurationInSeconds;
     }
 
     /**
@@ -80,7 +80,7 @@ public class WorkerCacheService implements InitializingBean {
                 cacheEntry.addWorkers(workerInsSet);
             } else {
                 LOGGER.info("New worker register {} with {} instances", workerType, workerInsSet.size());
-                cache.put(workerType, new CacheEntry(workerInsSet, expireInCacheDuration));
+                cache.put(workerType, new CacheEntry(workerInsSet, expireInCacheDurationInSeconds));
             }
             LOGGER.debug("{} heartbeat(s) received from worker type {}", workerInsSet.size(), workerType);
         }
@@ -140,7 +140,9 @@ public class WorkerCacheService implements InitializingBean {
         Map<String, Set<CacheWorkerInstance>> messagesByWorkerType = new HashMap<>();
         events.stream()
               // Remove events outdated
-              .filter(event -> CacheEntry.isValidHeartBeat(event.getHeartBeatDate(), expireInCacheDuration, true))
+              .filter(event -> CacheEntry.isValidHeartBeat(event.getHeartBeatDate(),
+                                                           expireInCacheDurationInSeconds,
+                                                           true))
               // Regroup events into a Map with workerType as key and a list of CacheWorkerIns as value
               .forEach(workerHeartBeatEvent -> {
                   String workerType = workerHeartBeatEvent.getType();

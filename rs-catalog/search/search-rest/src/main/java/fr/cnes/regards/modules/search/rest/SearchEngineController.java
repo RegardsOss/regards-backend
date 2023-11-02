@@ -37,7 +37,6 @@ import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
-import fr.cnes.regards.modules.search.service.SearchException;
 import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +99,8 @@ public class SearchEngineController implements IEntityLinkBuilder {
      * HATEOAS link to reach dataobjects from a dataset
      */
     private static final LinkRelation LINK_TO_DATAOBJECTS = LinkRelation.of("dataobjects");
+
+    private static final LinkRelation LINK_TO_DATAOBJECTS_FILES = LinkRelation.of("dataobjects-files");
 
     /**
      * Pagination property
@@ -423,7 +424,7 @@ public class SearchEngineController implements IEntityLinkBuilder {
         @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
         @RequestHeader HttpHeaders headers,
         @RequestParam(name = SearchEngineMappings.PROPERTY_NAMES) List<String> propertyNames,
-        @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
+        @RequestParam MultiValueMap<String, String> queryParams) throws ModuleException {
         LOGGER.debug("Search dataobject properties bounds valuesdelegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
                                                               engineType,
@@ -440,7 +441,7 @@ public class SearchEngineController implements IEntityLinkBuilder {
     public ResponseEntity<Set<EntityModel<AttributeModel>>> searchDataobjectsAttributes(
         @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
         @RequestHeader HttpHeaders headers,
-        @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
+        @RequestParam MultiValueMap<String, String> queryParams) throws ModuleException {
         LOGGER.debug("Get dataobject model common attributes delegated to engine \"{}\"", engineType);
         ResponseEntity<List<String>> result = dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
                                                                                              engineType,
@@ -479,9 +480,7 @@ public class SearchEngineController implements IEntityLinkBuilder {
                                                  @RequestHeader HttpHeaders headers,
                                                  @RequestParam MultiValueMap<String, String> queryParams,
                                                  Pageable pageable) throws ModuleException {
-        LOGGER.debug("Search dataobjects on dataset \"{}\" delegated to engine \"{}\"",
-                     datasetUrn.toString(),
-                     engineType);
+        LOGGER.debug("Search dataobjects on dataset \"{}\" delegated to engine \"{}\"", datasetUrn, engineType);
         UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
                                                               engineType,
@@ -708,7 +707,11 @@ public class SearchEngineController implements IEntityLinkBuilder {
                     return buildDataLinks(resourceService, context, idString);
                 case DATASET:
                     if (entity instanceof DatasetFeature datasetFeature) {
-                        return buildDatasetLinks(resourceService, context, idString, datasetFeature.getContentAccessGranted());
+                        return buildDatasetLinks(resourceService,
+                                                 context,
+                                                 idString,
+                                                 datasetFeature.getDataObjectsAccessGranted(),
+                                                 datasetFeature.getDataObjectsFilesAccessGranted());
                     }
                     LOGGER.warn("Cannot cast entity to DatasetFeature");
                     break;
@@ -732,31 +735,51 @@ public class SearchEngineController implements IEntityLinkBuilder {
         return links;
     }
 
-    private List<Link> buildDatasetLinks(IResourceService resourceService, SearchContext context, String idString, Boolean contentAccessGranted) {
+    private List<Link> buildDatasetLinks(IResourceService resourceService,
+                                         SearchContext context,
+                                         String idString,
+                                         Boolean dataObjectsAccessGranted,
+                                         Boolean dataObjectsFilesAccessGranted) {
         List<Link> links = new ArrayList<>();
         addEntitySelfLink(resourceService, context, links, idString, SearchEngineController.GET_DATASET_METHOD);
-        if (contentAccessGranted) {
+        if (dataObjectsAccessGranted) {
             // Add link to DATA OBJECTS
             addLink(links,
                     resourceService.buildLink(SearchEngineController.class,
-                            SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET,
-                            LINK_TO_DATAOBJECTS,
-                            MethodParamFactory.build(String.class, context.getEngineType()),
-                            MethodParamFactory.build(String.class, idString),
-                            MethodParamFactory.build(HttpHeaders.class),
-                            MethodParamFactory.build(MultiValueMap.class),
-                            MethodParamFactory.build(Pageable.class)));
+                                              SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET,
+                                              LINK_TO_DATAOBJECTS,
+                                              MethodParamFactory.build(String.class, context.getEngineType()),
+                                              MethodParamFactory.build(String.class, idString),
+                                              MethodParamFactory.build(HttpHeaders.class),
+                                              MethodParamFactory.build(MultiValueMap.class),
+                                              MethodParamFactory.build(Pageable.class)));
+        }
+        if (dataObjectsFilesAccessGranted) {
+            // Add link to DATA OBJECTS FILES
+            addLink(links,
+                    resourceService.buildLink(SearchEngineController.class,
+                                              SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET,
+                                              LINK_TO_DATAOBJECTS_FILES,
+                                              MethodParamFactory.build(String.class, context.getEngineType()),
+                                              MethodParamFactory.build(String.class, idString),
+                                              MethodParamFactory.build(HttpHeaders.class),
+                                              MethodParamFactory.build(MultiValueMap.class),
+                                              MethodParamFactory.build(Pageable.class)));
         }
         return links;
     }
 
-    private void addEntitySelfLink(IResourceService resourceService, SearchContext context, List<Link> links, String idString, String methodName) {
+    private void addEntitySelfLink(IResourceService resourceService,
+                                   SearchContext context,
+                                   List<Link> links,
+                                   String idString,
+                                   String methodName) {
         addLink(links,
                 resourceService.buildLink(SearchEngineController.class,
-                        methodName,
-                        LinkRels.SELF,
-                        MethodParamFactory.build(String.class, context.getEngineType()),
-                        MethodParamFactory.build(String.class, idString),
-                        MethodParamFactory.build(HttpHeaders.class)));
+                                          methodName,
+                                          LinkRels.SELF,
+                                          MethodParamFactory.build(String.class, context.getEngineType()),
+                                          MethodParamFactory.build(String.class, idString),
+                                          MethodParamFactory.build(HttpHeaders.class)));
     }
 }

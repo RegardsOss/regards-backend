@@ -35,10 +35,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+@ActiveProfiles("project-admin")
 @TestPropertySource(locations = { "classpath:test.properties" },
                     properties = { "regards.tenant=opensearch",
                                    "spring.jpa.properties.hibernate.default_schema=opensearch" })

@@ -35,9 +35,9 @@ public class CacheEntry {
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheEntry.class);
 
     /**
-     * The duration before assuming the last heartbeat of a workerIns is useless to store here
+     * The duration (in seconds) before assuming the last heartbeat of a workerIns is useless to store here
      */
-    private final long expireInCacheDuration;
+    private final long expireInCacheDurationInSeconds;
 
     /**
      * Set of Worker instances matching the cache key
@@ -46,9 +46,9 @@ public class CacheEntry {
 
     private OffsetDateTime lastUpdateDate;
 
-    public CacheEntry(Set<CacheWorkerInstance> workerInsList, long expireInCacheDuration) {
+    public CacheEntry(Set<CacheWorkerInstance> workerInsList, long expireInCacheDurationInSeconds) {
         this.workerInsList = workerInsList;
-        this.expireInCacheDuration = expireInCacheDuration;
+        this.expireInCacheDurationInSeconds = expireInCacheDurationInSeconds;
         this.lastUpdateDate = OffsetDateTime.now();
         this.removeOutdatedWorkerIns();
     }
@@ -76,7 +76,9 @@ public class CacheEntry {
      */
     private void removeOutdatedWorkerIns() {
         this.workerInsList.removeIf(cacheWorkerInstance -> {
-            boolean valid = isValidHeartBeat(cacheWorkerInstance.getLastHeartBeatDate(), expireInCacheDuration, false);
+            boolean valid = isValidHeartBeat(cacheWorkerInstance.getLastHeartBeatDate(),
+                                             expireInCacheDurationInSeconds,
+                                             false);
             if (!valid) {
                 LOGGER.info("Instance {} for {} worker expired",
                             cacheWorkerInstance.getId(),
@@ -90,10 +92,10 @@ public class CacheEntry {
      * Function used to check if an heartbeat is considered valid
      */
     public static boolean isValidHeartBeat(OffsetDateTime lastHeartBeatDate,
-                                           long expireInCacheDuration,
+                                           long expireInCacheDurationInSeconds,
                                            boolean enableLog) {
         OffsetDateTime now = OffsetDateTime.now();
-        boolean valid = lastHeartBeatDate.plusSeconds(expireInCacheDuration).isAfter(now);
+        boolean valid = lastHeartBeatDate.plusSeconds(expireInCacheDurationInSeconds).isAfter(now);
         if (!valid) {
             LOGGER.warn("Invalid heartbeat from {} received at {}", lastHeartBeatDate, now);
         }

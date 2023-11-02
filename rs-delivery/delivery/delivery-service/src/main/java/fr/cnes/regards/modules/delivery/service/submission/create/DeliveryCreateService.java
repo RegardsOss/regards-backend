@@ -19,8 +19,10 @@
 package fr.cnes.regards.modules.delivery.service.submission.create;
 
 import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.delivery.amqp.input.DeliveryRequestDtoEvent;
+import fr.cnes.regards.modules.delivery.amqp.output.DeliveryResponseDtoEvent;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.domain.settings.DeliverySettings;
 import fr.cnes.regards.modules.delivery.dto.input.DeliveryRequestDto;
@@ -33,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -53,12 +56,16 @@ public class DeliveryCreateService {
 
     private final DeliveryRequestService deliveryRequestService;
 
+    private final IPublisher publisher;
+
     public DeliveryCreateService(IAutoOrderRequestClient orderClient,
                                  DeliverySettingService settingService,
-                                 DeliveryRequestService deliveryRequestService) {
+                                 DeliveryRequestService deliveryRequestService,
+                                 IPublisher publisher) {
         this.orderClient = orderClient;
         this.settingService = settingService;
         this.deliveryRequestService = deliveryRequestService;
+        this.publisher = publisher;
     }
 
     /**
@@ -66,20 +73,21 @@ public class DeliveryCreateService {
      * monitoring purposes.
      *
      * @param deliveryEvents containing metadata to create orders.
-     * @return number of delivery requests created.
+     * @return status responses.
      */
     @MultitenantTransactional
-    public int handleDeliveryRequestsCreation(List<? extends DeliveryRequestDto> deliveryEvents) {
-        int nbRequestsCreated = 0;
+    public List<DeliveryResponseDtoEvent> handleDeliveryRequestsCreation(List<DeliveryRequestDtoEvent> deliveryEvents) {
+        List<DeliveryResponseDtoEvent> responses = new ArrayList<>(deliveryEvents.size());
         // split events received into manageable database slices
-        List<? extends List<? extends DeliveryRequestDto>> deliveryRequestEventsSlices = Lists.partition(deliveryEvents,
-                                                                                                         DB_SLICE_SIZE);
-        for (List<? extends DeliveryRequestDto> deliveryEventPart : deliveryRequestEventsSlices) {
+        deliveryEvents = removeDuplicatedCorrelationIdInSameBatch(deliveryEvents);
+        List<List<DeliveryRequestDtoEvent>> deliveryRequestEventsSlices = Lists.partition(deliveryEvents,
+                                                                                          DB_SLICE_SIZE);
+        for (List<DeliveryRequestDtoEvent> deliveryEventPart : deliveryRequestEventsSlices) {
+            // remove events with correlationIds already registered
+            deliveryEventPart = removeDuplicatedCorrelationIdFromBD(deliveryEventPart);
             int nbDeliveryEvents = deliveryEventPart.size();
             List<OrderRequestDto> orderRequestDtos = new ArrayList<>(nbDeliveryEvents);
             List<DeliveryRequest> deliveryRequests = new ArrayList<>(nbDeliveryEvents);
-            // remove events with correlationIds already registered
-            deliveryEventPart = filterUniqueCorrelationIds(deliveryEventPart);
             // if correlationIds are unique, create associated delivery requests and order events
             for (DeliveryRequestDto deliveryEvent : deliveryEventPart) {
                 String correlationId = deliveryEvent.getCorrelationId();
@@ -97,15 +105,21 @@ public class DeliveryCreateService {
                                                                                      DeliverySettings.REQUEST_TTL_HOURS),
                                                                                  originRequestAppId,
                                                                                  originRequestPriority));
+                responses.add(DeliveryResponseDtoEvent.buildGrantedDeliveryResponseEvent(deliveryEvent,
+                                                                                         originRequestAppId,
+                                                                                         originRequestPriority));
             }
             // save delivery requests
-            nbRequestsCreated += deliveryRequestService.saveAllRequests(deliveryRequests).size();
+            deliveryRequestService.saveAllRequests(deliveryRequests);
 
             // create orders from events
             orderClient.publishOrderRequestEvents(orderRequestDtos,
                                                   settingService.getValue(DeliverySettings.DELIVERY_ORDER_SIZE_LIMIT_BYTES));
         }
-        return nbRequestsCreated;
+        if (!responses.isEmpty()) {
+            publisher.publish(responses);
+        }
+        return responses;
     }
 
     /**
@@ -115,10 +129,12 @@ public class DeliveryCreateService {
      * @param deliveryEventPart events received
      * @return events with not unique correlationIds
      */
-    private List<? extends DeliveryRequestDto> filterUniqueCorrelationIds(List<? extends DeliveryRequestDto> deliveryEventPart) {
+    private List<DeliveryRequestDtoEvent> removeDuplicatedCorrelationIdFromBD(List<DeliveryRequestDtoEvent> deliveryEventPart) {
+        List<String> correlationIds = deliveryEventPart.stream().map(DeliveryRequestDto::getCorrelationId).toList();
         List<DeliveryRequest> alreadyExistingRequests = deliveryRequestService.findDeliveryRequestByCorrelationIds(
-            deliveryEventPart.stream().map(DeliveryRequestDto::getCorrelationId).toList());
+            correlationIds);
         if (!alreadyExistingRequests.isEmpty()) {
+            // an existing delivery request has same correlationId
             List<String> alreadyExistingCorrelationIds = alreadyExistingRequests.stream()
                                                                                 .map(DeliveryRequest::getCorrelationId)
                                                                                 .toList();
@@ -126,9 +142,37 @@ public class DeliveryCreateService {
                         + "will not be processed. You may send back the requests with other unique correlation ids.",
                         alreadyExistingCorrelationIds);
 
-            return deliveryEventPart.stream()
-                                    .filter(deliveryEvent -> !alreadyExistingCorrelationIds.contains(deliveryEvent.getCorrelationId()))
-                                    .toList();
+            deliveryEventPart = deliveryEventPart.stream()
+                                                 .filter(deliveryEvent -> !alreadyExistingCorrelationIds.contains(
+                                                     deliveryEvent.getCorrelationId()))
+                                                 .toList();
+        }
+        return deliveryEventPart;
+    }
+
+    /**
+     * Remove DeliveryRequestDtoEvents with duplicated delivery requests correlationId in current batch.
+     * None of requests with same correlationId will be processed.
+     *
+     * @param deliveryEventPart events received
+     * @return events remaining after deletion
+     */
+    private List<DeliveryRequestDtoEvent> removeDuplicatedCorrelationIdInSameBatch(List<DeliveryRequestDtoEvent> deliveryEventPart) {
+        List<String> correlationIds = deliveryEventPart.stream().map(DeliveryRequestDto::getCorrelationId).toList();
+        // manage not existing correlationId in BD, but multiple occurrence in current batch
+        // in this case, remove all events with same correlationId
+        List<String> duplicatedCorrelationIds = correlationIds.stream()
+                                                              .filter(corrId -> Collections.frequency(correlationIds,
+                                                                                                      corrId) > 1)
+                                                              .distinct()
+                                                              .toList();
+        if (!duplicatedCorrelationIds.isEmpty()) {
+            LOGGER.warn("Delivery events with correlation ids \"{}\" has been received multiple times, thus they "
+                        + "will not be processed. You may send back these requests once.", duplicatedCorrelationIds);
+            deliveryEventPart = deliveryEventPart.stream()
+                                                 .filter(deliveryEvent -> !duplicatedCorrelationIds.contains(
+                                                     deliveryEvent.getCorrelationId()))
+                                                 .toList();
         }
         return deliveryEventPart;
     }

@@ -4,7 +4,7 @@ import com.jsoniter.JsonIterator;
 import com.jsoniter.any.Any;
 import com.jsoniter.spi.Decoder;
 import com.jsoniter.spi.JsoniterSpi;
-import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata.DataObjectGroup;
+import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectGroup;
 
 import java.io.IOException;
 

@@ -33,11 +33,15 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.search.domain.download.Download;
 import fr.cnes.regards.modules.search.rest.download.CatalogDownloadResponse;
 import fr.cnes.regards.modules.search.rest.download.LicenseAccessor;
+import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +104,9 @@ public class CatalogDownloadController {
 
     @Autowired
     private ICatalogSearchService searchService;
+
+    @Autowired
+    private IBusinessSearchService businessSearchService;
 
     @Autowired
     private IStorageRestClient storageRestClient;
@@ -171,14 +178,17 @@ public class CatalogDownloadController {
         // Same Status than GET endpoint but without storage download part
         HttpStatus status = HttpStatus.OK;
         try {
-            if (!isLicenseFreeFile(productUrn, fileChecksum) && isLicenseUnaccepted()) {
+            AbstractEntity<?> entity = searchService.get(UniformResourceName.fromString(productUrn));
+            if (!businessSearchService.isContentAccessGranted(entity)) {
+                status = HttpStatus.FORBIDDEN;
+            } else if (isPrivateFile(entity, fileChecksum) && isLicenseUnaccepted()) {
                 status = HttpStatus.LOCKED;
             }
-        } catch (EntityOperationForbiddenException e) {
+        } catch (EntityOperationForbiddenException e) { // NOSONAR
             status = HttpStatus.FORBIDDEN;
-        } catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) { // NOSONAR
             status = HttpStatus.NOT_FOUND;
-        } catch (ExecutionException e) {
+        } catch (ExecutionException | AccessRightFilterException e) { // NOSONAR
             status = HttpStatus.INTERNAL_SERVER_ERROR;
         }
         return ResponseEntity.status(status).build();
@@ -227,38 +237,54 @@ public class CatalogDownloadController {
                                                   String checksum,
                                                   Boolean isContentInline,
                                                   HttpServletResponse response) throws ModuleException, IOException {
+
         try {
-            if (!isLicenseFreeFile(aipId, checksum) && isLicenseUnaccepted()) {
-                String linkToAcceptAndDownload = linkToDownloadWithLicense(aipId, checksum, isContentInline, response);
-                return CatalogDownloadResponse.acceptLicenceBeforeDownload(linkToLicense(), linkToAcceptAndDownload);
+            AbstractEntity<?> entity = searchService.get(UniformResourceName.fromString(aipId));
+            if (entity instanceof DataObject dataObject) {
+
+                // Check if file has public access or not
+                if (isPrivateFile(entity, checksum)) {
+                    // If not public access, check if logged-in user has access to this file
+                    if (!businessSearchService.isContentAccessGranted(dataObject)) {
+                        return CatalogDownloadResponse.unauthorizedAccess();
+                    }
+                    // Check if user has accepted associated license
+                    if (isLicenseUnaccepted()) {
+                        String linkToAcceptAndDownload = linkToDownloadWithLicense(aipId,
+                                                                                   checksum,
+                                                                                   isContentInline,
+                                                                                   response);
+                        return CatalogDownloadResponse.acceptLicenceBeforeDownload(linkToLicense(),
+                                                                                   linkToAcceptAndDownload);
+                    }
+                }
+                // To download through storage client we must be authenticated as user in order to
+                // impact the download quotas, but we upgrade the privileges so that the request passes.
+                FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+                return doDownloadFile(checksum, isContentInline, response);
             }
-            // To download through storage client we must be authenticated as user in order to
-            // impact the download quotas, but we upgrade the privileges so that the request passes.
-            FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
-            return doDownloadFile(checksum, isContentInline, response);
-        } catch (EntityOperationForbiddenException e) {
+        } catch (EntityOperationForbiddenException e) { // NOSONAR
             return CatalogDownloadResponse.unauthorizedAccess();
         } catch (HttpClientErrorException | HttpServerErrorException | ExecutionException e) {
             return CatalogDownloadResponse.internalError(checksum, e);
         } finally {
             FeignSecurityManager.reset();
         }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
-    private boolean isLicenseFreeFile(String aipId, String checksum)
-        throws EntityOperationForbiddenException, EntityNotFoundException {
-        // Note: if file is not found in catalog
-        // We don't raise an exception
-        // storage will raise an error (or not)
-        return searchService.get(UniformResourceName.fromString(aipId))
-                            .getFiles()
-                            .values()
-                            .stream()
-                            .filter(file -> file.getChecksum().equals(checksum))
-                            .findFirst()
-                            .map(DataFile::getDataType)
-                            .filter(PUBLIC_FILES::contains)
-                            .isPresent();
+    /**
+     * Check if file is not restricted to entity access rights
+     */
+    private boolean isPrivateFile(AbstractEntity<?> entity, String checksum) {
+        return entity.getFiles()
+                     .values()
+                     .stream()
+                     .filter(file -> file.getChecksum().equals(checksum))
+                     .findFirst()
+                     .map(DataFile::getDataType)
+                     .filter(PUBLIC_FILES::contains)
+                     .isEmpty();
     }
 
     private LicenseDTO retrieveLicense() throws ExecutionException {

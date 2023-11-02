@@ -74,9 +74,7 @@ public class DeliveryFromOrderService implements IAutoOrderResponseClient {
     @Override
     @MultitenantTransactional
     public void onOrderGranted(List<OrderResponseDtoEvent> groupedEvents) {
-        List<DeliveryResponseDtoEvent> deliveryResponseEvents = updateDeliveryRequestFromOrderResponseEvt(groupedEvents,
-                                                                                                          this::updateWithGrantedOrder);
-        publisher.publish(deliveryResponseEvents);
+        updateDeliveryRequestFromOrderResponseEvt(groupedEvents, this::updateWithGrantedOrder);
     }
 
     @Override
@@ -210,7 +208,7 @@ public class DeliveryFromOrderService implements IAutoOrderResponseClient {
         // Delete delivery request in db
         deliveryRequestService.deleteRequestById(deliveryRequest.getId());
         return new DeliveryResponseDtoEvent(deliveryRequest.getCorrelationId(),
-                                            DeliveryRequestStatus.DENIED,
+                                            DeliveryRequestStatus.ERROR,
                                             DeliveryErrorType.convert(orderResponseEvent.getErrorType()),
                                             orderResponseEvent.getMessage(),
                                             null,

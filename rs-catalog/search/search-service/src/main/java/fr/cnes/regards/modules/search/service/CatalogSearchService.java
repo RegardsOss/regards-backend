@@ -49,7 +49,6 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
@@ -89,11 +88,6 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final ISearchService searchService;
 
     /**
-     * The OpenSearch service building {@link ICriterion} from a request string. Autowired by Spring.
-     */
-    private final IOpenSearchService openSearchService;
-
-    /**
      * Service handling the access groups in criterion. Autowired by Spring.
      */
     private final IAccessRightFilter accessRightFilter;
@@ -114,18 +108,14 @@ public class CatalogSearchService implements ICatalogSearchService {
     /**
      * @param searchService     Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be
      *                          null.
-     * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by
-     *                          Spring. Must not be null.
      * @param accessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
      * @param facetConverter    manage facet conversion
      */
     public CatalogSearchService(ISearchService searchService,
-                                IOpenSearchService openSearchService,
                                 IAccessRightFilter accessRightFilter,
                                 IFacetConverter facetConverter,
                                 IPageableConverter pageableConverter) {
         this.searchService = searchService;
-        this.openSearchService = openSearchService;
         this.accessRightFilter = accessRightFilter;
         this.facetConverter = facetConverter;
         this.pageableConverter = pageableConverter;
@@ -270,10 +260,11 @@ public class CatalogSearchService implements ICatalogSearchService {
                                                   List<DataType> dataTypes) {
         try {
             // Apply security filter (ie user groups)
-            criterion = accessRightFilter.addDataAccessRights(criterion);
+            ICriterion finalCriterion = accessRightFilter.addDataAccessRights(criterion);
+
             // Perform compute
             DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey,
-                                                                            criterion,
+                                                                            finalCriterion,
                                                                             "tags",
                                                                             Optional.of("URN:AIP:DATASET.*"),
                                                                             dataTypes);

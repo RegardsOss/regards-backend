@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.dam.domain.entities.metadata;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,88 +20,19 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DatasetMetadata {
 
     /**
-     * Information about a group access to a specific dataset for data objects.
-     *
-     * @author Sébastien Binda
-     */
-    public static class DataObjectGroup {
-
-        /**
-         * Group name
-         */
-        private final String groupName;
-
-        /**
-         * Does the group have access to data files ?
-         */
-        private final Boolean dataFileAccess;
-
-        /**
-         * Does the groupe have access to the data objects ?
-         */
-        private final Boolean dataObjectAccess;
-
-        /**
-         * Does the group have access to the dataset ?
-         */
-        private final Boolean datasetAccess;
-
-        /**
-         * Does the group have access to the dataobjects metadatas ?
-         */
-        private final String metaDataObjectAccessFilterPluginBusinessId;
-
-        /**
-         * Identifier of the plugin configuration used to define specific access to data objects metadatas.<br/>
-         * Can be null, in this case all dataobjects of the dataset are available for the group.
-         */
-        private final String dataObjectAccessFilterPluginBusinessId;
-
-        public DataObjectGroup(String groupName,
-                               Boolean datasetAccess,
-                               Boolean dataFileAccess,
-                               Boolean dataObjectAccess,
-                               String metaDataObjectAccessFilterPlugin,
-                               String dataObjectAccessFilterPlugin) {
-            super();
-            this.groupName = groupName;
-            this.dataFileAccess = dataFileAccess;
-            this.dataObjectAccess = dataObjectAccess;
-            this.datasetAccess = datasetAccess;
-            this.metaDataObjectAccessFilterPluginBusinessId = metaDataObjectAccessFilterPlugin;
-            this.dataObjectAccessFilterPluginBusinessId = dataObjectAccessFilterPlugin;
-        }
-
-        public String getGroupName() {
-            return groupName;
-        }
-
-        public Boolean getDataFileAccess() {
-            return dataFileAccess;
-        }
-
-        public String getDataObjectAccessFilterPluginBusinessId() {
-            return dataObjectAccessFilterPluginBusinessId;
-        }
-
-        public Boolean getDatasetAccess() {
-            return datasetAccess;
-        }
-
-        public String getMetaDataObjectAccessFilterPluginBusinessId() {
-            return metaDataObjectAccessFilterPluginBusinessId;
-        }
-
-        public Boolean getDataObjectAccess() {
-            return dataObjectAccess;
-        }
-    }
-
-    /**
      * Associated data objects groups.
      * Same groups as dataset ones except some if rights don't permit access to data objects
      */
     private final ConcurrentHashMap<String, DataObjectGroup> dataObjectsGroups = new ConcurrentHashMap<>();
+
+    public DatasetMetadata() {
+    }
+
+    public void addDataObjectGroup(@Nullable DataObjectGroup dataObjectGroup) {
+        if (dataObjectGroup != null) {
+            this.dataObjectsGroups.put(dataObjectGroup.getGroupName(), dataObjectGroup);
+        }
+    }
 
     public void addDataObjectGroup(String groupName,
                                    Boolean datasetAccess,

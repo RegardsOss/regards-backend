@@ -25,9 +25,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectMetadata;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
-import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;
 import fr.cnes.regards.modules.search.rest.FakeProductFactory;
 import fr.cnes.regards.modules.search.service.CatalogSearchService;
@@ -61,11 +62,10 @@ public class CatalogSearchServiceMock extends CatalogSearchService {
     private boolean mockGet;
 
     public CatalogSearchServiceMock(ISearchService searchService,
-                                    IOpenSearchService openSearchService,
                                     IAccessRightFilter accessRightFilter,
                                     IFacetConverter facetConverter,
                                     IPageableConverter pageableConverter) {
-        super(searchService, openSearchService, accessRightFilter, facetConverter, pageableConverter);
+        super(searchService, accessRightFilter, facetConverter, pageableConverter);
         products = new FakeProductFactory();
         files = new FakeFileFactory();
         accessVerification = mockAccessVerification();
@@ -80,11 +80,12 @@ public class CatalogSearchServiceMock extends CatalogSearchService {
 
     private ICatalogSearchService mockAccessVerification() {
         try {
+            DataObject fakeProduct = fakeProduct();
             ICatalogSearchService searchService = mock(ICatalogSearchService.class);
             when(searchService.get(products.unknownProduct())).thenThrow(new EntityNotFoundException("product not found"));
             when(searchService.get(products.unauthorizedProduct())).thenThrow(new EntityOperationForbiddenException(
                 "product unauthorized"));
-            AbstractEntity<?> fakeProduct = fakeProduct();
+
             when(searchService.get(products.validProduct())).thenReturn(fakeProduct);
             return searchService;
         } catch (EntityNotFoundException | EntityOperationForbiddenException e) {
@@ -92,9 +93,10 @@ public class CatalogSearchServiceMock extends CatalogSearchService {
         }
     }
 
-    private AbstractEntity<?> fakeProduct() {
-        AbstractEntity entity = mock(AbstractEntity.class);
+    private DataObject fakeProduct() {
+        DataObject entity = mock(DataObject.class);
         when(entity.getFiles()).thenReturn(oneFileOfEachType());
+        when(entity.getMetadata()).thenReturn(new DataObjectMetadata());
         return entity;
     }
 

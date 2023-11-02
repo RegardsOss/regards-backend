@@ -61,8 +61,12 @@ public class CleanOrderService {
         List<OrderCancelRequestDtoEvent> cancelEvents = new ArrayList<>(deliveryRequests.size());
         deliveryRequests.forEach(deliveryRequest -> {
             deleteDownloadWorkspaceIfNecessary(deliveryRequest.getCorrelationId());
-            cancelEvents.add(new OrderCancelRequestDtoEvent(deliveryRequest.getOrderId(),
-                                                            deliveryRequest.getCorrelationId()));
+            if (deliveryRequest.getOrderId() != null) {
+                // orderId can be null in case of DENIED response from order
+                // no need to delete anyway because order is not created in this case
+                cancelEvents.add(new OrderCancelRequestDtoEvent(deliveryRequest.getOrderId(),
+                                                                deliveryRequest.getCorrelationId()));
+            }
         });
         // send events to cancel corresponding orders
         publisher.publish(cancelEvents);

@@ -57,7 +57,7 @@ public class CacheEvictScheduler {
         if (workerCacheService.getCache() != null) {
             workerCacheService.getCache().asMap().forEach((workerType, entry) -> {
                 if (entry.getLastUpdateDate()
-                         .plusSeconds(workerCacheService.getExpireInCacheDuration())
+                         .plusSeconds(workerCacheService.getExpireInCacheDurationInSeconds())
                          .isBefore(now)) {
                     workerCacheService.getCache().invalidate(workerType);
                 }

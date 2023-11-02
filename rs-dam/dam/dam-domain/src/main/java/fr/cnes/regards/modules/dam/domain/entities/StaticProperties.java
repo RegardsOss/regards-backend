@@ -85,6 +85,12 @@ public final class StaticProperties {
     // String
     public static final String FEATURE_LABEL = "label";
 
+    public static final String METADATA = "metadata";
+
+    public static final String META_DATA_GROUPS = METADATA + "." + GROUPS;
+
+    public static final String DATA_ACCESS_RIGHT = "dataAccessRight";
+
     public static final String FEATURE_LABEL_PATH = FEATURE_NS + FEATURE_LABEL;
 
     // String

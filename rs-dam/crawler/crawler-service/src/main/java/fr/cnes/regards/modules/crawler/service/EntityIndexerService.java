@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata.DataObjectGroup;
+import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectGroup;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
 import fr.cnes.regards.modules.dam.service.entities.DataObjectService;
 import fr.cnes.regards.modules.dam.service.entities.ICollectionService;
@@ -194,13 +194,17 @@ public class EntityIndexerService implements IEntityIndexerService {
         List<String> errors = new ArrayList<>(errorsObject.getErrorCount());
         for (ObjectError objError : errorsObject.getAllErrors()) {
             if (objError instanceof FieldError) {
-                StringBuilder buf = new StringBuilder();
-                buf.append("Field error in object ").append(objError.getObjectName());
-                buf.append(" on field '").append(((FieldError) objError).getField());
-                buf.append("', rejected value '").append(((FieldError) objError).getRejectedValue());
-                buf.append("': ").append(((FieldError) objError).getField());
-                buf.append(" ").append(objError.getDefaultMessage());
-                errors.add(buf.toString());
+                String buf = "Field error in object "
+                             + objError.getObjectName()
+                             + " on field '"
+                             + ((FieldError) objError).getField()
+                             + "', rejected value '"
+                             + ((FieldError) objError).getRejectedValue()
+                             + "': "
+                             + ((FieldError) objError).getField()
+                             + " "
+                             + objError.getDefaultMessage();
+                errors.add(buf);
             } else {
                 errors.add(objError.toString());
             }
@@ -232,12 +236,11 @@ public class EntityIndexerService implements IEntityIndexerService {
         if (entity == null) {
             LOGGER.debug("Entity is null !!");
             if (ipId.getEntityType() == EntityType.DATASET) {
-                sendDataSourceMessage(String.format("    Dataset with IP_ID %s no more exists...", ipId.toString()),
-                                      dsiId);
+                sendDataSourceMessage(String.format("    Dataset with IP_ID %s no more exists...", ipId), dsiId);
                 manageDatasetDelete(tenant, ipId.toString(), dsiId);
             }
             esRepos.delete(tenant, ipId.getEntityType().toString(), ipId.toString());
-            sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId.toString()), dsiId);
+            sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId), dsiId);
         } else { // entity has been created or updated, it must be saved into ES
             indexService.createIndexIfNeeded(tenant);
             indexService.configureMappings(tenant, entity.getModel().getName());
@@ -288,7 +291,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                 manageDatasetUpdate((Dataset) entity, lastUpdateDate, updateDate, dsiId);
             }
         }
-        LOGGER.info(ipId.toString() + " managed into Elasticsearch");
+        LOGGER.info(ipId + " managed into Elasticsearch");
     }
 
     private void prepareDatasetForEs(Dataset dataset) throws ModuleException {
@@ -323,14 +326,14 @@ public class EntityIndexerService implements IEntityIndexerService {
             need = true;
         }
 
-        Map<String, DataObjectGroup> curentMetadata = curDataset.getMetadata() != null ?
+        Map<String, DataObjectGroup> currentMetadata = curDataset.getMetadata() != null ?
             curDataset.getMetadata().getDataObjectsGroups() :
             null;
         Map<String, DataObjectGroup> newMetadata = newDataset.getMetadata() != null ?
             newDataset.getMetadata().getDataObjectsGroups() :
             null;
-        if (curentMetadata != null) {
-            need = need || !curentMetadata.equals(newMetadata);
+        if (currentMetadata != null) {
+            need = need || !currentMetadata.equals(newMetadata);
         } else {
             need = true;
         }
@@ -356,7 +359,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         OffsetDateTime updateDate = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
         // Function to update an object (tags, groups, lastUpdate, ...)
         Consumer<DataObject> updateDataObject = object -> {
-            object.removeTags(Arrays.asList(ipId));
+            object.removeTags(Collections.singletonList(ipId));
             // reset datasetModelIds
             object.getDatasetModelNames().clear();
             // Remove dataset ipId from metadata.groups dans modelNames
@@ -760,8 +763,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         // for each computation plugin lets add the computed attribute
         for (IComputedAttribute<Dataset, ?> plugin : computationPlugins) {
             IProperty<?> attributeToAdd = plugin.accept(new AttributeBuilderVisitor());
-            if (attributeToAdd instanceof ObjectProperty) {
-                ObjectProperty attrInFragment = (ObjectProperty) attributeToAdd;
+            if (attributeToAdd instanceof ObjectProperty attrInFragment) {
                 // the attribute is inside a fragment so lets find the right one to add the attribute inside it
                 Optional<IProperty<?>> candidate = dataset.getProperties()
                                                           .stream()
@@ -860,11 +862,12 @@ public class EntityIndexerService implements IEntityIndexerService {
             }
         } else {
             // Validation error
-            StringBuilder dataObjectBuffer = new StringBuilder("Data object with id '");
-            dataObjectBuffer.append(dataObject.getDocId()).append("' not indexed due to ");
-            dataObjectBuffer.append(errors.size()).append(" validation error(s):\n");
-            dataObjectBuffer.append(errors.stream().collect(Collectors.joining("\n")));
-            String msg = dataObjectBuffer.toString();
+            String msg = "Data object with id '"
+                         + dataObject.getDocId()
+                         + "' not indexed due to "
+                         + errors.size()
+                         + " validation error(s):\n"
+                         + errors.stream().collect(Collectors.joining("\n"));
             // Log error msg
             LOGGER.warn(msg);
             // Append error msg to buffer

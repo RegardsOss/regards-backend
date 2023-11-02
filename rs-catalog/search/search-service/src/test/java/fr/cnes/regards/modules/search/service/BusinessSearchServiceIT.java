@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
  * @author Théo Lasserre
  */
 public class BusinessSearchServiceIT {
+
     /**
      * Class under test
      */
@@ -61,23 +62,22 @@ public class BusinessSearchServiceIT {
      */
     protected ICatalogSearchService catalogSearchService;
 
-
     @Before
-    public void setUp() throws AccessRightFilterException, OpenSearchUnknownParameter {
+    public void setUp() {
         // Declare mocks
         accessRightFilter = Mockito.mock(IAccessRightFilter.class);
         catalogSearchService = Mockito.mock(ICatalogSearchService.class);
 
         // Instantiate the tested class
-        businessSearchService = new BusinessSearchService(catalogSearchService,
-                accessRightFilter);
+        businessSearchService = new BusinessSearchService(catalogSearchService, accessRightFilter);
     }
 
     /**
      * Test searching datasets
      */
     @Test
-    public void doSearchShouldReturnDatasetsWithAccessGrantedSet() throws SearchException, OpenSearchUnknownParameter, AccessRightFilterException {
+    public void doSearchShouldReturnDatasetsWithAccessGrantedSet()
+        throws SearchException, OpenSearchUnknownParameter, AccessRightFilterException {
         // Prepare test
         SearchType searchType = SearchType.DATASETS;
         PagedResourcesAssembler<Dataset> assembler = SampleDataUtils.ASSEMBLER_DATASET;
@@ -91,28 +91,33 @@ public class BusinessSearchServiceIT {
         FacetPage<Dataset> facetPageDataset = SampleDataUtils.FACET_PAGE_DATASET;
         // thanks to mockito not properly handling dynamic typing, we have to do this trick
         FacetPage<IIndexable> expectedSearchResult = new FacetPage<>(facetPageDataset.getContent()
-                .stream()
-                .map(data -> (IIndexable) data)
-                .collect(Collectors.toList()),
-                facetPageDataset.getFacets(),
-                pageable, 100);
+                                                                                     .stream()
+                                                                                     .map(data -> (IIndexable) data)
+                                                                                     .collect(Collectors.toList()),
+                                                                     facetPageDataset.getFacets(),
+                                                                     pageable,
+                                                                     100);
 
         // Mock dependencies
         Mockito.when(catalogSearchService.search(Mockito.any(ICriterion.class),
-                Mockito.any(SearchType.class),
-                Mockito.any(),
-                Mockito.any(Pageable.class))).thenReturn(expectedSearchResult);
+                                                 Mockito.any(SearchType.class),
+                                                 Mockito.any(),
+                                                 Mockito.any(Pageable.class))).thenReturn(expectedSearchResult);
 
         PagedModel<EntityModel<Dataset>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATASET;
         Mockito.when(assembler.toModel(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        FacetPage<EntityFeature> facetPage = businessSearchService.search(expectedCriterion, searchType, SampleDataUtils.QUERY_FACETS, pageable);
+        FacetPage<EntityFeature> facetPage = businessSearchService.search(expectedCriterion,
+                                                                          searchType,
+                                                                          SampleDataUtils.QUERY_FACETS,
+                                                                          pageable);
 
         // Verify that datasets have access granted set
         for (EntityFeature entityFeature : facetPage.getContent()) {
             DatasetFeature datasetFeature = (DatasetFeature) entityFeature;
-            Assert.assertTrue("Dataset must have access granted to true", datasetFeature.getContentAccessGranted());
+            Assert.assertTrue("Dataset must have access granted to true",
+                              datasetFeature.getDataObjectsFilesAccessGranted());
         }
     }
 
@@ -120,7 +125,8 @@ public class BusinessSearchServiceIT {
      * Test searching datasets
      */
     @Test
-    public void doSearchShouldReturnDatasetsWithNoAccessGrantedSet() throws SearchException, OpenSearchUnknownParameter {
+    public void doSearchShouldReturnDatasetsWithNoAccessGrantedSet()
+        throws SearchException, OpenSearchUnknownParameter {
         // Prepare test
         SearchType searchType = SearchType.DATASETS;
         PagedResourcesAssembler<Dataset> assembler = SampleDataUtils.ASSEMBLER_DATASET;
@@ -131,28 +137,33 @@ public class BusinessSearchServiceIT {
         FacetPage<Dataset> facetPageDataset = SampleDataUtils.FACET_PAGE_DATASET;
         // thanks to mockito not properly handling dynamic typing, we have to do this trick
         FacetPage<IIndexable> expectedSearchResult = new FacetPage<>(facetPageDataset.getContent()
-                .stream()
-                .map(data -> (IIndexable) data)
-                .collect(Collectors.toList()),
-                facetPageDataset.getFacets(),
-                pageable, 100);
+                                                                                     .stream()
+                                                                                     .map(data -> (IIndexable) data)
+                                                                                     .collect(Collectors.toList()),
+                                                                     facetPageDataset.getFacets(),
+                                                                     pageable,
+                                                                     100);
 
         // Mock dependencies
         Mockito.when(catalogSearchService.search(Mockito.any(ICriterion.class),
-                Mockito.any(SearchType.class),
-                Mockito.any(),
-                Mockito.any(Pageable.class))).thenReturn(expectedSearchResult);
+                                                 Mockito.any(SearchType.class),
+                                                 Mockito.any(),
+                                                 Mockito.any(Pageable.class))).thenReturn(expectedSearchResult);
 
         PagedModel<EntityModel<Dataset>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATASET;
         Mockito.when(assembler.toModel(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
-        FacetPage<EntityFeature> facetPage = businessSearchService.search(expectedCriterion, searchType, SampleDataUtils.QUERY_FACETS, pageable);
+        FacetPage<EntityFeature> facetPage = businessSearchService.search(expectedCriterion,
+                                                                          searchType,
+                                                                          SampleDataUtils.QUERY_FACETS,
+                                                                          pageable);
 
         // Verify that datasets have access granted set
         for (EntityFeature entityFeature : facetPage.getContent()) {
             DatasetFeature datasetFeature = (DatasetFeature) entityFeature;
-            Assert.assertFalse("Dataset must not have access granted to true", datasetFeature.getContentAccessGranted());
+            Assert.assertFalse("Dataset must not have access granted to true",
+                               datasetFeature.getDataObjectsFilesAccessGranted());
         }
     }
 }

@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.crawler.service.consumer;
 
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata.DataObjectGroup;
+import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectGroup;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -46,8 +46,9 @@ public class DataObjectUpdater extends AbstractDataObjectBulkSaver implements Co
         // This step only associate group to dataobjets of dataset with no filter. All objets of the dataset have the same groups.
         for (DataObjectGroup group : groupsMap.values()) {
             // Ignore any accessGroup not giving the access to the dataset
-            if (group.getMetaDataObjectAccessFilterPluginBusinessId() == null && group.getDatasetAccess()
-                                                                                    && group.getDataObjectAccess()) {
+            if (group.getMetaDataObjectAccessFilterPluginBusinessId() == null
+                && group.getDatasetAccess()
+                && group.getDataObjectAccess()) {
                 object.getMetadata().addGroup(group.getGroupName(), datasetIpId, group.getDataFileAccess());
             }
         }

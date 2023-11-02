@@ -41,6 +41,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -127,11 +128,23 @@ public class AccessRightFilter implements IAccessRightFilter {
 
     @Override
     public ICriterion addAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
+        return addAccessRights(userCriterion, false);
+    }
+
+    /**
+     * Add criterion for access rights for data or data and files if required.
+     *
+     * @return modified criterion
+     */
+    private ICriterion addAccessRights(ICriterion userCriterion, boolean addDataFileAccessRights)
+        throws AccessRightFilterException {
 
         Set<String> accessGroupNames = getUserAccessGroups();
         if (accessGroupNames != null) {
 
             List<ICriterion> searchCriterion = new ArrayList<>();
+
+            searchCriterion.add(getSecurityCriterion(accessGroupNames, addDataFileAccessRights));
 
             // Add security filter
             ICriterion groupCriterion = ICriterion.in(StaticProperties.GROUPS,
@@ -150,10 +163,33 @@ public class AccessRightFilter implements IAccessRightFilter {
         return userCriterion;
     }
 
-    // FIXME : for now, same as above
+    /**
+     * Return search criterion {@link ICriterion} to filter by user access rights depending on given groups.
+     */
+    private ICriterion getSecurityCriterion(Collection<String> accessGroupNames, boolean addDataFileAccessRights) {
+        // Check for user groups in groups property
+        ICriterion groupCriterion = ICriterion.in(StaticProperties.GROUPS, StringMatchType.KEYWORD, accessGroupNames);
+
+        if (addDataFileAccessRights) {
+            // For each group check in metadata property if group have file access enabled
+            List<ICriterion> fileAccessCriterionRights = accessGroupNames.stream().map(accessGroupName -> {
+                String property = String.format("%s.%s.%s",
+                                                StaticProperties.META_DATA_GROUPS,
+                                                accessGroupName,
+                                                StaticProperties.DATA_ACCESS_RIGHT);
+                return ICriterion.eq(property, true);
+            }).toList();
+            ICriterion fileAccessRightsCriterion = ICriterion.or(fileAccessCriterionRights);
+
+            return ICriterion.and(groupCriterion, fileAccessRightsCriterion);
+        } else {
+            return groupCriterion;
+        }
+    }
+
     @Override
     public ICriterion addDataAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
-        return addAccessRights(userCriterion);
+        return addAccessRights(userCriterion, true);
     }
 
     @Override

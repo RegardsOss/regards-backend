@@ -24,9 +24,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata;
+import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectGroup;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
@@ -45,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Business search service
@@ -84,15 +84,15 @@ public class BusinessSearchService implements IBusinessSearchService {
 
         // Extract feature(s) and metadata from entity(ies)
         List<F> features = facetPage.getContent().stream().peek(entity -> {
-            if (searchType.equals(SearchType.DATASETS)) {
+            if (searchType.equals(SearchType.DATASETS) || searchType.equals(SearchType.DATAOBJECTS_RETURN_DATASETS)) {
                 Dataset dataset = (Dataset) entity;
-                boolean contentAccessGranted = false;
                 try {
-                    contentAccessGranted = isContentAccessGranted(dataset.getMetadata());
+                    // Check dataset access rights for data object and for data files access
+                    dataset.getFeature().setDataObjectsFilesAccessGranted(isContentAccessGranted(dataset));
+                    dataset.getFeature().setDataObjectsAccessGranted(isDatasetDataObjectsAccessGranted(dataset));
                 } catch (AccessRightFilterException e) {
                     LOGGER.warn("Unable to calculate user right to order dataset \"{}\"..", entity.getLabel(), e);
                 }
-                dataset.getFeature().setContentAccessGranted(contentAccessGranted);
             }
         }).map(entity -> (F) entity.getFeature()).collect(Collectors.toList());
 
@@ -101,23 +101,61 @@ public class BusinessSearchService implements IBusinessSearchService {
     }
 
     /**
-     * Check if current user has right to access to dataobjects of a dataset
+     * Check if current user has right to access content (files) of given entity.
+     * Given entity can be Dataset or DataObject
      *
      * @return either true or false
      */
-    private boolean isContentAccessGranted(DatasetMetadata metadata) throws AccessRightFilterException {
+    @Override
+    public boolean isContentAccessGranted(AbstractEntity<?> entity) throws AccessRightFilterException {
+        Map<String, DataObjectGroup> datasetObjectsGroupsMap;
         final Set<String> userAccessGroups = accessRightFilter.getUserAccessGroups();
-        Map<String, DatasetMetadata.DataObjectGroup> datasetObjectsGroupsMap = metadata.getDataObjectsGroups();
         if (userAccessGroups == null) {
             // access groups is null for admin users. Admin have always access
             return true;
         }
-        Stream<DatasetMetadata.DataObjectGroup> groupsOfUserThatAreInDataset = userAccessGroups.stream()
-                                                                                               .filter(
-                                                                                                   datasetObjectsGroupsMap::containsKey)
-                                                                                               .map(
-                                                                                                   datasetObjectsGroupsMap::get);
-        return groupsOfUserThatAreInDataset.anyMatch(DatasetMetadata.DataObjectGroup::getDataObjectAccess);
+        if (entity instanceof Dataset dataset) {
+            datasetObjectsGroupsMap = dataset.getMetadata().getDataObjectsGroups();
+            List<DataObjectGroup> dataObjectGroups = userAccessGroups.stream()
+                                                                     .filter(datasetObjectsGroupsMap::containsKey)
+                                                                     .map(datasetObjectsGroupsMap::get)
+                                                                     .toList();
+            return dataObjectGroups.stream()
+                                   .anyMatch(dataobjectGroup -> dataobjectGroup.getDataObjectAccess()
+                                                                && dataobjectGroup.getDataFileAccess());
+        } else if (entity instanceof DataObject dataObject) {
+            return dataObject.getMetadata()
+                             .getGroupsAccessRightsMap()
+                             .entrySet()
+                             .stream()
+                             .anyMatch(entry -> userAccessGroups.contains(entry.getKey()) && entry.getValue());
+
+        }
+        return false;
+    }
+
+    /**
+     * Check if current user has right to access data objects of given dataset.
+     * Given entity can be Dataset or DataObject
+     *
+     * @return either true or false
+     */
+    public boolean isDatasetDataObjectsAccessGranted(AbstractEntity<?> entity) throws AccessRightFilterException {
+        Map<String, DataObjectGroup> datasetObjectsGroupsMap;
+        final Set<String> userAccessGroups = accessRightFilter.getUserAccessGroups();
+        if (userAccessGroups == null) {
+            // access groups is null for admin users. Admin have always access
+            return true;
+        }
+        if (entity instanceof Dataset dataset) {
+            datasetObjectsGroupsMap = dataset.getMetadata().getDataObjectsGroups();
+            List<DataObjectGroup> dataObjectGroups = userAccessGroups.stream()
+                                                                     .filter(datasetObjectsGroupsMap::containsKey)
+                                                                     .map(datasetObjectsGroupsMap::get)
+                                                                     .toList();
+            return dataObjectGroups.stream().anyMatch(DataObjectGroup::getDataObjectAccess);
+        }
+        return false;
     }
 
     @Override
