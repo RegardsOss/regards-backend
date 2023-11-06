@@ -98,9 +98,6 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
     private IEsRepository esRepos;
 
     @Autowired
-    private IDatasourceIngestionRepository dsIngestionRepos;
-
-    @Autowired
     private ProjectGeoSettings projectGeoSettings;
 
     @Autowired
@@ -154,7 +151,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
     public Optional<IngestionResult> ingest(String datasourceIngestionId)
         throws ModuleException, NotFinishedException, FirstFindException {
         String tenant = runtimeTenantResolver.getTenant();
-        Optional<DatasourceIngestion> odsi = dsIngestionRepos.findById(datasourceIngestionId);
+        Optional<DatasourceIngestion> odsi = datasourceIngestionRepo.findById(datasourceIngestionId);
         if (odsi.isPresent()) {
             DatasourceIngestion dsi = odsi.get();
             PluginConfiguration pluginConf = pluginService.getPluginConfiguration(datasourceIngestionId);
