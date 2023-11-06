@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.schedule;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.service.AipDisseminationService;
@@ -59,7 +59,7 @@ public class AipDisseminationJobScheduler extends AbstractTaskScheduler {
     private AipDisseminationService aipDisseminationService;
 
     @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     private final Task aipDisseminationTask = () -> {
         LockAssert.assertLocked();

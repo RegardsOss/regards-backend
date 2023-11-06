@@ -32,6 +32,7 @@ import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * An ingest request of type AIP_DISSEMINATION.
@@ -58,12 +59,12 @@ public class AipDisseminationRequest extends AbstractRequest {
     @Type(type = "jsonb",
           parameters = { @org.hibernate.annotations.Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                                               value = "java.lang.String") })
-    private List<String> recipients;
+    private AipDisseminationRequestPayload payload;
 
     public static AipDisseminationRequest build(AIPEntity aip, List<String> recipients) {
         AipDisseminationRequest disseminationRequest = new AipDisseminationRequest();
         disseminationRequest.aip = aip;
-        disseminationRequest.recipients = recipients;
+        disseminationRequest.payload = new AipDisseminationRequestPayload(UUID.randomUUID().toString(), recipients);
         disseminationRequest.setCreationDate(OffsetDateTime.now());
         disseminationRequest.setSessionOwner(aip.getSessionOwner());
         disseminationRequest.setSession(aip.getSession());
@@ -82,11 +83,11 @@ public class AipDisseminationRequest extends AbstractRequest {
     }
 
     public List<String> getRecipients() {
-        return recipients;
+        return payload.recipients();
     }
 
-    public void setRecipients(List<String> recipients) {
-        this.recipients = recipients;
+    public String getCorrelationId() {
+        return payload.correlationId();
     }
 
     @Override
@@ -98,16 +99,16 @@ public class AipDisseminationRequest extends AbstractRequest {
             return false;
         }
         AipDisseminationRequest that = (AipDisseminationRequest) o;
-        return Objects.equals(aip, that.aip) && Objects.equals(recipients, that.recipients);
+        return Objects.equals(aip, that.aip) && Objects.equals(payload, that.payload);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aip, recipients);
+        return Objects.hash(aip, payload);
     }
 
     @Override
     public String toString() {
-        return "AipDisseminationRequest{" + "aip=" + aip + ", recipients=" + recipients + '}';
+        return "AipDisseminationRequest{" + "aip=" + aip + ", payload=" + payload + '}';
     }
 }

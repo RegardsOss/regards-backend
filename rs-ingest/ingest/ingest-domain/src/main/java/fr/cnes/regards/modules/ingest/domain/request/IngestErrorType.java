@@ -64,6 +64,8 @@ public enum IngestErrorType implements ErrorType {
 
     NOTIFICATION,
 
+    DISSEMINATION,
+
     UNEXPECTED
 
 }

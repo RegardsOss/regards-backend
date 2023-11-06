@@ -28,16 +28,15 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAipDisseminationCreatorRepository;
-import fr.cnes.regards.modules.ingest.dao.IAipDisseminationRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dissemination.AipDisseminationRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
@@ -49,6 +48,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.dissemination.AIPDisseminationRequestDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
 import fr.cnes.regards.modules.ingest.service.job.AipDisseminationCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.AipDisseminationJob;
 import org.junit.Before;
@@ -66,10 +66,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.lang.reflect.Type;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
@@ -80,7 +77,7 @@ import java.util.stream.IntStream;
                                    "eureka.client.enabled=false",
                                    "regards.ingest.aips.dissemination.bulk=100" },
                     locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "noscheduler", "nojobs" }, inheritProfiles = false)
+@ActiveProfiles(value = { "nojobs", "noscheduler" }, inheritProfiles = false)
 @ContextConfiguration(classes = { JobTestUtils.class })
 public class AipDisseminationIT extends IngestMultitenantServiceIT {
 
@@ -108,6 +105,12 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
     @Autowired
     private JobTestUtils jobTestUtils;
 
+    @Autowired
+    private AIPUpdateRequestScheduler aipUpdateRequestScheduler;
+
+    @Autowired
+    private IAIPUpdateRequestRepository iaipUpdateRequestRepository;
+
     private static final String SESSION_NAME = "dissemination-session";
 
     private static final String ERROR_MSG = "error message";
@@ -117,6 +120,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Clean everything
         ingestServiceTest.init();
+        Mockito.reset(publisher);
     }
 
     protected void doInit() throws Exception {
@@ -124,6 +128,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         sipRepository.deleteAllInBatch();
         disseminationCreatorRepository.deleteAllInBatch();
         disseminationRequestRepository.deleteAllInBatch();
+        iaipUpdateRequestRepository.deleteAllInBatch();
     }
 
     @Test
@@ -204,6 +209,57 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         Mockito.verify(publisher, Mockito.times(201)).publish(Mockito.any(NotificationRequestEvent.class));
     }
 
+    @Test
+    public void testDisseminationWithNotifierSuccess() throws ExecutionException, InterruptedException {
+        // GIVEN 201 AipDisseminationRequest, and notification sent to notifier
+        testDisseminationJobSendToNotifier();
+        Page<AipDisseminationRequest> allRequests = aipDisseminationService.getAllRequests(PageRequest.of(0, 1000));
+        // WHEN simulate notifier success response received
+        notificationService.handleNotificationSuccess(new HashSet<>(allRequests.getContent()));
+        // first schedule : first 100 requests
+        JobInfo updateJobInfo = aipUpdateRequestScheduler.scheduleJob();
+        jobService.runJob(updateJobInfo, getDefaultTenant()).get();
+        // second schedule : next 100 requests (200 total)
+        updateJobInfo = aipUpdateRequestScheduler.scheduleJob();
+        jobService.runJob(updateJobInfo, getDefaultTenant()).get();
+        List<AIPEntity> allAips = aipRepository.findAll();
+        Assertions.assertEquals(200,
+                                allAips.stream().filter(aip -> aip.getDisseminationInfos() != null).count(),
+                                "Aip dissemination should be updated !");
+        // third schedule : last 1 request (201 total)
+        updateJobInfo = aipUpdateRequestScheduler.scheduleJob();
+        jobService.runJob(updateJobInfo, getDefaultTenant()).get();
+
+        // THEN All AIP has been updated, and there is 1 dissemination info per recipient
+        allAips = aipRepository.findAll();
+        Assertions.assertEquals(201, allAips.stream().filter(aip -> aip.getDisseminationInfos() != null).count());
+        Assertions.assertEquals(201 * 2, allAips.stream().mapToLong(aip -> aip.getDisseminationInfos().size()).sum());
+        Assertions.assertTrue(allAips.stream()
+                                     .allMatch(aip -> aip.getDisseminationInfos()
+                                                         .get(0)
+                                                         .getLabel()
+                                                         .equals("recipient1")));
+        Assertions.assertTrue(allAips.stream()
+                                     .allMatch(aip -> aip.getDisseminationInfos()
+                                                         .get(1)
+                                                         .getLabel()
+                                                         .equals("recipient2")));
+    }
+
+    @Test
+    public void testDisseminationWithNotifierError() throws ExecutionException, InterruptedException {
+        // GIVEN 201 AipDisseminationRequest, and notification sent to notifier
+        testDisseminationJobSendToNotifier();
+        Page<AipDisseminationRequest> allRequests = aipDisseminationService.getAllRequests(PageRequest.of(0, 1000));
+        // WHEN simulate notifier success response received
+        notificationService.handleNotificationError(new HashSet<>(allRequests.getContent()));
+        allRequests = aipDisseminationService.getAllRequests(PageRequest.of(0, 1000));
+        Assertions.assertEquals(201,
+                                allRequests.stream()
+                                           .filter(req -> req.getErrorType().equals(IngestErrorType.DISSEMINATION))
+                                           .count());
+    }
+
     private void scheduleDisseminationCreatorJob(AIPDisseminationRequestDto disseminationDto)
         throws ExecutionException, InterruptedException {
         aipDisseminationService.registerDisseminationCreator(disseminationDto);
@@ -229,7 +285,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
                                                              IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                              categories,
                                                              VersioningMode.IGNORE,
-                                                             "coucou",
+                                                             "model",
                                                              StorageMetadata.build(storage));
 
         SIP sip = SIP.build(EntityType.DATA, providerId);
@@ -249,8 +305,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         sipRepository.save(sipEntity);
 
         AIP aip = AIP.build(sip,
-                            OaisUniformResourceName.fromString(
-                                "URN:AIP:DATA:CDPP:4ece80cd-7705-3ee5-babd-64c03ff61bcd:V1"),
+                            OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 67),
                             Optional.empty(),
                             "providerId",
                             1);

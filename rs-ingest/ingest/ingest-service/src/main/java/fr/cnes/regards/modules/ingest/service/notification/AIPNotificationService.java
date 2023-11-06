@@ -19,7 +19,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.notification;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -27,25 +29,33 @@ import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.dissemination.AipDisseminationRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -77,6 +87,9 @@ public class AIPNotificationService implements IAIPNotificationService {
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private AIPUpdateRequestService aipUpdateRequestService;
 
     @Value("${spring.application.name}")
     private String microserviceName;
@@ -161,24 +174,60 @@ public class AIPNotificationService implements IAIPNotificationService {
     @Override
     public void handleNotificationSuccess(Set<AbstractRequest> successRequests) {
         // Handle Ingest success
-        // filter out ingest requests because their processing is specific
-        Set<IngestRequest> ingestRequests = successRequests.stream()
-                                                           .filter(IngestRequest.class::isInstance)
-                                                           .map(IngestRequest.class::cast)
-                                                           .collect(Collectors.toSet());
+        // Sort requests by type
+        Set<IngestRequest> ingestRequests = new HashSet<>();
+        Set<AipDisseminationRequest> disseminationRequests = new HashSet<>();
+        Set<AbstractRequest> allOtherRequests = new HashSet<>();
+        for (AbstractRequest successRequest : successRequests) {
+            if (successRequest instanceof IngestRequest ingestRequest) {
+                ingestRequests.add(ingestRequest);
+            } else if (successRequest instanceof AipDisseminationRequest aipDisseminationRequest) {
+                disseminationRequests.add(aipDisseminationRequest);
+            } else {
+                allOtherRequests.add(successRequest);
+            }
+        }
+
+        if (!disseminationRequests.isEmpty()) {
+            handleDisseminationNotificationSuccess(disseminationRequests);
+        }
+
         if (!ingestRequests.isEmpty()) {
-            successRequests.removeAll(ingestRequests);
             handleIngestNotificationSuccess(ingestRequests);
         }
 
-        // Handle Deletion and Update requests
+        // Handle other requests types (Deletion and Update requests)
         // no need to publish events like ingest requests as no service needs it for the moment
-        if (!successRequests.isEmpty()) {
-            successRequests.forEach((request) -> AIPNotificationLogger.notificationSuccess(request.getId(),
-                                                                                           request.getProviderId()));
+        if (!allOtherRequests.isEmpty()) {
+            allOtherRequests.forEach((request) -> AIPNotificationLogger.notificationSuccess(request.getId(),
+                                                                                            request.getProviderId()));
             // Delete successful requests
             requestService.deleteRequests(successRequests);
         }
+    }
+
+    private void handleDisseminationNotificationSuccess(Set<AipDisseminationRequest> disseminationRequests) {
+        OffsetDateTime now = OffsetDateTime.now();
+        Multimap<AIPEntity, AbstractAIPUpdateTask> updateTasksByAIP = ArrayListMultimap.create();
+        for (AipDisseminationRequest disseminationRequest : disseminationRequests) {
+            List<DisseminationInfo> disseminationInfos = disseminationRequest.getRecipients()
+                                                                             .stream()
+                                                                             .map(recipient -> new DisseminationInfo(
+                                                                                 recipient,
+                                                                                 now,
+                                                                                 null))
+                                                                             .toList();
+            AIPUpdateParametersDto aipUpdateDto = AIPUpdateParametersDto.build(null);
+            aipUpdateDto.setUpdateDisseminationInfo(disseminationInfos);
+
+            // for loop, but it is supposed to have only one task created
+            for (AbstractAIPUpdateTask updateDisseminationTask : AbstractAIPUpdateTask.build(aipUpdateDto)) {
+                updateTasksByAIP.put(disseminationRequest.getAip(), updateDisseminationTask);
+            }
+        }
+        aipUpdateRequestService.create(updateTasksByAIP);
+        // delete dissemination requests
+        requestService.deleteRequests(Sets.newHashSet(disseminationRequests));
     }
 
     private void handleIngestNotificationSuccess(Set<IngestRequest> successIngestRequests) {
@@ -214,8 +263,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                           + "Please check issues reported on notifier.";
         for (AbstractRequest abstractRequest : errorRequests) {
             // INGEST REQUESTS
-            if (abstractRequest instanceof IngestRequest) {
-                IngestRequest ingestRequest = (IngestRequest) abstractRequest;
+            if (abstractRequest instanceof IngestRequest ingestRequest) {
                 AIPNotificationLogger.notificationError(ingestRequest.getId(),
                                                         ingestRequest.getProviderId(),
                                                         ingestRequest.getErrors());
@@ -226,8 +274,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                 ingestRequest.addError(errorMsg);
             }
             // OAIS DELETION REQUESTS
-            else if (abstractRequest instanceof OAISDeletionRequest) {
-                OAISDeletionRequest oaisDeletionRequest = (OAISDeletionRequest) abstractRequest;
+            else if (abstractRequest instanceof OAISDeletionRequest oaisDeletionRequest) {
                 AIPNotificationLogger.notificationError(oaisDeletionRequest.getId(),
                                                         oaisDeletionRequest.getProviderId(),
                                                         oaisDeletionRequest.getErrors());
@@ -238,8 +285,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                 oaisDeletionRequest.addError(errorMsg);
             }
             // UPDATE REQUESTS
-            else if (abstractRequest instanceof AIPUpdateRequest) {
-                AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
+            else if (abstractRequest instanceof AIPUpdateRequest aipUpdateRequest) {
                 AIPNotificationLogger.notificationError(aipUpdateRequest.getId(),
                                                         aipUpdateRequest.getProviderId(),
                                                         aipUpdateRequest.getErrors());
@@ -248,6 +294,15 @@ public class AIPNotificationService implements IAIPNotificationService {
                 aipUpdateRequest.setStep(AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR);
                 aipUpdateRequest.setErrorType(IngestErrorType.NOTIFICATION);
                 aipUpdateRequest.addError(errorMsg);
+            }
+            // DISSEMINATION REQUEST
+            else if (abstractRequest instanceof AipDisseminationRequest aipDisseminationRequest) {
+                AIPNotificationLogger.notificationError(aipDisseminationRequest.getId(),
+                                                        aipDisseminationRequest.getProviderId(),
+                                                        aipDisseminationRequest.getErrors());
+                aipDisseminationRequest.setState(InternalRequestState.ERROR);
+                aipDisseminationRequest.setErrorType(IngestErrorType.DISSEMINATION);
+                aipDisseminationRequest.addError(errorMsg);
             }
         }
         // Save error requests

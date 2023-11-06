@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.ingest.dao.IAipDisseminationRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dissemination.AipDisseminationRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
@@ -37,6 +38,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+
+record AipDisseminationRequestLight(AIPEntity aip,
+                                    List<String> recipient) {
+
+}
 
 /**
  * This job is used to send an amqp message to notify by {@link AipDisseminationRequest} in parameter.
@@ -81,12 +87,13 @@ public class AipDisseminationJob extends AbstractJob<Void> {
         logger.debug("[AIP DISSEMINATION JOB] Start dissemination notification for {} aips",
                      aipDisseminationRequests.size());
         for (AipDisseminationRequest disseminationRequest : aipDisseminationRequests) {
-            publisher.publish(new NotificationRequestEvent(gson.toJsonTree(disseminationRequest.getAip())
-                                                               .getAsJsonObject(),
+            publisher.publish(new NotificationRequestEvent(gson.toJsonTree(new AipDisseminationRequestLight(
+                disseminationRequest.getAip(),
+                disseminationRequest.getRecipients())).getAsJsonObject(),
                                                            gson.toJsonTree(new AIPNotificationService.NotificationActionEventMetadata(
                                                                    RequestTypeConstant.AIP_DISSEMINATION_VALUE))
                                                                .getAsJsonObject(),
-                                                           disseminationRequest.getAip().getSession(),
+                                                           disseminationRequest.getCorrelationId(),
                                                            disseminationRequest.getAip().getSessionOwner()));
             disseminationRequest.setState(InternalRequestState.WAITING_NOTIFIER_DISSEMINATION_RESPONSE);
         }

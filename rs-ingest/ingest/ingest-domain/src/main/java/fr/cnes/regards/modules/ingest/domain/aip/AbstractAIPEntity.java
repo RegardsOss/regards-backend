@@ -100,7 +100,7 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
     @NotNull
     @Column(name = "dissemination_status", nullable = false)
     @Enumerated(value = EnumType.STRING)
-    private DisseminationStatus disseminationStatus;
+    private DisseminationStatus disseminationStatus = DisseminationStatus.NONE;
 
     public Long getId() {
         return id;
