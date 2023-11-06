@@ -38,6 +38,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -253,7 +254,9 @@ public class DeliveryDownloadService {
             runtimeTenantResolver.forceTenant(tenant);
             FeignSecurityManager.asUser(user, DefaultRole.REGISTERED_USER.toString());
             Response inputStreamRes = dataFileClient.downloadFile(availableFile.getId());
-            if (inputStreamRes == null || inputStreamRes.body() == null) {
+            if (inputStreamRes == null
+                || inputStreamRes.status() != HttpStatus.OK.value()
+                || inputStreamRes.body() == null) {
                 String errorMsg = String.format("Could not retrieve file with name '%s' from order service.",
                                                 availableFile.getFilename());
                 LOGGER.error(errorMsg + "Got response : {}", inputStreamRes);
