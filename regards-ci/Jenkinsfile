@@ -170,6 +170,21 @@ pipeline {
                                 runMavenDockerImgParallelTwo("tests", "rs-processing")
                             }
                         }
+                        stage('File Catalog') {
+                            steps {
+                                runMavenDockerImgParallelTwo("tests", "rs-file-catalog")
+                            }
+                        }
+                        stage('File Access') {
+                            steps {
+                                runMavenDockerImgParallelTwo("tests", "rs-file-access")
+                            }
+                        }
+                        stage('File Packager') {
+                            steps {
+                                runMavenDockerImgParallelTwo("tests", "rs-file-packager")
+                            }
+                        }
                     }
                 }
             }

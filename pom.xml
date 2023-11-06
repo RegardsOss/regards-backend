@@ -228,6 +228,9 @@
         <module>rs-worker-manager</module>
         <module>rs-lta-manager</module>
         <module>rs-delivery</module>
+        <module>rs-file-catalog</module>
+        <module>rs-file-access</module>
+        <module>rs-file-packager</module>
     </modules>
 
     <dependencies>
@@ -1714,6 +1717,99 @@
                 <artifactId>delivery-amqp</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <!--File Catalog -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+                <artifactId>file-catalog-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+                <artifactId>file-catalog-dao</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+                <artifactId>file-catalog-dto</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+                <artifactId>file-catalog-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+                <artifactId>file-catalog-rest</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+                <artifactId>file-catalog-amqp</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <!--File Access -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+                <artifactId>file-access-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+                <artifactId>file-access-dao</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+                <artifactId>file-access-dto</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+                <artifactId>file-access-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+                <artifactId>file-access-rest</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+                <artifactId>file-access-amqp</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <!--File Packager -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filepackager</groupId>
+                <artifactId>file-packager-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filepackager</groupId>
+                <artifactId>file-packager-dao</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filepackager</groupId>
+                <artifactId>file-packager-dto</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filepackager</groupId>
+                <artifactId>file-packager-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filepackager</groupId>
+                <artifactId>file-packager-rest</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filepackager</groupId>
+                <artifactId>file-packager-amqp</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <!-- CNES REMOTE STORAGES -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.storage.plugins</groupId>
@@ -1890,12 +1986,12 @@
                 <artifactId>jsoniter</artifactId>
                 <version>${com.jsoniter.version}</version>
             </dependency>
-			<!-- JSON encoder for logback -->
-			<dependency>
-				<groupId>net.logstash.logback</groupId>
-				<artifactId>logstash-logback-encoder</artifactId>
-				<version>${logstash.logback.version}</version>
-			</dependency>
+            <!-- JSON encoder for logback -->
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash.logback.version}</version>
+            </dependency>
             <!-- Maven plugins -->
             <dependency>
                 <groupId>org.apache.maven</groupId>
