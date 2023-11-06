@@ -39,8 +39,10 @@ import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.flow.mock.ResponseMockHandler;
+import fr.cnes.regards.modules.workermanager.service.flow.mock.WorkerRequestDlqMockHandler;
 import fr.cnes.regards.modules.workermanager.service.flow.mock.WorkerRequestMockHandler;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
@@ -86,6 +88,9 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
     protected ResponseMockHandler responseMock;
 
     @Autowired
+    protected WorkerRequestDlqMockHandler workerRequestDlqMockHandler;
+
+    @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
@@ -103,16 +108,19 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
     @Autowired
     protected IJobInfoRepository jobInfoRepo;
 
+    protected SessionHelper sessionHelper;
+
     @Before
     public void initTests() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        requestRepository.deleteAll();
+        requestRepository.deleteAllInBatch();
         jobInfoRepo.deleteAll();
-        stepPropertyUpdateRepository.deleteAll();
-        sessionSnapshotRepository.deleteAll();
-        sessionStepRepository.deleteAll();
+        stepPropertyUpdateRepository.deleteAllInBatch();
+        sessionSnapshotRepository.deleteAllInBatch();
+        sessionStepRepository.deleteAllInBatch();
         responseMock.reset();
         workerRequestMock.reset();
+        sessionHelper = new SessionHelper(runtimeTenantResolver, getDefaultTenant(), stepPropertyUpdateRepository);
     }
 
     protected Request createRequest(String requestId,
@@ -179,9 +187,9 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
                                        BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
     }
 
-    protected boolean waitForResponses(int expected, long count, TimeUnit timeUnit) {
+    protected boolean waitForResponses(int expected, long timeout, TimeUnit timeUnit) {
         try {
-            Awaitility.await().atMost(count, timeUnit).until(() -> responseMock.getEvents().size() >= expected);
+            Awaitility.await().atMost(timeout, timeUnit).until(() -> responseMock.getEvents().size() >= expected);
 
             return responseMock.getEvents().size() == expected;
         } catch (ConditionTimeoutException e) {
@@ -189,10 +197,21 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
         }
     }
 
-    protected boolean waitForWorkerRequestResponses(int expected, long count, TimeUnit timeUnit) {
+    protected boolean waitForWorkerRequestResponses(int expected, long timeout, TimeUnit timeUnit) {
         try {
-            Awaitility.await().atMost(count, timeUnit).until(() -> workerRequestMock.getEvents().size() >= expected);
+            Awaitility.await().atMost(timeout, timeUnit).until(() -> workerRequestMock.getEvents().size() >= expected);
             return workerRequestMock.getEvents().size() == expected;
+        } catch (ConditionTimeoutException e) {
+            return false;
+        }
+    }
+
+    protected boolean waitForWorkerRequestDlqResponses(int expected, long timeout, TimeUnit timeUnit) {
+        try {
+            Awaitility.await()
+                      .atMost(timeout, timeUnit)
+                      .until(() -> workerRequestDlqMockHandler.getEvents().size() >= expected);
+            return workerRequestDlqMockHandler.getEvents().size() == expected;
         } catch (ConditionTimeoutException e) {
             return false;
         }
@@ -217,9 +236,9 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
         }
     }
 
-    protected boolean waitForRequests(int expected, long count, TimeUnit timeUnit) {
+    protected boolean waitForRequests(int expected, long timeout, TimeUnit timeUnit) {
         try {
-            Awaitility.await().atMost(count, timeUnit).until(() -> {
+            Awaitility.await().atMost(timeout, timeUnit).until(() -> {
                 runtimeTenantResolver.forceTenant(getDefaultTenant());
                 return requestRepository.count() == expected;
             });
@@ -229,9 +248,9 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
         }
     }
 
-    protected boolean waitForSessionProperties(int expected, long count, TimeUnit timeUnit) {
+    protected boolean waitForSessionProperties(int expected, long timeout, TimeUnit timeUnit) {
         try {
-            Awaitility.await().atMost(count, timeUnit).until(() -> {
+            Awaitility.await().atMost(timeout, timeUnit).until(() -> {
                 runtimeTenantResolver.forceTenant(getDefaultTenant());
                 return sessionStepRepository.count() == expected;
             });

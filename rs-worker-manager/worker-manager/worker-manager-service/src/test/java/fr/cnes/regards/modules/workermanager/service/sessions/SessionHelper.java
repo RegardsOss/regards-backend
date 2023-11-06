@@ -21,43 +21,66 @@ package fr.cnes.regards.modules.workermanager.service.sessions;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public final class SessionHelper {
 
-    private SessionHelper() {
+    private final String defaultTenant;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    private final IStepPropertyUpdateRequestRepository stepPropertyUpdateRepository;
+
+    public SessionHelper(IRuntimeTenantResolver runtimeTenantResolver,
+                         String defaultTenant,
+                         IStepPropertyUpdateRequestRepository stepPropertyUpdateRepository) {
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.defaultTenant = defaultTenant;
+        this.stepPropertyUpdateRepository = stepPropertyUpdateRepository;
     }
 
-    public static void checkSession(IStepPropertyUpdateRequestRepository repo,
-                                    String source,
-                                    String session,
-                                    String workerType,
-                                    int total,
-                                    int running,
-                                    int noWorkerAvailable,
-                                    int dispatched,
-                                    int success,
-                                    int error,
-                                    int invalid,
-                                    int retry,
-                                    int deletion) {
+    public void checkSession(long timeout,
+                             TimeUnit timeUnit,
+                             long stepPropertyUpdateRequestExpected,
+                             String source,
+                             String session,
+                             String workerType,
+                             int total,
+                             int running,
+                             int noWorkerAvailable,
+                             int dispatched,
+                             int success,
+                             int error,
+                             int invalid,
+                             int retry,
+                             int deletion) {
 
-        try {
-            // Wait for handler to handle session events
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            Assert.fail("Fails !!");
-        }
-        Map<String, List<StepPropertyUpdateRequest>> stepProperties = repo.findBySession(session)
-                                                                          .stream()
-                                                                          .filter(s -> s.getSource().equals(source))
-                                                                          .collect(Collectors.groupingBy(s -> s.getStepPropertyInfo()
-                                                                                                               .getProperty()));
+        int currentStepPropertyUpdateRequestReceived = waitForStepProperties(timeout,
+                                                                             timeUnit,
+                                                                             stepPropertyUpdateRequestExpected,
+                                                                             source,
+                                                                             session);
+        Assert.assertEquals("Timeout exceeded while fetching properties update request or wrong number "
+                            + "of request received",
+                            stepPropertyUpdateRequestExpected,
+                            currentStepPropertyUpdateRequestReceived);
+        Map<String, List<StepPropertyUpdateRequest>> stepProperties = stepPropertyUpdateRepository.findBySession(session)
+                                                                                                  .stream()
+                                                                                                  .filter(s -> s.getSource()
+                                                                                                                .equals(
+                                                                                                                    source))
+                                                                                                  .collect(Collectors.groupingBy(
+                                                                                                      s -> s.getStepPropertyInfo()
+                                                                                                            .getProperty()));
 
         checkSessionProperty(workerType, stepProperties, WorkerStepPropertyEnum.TOTAL_REQUESTS, total);
         checkSessionProperty(workerType, stepProperties, WorkerStepPropertyEnum.RUNNING, running);
@@ -71,10 +94,36 @@ public final class SessionHelper {
 
     }
 
-    private static void checkSessionProperty(String workerType,
-                                             Map<String, List<StepPropertyUpdateRequest>> stepProperties,
-                                             WorkerStepPropertyEnum property,
-                                             int expected) {
+    private int waitForStepProperties(long timeout,
+                                      TimeUnit timeUnit,
+                                      long stepPropertyUpdateRequestExpected,
+                                      String source,
+                                      String session) {
+
+        try {
+            // Wait for handler to handle session events
+            Awaitility.await().atMost(timeout, timeUnit).until(() -> {
+                runtimeTenantResolver.forceTenant(defaultTenant);
+                return stepPropertyUpdateRepository.findBySession(session)
+                                                   .stream()
+                                                   .filter(s -> s.getSource().equals(source))
+                                                   .toList()
+                                                   .size() >= stepPropertyUpdateRequestExpected;
+            });
+            return stepPropertyUpdateRepository.findBySession(session)
+                                               .stream()
+                                               .filter(s -> s.getSource().equals(source))
+                                               .toList()
+                                               .size();
+        } catch (ConditionTimeoutException e) {
+            return 0;
+        }
+    }
+
+    private void checkSessionProperty(String workerType,
+                                      Map<String, List<StepPropertyUpdateRequest>> stepProperties,
+                                      WorkerStepPropertyEnum property,
+                                      int expected) {
         String propertyName = SessionService.getSessionPropertyName(workerType, property);
         int count = stepProperties.getOrDefault(propertyName, new ArrayList<>())
                                   .stream()

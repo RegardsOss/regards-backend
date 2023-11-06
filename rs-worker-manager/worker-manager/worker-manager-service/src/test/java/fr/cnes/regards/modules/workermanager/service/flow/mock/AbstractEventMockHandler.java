@@ -77,7 +77,7 @@ public abstract class AbstractEventMockHandler<T extends ISubscribable>
 
     @Override
     public void handleBatchWithRaw(List<T> messages, List<Message> rawMessages) {
-        LOGGER.info("[{}}] {} new message received.", this.getClass().getName(), events.size());
+        LOGGER.info("[{}}] {} new message received.", this.getClass().getName(), messages.size());
         this.events.addAll(messages);
         this.rawEvents.addAll(rawMessages);
     }

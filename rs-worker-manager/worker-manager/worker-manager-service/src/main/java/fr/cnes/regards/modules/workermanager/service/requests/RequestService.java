@@ -517,7 +517,7 @@ public class RequestService {
                                                                                                     .getHeader(
                                                                                                         EventHeadersHelper.REQUEST_ID_HEADER),
                                                                                       getErrorStackTraceHeader(event)))
-                                                                .collect(Collectors.toList());
+                                                                .toList();
 
         // Retrieve existing requests from database
         List<Request> requests = requestRepository.findByRequestIdIn(requestErrors.stream()

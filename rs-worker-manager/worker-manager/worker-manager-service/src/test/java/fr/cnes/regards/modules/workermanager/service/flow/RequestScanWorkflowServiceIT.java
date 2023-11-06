@@ -30,7 +30,6 @@ import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
 import fr.cnes.regards.modules.workermanager.dto.WorkflowConfigDto;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerManagerConfigManager;
-import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +128,9 @@ public class RequestScanWorkflowServiceIT extends AbstractWorkerManagerIT {
         // -2 TO_DISPATCH
         // 2 DISPATCHED
         waitForSessionProperties(2, 10, TimeUnit.SECONDS);
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    AVAILABLE_WORKER_TYPE_1,

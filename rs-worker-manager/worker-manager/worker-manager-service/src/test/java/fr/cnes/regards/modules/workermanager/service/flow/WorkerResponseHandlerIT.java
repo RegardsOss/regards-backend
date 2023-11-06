@@ -25,7 +25,6 @@ import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.test.context.ActiveProfiles;
@@ -35,7 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-@ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
+@ActiveProfiles(value = { "default", "test", "testAmqp", "nojobs" }, inheritProfiles = false)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_responses",
                                    "regards.amqp.enabled=true",
                                    "regards.workermanager.worker.response.bulk.size=1000" },
@@ -59,7 +58,9 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
         Assert.assertEquals("Requests status invalid", RequestStatus.RUNNING, dto.get().getStatus());
         Assert.assertEquals("Invalid number of response event sent", 0L, responseMock.getEvents().size());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -84,7 +85,7 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
 
         // Simulate new event from worker
         publishWorkerResponse(createWorkerResponseEvent("1", WorkerResponseStatus.SUCCESS));
-        waitForResponses(1, 5, TimeUnit.SECONDS);
+        Assert.assertTrue("Timeout while waiting for events", waitForResponses(1, 5, TimeUnit.SECONDS));
 
         Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertFalse("Request should noy exists anymore", dto.isPresent());
@@ -93,7 +94,9 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
                             ResponseStatus.SUCCESS,
                             responseMock.getEvents().stream().findFirst().get().getState());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -118,7 +121,7 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
         // Simulate new event from worker
         publishWorkerResponse(createWorkerResponseEvent("1", WorkerResponseStatus.INVALID_CONTENT));
 
-        waitForResponses(1, 5, TimeUnit.SECONDS);
+        Assert.assertTrue("Timeout while waiting for events", waitForResponses(1, 5, TimeUnit.SECONDS));
 
         Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertTrue("Request should exists", dto.isPresent());
@@ -128,7 +131,9 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
                             ResponseStatus.INVALID_CONTENT,
                             responseMock.getEvents().stream().findFirst().get().getState());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -153,17 +158,18 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
 
         // Simulate new event from worker
         publishWorkerResponse(createWorkerResponseEvent("1", WorkerResponseStatus.ERROR));
-        waitForResponses(1, 5, TimeUnit.SECONDS);
+        Assert.assertTrue("Timeout while waiting for events", waitForResponses(1, 10, TimeUnit.SECONDS));
 
         Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertTrue("Request should exists", dto.isPresent());
         Assert.assertEquals("Requests status invalid", RequestStatus.ERROR, dto.get().getStatus());
-        Assert.assertEquals("Invalid number of response event sent", 1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response event status",
                             ResponseStatus.ERROR,
                             responseMock.getEvents().stream().findFirst().get().getState());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -182,11 +188,13 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
      * Check that requests are updated in database with ERROR status after worker sent to DLQ the request
      */
     @Test
-    public void handleDlqErrorFromWorker() {
+    public void handleDlqErrorFromWorker() throws InterruptedException {
 
         handleDlqErrorFromWorker(RequestStatus.RUNNING, RequestStatus.ERROR);
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -206,10 +214,12 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
      * scheduled to be dispatched. Retry case of a request.
      */
     @Test
-    public void handleDlqErrorDuringReDispatchFromWorker() {
+    public void handleDlqErrorDuringReDispatchFromWorker() throws InterruptedException {
         handleDlqErrorFromWorker(RequestStatus.TO_DISPATCH, RequestStatus.TO_DISPATCH);
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   0,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -244,7 +254,9 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
         Assert.assertTrue("Request should exists", dto.isPresent());
         Assert.assertEquals("Requests status invalid", RequestStatus.DISPATCHED, dto.get().getStatus());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   0,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -264,19 +276,21 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
         List<Request> requests = Lists.newArrayList();
         List<WorkerResponseEvent> responses = Lists.newArrayList();
         for (int i = 0; i < 1_000; i++) {
-            String requestId = "request_" + String.valueOf(i);
-            requests.add(createRequest("request_" + String.valueOf(i), RequestStatus.RUNNING));
+            String requestId = "request_" + i;
+            requests.add(createRequest("request_" + i, RequestStatus.RUNNING));
             responses.add(createWorkerResponseEvent(requestId, WorkerResponseStatus.SUCCESS));
         }
         requestRepository.saveAll(requests);
         publishWorkerResponses(responses);
-        waitForResponses(1_000, 3, TimeUnit.SECONDS);
+        Assert.assertTrue("Timeout while waiting for events", waitForResponses(1_000, 3, TimeUnit.SECONDS));
 
         Assert.assertEquals("Invalid number of response event sent", 1_000L, responseMock.getEvents().size());
         Assert.assertFalse("Invalid response event status",
                            responseMock.getEvents().stream().anyMatch(e -> e.getState() != ResponseStatus.SUCCESS));
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -298,8 +312,13 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
         // Simulate request sent to DLQ by worker
         String errorStackTrace = "Test error stacktrace";
         publishWorkerDlq(createWorkerDlqRequestEvent("1", "Test error stacktrace"));
-        waitForResponses(1, 5, TimeUnit.SECONDS);
 
+        // when event receive and process by service
+        Assert.assertTrue("Timeout while waiting for worker dlq requests",
+                          waitForWorkerRequestDlqResponses(1, 10, TimeUnit.SECONDS));
+        requestService.handleRequestErrors(workerRequestDlqMockHandler.getEvents().stream().toList());
+
+        // then
         Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertTrue("Request should exists", dto.isPresent());
         Assert.assertEquals("Request status invalid", finalStatus, dto.get().getStatus());

@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigService;
 import fr.cnes.regards.modules.workermanager.service.requests.scan.RequestScanService;
-import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,7 +101,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                             0L,
                             responseMock.getEvents().size());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   0,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -126,7 +127,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                                                UUID.randomUUID().toString(),
                                                BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
         broadcastMessage(event, Optional.empty());
-        waitForResponses(1, 5, TimeUnit.SECONDS);
+        Assert.assertTrue("Timeout while waiting for events", waitForResponses(1, 5, TimeUnit.SECONDS));
         Assert.assertEquals("There should be no requests created", 0L, requestRepository.count());
         Assert.assertEquals("As the requestId and tenant are provided the response should be sent",
                             1L,
@@ -135,7 +136,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                             ResponseStatus.SKIPPED,
                             responseMock.getEvents().stream().findFirst().get().getState());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   0,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -156,7 +159,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         Thread.sleep(1_000);
         Assert.assertEquals("There should be no requests created", 0L, requestRepository.count());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   0,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -205,7 +210,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         // -2 TO_DISPATCH
         // +2 DISPATCHED
         waitForSessionProperties(4, 5, TimeUnit.SECONDS);
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -245,7 +252,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         // -5 TO_DISPATCH
         // +5 DISPATCHED
         waitForSessionProperties(5, 5, TimeUnit.SECONDS);
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   6,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -285,7 +294,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         // -5 TO_DELETE
         // -5 TOTAL
         waitForSessionProperties(5, 5, TimeUnit.SECONDS);
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   6,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -321,7 +332,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                             ResponseStatus.SKIPPED,
                             responseMock.getEvents().stream().findFirst().get().getState());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   0,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -334,7 +347,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                                    0,
                                    0,
                                    0);
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   0,
                                    "source",
                                    "session",
                                    DEFAULT_WORKER,
@@ -355,7 +370,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         String requestId = ((Message) message).getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
         broadcastMessage(message, Optional.empty());
 
-        waitForResponses(1, 5, TimeUnit.SECONDS);
+        Assert.assertTrue("Timeout while waiting for events", waitForResponses(1, 5, TimeUnit.SECONDS));
         waitForWorkerRequestResponses(1, 2, TimeUnit.SECONDS);
 
         Assert.assertEquals("Number of sent requests to worker invalid", 1L, workerRequestMock.getEvents().size());
@@ -371,7 +386,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                             ResponseStatus.GRANTED,
                             responseMock.getEvents().stream().findFirst().get().getState());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -398,7 +415,8 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         events.add(createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0)));
         events.add(createEvent(Optional.of("unknown")));
         broadcastMessages(events, Optional.empty());
-        waitForResponses(8, 5, TimeUnit.SECONDS);
+        Assert.assertTrue("Timeout while waiting for events", waitForResponses(8, 5, TimeUnit.SECONDS));
+
         waitForWorkerRequestResponses(4, 2, TimeUnit.SECONDS);
 
         Assert.assertEquals("Number of sent requests to worker invalid", 4L, workerRequestMock.getEvents().size());
@@ -429,7 +447,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                                         .filter(e -> e.getState() == ResponseStatus.DELAYED)
                                         .count());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   3,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
@@ -457,7 +477,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         }
         broadcastMessages(events, Optional.empty());
 
-        waitForResponses(1_000, 6, TimeUnit.SECONDS);
+        Assert.assertTrue("Timeout while waiting for events", waitForResponses(1_000, 6, TimeUnit.SECONDS));
         waitForWorkerRequestResponses(1_000, 4, TimeUnit.SECONDS);
 
         Assert.assertEquals("invalid number of response event sent", 1_000, responseMock.getEvents().size());
@@ -475,7 +495,9 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                                         .filter(e -> e.getState() == ResponseStatus.GRANTED)
                                         .count());
 
-        SessionHelper.checkSession(stepPropertyUpdateRepository,
+        sessionHelper.checkSession(2500,
+                                   TimeUnit.MILLISECONDS,
+                                   2,
                                    DEFAULT_SOURCE,
                                    DEFAULT_SESSION,
                                    DEFAULT_WORKER,
