@@ -23,9 +23,11 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.dto.AbstractStoragePluginConfigurationDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.transaction.NotSupportedException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
@@ -109,6 +111,16 @@ public interface IStorageLocation {
      */
     default Optional<Path> getRootPath() {
         return Optional.empty();
+    }
+
+    /**
+     * Create the configuration dto to share to the workers
+     *
+     * @return the configuration
+     */
+    default AbstractStoragePluginConfigurationDto createWorkerStoreConfiguration() throws NotSupportedException {
+        throw new NotSupportedException(String.format("Worker configuration creation is not supported for %s",
+                                                      this.getClass().getName()));
     }
 
 }
