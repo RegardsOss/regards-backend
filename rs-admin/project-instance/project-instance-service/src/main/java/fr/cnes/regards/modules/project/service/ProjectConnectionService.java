@@ -187,7 +187,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     @Override
     public ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection) throws ModuleException {
 
-        // Only store connection if it's really does not exist
+        // Only store connection if it really does not exist
         if (existsProjectConnection(projectConnection.getProject().getName(), projectConnection.getMicroservice())) {
             LOGGER.warn("Project connection already exists for tenant {} and microservice {}",
                         projectConnection.getProject().getName(),
