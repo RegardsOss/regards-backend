@@ -292,7 +292,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
                                          String.format(AutoOrderCompletionService.ERROR_RESPONSE_FORMAT,
                                                        ExceededBasketSizeException.class.getSimpleName(),
                                                        String.format(
-                                                           "The size of the basket ['%d bytes'] exceeds the maximum size allowed ['%d bytes']. Please review the"
+                                                           "The size of the basket [%d bytes] exceeds the maximum size allowed [%d bytes]. Please review the"
                                                            + " order requested so that it does not exceed the maximum size "
                                                            + "configured.",
                                                            6033303,

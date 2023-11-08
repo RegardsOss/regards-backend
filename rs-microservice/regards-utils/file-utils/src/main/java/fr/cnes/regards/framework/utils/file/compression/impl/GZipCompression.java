@@ -274,12 +274,11 @@ public class GZipCompression extends AbstractRunnableCompression {
 
     private void extract(File archive, File intoFile) throws CompressionException {
         try (GZIPInputStream archiveStream = new GZIPInputStream(new BufferedInputStream(new FileInputStream(archive)));
-            BufferedOutputStream extractedStream = new BufferedOutputStream(new FileOutputStream(intoFile), BUFFER)) {
+            FileOutputStream extractedStream = new FileOutputStream(intoFile)) {
             byte[] dataRead = new byte[BUFFER];
-            int amountRead = archiveStream.read(dataRead);
-            while (amountRead > 0) {
-                extractedStream.write(dataRead);
-                amountRead = archiveStream.read(dataRead);
+            int length;
+            while ((length = archiveStream.read(dataRead)) != -1) {
+                extractedStream.write(dataRead, 0, length);
             }
             extractedStream.flush();
         } catch (IOException ioE) {
