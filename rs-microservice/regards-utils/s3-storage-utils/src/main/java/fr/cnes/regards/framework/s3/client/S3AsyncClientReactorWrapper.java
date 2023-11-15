@@ -292,12 +292,12 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         });
     }
 
-    public Mono<RestoreObjectResponse> restore(String bucket, String key) {
+    public Mono<RestoreObjectResponse> restore(String bucket, String key, Integer days) {
         return withClient(client -> {
             RestoreObjectRequest request = RestoreObjectRequest.builder()
                                                                .bucket(bucket)
                                                                .key(key)
-                                                               .restoreRequest(r -> r.days(1))
+                                                               .restoreRequest(r -> r.days(days))
                                                                .build();
             return fromFutureSupplier(() -> client.restoreObject(request)).onErrorMap(SdkClientException.class,
                                                                                       S3ClientException::new);

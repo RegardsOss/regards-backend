@@ -115,7 +115,11 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
     }
 
     public Mono<RestoreObjectResponse> restore(StorageConfig config, String key) {
-        return getClient(config).restore(config.getBucket(), key);
+        return restore(config, key, 1);
+    }
+
+    public Mono<RestoreObjectResponse> restore(StorageConfig config, String key, Integer days) {
+        return getClient(config).restore(config.getBucket(), key, days);
     }
 
     public Mono<WriteResult> write(Write writeCmd) {
