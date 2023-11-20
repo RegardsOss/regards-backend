@@ -20,12 +20,16 @@ package fr.cnes.regards.modules.storage.client;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.*;
@@ -34,6 +38,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
@@ -69,6 +74,7 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -80,10 +86,10 @@ import java.util.stream.Collectors;
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
                                    "regards.amqp.enabled=true",
-                                   "regards.storage.schedule.initial.delay=100",
-                                   "regards.storage.schedule.delay=100" },
+                                   "regards.storage.schedule.initial.delay=2000",
+                                   "regards.storage.schedule.delay=2000" },
                     locations = { "classpath:application-test.properties" })
-public class StorageClientIT extends AbstractRegardsTransactionalIT {
+public class StorageClientIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageClientIT.class);
 
@@ -121,6 +127,18 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     private IFileReferenceRepository fileRefRepo;
 
     @Autowired
+    protected IJobInfoRepository jobInfoRepo;
+
+    @Autowired
+    private ISnapshotProcessRepository snapshotProcessRepository;
+
+    @Autowired
+    private ISessionStepRepository sessionStepRepository;
+
+    @Autowired
+    private IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepository;
+
+    @Autowired
     private IPublisher publisher;
 
     private Path fileToStore;
@@ -146,12 +164,18 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     @Before
     public void init() throws IOException, ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        storageReqRepo.deleteAll();
+        // Delete FileStorageRequest and related owners
+        List<FileStorageRequest> fileStorageRequests = storageReqRepo.findAll();
+        storageReqRepo.deleteAll(fileStorageRequests);
         copyReqRepo.deleteAll();
         cacheReqRepo.deleteAll();
         reqInfoRepo.deleteAll();
         reqGroupRepo.deleteAll();
         fileRefRepo.deleteAll();
+        jobInfoRepo.deleteAll();
+        snapshotProcessRepository.deleteAllInBatch();
+        stepPropertyUpdateRequestRepository.deleteAllInBatch();
+        sessionStepRepository.deleteAllInBatch();
 
         fileToStore = Paths.get("target/file-to-store.test");
         if (!Files.exists(fileToStore)) {
@@ -174,6 +198,8 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue(storageLocationConfService.search(NEARLINE_CONF_2).isPresent());
 
         listener.reset();
+        simulateApplicationReadyEvent();
+        simulateApplicationStartedEvent();
 
     }
 
@@ -260,8 +286,8 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         listener.reset();
         for (Path file : filesToStore) {
             cpt++;
-            String owner = "owner-" + cpt;
-            String sessionOwner = "SOURCE " + cpt;
+            String owner = "owner-" + (cpt % 5);
+            String sessionOwner = "SOURCE " + (cpt % 5);
             Set<FileStorageRequestDTO> files = Sets.newHashSet();
             String cs = ChecksumUtils.computeHexChecksum(file, "MD5");
             files.add(FileStorageRequestDTO.build(file.getFileName().toString(),
