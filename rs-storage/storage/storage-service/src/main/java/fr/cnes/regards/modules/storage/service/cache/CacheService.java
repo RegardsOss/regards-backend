@@ -85,7 +85,7 @@ public class CacheService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
 
     @Value("${regards.storage.cache.schedule.purge.bulk.size:500}")
-    private final int BULK_SIZE = 500;
+    private int BULK_SIZE;
 
     @Autowired
     private ICacheFileRepository cachedFileRepository;
@@ -111,12 +111,12 @@ public class CacheService {
                         URL location,
                         OffsetDateTime expirationDate,
                         String groupId) {
-        Optional<CacheFile> oCf = search(checksum);
+        Optional<CacheFile> cacheFileOptional = findByChecksum(checksum);
         CacheFile cachedFile;
-        if (!oCf.isPresent()) {
+        if (!cacheFileOptional.isPresent()) {
             cachedFile = new CacheFile(checksum, fileSize, fileName, mimeType, location, expirationDate, groupId, type);
         } else {
-            cachedFile = oCf.get();
+            cachedFile = cacheFileOptional.get();
             if (expirationDate.isAfter(cachedFile.getExpirationDate())) {
                 cachedFile.setExpirationDate(expirationDate);
             }
@@ -125,7 +125,8 @@ public class CacheService {
         cachedFileRepository.save(cachedFile);
     }
 
-    public Optional<CacheFile> search(String checksum) {
+    @MultitenantTransactional(readOnly = true)
+    public Optional<CacheFile> findByChecksum(String checksum) {
         return cachedFileRepository.findOneByChecksum(checksum);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,14 +21,13 @@ package fr.cnes.regards.modules.storage.domain.exception;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
- * Exception when a file is not available in NEARLINE storage.
+ * Exception when a error is raised during the downloading of file from NEARLINE storage.
  *
- * @author sbinda
+ * @author Stephane Cortine
  */
-public class NearlineFileNotAvailableException extends ModuleException {
+public class NearlineDownloadException extends ModuleException {
 
-    public NearlineFileNotAvailableException(String message) {
+    public NearlineDownloadException(String message) {
         super(message);
     }
-
 }

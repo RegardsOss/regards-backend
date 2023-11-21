@@ -131,7 +131,7 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
-        Optional<CacheFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());
+        Optional<CacheFile> oCf = cacheService.findByChecksum(fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File should be present in cache", oCf.isPresent());
         assertEquals("File should be present in cache",
                      cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()),

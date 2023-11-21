@@ -163,7 +163,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
 
         // Cache file should be restored
         oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
-        Optional<CacheFile> oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
+        Optional<CacheFile> oCachedFile = cacheService.findByChecksum(fileRef.getMetaInfo().getChecksum());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a cache request anymore", oCacheReq.isPresent());
         Assert.assertTrue("The file should be restored in  cache", oCachedFile.isPresent());
@@ -257,7 +257,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         Assert.assertFalse("There should not be a copy request anymore", oReq.isPresent());
 
         // File should not be in cache anymore
-        oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
+        oCachedFile = cacheService.findByChecksum(fileRef.getMetaInfo().getChecksum());
         Assert.assertFalse("The cache file should be deleted after copy", oCachedFile.isPresent());
 
         // check step events are correctly notified
@@ -326,7 +326,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
 
         // Cache file should be restored
         oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
-        Optional<CacheFile> oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
+        Optional<CacheFile> oCachedFile = cacheService.findByChecksum(fileRef.getMetaInfo().getChecksum());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a cache request anymore", oCacheReq.isPresent());
         Assert.assertTrue("The file should be restored in  cache", oCachedFile.isPresent());
@@ -377,7 +377,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         Assert.assertFalse("There should not be a copy request anymore", oReq.isPresent());
 
         // File should not be in cache anymore
-        oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
+        oCachedFile = cacheService.findByChecksum(fileRef.getMetaInfo().getChecksum());
         Assert.assertFalse("The cache file should be deleted after copy", oCachedFile.isPresent());
     }
 

@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
- * Database definition of the table containing the files currently in cache.
+ * Database definition of the table containing the files currently in internal or external cache.
  *
  * @author Sébastien Binda
  */
@@ -23,7 +23,7 @@ import java.util.Set;
 public class CacheFile {
 
     /**
-     * db id
+     * Technical unique identifier for the cache file in database
      */
     @Id
     @SequenceGenerator(name = "cacheFileSequence", initialValue = 1, sequenceName = "seq_cache_file")
@@ -31,14 +31,14 @@ public class CacheFile {
     private Long id;
 
     /**
-     * The cache file checksum
+     * The cache file checksum (unique identifier of cache file)
      */
     @NotNull
-    @Column(length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH)
+    @Column(length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH, unique = true)
     private String checksum;
 
     /**
-     * the cache file size
+     * The cache file size
      */
     @Column(name = "file_size")
     private Long fileSize;
@@ -60,13 +60,13 @@ public class CacheFile {
     private String type;
 
     /**
-     * location into the cache
+     * Location of file into the cache
      */
     @Column
     private URL location;
 
     /**
-     * expiration date of the file into the cache
+     * Expiration date of the file into the cache
      */
     @Column(name = "expiration_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
@@ -84,6 +84,19 @@ public class CacheFile {
     private final Set<String> groupIds = Sets.newHashSet();
 
     /**
+     * True when the file is stored inside internal REGARDS cache, false when file is in external cache.
+     * By default, the file is inside internal REGARDS cache.
+     */
+    @Column(name = "internal_cache")
+    private boolean internalCache = true;
+
+    /**
+     * Businness identifier of plugin to access file in external cache.
+     */
+    @Column(name = "external_cache_plugin", nullable = true)
+    private String externalCachePlugin;
+
+    /**
      * Default constructor
      */
     public CacheFile() {
@@ -91,7 +104,25 @@ public class CacheFile {
     }
 
     /**
-     * Constructor initializing the cache file from the parameters
+     * Constructor initializing a file managed by an external cache
+     */
+    public CacheFile(String checksum,
+                     Long fileSize,
+                     String fileName,
+                     MimeType mimeType,
+                     URL location,
+                     OffsetDateTime expirationDate,
+                     String groupId,
+                     String type,
+                     String externalCachePlugin) {
+        this(checksum, fileSize, fileName, mimeType, location, expirationDate, groupId, type);
+        // Set external cache in DATALAKE
+        this.internalCache = false;
+        this.externalCachePlugin = externalCachePlugin;
+    }
+
+    /**
+     * Constructor initializing the internal cache(in REGARDS) file from the parameters.
      */
     public CacheFile(String checksum,
                      Long fileSize,
@@ -200,6 +231,27 @@ public class CacheFile {
 
     @Override
     public String toString() {
-        return "CacheFile[id=" + id + ", checksum=" + checksum + "]";
+        return "CacheFile["
+               + "id="
+               + id
+               + ", checksum="
+               + checksum
+               + ", fileSize="
+               + fileSize
+               + ", fileName="
+               + fileName
+               + ", mimeType="
+               + mimeType
+               + ", type="
+               + type
+               + ", location="
+               + location
+               + ", expirationDate="
+               + expirationDate
+               + ", internalCache="
+               + internalCache
+               + ", externalCachePlugin="
+               + externalCachePlugin
+               + "]";
     }
 }

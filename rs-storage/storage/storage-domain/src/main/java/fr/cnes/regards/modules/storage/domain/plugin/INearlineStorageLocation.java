@@ -19,11 +19,17 @@
 package fr.cnes.regards.modules.storage.domain.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineDownloadException;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
+import org.apache.commons.lang3.NotImplementedException;
+
+import java.io.InputStream;
 
 /**
  * Plugin to handle NEARLINE storage location. <br/>
- * A nearline storage location is a lcoation where files cannot be accessed synchronously.<br/>
+ * A nearline storage location is a location where files cannot be accessed synchronously.<br/>
  * Files need to be restored in cache before they can be access for download.<br/>
  * See {@link AvailabilityFlowItem} for more information.
  *
@@ -39,5 +45,18 @@ public interface INearlineStorageLocation extends IStorageLocation {
      * @param progressManager {@link IRestorationProgressManager} object to inform global store process after each transfer succeed or fail.
      */
     void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager);
+
+    /**
+     * Download file if it is available in cache.
+     *
+     * @param fileReference the file's reference
+     * @return input stream of file in cache
+     * @throws NearlineFileNotAvailableException if the file is not available in the cache of NEARLINE storage
+     * @throws NearlineDownloadException         if a error is raised during the downloading of file in the cache of NEARLINE storage
+     */
+    default InputStream download(FileReference fileReference)
+        throws NearlineFileNotAvailableException, NearlineDownloadException {
+        throw new NotImplementedException();
+    }
 
 }

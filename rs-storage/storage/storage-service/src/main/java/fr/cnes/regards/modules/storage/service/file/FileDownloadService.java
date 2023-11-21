@@ -178,7 +178,7 @@ public class FileDownloadService {
      * @param checksum of the file to download
      */
     private Try<Callable<DownloadableFile>> downloadCacheFile(String checksum) {
-        return Option.ofOptional(cachedFileService.search(checksum)).toTry().map(cachedFileToDownload -> () -> {
+        return Option.ofOptional(cachedFileService.findByChecksum(checksum)).toTry().map(cachedFileToDownload -> () -> {
             try {
                 Long fileSize = cachedFileToDownload.getFileSize();
                 String fileName = cachedFileToDownload.getFileName();
