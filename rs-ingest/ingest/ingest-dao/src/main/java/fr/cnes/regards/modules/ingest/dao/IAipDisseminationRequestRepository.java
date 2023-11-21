@@ -39,6 +39,8 @@ public interface IAipDisseminationRequestRepository extends JpaRepository<AipDis
 
     boolean existsByAipIdAndStateIn(Long id, Collection<InternalRequestState> states);
 
+    boolean existsByAipId(Long id);
+
     long countByState(InternalRequestState state);
 
 }

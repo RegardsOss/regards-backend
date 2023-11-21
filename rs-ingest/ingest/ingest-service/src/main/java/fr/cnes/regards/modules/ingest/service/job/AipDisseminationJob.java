@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
@@ -73,10 +74,9 @@ public class AipDisseminationJob extends AbstractJob<Void> {
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve param
-        Type type = new TypeToken<List<Long>>() {
+        List<Long> aipRequestIds = getValue(parameters, AIP_DISSEMINATION_REQUEST_IDS, new TypeToken<List<Long>>() {
 
-        }.getType();
-        List<Long> aipRequestIds = getValue(parameters, AIP_DISSEMINATION_REQUEST_IDS, type);
+        }.getType());
         // Retrieve list of AIP save metadata requests to handle
         aipDisseminationRequests = aipDisseminationService.searchRequests(aipRequestIds);
     }
@@ -87,9 +87,10 @@ public class AipDisseminationJob extends AbstractJob<Void> {
         logger.debug("[AIP DISSEMINATION JOB] Start dissemination notification for {} aips",
                      aipDisseminationRequests.size());
         for (AipDisseminationRequest disseminationRequest : aipDisseminationRequests) {
-            publisher.publish(new NotificationRequestEvent(gson.toJsonTree(new AipDisseminationRequestLight(
-                disseminationRequest.getAip(),
-                disseminationRequest.getRecipients())).getAsJsonObject(),
+            JsonObject payload = gson.toJsonTree(new AipDisseminationRequestLight(disseminationRequest.getAip(),
+                                                                                  disseminationRequest.getRecipients()))
+                                     .getAsJsonObject();
+            publisher.publish(new NotificationRequestEvent(payload,
                                                            gson.toJsonTree(new AIPNotificationService.NotificationActionEventMetadata(
                                                                    RequestTypeConstant.AIP_DISSEMINATION_VALUE))
                                                                .getAsJsonObject(),

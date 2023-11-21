@@ -93,6 +93,11 @@ public final class AbstractRequestSpecifications {
                                                                           AbstractRequestSpecifications.searchAipDisseminationCreator(
                                                                               root,
                                                                               cb),
+                                                                          AbstractRequestSpecifications.searchOAISDissemiation(
+                                                                              root,
+                                                                              cb,
+                                                                              sessionOwner,
+                                                                              session),
                                                                           AbstractRequestSpecifications.searchOAISDeletion(
                                                                               root,
                                                                               cb,
@@ -131,6 +136,11 @@ public final class AbstractRequestSpecifications {
                                                                               root,
                                                                               cb),
                                                                           AbstractRequestSpecifications.searchPostProcess(
+                                                                              root,
+                                                                              cb,
+                                                                              sessionOwner,
+                                                                              session),
+                                                                          AbstractRequestSpecifications.searchOAISDissemiation(
                                                                               root,
                                                                               cb,
                                                                               sessionOwner,
@@ -206,6 +216,17 @@ public final class AbstractRequestSpecifications {
                                                                 sessionOwner,
                                                                 session,
                                                                 RequestTypeConstant.OAIS_DELETION_VALUE);
+    }
+
+    public static Predicate searchOAISDissemiation(Root<AbstractRequest> root,
+                                                   CriteriaBuilder cb,
+                                                   Optional<String> sessionOwner,
+                                                   Optional<String> session) {
+        return AbstractRequestSpecifications.searchMicroRequest(root,
+                                                                cb,
+                                                                sessionOwner,
+                                                                session,
+                                                                RequestTypeConstant.AIP_DISSEMINATION_VALUE);
     }
 
     public static Predicate searchIngest(Root<AbstractRequest> root,
