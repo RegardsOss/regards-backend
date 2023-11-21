@@ -24,6 +24,7 @@ import com.google.gson.JsonIOException;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping;
+import fr.cnes.regards.modules.model.dto.properties.adapter.RangeMapping;
 import org.springframework.validation.Errors;
 
 import java.net.MalformedURLException;
@@ -85,17 +86,29 @@ public class ObjectTypeValidator extends AbstractObjectValidator {
             case DATE_ARRAY:
                 error = !isDateArray(target);
                 break;
+            case INTEGER_RANGE:
+                error = !isIntegerIntervalValid(target, RangeMapping.RANGE_LOWER_BOUND, RangeMapping.RANGE_UPPER_BOUND);
+                break;
+            case DOUBLE_RANGE:
+                error = !isIntervalValid(target, Double.class, RangeMapping.RANGE_LOWER_BOUND, RangeMapping.RANGE_UPPER_BOUND);
+                break;
+            case LONG_RANGE:
+                error = !isIntervalValid(target, Long.class, RangeMapping.RANGE_LOWER_BOUND, RangeMapping.RANGE_UPPER_BOUND);
+                break;
+            case DATE_RANGE:
+                error = !isDateIntervalValid(target, RangeMapping.RANGE_LOWER_BOUND, RangeMapping.RANGE_UPPER_BOUND);
+                break;
             case INTEGER_INTERVAL:
-                error = !isIntegerIntervalValid(target);
+                error = !isIntegerIntervalValid(target, IntervalMapping.RANGE_LOWER_BOUND, IntervalMapping.RANGE_UPPER_BOUND);
                 break;
             case DOUBLE_INTERVAL:
-                error = !isIntervalValid(target, Double.class);
+                error = !isIntervalValid(target, Double.class, IntervalMapping.RANGE_LOWER_BOUND, IntervalMapping.RANGE_UPPER_BOUND);
                 break;
             case LONG_INTERVAL:
-                error = !isIntervalValid(target, Long.class);
+                error = !isIntervalValid(target, Long.class, IntervalMapping.RANGE_LOWER_BOUND, IntervalMapping.RANGE_UPPER_BOUND);
                 break;
             case DATE_INTERVAL:
-                error = !isDateIntervalValid(target);
+                error = !isDateIntervalValid(target, IntervalMapping.RANGE_LOWER_BOUND, IntervalMapping.RANGE_UPPER_BOUND);
                 break;
             case JSON:
                 error = !isJson(target);
@@ -111,16 +124,16 @@ public class ObjectTypeValidator extends AbstractObjectValidator {
         }
     }
 
-    private boolean isIntegerIntervalValid(Object target) {
+    private boolean isIntegerIntervalValid(Object target, String lowerBoundName, String upperBoundName) {
         if (!Map.class.isAssignableFrom(target.getClass())) {
             return false;
         }
         Map interval = (Map) target;
-        Object lowerBound = interval.get(IntervalMapping.RANGE_LOWER_BOUND);
+        Object lowerBound = interval.get(lowerBoundName);
         if (lowerBound == null || !isInteger(lowerBound)) {
             return false;
         }
-        Object upperBound = interval.get(IntervalMapping.RANGE_UPPER_BOUND);
+        Object upperBound = interval.get(upperBoundName);
         if (upperBound == null || !isInteger(upperBound)) {
             return false;
         }
@@ -204,34 +217,34 @@ public class ObjectTypeValidator extends AbstractObjectValidator {
         return true;
     }
 
-    private boolean isIntervalValid(Object target, Class<?> clazz) {
+    private boolean isIntervalValid(Object target, Class<?> clazz, String lowerBoundName, String upperBoundName) {
         if (!Map.class.isAssignableFrom(target.getClass())) {
             return false;
         }
         Map interval = (Map) target;
-        Object lowerBound = interval.get(IntervalMapping.RANGE_LOWER_BOUND);
+        Object lowerBound = interval.get(lowerBoundName);
         if (lowerBound == null || !clazz.isAssignableFrom(lowerBound.getClass())) {
             return false;
         }
-        Object upperBound = interval.get(IntervalMapping.RANGE_UPPER_BOUND);
+        Object upperBound = interval.get(upperBoundName);
         if (upperBound == null || !clazz.isAssignableFrom(upperBound.getClass())) {
             return false;
         }
         return true;
     }
 
-    private boolean isDateIntervalValid(Object target) {
+    private boolean isDateIntervalValid(Object target, String lowerBoundName, String upperBoundName) {
         if (!Map.class.isAssignableFrom(target.getClass())) {
             return false;
         }
         Map interval = (Map) target;
-        Object lowerBound = interval.get(IntervalMapping.RANGE_LOWER_BOUND);
+        Object lowerBound = interval.get(lowerBoundName);
         if (lowerBound == null || !isADate(lowerBound)) {
             return false;
         } else {
 
         }
-        Object upperBound = interval.get(IntervalMapping.RANGE_UPPER_BOUND);
+        Object upperBound = interval.get(upperBoundName);
         if (upperBound == null || !isADate(lowerBound)) {
             return false;
         }

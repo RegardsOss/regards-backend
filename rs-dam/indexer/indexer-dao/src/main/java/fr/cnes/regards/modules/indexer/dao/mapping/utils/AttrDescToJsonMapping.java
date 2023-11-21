@@ -102,21 +102,29 @@ public class AttrDescToJsonMapping {
             case INTEGER:
             case INTEGER_ARRAY:
                 return toIntegerJsonMapping(a);
+            case INTEGER_RANGE:
+                return toIntegerRangeJsonMapping(a);
             case INTEGER_INTERVAL:
                 return toIntegerIntervalJsonMapping(a);
             case LONG:
             case LONG_ARRAY:
                 return toLongJsonMapping(a);
+            case LONG_RANGE:
+                return toLongRangeJsonMapping(a);
             case LONG_INTERVAL:
                 return toLongIntervalJsonMapping(a);
             case DOUBLE:
             case DOUBLE_ARRAY:
                 return toDoubleJsonMapping(a);
+            case DOUBLE_RANGE:
+                return toDoubleRangeJsonMapping(a);
             case DOUBLE_INTERVAL:
                 return toDoubleIntervalJsonMapping(a);
             case DATE_ISO8601:
             case DATE_ARRAY:
                 return toDateJsonMapping(a);
+            case DATE_RANGE:
+                return toDateRangeJsonMapping(a);
             case DATE_INTERVAL:
                 return toDateIntervalJsonMapping(a);
             case OBJECT:
@@ -170,6 +178,10 @@ public class AttrDescToJsonMapping {
         return nestedPropertiesStructure(attrDesc.getPath(), type("integer", attrDesc.isIndexed()));
     }
 
+    private JsonObject toIntegerRangeJsonMapping(AttributeDescription attrDesc) {
+        return nestedPropertiesStructure(attrDesc.getPath(), type("integer_range", attrDesc.isIndexed()));
+    }
+
     private JsonObject toIntegerIntervalJsonMapping(AttributeDescription attrDesc) {
         return nestedSimpleRange(attrDesc, type("integer", attrDesc.isIndexed()));
     }
@@ -178,12 +190,20 @@ public class AttrDescToJsonMapping {
         return nestedPropertiesStructure(attrDesc.getPath(), type("long", attrDesc.isIndexed()));
     }
 
+    private JsonObject toLongRangeJsonMapping(AttributeDescription attrDesc) {
+        return nestedPropertiesStructure(attrDesc.getPath(), type("long_range", attrDesc.isIndexed()));
+    }
+
     private JsonObject toLongIntervalJsonMapping(AttributeDescription attrDesc) {
         return nestedSimpleRange(attrDesc, type("long", attrDesc.isIndexed()));
     }
 
     private JsonObject toDoubleJsonMapping(AttributeDescription attrDesc) {
         return nestedPropertiesStructure(attrDesc.getPath(), type("double", attrDesc.isIndexed()));
+    }
+
+    private JsonObject toDoubleRangeJsonMapping(AttributeDescription attrDesc) {
+        return nestedPropertiesStructure(attrDesc.getPath(), type("double_range", attrDesc.isIndexed()));
     }
 
     private JsonObject toDoubleIntervalJsonMapping(AttributeDescription attrDesc) {
@@ -195,6 +215,10 @@ public class AttrDescToJsonMapping {
                                          object(kv(TYPE_KEY, "date"),
                                                 kv(INDEX_KEY, attrDesc.isIndexed()),
                                                 kv(FORMAT_KEY, "date_optional_time")));
+    }
+
+    private JsonObject toDateRangeJsonMapping(AttributeDescription attrDesc) {
+        return nestedPropertiesStructure(attrDesc.getPath(), type("date_range", attrDesc.isIndexed()));
     }
 
     private JsonObject toDateIntervalJsonMapping(AttributeDescription attrDesc) {

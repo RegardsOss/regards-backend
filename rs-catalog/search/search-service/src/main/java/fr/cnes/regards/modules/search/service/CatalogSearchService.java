@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
@@ -57,6 +58,11 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.aggregations.bucket.histogram.ParsedDateHistogram;
 import org.elasticsearch.search.aggregations.metrics.ParsedStats;
 import org.elasticsearch.search.aggregations.metrics.StatsAggregationBuilder;
 import org.slf4j.Logger;
@@ -67,6 +73,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -81,6 +90,8 @@ import java.util.stream.Collectors;
 public class CatalogSearchService implements ICatalogSearchService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogSearchService.class);
+
+    private static final String DATE_HISTOGRAM_AGGREGATION_NAME = "date_histogram";
 
     /**
      * Service perfoming the ElasticSearch search from criterions. Autowired.
@@ -507,22 +518,26 @@ public class CatalogSearchService implements ICatalogSearchService {
                 }
                 switch (attribute.getType()) {
                     case DATE_ARRAY:
+                    case DATE_RANGE:
                     case DATE_INTERVAL:
                     case DATE_ISO8601:
                         bounds.add(new PropertyBound<>(attribute.getJsonPath(), minAsString, maxAsString));
                         break;
                     case DOUBLE:
                     case DOUBLE_ARRAY:
+                    case DOUBLE_RANGE:
                     case DOUBLE_INTERVAL:
                         bounds.add(new PropertyBound<>(attribute.getJsonPath(), min, max));
                         break;
                     case INTEGER:
                     case INTEGER_ARRAY:
+                    case INTEGER_RANGE:
                     case INTEGER_INTERVAL:
                         bounds.add(new PropertyBound<>(attribute.getJsonPath(), minAsInt, maxAsInt));
                         break;
                     case LONG:
                     case LONG_ARRAY:
+                    case LONG_RANGE:
                     case LONG_INTERVAL:
                         bounds.add(new PropertyBound<>(attribute.getJsonPath(), minAsLong, maxAsLong));
                         break;
@@ -536,5 +551,58 @@ public class CatalogSearchService implements ICatalogSearchService {
             }
         });
         return bounds;
+    }
+
+    @Override
+    public <T extends IIndexable> ParsedDateHistogram getDateHistogram(SearchKey<?, T> searchKey,
+                                                                       String propertyPath,
+                                                                       ICriterion criterion,
+                                                                       DateHistogramInterval dateHistogramInterval,
+                                                                       OffsetDateTime from,
+                                                                       OffsetDateTime to,
+                                                                       ZoneOffset timeZone) {
+
+        // Retrieve attribute from path
+        String attributePath = null;
+        try {
+            AttributeModel attModel = finder.findByName(propertyPath);
+            // Only DATE_RANGE property is available for date histogram
+            if (!(PropertyType.DATE_RANGE.equals(attModel.getType())
+                || PropertyType.DATE_ISO8601.equals(attModel.getType()))) {
+                String errorMessage = String.format("Unexpected type for attribute : %s, %s or %s type required!",
+                                                    propertyPath,
+                                                    PropertyType.DATE_RANGE,
+                                                    PropertyType.DATE_ISO8601);
+                LOGGER.debug(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
+            attributePath = attModel.getFullJsonPath();
+
+
+        } catch (OpenSearchUnknownParameter e) {
+            String errorMessage = String.format("Unknown attribute : %s", propertyPath);
+            LOGGER.debug(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        // Limit request to the required from/to dates
+        ICriterion tmpCriterion = ICriterion.and(criterion, ICriterion.between(attributePath, from, to));
+
+        // Define aggregation
+        Collection<AggregationBuilder> aggregationBuilders = Collections.singleton(AggregationBuilders.dateHistogram(
+                                                                                                          DATE_HISTOGRAM_AGGREGATION_NAME)
+                                                                                                      .field(
+                                                                                                          attributePath)
+                                                                                                      .calendarInterval(
+                                                                                                          dateHistogramInterval)
+                                                                                                      .timeZone(ZoneId.ofOffset(
+                                                                                                          "",
+                                                                                                          timeZone)));
+        // Search on DATA only
+        Aggregations aggregations = searchService.getAggregationsFor(searchKey,
+                                                                     tmpCriterion,
+                                                                     aggregationBuilders,
+                                                                     0);
+        return aggregations.get(DATE_HISTOGRAM_AGGREGATION_NAME);
     }
 }

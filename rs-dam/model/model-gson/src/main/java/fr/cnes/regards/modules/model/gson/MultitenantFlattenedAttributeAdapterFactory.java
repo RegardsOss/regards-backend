@@ -185,6 +185,9 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
             case DATE_ARRAY:
                 matchingClass = DateArrayProperty.class;
                 break;
+            case DATE_RANGE:
+                matchingClass = DateRangeProperty.class;
+                break;
             case DATE_INTERVAL:
                 matchingClass = DateIntervalProperty.class;
                 break;
@@ -197,6 +200,9 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
             case DOUBLE_ARRAY:
                 matchingClass = DoubleArrayProperty.class;
                 break;
+            case DOUBLE_RANGE:
+                matchingClass = DoubleRangeProperty.class;
+                break;
             case DOUBLE_INTERVAL:
                 matchingClass = DoubleIntervalProperty.class;
                 break;
@@ -205,6 +211,9 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
                 break;
             case INTEGER_ARRAY:
                 matchingClass = IntegerArrayProperty.class;
+                break;
+            case INTEGER_RANGE:
+                matchingClass = IntegerRangeProperty.class;
                 break;
             case INTEGER_INTERVAL:
                 matchingClass = IntegerIntervalProperty.class;
@@ -223,6 +232,9 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
                 break;
             case LONG_ARRAY:
                 matchingClass = LongArrayProperty.class;
+                break;
+            case LONG_RANGE:
+                matchingClass = LongRangeProperty.class;
                 break;
             case LONG_INTERVAL:
                 matchingClass = LongIntervalProperty.class;

@@ -37,8 +37,12 @@ import fr.cnes.regards.modules.search.domain.PropertyBound;
 import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.aggregations.bucket.histogram.ParsedDateHistogram;
 import org.springframework.data.domain.Pageable;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -169,4 +173,23 @@ public interface ICatalogSearchService {
      */
     List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion parse, SearchType type);
 
+    /**
+     * Retrieve date histogram for a selection of data objects
+     *
+     * @param searchKey             identify target entity types
+     * @param propertyPath          property path
+     * @param criterion             {@link ICriterion}s for search context
+     * @param dateHistogramInterval date histogram interval
+     * @param from                  histogram start datetime
+     * @param to                    histogram end datetime
+     * @param timeZone              {@link ZoneOffset} for search context
+     * @return {@link ParsedDateHistogram}
+     */
+    <T extends IIndexable> ParsedDateHistogram getDateHistogram(SearchKey<?, T> searchKey,
+                                                                String propertyPath,
+                                                                ICriterion criterion,
+                                                                DateHistogramInterval dateHistogramInterval,
+                                                                OffsetDateTime from,
+                                                                OffsetDateTime to,
+                                                                ZoneOffset timeZone);
 }

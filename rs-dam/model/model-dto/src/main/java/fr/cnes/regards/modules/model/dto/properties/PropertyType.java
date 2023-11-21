@@ -28,53 +28,109 @@ public enum PropertyType {
     /**
      * Possible attribute type
      */
-    STRING, JSON, INTEGER, DOUBLE, DATE_ISO8601, URL, BOOLEAN, STRING_ARRAY {
+    STRING,
+    JSON,
+    INTEGER,
+    DOUBLE,
+    DATE_ISO8601,
+    URL,
+    BOOLEAN,
+    STRING_ARRAY {
         @Override
         public boolean isArray() {
             return true;
         }
-    }, INTEGER_ARRAY {
+    },
+    INTEGER_ARRAY {
         @Override
         public boolean isArray() {
             return true;
         }
-    }, DOUBLE_ARRAY {
+    },
+    DOUBLE_ARRAY {
         @Override
         public boolean isArray() {
             return true;
         }
-    }, DATE_ARRAY {
+    },
+    DATE_ARRAY {
         @Override
         public boolean isArray() {
             return true;
         }
-    }, //
-    INTEGER_INTERVAL {
+    },
+    // Equivalent to the related Elasticsearch type integer_range
+    INTEGER_RANGE {
         @Override
         public boolean isInterval() {
             return true;
         }
-    }, DOUBLE_INTERVAL {
+    },
+    /**
+     * @deprecated Use {@link #INTEGER_RANGE} instead
+     */
+    @Deprecated INTEGER_INTERVAL {
         @Override
         public boolean isInterval() {
             return true;
         }
-    }, DATE_INTERVAL {
+    },
+    // Equivalent to the related Elasticsearch type double_range
+    DOUBLE_RANGE {
         @Override
         public boolean isInterval() {
             return true;
         }
-    }, LONG, LONG_INTERVAL {
+    },
+    /**
+     * @deprecated Use {@link #DOUBLE_RANGE} instead
+     */
+    @Deprecated DOUBLE_INTERVAL {
         @Override
         public boolean isInterval() {
             return true;
         }
-    }, LONG_ARRAY {
+    },
+    // Equivalent to the related Elasticsearch type date_range
+    DATE_RANGE {
+        @Override
+        public boolean isInterval() {
+            return true;
+        }
+    },
+    /**
+     * @deprecated Use {@link #DATE_RANGE} instead
+     */
+    @Deprecated DATE_INTERVAL {
+        @Override
+        public boolean isInterval() {
+            return true;
+        }
+    },
+    LONG,
+    // Equivalent to the related Elasticsearch type long_range
+    LONG_RANGE {
+        @Override
+        public boolean isInterval() {
+            return true;
+        }
+    },
+    /**
+     * @deprecated Use {@link #LONG_RANGE} instead
+     */
+    @Deprecated LONG_INTERVAL {
+        @Override
+        public boolean isInterval() {
+            return true;
+        }
+    },
+    LONG_ARRAY {
         @Override
         public boolean isArray() {
             return true;
         }
-    }, OBJECT;
+    },
+    OBJECT;
 
     /**
      * Tell whether or not specified type correspond to an interval

@@ -59,7 +59,11 @@ public class FacetConverter implements IFacetConverter {
             .put(PropertyType.INTEGER_INTERVAL, FacetType.NUMERIC)
             .put(PropertyType.DOUBLE_INTERVAL, FacetType.NUMERIC)
             .put(PropertyType.LONG_INTERVAL, FacetType.NUMERIC)
-            .put(PropertyType.DATE_INTERVAL, FacetType.NUMERIC)
+            .put(PropertyType.DATE_INTERVAL, FacetType.DATE)
+            .put(PropertyType.INTEGER_RANGE, FacetType.NUMERIC)
+            .put(PropertyType.DOUBLE_RANGE, FacetType.NUMERIC)
+            .put(PropertyType.LONG_RANGE, FacetType.NUMERIC)
+            .put(PropertyType.DATE_RANGE, FacetType.DATE)
             .build();
     // @formatter:on
 

@@ -12,6 +12,7 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import fr.cnes.regards.modules.model.dto.properties.adapter.RangeMapping;
 import io.vavr.collection.HashMap;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
@@ -78,6 +79,10 @@ public interface EntityFeatureDecoder extends SmartDecoder {
                     return Option.of(IProperty.buildInteger(name, value.toInt()));
                 case INTEGER_ARRAY:
                     return Option.of(IProperty.buildIntegerArray(name, value.as(Integer[].class)));
+                case INTEGER_RANGE:
+                    return Option.of(IProperty.buildIntegerRange(name,
+                                                                 value.toInt(RangeMapping.RANGE_LOWER_BOUND),
+                                                                 value.toInt(RangeMapping.RANGE_UPPER_BOUND)));
                 case INTEGER_INTERVAL:
                     return Option.of(IProperty.buildIntegerInterval(name,
                                                                     value.toInt(RANGE_LOWER_BOUND),
@@ -87,6 +92,10 @@ public interface EntityFeatureDecoder extends SmartDecoder {
                     return Option.of(IProperty.buildLong(name, value.toLong()));
                 case LONG_ARRAY:
                     return Option.of(IProperty.buildLongArray(name, value.as(Long[].class)));
+                case LONG_RANGE:
+                    return Option.of(IProperty.buildLongRange(name,
+                                                              value.toLong(RangeMapping.RANGE_LOWER_BOUND),
+                                                              value.toLong(RangeMapping.RANGE_UPPER_BOUND)));
                 case LONG_INTERVAL:
                     return Option.of(IProperty.buildLongInterval(name,
                                                                  value.toLong(RANGE_LOWER_BOUND),
@@ -96,6 +105,10 @@ public interface EntityFeatureDecoder extends SmartDecoder {
                     return Option.of(IProperty.buildDouble(name, value.toDouble()));
                 case DOUBLE_ARRAY:
                     return Option.of(IProperty.buildDoubleArray(name, value.as(Double[].class)));
+                case DOUBLE_RANGE:
+                    return Option.of(IProperty.buildDoubleRange(name,
+                                                                value.toDouble(RangeMapping.RANGE_LOWER_BOUND),
+                                                                value.toDouble(RangeMapping.RANGE_UPPER_BOUND)));
                 case DOUBLE_INTERVAL:
                     return Option.of(IProperty.buildDoubleInterval(name,
                                                                    value.toDouble(RANGE_LOWER_BOUND),
@@ -105,6 +118,10 @@ public interface EntityFeatureDecoder extends SmartDecoder {
                     return Option.of(IProperty.buildDate(name, parseDate(value.toString())));
                 case DATE_ARRAY:
                     return Option.of(IProperty.buildDateArray(name, toDateTimes(value.as(String[].class))));
+                case DATE_RANGE:
+                    return Option.of(IProperty.buildDateRange(name,
+                                                              parseDate(value.toString(RangeMapping.RANGE_LOWER_BOUND)),
+                                                              parseDate(value.toString(RangeMapping.RANGE_UPPER_BOUND))));
                 case DATE_INTERVAL:
                     return Option.of(IProperty.buildDateInterval(name,
                                                                  toDateRange(value.toString(RANGE_LOWER_BOUND),

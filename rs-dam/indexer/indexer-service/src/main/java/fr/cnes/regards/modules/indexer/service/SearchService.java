@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -204,5 +205,14 @@ public class SearchService implements ISearchService {
                                                                Collection<QueryableAttribute> attributes) {
         addProjectInfos(searchKey);
         return repository.getAggregations(searchKey, criterion, attributes);
+    }
+
+    @Override
+    public <T extends IIndexable> Aggregations getAggregationsFor(SearchKey<?, T> searchKey,
+                                                                  ICriterion criterion,
+                                                                  Collection<AggregationBuilder> aggregationBuilders,
+                                                                  int limit) {
+        addProjectInfos(searchKey);
+        return repository.getAggregationsFor(searchKey, criterion, aggregationBuilders, limit);
     }
 }

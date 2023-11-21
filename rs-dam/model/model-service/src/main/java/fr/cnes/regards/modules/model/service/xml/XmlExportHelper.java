@@ -51,7 +51,7 @@ public final class XmlExportHelper {
     /**
      * Related schema
      */
-    public static final String XML_SCHEMA_NAME = "model_V1.10.0.xsd";
+    public static final String XML_SCHEMA_NAME = "model_V1.15.0.xsd";
 
     /**
      * Class logger

@@ -296,6 +296,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return buildBoolean(name, toBooleanValue(value));
             case DATE_ARRAY:
                 return buildDateArray(name, toArrayValue(value, IProperty::toDateValue, OffsetDateTime.class));
+            case DATE_RANGE:
+                return buildDateRange(name, (AbstractRangeProperty.RangePropertyValue<OffsetDateTime>) value);
             case DATE_INTERVAL:
                 return buildDateInterval(name, (Range<OffsetDateTime>) value);
             case DATE_ISO8601:
@@ -304,18 +306,24 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return buildDouble(name, toDoubleValue(value));
             case DOUBLE_ARRAY:
                 return buildDoubleArray(name, toArrayValue(value, IProperty::toDoubleValue, Double.class));
+            case DOUBLE_RANGE:
+                return buildDoubleRange(name, (AbstractRangeProperty.RangePropertyValue<Double>) value);
             case DOUBLE_INTERVAL:
                 return buildDoubleInterval(name, (Range<Double>) value);
             case INTEGER:
                 return buildInteger(name, toIntegerValue(value));
             case INTEGER_ARRAY:
                 return buildIntegerArray(name, toArrayValue(value, IProperty::toIntegerValue, Integer.class));
+            case INTEGER_RANGE:
+                return buildIntegerRange(name, (AbstractRangeProperty.RangePropertyValue<Integer>) value);
             case INTEGER_INTERVAL:
                 return buildIntegerInterval(name, (Range<Integer>) value);
             case LONG:
                 return buildLong(name, toLongValue(value));
             case LONG_ARRAY:
                 return buildLongArray(name, toArrayValue(value, IProperty::toLongValue, Long.class));
+            case LONG_RANGE:
+                return buildLongRange(name, (AbstractRangeProperty.RangePropertyValue<Long>) value);
             case LONG_INTERVAL:
                 return buildLongInterval(name, (Range<Long>) value);
             case STRING:
@@ -365,6 +373,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         }
 
         switch (attributeType) {
+            case DATE_RANGE:
             case DATE_INTERVAL:
                 OffsetDateTime lowerDateTime = lowerBound == null ?
                     null :
@@ -372,19 +381,38 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 OffsetDateTime upperDateTime = upperBound == null ?
                     null :
                     OffsetDateTimeAdapter.parse((String) upperBound);
-                return (T) buildDateInterval(name, buildRange(lowerDateTime, upperDateTime));
+                if (PropertyType.DATE_RANGE.equals(attributeType)) {
+                    return (T) buildDateRange(name, lowerDateTime, upperDateTime);
+                } else {
+                    return (T) buildDateInterval(name, buildRange(lowerDateTime, upperDateTime));
+                }
+            case DOUBLE_RANGE:
             case DOUBLE_INTERVAL:
                 Double lowerDouble = lowerBound == null ? null : ((Number) lowerBound).doubleValue();
                 Double upperDouble = upperBound == null ? null : ((Number) upperBound).doubleValue();
-                return (T) buildDoubleInterval(name, buildRange(lowerDouble, upperDouble));
+                if (PropertyType.DOUBLE_RANGE.equals(attributeType)) {
+                    return (T) buildDoubleRange(name, lowerDouble, upperDouble);
+                } else {
+                    return (T) buildDoubleInterval(name, buildRange(lowerDouble, upperDouble));
+                }
+            case INTEGER_RANGE:
             case INTEGER_INTERVAL:
                 Integer lowerInteger = lowerBound == null ? null : ((Number) lowerBound).intValue();
                 Integer upperInteger = upperBound == null ? null : ((Number) upperBound).intValue();
-                return (T) buildIntegerInterval(name, buildRange(lowerInteger, upperInteger));
+                if (PropertyType.INTEGER_RANGE.equals(attributeType)) {
+                    return (T) buildIntegerRange(name, lowerInteger, upperInteger);
+                } else {
+                    return (T) buildIntegerInterval(name, buildRange(lowerInteger, upperInteger));
+                }
+            case LONG_RANGE:
             case LONG_INTERVAL:
                 Long lowerLong = lowerBound == null ? null : ((Number) lowerBound).longValue();
                 Long upperLong = upperBound == null ? null : ((Number) upperBound).longValue();
-                return (T) buildLongInterval(name, buildRange(lowerLong, upperLong));
+                if (PropertyType.LONG_RANGE.equals(attributeType)) {
+                    return (T) buildLongRange(name, lowerLong, upperLong);
+                } else {
+                    return (T) buildLongInterval(name, buildRange(lowerLong, upperLong));
+                }
             default:
                 throw new IllegalArgumentException(attributeType
                                                    + " is not a handled value of "
@@ -411,6 +439,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                                                                         IProperty::toDateValue,
                                                                         OffsetDateTime.class));
                 break;
+            case DATE_RANGE:
+                ((DateRangeProperty) property).updateValue((AbstractRangeProperty.RangePropertyValue<OffsetDateTime>) value);
+                break;
             case DATE_INTERVAL:
                 ((DateIntervalProperty) property).updateValue((Range<OffsetDateTime>) value);
                 break;
@@ -425,6 +456,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                                                                           IProperty::toDoubleValue,
                                                                           Double.class));
                 break;
+            case DOUBLE_RANGE:
+                ((DoubleRangeProperty) property).updateValue((AbstractRangeProperty.RangePropertyValue<Double>) value);
             case DOUBLE_INTERVAL:
                 ((DoubleIntervalProperty) property).updateValue((Range<Double>) value);
                 break;
@@ -436,6 +469,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                                                                            IProperty::toIntegerValue,
                                                                            Integer.class));
                 break;
+            case INTEGER_RANGE:
+                ((IntegerRangeProperty) property).updateValue((AbstractRangeProperty.RangePropertyValue<Integer>) value);
+                break;
             case INTEGER_INTERVAL:
                 ((IntegerIntervalProperty) property).updateValue((Range<Integer>) value);
                 break;
@@ -444,6 +480,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 break;
             case LONG_ARRAY:
                 ((LongArrayProperty) property).updateValue(toArrayValue(value, IProperty::toLongValue, Long.class));
+                break;
+            case LONG_RANGE:
+                ((LongRangeProperty) property).updateValue((AbstractRangeProperty.RangePropertyValue<Long>) value);
                 break;
             case LONG_INTERVAL:
                 ((LongIntervalProperty) property).updateValue((Range<Long>) value);
@@ -498,6 +537,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return (T) buildBoolean(name, null);
             case DATE_ARRAY:
                 return (T) buildDateArray(name);
+            case DATE_RANGE:
+                return (T) buildDateRange(name, null);
             case DATE_INTERVAL:
                 return (T) buildDateInterval(name, null);
             case DATE_ISO8601:
@@ -506,16 +547,22 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return (T) buildDouble(name, null);
             case DOUBLE_ARRAY:
                 return (T) buildDoubleArray(name);
+            case DOUBLE_RANGE:
+                return (T) buildDoubleRange(name, null);
             case DOUBLE_INTERVAL:
                 return (T) buildDoubleInterval(name, null);
             case INTEGER_ARRAY:
                 return (T) buildIntegerArray(name);
+            case INTEGER_RANGE:
+                return (T) buildIntegerRange(name, null);
             case INTEGER_INTERVAL:
                 return (T) buildIntegerInterval(name, null);
             case LONG:
                 return (T) buildLong(name, null);
             case LONG_ARRAY:
                 return (T) buildLongArray(name);
+            case LONG_RANGE:
+                return (T) buildLongRange(name, null);
             case LONG_INTERVAL:
                 return (T) buildLongInterval(name, null);
             case STRING:
@@ -533,10 +580,32 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         }
     }
 
+    static LongRangeProperty buildLongRange(String name, Long lowerBound, Long upperBound) {
+        return buildLongRange(name, new AbstractRangeProperty.RangePropertyValue<>(lowerBound, upperBound));
+    }
+
+    static LongRangeProperty buildLongRange(String name, AbstractRangeProperty.RangePropertyValue<Long> range) {
+        LongRangeProperty att = new LongRangeProperty();
+        att.setName(name);
+        att.setValue(range);
+        return att;
+    }
+
     static LongIntervalProperty buildLongInterval(String name, Range<Long> value) {
         LongIntervalProperty att = new LongIntervalProperty();
         att.setName(name);
         att.setValue(value);
+        return att;
+    }
+
+    static IntegerRangeProperty buildIntegerRange(String name, Integer lowerBound, Integer upperBound) {
+        return buildIntegerRange(name, new AbstractRangeProperty.RangePropertyValue<>(lowerBound, upperBound));
+    }
+
+    static IntegerRangeProperty buildIntegerRange(String name, AbstractRangeProperty.RangePropertyValue<Integer> range) {
+        IntegerRangeProperty att = new IntegerRangeProperty();
+        att.setName(name);
+        att.setValue(range);
         return att;
     }
 
@@ -547,10 +616,32 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         return att;
     }
 
+    static DoubleRangeProperty buildDoubleRange(String name, Double lowerBound, Double upperBound) {
+        return buildDoubleRange(name, new AbstractRangeProperty.RangePropertyValue<>(lowerBound, upperBound));
+    }
+
+    static DoubleRangeProperty buildDoubleRange(String name, AbstractRangeProperty.RangePropertyValue<Double> range) {
+        DoubleRangeProperty att = new DoubleRangeProperty();
+        att.setName(name);
+        att.setValue(range);
+        return att;
+    }
+
     static DoubleIntervalProperty buildDoubleInterval(String name, Range<Double> value) {
         DoubleIntervalProperty att = new DoubleIntervalProperty();
         att.setName(name);
         att.setValue(value);
+        return att;
+    }
+
+    static DateRangeProperty buildDateRange(String name, OffsetDateTime lowerBound, OffsetDateTime upperBound) {
+        return IProperty.buildDateRange(name, new AbstractRangeProperty.RangePropertyValue<>(lowerBound, upperBound));
+    }
+
+    static DateRangeProperty buildDateRange(String name, AbstractRangeProperty.RangePropertyValue<OffsetDateTime> range) {
+        DateRangeProperty att = new DateRangeProperty();
+        att.setName(name);
+        att.setValue(range);
         return att;
     }
 

@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -152,6 +153,10 @@ public interface ISearchService {
                                                         ICriterion criterion,
                                                         Collection<QueryableAttribute> attributes);
 
+    <T extends IIndexable> Aggregations getAggregationsFor(SearchKey<?, T> searchKey,
+                                                           ICriterion criterion,
+                                                           Collection<AggregationBuilder> aggregationBuilders,
+                                                           int limit);
     /**
      * Compute a DocFilesSummary for given request distributing results based on disciminantProperty for given file
      * types

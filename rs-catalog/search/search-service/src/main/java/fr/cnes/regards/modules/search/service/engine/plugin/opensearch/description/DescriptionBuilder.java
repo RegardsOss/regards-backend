@@ -508,6 +508,7 @@ public class DescriptionBuilder {
                           .append(":")
                           .append("{ISO-8601 date}");
                     break;
+                case DATE_RANGE:
                 case DATE_INTERVAL:
                     result.append(attr.getFullJsonPath()).append(":");
                     result.append("[* TO  {ISO-8601 date} ]");
@@ -524,6 +525,7 @@ public class DescriptionBuilder {
                     result.append(attr.getFullJsonPath()).append(":");
                     result.append("{double value} OR ").append(attr.getJsonPath()).append(":").append("{double value}");
                     break;
+                case DOUBLE_RANGE:
                 case DOUBLE_INTERVAL:
                     result.append(attr.getFullJsonPath()).append(":");
                     result.append("[{double value} TO  {double value}]");
@@ -547,10 +549,12 @@ public class DescriptionBuilder {
                           .append(":")
                           .append("{integer value}");
                     break;
+                case LONG_RANGE:
                 case LONG_INTERVAL:
                     result.append(attr.getFullJsonPath()).append(":");
                     result.append("[{long value} TO  {long value}]");
                     break;
+                case INTEGER_RANGE:
                 case INTEGER_INTERVAL:
                     result.append(attr.getFullJsonPath()).append(":");
                     result.append("[{integer value} TO  {integer value}]");

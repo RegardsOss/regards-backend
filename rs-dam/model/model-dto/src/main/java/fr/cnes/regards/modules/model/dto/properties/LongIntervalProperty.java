@@ -5,7 +5,7 @@ import com.google.gson.annotations.JsonAdapter;
 import fr.cnes.regards.modules.model.dto.properties.adapter.LongIntervalAttributeAdapter;
 
 /**
- * Represent a {@link PropertyType#INTEGER_INTERVAL} model attribute
+ * Represent a {@link PropertyType#LONG_INTERVAL} model attribute
  *
  * @author oroussel
  * @author Christophe Mertz
