@@ -30,16 +30,22 @@ public class SuccessLtaRequestNotification extends NotificationRequestEvent {
 
     public final static String NOTIF_ACTION = "LONG_TERM_ARCHIVED";
 
-    public SuccessLtaRequestNotification(JsonObject payload, JsonObject metadata) {
-        super(payload, metadata, null, null);
+    public SuccessLtaRequestNotification(JsonObject payload,
+                                         JsonObject metadata,
+                                         String requestId,
+                                         String requestOwner) {
+        super(payload, metadata, requestId, requestOwner);
     }
 
     public static SuccessLtaRequestNotification fromRequest(SubmissionRequest request,
                                                             String currentTenant,
                                                             Gson gson) {
-        var payload = new SuccessLtaRequestNotificationPayload(request.getOriginUrn());
-        var metadata = new SuccessLtaRequestNotificationMetadata(currentTenant, request.getSession());
+        SuccessLtaRequestNotificationPayload payload = new SuccessLtaRequestNotificationPayload(request.getOriginUrn());
+        SuccessLtaRequestNotificationMetadata metadata = new SuccessLtaRequestNotificationMetadata(currentTenant,
+                                                                                                   request.getSession());
         return new SuccessLtaRequestNotification(gson.toJsonTree(payload).getAsJsonObject(),
-                                                 gson.toJsonTree(metadata).getAsJsonObject());
+                                                 gson.toJsonTree(metadata).getAsJsonObject(),
+                                                 request.getCorrelationId(),
+                                                 request.getOwner());
     }
 }

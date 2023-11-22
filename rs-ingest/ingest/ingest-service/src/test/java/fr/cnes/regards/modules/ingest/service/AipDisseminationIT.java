@@ -51,11 +51,15 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
 import fr.cnes.regards.modules.ingest.service.job.AipDisseminationCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.AipDisseminationJob;
+import fr.cnes.regards.modules.notifier.client.NotifierClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -111,6 +115,12 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
     @Autowired
     private IAIPUpdateRequestRepository iaipUpdateRequestRepository;
 
+    @SpyBean
+    private NotifierClient notifierClient;
+
+    @Captor
+    private ArgumentCaptor<List<NotificationRequestEvent>> notifCapture;
+
     private static final String SESSION_NAME = "dissemination-session";
 
     private static final String ERROR_MSG = "error message";
@@ -120,7 +130,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Clean everything
         ingestServiceTest.init();
-        Mockito.reset(publisher);
+        Mockito.reset(notifierClient);
     }
 
     protected void doInit() throws Exception {
@@ -142,7 +152,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         // WHEN Schedule the dissemination creator
         scheduleDisseminationCreatorJob(disseminationDto);
         // THEN 50 Dissemination request (one by AIP) are created
-        Assertions.assertEquals(50, aipDisseminationService.getAllRequests(pageable).getTotalElements());
+        Assertions.assertEquals(50, aipDisseminationService.findAll(pageable).getTotalElements());
 
         // WHEN Schedule Dissemination request
         Optional<JobInfo> jobInfo = aipDisseminationService.scheduleDisseminationJobs();
@@ -170,7 +180,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         // WHEN Schedule the dissemination creator
         scheduleDisseminationCreatorJob(disseminationDto);
         // THEN 201 Dissemination request (one by AIP) are created
-        Assertions.assertEquals(201, aipDisseminationService.getAllRequests(pageable).getTotalElements());
+        Assertions.assertEquals(201, aipDisseminationService.findAll(pageable).getTotalElements());
 
         // WHEN Schedule 3 times a Dissemination request
         IntStream.range(0, 3).forEach(i -> {
@@ -197,7 +207,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
             jobService.runJob(jobInfo, getDefaultTenant()).get();
         }
         // THEN
-        Page<AipDisseminationRequest> allRequests = aipDisseminationService.getAllRequests(PageRequest.of(0, 1000));
+        Page<AipDisseminationRequest> allRequests = aipDisseminationService.findAll(PageRequest.of(0, 1000));
         Assertions.assertEquals(201, allRequests.getTotalElements());
         // All dissemination is in state Waiting notifier dissemination response
         Assertions.assertTrue(allRequests.stream()
@@ -205,15 +215,17 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
                                              req.getState())),
                               "Dissemination requests are supposed to be in "
                               + "WAITING_NOTIFIER state after scheduling");
+        // each jobs (3) call one time notifierClient
+        Mockito.verify(notifierClient, Mockito.times(3)).sendNotifications(notifCapture.capture());
         // And 201 AMQP notification are send to notifier
-        Mockito.verify(publisher, Mockito.times(201)).publish(Mockito.any(NotificationRequestEvent.class));
+        Assertions.assertEquals(201, notifCapture.getAllValues().stream().flatMap(Collection::stream).count());
     }
 
     @Test
     public void testDisseminationWithNotifierSuccess() throws ExecutionException, InterruptedException {
         // GIVEN 201 AipDisseminationRequest, and notification sent to notifier
         testDisseminationJobSendToNotifier();
-        Page<AipDisseminationRequest> allRequests = aipDisseminationService.getAllRequests(PageRequest.of(0, 1000));
+        Page<AipDisseminationRequest> allRequests = aipDisseminationService.findAll(PageRequest.of(0, 1000));
         // WHEN simulate notifier success response received
         notificationService.handleNotificationSuccess(new HashSet<>(allRequests.getContent()));
         // first schedule : first 100 requests
@@ -250,10 +262,10 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
     public void testDisseminationWithNotifierError() throws ExecutionException, InterruptedException {
         // GIVEN 201 AipDisseminationRequest, and notification sent to notifier
         testDisseminationJobSendToNotifier();
-        Page<AipDisseminationRequest> allRequests = aipDisseminationService.getAllRequests(PageRequest.of(0, 1000));
+        Page<AipDisseminationRequest> allRequests = aipDisseminationService.findAll(PageRequest.of(0, 1000));
         // WHEN simulate notifier success response received
         notificationService.handleNotificationError(new HashSet<>(allRequests.getContent()));
-        allRequests = aipDisseminationService.getAllRequests(PageRequest.of(0, 1000));
+        allRequests = aipDisseminationService.findAll(PageRequest.of(0, 1000));
         Assertions.assertEquals(201,
                                 allRequests.stream()
                                            .filter(req -> req.getErrorType().equals(IngestErrorType.DISSEMINATION))
@@ -326,7 +338,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         scheduleDisseminationCreatorJob(disseminationDto);
 
         // WHEN I schedule this job with an error message in the status
-        Assertions.assertEquals(5, aipDisseminationService.getAllRequests(pageable).getTotalElements());
+        Assertions.assertEquals(5, aipDisseminationService.findAll(pageable).getTotalElements());
         Optional<JobInfo> jobInfo = aipDisseminationService.scheduleDisseminationJobs();
         Assertions.assertTrue(jobInfo.isPresent());
         jobInfo.get().getStatus().setStackTrace(ERROR_MSG);
@@ -340,7 +352,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
             Set<Long> ids = IJob.getValue(jobInfo.get().getParametersAsMap(),
                                           AipDisseminationJob.AIP_DISSEMINATION_REQUEST_IDS,
                                           type);
-            List<AipDisseminationRequest> requests = aipDisseminationService.searchRequests(new ArrayList<>(ids));
+            List<AipDisseminationRequest> requests = aipDisseminationService.findAllById(new ArrayList<>(ids));
             Assertions.assertEquals(requests.size(), 5);
             requests.forEach(r -> {
                 Assertions.assertEquals(r.getState(), InternalRequestState.ERROR);

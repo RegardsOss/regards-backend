@@ -67,21 +67,18 @@ public class AIPNotifierListener implements INotifierRequestListener {
     @Override
     public void onRequestSuccess(List<NotifierEvent> successEvents) {
         // Retrieve requests ids from events
-        List<Long> requestIds = successEvents.stream()
-                                             .filter(event -> event.getRequestOwner().equals(this.microserviceName))
-                                             .map(event -> Long.parseLong(event.getRequestId()))
-                                             .collect(Collectors.toList());
+        List<String> requestIds = successEvents.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
 
         // Handle notification successes
         if (!requestIds.isEmpty()) {
             int nbRequests = requestIds.size();
-            AIPNotificationLogger.notificationEventSuccess(nbRequests);
             // Find corresponding requests and handle them
-            Set<AbstractRequest> successRequests = abstractRequestRepo.findAllByIdIn(requestIds);
+            Set<AbstractRequest> successRequests = abstractRequestRepo.findAllByCorrelationIdIn(requestIds);
             if (!successRequests.isEmpty()) {
+                AIPNotificationLogger.notificationEventSuccess(nbRequests);
                 notificationService.handleNotificationSuccess(successRequests);
+                AIPNotificationLogger.notificationEventSuccessHandled(successEvents.size());
             }
-            AIPNotificationLogger.notificationEventSuccessHandled(successEvents.size());
         }
     }
 
@@ -92,19 +89,18 @@ public class AIPNotifierListener implements INotifierRequestListener {
 
     private void handleNotificationIssue(List<NotifierEvent> events) {
         // Retrieve requests ids from events
-        List<Long> requestIds = events.stream()
-                                      .filter(event -> event.getRequestOwner().equals(this.microserviceName))
-                                      .map(event -> Long.parseLong(event.getRequestId()))
-                                      .collect(Collectors.toList());
+        List<String> requestIds = events.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
 
         // Handle notification errors
         if (!requestIds.isEmpty()) {
             int nbRequests = requestIds.size();
-            AIPNotificationLogger.notificationEventError(nbRequests);
             // Find corresponding requests and handle them
-            Set<AbstractRequest> errorRequest = abstractRequestRepo.findAllByIdIn(requestIds);
-            notificationService.handleNotificationError(errorRequest);
-            AIPNotificationLogger.notificationEventErrorHandled(nbRequests);
+            Set<AbstractRequest> errorRequest = abstractRequestRepo.findAllByCorrelationIdIn(requestIds);
+            if (!errorRequest.isEmpty()) {
+                AIPNotificationLogger.notificationEventError(nbRequests);
+                notificationService.handleNotificationError(errorRequest);
+                AIPNotificationLogger.notificationEventErrorHandled(nbRequests);
+            }
         }
     }
 }

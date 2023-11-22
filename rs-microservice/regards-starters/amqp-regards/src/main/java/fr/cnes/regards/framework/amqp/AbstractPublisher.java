@@ -403,6 +403,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
         String requestOwner = applicationId;
         if (AbstractRequestEvent.class.isAssignableFrom(event.getClass())) {
             requestOwner = ((AbstractRequestEvent) event).getRequestOwner();
+            requestId = ((AbstractRequestEvent) event).getRequestId();
         }
 
         NotificationRequestEvent notificationRequestEvent = new NotificationRequestEvent(gson.toJsonTree(event)

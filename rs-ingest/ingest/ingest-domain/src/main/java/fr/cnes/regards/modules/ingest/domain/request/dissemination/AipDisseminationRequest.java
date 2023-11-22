@@ -61,10 +61,18 @@ public class AipDisseminationRequest extends AbstractRequest {
                                                               value = "java.lang.String") })
     private AipDisseminationRequestPayload payload;
 
+    public AipDisseminationRequest(String correlationId) {
+        super(correlationId);
+    }
+
+    protected AipDisseminationRequest() {
+    }
+
     public static AipDisseminationRequest build(AIPEntity aip, List<String> recipients) {
-        AipDisseminationRequest disseminationRequest = new AipDisseminationRequest();
+        String correlationId = UUID.randomUUID().toString();
+        AipDisseminationRequest disseminationRequest = new AipDisseminationRequest(correlationId);
         disseminationRequest.aip = aip;
-        disseminationRequest.payload = new AipDisseminationRequestPayload(UUID.randomUUID().toString(), recipients);
+        disseminationRequest.payload = new AipDisseminationRequestPayload(correlationId, recipients);
         disseminationRequest.setCreationDate(OffsetDateTime.now());
         disseminationRequest.setSessionOwner(aip.getSessionOwner());
         disseminationRequest.setSession(aip.getSession());

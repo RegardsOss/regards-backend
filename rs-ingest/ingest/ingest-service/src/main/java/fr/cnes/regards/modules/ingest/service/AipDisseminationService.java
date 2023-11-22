@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
@@ -38,6 +39,7 @@ import fr.cnes.regards.modules.ingest.service.job.AipDisseminationCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.AipDisseminationJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,7 +62,6 @@ import java.util.stream.Collectors;
  * @author Thomas GUILLOU
  **/
 @Service
-@MultitenantTransactional
 public class AipDisseminationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AipDisseminationService.class);
@@ -81,16 +82,24 @@ public class AipDisseminationService {
 
     private final IAbstractRequestRepository abstractRequestRepository;
 
+    private final INotifierClient notifierClient;
+
+    private final Gson gson;
+
     public AipDisseminationService(RequestService requestService,
                                    IAIPService aipService,
                                    JobInfoService jobInfoService,
                                    IAipDisseminationRequestRepository aipDisseminationRequestRepository,
-                                   IAbstractRequestRepository abstractRequestRepository) {
+                                   IAbstractRequestRepository abstractRequestRepository,
+                                   INotifierClient notifierClient,
+                                   Gson gson) {
         this.requestService = requestService;
         this.aipService = aipService;
         this.jobInfoService = jobInfoService;
         this.aipDisseminationRequestRepository = aipDisseminationRequestRepository;
         this.abstractRequestRepository = abstractRequestRepository;
+        this.notifierClient = notifierClient;
+        this.gson = gson;
     }
 
     /**
@@ -110,6 +119,7 @@ public class AipDisseminationService {
      * Create an {@link AipDisseminationJob} which will manage a maximum of n {@link AipDisseminationRequest}.
      * Other pages of AipDisseminationRequest will be manage next time this method is called (next scheduler)
      */
+    @MultitenantTransactional
     public Optional<JobInfo> scheduleDisseminationJobs() {
         Pageable pageRequest = PageRequest.of(0, numberOfAipMaxPerDisseminationJob, Sort.Direction.ASC, "id");
         JobInfo jobInfo = null;
@@ -141,11 +151,13 @@ public class AipDisseminationService {
         return Optional.ofNullable(jobInfo);
     }
 
-    public List<AipDisseminationRequest> searchRequests(List<Long> aipRequestIds) {
+    @MultitenantTransactional(readOnly = true)
+    public List<AipDisseminationRequest> findAllById(List<Long> aipRequestIds) {
         return aipDisseminationRequestRepository.findAllById(aipRequestIds);
     }
 
-    public Page<AipDisseminationRequest> getAllRequests(PageRequest pageable) {
+    @MultitenantTransactional(readOnly = true)
+    public Page<AipDisseminationRequest> findAll(PageRequest pageable) {
         return aipDisseminationRequestRepository.findAll(pageable);
     }
 
@@ -153,6 +165,7 @@ public class AipDisseminationService {
      * For {@link AipDisseminationJob}s  and {@link AipDisseminationCreatorJob}s in error, update each requests'
      * state to ERROR and add a message containing the error in each request
      */
+    @MultitenantTransactional
     public boolean handleJobCrash(JobInfo jobInfo) {
         boolean isDisseminationJob = AipDisseminationJob.class.getName().equals(jobInfo.getClassName());
         boolean isDisseminationCreatorJob = AipDisseminationCreatorJob.class.getName().equals(jobInfo.getClassName());
@@ -166,7 +179,7 @@ public class AipDisseminationService {
                                                   AipDisseminationCreatorJob.REQUEST_ID :
                                                   AipDisseminationJob.AIP_DISSEMINATION_REQUEST_IDS,
                                               type);
-                List<AipDisseminationRequest> requests = searchRequests(new ArrayList<>(ids));
+                List<AipDisseminationRequest> requests = findAllById(new ArrayList<>(ids));
                 requests.forEach(r -> {
                     r.addError(jobInfo.getStatus().getStackTrace());
                     r.setState(InternalRequestState.ERROR);
@@ -180,5 +193,6 @@ public class AipDisseminationService {
         }
         return isDisseminationJob || isDisseminationCreatorJob;
     }
-
 }
+
+

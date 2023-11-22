@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -103,18 +104,17 @@ public class AIPNotificationService implements IAIPNotificationService {
         if (!requestsToSend.isEmpty()) {
             // first update step and states of requests
             for (AbstractRequest abstractRequest : requestsToSend) {
-                if (abstractRequest instanceof IngestRequest) {
-                    IngestRequest ingestRequest = (IngestRequest) abstractRequest;
+                if (abstractRequest instanceof IngestRequest ingestRequest) {
                     ingestRequest.setState(InternalRequestState.RUNNING);
                     ingestRequest.setStep(IngestRequestStep.LOCAL_TO_BE_NOTIFIED);
-                } else if (abstractRequest instanceof OAISDeletionRequest) {
-                    OAISDeletionRequest oaisDeletionRequest = (OAISDeletionRequest) abstractRequest;
+                } else if (abstractRequest instanceof OAISDeletionRequest oaisDeletionRequest) {
                     oaisDeletionRequest.setState(InternalRequestState.RUNNING);
                     oaisDeletionRequest.setStep(DeletionRequestStep.LOCAL_TO_BE_NOTIFIED);
-                } else if (abstractRequest instanceof AIPUpdateRequest) {
-                    AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
+                } else if (abstractRequest instanceof AIPUpdateRequest aipUpdateRequest) {
                     aipUpdateRequest.setState(InternalRequestState.RUNNING);
                     aipUpdateRequest.setStep(AIPUpdateRequestStep.LOCAL_TO_BE_NOTIFIED);
+                } else if (abstractRequest instanceof AipDisseminationRequest disseminationRequest) {
+                    disseminationRequest.setState(InternalRequestState.WAITING_NOTIFIER_DISSEMINATION_RESPONSE);
                 }
             }
             abstractRequestRepo.saveAll(requestsToSend);
@@ -129,39 +129,57 @@ public class AIPNotificationService implements IAIPNotificationService {
         // for each request, create the associated notification request event
         for (AbstractRequest abstractRequest : requestsToSend) {
             // INGEST REQUESTS
-            if (abstractRequest instanceof IngestRequest) {
-                IngestRequest ingestRequest = (IngestRequest) abstractRequest;
+            if (abstractRequest instanceof IngestRequest ingestRequest) {
                 ingestRequest.getAips()
                              .forEach((aip) -> eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(aip)
                                                                                                 .getAsJsonObject(),
-                                                                                            gson.toJsonTree(new NotificationActionEventMetadata(
-                                                                                                    RequestTypeConstant.INGEST_VALUE))
+                                                                                            gson.toJsonTree(new AipNotificationRequestMetadata(
+                                                                                                    RequestTypeConstant.INGEST_VALUE,
+                                                                                                    aip.getSession(),
+                                                                                                    aip.getSessionOwner()))
                                                                                                 .getAsJsonObject(),
-                                                                                            ingestRequest.getId()
-                                                                                                         .toString(),
-                                                                                            this.microserviceName)));
+                                                                                            ingestRequest.getCorrelationId(),
+                                                                                            abstractRequest.getSessionOwner())));
             }
             // OAIS DELETION REQUESTS
-            else if (abstractRequest instanceof OAISDeletionRequest) {
-                OAISDeletionRequest oaisDeletionRequest = (OAISDeletionRequest) abstractRequest;
+            else if (abstractRequest instanceof OAISDeletionRequest oaisDeletionRequest) {
                 // remark : aip content is in payload because it has already been removed from database
                 eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(oaisDeletionRequest.getAipToNotify())
                                                                  .getAsJsonObject(),
-                                                             gson.toJsonTree(new NotificationActionEventMetadata(
-                                                                     RequestTypeConstant.OAIS_DELETION_VALUE))
+                                                             gson.toJsonTree(new AipNotificationRequestMetadata(
+                                                                     RequestTypeConstant.OAIS_DELETION_VALUE,
+                                                                     oaisDeletionRequest.getSession(),
+                                                                     oaisDeletionRequest.getSessionOwner()))
                                                                  .getAsJsonObject(),
-                                                             oaisDeletionRequest.getId().toString(),
-                                                             this.microserviceName));
+                                                             oaisDeletionRequest.getCorrelationId(),
+                                                             abstractRequest.getSessionOwner()));
             }
             // UPDATE REQUESTS
-            else if (abstractRequest instanceof AIPUpdateRequest) {
-                AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
+            else if (abstractRequest instanceof AIPUpdateRequest aipUpdateRequest) {
                 eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(aipUpdateRequest.getAip())
                                                                  .getAsJsonObject(),
-                                                             gson.toJsonTree(new NotificationActionEventMetadata(
-                                                                 RequestTypeConstant.UPDATE_VALUE)).getAsJsonObject(),
-                                                             aipUpdateRequest.getId().toString(),
-                                                             this.microserviceName));
+                                                             gson.toJsonTree(new AipNotificationRequestMetadata(
+                                                                 RequestTypeConstant.UPDATE_VALUE,
+                                                                 aipUpdateRequest.getSession(),
+                                                                 aipUpdateRequest.getSessionOwner())).getAsJsonObject(),
+                                                             aipUpdateRequest.getCorrelationId(),
+                                                             abstractRequest.getSessionOwner()));
+            }
+            // DISSEMINATION REQUESTS
+            else if (abstractRequest instanceof AipDisseminationRequest disseminationRequest) {
+                JsonObject payload = gson.toJsonTree(new AipDisseminationNotificationRequestPayload(disseminationRequest.getAip(),
+                                                                                                    disseminationRequest.getRecipients()))
+                                         .getAsJsonObject();
+                JsonObject metadata = gson.toJsonTree(new AipNotificationRequestMetadata(RequestTypeConstant.AIP_DISSEMINATION_VALUE,
+                                                                                         disseminationRequest.getSession(),
+                                                                                         disseminationRequest.getSessionOwner()))
+                                          .getAsJsonObject();
+                NotificationRequestEvent notificationRequestEvent = new NotificationRequestEvent(payload,
+                                                                                                 metadata,
+                                                                                                 disseminationRequest.getCorrelationId(),
+                                                                                                 disseminationRequest.getAip()
+                                                                                                                     .getSessionOwner());
+                eventToSend.add(notificationRequestEvent);
             }
         }
         return eventToSend;
@@ -217,7 +235,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                                                                                  now,
                                                                                  null))
                                                                              .toList();
-            AIPUpdateParametersDto aipUpdateDto = AIPUpdateParametersDto.build(null);
+            AIPUpdateParametersDto aipUpdateDto = AIPUpdateParametersDto.build();
             aipUpdateDto.setUpdateDisseminationInfo(disseminationInfos);
 
             // for loop, but it is supposed to have only one task created
@@ -307,20 +325,5 @@ public class AIPNotificationService implements IAIPNotificationService {
         }
         // Save error requests
         abstractRequestRepo.saveAll(errorRequests);
-    }
-
-    // class used to format RequestTypeConstant in gson
-    public static class NotificationActionEventMetadata {
-
-        private final String action;
-
-        public NotificationActionEventMetadata(String action) {
-            this.action = action;
-        }
-
-        public String getAction() {
-            return action;
-        }
-
     }
 }

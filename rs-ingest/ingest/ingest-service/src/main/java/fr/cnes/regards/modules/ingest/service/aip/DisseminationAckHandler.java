@@ -20,17 +20,14 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateDisseminationTask;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateState;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.dto.request.event.DisseminationAckEvent;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -40,7 +37,6 @@ import org.springframework.validation.Errors;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Listen to {@link DisseminationAckEvent} and create tasks to update aips
@@ -80,25 +76,28 @@ public class DisseminationAckHandler
 
         List<String> urns = messages.stream().map(DisseminationAckEvent::getUrn).toList();
         Collection<AIPEntity> aips = aipService.findByAipIds(urns);
-
+        Multimap<AIPEntity, AbstractAIPUpdateTask> updateTasksByAIP = ArrayListMultimap.create();
         for (AIPEntity aip : aips) {
-            Optional<String> label = messages.stream()
-                                             .filter(message -> message.getUrn().equals(aip.getAipIdUrn().toString()))
-                                             .map(DisseminationAckEvent::getRecipientLabel)
-                                             .findFirst();
-            if (label.isPresent()) {
-                List<AbstractAIPUpdateTask> updateDisseminationTasks = Lists.newArrayList(AIPUpdateDisseminationTask.build(
-                    AIPUpdateTaskType.UDPATE_DISSEMINATION,
-                    AIPUpdateState.READY,
-                    Lists.newArrayList(new DisseminationInfo(label.get(), null, OffsetDateTime.now()))));
-                Multimap<AIPEntity, AbstractAIPUpdateTask> updateTasksByAIP = ArrayListMultimap.create();
-                updateTasksByAIP.putAll(aip, updateDisseminationTasks);
-                aipUpdateRequestService.create(updateTasksByAIP);
-            } else {
-                LOGGER.error("No recipient label found for DisseminationAckEvent with urn {}",
-                             aip.getAipIdUrn().toString());
-            }
+            List<String> recipients = messages.stream()
+                                              .filter(message -> message.getUrn().equals(aip.getAipIdUrn().toString()))
+                                              .map(DisseminationAckEvent::getRecipientLabel)
+                                              .toList();
+            // null value will not override existing value when UpdateTask will be executed.
+            List<DisseminationInfo> updatedDisseminationInfos = recipients.stream()
+                                                                          .map(recipient -> new DisseminationInfo(
+                                                                              recipient,
+                                                                              null,
+                                                                              OffsetDateTime.now()))
+                                                                          .toList();
 
+            AIPUpdateParametersDto aipUpdateDto = AIPUpdateParametersDto.build();
+            aipUpdateDto.setUpdateDisseminationInfo(updatedDisseminationInfos);
+
+            // for loop, but it is supposed to have only one task created
+            for (AbstractAIPUpdateTask updateDisseminationTask : AbstractAIPUpdateTask.build(aipUpdateDto)) {
+                updateTasksByAIP.put(aip, updateDisseminationTask);
+            }
         }
+        aipUpdateRequestService.create(updateTasksByAIP);
     }
 }

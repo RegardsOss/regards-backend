@@ -154,6 +154,10 @@ public class AIPUpdateParametersDto {
         return params;
     }
 
+    public static AIPUpdateParametersDto build() {
+        return build(null);
+    }
+
     public AIPUpdateParametersDto withAddTags(List<String> addTags) {
         this.addTags.addAll(addTags);
         return this;

@@ -18,32 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.ingest.dao.IAipDisseminationRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dissemination.AipDisseminationRequest;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.service.AipDisseminationService;
 import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-
-record AipDisseminationRequestLight(AIPEntity aip,
-                                    List<String> recipient) {
-
-}
 
 /**
  * This job is used to send an amqp message to notify by {@link AipDisseminationRequest} in parameter.
@@ -62,13 +49,7 @@ public class AipDisseminationJob extends AbstractJob<Void> {
     private AipDisseminationService aipDisseminationService;
 
     @Autowired
-    private IAipDisseminationRequestRepository aipDisseminationRequestRepository;
-
-    @Autowired
-    private IPublisher publisher;
-
-    @Autowired
-    private Gson gson;
+    private AIPNotificationService aipNotificationService;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -77,8 +58,7 @@ public class AipDisseminationJob extends AbstractJob<Void> {
         List<Long> aipRequestIds = getValue(parameters, AIP_DISSEMINATION_REQUEST_IDS, new TypeToken<List<Long>>() {
 
         }.getType());
-        // Retrieve list of AIP save metadata requests to handle
-        aipDisseminationRequests = aipDisseminationService.searchRequests(aipRequestIds);
+        aipDisseminationRequests = aipDisseminationService.findAllById(aipRequestIds);
     }
 
     @Override
@@ -86,19 +66,7 @@ public class AipDisseminationJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         logger.debug("[AIP DISSEMINATION JOB] Start dissemination notification for {} aips",
                      aipDisseminationRequests.size());
-        for (AipDisseminationRequest disseminationRequest : aipDisseminationRequests) {
-            JsonObject payload = gson.toJsonTree(new AipDisseminationRequestLight(disseminationRequest.getAip(),
-                                                                                  disseminationRequest.getRecipients()))
-                                     .getAsJsonObject();
-            publisher.publish(new NotificationRequestEvent(payload,
-                                                           gson.toJsonTree(new AIPNotificationService.NotificationActionEventMetadata(
-                                                                   RequestTypeConstant.AIP_DISSEMINATION_VALUE))
-                                                               .getAsJsonObject(),
-                                                           disseminationRequest.getCorrelationId(),
-                                                           disseminationRequest.getAip().getSessionOwner()));
-            disseminationRequest.setState(InternalRequestState.WAITING_NOTIFIER_DISSEMINATION_RESPONSE);
-        }
-        aipDisseminationRequestRepository.saveAll(aipDisseminationRequests);
+        aipNotificationService.sendRequestsToNotifier(Sets.newHashSet(aipDisseminationRequests));
         logger.debug("[AIP DISSEMINATION JOB] End, {} dissemination notification send in {} ms",
                      aipDisseminationRequests.size(),
                      System.currentTimeMillis() - start);

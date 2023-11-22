@@ -78,11 +78,5 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
     @Query(value = "UPDATE AbstractRequest SET state = :state WHERE id IN (:ids)")
     int updateStates(@Param("ids") List<Long> ids, @Param("state") InternalRequestState state);
 
-    /**
-     * Find all requests by id (used only in case of notification)
-     *
-     * @param requestIds ids of the requests
-     * @return requests
-     */
-    Set<AbstractRequest> findAllByIdIn(List<Long> requestIds);
+    Set<AbstractRequest> findAllByCorrelationIdIn(List<String> correlationIds);
 }
