@@ -218,7 +218,8 @@ public interface IAcquisitionProcessingService {
                                              Optional<OffsetDateTime> scanningDate,
                                              int limit,
                                              String session,
-                                             String sessionOwner) throws ModuleException;
+                                             String sessionOwner,
+                                             String fileExtensionToFilter) throws ModuleException;
 
     /**
      * Register multiple files by creating multiple transactions by batch
@@ -228,7 +229,8 @@ public interface IAcquisitionProcessingService {
                        ScanDirectoryInfo scanDir,
                        Optional<OffsetDateTime> scanningDate,
                        String session,
-                       String sessionOwner) throws ModuleException;
+                       String sessionOwner,
+                       String fileExtensionToFilter) throws ModuleException;
 
     /**
      * Register a new file in one transaction

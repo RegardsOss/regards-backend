@@ -39,16 +39,15 @@ import fr.cnes.regards.modules.acquisition.domain.*;
 import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
-import fr.cnes.regards.modules.acquisition.plugins.IChainBlockingPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.*;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.DeleteProductsJob;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
+import fr.cnes.regards.modules.acquisition.service.plugins.CleanAndAcknowledgePlugin;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -720,6 +719,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 LOGGER.error("Unable to run files scan as plugin is disabled");
                 throw new ModuleException(e1.getMessage(), e1);
             }
+            String fileExtensionToNotRegister = getAckExtensionIfExists(processingChain);
             // Get files to scan
             Set<ScanDirectoryInfo> scanDirs = fileInfo.getScanDirInfo();
             for (ScanDirectoryInfo scanDirInfo : scanDirs) {
@@ -736,17 +736,49 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                            (IFluxScanPlugin) scanPlugin,
                                            scanningDate,
                                            session,
-                                           processingChain.getLabel());
+                                           processingChain.getLabel(),
+                                           fileExtensionToNotRegister);
                 } else {
                     scanAndRegisterFiles(fileInfo,
                                          scanDirInfo,
                                          scanPlugin,
                                          scanningDate,
                                          session,
-                                         processingChain.getLabel());
+                                         processingChain.getLabel(),
+                                         fileExtensionToNotRegister);
                 }
             }
         }
+    }
+
+    /**
+     * Return ack extension, if postProcess plugin is set to {@link CleanAndAcknowledgePlugin},
+     * and if createAck param is set to true
+     * </br>
+     * This is necessary during the scan operation, to remove ack files created at the previous acquisitions
+     *
+     * @see <a href="https://odin.si.c-s.fr/plugins/tracker/?aid=295088">odin FA</a>
+     */
+    private String getAckExtensionIfExists(AcquisitionProcessingChain acqProcessingChain) {
+        Optional<PluginConfiguration> postProcessSipPluginConfOpt = acqProcessingChain.getPostProcessSipPluginConf();
+        if (postProcessSipPluginConfOpt.isPresent()) {
+            try {
+                ISipPostProcessingPlugin postProcessPlugin = pluginService.getPlugin(postProcessSipPluginConfOpt.get()
+                                                                                                                .getBusinessId());
+                Optional<String> extensionOpt = postProcessPlugin.getFileExtensionToExcludeInScanStep();
+                if (extensionOpt.isPresent()) {
+                    String extension = extensionOpt.get();
+                    // removes "." if indicated
+                    if (extension.startsWith(".")) {
+                        extension = extension.substring(1);
+                    }
+                    return extension;
+                }
+            } catch (NotAvailablePluginConfigurationException | ModuleException e) {
+                LOGGER.warn("Unable to get postprocess plugin : "+e.getMessage(), e);
+            }
+        }
+        return null;
     }
 
     private void scanAndRegisterFiles(AcquisitionFileInfo fileInfo,
@@ -754,7 +786,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                       IScanPlugin scanPlugin,
                                       Optional<OffsetDateTime> scanningDate,
                                       String session,
-                                      String sessionOwner) throws ModuleException {
+                                      String sessionOwner,
+                                      String fileExtensionToFilter) throws ModuleException {
         // Do scan
         List<Path> scannedFiles = scanPlugin.scan(scanDirInfo.getScannedDirectory(), scanningDate);
 
@@ -768,7 +801,13 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             }
         });
         if (!scannedFiles.isEmpty()) {
-            registerFiles(scannedFiles.iterator(), fileInfo, scanDirInfo, scanningDate, session, sessionOwner);
+            registerFiles(scannedFiles.iterator(),
+                          fileInfo,
+                          scanDirInfo,
+                          scanningDate,
+                          session,
+                          sessionOwner,
+                          fileExtensionToFilter);
         }
         if (scanningDate.isPresent()) {
             LOGGER.info("[{} - {}] Scan for files <{}> found {} files with last update date > {} ",
@@ -791,12 +830,19 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                         IFluxScanPlugin scanPlugin,
                                         Optional<OffsetDateTime> scanningDate,
                                         String session,
-                                        String sessionOwner) throws ModuleException {
+                                        String sessionOwner,
+                                        String fileExtensionToNotRegister) throws ModuleException {
         List<Stream<Path>> streams = scanPlugin.stream(scanDirInfo.getScannedDirectory(), scanningDate);
         Iterator<Stream<Path>> streamsIt = streams.iterator();
         while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
             try (Stream<Path> stream = streamsIt.next()) {
-                registerFiles(stream.iterator(), fileInfo, scanDirInfo, scanningDate, session, sessionOwner);
+                registerFiles(stream.iterator(),
+                              fileInfo,
+                              scanDirInfo,
+                              scanningDate,
+                              session,
+                              sessionOwner,
+                              fileExtensionToNotRegister);
             }
         }
     }
@@ -807,14 +853,21 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                               ScanDirectoryInfo scanDir,
                               Optional<OffsetDateTime> scanningDate,
                               String session,
-                              String sessionOwner) throws ModuleException {
+                              String sessionOwner,
+                              String fileExtensionToNotRegister) throws ModuleException {
         RegisterFilesResponse response;
         long totalCount = 0;
         OffsetDateTime lmd = null;
         long nbFilesAcquired;
         do {
             long startTime = System.currentTimeMillis();
-            response = self.registerFilesBatch(filePathsIt, fileInfo, scanningDate, BATCH_SIZE, session, sessionOwner);
+            response = self.registerFilesBatch(filePathsIt,
+                                               fileInfo,
+                                               scanningDate,
+                                               BATCH_SIZE,
+                                               session,
+                                               sessionOwner,
+                                               fileExtensionToNotRegister);
             nbFilesAcquired = response.getNumberOfRegisteredFiles();
             // Calculate most recent file registered.
             if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate()) && !Thread.currentThread()
@@ -846,7 +899,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                                     Optional<OffsetDateTime> scanningDate,
                                                     int limit,
                                                     String session,
-                                                    String sessionOwner) throws ModuleException {
+                                                    String sessionOwner,
+                                                    String fileExtensionToNotRegister) throws ModuleException {
         int countRegistered = 0;
         OffsetDateTime lastUpdateDate = null;
         // We catch general exception to avoid AccessDeniedException thrown by FileTreeIterator provided to this method.
@@ -855,9 +909,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         while (nextPath && (countRegistered < limit) && !Thread.currentThread().isInterrupted()) {
             try {
                 Path filePath = filePaths.next();
-                if (registerFile(filePath, info, scanningDate)) {
-                    countRegistered++;
-                    lastUpdateDate = getLastUpdateDate(filePath, lastUpdateDate);
+                if (needToRegisterFile(filePath, fileExtensionToNotRegister)) {
+                    if (registerFile(filePath, info, scanningDate)) {
+                        countRegistered++;
+                        lastUpdateDate = getLastUpdateDate(filePath, lastUpdateDate);
+                    }
                 }
             } catch (Exception e) { // NOSONAR
                 LOGGER.error(String.format("Error parsing file. %s", e.getMessage()), e);
@@ -866,6 +922,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             }
         }
         return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePaths.hasNext());
+    }
+
+    private boolean needToRegisterFile(Path filePath, String fileExtensionToNotRegister) {
+        return !FilenameUtils.getExtension(filePath.getFileName().toString()).equals(fileExtensionToNotRegister);
     }
 
     /**

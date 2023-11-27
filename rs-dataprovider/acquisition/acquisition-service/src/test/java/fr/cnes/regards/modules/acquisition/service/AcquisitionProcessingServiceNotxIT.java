@@ -119,7 +119,8 @@ public class AcquisitionProcessingServiceNotxIT extends AbstractMultitenantServi
                                                             scanDirInfo,
                                                             Optional.of(lmd),
                                                             "chain1",
-                                                            "session1"));
+                                                            "session1",
+                                                            null));
 
     }
 }
