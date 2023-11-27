@@ -73,10 +73,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -282,6 +279,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         String csCommon = ChecksumUtils.computeHexChecksum(fileCommon, "MD5");
 
         int cpt = 0;
+        List<String> groupIds = new ArrayList<>();
         // Clear listener if any requests
         listener.reset();
         for (Path file : filesToStore) {
@@ -312,7 +310,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                                            fileCommon.toAbsolutePath().toString())).toString(),
                                                   ONLINE_CONF,
                                                   null));
-            client.store(files);
+            groupIds.addAll(client.store(files).stream().map(RequestInfo::getGroupId).toList());
         }
 
         waitRequestEnds(nbGroups, 120);
@@ -322,8 +320,16 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
             LOGGER.warn("Request groups error events received : {}", listener.getErrors().size());
         }
 
-        Assert.assertEquals("All storage request groups should be done", nbGroups, listener.getNbRequestEnds());
-        listener.reset();
+        Assert.assertTrue("All storage request groups should be done", listener.getSuccess().size() >= nbGroups);
+        // Check all requested groups has been done
+        Assert.assertTrue("All storage request groups should be done",
+                          groupIds.stream()
+                                  .allMatch(groupId -> listener.getSuccess()
+                                                               .values()
+                                                               .stream()
+                                                               .anyMatch(r -> Objects.equals(r.getGroupId(),
+                                                                                             groupId))));
+
     }
 
     @Test
