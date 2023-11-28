@@ -27,14 +27,14 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.job.CacheCleanJob;
 import org.slf4j.Logger;
@@ -350,10 +350,10 @@ public class CacheService {
         return cachedFileRepository.count();
     }
 
-    public StorageLocationDTO toStorageLocation() {
+    public StorageLocationDto toStorageLocation() {
         StorageLocationConfiguration conf = new StorageLocationConfiguration(CACHE_NAME, null, getMaxCacheSizeKo());
         conf.setStorageType(StorageType.CACHE);
-        return StorageLocationDTO.build(CACHE_NAME, conf)
+        return StorageLocationDto.build(CACHE_NAME, conf.toDto())
                                  .withAllowPhysicalDeletion()
                                  .withFilesInformation(getTotalCachedFiles(), 0, getCacheSizeUsedKB());
     }

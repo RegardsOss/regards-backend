@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.utils.plugins.withconf;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginConfigurationDto;
 
 /**
  * Test plugin
@@ -40,7 +40,7 @@ public class PluginWithConf {
     private String pluginInstanceName;
 
     @PluginInit(hasConfiguration = true)
-    void doPluginInit(PluginConfiguration conf) {
+    void doPluginInit(PluginConfigurationDto conf) {
         pluginInstanceName = conf.getBusinessId();
     }
 

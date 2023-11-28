@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 import java.util.Collection;
 import java.util.List;
@@ -47,7 +47,7 @@ public interface IAIPStorageService {
      * @param aips              to update
      * @param storeRequestInfos storage events
      */
-    void updateAIPsContentInfosAndLocations(List<AIPEntity> aips, Collection<RequestResultInfoDTO> storeRequestInfos);
+    void updateAIPsContentInfosAndLocations(List<AIPEntity> aips, Collection<RequestResultInfoDto> storeRequestInfos);
 
     /**
      * Update provided {@link AIPEntity} aip with a list of new file storage locations
@@ -56,7 +56,7 @@ public interface IAIPStorageService {
      * @param storeRequestInfos storage events
      * @return true when aip have been impacted by these events
      */
-    AIPUpdateResult addAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos);
+    AIPUpdateResult addAIPLocations(AIPEntity aip, Collection<RequestResultInfoDto> storeRequestInfos);
 
     /**
      * Update provided {@link AIPEntity} aip with a list of removed file storage locations
@@ -65,7 +65,7 @@ public interface IAIPStorageService {
      * @param storeRequestInfos storage events
      * @return true when aip have been impacted by these events
      */
-    AIPUpdateResult removeAIPLocations(AIPEntity aip, Collection<RequestResultInfoDTO> storeRequestInfos);
+    AIPUpdateResult removeAIPLocations(AIPEntity aip, Collection<RequestResultInfoDto> storeRequestInfos);
 
     /**
      * Remove a list of storage id from the AIP and retrieve the list of events to send
@@ -73,5 +73,5 @@ public interface IAIPStorageService {
      * @param removedStorages list of storage metadata that will be removed from the AIP
      * @return the list of events to sent to storage, empty if nothing have been done
      */
-    Collection<FileDeletionRequestDTO> removeStorages(AIPEntity aip, List<String> removedStorages);
+    Collection<FileDeletionRequestDto> removeStorages(AIPEntity aip, List<String> removedStorages);
 }

@@ -19,16 +19,16 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.dao.IRequestGroupRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
 import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import org.apache.commons.compress.utils.Sets;
 import org.junit.Assert;
@@ -90,39 +90,43 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
 
             // Simulate a running request
             if (i < 1000) {
-                FileStorageRequest request = storageReqService.createNewFileStorageRequest(Sets.newHashSet("someone"),
-                                                                                           new FileReferenceMetaInfo(
-                                                                                               UUID.randomUUID()
-                                                                                                   .toString(),
-                                                                                               "MD5",
-                                                                                               "plop",
-                                                                                               10L,
-                                                                                               MediaType.APPLICATION_ATOM_XML),
-                                                                                           groupId,
-                                                                                           ONLINE_CONF_LABEL,
-                                                                                           Optional.empty(),
-                                                                                           groupId,
-                                                                                           Optional.empty(),
-                                                                                           Optional.empty(),
-                                                                                           SESSION_OWNER_1,
-                                                                                           SESSION_1);
+                FileStorageRequestAggregation request = storageReqService.createNewFileStorageRequest(Sets.newHashSet(
+                                                                                                          "someone"),
+                                                                                                      new FileReferenceMetaInfo(
+                                                                                                          UUID.randomUUID()
+                                                                                                              .toString(),
+                                                                                                          "MD5",
+                                                                                                          "plop",
+                                                                                                          10L,
+                                                                                                          MediaType.APPLICATION_ATOM_XML),
+                                                                                                      groupId,
+                                                                                                      ONLINE_CONF_LABEL,
+                                                                                                      Optional.empty(),
+                                                                                                      groupId,
+                                                                                                      Optional.empty(),
+                                                                                                      Optional.empty(),
+                                                                                                      SESSION_OWNER_1,
+                                                                                                      SESSION_1);
             }
-            FileStorageRequest request = storageReqService.createNewFileStorageRequest(Sets.newHashSet("someone"),
-                                                                                       new FileReferenceMetaInfo(UUID.randomUUID()
-                                                                                                                     .toString(),
-                                                                                                                 "MD5",
-                                                                                                                 "plop",
-                                                                                                                 10L,
-                                                                                                                 MediaType.APPLICATION_ATOM_XML),
-                                                                                       groupId,
-                                                                                       ONLINE_CONF_LABEL,
-                                                                                       Optional.empty(),
-                                                                                       groupId,
-                                                                                       Optional.of(
-                                                                                           "toto la belle erreur"),
-                                                                                       Optional.of(FileRequestStatus.ERROR),
-                                                                                       SESSION_OWNER_1,
-                                                                                       SESSION_1);
+            FileStorageRequestAggregation request = storageReqService.createNewFileStorageRequest(Sets.newHashSet(
+                                                                                                      "someone"),
+                                                                                                  new FileReferenceMetaInfo(
+                                                                                                      UUID.randomUUID()
+                                                                                                          .toString(),
+                                                                                                      "MD5",
+                                                                                                      "plop",
+                                                                                                      10L,
+                                                                                                      MediaType.APPLICATION_ATOM_XML),
+                                                                                                  groupId,
+                                                                                                  ONLINE_CONF_LABEL,
+                                                                                                  Optional.empty(),
+                                                                                                  groupId,
+                                                                                                  Optional.of(
+                                                                                                      "toto la belle erreur"),
+                                                                                                  Optional.of(
+                                                                                                      FileRequestStatus.ERROR),
+                                                                                                  SESSION_OWNER_1,
+                                                                                                  SESSION_1);
             // Grant a group requests
             reqGrpService.granted(groupId, FileRequestType.STORAGE, 5, OffsetDateTime.now().plusDays(120));
 
@@ -213,19 +217,19 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
         String groupId = UUID.randomUUID().toString();
         String destStorage = ONLINE_CONF_LABEL;
         String checksum = UUID.randomUUID().toString();
-        List<StorageFlowItem> items = new ArrayList<>();
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
 
         // 1. Run a storage request
-        items.add(StorageFlowItem.build(FileStorageRequestDTO.build("filename",
-                                                                    checksum,
-                                                                    "UUID",
-                                                                    MediaType.APPLICATION_JSON.toString(),
-                                                                    "owner",
-                                                                    SESSION_OWNER_1,
-                                                                    SESSION_1,
-                                                                    "file://somewhere/file.test",
-                                                                    destStorage,
-                                                                    Optional.empty()), groupId));
+        items.add(new FilesStorageRequestEvent(FileStorageRequestDto.build("filename",
+                                                                           checksum,
+                                                                           "UUID",
+                                                                           MediaType.APPLICATION_JSON.toString(),
+                                                                           "owner",
+                                                                           SESSION_OWNER_1,
+                                                                           SESSION_1,
+                                                                           "file://somewhere/file.test",
+                                                                           destStorage,
+                                                                           Optional.empty()), groupId));
         storageReqService.store(items);
 
         // 2. Simulate response info added for this group

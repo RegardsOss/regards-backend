@@ -19,10 +19,10 @@
 package fr.cnes.regards.framework.utils.plugins.basic;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginParamDescriptor;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.PluginParamType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils.PrimitiveObject;

@@ -26,8 +26,8 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.FeatureDeletionService;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
@@ -97,10 +97,10 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
     public void testHandlerStorageError() throws InterruptedException {
         prepareData();
 
-        FileReference fr = null;
+        FileReferenceDto fr = null;
         List<FeatureDeletionRequest> toDelete = this.featureDeletionRequestRepo.findAll();
         requestService.handleDeletionError(toDelete.stream()
-                                                   .map(t -> RequestResultInfoDTO.build(t.getGroupId(),
+                                                   .map(t -> RequestResultInfoDto.build(t.getGroupId(),
                                                                                         "checksum",
                                                                                         "storage",
                                                                                         "storePath",

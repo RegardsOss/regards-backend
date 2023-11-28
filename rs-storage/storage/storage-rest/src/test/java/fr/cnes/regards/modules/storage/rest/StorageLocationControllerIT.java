@@ -21,17 +21,17 @@ package fr.cnes.regards.modules.storage.rest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.filecatalog.dto.CopyFilesParametersDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.dto.CopyFilesParametersDTO;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.rest.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
@@ -114,7 +114,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                                                                         .expectValue("content.configuration.storageType",
                                                                                      StorageType.OFFLINE.toString());
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           buildStorageLocationDTO(name, null, true),
+                           buildStorageLocationDto(name, null, true),
                            requestBuilderCustomizer,
                            "Should be created");
 
@@ -128,7 +128,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                                                .expectValue("content.configuration.storageType",
                                                             StorageType.ONLINE.toString());
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           buildStorageLocationDTO("plop2", 10_000L, false),
+                           buildStorageLocationDto("plop2", 10_000L, false),
                            requestBuilderCustomizer,
                            "Should be created");
     }
@@ -137,13 +137,13 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     public void configureLocation_alreadyExists() throws IOException {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           buildStorageLocationDTO("plop", null, false),
+                           buildStorageLocationDto("plop", null, false),
                            requestBuilderCustomizer,
                            "Should be created");
 
         requestBuilderCustomizer = customizer().expectStatusConflict();
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           buildStorageLocationDTO("plop", null, false),
+                           buildStorageLocationDto("plop", null, false),
                            requestBuilderCustomizer,
                            "Should not be created");
     }
@@ -156,12 +156,12 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                                                                             "content.configuration.allocatedSizeInKo",
                                                                             100L);
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           buildStorageLocationDTO(name, 100L, false),
+                           buildStorageLocationDto(name, 100L, false),
                            requestBuilderCustomizer,
                            "Should be created");
 
         tenantResolver.forceTenant(getDefaultTenant());
-        StorageLocationDTO loc = storageLocService.getByName(name);
+        StorageLocationDto loc = storageLocService.getByName(name);
         loc.getConfiguration().setAllocatedSizeInKo(10_000L);
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectValue("content.configuration.allocatedSizeInKo", 10_000L);
@@ -176,7 +176,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     public void retreiveAll() throws IOException {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           buildStorageLocationDTO("plop", null, false),
+                           buildStorageLocationDto("plop", null, false),
                            requestBuilderCustomizer,
                            "Should be created");
 
@@ -213,7 +213,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
         performDefaultPost(StorageLocationController.BASE_PATH
                            + StorageLocationController.FILES
                            + StorageLocationController.COPY,
-                           CopyFilesParametersDTO.build("somewhere",
+                           CopyFilesParametersDto.build("somewhere",
                                                         "/dir/one",
                                                         "somewhere-else",
                                                         null,
@@ -253,7 +253,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                                                                         .expectValue("content.configuration.priority",
                                                                                      1);
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           buildStorageLocationDTO(name, 10_000L, false),
+                           buildStorageLocationDto(name, 10_000L, false),
                            requestBuilderCustomizer,
                            "Should be created");
 
@@ -291,7 +291,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                                                                         .expectValue("content.configuration.priority",
                                                                                      1);
         performDefaultPost(StorageLocationController.BASE_PATH,
-                           buildStorageLocationDTO(name, 10_000L, false),
+                           buildStorageLocationDto(name, 10_000L, false),
                            requestBuilderCustomizer,
                            "Should be created");
 
@@ -338,12 +338,12 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
         }
     }
 
-    private StorageLocationDTO buildStorageLocationDTO(String name, Long allocatedSizeInKo, boolean offline)
+    private StorageLocationDto buildStorageLocationDto(String name, Long allocatedSizeInKo, boolean offline)
         throws IOException {
         StorageLocationConfiguration conf = new StorageLocationConfiguration(name,
                                                                              offline ? null : getPluginConf(name),
                                                                              allocatedSizeInKo);
-        return StorageLocationDTO.build(name, conf);
+        return StorageLocationDto.build(name, conf.toDto());
     }
 
 }

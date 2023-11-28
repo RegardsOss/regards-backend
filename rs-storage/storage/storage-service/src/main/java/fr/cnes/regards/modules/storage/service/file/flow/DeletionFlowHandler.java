@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.flow;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
- * Handler to handle {@link DeletionFlowItem} AMQP messages.<br>
+ * Handler to handle {@link FilesDeletionEvent} AMQP messages.<br>
  * Those messages are sent to delete a file reference for one owner.<br>
  * Each message is saved in a concurrent list to handle availability request by bulk.
  *
@@ -42,7 +42,7 @@ import java.util.List;
  */
 @Component
 public class DeletionFlowHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<DeletionFlowItem> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesDeletionEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeletionFlowHandler.class);
 
@@ -57,11 +57,11 @@ public class DeletionFlowHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(DeletionFlowItem.class, this);
+        subscriber.subscribeTo(FilesDeletionEvent.class, this);
     }
 
     @Override
-    public void handleBatch(List<DeletionFlowItem> messages) {
+    public void handleBatch(List<FilesDeletionEvent> messages) {
         LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", messages.size());
         long start = System.currentTimeMillis();
         fileDelReqService.handle(messages);
@@ -71,7 +71,7 @@ public class DeletionFlowHandler
     }
 
     @Override
-    public Errors validate(DeletionFlowItem message) {
+    public Errors validate(FilesDeletionEvent message) {
         return null;
     }
 

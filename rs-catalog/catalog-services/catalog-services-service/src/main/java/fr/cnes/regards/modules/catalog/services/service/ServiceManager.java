@@ -24,9 +24,9 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginParamDescriptor;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.PluginParamType;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;

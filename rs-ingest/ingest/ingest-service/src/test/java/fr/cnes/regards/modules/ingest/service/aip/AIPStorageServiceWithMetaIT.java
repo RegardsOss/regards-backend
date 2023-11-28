@@ -23,6 +23,7 @@ import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -32,7 +33,6 @@ import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storage.client.StorageClient;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
@@ -91,7 +91,7 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
     private StorageClient storageClient;
 
     @Captor
-    ArgumentCaptor<List<FileStorageRequestDTO>> fileStorageRequestsCaptor;
+    ArgumentCaptor<List<FileStorageRequestDto>> fileStorageRequestsCaptor;
 
     @Test
     @Purpose("Test if storage requests are correctly stored according to sip metadata.")
@@ -130,9 +130,9 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
             return this.aipRepository.count() == 2;
         });
         Mockito.verify(storageClient, Mockito.times(2)).store(fileStorageRequestsCaptor.capture());
-        List<List<FileStorageRequestDTO>> storageReq = fileStorageRequestsCaptor.getAllValues();
+        List<List<FileStorageRequestDto>> storageReq = fileStorageRequestsCaptor.getAllValues();
         // validate storage requests from aip1
-        for (List<FileStorageRequestDTO> storageReqPerAip : storageReq) {
+        for (List<FileStorageRequestDto> storageReqPerAip : storageReq) {
             if (storageReqPerAip.size() == 9) {
                 validateStorageRequests(storageReqPerAip,
                                         Map.of("simple_sip_01.dat",
@@ -193,21 +193,19 @@ public class AIPStorageServiceWithMetaIT extends IngestMultitenantServiceIT {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             return requestService.findRequests(filters, Pageable.ofSize(10)).getTotalElements() == 1;
         });
-        Page<AbstractRequest> pageRequest = requestService.findRequests(
-            filters,
-            Pageable.ofSize(10));
+        Page<AbstractRequest> pageRequest = requestService.findRequests(filters, Pageable.ofSize(10));
         Assert.assertEquals(1, pageRequest.getTotalElements());
         AbstractRequest request = pageRequest.getContent().get(0);
         Assert.assertEquals(InternalRequestState.ERROR, request.getState());
         Assert.assertEquals(IngestErrorType.GENERATION, request.getErrorType());
     }
 
-    private void validateStorageRequests(List<FileStorageRequestDTO> actualStorageRequests,
+    private void validateStorageRequests(List<FileStorageRequestDto> actualStorageRequests,
                                          Map<String, Set<String>> expectedMappingStorageRequests) {
         Assertions.assertThat(actualStorageRequests.stream()
-                                                   .collect(Collectors.groupingBy(FileStorageRequestDTO::getFileName,
+                                                   .collect(Collectors.groupingBy(FileStorageRequestDto::getFileName,
                                                                                   Collectors.mapping(
-                                                                                      FileStorageRequestDTO::getStorage,
+                                                                                      FileStorageRequestDto::getStorage,
                                                                                       Collectors.toUnmodifiableSet()))))
                   .containsExactlyInAnyOrderEntriesOf(expectedMappingStorageRequests);
 

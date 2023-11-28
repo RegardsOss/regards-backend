@@ -30,10 +30,10 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
-import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.assertj.core.util.Lists;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -149,9 +149,9 @@ public class MockStorageResponsesHelper {
         } while (fcrPage.hasNext() && handled < nbRequestsToMock.orElse(Integer.MAX_VALUE));
     }
 
-    private Set<RequestResultInfoDTO> toStorageRequestInfoResponse(FeatureUpdateRequest featureRequest,
+    private Set<RequestResultInfoDto> toStorageRequestInfoResponse(FeatureUpdateRequest featureRequest,
                                                                    boolean success) {
-        Set<RequestResultInfoDTO> requestsInfo = Sets.newHashSet();
+        Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
         List<StorageMetadata> storages = featureRequest.getMetadata() != null ?
             featureRequest.getMetadata().getStorages() :
             new ArrayList<>();
@@ -161,9 +161,9 @@ public class MockStorageResponsesHelper {
         return requestsInfo;
     }
 
-    private Set<RequestResultInfoDTO> toStorageRequestInfoResponse(FeatureCreationRequest featureRequest,
+    private Set<RequestResultInfoDto> toStorageRequestInfoResponse(FeatureCreationRequest featureRequest,
                                                                    boolean success) {
-        Set<RequestResultInfoDTO> requestsInfo = Sets.newHashSet();
+        Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
         List<StorageMetadata> storages = featureRequest.getMetadata().getStorages();
         featureRequest.getFeatureEntity().getFeature().getFiles().forEach(file -> {
             file.getLocations().forEach(location -> {
@@ -173,22 +173,20 @@ public class MockStorageResponsesHelper {
         return requestsInfo;
     }
 
-    private Set<RequestResultInfoDTO> toInfo(FeatureFile file,
+    private Set<RequestResultInfoDto> toInfo(FeatureFile file,
                                              AbstractFeatureRequest featureRequest,
                                              Collection<StorageMetadata> storages,
                                              boolean success) {
-        Set<RequestResultInfoDTO> requestsInfo = Sets.newHashSet();
+        Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
         file.getLocations().forEach(location -> {
-            FileReferenceMetaInfoDTO meta = FileReferenceMetaInfoDTO.build(file.getAttributes().getChecksum(),
-                                                                           file.getAttributes().getAlgorithm(),
-                                                                           file.getAttributes().getFilename(),
-                                                                           file.getAttributes().getFilesize(),
-                                                                           null,
-                                                                           null,
-                                                                           file.getAttributes().getMimeType(),
-                                                                           file.getAttributes()
-                                                                               .getDataType()
-                                                                               .toString());
+            FileReferenceMetaInfoDto meta = new FileReferenceMetaInfoDto(file.getAttributes().getChecksum(),
+                                                                         file.getAttributes().getAlgorithm(),
+                                                                         file.getAttributes().getFilename(),
+                                                                         file.getAttributes().getFilesize(),
+                                                                         null,
+                                                                         null,
+                                                                         file.getAttributes().getMimeType().toString(),
+                                                                         file.getAttributes().getDataType().toString());
             if (location.getStorage() != null && !location.getStorage().isEmpty()) {
                 requestsInfo.add(createStorageResultInfo(success,
                                                          featureRequest.getGroupId(),
@@ -208,18 +206,18 @@ public class MockStorageResponsesHelper {
         return requestsInfo;
     }
 
-    private RequestResultInfoDTO createStorageResultInfo(boolean success,
+    private RequestResultInfoDto createStorageResultInfo(boolean success,
                                                          String groupId,
                                                          String storage,
-                                                         FileReferenceMetaInfoDTO meta,
+                                                         FileReferenceMetaInfoDto meta,
                                                          Optional<String> refUrl) {
-        FileLocationDTO fl = FileLocationDTO.build(storage, refUrl.orElse("storage://internal/store/directory"));
-        FileReferenceDTO fr = FileReferenceDTO.build(OffsetDateTime.now(), meta, fl, Lists.newArrayList());
+        FileLocationDto fl = new FileLocationDto(storage, refUrl.orElse("storage://internal/store/directory"));
+        FileReferenceDto fr = new FileReferenceDto(OffsetDateTime.now(), meta, fl, Lists.newArrayList());
         String errorCause = null;
         if (!success) {
             errorCause = "Simulated storage error";
         }
-        return RequestResultInfoDTO.build(groupId,
+        return RequestResultInfoDto.build(groupId,
                                           meta.getChecksum(),
                                           storage,
                                           null,
@@ -230,7 +228,7 @@ public class MockStorageResponsesHelper {
 
     private void mockStorageSuccess(Collection<AbstractFeatureRequest> featureRequestsPage) {
         // mock rs-storage response success for file storage
-        Set<RequestResultInfoDTO> requestsInfo = Sets.newHashSet();
+        Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
         featureRequestsPage.forEach(featureRequest -> {
             if (featureRequest instanceof FeatureCreationRequest) {
                 requestsInfo.addAll(this.toStorageRequestInfoResponse((FeatureCreationRequest) featureRequest, true));
@@ -245,7 +243,7 @@ public class MockStorageResponsesHelper {
 
     private void mockStorageError(Collection<AbstractFeatureRequest> featureRequestsPage) {
         // mock rs-storage response success for file storage
-        Set<RequestResultInfoDTO> requestsInfo = Sets.newHashSet();
+        Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
         featureRequestsPage.forEach(featureRequest -> {
             if (featureRequest instanceof FeatureCreationRequest) {
                 requestsInfo.addAll(toStorageRequestInfoResponse((FeatureCreationRequest) featureRequest, false));

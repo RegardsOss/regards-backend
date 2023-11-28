@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.s3.test.S3FileTestUtils;
 import fr.cnes.regards.framework.test.integration.RegardsActiveProfileResolver;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import org.apache.commons.io.FileUtils;
 import org.junit.*;
@@ -344,7 +344,7 @@ public class DownloadUtilsIT {
 
         String checksum = DatatypeConverter.printHexBinary(digest.digest());
 
-        FileStorageRequest fileStorageRequest = new FileStorageRequest();
+        FileStorageRequestAggregation fileStorageRequest = new FileStorageRequestAggregation();
         fileStorageRequest.setOriginUrl("file:" + file.getAbsolutePath());
         fileStorageRequest.setStorageSubDirectory("");
         FileReferenceMetaInfo fileReferenceMetaInfo = new FileReferenceMetaInfo();
@@ -362,7 +362,7 @@ public class DownloadUtilsIT {
 
     private void createTestFileOnServer() {
 
-        FileStorageRequest fileStorageRequest = new FileStorageRequest();
+        FileStorageRequestAggregation fileStorageRequest = new FileStorageRequestAggregation();
         fileStorageRequest.setOriginUrl("file:./src/test/resources/file1.txt");
         fileStorageRequest.setStorageSubDirectory("");
         FileReferenceMetaInfo fileReferenceMetaInfo = new FileReferenceMetaInfo();
@@ -379,7 +379,7 @@ public class DownloadUtilsIT {
 
     private void createDeepTestFileOnServer() {
 
-        FileStorageRequest fileStorageRequest = new FileStorageRequest();
+        FileStorageRequestAggregation fileStorageRequest = new FileStorageRequestAggregation();
         fileStorageRequest.setOriginUrl("file:./src/test/resources/file2.txt");
         fileStorageRequest.setStorageSubDirectory("/test/deep/file/sub/directory");
         FileReferenceMetaInfo fileReferenceMetaInfo = new FileReferenceMetaInfo();

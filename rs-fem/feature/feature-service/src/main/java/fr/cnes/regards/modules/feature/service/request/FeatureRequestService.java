@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.*;
 import fr.cnes.regards.modules.feature.service.dump.IFeatureMetadataService;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,13 +192,13 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
-    public void handleStorageSuccess(Set<RequestResultInfoDTO> requestsInfo) {
+    public void handleStorageSuccess(Set<RequestResultInfoDto> requestsInfo) {
         long scheduleStart = System.currentTimeMillis();
         LOGGER.trace("Handling {} storage success responses from storage", requestsInfo.size());
         List<FeatureEntity> updatedFeatures = new ArrayList<>();
-        Map<String, List<RequestResultInfoDTO>> requestInfoPerGroupId = requestsInfo.stream()
+        Map<String, List<RequestResultInfoDto>> requestInfoPerGroupId = requestsInfo.stream()
                                                                                     .collect(Collectors.groupingBy(
-                                                                                        RequestResultInfoDTO::getGroupId));
+                                                                                        RequestResultInfoDto::getGroupId));
 
         // Find FeatureCreationRequest associated to success storage responses if any
         Set<FeatureCreationRequest> creationRequests = this.fcrRepo.findByGroupIdIn(requestInfoPerGroupId.keySet());
@@ -259,7 +259,7 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
-    public void handleStorageError(Collection<RequestResultInfoDTO> errorRequests) {
+    public void handleStorageError(Collection<RequestResultInfoDto> errorRequests) {
         this.featureCreationService.handleStorageError(errorRequests);
         this.featureUpdateService.handleStorageError(errorRequests);
     }
@@ -270,7 +270,7 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
-    public void handleDeletionError(Collection<RequestResultInfoDTO> errorRequests) {
+    public void handleDeletionError(Collection<RequestResultInfoDto> errorRequests) {
         Map<String, String> errorByGroupId = Maps.newHashMap();
         errorRequests.forEach(e -> errorByGroupId.put(e.getGroupId(), e.getErrorCause()));
         Set<FeatureDeletionRequest> deletionRequests = fdrRepo.findByGroupIdIn(errorByGroupId.keySet());

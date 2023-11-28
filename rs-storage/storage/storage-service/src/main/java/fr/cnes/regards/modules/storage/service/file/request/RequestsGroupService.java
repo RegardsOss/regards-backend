@@ -20,12 +20,13 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileGroupRequestStatus;
 import fr.cnes.regards.modules.storage.dao.*;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.*;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import org.apache.commons.compress.utils.Sets;
@@ -51,11 +52,11 @@ import java.util.stream.Collectors;
  * A requests group is an business association between many FileRequests of the same type.<br>
  * All requests of a same groups are associated thanks to a group identifier.<br>
  * When all requests of a group has been handled by the associated service, then a {@link FileRequestsGroupEvent} is published
- * with {@link FlowItemStatus#GRANTED} status.<br>
+ * with {@link FileGroupRequestStatus#GRANTED} status.<br>
  * When all requests of a group has been rejected by the associated service, then a {@link FileRequestsGroupEvent} is published
- * with {@link FlowItemStatus#DENIED} status.<br>
+ * with {@link FileGroupRequestStatus#DENIED} status.<br>
  * When all requests of a group are done (successfully or with errors), a {@link FileRequestsGroupEvent} is published
- * with {@link FlowItemStatus#SUCCESS} or with {@link FlowItemStatus#ERROR} status.<br>
+ * with {@link FileGroupRequestStatus#SUCCESS} or with {@link FileGroupRequestStatus#ERROR} status.<br>
  *
  * @author Sébastien Binda
  */
@@ -133,7 +134,7 @@ public class RequestsGroupService {
                      type.toString().toUpperCase(),
                      groupId,
                      denyCause);
-        publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.DENIED, Sets.newHashSet())
+        publisher.publish(FileRequestsGroupEvent.build(groupId, type, FileGroupRequestStatus.DENIED, Sets.newHashSet())
                                                 .withMessage(denyCause));
     }
 
@@ -156,7 +157,10 @@ public class RequestsGroupService {
             LOGGER.error("[{} Group request] Identifier {} already exists", type.toString(), groupId);
         }
         if (!silent) {
-            publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
+            publisher.publish(FileRequestsGroupEvent.build(groupId,
+                                                           type,
+                                                           FileGroupRequestStatus.GRANTED,
+                                                           Sets.newHashSet()));
         }
         LOGGER.trace("[{} GROUP GRANTED {}] - Group request granted with {} requests. ({}ms)",
                      type.toString().toUpperCase(),
@@ -185,7 +189,7 @@ public class RequestsGroupService {
                 toSave.add(RequestGroup.build(groupId, type, expirationDate));
                 publisher.publish(FileRequestsGroupEvent.build(groupId,
                                                                type,
-                                                               FlowItemStatus.GRANTED,
+                                                               FileGroupRequestStatus.GRANTED,
                                                                Sets.newHashSet()));
             } else {
                 LOGGER.error("Group request identifier already exists");
@@ -201,8 +205,8 @@ public class RequestsGroupService {
      */
     public void cancelRequestGroup(String group) {
         // Cancel storage requests
-        List<FileStorageRequest> storageRequests = storageReqRepository.findByGroupIdsAndStatusNotIn(group,
-                                                                                                     FileRequestStatus.RUNNING_STATUS);
+        List<FileStorageRequestAggregation> storageRequests = storageReqRepository.findByGroupIdsAndStatusNotIn(group,
+                                                                                                                FileRequestStatus.RUNNING_STATUS);
         storageRequests.forEach(r -> {
             sessionNotifier.decrementStoreRequests(r.getSessionOwner(), r.getSession());
             if (r.getStatus() == FileRequestStatus.ERROR) {
@@ -338,7 +342,7 @@ public class RequestsGroupService {
      */
     private void groupDone(RequestGroup reqGrp,
                            Set<RequestResultInfo> resultInfos,
-                           Optional<FlowItemStatus> forcedStatus) {
+                           Optional<FileGroupRequestStatus> forcedStatus) {
         Set<RequestResultInfo> errors = Sets.newHashSet();
         Set<RequestResultInfo> successes = Sets.newHashSet();
         for (RequestResultInfo info : resultInfos) {
@@ -352,16 +356,16 @@ public class RequestsGroupService {
         if (errors.isEmpty()) {
             LOGGER.trace("[{} GROUP {} {}] - {} requests success.",
                          reqGrp.getType().toString().toUpperCase(),
-                         forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(),
+                         forcedStatus.orElse(FileGroupRequestStatus.SUCCESS),
                          reqGrp.getId(),
                          successes.size());
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(),
                                                            reqGrp.getType(),
-                                                           forcedStatus.orElse(FlowItemStatus.SUCCESS),
-                                                           successes));
+                                                           forcedStatus.orElse(FileGroupRequestStatus.SUCCESS),
+                                                           successes.stream().map(RequestResultInfo::toDto).toList()));
             if (successes.isEmpty()) {
                 LOGGER.debug("[{} GROUP {} {}] No success requests associated to terminated group",
-                             forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(),
+                             forcedStatus.orElse(FileGroupRequestStatus.SUCCESS),
                              reqGrp.getType(),
                              reqGrp.getId());
             }
@@ -371,7 +375,14 @@ public class RequestsGroupService {
                          reqGrp.getId(),
                          successes.size(),
                          errors.size());
-            publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(), reqGrp.getType(), successes, errors));
+            publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(),
+                                                                reqGrp.getType(),
+                                                                successes.stream()
+                                                                         .map(RequestResultInfo::toDto)
+                                                                         .toList(),
+                                                                errors.stream()
+                                                                      .map(RequestResultInfo::toDto)
+                                                                      .toList()));
         }
     }
 
@@ -408,7 +419,7 @@ public class RequestsGroupService {
             for (RequestGroup group : groups) {
                 groupDone(group,
                           infos.stream().filter(i -> i.getGroupId().equals(group.getId())).collect(Collectors.toSet()),
-                          Optional.of(FlowItemStatus.ERROR));
+                          Optional.of(FileGroupRequestStatus.ERROR));
             }
             groupReqInfoRepository.deleteByGroupIdIn(groups.stream()
                                                            .map(RequestGroup::getId)

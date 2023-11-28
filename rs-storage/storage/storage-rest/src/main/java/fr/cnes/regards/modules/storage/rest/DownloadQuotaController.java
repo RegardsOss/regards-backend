@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +55,8 @@ public class DownloadQuotaController {
     public static final String PATH_CURRENT_QUOTA = "/quota/current";
 
     public static final String PATH_CURRENT_QUOTA_LIST = "/quota/currents";
+
+    public static final String PATH_MAX_QUOTA = "/quota/max";
 
     public static final String USER_EMAIL_PARAM = "user_email";
 
@@ -112,14 +114,14 @@ public class DownloadQuotaController {
     @GetMapping(path = PATH_CURRENT_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get current download quota values for current user.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
+    public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas() {
         return new ResponseEntity<>(quotaService.getCurrentQuotas(authResolver.getUser()), HttpStatus.OK);
     }
 
     @GetMapping(path = PATH_USER_CURRENT_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail) {
+    public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail) {
         return new ResponseEntity<>(quotaService.getCurrentQuotas(userEmail), HttpStatus.OK);
     }
 
@@ -127,7 +129,14 @@ public class DownloadQuotaController {
     @ResponseBody
     @ResourceAccess(description = "Get current download quota values for the specified users.",
                     role = DefaultRole.ADMIN)
-    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails) {
+    public ResponseEntity<List<UserCurrentQuotasDto>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails) {
         return quotaService.getCurrentQuotas(userEmails).map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)).get();
+    }
+
+    @GetMapping(path = PATH_MAX_QUOTA)
+    @ResponseBody
+    @ResourceAccess(description = "Get max download quota value.", role = DefaultRole.ADMIN)
+    public ResponseEntity<Long> getMaxQuota() {
+        return new ResponseEntity<>(quotaService.getMaxQuota(), HttpStatus.OK);
     }
 }

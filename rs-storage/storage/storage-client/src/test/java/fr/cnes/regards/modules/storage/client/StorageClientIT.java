@@ -24,29 +24,25 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.*;
+import fr.cnes.regards.modules.filecatalog.dto.request.*;
 import fr.cnes.regards.modules.storage.dao.*;
-import fr.cnes.regards.modules.storage.domain.database.FileLocation;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.storage.domain.flow.*;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleNearlineDataStorage;
@@ -162,7 +158,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
     public void init() throws IOException, ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Delete FileStorageRequest and related owners
-        List<FileStorageRequest> fileStorageRequests = storageReqRepo.findAll();
+        List<FileStorageRequestAggregation> fileStorageRequests = storageReqRepo.findAll();
         storageReqRepo.deleteAll(fileStorageRequests);
         copyReqRepo.deleteAll();
         cacheReqRepo.deleteAll();
@@ -209,21 +205,31 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         for (int i = 0; i < nbMessages; i++) {
             String groupId = "group_" + i;
             String checksum = UUID.randomUUID().toString();
-            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum,
-                                                                       "UUID",
-                                                                       "file" + i,
-                                                                       10L,
-                                                                       MediaType.APPLICATION_JSON);
-            RequestResultInfo resultInfo = new RequestResultInfo(groupId,
-                                                                 FileRequestType.STORAGE,
-                                                                 checksum,
-                                                                 "storage",
-                                                                 "path",
-                                                                 Sets.newHashSet("owner"));
-            resultInfo.setResultFile(new FileReference("owner", metaInfo, new FileLocation("storage", "path", false)));
+            FileReferenceMetaInfoDto metaInfo = new FileReferenceMetaInfoDto(checksum,
+                                                                             "UUID",
+                                                                             "file" + i,
+                                                                             10L,
+                                                                             null,
+                                                                             null,
+                                                                             MediaType.APPLICATION_JSON.toString(),
+                                                                             null);
+
+            FileLocationDto FileLocationDto = new FileLocationDto("storage", "path");
+            HashSet<String> owners = Sets.newHashSet("owner");
+
+            FileReferenceDto ref = new FileReferenceDto(OffsetDateTime.now(), metaInfo, FileLocationDto, owners);
+
+            RequestResultInfoDto resultInfo = RequestResultInfoDto.build(groupId,
+                                                                         checksum,
+                                                                         "storage",
+                                                                         "path",
+                                                                         owners,
+                                                                         ref,
+                                                                         null);
+
             publisher.publish(FileRequestsGroupEvent.build(groupId,
                                                            FileRequestType.STORAGE,
-                                                           FlowItemStatus.SUCCESS,
+                                                           FileGroupRequestStatus.SUCCESS,
                                                            Sets.newHashSet(resultInfo)));
         }
         LOGGER.info(" -------> Start waiting for all responses received !!!!!!!!!");
@@ -234,9 +240,9 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
     @Test
     public void storeWithMultipleRequests() throws MalformedURLException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Set<FileStorageRequestDTO> files = Sets.newHashSet();
-        for (int i = 0; i < (StorageFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
-            files.add(FileStorageRequestDTO.build("file.test",
+        Set<FileStorageRequestDto> files = Sets.newHashSet();
+        for (int i = 0; i < (FilesStorageRequestEvent.MAX_REQUEST_PER_GROUP + 1); i++) {
+            files.add(FileStorageRequestDto.build("file.test",
                                                   UUID.randomUUID().toString(),
                                                   "UUID",
                                                   "application/octet-stream",
@@ -286,9 +292,9 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
             cpt++;
             String owner = "owner-" + (cpt % 5);
             String sessionOwner = "SOURCE " + (cpt % 5);
-            Set<FileStorageRequestDTO> files = Sets.newHashSet();
+            Set<FileStorageRequestDto> files = Sets.newHashSet();
             String cs = ChecksumUtils.computeHexChecksum(file, "MD5");
-            files.add(FileStorageRequestDTO.build(file.getFileName().toString(),
+            files.add(FileStorageRequestDto.build(file.getFileName().toString(),
                                                   cs,
                                                   "MD5",
                                                   "application/octet-stream",
@@ -298,7 +304,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                                   (new URL("file", null, file.toAbsolutePath().toString())).toString(),
                                                   ONLINE_CONF,
                                                   null));
-            files.add(FileStorageRequestDTO.build(fileCommon.getFileName().toString(),
+            files.add(FileStorageRequestDto.build(fileCommon.getFileName().toString(),
                                                   csCommon,
                                                   "MD5",
                                                   "application/octet-stream",
@@ -339,8 +345,8 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         String cs2 = UUID.randomUUID().toString();
         String cs3 = UUID.randomUUID().toString();
         String cs4 = UUID.randomUUID().toString();
-        Set<FileStorageRequestDTO> files = Sets.newHashSet();
-        files.add(FileStorageRequestDTO.build("file.test",
+        Set<FileStorageRequestDto> files = Sets.newHashSet();
+        files.add(FileStorageRequestDto.build("file.test",
                                               cs1,
                                               "UUID",
                                               "application/octet-stream",
@@ -350,7 +356,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                               new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               ONLINE_CONF,
                                               null));
-        files.add(FileStorageRequestDTO.build("file2.test",
+        files.add(FileStorageRequestDto.build("file2.test",
                                               cs2,
                                               "UUID",
                                               "application/octet-stream",
@@ -360,7 +366,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                               new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               ONLINE_CONF,
                                               null));
-        files.add(FileStorageRequestDTO.build("restoError.file3.test",
+        files.add(FileStorageRequestDto.build("restoError.file3.test",
                                               cs3,
                                               "UUID",
                                               "application/octet-stream",
@@ -370,7 +376,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                               new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               NEARLINE_CONF,
                                               null));
-        files.add(FileStorageRequestDTO.build("file4.test",
+        files.add(FileStorageRequestDto.build("file4.test",
                                               cs4,
                                               "UUID",
                                               "application/octet-stream",
@@ -381,7 +387,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                               NEARLINE_CONF,
                                               null));
 
-        files.add(FileStorageRequestDTO.build(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_NAME,
+        files.add(FileStorageRequestDto.build(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_NAME,
                                               AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_CHECKSUM,
                                               "UUID",
                                               "application/octet-stream",
@@ -422,7 +428,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
     @Test
     public void storeError_unknownStorage() throws MalformedURLException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        RequestInfo info = client.store(FileStorageRequestDTO.build("file.test",
+        RequestInfo info = client.store(FileStorageRequestDto.build("file.test",
                                                                     UUID.randomUUID().toString(),
                                                                     "UUID",
                                                                     "application/octet-stream",
@@ -447,7 +453,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
     public void storeError_storagePluginError() throws MalformedURLException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         listener.reset();
-        RequestInfo info = client.store(FileStorageRequestDTO.build("error.file.test",
+        RequestInfo info = client.store(FileStorageRequestDto.build("error.file.test",
                                                                     UUID.randomUUID().toString(),
                                                                     "UUID",
                                                                     "application/octet-stream",
@@ -471,8 +477,8 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
     @Test
     public void storeError_storeSuccessAndError() throws MalformedURLException, InterruptedException {
         // Test a request with one file success and one file error
-        Set<FileStorageRequestDTO> files = Sets.newHashSet();
-        files.add(FileStorageRequestDTO.build("error.file.test",
+        Set<FileStorageRequestDto> files = Sets.newHashSet();
+        files.add(FileStorageRequestDto.build("error.file.test",
                                               UUID.randomUUID().toString(),
                                               "UUID",
                                               "application/octet-stream",
@@ -482,7 +488,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                               new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               ONLINE_CONF,
                                               null));
-        files.add(FileStorageRequestDTO.build("ok.file.test",
+        files.add(FileStorageRequestDto.build("ok.file.test",
                                               UUID.randomUUID().toString(),
                                               "UUID",
                                               "application/octet-stream",
@@ -508,8 +514,8 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void storeRetry() throws MalformedURLException, InterruptedException {
-        Set<FileStorageRequestDTO> files = Sets.newHashSet();
-        files.add(FileStorageRequestDTO.build("error.file.test",
+        Set<FileStorageRequestDto> files = Sets.newHashSet();
+        files.add(FileStorageRequestDto.build("error.file.test",
                                               UUID.randomUUID().toString(),
                                               "UUID",
                                               "application/octet-stream",
@@ -519,7 +525,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                               new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               ONLINE_CONF,
                                               null));
-        files.add(FileStorageRequestDTO.build("ok.file.test",
+        files.add(FileStorageRequestDto.build("ok.file.test",
                                               UUID.randomUUID().toString(),
                                               "UUID",
                                               "application/octet-stream",
@@ -556,9 +562,9 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void referenceWithMultipleGroups() throws InterruptedException {
-        Set<FileReferenceRequestDTO> files = Sets.newHashSet();
-        for (int i = 0; i < (ReferenceFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
-            files.add(FileReferenceRequestDTO.build("file1.test",
+        Set<FileReferenceRequestDto> files = Sets.newHashSet();
+        for (int i = 0; i < (FilesReferenceEvent.MAX_REQUEST_PER_GROUP + 1); i++) {
+            files.add(FileReferenceRequestDto.build("file1.test",
                                                     UUID.randomUUID().toString(),
                                                     "UUID",
                                                     "application/octet-stream",
@@ -581,7 +587,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
 
     private void waitRequestEnds(int nbrequests, int maxDurationSec) throws InterruptedException {
         int loopDuration = 2_000;
-        int nbLoop = ((maxDurationSec * 1000) / loopDuration);
+        int nbLoop = ((maxDurationSec * 100000) / loopDuration);
         int loop = 0;
         while ((listener.getNbRequestEnds() < nbrequests) && (loop < nbLoop)) {
             loop++;
@@ -605,8 +611,8 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         String cs1 = UUID.randomUUID().toString();
         String cs2 = UUID.randomUUID().toString();
         String cs3 = UUID.randomUUID().toString();
-        Set<FileReferenceRequestDTO> files = Sets.newHashSet();
-        files.add(FileReferenceRequestDTO.build("file1.test",
+        Set<FileReferenceRequestDto> files = Sets.newHashSet();
+        files.add(FileReferenceRequestDto.build("file1.test",
                                                 cs1,
                                                 "UUID",
                                                 "application/octet-stream",
@@ -616,7 +622,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                                 baseURl + "file1.test",
                                                 sessionOwner,
                                                 session));
-        files.add(FileReferenceRequestDTO.build("file2.test",
+        files.add(FileReferenceRequestDto.build("file2.test",
                                                 cs2,
                                                 "UUID",
                                                 "application/octet-stream",
@@ -626,7 +632,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
                                                 baseURl + "file2.test",
                                                 sessionOwner,
                                                 session));
-        files.add(FileReferenceRequestDTO.build("file3.test",
+        files.add(FileReferenceRequestDto.build("file3.test",
                                                 cs3,
                                                 "UUID",
                                                 "application/octet-stream",
@@ -659,7 +665,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         String checksum = UUID.randomUUID().toString();
         String owner = "delete-test";
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        RequestInfo info = client.store(FileStorageRequestDTO.build("ok.file.test",
+        RequestInfo info = client.store(FileStorageRequestDto.build("ok.file.test",
                                                                     checksum,
                                                                     "UUID",
                                                                     "application/octet-stream",
@@ -681,7 +687,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         listener.reset();
 
         // Delete it
-        RequestInfo deleteInfo = client.delete(FileDeletionRequestDTO.build(checksum,
+        RequestInfo deleteInfo = client.delete(FileDeletionRequestDto.build(checksum,
                                                                             ONLINE_CONF,
                                                                             owner,
                                                                             SESSION_OWNER,
@@ -697,9 +703,9 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void deleteWithMultipleGroups() throws InterruptedException {
-        Set<FileDeletionRequestDTO> files = Sets.newHashSet();
-        for (int i = 0; i < (DeletionFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
-            files.add(FileDeletionRequestDTO.build(UUID.randomUUID().toString(),
+        Set<FileDeletionRequestDto> files = Sets.newHashSet();
+        for (int i = 0; i < (FilesDeletionEvent.MAX_REQUEST_PER_GROUP + 1); i++) {
+            files.add(FileDeletionRequestDto.build(UUID.randomUUID().toString(),
                                                    ONLINE_CONF,
                                                    "owner",
                                                    SESSION_OWNER,
@@ -773,7 +779,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
     @Test
     public void availabilityWithMultipleRequests() throws InterruptedException {
         Set<String> files = Sets.newHashSet();
-        for (int i = 0; i < (AvailabilityFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
+        for (int i = 0; i < (FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(UUID.randomUUID().toString());
         }
 
@@ -871,8 +877,8 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         this.storeFile();
         listener.reset();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Set<FileCopyRequestDTO> requests = restorableFileChecksums.stream()
-                                                                  .map(f -> FileCopyRequestDTO.build(f,
+        Set<FileCopyRequestDto> requests = restorableFileChecksums.stream()
+                                                                  .map(f -> FileCopyRequestDto.build(f,
                                                                                                      NEARLINE_CONF_2,
                                                                                                      SESSION_OWNER,
                                                                                                      SESSION))
@@ -903,7 +909,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_CHECKSUM,
+        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_CHECKSUM,
                                                                                     ONLINE_CONF,
                                                                                     SESSION_OWNER,
                                                                                     SESSION));
@@ -925,8 +931,8 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         this.storeFile();
         listener.reset();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Set<FileCopyRequestDTO> requests = storedFileChecksums.stream()
-                                                              .map(f -> FileCopyRequestDTO.build(f,
+        Set<FileCopyRequestDto> requests = storedFileChecksums.stream()
+                                                              .map(f -> FileCopyRequestDto.build(f,
                                                                                                  NEARLINE_CONF_2,
                                                                                                  SESSION_OWNER,
                                                                                                  SESSION))

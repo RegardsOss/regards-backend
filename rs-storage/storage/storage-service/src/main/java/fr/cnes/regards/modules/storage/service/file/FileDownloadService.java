@@ -26,14 +26,14 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
@@ -118,7 +118,7 @@ public class FileDownloadService {
                                Try.of(() -> fileRefService.search(checksum))
                                   .filter(s -> !s.isEmpty())
                                   .mapFailure(Case($(instanceOf(NoSuchElementException.class)),
-                                                   ex -> new EntityNotFoundException(checksum, FileReferenceDTO.class)),
+                                                   ex -> new EntityNotFoundException(checksum, FileReferenceDto.class)),
                                               Case($(), (Function<Throwable, ModuleException>) ModuleException::new))
                                   .map(fileRefs -> fileRefs.stream()
                                                            .collect(Collectors.toMap(f -> f.getLocation().getStorage(),

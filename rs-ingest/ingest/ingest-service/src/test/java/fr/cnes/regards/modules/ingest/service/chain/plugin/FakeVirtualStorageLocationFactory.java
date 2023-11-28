@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.domain.exception.PluginInitException;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -33,7 +33,7 @@ public class FakeVirtualStorageLocationFactory {
 
     public static VirtualStorageLocation create(String virtualStorageLocationLabel,
                                                 List<StorageMetadata> realStorageLocations,
-                                                List<EntityModel<StorageLocationDTO>> mockStorageLocationContent)
+                                                List<EntityModel<StorageLocationDto>> mockStorageLocationContent)
         throws PluginInitException {
         VirtualStorageLocation virtualStorageLocation = new VirtualStorageLocation();
         ReflectionTestUtils.setField(virtualStorageLocation, "virtualStorageName", virtualStorageLocationLabel);
@@ -47,7 +47,7 @@ public class FakeVirtualStorageLocationFactory {
     }
 
     public VirtualStorageLocation createValid() throws PluginInitException {
-        List<EntityModel<StorageLocationDTO>> mockStorageLocationContent = FakeStorageRestClientFactory.createResponse(
+        List<EntityModel<StorageLocationDto>> mockStorageLocationContent = FakeStorageRestClientFactory.createResponse(
             StorageLocationMock.validRealStorageLocationsWithAllDataType(),
             false);
 
@@ -57,7 +57,7 @@ public class FakeVirtualStorageLocationFactory {
     }
 
     public VirtualStorageLocation createValidWithAllDataTypes() throws PluginInitException {
-        List<EntityModel<StorageLocationDTO>> mockStorageLocationContent = FakeStorageRestClientFactory.createResponse(
+        List<EntityModel<StorageLocationDto>> mockStorageLocationContent = FakeStorageRestClientFactory.createResponse(
             StorageLocationMock.validRealStorageLocationsWithAllDataType(),
             false);
 

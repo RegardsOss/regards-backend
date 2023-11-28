@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.domain.plugin.*;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
@@ -126,7 +126,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(Collection<FileStorageRequest> FileReferenceRequest) {
+    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregation> prepareForStorage(Collection<FileStorageRequestAggregation> FileReferenceRequest) {
         Collection<FileStorageWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileStorageWorkingSubset(Sets.newHashSet(FileReferenceRequest)));
         return PreparationResponse.build(workingSubSets, Maps.newHashMap());
@@ -142,7 +142,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
         });
     }
 
-    private void doStore(IStorageProgressManager progressManager, FileStorageRequest fileRefRequest) {
+    private void doStore(IStorageProgressManager progressManager, FileStorageRequestAggregation fileRefRequest) {
 
         Assert.assertNotNull("File reference request cannot be null", fileRefRequest);
         Assert.assertNotNull("File reference request meta info cannot be null", fileRefRequest.getMetaInfo());

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
+import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
@@ -145,6 +147,14 @@ public class FileLocation {
             return false;
         }
         return true;
+    }
+
+    public FileLocationDto toDto() {
+        return new FileLocationDto(storage, url);
+    }
+
+    public static FileLocation buildFromDto(FileLocationDto dto) {
+        return new FileLocation(dto.getStorage(), dto.getUrl(), false);
     }
 
 }

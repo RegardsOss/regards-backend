@@ -40,9 +40,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.configuration.service.SearchHistoryService;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -120,18 +120,18 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
 
     private final SearchHistoryService searchHistoryService;
 
-    private final Function<Try<ResponseEntity<UserCurrentQuotas>>, Validation<ComposableClientException, UserCurrentQuotas>> ignoreStorageQuotaErrors = t -> t.map(
-                                                                                                                                                                  ResponseEntity::getBody)
-                                                                                                                                                              // special value for frontend if any error on storage or storage not deploy
-                                                                                                                                                              .onFailure(
-                                                                                                                                                                  e -> LOGGER.debug(
-                                                                                                                                                                      "Failed to query rs-storage for quotas.",
-                                                                                                                                                                      e))
-                                                                                                                                                              .orElse(
-                                                                                                                                                                  () -> Try.success(
-                                                                                                                                                                      new UserCurrentQuotas()))
-                                                                                                                                                              .toValidation(
-                                                                                                                                                                  ComposableClientException::make);
+    private final Function<Try<ResponseEntity<UserCurrentQuotasDto>>, Validation<ComposableClientException, UserCurrentQuotasDto>> ignoreStorageQuotaErrors = t -> t.map(
+                                                                                                                                                                        ResponseEntity::getBody)
+                                                                                                                                                                    // special value for frontend if any error on storage or storage not deploy
+                                                                                                                                                                    .onFailure(
+                                                                                                                                                                        e -> LOGGER.debug(
+                                                                                                                                                                            "Failed to query rs-storage for quotas.",
+                                                                                                                                                                            e))
+                                                                                                                                                                    .orElse(
+                                                                                                                                                                        () -> Try.success(
+                                                                                                                                                                            new UserCurrentQuotasDto()))
+                                                                                                                                                                    .toValidation(
+                                                                                                                                                                        ComposableClientException::make);
 
     @Value("${spring.application.name}")
     private String appName;
@@ -428,7 +428,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                                        "Failed to query rs-storage for quotas.",
                                                        throwable))
                                                    .orElse(() -> Try.success(Arrays.stream(emails)
-                                                                                   .map(UserCurrentQuotas::new)
+                                                                                   .map(UserCurrentQuotasDto::new)
                                                                                    .collect(toList())))
                                                    .toValidation(ComposableClientException::make))
                              .map(quotas -> users.get()
@@ -463,7 +463,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     }
 
     private ResponseEntity<EntityModel<ProjectUserReadDto>> combineProjectUserThenQuotaCalls(Supplier<ResponseEntity<EntityModel<ProjectUser>>> projectUsersCall,
-                                                                                             Supplier<ResponseEntity<UserCurrentQuotas>> quotaCall,
+                                                                                             Supplier<ResponseEntity<UserCurrentQuotasDto>> quotaCall,
                                                                                              Function<ProjectUserReadDto, EntityModel<ProjectUserReadDto>> resourceMapper)
         throws ModuleException {
         return toResponse(Try.ofSupplier(projectUsersCall)

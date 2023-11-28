@@ -26,6 +26,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.dao.IStorageLocationRepository;
@@ -35,10 +38,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
@@ -139,7 +139,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
     @Test
     public void runPeriodicActions() throws ModuleException {
         initStorageLocations(NEARLINE_CONF_LABEL);
-        Optional<StorageLocationDTO> location = storageLocationService.getAllLocations()
+        Optional<StorageLocationDto> location = storageLocationService.getAllLocations()
                                                                       .stream()
                                                                       .filter(l -> l.getName()
                                                                                     .equals(NEARLINE_CONF_LABEL))
@@ -205,7 +205,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         createFileReference(storage, 2048L);
         createFileReference(storage, 2048L);
         storageLocationService.monitorStorageLocations(false);
-        StorageLocationDTO loc = storageLocationService.getByName(storage);
+        StorageLocationDto loc = storageLocationService.getByName(storage);
         Assert.assertNotNull("A location should be retrieved", loc);
         Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
         Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored());
@@ -226,7 +226,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         createFileReference(storage2, 4 * 1024L);
         createFileReference(storage2, 4 * 1024L);
         storageLocationService.monitorStorageLocations(false);
-        Set<StorageLocationDTO> locs = storageLocationService.getAllLocations();
+        Set<StorageLocationDto> locs = storageLocationService.getAllLocations();
         Assert.assertNotNull("Locations should be retrieved", locs);
         Assert.assertEquals("There should be 6 locations", 6, locs.size());
         Assert.assertEquals("Location one is missing",
@@ -350,7 +350,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
                                                                    FileRequestStatus.TO_DO,
                                                                    req.getStatus()));
         // storage requests
-        List<FileStorageRequest> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
+        List<FileStorageRequestAggregation> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
         updatedStorageRequests.forEach(req -> Assert.assertEquals("Request state should have been updated for retry",
                                                                   FileRequestStatus.TO_DO,
                                                                   req.getStatus()));
@@ -411,7 +411,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
                                                                    FileRequestStatus.DELAYED,
                                                                    req.getStatus()));
         // storage requests
-        List<FileStorageRequest> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
+        List<FileStorageRequestAggregation> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
         updatedStorageRequests.forEach(req -> Assert.assertEquals("Request state should be in the same state",
                                                                   FileRequestStatus.PENDING,
                                                                   req.getStatus()));
@@ -446,11 +446,11 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
     /**
      * Method to create FileStorageRequests for test
      */
-    private List<FileStorageRequest> createFileStorageRequests(int nbRequests,
-                                                               FileRequestStatus requestStatus,
-                                                               String sessionOwner,
-                                                               String session) {
-        List<FileStorageRequest> createdStorageRequests = new ArrayList<>();
+    private List<FileStorageRequestAggregation> createFileStorageRequests(int nbRequests,
+                                                                          FileRequestStatus requestStatus,
+                                                                          String sessionOwner,
+                                                                          String session) {
+        List<FileStorageRequestAggregation> createdStorageRequests = new ArrayList<>();
         // init parameters
         String owner = "test";
         String checksum = "2468";
@@ -462,14 +462,14 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         String originUrl = "file://" + Paths.get("src/test/resources/input/cnes.png").toAbsolutePath();
         // create requests
         for (int i = 0; i < nbRequests; i++) {
-            FileStorageRequest request = new FileStorageRequest(owner,
-                                                                metaInfos,
-                                                                originUrl,
-                                                                "storage-" + i,
-                                                                Optional.empty(),
-                                                                UUID.randomUUID().toString(),
-                                                                sessionOwner,
-                                                                session);
+            FileStorageRequestAggregation request = new FileStorageRequestAggregation(owner,
+                                                                                      metaInfos,
+                                                                                      originUrl,
+                                                                                      "storage-" + i,
+                                                                                      Optional.empty(),
+                                                                                      UUID.randomUUID().toString(),
+                                                                                      sessionOwner,
+                                                                                      session);
             request.setStatus(requestStatus);
             createdStorageRequests.add(request);
         }

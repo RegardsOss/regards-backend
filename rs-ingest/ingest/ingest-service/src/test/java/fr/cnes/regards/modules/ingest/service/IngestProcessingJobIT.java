@@ -29,6 +29,12 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -53,12 +59,6 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.*;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -222,7 +222,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
         // Check that files storage has been requested
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<Collection<FileStorageRequestDTO>> storageArgs = ArgumentCaptor.forClass(Collection.class);
+        ArgumentCaptor<Collection<FileStorageRequestDto>> storageArgs = ArgumentCaptor.forClass(Collection.class);
         Mockito.verify(storageClient, Mockito.times(1)).store(storageArgs.capture());
         Assert.assertTrue("File storage url is not vali in storage request",
                           storageArgs.getValue()
@@ -244,25 +244,25 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         AIPEntity aip = req.getAips().get(0);
 
         String remoteStepGroupId = req.getRemoteStepGroupIds().get(0);
-        RequestResultInfoDTO success = RequestResultInfoDTO.build(remoteStepGroupId,
+        RequestResultInfoDto success = RequestResultInfoDto.build(remoteStepGroupId,
                                                                   checksum,
                                                                   STORAGE_METADATA.getPluginBusinessId(),
                                                                   null,
                                                                   Sets.newHashSet(aip.getAipId()),
-                                                                  FileReferenceDTO.build(OffsetDateTime.now(),
-                                                                                         FileReferenceMetaInfoDTO.build(
-                                                                                             checksum,
-                                                                                             "MD5",
-                                                                                             "file.name",
-                                                                                             10L,
-                                                                                             null,
-                                                                                             null,
-                                                                                             MediaType.APPLICATION_JSON,
-                                                                                             "type"),
-                                                                                         FileLocationDTO.build(
-                                                                                             STORAGE_METADATA.getPluginBusinessId(),
-                                                                                             "file:///test/file.name"),
-                                                                                         Sets.newHashSet(aip.getAipId())),
+                                                                  new FileReferenceDto(OffsetDateTime.now(),
+                                                                                       new FileReferenceMetaInfoDto(
+                                                                                           checksum,
+                                                                                           "MD5",
+                                                                                           "file.name",
+                                                                                           10L,
+                                                                                           null,
+                                                                                           null,
+                                                                                           MediaType.APPLICATION_JSON.toString(),
+                                                                                           "type"),
+                                                                                       new FileLocationDto(
+                                                                                           STORAGE_METADATA.getPluginBusinessId(),
+                                                                                           "file:///test/file.name"),
+                                                                                       Sets.newHashSet(aip.getAipId())),
                                                                   null);
         RequestInfo ri = RequestInfo.build(remoteStepGroupId, Sets.newHashSet(success), Sets.newHashSet());
         Set<RequestInfo> requestInfos = Sets.newHashSet(ri);
@@ -313,7 +313,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
         // Check that files storage has been requested
         @SuppressWarnings("unchecked")
-        ArgumentCaptor<Collection<FileStorageRequestDTO>> storageArgs = ArgumentCaptor.forClass(Collection.class);
+        ArgumentCaptor<Collection<FileStorageRequestDto>> storageArgs = ArgumentCaptor.forClass(Collection.class);
         Mockito.verify(storageClient, Mockito.times(1)).store(storageArgs.capture());
         Assert.assertTrue("File storage url is not vali in storage request",
                           storageArgs.getValue()
@@ -335,12 +335,12 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         AIPEntity aip = req.getAips().get(0);
 
         String remoteStepGroupId = req.getRemoteStepGroupIds().get(0);
-        RequestResultInfoDTO error = RequestResultInfoDTO.build(remoteStepGroupId,
+        RequestResultInfoDto error = RequestResultInfoDto.build(remoteStepGroupId,
                                                                 checksum,
                                                                 STORAGE_METADATA.getPluginBusinessId(),
                                                                 null,
                                                                 Sets.newHashSet(aip.getAipId()),
-                                                                new FileReferenceDTO(),
+                                                                new FileReferenceDto(),
                                                                 "simulated error");
         RequestInfo ri = RequestInfo.build(remoteStepGroupId, Sets.newHashSet(), Sets.newHashSet(error));
         Set<RequestInfo> requestInfos = Sets.newHashSet(ri);

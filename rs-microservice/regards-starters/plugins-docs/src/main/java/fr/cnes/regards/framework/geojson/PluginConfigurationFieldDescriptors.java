@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.geojson;
 
 import com.google.common.base.Strings;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import org.springframework.restdocs.payload.FieldDescriptor;
 

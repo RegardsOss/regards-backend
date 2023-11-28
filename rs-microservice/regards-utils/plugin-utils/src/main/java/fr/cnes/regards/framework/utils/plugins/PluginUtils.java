@@ -27,10 +27,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.exception.PluginInitException;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginConfigurationDto;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginParamDescriptor;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.reflections.Configuration;
@@ -208,7 +209,7 @@ public final class PluginUtils {
         Plugin plugin = pluginClass.getAnnotation(Plugin.class);
 
         // Init plugin metadata
-        PluginMetaData pluginMetaData = new PluginMetaData(plugin);
+        PluginMetaData pluginMetaData = buildPluginMetadata(plugin);
 
         // Manage markdown description for admin
         String markdown = AnnotationUtils.loadMarkdown(pluginClass, plugin.markdown());
@@ -235,7 +236,34 @@ public final class PluginUtils {
     public static <T> T getPlugin(PluginConfiguration conf,
                                   ConcurrentMap<String, Object> instantiatedPlugins,
                                   IPluginParam... dynamicParams) throws NotAvailablePluginConfigurationException {
-        return getPlugin(conf, pluginMetadataCache.get(conf.getPluginId()), instantiatedPlugins, dynamicParams);
+        return getPlugin(conf.toDto(), pluginMetadataCache.get(conf.getPluginId()), instantiatedPlugins, dynamicParams);
+    }
+
+    /**
+     * Create an instance of {@link Plugin} based on its configuration and metadata
+     *
+     * @param <T>                 a {@link Plugin}
+     * @param conf                the {@link PluginConfiguration}
+     * @param pluginMetadata      the {@link PluginMetaData}
+     * @param instantiatedPlugins already instaniated plugins
+     * @param dynamicParams       an optional list of {@link IPluginParam}
+     * @return an instance of a {@link Plugin} @ if a problem occurs
+     */
+    public static <T> T getPlugin(PluginConfigurationDto conf,
+                                  PluginMetaData pluginMetadata,
+                                  ConcurrentMap<String, Object> instantiatedPlugins,
+                                  IPluginParam... dynamicParams) throws NotAvailablePluginConfigurationException {
+        if (pluginMetadata == null) {
+            throw new IllegalArgumentException(String.format("Plugin metadata are required for plugin \"%s\"",
+                                                             conf.getPluginId()));
+        }
+        if (Boolean.FALSE.equals(conf.isActive())) {
+            throw new NotAvailablePluginConfigurationException(String.format(
+                "Plugin configuration <%s - %s> is not active.",
+                conf.getPluginId(),
+                conf.getLabel()));
+        }
+        return getPlugin(conf, pluginMetadata.getPluginClassName(), instantiatedPlugins, dynamicParams);
     }
 
     /**
@@ -252,17 +280,7 @@ public final class PluginUtils {
                                   PluginMetaData pluginMetadata,
                                   ConcurrentMap<String, Object> instantiatedPlugins,
                                   IPluginParam... dynamicParams) throws NotAvailablePluginConfigurationException {
-        if (pluginMetadata == null) {
-            throw new IllegalArgumentException(String.format("Plugin metadata are required for plugin \"%s\"",
-                                                             conf.getPluginId()));
-        }
-        if (Boolean.FALSE.equals(conf.isActive())) {
-            throw new NotAvailablePluginConfigurationException(String.format(
-                "Plugin configuration <%d - %s> is not active.",
-                conf.getId(),
-                conf.getLabel()));
-        }
-        return getPlugin(conf, pluginMetadata.getPluginClassName(), instantiatedPlugins, dynamicParams);
+        return getPlugin(conf.toDto(), pluginMetadata, instantiatedPlugins, dynamicParams);
     }
 
     /**
@@ -275,7 +293,7 @@ public final class PluginUtils {
      * @return an instance of {@link Plugin} @ if a problem occurs
      */
     @SuppressWarnings("unchecked")
-    public static <T> T getPlugin(PluginConfiguration conf,
+    public static <T> T getPlugin(PluginConfigurationDto conf,
                                   String pluginClass,
                                   ConcurrentMap<String, Object> instantiatedPlugins,
                                   IPluginParam... dynamicParams) {
@@ -298,6 +316,23 @@ public final class PluginUtils {
         }
 
         return returnPlugin;
+    }
+
+    /**
+     * Create an instance of {@link Plugin} based on its configuration and the plugin class name
+     *
+     * @param <T>           a {@link Plugin}
+     * @param conf          the {@link PluginConfiguration}
+     * @param pluginClass   the {@link Plugin} class name
+     * @param dynamicParams an optional list of {@link IPluginParam}
+     * @return an instance of {@link Plugin} @ if a problem occurs
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T getPlugin(PluginConfiguration conf,
+                                  String pluginClass,
+                                  ConcurrentMap<String, Object> instantiatedPlugins,
+                                  IPluginParam... dynamicParams) {
+        return getPlugin(conf.toDto(), pluginClass, instantiatedPlugins, dynamicParams);
     }
 
     private static <T> void autowirePlugin(T plugin) {
@@ -340,7 +375,7 @@ public final class PluginUtils {
      * @param conf   current plugin configuration
      * @param plugin the {@link Plugin} instance @ if a problem occurs
      */
-    private static <T> void doInitPlugin(final T plugin, PluginConfiguration conf) {
+    private static <T> void doInitPlugin(final T plugin, PluginConfigurationDto conf) {
         for (final Method method : ReflectionUtils.getAllDeclaredMethods(plugin.getClass())) {
             if (method.isAnnotationPresent(PluginInit.class)) {
                 // Invoke method
@@ -459,5 +494,16 @@ public final class PluginUtils {
             }
         }
         return validationErrors;
+    }
+
+    public static PluginMetaData buildPluginMetadata(Plugin plugin) {
+        return new PluginMetaData(plugin.author(),
+                                  plugin.id(),
+                                  plugin.version(),
+                                  plugin.description(),
+                                  plugin.url(),
+                                  plugin.contact(),
+                                  plugin.owner(),
+                                  plugin.license());
     }
 }

@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.in
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.StringPluginParam;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -81,7 +81,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         String secretStr = "";
         StringPluginParam secret = IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET,
                                                       encryptionService.encrypt(secretStr));
-        secret.setDecryptedValue(secretStr);
+        secret.setValue(secretStr);
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID,
                                                                            "rRLGfEh6jtXjiiGUf53UOdmJLXga"),
                                                         secret,

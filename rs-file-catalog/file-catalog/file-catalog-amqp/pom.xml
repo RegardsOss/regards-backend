@@ -57,7 +57,10 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.filecatalog</groupId>
             <artifactId>file-catalog-dto</artifactId>
-            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>amqp-regards</artifactId>
         </dependency>
     </dependencies>
 </project>

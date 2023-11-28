@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.access.services.domain.user;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -69,11 +69,11 @@ public class ProjectUserReadDto extends ProjectUserBaseDto {
         this.currentRate = currentRate;
     }
 
-    public ProjectUserReadDto(ProjectUser projectUser, UserCurrentQuotas currentQuotas) {
+    public ProjectUserReadDto(ProjectUser projectUser, UserCurrentQuotasDto currentQuotas) {
         this(projectUser, currentQuotas.getRateLimit(), currentQuotas.getCurrentRate());
     }
 
-    public ProjectUserReadDto(UserCurrentQuotas currentQuotas, ProjectUser projectUser) {
+    public ProjectUserReadDto(UserCurrentQuotasDto currentQuotas, ProjectUser projectUser) {
         this(projectUser, currentQuotas);
     }
 

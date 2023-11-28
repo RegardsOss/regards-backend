@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.storage.client;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -60,7 +60,7 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
                           @RequestParam(name = "isContentInline", required = false) Boolean isContentInline);
 
     @RequestMapping(method = RequestMethod.GET, path = STORAGES_PATH, produces = MediaType.ALL_VALUE)
-    ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve();
+    ResponseEntity<List<EntityModel<StorageLocationDto>>> retrieve();
 
     @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + EXPORT_PATH, produces = MediaType.ALL_VALUE)
     Response export();
@@ -68,6 +68,6 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
     @RequestMapping(method = RequestMethod.POST,
                     path = FILE_PATH + LOCATIONS_PATH,
                     consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(
+    ResponseEntity<Set<FileReferenceDto>> getFileReferencesWithoutOwners(
         @PathVariable(name = "storage") final String storage, @RequestBody final Set<String> checksums);
 }

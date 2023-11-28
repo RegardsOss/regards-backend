@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
-import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesCopyEvent;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import org.junit.Assert;
@@ -149,13 +149,13 @@ public class FileCopyRequestsCreatorJobIT extends AbstractStorageIT {
         jobService.runJob(jobInfo, getDefaultTenant()).get();
 
         // Check event is well publish for copying the files
-        ArgumentCaptor<CopyFlowItem> argumentCaptor = ArgumentCaptor.forClass(CopyFlowItem.class);
-        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(CopyFlowItem.class));
+        ArgumentCaptor<FilesCopyEvent> argumentCaptor = ArgumentCaptor.forClass(FilesCopyEvent.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FilesCopyEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        CopyFlowItem copyItem = null;
+        FilesCopyEvent copyItem = null;
         for (Object item : argumentCaptor.getAllValues()) {
-            if (item instanceof CopyFlowItem) {
-                copyItem = (CopyFlowItem) item;
+            if (item instanceof FilesCopyEvent) {
+                copyItem = (FilesCopyEvent) item;
                 break;
             }
         }
@@ -196,13 +196,13 @@ public class FileCopyRequestsCreatorJobIT extends AbstractStorageIT {
         jobService.runJob(jobInfo, getDefaultTenant()).get();
 
         // Check event is well publish for copying the files
-        ArgumentCaptor<CopyFlowItem> argumentCaptor = ArgumentCaptor.forClass(CopyFlowItem.class);
-        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(CopyFlowItem.class));
+        ArgumentCaptor<FilesCopyEvent> argumentCaptor = ArgumentCaptor.forClass(FilesCopyEvent.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FilesCopyEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        CopyFlowItem copyItem = null;
+        FilesCopyEvent copyItem = null;
         for (Object item : argumentCaptor.getAllValues()) {
-            if (item instanceof CopyFlowItem) {
-                copyItem = (CopyFlowItem) item;
+            if (item instanceof FilesCopyEvent) {
+                copyItem = (FilesCopyEvent) item;
                 break;
             }
         }

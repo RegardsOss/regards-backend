@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.utils.cycle.detection;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.cycle.detection.invalid1.SamplePluginWithPojoCycleDetected;
 import fr.cnes.regards.framework.utils.cycle.detection.invalid2.SamplePluginWithPojoCycleDetectedLevelThree;
 import fr.cnes.regards.framework.utils.cycle.detection.valid.SamplePluginWithPojo;

@@ -26,11 +26,11 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import org.junit.Assert;
 import org.junit.Before;
@@ -79,10 +79,10 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
 
     @Test
     public void retryMultipleStoreErrors() throws InterruptedException, ExecutionException, ModuleException {
-        FileStorageRequest fileRefReq = this.generateStoreFileError("someone",
-                                                                    ONLINE_CONF_LABEL,
-                                                                    SESSION_OWNER_1,
-                                                                    SESSION_1);
+        FileStorageRequestAggregation fileRefReq = this.generateStoreFileError("someone",
+                                                                               ONLINE_CONF_LABEL,
+                                                                               SESSION_OWNER_1,
+                                                                               SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         // Update plugin conf to now accept error files
@@ -95,8 +95,11 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         jobService.runJob(jobs.iterator().next(), tenant).get();
         runtimeTenantResolver.forceTenant(tenant);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Page<FileStorageRequest> fileRefReqs = stoReqService.search(fileRefReq.getStorage(),
-                                                                    PageRequest.of(0, 1000, Direction.ASC, "id"));
+        Page<FileStorageRequestAggregation> fileRefReqs = stoReqService.search(fileRefReq.getStorage(),
+                                                                               PageRequest.of(0,
+                                                                                              1000,
+                                                                                              Direction.ASC,
+                                                                                              "id"));
         Page<FileReference> fileRefs = fileRefService.search(fileRefReq.getStorage(),
                                                              PageRequest.of(0, 1000, Direction.ASC, "id"));
         Assert.assertEquals("File references should have been created.", 3, fileRefs.getContent().size());
@@ -109,14 +112,14 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
-        FileStorageRequest fileRefReq1 = this.generateStoreFileError("someone-else",
-                                                                     ONLINE_CONF_LABEL,
-                                                                     SESSION_OWNER_2,
-                                                                     SESSION_1);
-        FileStorageRequest fileRefReq2 = this.generateStoreFileError("someone-else",
-                                                                     ONLINE_CONF_LABEL,
-                                                                     SESSION_OWNER_2,
-                                                                     SESSION_1);
+        FileStorageRequestAggregation fileRefReq1 = this.generateStoreFileError("someone-else",
+                                                                                ONLINE_CONF_LABEL,
+                                                                                SESSION_OWNER_2,
+                                                                                SESSION_1);
+        FileStorageRequestAggregation fileRefReq2 = this.generateStoreFileError("someone-else",
+                                                                                ONLINE_CONF_LABEL,
+                                                                                SESSION_OWNER_2,
+                                                                                SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -128,8 +131,11 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         jobService.runJob(jobs.iterator().next(), tenant).get();
         runtimeTenantResolver.forceTenant(tenant);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Page<FileStorageRequest> fileRefReqs = stoReqService.search(ONLINE_CONF_LABEL,
-                                                                    PageRequest.of(0, 1000, Direction.ASC, "id"));
+        Page<FileStorageRequestAggregation> fileRefReqs = stoReqService.search(ONLINE_CONF_LABEL,
+                                                                               PageRequest.of(0,
+                                                                                              1000,
+                                                                                              Direction.ASC,
+                                                                                              "id"));
         Page<FileReference> fileRefs = fileRefService.search(ONLINE_CONF_LABEL,
                                                              PageRequest.of(0, 1000, Direction.ASC, "id"));
         Assert.assertEquals("File references should have been created for the given owner.",
@@ -156,10 +162,10 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
     public void retryMultipleStoreErrorsByStorage() throws InterruptedException, ExecutionException, ModuleException {
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
-        FileStorageRequest fileRefReqOther = this.generateStoreFileError("someone",
-                                                                         "other-target",
-                                                                         SESSION_OWNER_1,
-                                                                         SESSION_1);
+        FileStorageRequestAggregation fileRefReqOther = this.generateStoreFileError("someone",
+                                                                                    "other-target",
+                                                                                    SESSION_OWNER_1,
+                                                                                    SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -171,7 +177,10 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         jobService.runJob(jobs.iterator().next(), tenant).get();
         runtimeTenantResolver.forceTenant(tenant);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Page<FileStorageRequest> fileRefReqs = stoReqService.search(PageRequest.of(0, 1000, Direction.ASC, "id"));
+        Page<FileStorageRequestAggregation> fileRefReqs = stoReqService.search(PageRequest.of(0,
+                                                                                              1000,
+                                                                                              Direction.ASC,
+                                                                                              "id"));
         Page<FileReference> fileRefs = fileRefService.search(PageRequest.of(0, 1000, Direction.ASC, "id"));
         Assert.assertEquals("File references should have been created.", 2, fileRefs.getContent().size());
         Assert.assertEquals("File reference requests should not exists anymore for given storage",
@@ -187,10 +196,10 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
 
     @Test
     public void retryStoreErrors() throws InterruptedException, ExecutionException, ModuleException {
-        FileStorageRequest fileRefReq = this.generateStoreFileError("someone",
-                                                                    ONLINE_CONF_LABEL,
-                                                                    SESSION_OWNER_1,
-                                                                    SESSION_1);
+        FileStorageRequestAggregation fileRefReq = this.generateStoreFileError("someone",
+                                                                               ONLINE_CONF_LABEL,
+                                                                               SESSION_OWNER_1,
+                                                                               SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -199,8 +208,9 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         // Run Job and wait for end
         runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(fileRefReq.getStorage(),
-                                                                          fileRefReq.getMetaInfo().getChecksum());
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(fileRefReq.getStorage(),
+                                                                                     fileRefReq.getMetaInfo()
+                                                                                               .getChecksum());
         Optional<FileReference> oFileRef = fileRefService.search(fileRefReq.getStorage(),
                                                                  fileRefReq.getMetaInfo().getChecksum());
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
@@ -231,8 +241,8 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
                                     UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(destination.getStorage(),
-                                                                          fileMetaInfo.getChecksum());
+        Collection<FileStorageRequestAggregation> fileRefReqs = stoReqService.search(destination.getStorage(),
+                                                                                     fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
         Assert.assertEquals("File reference request should be in STORE_ERROR status",
@@ -370,7 +380,8 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         runAndWaitJob(jobs);
 
         Optional<FileReference> fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksumNotHandled);
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL, checksumNotHandled);
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
+                                                                                     checksumNotHandled);
         Assert.assertFalse("File reference should not exists has the file to store has not been handled",
                            fileRef.isPresent());
         Assert.assertEquals("File reference request should still exists has the file to store has not been handled",
@@ -409,8 +420,8 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
                                     ONLINE_CONF_LABEL,
                                     Optional.empty(),
                                     UUID.randomUUID().toString());
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
-                                                                          fileMetaInfo.getChecksum());
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
+                                                                                     fileMetaInfo.getChecksum());
         Assert.assertEquals("Request sould be in error status as file url is not valid",
                             storageReqs.stream().findFirst().get().getStatus(),
                             FileRequestStatus.ERROR);
@@ -470,8 +481,8 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
                                     Optional.of("elsewhere://in/this/directory/file.test"),
                                     UUID.randomUUID().toString());
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(destination.getStorage(),
-                                                                          fileMetaInfo.getChecksum());
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(destination.getStorage(),
+                                                                                     fileMetaInfo.getChecksum());
         Assert.assertFalse(
             "File reference should not have been created. As storage is not possible into an unkown storage location",
             oFileRef.isPresent());

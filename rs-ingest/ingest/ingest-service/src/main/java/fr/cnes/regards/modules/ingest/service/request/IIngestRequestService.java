@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -28,7 +29,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

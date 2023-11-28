@@ -24,9 +24,9 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
-import fr.cnes.regards.modules.storage.client.IStorageRequestListener;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,8 +57,8 @@ public class FeatureStorageListener implements IStorageRequestListener {
     @Override
     public void onRequestDenied(Set<RequestInfo> requests) {
         // Only groupId is available on request denied
-        Collection<RequestResultInfoDTO> errorRequests = requests.stream()
-                                                                 .map(r -> RequestResultInfoDTO.build(r.getGroupId(),
+        Collection<RequestResultInfoDto> errorRequests = requests.stream()
+                                                                 .map(r -> RequestResultInfoDto.build(r.getGroupId(),
                                                                                                       r.getMessage()))
                                                                  .collect(Collectors.toSet());
         this.featureRequestService.handleStorageError(errorRequests);
@@ -68,7 +68,7 @@ public class FeatureStorageListener implements IStorageRequestListener {
     public void onCopySuccess(Set<RequestInfo> requests) {
         List<FeatureCopyRequest> copies = new ArrayList<>();
         for (RequestInfo info : requests) {
-            for (RequestResultInfoDTO result : info.getSuccessRequests()) {
+            for (RequestResultInfoDto result : info.getSuccessRequests()) {
                 copies.addAll(result.getRequestOwners()
                                     .stream()
                                     .filter(owner -> FeatureUniformResourceName.isValidUrn(owner))

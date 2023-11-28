@@ -388,7 +388,9 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                                       "Datasource harvesting failure",
                                       NotificationLevel.ERROR,
                                       DefaultRole.ADMIN);
-            throw new DataSourceException("Cannot retrieve data from datasource", e);
+            throw new DataSourceException(String.format("Cannot retrieve data from datasource %s on tenant %s",
+                                                        datasourceId,
+                                                        tenant), e);
         }
 
         // Decorate features with its related entity (i.e. DataObject)

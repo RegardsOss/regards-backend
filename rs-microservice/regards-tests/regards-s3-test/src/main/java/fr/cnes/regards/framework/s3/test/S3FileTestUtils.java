@@ -21,7 +21,7 @@ package fr.cnes.regards.framework.s3.test;
 
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -165,11 +165,11 @@ public final class S3FileTestUtils {
         }
     }
 
-    private static Option<Long> entrySize(FileStorageRequest request) {
+    private static Option<Long> entrySize(FileStorageRequestAggregation request) {
         return Option.some(request.getMetaInfo().getFileSize());
     }
 
-    private static Option<Tuple2<String, String>> entryChecksum(FileStorageRequest request) {
+    private static Option<Tuple2<String, String>> entryChecksum(FileStorageRequestAggregation request) {
         return Option.some(Tuple.of(request.getMetaInfo().getAlgorithm(), request.getMetaInfo().getChecksum()));
     }
 

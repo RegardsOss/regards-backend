@@ -21,10 +21,10 @@ package fr.cnes.regards.modules.storage.rest;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,14 +71,14 @@ public class FileRequestsControllerIT extends AbstractRegardsTransactionalIT {
                                                                "file.txt",
                                                                10L,
                                                                MediaType.APPLICATION_JSON_UTF8);
-        FileStorageRequest req = new FileStorageRequest("regards",
-                                                        meta,
-                                                        "file://somewhere/file.txt",
-                                                        "somewhere",
-                                                        Optional.empty(),
-                                                        UUID.randomUUID().toString(),
-                                                        "source1",
-                                                        "session1");
+        FileStorageRequestAggregation req = new FileStorageRequestAggregation("regards",
+                                                                              meta,
+                                                                              "file://somewhere/file.txt",
+                                                                              "somewhere",
+                                                                              Optional.empty(),
+                                                                              UUID.randomUUID().toString(),
+                                                                              "source1",
+                                                                              "session1");
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectIsEmpty("$.content");
         performDefaultGet(FileRequestsController.REQUESTS_PATH
                           + FileRequestsController.STORAGE_PATH

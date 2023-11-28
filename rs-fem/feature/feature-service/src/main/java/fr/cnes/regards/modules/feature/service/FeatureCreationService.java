@@ -57,8 +57,8 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -262,7 +262,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             } else if (grantedRequests.stream().anyMatch(request -> request.getUrn().equals(urn))) {
                 errors.rejectValue(rejectField, errorCode, String.format(defaultMessageTemplate, "granted requests"));
             } else if (newUpdateRequests.stream().anyMatch(request -> request.getFeature().getUrn().equals(urn))) {
-                errors.rejectValue(rejectField, errorCode, String.format(defaultMessageTemplate, "new update requests"));
+                errors.rejectValue(rejectField,
+                                   errorCode,
+                                   String.format(defaultMessageTemplate, "new update requests"));
             } else {
                 // Check if provided URN match an existing feature
                 if (existingEntityUrns.contains(urn)) {
@@ -641,7 +643,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     }
 
     @Override
-    public void handleStorageError(Collection<RequestResultInfoDTO> errorRequests) {
+    public void handleStorageError(Collection<RequestResultInfoDto> errorRequests) {
         Map<String, String> errorByGroupId = Maps.newHashMap();
         errorRequests.forEach(e -> errorByGroupId.put(e.getGroupId(), e.getErrorCause()));
 

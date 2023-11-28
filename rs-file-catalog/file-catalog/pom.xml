@@ -49,6 +49,7 @@
         <module>file-catalog-dto</module>
         <module>file-catalog-dao</module>
         <module>file-catalog-rest</module>
+        <module>file-catalog-client</module>
         <module>file-catalog-amqp</module>
         <module>file-catalog-service</module>
     </modules>

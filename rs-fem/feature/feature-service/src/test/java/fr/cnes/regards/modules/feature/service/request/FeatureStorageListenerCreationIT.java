@@ -33,10 +33,9 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -116,9 +115,9 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
 
         RequestInfo info = RequestInfo.build();
         initData(info);
-        FileReference ref = null;
+        FileReferenceDto ref = null;
         info.getErrorRequests()
-            .add(RequestResultInfoDTO.build(info.getGroupId(),
+            .add(RequestResultInfoDto.build(info.getGroupId(),
                                             "",
                                             "",
                                             "",
@@ -162,9 +161,9 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         RequestInfo info = RequestInfo.build();
 
         initData(info);
-        FileReference ref = null;
+        FileReferenceDto ref = null;
         info.getErrorRequests()
-            .add(RequestResultInfoDTO.build(info.getGroupId(),
+            .add(RequestResultInfoDto.build(info.getGroupId(),
                                             "",
                                             "",
                                             "",
@@ -189,7 +188,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         RequestInfo info = RequestInfo.build();
 
         initData(info);
-        RequestResultInfoDTO resultInfo = RequestResultInfoDTO.build(null,
+        RequestResultInfoDto resultInfo = RequestResultInfoDto.build(null,
                                                                      "checksum",
                                                                      null,
                                                                      "dtc",
@@ -198,7 +197,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
                                                                                                 .getFeature()
                                                                                                 .getUrn()
                                                                                                 .toString()),
-                                                                     new FileReferenceDTO(),
+                                                                     new FileReferenceDto(),
                                                                      null);
 
         info.getSuccessRequests().add(resultInfo);
@@ -227,7 +226,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         RequestInfo info = RequestInfo.build();
 
         initData(info);
-        RequestResultInfoDTO resultInfo = RequestResultInfoDTO.build(null,
+        RequestResultInfoDto resultInfo = RequestResultInfoDto.build(null,
                                                                      "fail",
                                                                      null,
                                                                      "dtc",
@@ -236,7 +235,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
                                                                                                 .getFeature()
                                                                                                 .getUrn()
                                                                                                 .toString()),
-                                                                     new FileReferenceDTO(),
+                                                                     new FileReferenceDto(),
                                                                      null);
 
         info.getSuccessRequests().add(resultInfo);
@@ -254,7 +253,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         RequestInfo info = RequestInfo.build();
 
         initData(info);
-        RequestResultInfoDTO resultInfo = RequestResultInfoDTO.build(null,
+        RequestResultInfoDto resultInfo = RequestResultInfoDto.build(null,
                                                                      "checksum",
                                                                      null,
                                                                      "dtc",
@@ -264,7 +263,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
                                                                          "fail",
                                                                          UUID.randomUUID(),
                                                                          1).toString()),
-                                                                     new FileReferenceDTO(),
+                                                                     new FileReferenceDto(),
                                                                      null);
 
         info.getSuccessRequests().add(resultInfo);

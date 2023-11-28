@@ -26,17 +26,17 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.FileReferenceResult;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.FileReferenceResultStatusEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
@@ -100,14 +100,14 @@ public class FileReferenceRequestService {
     /**
      * Initialize new reference requests from Flow items.
      */
-    public void reference(List<ReferenceFlowItem> list) {
+    public void reference(List<FilesReferenceEvent> list) {
         Set<FileReference> existingOnes = fileRefService.search(list.stream()
-                                                                    .map(ReferenceFlowItem::getFiles)
+                                                                    .map(FilesReferenceEvent::getFiles)
                                                                     .flatMap(Set::stream)
-                                                                    .map(FileReferenceRequestDTO::getChecksum)
+                                                                    .map(FileReferenceRequestDto::getChecksum)
                                                                     .collect(Collectors.toSet()));
         Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(existingOnes);
-        for (ReferenceFlowItem item : list) {
+        for (FilesReferenceEvent item : list) {
             Errors errors = item.validate(validator);
             if (errors.hasErrors()) {
                 reqGrpService.denied(item.getGroupId(),
@@ -136,12 +136,12 @@ public class FileReferenceRequestService {
      *
      * @return referenced files
      */
-    private Collection<FileReference> reference(Collection<FileReferenceRequestDTO> requests,
+    private Collection<FileReference> reference(Collection<FileReferenceRequestDto> requests,
                                                 String groupId,
                                                 Collection<FileReference> existingOnes,
                                                 Collection<FileDeletionRequest> existingDeletionRequests) {
         Set<FileReference> fileRefs = Sets.newHashSet();
-        for (FileReferenceRequestDTO file : requests) {
+        for (FileReferenceRequestDto file : requests) {
             long start = System.currentTimeMillis();
 
             // notify reference request to the session agent
@@ -243,7 +243,7 @@ public class FileReferenceRequestService {
         if (oFileRef.isPresent()) {
             oFileDelReq = fileDeletionRequestService.search(oFileRef.get());
         }
-        FileReferenceRequestDTO fileRef = FileReferenceRequestDTO.build(metaInfo.getFileName(),
+        FileReferenceRequestDto fileRef = FileReferenceRequestDto.build(metaInfo.getFileName(),
                                                                         metaInfo.getChecksum(),
                                                                         metaInfo.getAlgorithm(),
                                                                         metaInfo.getMimeType().toString(),
@@ -262,7 +262,7 @@ public class FileReferenceRequestService {
     /**
      * Reference a new file. No file movement is made here. File is only referenced.
      *
-     * @param request                {@link FileReferenceRequestDTO}
+     * @param request                {@link FileReferenceRequestDto}
      * @param fileRef                {@link FileReference} of associated file if already exists
      * @param groupIds               Business requests identifiers associated to the new file reference.
      * @param isReferenced           does the file is a reference (meaning not stored b this service)
@@ -270,7 +270,7 @@ public class FileReferenceRequestService {
      * @return {@link FileReference}
      * @throws ModuleException if the file reference can not be created.
      */
-    private FileReferenceResult reference(FileReferenceRequestDTO request,
+    private FileReferenceResult reference(FileReferenceRequestDto request,
                                           Optional<FileReference> fileRef,
                                           Optional<FileDeletionRequest> fileDelReq,
                                           Collection<String> groupIds,
@@ -282,7 +282,8 @@ public class FileReferenceRequestService {
             // If referenced file is associated to a known storage location then validate the reference
             validateReferenceUrl(request);
             FileReference newFileRef = fileRefService.create(Lists.newArrayList(request.getOwner()),
-                                                             request.buildMetaInfo(),
+                                                             FileReferenceMetaInfo.buildFromFileReferenceRequestDto(
+                                                                 request),
                                                              new FileLocation(request.getStorage(),
                                                                               request.getUrl(),
                                                                               pendingActionRemaining),
@@ -296,7 +297,7 @@ public class FileReferenceRequestService {
         }
     }
 
-    private void validateReferenceUrl(FileReferenceRequestDTO request) throws ModuleException {
+    private void validateReferenceUrl(FileReferenceRequestDto request) throws ModuleException {
         Optional<PluginConfiguration> conf = storagePluginConfHandler.getConfiguredStorage(request.getStorage());
         if (conf.isPresent()) {
             try {
@@ -334,7 +335,7 @@ public class FileReferenceRequestService {
      */
     private FileReferenceResult handleAlreadyExists(FileReference fileReference,
                                                     Optional<FileDeletionRequest> deletionRequest,
-                                                    FileReferenceRequestDTO request,
+                                                    FileReferenceRequestDto request,
                                                     Collection<String> groupIds) throws ModuleException {
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // A deletion is pending on the existing file reference but the new reference request does not indicates the new file location
@@ -350,7 +351,7 @@ public class FileReferenceRequestService {
                 // Delete not running deletion request to add the new owner
                 fileDeletionRequestService.delete(deletionRequest.get());
             }
-            if (!fileReference.getMetaInfo().equals(request.buildMetaInfo())) {
+            if (!fileReference.getMetaInfo().equals(FileReferenceMetaInfo.buildFromFileReferenceRequestDto(request))) {
                 LOGGER.debug("Existing referenced file meta information differs "
                              + "from new reference meta information. Previous ones are maintained");
             }

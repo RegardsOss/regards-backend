@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskWithResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

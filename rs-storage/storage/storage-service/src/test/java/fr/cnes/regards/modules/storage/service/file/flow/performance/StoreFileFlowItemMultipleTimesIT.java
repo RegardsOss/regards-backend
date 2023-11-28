@@ -23,9 +23,9 @@ import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRe
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
 import org.awaitility.Awaitility;
@@ -111,21 +111,21 @@ public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
 
         // create a new bus message of store requests
-        List<StorageFlowItem> items = new ArrayList<>();
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         int nbItems = 1000;
 
         for (int i = 0; i < nbItems; i++) {
-            StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build("file.name",
-                                                                                     checksum,
-                                                                                     "MD5",
-                                                                                     "application/octet-stream",
-                                                                                     FILE_REF_OWNER + i,
-                                                                                     SESSION_OWNER,
-                                                                                     SESSION,
-                                                                                     originUrl,
-                                                                                     ONLINE_CONF_LABEL,
-                                                                                     Optional.empty()),
-                                                         UUID.randomUUID().toString());
+            FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
+                                                                                                     checksum,
+                                                                                                     "MD5",
+                                                                                                     "application/octet-stream",
+                                                                                                     FILE_REF_OWNER + i,
+                                                                                                     SESSION_OWNER,
+                                                                                                     SESSION,
+                                                                                                     originUrl,
+                                                                                                     ONLINE_CONF_LABEL,
+                                                                                                     Optional.empty()),
+                                                                         UUID.randomUUID().toString());
             items.add(item);
         }
         this.publisher.publish(items);

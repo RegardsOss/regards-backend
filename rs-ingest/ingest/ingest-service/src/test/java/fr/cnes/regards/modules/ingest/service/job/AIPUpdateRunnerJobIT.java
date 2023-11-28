@@ -27,6 +27,8 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
@@ -37,12 +39,10 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
@@ -336,14 +336,15 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
         Set<RequestInfo> requests = Sets.newHashSet();
         String newStorageLocation = "somewhere";
-        Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
+        Collection<RequestResultInfoDto> successRequests = Sets.newHashSet();
         Collection<String> owners = Sets.newHashSet(toUpdate.getAipId());
-        successRequests.add(RequestResultInfoDTO.build("groupId",
+        successRequests.add(RequestResultInfoDto.build("groupId",
                                                        toUpdateChecksum,
                                                        newStorageLocation,
                                                        null,
                                                        owners,
-                                                       simulatefileReference(toUpdateChecksum, toUpdate.getAipId()),
+                                                       simulatefileReference(toUpdateChecksum,
+                                                                             toUpdate.getAipId()).toDto(),
                                                        null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
 

@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.dam.listener;
 
 import fr.cnes.regards.modules.dam.service.entities.ICollectionService;
-import fr.cnes.regards.modules.storage.client.IStorageRequestListener;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

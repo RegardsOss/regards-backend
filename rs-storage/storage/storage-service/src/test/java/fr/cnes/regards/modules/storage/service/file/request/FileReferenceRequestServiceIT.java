@@ -24,15 +24,15 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.file.job.FileDeletionJobProgressManager;
 import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestJob;
@@ -93,7 +93,7 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
 
         // Remove all his owners
         String deletionReqId = UUID.randomUUID().toString();
-        FileDeletionRequestDTO request = FileDeletionRequestDTO.build(fileRefChecksum,
+        FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRefChecksum,
                                                                       fileRefStorage,
                                                                       fileRefOwner,
                                                                       SESSION_OWNER_1,
@@ -127,7 +127,7 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
                             ofdr.get().getStatus());
         // check that a new reference request is made to store again the file after deletion request is done
         reqStatusService.checkDelayedStorageRequests();
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
         Assert.assertEquals("A new file reference request should exists", 1, storageReqs.size());
         Assert.assertEquals("A new file reference request should exists with DELAYED status",
                             FileRequestStatus.DELAYED,
@@ -149,8 +149,12 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
                                                                                     FileReferenceEventType.FULLY_DELETED,
                                                                                     null,
                                                                                     "Deletion succeed",
-                                                                                    oFileRef.get().getLocation(),
-                                                                                    oFileRef.get().getMetaInfo(),
+                                                                                    oFileRef.get()
+                                                                                            .getLocation()
+                                                                                            .toDto(),
+                                                                                    oFileRef.get()
+                                                                                            .getMetaInfo()
+                                                                                            .toDto(),
                                                                                     Sets.newHashSet(deletionReqId))));
         // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);
@@ -193,8 +197,12 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
                                                                SESSION_1,
                                                                false);
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),
-                                                                          oFileRef.get().getMetaInfo().getChecksum());
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(oFileRef.get()
+                                                                                             .getLocation()
+                                                                                             .getStorage(),
+                                                                                     oFileRef.get()
+                                                                                             .getMetaInfo()
+                                                                                             .getChecksum());
         Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
                           storageReqs.isEmpty());
     }

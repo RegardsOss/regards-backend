@@ -37,6 +37,8 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
@@ -70,8 +72,6 @@ import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationServi
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -795,13 +795,13 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     private void updateRequestWithErrors(IngestRequest request,
-                                         Collection<RequestResultInfoDTO> errors,
+                                         Collection<RequestResultInfoDto> errors,
                                          String errorCause,
                                          StorageType type) {
         List<AIPEntity> aips = request.getAips();
         // Iterate overs AIPs and errors
         for (AIPEntity aipEntity : aips) {
-            for (RequestResultInfoDTO error : errors) {
+            for (RequestResultInfoDto error : errors) {
                 // Check using owner property if the AIP contains the file that was not properly saved
                 if (error.getRequestOwners().contains(aipEntity.getAipId())) {
                     // Add the cause to this AIP

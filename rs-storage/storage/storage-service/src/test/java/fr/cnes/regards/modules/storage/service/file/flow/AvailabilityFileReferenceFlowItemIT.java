@@ -28,12 +28,12 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRetryRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
@@ -82,7 +82,7 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
     private AvailabilityFlowItemHandler handler;
 
     @Autowired
-    private RetryFlowItemHandler retryHandler;
+    private FilesRetryRequestEventHandler retryHandler;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -101,9 +101,9 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
     @Test
     @Requirement("REGARDS_DSL_STO_AIP_140")
     @Purpose("Check that a availability request is well handled when a new bus message is received")
-    public void availabilityFlowItem() throws InterruptedException, ExecutionException {
+    public void FilesAvailabilityRequestEvent() throws InterruptedException, ExecutionException {
 
-        LOGGER.info("--> availabilityFlowItem");
+        LOGGER.info("--> FilesAvailabilityRequestEvent");
         // Simulate storage of 3 files in a near line location
         FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test", Optional.empty());
         FileReference file2 = this.generateRandomStoredNearlineFileReference("file.nearline.2.test", Optional.empty());
@@ -155,8 +155,10 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
                                                 checksum);
         Mockito.clearInvocations(publisher);
         String groupId = UUID.randomUUID().toString();
-        AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1), groupId);
-        List<AvailabilityFlowItem> items = new ArrayList<>();
+        FilesAvailabilityRequestEvent request = new FilesAvailabilityRequestEvent(checksums,
+                                                                                  OffsetDateTime.now().plusDays(1),
+                                                                                  groupId);
+        List<FilesAvailabilityRequestEvent> items = new ArrayList<>();
         items.add(request);
         handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
@@ -225,10 +227,11 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
                              UUID.randomUUID().toString());
         // Simulate availability request on this file
         Mockito.clearInvocations(publisher);
-        AvailabilityFlowItem request = AvailabilityFlowItem.build(Sets.newHashSet(file1.getMetaInfo().getChecksum()),
-                                                                  OffsetDateTime.now().plusDays(2),
-                                                                  UUID.randomUUID().toString());
-        List<AvailabilityFlowItem> items = new ArrayList<>();
+        FilesAvailabilityRequestEvent request = new FilesAvailabilityRequestEvent(Sets.newHashSet(file1.getMetaInfo()
+                                                                                                       .getChecksum()),
+                                                                                  OffsetDateTime.now().plusDays(2),
+                                                                                  UUID.randomUUID().toString());
+        List<FilesAvailabilityRequestEvent> items = new ArrayList<>();
         items.add(request);
         handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
@@ -264,8 +267,10 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
                                                 file4.getMetaInfo().getChecksum());
 
         String groupId = UUID.randomUUID().toString();
-        AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1), groupId);
-        List<AvailabilityFlowItem> items = new ArrayList<>();
+        FilesAvailabilityRequestEvent request = new FilesAvailabilityRequestEvent(checksums,
+                                                                                  OffsetDateTime.now().plusDays(1),
+                                                                                  groupId);
+        List<FilesAvailabilityRequestEvent> items = new ArrayList<>();
         items.add(request);
         handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
@@ -306,7 +311,8 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
         Assert.assertEquals("There should be 1 files available", 1, availables.size());
         Assert.assertEquals("There should be 3 files error", 3, notAvailables.size());
 
-        retryHandler.handle(TenantWrapper.build(RetryFlowItem.buildAvailabilityRetry(groupId), getDefaultTenant()));
+        retryHandler.handle(TenantWrapper.build(FilesRetryRequestEvent.buildAvailabilityRetry(groupId),
+                                                getDefaultTenant()));
 
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
         Assert.assertEquals("There should be 3 cache requests in TODO",

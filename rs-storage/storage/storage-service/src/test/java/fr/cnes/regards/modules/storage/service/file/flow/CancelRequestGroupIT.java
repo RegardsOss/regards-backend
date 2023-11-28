@@ -18,8 +18,8 @@ package fr.cnes.regards.modules.storage.service.file.flow;/*
  */
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 import org.junit.Assert;
@@ -60,10 +60,10 @@ public class CancelRequestGroupIT extends AbstractStorageIT {
                                          Optional.empty(),
                                          "SESSION_OWNER_1",
                                          "SESSION_1");
-        FileStorageRequest fr = this.generateStoreFileError("regards",
-                                                            ONLINE_CONF_LABEL,
-                                                            "SESSION_OWNER_1",
-                                                            "SESSION_1");
+        FileStorageRequestAggregation fr = this.generateStoreFileError("regards",
+                                                                       ONLINE_CONF_LABEL,
+                                                                       "SESSION_OWNER_1",
+                                                                       "SESSION_1");
         Assert.assertEquals("There should be one request in error status", 1L, fileStorageRequestRepo.count());
         // Nb store requests : 2 INC --> 2 storage requests sent
         // Nb running requests : 2 INC - 2 DEC
@@ -88,10 +88,10 @@ public class CancelRequestGroupIT extends AbstractStorageIT {
                                          Optional.empty(),
                                          "SESSION_OWNER_1",
                                          "SESSION_1");
-        FileStorageRequest fr = this.generateStoreFileError("regards",
-                                                            ONLINE_CONF_LABEL,
-                                                            "SESSION_OWNER_1",
-                                                            "SESSION_1");
+        FileStorageRequestAggregation fr = this.generateStoreFileError("regards",
+                                                                       ONLINE_CONF_LABEL,
+                                                                       "SESSION_OWNER_1",
+                                                                       "SESSION_1");
         fr.setStatus(FileRequestStatus.PENDING);
         fileStorageRequestRepo.save(fr);
         // Nb store requests : 2 INC --> 2 storage requests sent

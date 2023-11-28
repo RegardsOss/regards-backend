@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service.job.step;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
@@ -28,7 +29,6 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTas
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateResult;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +53,7 @@ public class UpdateAIPLocation implements IUpdateStep {
 
         AIPUpdateTaskType taskType = updateTask.getType();
         AIPUpdateFileLocationTask updateFileLocation = (AIPUpdateFileLocationTask) updateTask;
-        List<RequestResultInfoDTO> fileLocationUpdates = updateFileLocation.getFileLocationUpdates();
+        List<RequestResultInfoDto> fileLocationUpdates = updateFileLocation.getFileLocationUpdates();
         AIPUpdateResult updated;
         if (taskType == AIPUpdateTaskType.ADD_FILE_LOCATION) {
             updated = aipStorageService.addAIPLocations(aipWrapper.getAip(), fileLocationUpdates);

@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.order.service.job;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
-import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
-import fr.cnes.regards.modules.storage.client.IStorageFileListener;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceUpdateDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -59,17 +59,17 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
     }
 
     @Override
-    public void onFileAvailable(List<FileReferenceEventDTO> available) {
+    public void onFileAvailable(List<FileReferenceEvent> available) {
         Set<String> availableChecksums = available.stream()
-                                                  .map(FileReferenceEventDTO::getChecksum)
+                                                  .map(FileReferenceEvent::getChecksum)
                                                   .collect(Collectors.toSet());
         subscribers.forEach(subscriber -> subscriber.notifyFilesAvailable(availableChecksums));
     }
 
     @Override
-    public void onFileNotAvailable(List<FileReferenceEventDTO> availabilityError) {
+    public void onFileNotAvailable(List<FileReferenceEvent> availabilityError) {
         Set<String> inErrorChecksum = availabilityError.stream()
-                                                       .map(FileReferenceEventDTO::getChecksum)
+                                                       .map(FileReferenceEvent::getChecksum)
                                                        .collect(Collectors.toSet());
         subscribers.forEach(subscriber -> subscriber.notifyFilesUnavailable(inErrorChecksum));
     }
@@ -85,22 +85,22 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
     }
 
     @Override
-    public void onFileStored(List<FileReferenceEventDTO> stored) {
+    public void onFileStored(List<FileReferenceEvent> stored) {
         // Do nothing because message is of no importance for rs-order
     }
 
     @Override
-    public void onFileStoreError(List<FileReferenceEventDTO> storedError) {
+    public void onFileStoreError(List<FileReferenceEvent> storedError) {
         // Do nothing because message is of no importance for rs-order
     }
 
     @Override
-    public void onFileDeletedForOwner(String owner, List<FileReferenceEventDTO> deletedForThisOwner) {
+    public void onFileDeletedForOwner(String owner, List<FileReferenceEvent> deletedForThisOwner) {
         // Do nothing because message is of no importance for rs-order
     }
 
     @Override
-    public void onFileUpdated(List<FileReferenceUpdateDTO> updatedReferences) {
+    public void onFileUpdated(List<FileReferenceUpdateDto> updatedReferences) {
         // Do nothing because message is of no importance for rs-order
     }
 }

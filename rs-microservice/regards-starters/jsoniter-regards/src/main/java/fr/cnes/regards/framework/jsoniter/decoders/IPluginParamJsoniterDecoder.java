@@ -4,7 +4,7 @@ import com.jsoniter.JsonIterator;
 import com.jsoniter.any.Any;
 import com.jsoniter.spi.Decoder;
 import com.jsoniter.spi.JsoniterSpi;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 
 import java.io.IOException;
 

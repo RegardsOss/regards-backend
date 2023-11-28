@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
@@ -53,17 +53,17 @@ public interface IFeatureRequestService {
      * Set the status STORAGE_OK to all {@link FeatureEntity} references by
      * group id in the list send in parameter
      *
-     * @param requestsInfo a list of {@link RequestResultInfoDTO} received from storage
+     * @param requestsInfo a list of {@link RequestResultInfoDto} received from storage
      */
-    void handleStorageSuccess(Set<RequestResultInfoDTO> requestsInfo);
+    void handleStorageSuccess(Set<RequestResultInfoDto> requestsInfo);
 
     /**
      * Set the status STORAGE_ERROR to the {@link FeatureEntity} references by
      * group id in the list send in parameter
      *
-     * @param errorRequests request errors {@link RequestResultInfoDTO}
+     * @param errorRequests request errors {@link RequestResultInfoDto}
      */
-    void handleStorageError(Collection<RequestResultInfoDTO> errorRequests);
+    void handleStorageError(Collection<RequestResultInfoDto> errorRequests);
 
     /**
      * Delete all {@link FeatureEntity} references by
@@ -77,7 +77,7 @@ public interface IFeatureRequestService {
      * Set the status STORAGE_ERROR to the {@link FeatureEntity} references by
      * group id in the list send in parameter
      */
-    void handleDeletionError(Collection<RequestResultInfoDTO> errorRequests);
+    void handleDeletionError(Collection<RequestResultInfoDto> errorRequests);
 
     /**
      * Delete requests with given selection

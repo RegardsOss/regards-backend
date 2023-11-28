@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import org.springframework.util.MimeType;
 
 import javax.persistence.Column;
@@ -156,6 +158,7 @@ public class FileReferenceMetaInfo {
      */
     public Integer getHeight() {
         return height;
+
     }
 
     /**
@@ -296,6 +299,42 @@ public class FileReferenceMetaInfo {
             return false;
         }
         return true;
+    }
+
+    public FileReferenceMetaInfoDto toDto() {
+        return new FileReferenceMetaInfoDto(checksum,
+                                            algorithm,
+                                            fileName,
+                                            fileSize,
+                                            height,
+                                            width,
+                                            mimeType.toString(),
+                                            type);
+    }
+
+    public static FileReferenceMetaInfo buildFromDto(FileReferenceMetaInfoDto dto) {
+        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(dto.getChecksum(),
+                                                                   dto.getAlgorithm(),
+                                                                   dto.getFileName(),
+                                                                   dto.getFileSize(),
+                                                                   MimeType.valueOf(dto.getMimeType()));
+        metaInfo.setType(dto.getType());
+        metaInfo.setHeight(dto.getHeight());
+        metaInfo.setWidth(dto.getWidth());
+        return metaInfo;
+    }
+
+    public static FileReferenceMetaInfo buildFromFileReferenceRequestDto(FileReferenceRequestDto requestDto) {
+        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(requestDto.getChecksum(),
+                                                                   requestDto.getAlgorithm(),
+                                                                   requestDto.getFileName(),
+                                                                   requestDto.getFileSize(),
+                                                                   MimeType.valueOf(requestDto.getMimeType()));
+
+        metaInfo.setType(requestDto.getType());
+        metaInfo.setWidth(requestDto.getWidth());
+        metaInfo.setHeight(requestDto.getHeight());
+        return metaInfo;
     }
 
 }

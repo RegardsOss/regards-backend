@@ -27,8 +27,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.*;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginConfigurationDto;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginParamDescriptor;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -395,7 +396,7 @@ public final class PluginParameterUtils {
      * @param dynamicParams       an optional set of {@link IPluginParam}
      */
     public static <T> void postProcess(T plugin,
-                                       PluginConfiguration conf,
+                                       PluginConfigurationDto conf,
                                        ConcurrentMap<String, Object> instantiatedPlugins,
                                        IPluginParam... dynamicParams) {
 
@@ -404,7 +405,7 @@ public final class PluginParameterUtils {
         // Test if the plugin configuration is active
         if (Boolean.FALSE.equals(conf.isActive())) {
             throw new PluginUtilsRuntimeException(String.format("The plugin configuration <%s-%s> is not active.",
-                                                                conf.getId(),
+                                                                conf.getPluginId(),
                                                                 conf.getLabel()));
         }
 
@@ -431,7 +432,7 @@ public final class PluginParameterUtils {
      * @param dynamicParams       an optional set of {@link IPluginParam}
      */
     private static <T> void processPluginParameter(T plugin,
-                                                   PluginConfiguration conf,
+                                                   PluginConfigurationDto conf,
                                                    Field field,
                                                    PluginParameter paramAnnotation,
                                                    ConcurrentMap<String, Object> instantiatedPlugins,
@@ -512,7 +513,7 @@ public final class PluginParameterUtils {
      * @return {@link IPluginParam} or null
      */
     private static IPluginParam findParameter(String parameterName,
-                                              PluginConfiguration pluginConf,
+                                              PluginConfigurationDto pluginConf,
                                               IPluginParam... dynamicPluginParameters) {
         // Default value comes from plugin configuration
         IPluginParam staticParam = pluginConf.getParameter(parameterName);
@@ -559,7 +560,7 @@ public final class PluginParameterUtils {
      * @param dynamicParams   an optional set of {@link IPluginParam}
      */
     private static <T> void postProcessObjectType(T plugin,
-                                                  PluginConfiguration conf,
+                                                  PluginConfigurationDto conf,
                                                   Field field,
                                                   PluginParameter paramAnnotation,
                                                   PluginParamType paramType,
@@ -649,7 +650,7 @@ public final class PluginParameterUtils {
      * @param dynamicParams   an optional set of {@link IPluginParam}
      */
     private static <T> void postProcessPrimitiveType(T plugin,
-                                                     PluginConfiguration conf,
+                                                     PluginConfigurationDto conf,
                                                      Field field,
                                                      PrimitiveObject typeWrapper,
                                                      PluginParameter paramAnnotation,
@@ -705,22 +706,7 @@ public final class PluginParameterUtils {
         LOGGER.debug("Primitive parameter value: {}", param);
 
         try {
-            if (paramAnnotation.sensitive()) {
-                // Only available for string parameter
-                // FIXME : vérifier le fonctionnement en profondeur
-                if (param instanceof StringPluginParam spp) {
-                    field.set(plugin, spp.getDecryptedValue());
-                } else {
-                    // Propagate exception
-                    throw new PluginUtilsRuntimeException(String.format(
-                        "Exception while processing param <%s> in plugin class <%s> with param <%s>. Cannot handle sensitive value!",
-                        paramAnnotation.label(),
-                        plugin.getClass(),
-                        param));
-                }
-            } else {
-                field.set(plugin, param.getValue());
-            }
+            field.set(plugin, param.getValue());
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
@@ -742,7 +728,7 @@ public final class PluginParameterUtils {
      * @param instantiatedPlugins a Map of all already instantiated plugins
      */
     private static <T> void postProcessInterface(T plugin,
-                                                 PluginConfiguration conf,
+                                                 PluginConfigurationDto conf,
                                                  Field field,
                                                  PluginParameter paramAnnotation,
                                                  ConcurrentMap<String, Object> instantiatedPlugins) {

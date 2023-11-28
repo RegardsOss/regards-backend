@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,7 +53,7 @@ public class RequestStatusServiceIT extends AbstractStorageIT {
     @Test
     public void test_delayed_requests() {
         // Given
-        List<FileStorageRequest> requests = new ArrayList<>();
+        List<FileStorageRequestAggregation> requests = new ArrayList<>();
         String id = UUID.randomUUID().toString();
         IntStream.range(0, 10).forEach(i -> requests.add(generateRandomStorageRequest(id, FileRequestStatus.DELAYED)));
         fileStorageRequestRepo.saveAll(requests);

@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.flow.*;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.filecatalog.amqp.input.*;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -43,25 +44,25 @@ public interface IStorageClient {
 
     /**
      * Requests storage of a file from a local accessible URL to a destination storage defined
-     * by {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
+     * by Plugin Configuration businessId of StorageLocation plugin.
      * <br/>
      *
-     * @param file {@link FileStorageRequestDTO} information about file to store
+     * @param file {@link FileStorageRequestDto} information about file to store
      * @return {@link RequestInfo} containing a unique request id. This request id can
      * be used to identify responses in {@link IStorageRequestListener} implementation.
      */
-    RequestInfo store(FileStorageRequestDTO file);
+    RequestInfo store(FileStorageRequestDto file);
 
     /**
      * Request storage of a collection of files from a local accessible URL to a destination storage defined
-     * by {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
+     * by Plugin Configuration businessId of StorageLocation plugin.
      *
-     * @param files {@link FileStorageRequestDTO} information about files to store
+     * @param files {@link FileStorageRequestDto} information about files to store
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
-     * {@link StorageFlowItem#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
+     * {@link FilesStorageRequestEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.
      */
-    Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files);
+    Collection<RequestInfo> store(Collection<FileStorageRequestDto> files);
 
     /**
      * Retry all registered request in error associated to the given {@link RequestInfo}
@@ -88,67 +89,67 @@ public interface IStorageClient {
      * Requests to reference a file at a given storage location. With this request, file is not moved, there are only referenced.
      * <br/>
      *
-     * @param file {@link FileReferenceRequestDTO} information about files to reference
+     * @param file {@link FileReferenceRequestDto} information about files to reference
      * @return {@link RequestInfo} containing a unique request id. This request id can
      * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
-    RequestInfo reference(FileReferenceRequestDTO file);
+    RequestInfo reference(FileReferenceRequestDto file);
 
     /**
      * Request to reference a collection of files at given storage locations. With this request, files is not moved,
      * there are only referenced.
      * <br/>
      *
-     * @param files {@link FileReferenceRequestDTO} information about files to reference
+     * @param files {@link FileReferenceRequestDto} information about files to reference
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
-     * {@link ReferenceFlowItem#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
+     * {@link FilesReferenceEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.
      */
-    Collection<RequestInfo> reference(Collection<FileReferenceRequestDTO> files);
+    Collection<RequestInfo> reference(Collection<FileReferenceRequestDto> files);
 
     /**
      * Requests the deletion of the file identified by its checksum on the specified storage.<br/>
      * It is necessary to specify the owner as the file can be owned by several owners (multiple references).<br/>
      * As a result, the file will be really deleted if and only if no other owner remains!
      *
-     * @param file {@link FileDeletionRequestDTO} information about file to delete
+     * @param file {@link FileDeletionRequestDto} information about file to delete
      * @return {@link RequestInfo} containing a unique request id. This request id can
      * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
-    RequestInfo delete(FileDeletionRequestDTO file);
+    RequestInfo delete(FileDeletionRequestDto file);
 
     /**
      * Requests the deletion of a collection of  files identified by there checksum on the specified storage.<br/>
      * It is necessary to specify the owner as the file can be owned by several owners (multiple references).<br/>
      * As a result, the file will be really deleted if and only if no other owner remains!
      *
-     * @param files {@link FileDeletionRequestDTO}s information about files to delete
+     * @param files {@link FileDeletionRequestDto}s information about files to delete
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
-     * {@link DeletionFlowItem#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
+     * {@link FilesDeletionEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.
      */
-    Collection<RequestInfo> delete(Collection<FileDeletionRequestDTO> files);
+    Collection<RequestInfo> delete(Collection<FileDeletionRequestDto> files);
 
     /**
      * Requests the copy of a file identified is checksum to a specified storage.<br/>
      * New copied files will be referenced with the same owners as the original files.<br/>
      *
-     * @param file {@link FileCopyRequestDTO} information about file to copy
+     * @param file {@link FileCopyRequestDto} information about file to copy
      * @return {@link RequestInfo} containing a unique request id. This request id can
      * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
-    RequestInfo copy(FileCopyRequestDTO file);
+    RequestInfo copy(FileCopyRequestDto file);
 
     /**
      * Requests the copy of a collection of files identified by there checksum to a specified storage.<br/>
      * New copied files will be referenced with the same owners as the original files.<br/>
      *
-     * @param files {@link FileCopyRequestDTO} information about files to copy
+     * @param files {@link FileCopyRequestDto} information about files to copy
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
-     * {@link CopyFlowItem#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
+     * {@link FilesCopyEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.
      */
-    Collection<RequestInfo> copy(Collection<FileCopyRequestDTO> files);
+    Collection<RequestInfo> copy(Collection<FileCopyRequestDto> files);
 
     /**
      * Requests that files identified by their checksums be put online so that they can be downloaded by a third party component.
@@ -157,7 +158,7 @@ public interface IStorageClient {
      * @param expirationDate date until which the file must be available
      *                       (after this date, the system could proceed to a possible cleaning of its cache, only offline files are concerned!)
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
-     * {@link AvailabilityFlowItem#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
+     * {@link FilesAvailabilityRequestEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.
      */
     Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate);

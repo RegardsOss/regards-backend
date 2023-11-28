@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.junit.Assert;
 import org.junit.Before;
@@ -77,6 +78,9 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
 
     @MockBean
     private IStorageSettingClient storageSettingClient;
+
+    @MockBean
+    private IStorageDownloadQuotaRestClient storageDownloadQuotaRestClient;
 
     @Before
     public void init() throws EntityException {

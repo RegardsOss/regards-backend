@@ -20,10 +20,10 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.*;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,13 +59,13 @@ public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
         AIPUpdateFileLocationTask task = new AIPUpdateFileLocationTask();
         task.setType(AIPUpdateTaskType.ADD_FILE_LOCATION);
         task.setState(AIPUpdateState.READY);
-        task.setFileLocationUpdates(Lists.newArrayList(RequestResultInfoDTO.build("groupId",
+        task.setFileLocationUpdates(Lists.newArrayList(RequestResultInfoDto.build("groupId",
                                                                                   "checksum",
                                                                                   "somewhere",
                                                                                   null,
                                                                                   Sets.newHashSet("someone"),
                                                                                   simulatefileReference(checksum,
-                                                                                                        aipEntity.getAipId()),
+                                                                                                        aipEntity.getAipId()).toDto(),
                                                                                   null)));
         updateTasks.add(task);
         AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
@@ -92,12 +92,12 @@ public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
         initSipAndAip(checksum, providerId);
         Set<AbstractAIPUpdateTask> updateTasks = Sets.newHashSet();
         AIPUpdateFileLocationTask task = AIPUpdateFileLocationTask.buildAddLocationTask(Lists.newArrayList(
-            RequestResultInfoDTO.build("groupId",
+            RequestResultInfoDto.build("groupId",
                                        "checksum",
                                        "somewhere",
                                        null,
                                        Sets.newHashSet("someone"),
-                                       simulatefileReference(checksum, aipEntity.getAipId()),
+                                       simulatefileReference(checksum, aipEntity.getAipId()).toDto(),
                                        null)));
         AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
         catTask.setType(AIPUpdateTaskType.ADD_CATEGORY);
@@ -121,12 +121,12 @@ public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
 
         // Send the same requests
         AIPUpdateFileLocationTask newTask = AIPUpdateFileLocationTask.buildAddLocationTask(Lists.newArrayList(
-            RequestResultInfoDTO.build("groupId",
+            RequestResultInfoDto.build("groupId",
                                        "checksum",
                                        "somewhere",
                                        null,
                                        Sets.newHashSet("someone"),
-                                       simulatefileReference(checksum, aipEntity.getAipId()),
+                                       simulatefileReference(checksum, aipEntity.getAipId()).toDto(),
                                        null)));
         aipUpdateReqService.create(Lists.newArrayList(aipEntity), Sets.newHashSet(newTask));
         // The new update request should be blocked as requests are already running for the give aip

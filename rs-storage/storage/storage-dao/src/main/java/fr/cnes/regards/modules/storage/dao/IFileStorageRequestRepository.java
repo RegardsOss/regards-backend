@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,59 +33,66 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * JPA Repository to handle access to {@link FileStorageRequest} entities.
+ * JPA Repository to handle access to {@link FileStorageRequestAggregation} entities.
  *
  * @author Sébatien Binda
  */
-public interface IFileStorageRequestRepository extends JpaRepository<FileStorageRequest, Long> {
+public interface IFileStorageRequestRepository extends JpaRepository<FileStorageRequestAggregation, Long> {
 
-    Page<FileStorageRequest> findByStorage(String storage, Pageable pageable);
+    Page<FileStorageRequestAggregation> findByStorage(String storage, Pageable pageable);
 
-    Set<FileStorageRequest> findByMetaInfoChecksumAndStorage(String checksum, String storage);
+    Set<FileStorageRequestAggregation> findByMetaInfoChecksumAndStorage(String checksum, String storage);
 
-    Page<FileStorageRequest> findAllByStorage(String storage, Pageable page);
+    Page<FileStorageRequestAggregation> findAllByStorage(String storage, Pageable page);
 
-    Page<FileStorageRequest> findAllByStorageAndOwnersIn(String storage, Collection<String> owners, Pageable page);
+    Page<FileStorageRequestAggregation> findAllByStorageAndOwnersIn(String storage,
+                                                                    Collection<String> owners,
+                                                                    Pageable page);
 
-    Set<FileStorageRequest> findByGroupIds(String groupId);
+    Set<FileStorageRequestAggregation> findByGroupIds(String groupId);
 
     Set<String> findGroupIdsByGroupIdsIn(Collection<String> groupId);
 
-    Set<FileStorageRequest> findByGroupIdsAndStatus(String groupId, FileRequestStatus error);
+    Set<FileStorageRequestAggregation> findByGroupIdsAndStatus(String groupId, FileRequestStatus error);
 
-    Page<FileStorageRequest> findByOwnersInAndStatus(Collection<String> owners, FileRequestStatus error, Pageable page);
+    Page<FileStorageRequestAggregation> findByOwnersInAndStatus(Collection<String> owners,
+                                                                FileRequestStatus error,
+                                                                Pageable page);
 
-    Page<FileStorageRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
+    Page<FileStorageRequestAggregation> findAllByStorageAndStatus(String storage,
+                                                                  FileRequestStatus status,
+                                                                  Pageable page);
 
-    Page<FileStorageRequest> findAllByStorageAndStatusAndIdGreaterThan(String storage,
-                                                                       FileRequestStatus status,
-                                                                       Long id,
-                                                                       Pageable page);
-
-    Page<FileStorageRequest> findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(String storage,
+    Page<FileStorageRequestAggregation> findAllByStorageAndStatusAndIdGreaterThan(String storage,
                                                                                   FileRequestStatus status,
-                                                                                  Collection<String> owners,
                                                                                   Long id,
                                                                                   Pageable page);
 
-    @Query("select storage from FileStorageRequest where status = :status")
+    Page<FileStorageRequestAggregation> findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(String storage,
+                                                                                             FileRequestStatus status,
+                                                                                             Collection<String> owners,
+                                                                                             Long id,
+                                                                                             Pageable page);
+
+    @Query("select storage from FileStorageRequestAggregation where status = :status")
     Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
 
     @Modifying
-    @Query("update FileStorageRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
+    @Query(
+        "update FileStorageRequestAggregation fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
     int updateError(@Param("status") FileRequestStatus status,
                     @Param("errorCause") String errorCause,
                     @Param("id") Long id);
 
     @Modifying
-    @Query("update FileStorageRequest fsr set fsr.status = :status, fsr.jobId = :jobId where fsr.id = :id")
+    @Query("update FileStorageRequestAggregation fsr set fsr.status = :status, fsr.jobId = :jobId where fsr.id = :id")
     int updateStatusAndJobId(@Param("status") FileRequestStatus status,
                              @Param("jobId") String jobId,
                              @Param("id") Long id);
 
     void deleteByStorage(String storageLocationId);
 
-    void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus fileRequestStatus);
+    void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus FileReferenceStatus);
 
     boolean existsByGroupIdsAndStatusNot(String groupId, FileRequestStatus error);
 
@@ -93,20 +100,21 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     boolean existsByStorageAndStatusIn(String storageId, Set<FileRequestStatus> status);
 
-    Page<FileStorageRequest> findByStatus(FileRequestStatus delayed, Pageable page);
+    Page<FileStorageRequestAggregation> findByStatus(FileRequestStatus delayed, Pageable page);
 
-    Page<FileStorageRequest> findByStatusAndSessionOwnerAndSession(FileRequestStatus error,
-                                                                   String source,
-                                                                   String session,
-                                                                   Pageable pageToRequest);
+    Page<FileStorageRequestAggregation> findByStatusAndSessionOwnerAndSession(FileRequestStatus error,
+                                                                              String source,
+                                                                              String session,
+                                                                              Pageable pageToRequest);
 
     boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage,
                                                           String checksum,
                                                           Set<FileRequestStatus> ruuningStatus);
 
-    Set<FileStorageRequest> findByMetaInfoChecksumIn(Set<String> checksums);
+    Set<FileStorageRequestAggregation> findByMetaInfoChecksumIn(Set<String> checksums);
 
-    Optional<FileStorageRequest> findByMetaInfoChecksum(String checksum);
+    Optional<FileStorageRequestAggregation> findByMetaInfoChecksum(String checksum);
 
-    List<FileStorageRequest> findByGroupIdsAndStatusNotIn(String group, Collection<FileRequestStatus> runningStatus);
+    List<FileStorageRequestAggregation> findByGroupIdsAndStatusNotIn(String group,
+                                                                     Collection<FileRequestStatus> runningStatus);
 }

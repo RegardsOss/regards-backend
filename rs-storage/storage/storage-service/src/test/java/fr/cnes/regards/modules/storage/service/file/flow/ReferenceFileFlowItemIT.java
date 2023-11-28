@@ -22,12 +22,12 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileGroupRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
 import org.apache.commons.compress.utils.Lists;
@@ -84,18 +84,18 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
-        ReferenceFlowItem item = ReferenceFlowItem.build(FileReferenceRequestDTO.build("file.name",
-                                                                                       checksum,
-                                                                                       "MD5",
-                                                                                       "application/octet-stream",
-                                                                                       10L,
-                                                                                       "owner-test",
-                                                                                       storage,
-                                                                                       "file://storage/location/file.name",
-                                                                                       SESSION_OWNER_1,
-                                                                                       SESSION_1),
-                                                         UUID.randomUUID().toString());
-        List<ReferenceFlowItem> items = new ArrayList<>();
+        FilesReferenceEvent item = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
+                                                                                         checksum,
+                                                                                         "MD5",
+                                                                                         "application/octet-stream",
+                                                                                         10L,
+                                                                                         "owner-test",
+                                                                                         storage,
+                                                                                         "file://storage/location/file.name",
+                                                                                         SESSION_OWNER_1,
+                                                                                         SESSION_1),
+                                                           UUID.randomUUID().toString());
+        List<FilesReferenceEvent> items = new ArrayList<>();
         items.add(item);
         long start = System.currentTimeMillis();
         handler.handleBatch(items);
@@ -148,34 +148,34 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "somewhere";
-        List<ReferenceFlowItem> items = Lists.newArrayList();
+        List<FilesReferenceEvent> items = Lists.newArrayList();
 
         // Create a request to reference a file with the same checksum as the one stored before but with a new owner
-        ReferenceFlowItem item = ReferenceFlowItem.build(FileReferenceRequestDTO.build("file.name",
-                                                                                       checksum,
-                                                                                       "MD5",
-                                                                                       "application/octet-stream",
-                                                                                       10L,
-                                                                                       owner,
-                                                                                       storage,
-                                                                                       "file://storage/location/file.name",
-                                                                                       SESSION_OWNER_1,
-                                                                                       SESSION_1),
-                                                         UUID.randomUUID().toString());
+        FilesReferenceEvent item = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
+                                                                                         checksum,
+                                                                                         "MD5",
+                                                                                         "application/octet-stream",
+                                                                                         10L,
+                                                                                         owner,
+                                                                                         storage,
+                                                                                         "file://storage/location/file.name",
+                                                                                         SESSION_OWNER_1,
+                                                                                         SESSION_1),
+                                                           UUID.randomUUID().toString());
         items.add(item);
 
         // Create a request to reference a file with the same checksum as the one stored before but with a new owner
-        ReferenceFlowItem item2 = ReferenceFlowItem.build(FileReferenceRequestDTO.build("file.name.2",
-                                                                                        checksum,
-                                                                                        "MD5",
-                                                                                        "application/octet-stream",
-                                                                                        10L,
-                                                                                        owner,
-                                                                                        storage,
-                                                                                        "file://storage/location/file.name",
-                                                                                        SESSION_OWNER_1,
-                                                                                        SESSION_1),
-                                                          UUID.randomUUID().toString());
+        FilesReferenceEvent item2 = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name.2",
+                                                                                          checksum,
+                                                                                          "MD5",
+                                                                                          "application/octet-stream",
+                                                                                          10L,
+                                                                                          owner,
+                                                                                          storage,
+                                                                                          "file://storage/location/file.name",
+                                                                                          SESSION_OWNER_1,
+                                                                                          SESSION_1),
+                                                            UUID.randomUUID().toString());
         items.add(item2);
 
         // Publish request
@@ -192,10 +192,10 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "somewhere";
-        List<ReferenceFlowItem> items = Lists.newArrayList();
+        List<FilesReferenceEvent> items = Lists.newArrayList();
 
         // Create a request to reference a file with the same checksum as the one stored before but with a new owner
-        FileReferenceRequestDTO req = FileReferenceRequestDTO.build("file.name",
+        FileReferenceRequestDto req = FileReferenceRequestDto.build("file.name",
                                                                     checksum,
                                                                     "MD5",
                                                                     "application/octet-stream",
@@ -206,7 +206,7 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
                                                                     SESSION_OWNER_1,
                                                                     SESSION_1);
         req.setChecksum(null);
-        ReferenceFlowItem item = ReferenceFlowItem.build(req, UUID.randomUUID().toString());
+        FilesReferenceEvent item = new FilesReferenceEvent(req, UUID.randomUUID().toString());
         items.add(item);
 
         // Publish request
@@ -218,7 +218,7 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published",
-                            FlowItemStatus.DENIED,
+                            FileGroupRequestStatus.DENIED,
                             getFileRequestsGroupEvent(argumentCaptor.getAllValues()).getState());
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
@@ -259,18 +259,18 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
 
         // Create a request to reference a file with the same checksum as the one stored before but with a new owner
-        ReferenceFlowItem item = ReferenceFlowItem.build(FileReferenceRequestDTO.build("file.name",
-                                                                                       checksum,
-                                                                                       "MD5",
-                                                                                       "application/octet-stream",
-                                                                                       10L,
-                                                                                       "owner-test",
-                                                                                       storage,
-                                                                                       "file://storage/location/file.name",
-                                                                                       SESSION_OWNER_2,
-                                                                                       SESSION_1),
-                                                         UUID.randomUUID().toString());
-        List<ReferenceFlowItem> items = new ArrayList<>();
+        FilesReferenceEvent item = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
+                                                                                         checksum,
+                                                                                         "MD5",
+                                                                                         "application/octet-stream",
+                                                                                         10L,
+                                                                                         "owner-test",
+                                                                                         storage,
+                                                                                         "file://storage/location/file.name",
+                                                                                         SESSION_OWNER_2,
+                                                                                         SESSION_1),
+                                                           UUID.randomUUID().toString());
+        List<FilesReferenceEvent> items = new ArrayList<>();
         items.add(item);
         handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -355,18 +355,18 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
                                          SESSION_OWNER_1,
                                          SESSION_1);
         // Create a new bus message File reference request
-        ReferenceFlowItem item = ReferenceFlowItem.build(FileReferenceRequestDTO.build("file.name",
-                                                                                       checksum,
-                                                                                       "MD5",
-                                                                                       "application/octet-stream",
-                                                                                       10L,
-                                                                                       "owner-test",
-                                                                                       storage,
-                                                                                       "file://storage/location/file.name",
-                                                                                       SESSION_OWNER_2,
-                                                                                       SESSION_1),
-                                                         UUID.randomUUID().toString());
-        List<ReferenceFlowItem> items = new ArrayList<>();
+        FilesReferenceEvent item = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
+                                                                                         checksum,
+                                                                                         "MD5",
+                                                                                         "application/octet-stream",
+                                                                                         10L,
+                                                                                         "owner-test",
+                                                                                         storage,
+                                                                                         "file://storage/location/file.name",
+                                                                                         SESSION_OWNER_2,
+                                                                                         SESSION_1),
+                                                           UUID.randomUUID().toString());
+        List<FilesReferenceEvent> items = new ArrayList<>();
         items.add(item);
         handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());

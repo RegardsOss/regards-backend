@@ -24,14 +24,14 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import org.apache.commons.compress.utils.Sets;
 import org.junit.Assert;
@@ -100,7 +100,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
         jobService.runJob(ji, getDefaultTenant()).get();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // A deletion request should be created for a group request containing each file
-        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(DeletionFlowItem.class));
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FilesDeletionEvent.class));
     }
 
     @Test
@@ -120,14 +120,18 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                            false);
         }
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),
-                                                                          oFileRef.get().getMetaInfo().getChecksum());
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(oFileRef.get()
+                                                                                             .getLocation()
+                                                                                             .getStorage(),
+                                                                                     oFileRef.get()
+                                                                                             .getMetaInfo()
+                                                                                             .getChecksum());
         Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
                           storageReqs.isEmpty());
         FileReference fileRef = oFileRef.get();
 
         // Delete file reference for one owner
-        FileDeletionRequestDTO request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+        FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                       fileRef.getLocation().getStorage(),
                                                                       owners.get(0),
                                                                       SESSION_OWNER_1,
@@ -149,7 +153,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
         fileCacheRequestService.create(fileRef, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
 
         // Delete file reference for the remaining owner
-        request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+        request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                fileRef.getLocation().getStorage(),
                                                owners.get(1),
                                                SESSION_OWNER_2,
@@ -194,19 +198,19 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
         fileRef = oFileRef.get();
 
         // Create deletion request for each owner
-        FileDeletionRequestDTO request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+        FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                       fileRef.getLocation().getStorage(),
                                                                       firstOwner,
                                                                       SESSION_OWNER_1,
                                                                       SESSION_1,
                                                                       false);
-        FileDeletionRequestDTO request2 = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+        FileDeletionRequestDto request2 = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                        fileRef.getLocation().getStorage(),
                                                                        secondOwner,
                                                                        SESSION_OWNER_2,
                                                                        SESSION_1,
                                                                        false);
-        FileDeletionRequestDTO request3 = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+        FileDeletionRequestDto request3 = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                        fileRef.getLocation().getStorage(),
                                                                        "other-owner",
                                                                        SESSION_OWNER_3,
@@ -241,7 +245,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                           fileRef.getLazzyOwners().contains(firstOwner));
 
         // Delete file reference
-        FileDeletionRequestDTO request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+        FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                       fileRef.getLocation().getStorage(),
                                                                       firstOwner,
                                                                       SESSION_OWNER_1,
@@ -340,7 +344,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
             filePathToDelete = Paths.get(new URL(fileRef.getLocation().getUrl()).getPath());
 
             // Delete file reference for one owner
-            FileDeletionRequestDTO request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+            FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                           fileRef.getLocation().getStorage(),
                                                                           firstOwner,
                                                                           SESSION_OWNER_1,
@@ -361,7 +365,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
             fileCacheRequestService.create(fileRef, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
 
             // Delete file reference for the remaining owner
-            request = FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+            request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                    fileRef.getLocation().getStorage(),
                                                    secondOwner,
                                                    SESSION_OWNER_2,

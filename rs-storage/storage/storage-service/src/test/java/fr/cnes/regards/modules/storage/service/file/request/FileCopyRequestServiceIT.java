@@ -26,18 +26,18 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesCopyEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileGroupRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
 import org.junit.Assert;
@@ -117,13 +117,13 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         jobService.runJob(ji, getDefaultTenant()).get();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check event is well publish for copying the files
-        ArgumentCaptor<CopyFlowItem> argumentCaptor = ArgumentCaptor.forClass(CopyFlowItem.class);
-        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(CopyFlowItem.class));
+        ArgumentCaptor<FilesCopyEvent> argumentCaptor = ArgumentCaptor.forClass(FilesCopyEvent.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FilesCopyEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        CopyFlowItem copyItem = null;
+        FilesCopyEvent copyItem = null;
         for (Object item : argumentCaptor.getAllValues()) {
-            if (item instanceof CopyFlowItem) {
-                copyItem = (CopyFlowItem) item;
+            if (item instanceof FilesCopyEvent) {
+                copyItem = (FilesCopyEvent) item;
                 break;
             }
         }
@@ -136,11 +136,11 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFile() throws InterruptedException, ExecutionException {
         String requestGroup = UUID.randomUUID().toString();
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
-        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                                     ONLINE_CONF_LABEL,
                                                                                     SESSION_OWNER,
                                                                                     SESSION));
-        fileCopyRequestService.copy(Sets.newHashSet(CopyFlowItem.build(requests, requestGroup)));
+        fileCopyRequestService.copy(Sets.newHashSet(new FilesCopyEvent(requests, requestGroup)));
         // A new copy request should be created
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
                                                                        ONLINE_CONF_LABEL);
@@ -181,8 +181,9 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // A new storage request should be created
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
-                                                                          fileRef.getMetaInfo().getChecksum());
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
+                                                                                     fileRef.getMetaInfo()
+                                                                                            .getChecksum());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertEquals("There should be a storage request created", 1, storageReqs.size());
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
@@ -289,7 +290,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
             }
         }
         Assert.assertNotNull(frge);
-        Assert.assertEquals(FlowItemStatus.SUCCESS, frge.getState());
+        Assert.assertEquals(FileGroupRequestStatus.SUCCESS, frge.getState());
         Assert.assertEquals(1, frge.getSuccess().size());
         Assert.assertEquals(0, frge.getErrors().size());
     }
@@ -298,7 +299,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFileInSubDir() throws InterruptedException, ExecutionException {
         String copyDestinationPath = "dir/test/copy";
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
-        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                                     ONLINE_CONF_LABEL,
                                                                                     copyDestinationPath,
                                                                                     SESSION_OWNER,
@@ -343,8 +344,9 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // A new storage request should be created
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
-                                                                          fileRef.getMetaInfo().getChecksum());
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
+                                                                                     fileRef.getMetaInfo()
+                                                                                            .getChecksum());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertEquals("There should be a storage request created", 1, storageReqs.size());
         Assert.assertEquals("The storage request should contains subdirectory to store to",
@@ -392,7 +394,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
                                                     SESSION_OWNER,
                                                     SESSION,
                                                     false).get();
-        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                                     storageCopyDest,
                                                                                     SESSION_OWNER,
                                                                                     SESSION));
@@ -437,7 +439,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFile_error_unknownFile() {
         String storage = "somewhere";
         String unknownChecksum = UUID.randomUUID().toString();
-        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(unknownChecksum,
+        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(unknownChecksum,
                                                                                     storage,
                                                                                     SESSION_OWNER,
                                                                                     SESSION));

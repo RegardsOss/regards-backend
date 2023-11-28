@@ -25,10 +25,10 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import org.junit.Assert;
 import org.junit.Before;

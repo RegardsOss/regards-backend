@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.dam.service.entities.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.modules.dam.plugin.entities.*;
 import fr.cnes.regards.modules.model.domain.schema.Attribute;
 import fr.cnes.regards.modules.model.domain.schema.Computation;

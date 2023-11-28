@@ -35,15 +35,15 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
@@ -211,7 +211,7 @@ public class FileCacheRequestService {
         return Optional.of(request);
     }
 
-    public void makeAvailable(Collection<AvailabilityFlowItem> items) {
+    public void makeAvailable(Collection<FilesAvailabilityRequestEvent> items) {
         items.forEach(i -> {
             reqGrpService.granted(i.getGroupId(),
                                   FileRequestType.AVAILABILITY,

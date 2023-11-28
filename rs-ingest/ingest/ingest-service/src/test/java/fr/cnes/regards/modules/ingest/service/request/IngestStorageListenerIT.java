@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,13 +52,13 @@ public class IngestStorageListenerIT extends AbstractIngestRequestIT {
     @Test
     public void testCopySuccessForUnknownFiles() {
         Set<RequestInfo> requests = Sets.newHashSet();
-        Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests.add(RequestResultInfoDTO.build("groupId",
+        Collection<RequestResultInfoDto> successRequests = Sets.newHashSet();
+        successRequests.add(RequestResultInfoDto.build("groupId",
                                                        "checksum",
                                                        "somewhere",
                                                        null,
                                                        Sets.newHashSet("someone"),
-                                                       simulatefileReference("checksum", "someone"),
+                                                       simulatefileReference("checksum", "someone").toDto(),
                                                        null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
         Assert.assertEquals("At initialization no requests should be created",
@@ -78,20 +78,20 @@ public class IngestStorageListenerIT extends AbstractIngestRequestIT {
         String providerId = "providerId";
         initSipAndAip(checksum, providerId);
         Set<RequestInfo> requests = Sets.newHashSet();
-        Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests.add(RequestResultInfoDTO.build("groupId",
+        Collection<RequestResultInfoDto> successRequests = Sets.newHashSet();
+        successRequests.add(RequestResultInfoDto.build("groupId",
                                                        checksum,
                                                        "somewhere",
                                                        null,
                                                        Sets.newHashSet(aipEntity.getAipId()),
-                                                       simulatefileReference(checksum, aipEntity.getAipId()),
+                                                       simulatefileReference(checksum, aipEntity.getAipId()).toDto(),
                                                        null));
-        successRequests.add(RequestResultInfoDTO.build("groupId",
+        successRequests.add(RequestResultInfoDto.build("groupId",
                                                        "other-file-checksum",
                                                        "somewhere",
                                                        null,
                                                        Sets.newHashSet("someone"),
-                                                       simulatefileReference(checksum, "someone"),
+                                                       simulatefileReference(checksum, "someone").toDto(),
                                                        null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
         Assert.assertEquals("At initialization no requests should be created",

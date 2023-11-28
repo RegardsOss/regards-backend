@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
@@ -42,7 +43,6 @@ import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationServic
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.ingest.service.settings.IngestSettingsService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
@@ -172,7 +172,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     // Wrapper also collect events
                     if (aipWrapper.hasDeletionRequests()) {
                         // Request files deletion
-                        Collection<FileDeletionRequestDTO> deletionRequests = aipWrapper.getDeletionRequests();
+                        Collection<FileDeletionRequestDto> deletionRequests = aipWrapper.getDeletionRequests();
                         logger.trace("[AIP {}] Run {} deletion requests on storage.",
                                      aipWrapper.getAip().getAipId(),
                                      deletionRequests.size());

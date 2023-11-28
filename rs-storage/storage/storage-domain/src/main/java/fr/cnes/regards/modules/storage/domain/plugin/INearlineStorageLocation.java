@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.exception.NearlineDownloadException;
 import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.InputStream;
@@ -31,7 +30,7 @@ import java.io.InputStream;
  * Plugin to handle NEARLINE storage location. <br/>
  * A nearline storage location is a location where files cannot be accessed synchronously.<br/>
  * Files need to be restored in cache before they can be access for download.<br/>
- * See {@link AvailabilityFlowItem} for more information.
+ * See {@link FilesAvailabilityRequestEvent} for more information.
  *
  * @author Sébastien Binda
  */

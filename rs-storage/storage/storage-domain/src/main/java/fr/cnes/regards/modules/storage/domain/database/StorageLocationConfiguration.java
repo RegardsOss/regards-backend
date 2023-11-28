@@ -20,10 +20,12 @@ package fr.cnes.regards.modules.storage.domain.database;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationConfigurationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -80,7 +82,7 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     private StorageLocationConfiguration() {
     }
 
-    public StorageLocationConfiguration(String name, PluginConfiguration pluginConf, Long allocatedSizeInKo) {
+    public StorageLocationConfiguration(String name, @Nullable PluginConfiguration pluginConf, Long allocatedSizeInKo) {
         this.name = name;
         this.pluginConfiguration = pluginConf;
         this.allocatedSizeInKo = allocatedSizeInKo;
@@ -173,4 +175,26 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
             return -1;
         }
     }
+
+    public StorageLocationConfigurationDto toDto() {
+        return new StorageLocationConfigurationDto(name,
+                                                   pluginConfiguration != null ? pluginConfiguration.toDto() : null,
+                                                   storageType,
+                                                   priority,
+                                                   allocatedSizeInKo);
+    }
+
+    public static StorageLocationConfiguration fromDto(StorageLocationConfigurationDto configuration) {
+        StorageLocationConfiguration storageLocationConfiguration = new StorageLocationConfiguration(configuration.getName(),
+                                                                                                     configuration.getPluginConfiguration()
+                                                                                                     != null ?
+                                                                                                         PluginConfiguration.fromDto(
+                                                                                                             configuration.getPluginConfiguration()) :
+                                                                                                         null,
+                                                                                                     configuration.getAllocatedSizeInKo());
+        storageLocationConfiguration.setStorageType(configuration.getStorageType());
+        storageLocationConfiguration.setPriority(configuration.getPriority());
+        return storageLocationConfiguration;
+    }
+
 }

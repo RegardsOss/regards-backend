@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 import java.util.Collection;
 import java.util.Set;

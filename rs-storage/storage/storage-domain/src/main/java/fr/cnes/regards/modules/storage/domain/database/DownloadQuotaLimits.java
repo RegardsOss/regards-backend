@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
 import com.google.common.annotations.VisibleForTesting;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
 
 import java.util.Objects;
 
@@ -98,5 +99,9 @@ public class DownloadQuotaLimits {
     @Override
     public int hashCode() {
         return Objects.hash(id, tenant, email, maxQuota, rateLimit);
+    }
+
+    public DownloadQuotaLimitsDto toDto() {
+        return new DownloadQuotaLimitsDto(email, maxQuota, rateLimit);
     }
 }

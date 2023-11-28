@@ -668,6 +668,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+                <artifactId>plugins-dto</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
                 <artifactId>plugins-service</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -1741,6 +1746,11 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.filecatalog</groupId>
                 <artifactId>file-catalog-rest</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+                <artifactId>file-catalog-client</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

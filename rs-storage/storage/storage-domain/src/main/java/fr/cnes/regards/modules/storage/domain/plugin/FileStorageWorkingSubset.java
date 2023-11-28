@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.storage.domain.plugin;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 
 import java.util.Collection;
 import java.util.Set;
@@ -32,16 +32,16 @@ import java.util.Set;
 public class FileStorageWorkingSubset {
 
     /**
-     * Raw {@link FileStorageRequest}s associate
+     * Raw {@link FileStorageRequestAggregation}s associate
      */
-    private final Set<FileStorageRequest> fileRefenreceRequests = Sets.newHashSet();
+    private final Set<FileStorageRequestAggregation> fileRefenreceRequests = Sets.newHashSet();
 
-    public FileStorageWorkingSubset(Collection<FileStorageRequest> dataFiles) {
+    public FileStorageWorkingSubset(Collection<FileStorageRequestAggregation> dataFiles) {
         super();
         this.fileRefenreceRequests.addAll(dataFiles);
     }
 
-    public Set<FileStorageRequest> getFileReferenceRequests() {
+    public Set<FileStorageRequestAggregation> getFileReferenceRequests() {
         return fileRefenreceRequests;
     }
 

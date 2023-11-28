@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.job;
 
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +47,7 @@ public class AIPEntityUpdateWrapper {
      */
     private boolean aipPristine = false;
 
-    private Collection<FileDeletionRequestDTO> deletionRequests;
+    private Collection<FileDeletionRequestDto> deletionRequests;
 
     public AIPEntity getAip() {
         return aip;
@@ -61,7 +61,7 @@ public class AIPEntityUpdateWrapper {
         return pristine;
     }
 
-    public Collection<FileDeletionRequestDTO> getDeletionRequests() {
+    public Collection<FileDeletionRequestDto> getDeletionRequests() {
         return deletionRequests;
     }
 
@@ -69,11 +69,11 @@ public class AIPEntityUpdateWrapper {
         return !deletionRequests.isEmpty();
     }
 
-    public void setDeletionRequests(Collection<FileDeletionRequestDTO> deletionRequests) {
+    public void setDeletionRequests(Collection<FileDeletionRequestDto> deletionRequests) {
         this.deletionRequests = deletionRequests;
     }
 
-    public void addDeletionRequests(Collection<FileDeletionRequestDTO> requests) {
+    public void addDeletionRequests(Collection<FileDeletionRequestDto> requests) {
         this.deletionRequests.addAll(requests);
     }
 

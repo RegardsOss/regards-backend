@@ -30,15 +30,16 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.NestedPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginConfigurationDto;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginParamDescriptor;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.NestedPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.PluginParamType;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.StringPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -238,14 +239,17 @@ public class PluginService implements IPluginService, InitializingBean {
     /**
      * Set decrypted value for plugin instantiation.
      */
-    private void decryptSensibleParameter(PluginMetaData pluginMetadata, PluginConfiguration conf)
+    private void decryptSensibleParameter(PluginMetaData pluginMetadata, PluginConfigurationDto conf)
         throws EncryptionException {
         for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
             // only decrypt STRING plugin parameter for now.
             if (paramType.getType() == PluginParamType.STRING) {
                 StringPluginParam pluginParam = (StringPluginParam) conf.getParameter(paramType.getName());
                 if (Boolean.TRUE.equals((pluginParam != null) && paramType.isSensible()) && pluginParam.hasValue()) {
-                    pluginParam.setDecryptedValue(encryptionService.decrypt(pluginParam.getValue()));
+                    conf.getParameters().remove(pluginParam);
+                    StringPluginParam decryptedParam = pluginParam.clone();
+                    decryptedParam.setValue(encryptionService.decrypt(decryptedParam.getValue()));
+                    conf.getParameters().add(decryptedParam);
                 }
             }
         }
@@ -730,14 +734,15 @@ public class PluginService implements IPluginService, InitializingBean {
                 pluginMetadata.getVersion()));
         }
 
-        decryptSensibleParameter(pluginMetadata, pluginConf);
+        PluginConfigurationDto pluginConfDto = pluginConf.toDto();
+        decryptSensibleParameter(pluginMetadata, pluginConfDto);
 
         LOGGER.info("New plugin instantiation for {}configuration {} of plugin {}",
                     dynamicParameters.length > 0 ? "dynamic " : "",
                     pluginConf.getBusinessId(),
                     pluginMetadata.getPluginId());
 
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata, tenantPluginCache, dynamicParameters);
+        return PluginUtils.getPlugin(pluginConfDto, pluginMetadata, tenantPluginCache, dynamicParameters);
     }
 
     private void logPluginMetadataScanned() {

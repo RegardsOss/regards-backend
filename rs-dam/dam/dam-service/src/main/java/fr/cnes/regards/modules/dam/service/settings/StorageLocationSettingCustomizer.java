@@ -4,9 +4,9 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
 import fr.cnes.regards.modules.dam.domain.settings.DamSettings;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -39,11 +39,11 @@ public class StorageLocationSettingCustomizer implements IDynamicTenantSettingCu
     }
 
     private boolean isOnlineLocation(String location) {
-        ResponseEntity<List<EntityModel<StorageLocationDTO>>> responseEntity = storageRestClient.retrieve();
+        ResponseEntity<List<EntityModel<StorageLocationDto>>> responseEntity = storageRestClient.retrieve();
         if (!responseEntity.hasBody()) {
             return false;
         } else {
-            List<StorageLocationDTO> storageLocationList = HateoasUtils.unwrapList(responseEntity.getBody());
+            List<StorageLocationDto> storageLocationList = HateoasUtils.unwrapList(responseEntity.getBody());
             return storageLocationList.stream()
                                       .filter(storageLocationDTO -> storageLocationDTO.getConfiguration()
                                                                                       .getStorageType()

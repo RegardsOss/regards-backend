@@ -21,14 +21,14 @@ package fr.cnes.regards.modules.storage.service.file.handler;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
@@ -179,14 +179,18 @@ public class FileReferenceEventHandler
      * @return updated {@link FileReferenceMetaInfo}
      */
     private Optional<FileReferenceMetaInfo> handleUpdateOnAvailableProcess(FileReferenceEvent event) {
-        Optional<FileReferenceMetaInfo> fileRefMeta = Optional.ofNullable(event.getMetaInfo());
+        Optional<FileReferenceMetaInfo> fileRefMeta = Optional.ofNullable(event.getMetaInfo() != null ?
+                                                                              FileReferenceMetaInfo.buildFromDto(event.getMetaInfo()) :
+                                                                              null);
         if (updateActions != null) {
             Optional<FileReference> fileReference = fileReferenceService.search(event.getOriginStorage(),
                                                                                 event.getChecksum());
             if (fileReference.isPresent()) {
                 FileReference fileRef = fileReference.get();
                 for (IUpdateFileReferenceOnAvailable action : updateActions) {
-                    Optional<FileReference> oUpdated = updateFileReference(fileRef, event.getLocation(), action);
+                    Optional<FileReference> oUpdated = updateFileReference(fileRef,
+                                                                           FileLocation.buildFromDto(event.getLocation()),
+                                                                           action);
                     if (oUpdated.isPresent() && (oUpdated.get().getMetaInfo() != null)) {
                         fileRefMeta = Optional.ofNullable(oUpdated.get().getMetaInfo());
                     }
@@ -271,17 +275,18 @@ public class FileReferenceEventHandler
             String sessionOwner = copyReq.getSessionOwner();
             String session = copyReq.getSession();
             sessionNotifier.incrementStoreRequests(sessionOwner, session);
-            FileStorageRequest r = fileStorageRequestService.createNewFileStorageRequest(availableEvent.getOwners(),
-                                                                                         fileMeta,
-                                                                                         availableEvent.getLocation()
-                                                                                                       .getUrl(),
-                                                                                         copyReq.getStorage(),
-                                                                                         Optional.ofNullable(copyReq.getStorageSubDirectory()),
-                                                                                         storageGroupId,
-                                                                                         Optional.empty(),
-                                                                                         Optional.empty(),
-                                                                                         sessionOwner,
-                                                                                         session);
+            FileStorageRequestAggregation r = fileStorageRequestService.createNewFileStorageRequest(availableEvent.getOwners(),
+                                                                                                    fileMeta,
+                                                                                                    availableEvent.getLocation()
+                                                                                                                  .getUrl(),
+                                                                                                    copyReq.getStorage(),
+                                                                                                    Optional.ofNullable(
+                                                                                                        copyReq.getStorageSubDirectory()),
+                                                                                                    storageGroupId,
+                                                                                                    Optional.empty(),
+                                                                                                    Optional.empty(),
+                                                                                                    sessionOwner,
+                                                                                                    session);
             copyReq.setFileStorageGroupId(storageGroupId);
             fileCopyRequestService.update(copyReq);
             LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",

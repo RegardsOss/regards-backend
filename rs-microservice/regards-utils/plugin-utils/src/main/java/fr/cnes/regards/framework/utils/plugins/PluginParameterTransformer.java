@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.utils.plugins;
 
 import com.google.gson.*;
 import fr.cnes.regards.framework.gson.GsonCustomizer;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.*;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

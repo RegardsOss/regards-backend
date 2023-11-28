@@ -26,17 +26,17 @@ import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
@@ -154,7 +154,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void retrieveStorageLocations() {
-        ResponseEntity<List<EntityModel<StorageLocationDTO>>> response = client.retrieve();
+        ResponseEntity<List<EntityModel<StorageLocationDto>>> response = client.retrieve();
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         // Expected 2 storages. One created in init method and 1 cache system
         Assert.assertEquals(2, response.getBody().size());
@@ -178,7 +178,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
                                   new FileLocation("somewhere", "file://sample/file_ref.txt", false),
                                   true);
         }
-        ResponseEntity<Set<FileReferenceDTO>> response = client.getFileReferencesWithoutOwners(storageName, checksums);
+        ResponseEntity<Set<FileReferenceDto>> response = client.getFileReferencesWithoutOwners(storageName, checksums);
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertEquals("Unexpected number of file references found",
                             checksums.size(),

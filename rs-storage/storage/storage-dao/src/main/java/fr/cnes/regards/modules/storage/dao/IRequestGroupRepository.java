@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

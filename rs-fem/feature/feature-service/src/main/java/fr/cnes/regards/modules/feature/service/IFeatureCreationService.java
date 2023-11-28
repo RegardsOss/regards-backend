@@ -9,7 +9,7 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -55,7 +55,7 @@ public interface IFeatureCreationService extends IAbstractFeatureService<Feature
      *
      * @param errorRequests errors requests
      */
-    void handleStorageError(Collection<RequestResultInfoDTO> errorRequests);
+    void handleStorageError(Collection<RequestResultInfoDto> errorRequests);
 
     /**
      * Find all {@link FeatureCreationRequest}s

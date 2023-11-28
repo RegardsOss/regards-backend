@@ -23,7 +23,11 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.storage.domain.database.request.*;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -38,7 +42,7 @@ import java.time.Instant;
 
 /**
  * Scheduler to periodically handle bulk requests :<br />
- * <li> {@link FileStorageRequest} for storage</li>
+ * <li> {@link FileStorageRequestAggregation} for storage</li>
  * <li> {@link FileDeletionRequest} for deletion</li>
  * <li> {@link FileCopyRequest} for copy</li>
  * <li> {@link FileCacheRequest} for availability</li>

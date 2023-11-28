@@ -19,17 +19,18 @@
 package fr.cnes.regards.modules.order.test;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
+import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
-import fr.cnes.regards.modules.storage.client.IStorageFileListener;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,12 +60,12 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo store(FileStorageRequestDTO file) {
+    public RequestInfo store(FileStorageRequestDto file) {
         return null;
     }
 
     @Override
-    public Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files) {
+    public Collection<RequestInfo> store(Collection<FileStorageRequestDto> files) {
         return null;
     }
 
@@ -82,32 +83,32 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo reference(FileReferenceRequestDTO file) {
+    public RequestInfo reference(FileReferenceRequestDto file) {
         return null;
     }
 
     @Override
-    public Collection<RequestInfo> reference(Collection<FileReferenceRequestDTO> files) {
+    public Collection<RequestInfo> reference(Collection<FileReferenceRequestDto> files) {
         return null;
     }
 
     @Override
-    public RequestInfo delete(FileDeletionRequestDTO file) {
+    public RequestInfo delete(FileDeletionRequestDto file) {
         return null;
     }
 
     @Override
-    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDTO> files) {
+    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDto> files) {
         return null;
     }
 
     @Override
-    public RequestInfo copy(FileCopyRequestDTO file) {
+    public RequestInfo copy(FileCopyRequestDto file) {
         return null;
     }
 
     @Override
-    public Collection<RequestInfo> copy(Collection<FileCopyRequestDTO> files) {
+    public Collection<RequestInfo> copy(Collection<FileCopyRequestDto> files) {
         return null;
     }
 
@@ -117,33 +118,47 @@ public class StorageClientMock implements IStorageClient {
         int count = 0;
         if (!waitMode) {
             LOGGER.info("Simulate storage responses !!!!!!!");
-            List<FileReferenceEventDTO> notAvailable = new ArrayList<>();
-            List<FileReferenceEventDTO> available = new ArrayList<>();
+            List<FileReferenceEvent> notAvailable = new ArrayList<>();
+            List<FileReferenceEvent> available = new ArrayList<>();
             for (String c : checksums) {
-                if (count > AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
+                if (count > FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP) {
                     count = 0;
                 }
                 if (count == 0) {
                     groupIds.add(UUID.randomUUID().toString());
                 }
                 if (!isAvailable) {
-                    notAvailable.add(new FileReferenceEventDTO(FileReferenceEvent.build(c,
-                                                                                        null,
-                                                                                        FileReferenceEventType.AVAILABILITY_ERROR,
-                                                                                        null,
-                                                                                        "",
-                                                                                        null,
-                                                                                        null,
-                                                                                        groupIds)));
+                    notAvailable.add(FileReferenceEvent.build(c,
+                                                              null,
+                                                              FileReferenceEventType.AVAILABILITY_ERROR,
+                                                              null,
+                                                              "",
+                                                              new FileLocationDto("storageName", "url"),
+                                                              new FileReferenceMetaInfoDto("checksum",
+                                                                                           "MD5",
+                                                                                           "fileName",
+                                                                                           null,
+                                                                                           null,
+                                                                                           null,
+                                                                                           null,
+                                                                                           null),
+                                                              groupIds));
                 } else {
-                    available.add(new FileReferenceEventDTO(FileReferenceEvent.build(c,
-                                                                                     null,
-                                                                                     FileReferenceEventType.AVAILABLE,
-                                                                                     null,
-                                                                                     "",
-                                                                                     null,
-                                                                                     null,
-                                                                                     groupIds)));
+                    available.add(FileReferenceEvent.build(c,
+                                                           null,
+                                                           FileReferenceEventType.AVAILABLE,
+                                                           null,
+                                                           "",
+                                                           new FileLocationDto("storageName", "url"),
+                                                           new FileReferenceMetaInfoDto("checksum",
+                                                                                        "MD5",
+                                                                                        "fileName",
+                                                                                        null,
+                                                                                        null,
+                                                                                        null,
+                                                                                        null,
+                                                                                        null),
+                                                           groupIds));
                 }
             }
             listener.onFileNotAvailable(notAvailable);

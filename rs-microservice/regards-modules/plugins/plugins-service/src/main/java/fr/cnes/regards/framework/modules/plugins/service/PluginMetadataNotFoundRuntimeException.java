@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 
 /**
  * If {@link PluginMetaData} cannot be retrieved

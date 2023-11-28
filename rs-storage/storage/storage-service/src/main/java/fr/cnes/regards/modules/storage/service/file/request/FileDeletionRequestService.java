@@ -36,14 +36,14 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
@@ -256,7 +256,7 @@ public class FileDeletionRequestService {
                                                                                                                fileDeletionRequestRepo,
                                                                                                                self),
                                                                                           new LockConfiguration(
-                                                                                              DeletionFlowItem.DELETION_LOCK,
+                                                                                              FilesDeletionEvent.DELETION_LOCK,
                                                                                               Instant.now()
                                                                                                      .plusSeconds(30)));
             if (result.wasExecuted() && (result.getResult() != null)) {
@@ -422,21 +422,21 @@ public class FileDeletionRequestService {
      *
      * @param list deletion flow items to transform into deletion requests
      */
-    public void handle(List<DeletionFlowItem> list) {
+    public void handle(List<FilesDeletionEvent> list) {
         Set<String> checksums = list.stream()
-                                    .map(DeletionFlowItem::getFiles)
+                                    .map(FilesDeletionEvent::getFiles)
                                     .flatMap(Set::stream)
-                                    .map(FileDeletionRequestDTO::getChecksum)
+                                    .map(FileDeletionRequestDto::getChecksum)
                                     .collect(Collectors.toSet());
         Set<FileReference> existingOnes = fileRefService.search(checksums);
         Set<FileDeletionRequest> fileDeletionRequests = fileDeletionRequestRepo.findByFileReferenceMetaInfoChecksumIn(
             checksums);
-        for (DeletionFlowItem item : list) {
+        for (FilesDeletionEvent item : list) {
             // files to store
-            Set<FileDeletionRequestDTO> files = item.getFiles();
+            Set<FileDeletionRequestDto> files = item.getFiles();
             // if a copy process is already running on files, refuse file deletions
             if (fileCopyReqService.isFileCopyRunning(files.stream()
-                                                          .map(FileDeletionRequestDTO::getChecksum)
+                                                          .map(FileDeletionRequestDto::getChecksum)
                                                           .collect(Collectors.toSet()))) {
                 reqGroupService.denied(item.getGroupId(),
                                        FileRequestType.DELETION,
@@ -465,8 +465,8 @@ public class FileDeletionRequestService {
     /**
      * Initialize new deletion requests for a given group identifier
      */
-    public void handle(Collection<FileDeletionRequestDTO> requests, String groupId) {
-        Set<String> checksums = requests.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet());
+    public void handle(Collection<FileDeletionRequestDto> requests, String groupId) {
+        Set<String> checksums = requests.stream().map(FileDeletionRequestDto::getChecksum).collect(Collectors.toSet());
         Set<FileReference> existingOnes = fileRefService.search(checksums);
         Set<FileDeletionRequest> fileDeletionRequests = fileDeletionRequestRepo.findByFileReferenceMetaInfoChecksumIn(
             checksums);
@@ -477,11 +477,11 @@ public class FileDeletionRequestService {
      * Initialize new deletion requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
      * avoid requesting {@link IFileReferenceRepository} on each request.
      */
-    public void handle(Collection<FileDeletionRequestDTO> requests,
+    public void handle(Collection<FileDeletionRequestDto> requests,
                        String groupId,
                        Collection<FileReference> existingOnes,
                        Collection<FileDeletionRequest> existingRequests) {
-        for (FileDeletionRequestDTO request : requests) {
+        for (FileDeletionRequestDto request : requests) {
             // notify deletion requests to the session agent
             String sessionOwner = request.getSessionOwner();
             String session = request.getSession();

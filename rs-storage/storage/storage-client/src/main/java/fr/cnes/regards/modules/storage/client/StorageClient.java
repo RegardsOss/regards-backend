@@ -21,12 +21,13 @@ package fr.cnes.regards.modules.storage.client;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.CancelRequestEvent;
-import fr.cnes.regards.modules.storage.domain.flow.*;
+import fr.cnes.regards.modules.filecatalog.amqp.input.*;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,75 +52,75 @@ public class StorageClient implements IStorageClient {
     private IPublisher publisher;
 
     @Override
-    public RequestInfo copy(FileCopyRequestDTO file) {
+    public RequestInfo copy(FileCopyRequestDto file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(CopyFlowItem.build(file, requestInfo.getGroupId()));
+        publisher.publish(new FilesCopyEvent(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
-    public Collection<RequestInfo> copy(Collection<FileCopyRequestDTO> files) {
-        return publish(CopyFlowItem::build, files, CopyFlowItem.MAX_REQUEST_PER_GROUP);
+    public Collection<RequestInfo> copy(Collection<FileCopyRequestDto> files) {
+        return publish(FilesCopyEvent::new, files, FilesCopyEvent.MAX_REQUEST_PER_GROUP);
     }
 
     @Override
-    public RequestInfo delete(FileDeletionRequestDTO file) {
+    public RequestInfo delete(FileDeletionRequestDto file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(DeletionFlowItem.build(file, requestInfo.getGroupId()));
+        publisher.publish(new FilesDeletionEvent(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
-    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDTO> files) {
-        return publish(DeletionFlowItem::build, files, DeletionFlowItem.MAX_REQUEST_PER_GROUP);
+    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDto> files) {
+        return publish(FilesDeletionEvent::new, files, FilesDeletionEvent.MAX_REQUEST_PER_GROUP);
     }
 
     @Override
-    public RequestInfo reference(FileReferenceRequestDTO file) {
+    public RequestInfo reference(FileReferenceRequestDto file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(ReferenceFlowItem.build(file, requestInfo.getGroupId()));
+        publisher.publish(new FilesReferenceEvent(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
-    public Collection<RequestInfo> reference(Collection<FileReferenceRequestDTO> files) {
-        return publish(ReferenceFlowItem::build, files, ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+    public Collection<RequestInfo> reference(Collection<FileReferenceRequestDto> files) {
+        return publish(FilesReferenceEvent::new, files, FilesReferenceEvent.MAX_REQUEST_PER_GROUP);
     }
 
     @Override
     public void storeRetry(RequestInfo requestInfo) {
-        publisher.publish(RetryFlowItem.buildStorageRetry(requestInfo.getGroupId()));
+        publisher.publish(FilesRetryRequestEvent.buildStorageRetry(requestInfo.getGroupId()));
     }
 
     @Override
     public void storeRetry(Collection<String> owners) {
-        publisher.publish(RetryFlowItem.buildStorageRetry(owners));
+        publisher.publish(FilesRetryRequestEvent.buildStorageRetry(owners));
     }
 
     @Override
     public void availabilityRetry(RequestInfo requestInfo) {
-        publisher.publish(RetryFlowItem.buildAvailabilityRetry(requestInfo.getGroupId()));
+        publisher.publish(FilesRetryRequestEvent.buildAvailabilityRetry(requestInfo.getGroupId()));
     }
 
     @Override
-    public RequestInfo store(FileStorageRequestDTO file) {
+    public RequestInfo store(FileStorageRequestDto file) {
         RequestInfo requestInfo = RequestInfo.build();
-        publisher.publish(StorageFlowItem.build(file, requestInfo.getGroupId()));
+        publisher.publish(new FilesStorageRequestEvent(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
-    public Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files) {
-        return publish(StorageFlowItem::build, files, StorageFlowItem.MAX_REQUEST_PER_GROUP);
+    public Collection<RequestInfo> store(Collection<FileStorageRequestDto> files) {
+        return publish(FilesStorageRequestEvent::new, files, FilesStorageRequestEvent.MAX_REQUEST_PER_GROUP);
     }
 
     @Override
     public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
         Collection<RequestInfo> requestInfos = Lists.newArrayList();
         // If number of files in the request is less than the maximum allowed by request then publish it
-        if (checksums.size() <= AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
+        if (checksums.size() <= FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP) {
             RequestInfo requestInfo = RequestInfo.build();
-            publisher.publish(AvailabilityFlowItem.build(checksums, expirationDate, requestInfo.getGroupId()));
+            publisher.publish(new FilesAvailabilityRequestEvent(checksums, expirationDate, requestInfo.getGroupId()));
             requestInfos.add(requestInfo);
         } else {
             // Else publish as many requests as needed.
@@ -127,16 +128,18 @@ public class StorageClient implements IStorageClient {
             Iterator<String> it = checksums.iterator();
             while (it.hasNext()) {
                 group.add(it.next());
-                if (group.size() >= AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
+                if (group.size() >= FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP) {
                     RequestInfo requestInfo = RequestInfo.build();
-                    publisher.publish(AvailabilityFlowItem.build(group, expirationDate, requestInfo.getGroupId()));
+                    publisher.publish(new FilesAvailabilityRequestEvent(group,
+                                                                        expirationDate,
+                                                                        requestInfo.getGroupId()));
                     requestInfos.add(requestInfo);
                     group.clear();
                 }
             }
             if (!group.isEmpty()) {
                 RequestInfo requestInfo = RequestInfo.build();
-                publisher.publish(AvailabilityFlowItem.build(group, expirationDate, requestInfo.getGroupId()));
+                publisher.publish(new FilesAvailabilityRequestEvent(group, expirationDate, requestInfo.getGroupId()));
                 requestInfos.add(requestInfo);
             }
         }

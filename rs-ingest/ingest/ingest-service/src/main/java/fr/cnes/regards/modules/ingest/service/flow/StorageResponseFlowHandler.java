@@ -24,6 +24,9 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -34,9 +37,6 @@ import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import fr.cnes.regards.modules.storage.client.IStorageRequestListener;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,7 +231,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
         int total = 0;
         for (RequestInfo r : requestsInfo) {
             // For each copy group request in success, check unitary file copy requests succeeded
-            for (RequestResultInfoDTO sr : r.getSuccessRequests()) {
+            for (RequestResultInfoDto sr : r.getSuccessRequests()) {
                 total++;
                 // For each file successfully copied, check if at least one of the owners of the file is an AIP.
                 boolean found = false;

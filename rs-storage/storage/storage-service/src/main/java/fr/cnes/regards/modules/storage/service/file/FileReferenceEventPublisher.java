@@ -19,13 +19,13 @@
 package fr.cnes.regards.modules.storage.service.file;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceUpdateEvent;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceUpdateEvent;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +65,8 @@ public class FileReferenceEventPublisher {
                                                    FileReferenceEventType.COPIED,
                                                    fileRef.getLazzyOwners(),
                                                    message,
-                                                   fileRef.getLocation(),
-                                                   fileRef.getMetaInfo(),
+                                                   fileRef.getLocation().toDto(),
+                                                   fileRef.getMetaInfo().toDto(),
                                                    Sets.newHashSet(groupId)));
     }
 
@@ -87,7 +87,7 @@ public class FileReferenceEventPublisher {
                                                    errorCause,
                                                    new FileLocation(errorRequest.getStorage(),
                                                                     errorRequest.getStorageSubDirectory(),
-                                                                    false),
+                                                                    false).toDto(),
                                                    null,
                                                    Sets.newHashSet(errorRequest.getGroupId())));
     }
@@ -105,8 +105,8 @@ public class FileReferenceEventPublisher {
                                                    FileReferenceEventType.FULLY_DELETED,
                                                    null,
                                                    message,
-                                                   fileRef.getLocation(),
-                                                   fileRef.getMetaInfo(),
+                                                   fileRef.getLocation().toDto(),
+                                                   fileRef.getMetaInfo().toDto(),
                                                    Sets.newHashSet(groupId)));
     }
 
@@ -123,8 +123,8 @@ public class FileReferenceEventPublisher {
                                                    FileReferenceEventType.DELETION_ERROR,
                                                    null,
                                                    message,
-                                                   fileRef.getLocation(),
-                                                   fileRef.getMetaInfo(),
+                                                   fileRef.getLocation().toDto(),
+                                                   fileRef.getMetaInfo().toDto(),
                                                    Sets.newHashSet(groupId)));
     }
 
@@ -141,14 +141,14 @@ public class FileReferenceEventPublisher {
                                                    FileReferenceEventType.DELETED_FOR_OWNER,
                                                    Sets.newHashSet(owner),
                                                    message,
-                                                   fileRef.getLocation(),
-                                                   fileRef.getMetaInfo(),
+                                                   fileRef.getLocation().toDto(),
+                                                   fileRef.getMetaInfo().toDto(),
                                                    Sets.newHashSet(groupId)));
     }
 
     /**
      * Notify listeners for a {@link FileReference} successfully referenced.
-     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * If there is no more {@link FileStorageRequestAggregation} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
      *
      * @param fileRef {@link FileReference} deleted for the given owner
@@ -164,14 +164,14 @@ public class FileReferenceEventPublisher {
                                                    FileReferenceEventType.STORED,
                                                    owners,
                                                    message,
-                                                   fileRef.getLocation(),
-                                                   fileRef.getMetaInfo(),
+                                                   fileRef.getLocation().toDto(),
+                                                   fileRef.getMetaInfo().toDto(),
                                                    groupIds));
     }
 
     /**
      * Notify listeners for a {@link FileReference} successfully referenced.
-     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * If there is no more {@link FileStorageRequestAggregation} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
      *
      * @param fileRef {@link FileReference} deleted for the given owner
@@ -183,7 +183,7 @@ public class FileReferenceEventPublisher {
 
     /**
      * Notify listeners for an error during a {@link FileReference} referencing.
-     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * If there is no more {@link FileStorageRequestAggregation} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
      *
      * @param checksum of the file in error
@@ -202,14 +202,14 @@ public class FileReferenceEventPublisher {
                                                    FileReferenceEventType.STORE_ERROR,
                                                    owners,
                                                    message,
-                                                   new FileLocation(storage, null, false),
+                                                   new FileLocation(storage, null, false).toDto(),
                                                    null,
                                                    groupIds));
     }
 
     /**
      * Notify listeners for an error during a {@link FileReference} referencing.
-     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * If there is no more {@link FileStorageRequestAggregation} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
      *
      * @param checksum of the file in error
@@ -223,7 +223,7 @@ public class FileReferenceEventPublisher {
 
     /**
      * Notify listeners for a file available for download.
-     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * If there is no more {@link FileStorageRequestAggregation} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
      */
     public void available(String checksum,
@@ -239,7 +239,7 @@ public class FileReferenceEventPublisher {
                                                    FileReferenceEventType.AVAILABLE,
                                                    owners,
                                                    message,
-                                                   new FileLocation(availableStorage, url.toString(), false),
+                                                   new FileLocation(availableStorage, url.toString(), false).toDto(),
                                                    null,
                                                    Sets.newHashSet(groupId)));
     }
@@ -248,12 +248,12 @@ public class FileReferenceEventPublisher {
         LOGGER.trace("Publishing FileReferenceUpdateEvent for file checksum {} and storage location {}",
                      checksum,
                      storage);
-        publisher.publish(FileReferenceUpdateEvent.build(checksum, storage, updatedFile));
+        publisher.publish(new FileReferenceUpdateEvent(checksum, storage, updatedFile.toDto()));
     }
 
     /**
      * Notify listeners for an restoring a file for download availability.
-     * If there is no more {@link FileStorageRequest} associated to the Business request identifier, so a request notification
+     * If there is no more {@link FileStorageRequestAggregation} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
      */
     public void notAvailable(String checksum, String originStorage, String message, String groupId) {

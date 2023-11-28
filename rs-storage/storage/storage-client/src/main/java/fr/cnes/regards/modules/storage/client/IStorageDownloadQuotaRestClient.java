@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +40,8 @@ public interface IStorageDownloadQuotaRestClient {
     String PATH_USER_CURRENT_QUOTA = "/quota/current/{user_email}";
 
     String PATH_CURRENT_QUOTA_LIST = "/quota/currents";
+
+    String PATH_MAX_QUOTA = "/quota/max";
 
     String USER_EMAIL_PARAM = "user_email";
 
@@ -73,17 +75,23 @@ public interface IStorageDownloadQuotaRestClient {
                 produces = MediaType.APPLICATION_JSON_VALUE,
                 consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<UserCurrentQuotas> getCurrentQuotas();
+    ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas();
 
     @GetMapping(path = PATH_USER_CURRENT_QUOTA,
                 produces = MediaType.APPLICATION_JSON_VALUE,
                 consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail);
+    ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail);
+
+    @GetMapping(path = PATH_QUOTA,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    ResponseEntity<Long> getMaxQuota();
 
     @PostMapping(path = PATH_CURRENT_QUOTA_LIST,
                  produces = MediaType.APPLICATION_JSON_VALUE,
                  consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails);
+    ResponseEntity<List<UserCurrentQuotasDto>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails);
 }

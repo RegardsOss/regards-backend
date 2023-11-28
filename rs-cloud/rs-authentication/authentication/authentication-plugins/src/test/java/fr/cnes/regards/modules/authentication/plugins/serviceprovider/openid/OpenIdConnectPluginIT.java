@@ -22,7 +22,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo;
@@ -99,9 +99,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                                                             IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING,
                                                                                "http://theia.org/claims/givenname"),
                                                             IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING,
-                                                                               "http://theia.org/claims/lastname"),
-                                                            IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT,
-                                                                               (String) null));
+                                                                               "http://theia.org/claims/lastname"));
 
             PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, "", parameters);
             OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new ConcurrentHashMap<>());

@@ -23,12 +23,12 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileRequestInfoDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileRequestInfoDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
@@ -45,14 +45,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 /**
- * REST Controller to handle requests on {@link FileRequestInfoDTO}s.<br/>
- * Those requests are DTO from {@link FileStorageRequest} {@link FileCopyRequest}, {@link FileCacheRequest} or {@link FileDeletionRequestService}.
+ * REST Controller to handle requests on {@link FileRequestInfoDto}s.<br/>
+ * Those requests are Dto from {@link FileStorageRequestAggregation} {@link FileCopyRequest}, {@link FileCacheRequest}
+ * or {@link FileDeletionRequestService}.
  *
  * @author Sébastien Binda
  */
 @RestController
 @RequestMapping(FileRequestsController.REQUESTS_PATH)
-public class FileRequestsController implements IResourceController<FileRequestInfoDTO> {
+public class FileRequestsController implements IResourceController<FileRequestInfoDto> {
 
     public static final String REQUESTS_PATH = "/requests";
 
@@ -78,12 +79,12 @@ public class FileRequestsController implements IResourceController<FileRequestIn
 
     @RequestMapping(method = RequestMethod.GET, path = STORAGE_PATH + TYPE_PATH)
     @ResourceAccess(description = "Retrieve list of all storage requests", role = DefaultRole.ADMIN)
-    public ResponseEntity<PagedModel<EntityModel<FileRequestInfoDTO>>> search(
+    public ResponseEntity<PagedModel<EntityModel<FileRequestInfoDto>>> search(
         @PathVariable(name = "storage") String storageName,
         @PathVariable(name = "type") FileRequestType type,
         @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status,
         Pageable page,
-        @Parameter(hidden = true) PagedResourcesAssembler<FileRequestInfoDTO> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<FileRequestInfoDto> assembler) {
         return new ResponseEntity<>(toPagedResources(service.getRequestInfos(storageName,
                                                                              type,
                                                                              Optional.ofNullable(status),
@@ -111,8 +112,8 @@ public class FileRequestsController implements IResourceController<FileRequestIn
     }
 
     @Override
-    public EntityModel<FileRequestInfoDTO> toResource(FileRequestInfoDTO element, Object... extras) {
-        EntityModel<FileRequestInfoDTO> resource = resourceService.toResource(element);
+    public EntityModel<FileRequestInfoDto> toResource(FileRequestInfoDto element, Object... extras) {
+        EntityModel<FileRequestInfoDto> resource = resourceService.toResource(element);
         return resource;
     }
 

@@ -29,21 +29,19 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
-import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
-import fr.cnes.regards.modules.storage.dao.IStorageLocationRepository;
-import fr.cnes.regards.modules.storage.dao.IStorageMonitoringRepository;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileRequestInfoDto;
+import fr.cnes.regards.modules.storage.dao.*;
 import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileRequestInfoDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -117,6 +115,9 @@ public class StorageLocationService {
     private IFileStorageRequestRepository storageReqRepo;
 
     @Autowired
+    private IStorageLocationConfigurationRepostory storageLocConfRepo;
+
+    @Autowired
     private CacheService cacheService;
 
     @Autowired
@@ -138,7 +139,7 @@ public class StorageLocationService {
         return storageLocationRepo.findByName(storage);
     }
 
-    public StorageLocationDTO getByName(String storageName) throws ModuleException {
+    public StorageLocationDto getByName(String storageName) throws ModuleException {
         Optional<StorageLocation> oLoc = storageLocationRepo.findByName(storageName);
         Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageName);
         long nbStorageError = storageService.count(storageName, FileRequestStatus.ERROR);
@@ -171,7 +172,7 @@ public class StorageLocationService {
         } else {
             throw new EntityNotFoundException(storageName, StorageLocation.class);
         }
-        return StorageLocationDTO.build(storageName, conf)
+        return StorageLocationDto.build(storageName, conf != null ? conf.toDto() : null)
                                  .withFilesInformation(nbReferencedFiles, nbPendingFiles, totalSizeOfReferencedFiles)
                                  .withPendingActionRemaining(pendingActionRemaining)
                                  .withErrorInformation(nbStorageError, nbDeletionError)
@@ -185,10 +186,10 @@ public class StorageLocationService {
     /**
      * Retrieve all known storage locations with there monitoring informations.
      *
-     * @return {@link StorageLocationDTO}s
+     * @return {@link StorageLocationDto}s
      */
-    public Set<StorageLocationDTO> getAllLocations() throws ModuleException {
-        Set<StorageLocationDTO> locationsDto = Sets.newHashSet();
+    public Set<StorageLocationDto> getAllLocations() throws ModuleException {
+        Set<StorageLocationDto> locationsDto = Sets.newHashSet();
         // Get all monitored locations
         Map<String, StorageLocation> monitoredLocations = storageLocationRepo.findAll()
                                                                              .stream()
@@ -206,7 +207,7 @@ public class StorageLocationService {
             boolean pendingActionRunning = storageService.isPendingActionRunning(conf.getName());
             StorageLocation monitored = monitoredLocations.get(conf.getName());
             if (monitored != null) {
-                locationsDto.add(StorageLocationDTO.build(conf.getName(), conf)
+                locationsDto.add(StorageLocationDto.build(conf.getName(), conf.toDto())
                                                    .withFilesInformation(monitored.getNumberOfReferencedFiles(),
                                                                          monitored.getNumberOfPendingFiles(),
                                                                          monitored.getTotalSizeOfReferencedFilesInKo())
@@ -220,7 +221,7 @@ public class StorageLocationService {
                                                        conf)));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto.add(StorageLocationDTO.build(conf.getName(), conf)
+                locationsDto.add(StorageLocationDto.build(conf.getName(), conf.toDto())
                                                    .withErrorInformation(nbStorageError, nbDeletionError)
                                                    .withRunningProcessesInformation(storageRunning,
                                                                                     deletionRunning,
@@ -235,7 +236,7 @@ public class StorageLocationService {
             long nbStorageError = 0L;
             long nbDeletionError = 0L;
             StorageLocationConfiguration conf = new StorageLocationConfiguration(monitored.getName(), null, null);
-            locationsDto.add(StorageLocationDTO.build(monitored.getName(), conf)
+            locationsDto.add(StorageLocationDto.build(monitored.getName(), conf.toDto())
                                                .withFilesInformation(monitored.getNumberOfReferencedFiles(),
                                                                      monitored.getNumberOfPendingFiles(),
                                                                      monitored.getTotalSizeOfReferencedFilesInKo())
@@ -476,13 +477,13 @@ public class StorageLocationService {
         } while (deletionReqPage.hasNext());
 
         // CASE STORAGE REQUESTS, retry them all
-        Page<FileStorageRequest> storageReqPage;
+        Page<FileStorageRequestAggregation> storageReqPage;
         do {
             storageReqPage = this.storageReqRepo.findByStatusAndSessionOwnerAndSession(FileRequestStatus.ERROR,
                                                                                        source,
                                                                                        session,
                                                                                        pageToRequest);
-            List<FileStorageRequest> storageReqList = storageReqPage.getContent();
+            List<FileStorageRequestAggregation> storageReqList = storageReqPage.getContent();
             // update all requests status and decrement errors to the session agent
             if (!storageReqList.isEmpty()) {
                 this.storageService.retryBySession(storageReqList, source, session);
@@ -493,30 +494,35 @@ public class StorageLocationService {
     /**
      * Creates a new configuration for the given storage location.
      */
-    public StorageLocationDTO configureLocation(StorageLocationDTO storageLocation) throws ModuleException {
+    public StorageLocationDto configureLocation(StorageLocationDto storageLocation) throws ModuleException {
         Assert.notNull(storageLocation, "Storage location to configure can not be null");
         Assert.notNull(storageLocation.getName(), "Storage location name to configure can not be null");
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
-        StorageLocationConfiguration newConf = pLocationConfService.create(storageLocation.getName(),
-                                                                           storageLocation.getConfiguration()
-                                                                                          .getPluginConfiguration(),
-                                                                           storageLocation.getConfiguration()
-                                                                                          .getAllocatedSizeInKo());
-        return StorageLocationDTO.build(storageLocation.getName(), newConf)
-                                 .withAllowPhysicalDeletion(pLocationConfService.allowPhysicalDeletion(newConf));
+        StorageLocationConfiguration conf = pLocationConfService.create(storageLocation.getName(),
+                                                                        storageLocation.getConfiguration()
+                                                                                       .getPluginConfiguration()
+                                                                        != null ?
+                                                                            PluginConfiguration.fromDto(storageLocation.getConfiguration()
+                                                                                                                       .getPluginConfiguration()) :
+                                                                            null,
+                                                                        storageLocation.getConfiguration()
+                                                                                       .getAllocatedSizeInKo());
+        return StorageLocationDto.build(storageLocation.getName(), conf.toDto())
+                                 .withAllowPhysicalDeletion(pLocationConfService.allowPhysicalDeletion(conf));
     }
 
     /**
      * Update the configuration of the given storage location.
      */
-    public StorageLocationDTO updateLocationConfiguration(String storageName, StorageLocationDTO storageLocation)
+    public StorageLocationDto updateLocationConfiguration(String storageName, StorageLocationDto storageLocation)
         throws ModuleException {
         Assert.notNull(storageLocation, "Storage location to configure can not be null");
         Assert.notNull(storageLocation.getName(), "Storage location name to update can not be null");
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
         StorageLocationConfiguration newConf = pLocationConfService.update(storageName,
-                                                                           storageLocation.getConfiguration());
-        return StorageLocationDTO.build(storageLocation.getName(), newConf)
+                                                                           StorageLocationConfiguration.fromDto(
+                                                                               storageLocation.getConfiguration()));
+        return StorageLocationDto.build(storageLocation.getName(), newConf.toDto())
                                  .withAllowPhysicalDeletion(pLocationConfService.allowPhysicalDeletion(newConf));
     }
 
@@ -553,11 +559,11 @@ public class StorageLocationService {
         }
     }
 
-    public Page<FileRequestInfoDTO> getRequestInfos(String storageName,
+    public Page<FileRequestInfoDto> getRequestInfos(String storageName,
                                                     FileRequestType type,
                                                     Optional<FileRequestStatus> status,
                                                     Pageable page) {
-        Page<FileRequestInfoDTO> results = Page.empty(page);
+        Page<FileRequestInfoDto> results = Page.empty(page);
         switch (type) {
             case AVAILABILITY:
                 break;
@@ -580,7 +586,7 @@ public class StorageLocationService {
             case REFERENCE:
                 break;
             case STORAGE:
-                Page<FileStorageRequest> requests;
+                Page<FileStorageRequestAggregation> requests;
                 if (status.isPresent()) {
                     requests = storageService.search(storageName, status.get(), page);
                 } else {
@@ -597,24 +603,24 @@ public class StorageLocationService {
         return results;
     }
 
-    private FileRequestInfoDTO toRequestInfosDto(FileStorageRequest request) {
+    private FileRequestInfoDto toRequestInfosDto(FileStorageRequestAggregation request) {
         String fileName = "";
         if (request.getMetaInfo() != null) {
             fileName = request.getMetaInfo().getFileName();
         }
-        return FileRequestInfoDTO.build(request.getId(),
+        return FileRequestInfoDto.build(request.getId(),
                                         fileName,
                                         FileRequestType.STORAGE,
                                         request.getStatus(),
                                         request.getErrorCause());
     }
 
-    private FileRequestInfoDTO toRequestInfosDto(FileDeletionRequest request) {
+    private FileRequestInfoDto toRequestInfosDto(FileDeletionRequest request) {
         String fileName = "";
         if ((request.getFileReference() != null) && (request.getFileReference().getMetaInfo() != null)) {
             fileName = request.getFileReference().getMetaInfo().getFileName();
         }
-        return FileRequestInfoDTO.build(request.getId(),
+        return FileRequestInfoDto.build(request.getId(),
                                         fileName,
                                         FileRequestType.DELETION,
                                         request.getStatus(),

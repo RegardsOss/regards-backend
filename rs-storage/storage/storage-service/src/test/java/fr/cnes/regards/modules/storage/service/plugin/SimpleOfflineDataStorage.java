@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.domain.plugin.*;
 import org.apache.commons.lang.NotImplementedException;
 
@@ -51,7 +51,7 @@ public class SimpleOfflineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(Collection<FileStorageRequest> fileReferenceRequests) {
+    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregation> prepareForStorage(Collection<FileStorageRequestAggregation> fileReferenceRequests) {
         throw new NotImplementedException();
     }
 

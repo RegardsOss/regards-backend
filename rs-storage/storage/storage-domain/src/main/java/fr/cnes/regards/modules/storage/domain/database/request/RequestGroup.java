@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.storage.domain.database.request;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;

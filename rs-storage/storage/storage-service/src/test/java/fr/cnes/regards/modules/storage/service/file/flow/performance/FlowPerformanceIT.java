@@ -22,24 +22,24 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.storage.dao.FileReferenceSpecification;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.file.flow.AvailabilityFlowItemHandler;
 import fr.cnes.regards.modules.storage.service.file.flow.DeletionFlowHandler;
+import fr.cnes.regards.modules.storage.service.file.flow.FilesStorageRequestHandler;
 import fr.cnes.regards.modules.storage.service.file.flow.ReferenceFlowItemHandler;
-import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -84,7 +84,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     private ReferenceFlowItemHandler referenceFlowHandler;
 
     @Autowired
-    private StorageFlowItemHandler storeFlowHandler;
+    private FilesStorageRequestHandler storeFlowHandler;
 
     @Autowired
     private AvailabilityFlowItemHandler availabilityHandler;
@@ -94,7 +94,6 @@ public class FlowPerformanceIT extends AbstractStorageIT {
 
     @Before
     public void initialize() throws ModuleException {
-
         LOGGER.info("----- Tests initialization -----");
         Mockito.clearInvocations(publisher);
 
@@ -160,15 +159,15 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     @Test
     public void referenceFileWithManyOwners() {
         String checksum = UUID.randomUUID().toString();
-        Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
-        List<ReferenceFlowItem> items = new ArrayList<>();
+        Set<FileReferenceRequestDto> requests = Sets.newHashSet();
+        List<FilesReferenceEvent> items = new ArrayList<>();
         for (int i = 0; i < 5_000; i++) {
             items.clear();
             requests.clear();
             String newOwner = "owner-" + UUID.randomUUID().toString();
             String sessionOwner = "source-" + i;
             String session = "session-" + i;
-            requests.add(FileReferenceRequestDTO.build(checksum,
+            requests.add(FileReferenceRequestDto.build(checksum,
                                                        checksum,
                                                        "MD5",
                                                        "application/octet-stream",
@@ -178,7 +177,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                        "file://storage/location/file1",
                                                        sessionOwner,
                                                        session));
-            items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
+            items.add(new FilesReferenceEvent(requests, UUID.randomUUID().toString()));
             referenceFlowHandler.handleBatch(items);
         }
 
@@ -189,14 +188,14 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         LOGGER.info(" --------     REFERENCE TEST     --------- ");
         String refStorage = "storage-1";
         String storage = "storage" + UUID.randomUUID().toString();
-        List<ReferenceFlowItem> items = new ArrayList<>();
+        List<FilesReferenceEvent> items = new ArrayList<>();
         for (int i = 0; i < 5000; i++) {
             String newOwner = "owner-" + UUID.randomUUID().toString();
             String sessionOwner = "source-" + i;
             String session = "session-" + i;
             String checksum = UUID.randomUUID().toString();
-            Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
-            requests.add(FileReferenceRequestDTO.build("quicklook.1-" + checksum,
+            Set<FileReferenceRequestDto> requests = Sets.newHashSet();
+            requests.add(FileReferenceRequestDto.build("quicklook.1-" + checksum,
                                                        UUID.randomUUID().toString(),
                                                        "MD5",
                                                        "application/octet-stream",
@@ -206,7 +205,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                        "file://storage/location/quicklook1",
                                                        sessionOwner,
                                                        session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.2-" + checksum,
+            requests.add(FileReferenceRequestDto.build("quicklook.2-" + checksum,
                                                        UUID.randomUUID().toString(),
                                                        "MD5",
                                                        "application/octet-stream",
@@ -216,7 +215,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                        "file://storage/location/quicklook1",
                                                        sessionOwner,
                                                        session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.3-" + checksum,
+            requests.add(FileReferenceRequestDto.build("quicklook.3-" + checksum,
                                                        UUID.randomUUID().toString(),
                                                        "MD5",
                                                        "application/octet-stream",
@@ -226,7 +225,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                        "file://storage/location/quicklook1",
                                                        sessionOwner,
                                                        session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.4-" + checksum,
+            requests.add(FileReferenceRequestDto.build("quicklook.4-" + checksum,
                                                        UUID.randomUUID().toString(),
                                                        "MD5",
                                                        "application/octet-stream",
@@ -237,7 +236,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                        sessionOwner,
                                                        session));
             // Create a new bus message File reference request
-            requests.add(FileReferenceRequestDTO.build("file.name",
+            requests.add(FileReferenceRequestDto.build("file.name",
                                                        checksum,
                                                        "MD5",
                                                        "application/octet-stream",
@@ -247,7 +246,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                        "file://storage/location/file.name",
                                                        sessionOwner,
                                                        session));
-            items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
+            items.add(new FilesReferenceEvent(requests, UUID.randomUUID().toString()));
             if (items.size() >= referenceFlowHandler.getBatchSize()) {
                 referenceFlowHandler.handleBatch(items);
                 items.clear();
@@ -276,21 +275,21 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     public void storeFiles() throws InterruptedException {
         LOGGER.info(" --------     STORE TEST     --------- ");
         OffsetDateTime now = OffsetDateTime.now();
-        List<StorageFlowItem> items = Lists.newArrayList();
+        List<FilesStorageRequestEvent> items = Lists.newArrayList();
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
             // Create a new bus message File reference request
-            items.add(StorageFlowItem.build(FileStorageRequestDTO.build("file.name",
-                                                                        checksum,
-                                                                        "MD5",
-                                                                        "application/octet-stream",
-                                                                        "owner-test",
-                                                                        SESSION_OWNER,
-                                                                        SESSION,
-                                                                        originUrl,
-                                                                        ONLINE_CONF_LABEL,
-                                                                        Optional.empty()),
-                                            UUID.randomUUID().toString()));
+            items.add(new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
+                                                                               checksum,
+                                                                               "MD5",
+                                                                               "application/octet-stream",
+                                                                               "owner-test",
+                                                                               SESSION_OWNER,
+                                                                               SESSION,
+                                                                               originUrl,
+                                                                               ONLINE_CONF_LABEL,
+                                                                               Optional.empty()),
+                                                   UUID.randomUUID().toString()));
 
             // Publish request
             if (items.size() > storeFlowHandler.getBatchSize()) {
@@ -348,9 +347,9 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         int nbToDelete = 500;
         Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         Long total = page.getTotalElements();
-        List<DeletionFlowItem> items = Lists.newArrayList();
+        List<FilesDeletionEvent> items = Lists.newArrayList();
         for (FileReference fileRef : page.getContent()) {
-            items.add(DeletionFlowItem.build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+            items.add(new FilesDeletionEvent(FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                           fileRef.getLocation().getStorage(),
                                                                           FILE_REF_OWNER,
                                                                           SESSION_OWNER,
@@ -372,11 +371,11 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     public void deleteStoredFiles() throws InterruptedException {
         LOGGER.info(" --------     DELETE TEST     --------- ");
         int nbToDelete = 500;
-        List<DeletionFlowItem> items = Lists.newArrayList();
+        List<FilesDeletionEvent> items = Lists.newArrayList();
         Page<FileReference> page = fileRefService.search(NEARLINE_CONF_LABEL,
                                                          PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         for (FileReference fileRef : page.getContent()) {
-            items.add(DeletionFlowItem.build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+            items.add(new FilesDeletionEvent(FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                           fileRef.getLocation().getStorage(),
                                                                           FILE_REF_OWNER,
                                                                           SESSION_OWNER,
@@ -406,10 +405,10 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepo.count());
         Assert.assertTrue("There should be checksums to restore from nearline storages", nlChecksums.size() > 0);
         // Create a new bus message File reference request
-        AvailabilityFlowItem item = AvailabilityFlowItem.build(nlChecksums,
-                                                               OffsetDateTime.now().plusDays(1),
-                                                               UUID.randomUUID().toString());
-        List<AvailabilityFlowItem> items = new ArrayList<>();
+        FilesAvailabilityRequestEvent item = new FilesAvailabilityRequestEvent(nlChecksums,
+                                                                               OffsetDateTime.now().plusDays(1),
+                                                                               UUID.randomUUID().toString());
+        List<FilesAvailabilityRequestEvent> items = new ArrayList<>();
         items.add(item);
         availabilityHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());

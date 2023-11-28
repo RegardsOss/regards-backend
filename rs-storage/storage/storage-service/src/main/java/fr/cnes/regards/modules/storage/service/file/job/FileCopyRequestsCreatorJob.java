@@ -31,11 +31,11 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesCopyEvent;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
-import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
@@ -58,7 +58,7 @@ import java.util.UUID;
 
 /**
  * JOB to handle copy requests on many {@link FileReference}s.<br>
- * This jobs requests database to retrieve {@link FileReference}s with search criterion and for each, send a {@link CopyFlowItem} events.<br>
+ * This jobs requests database to retrieve {@link FileReference}s with search criterion and for each, send a {@link FilesCopyEvent} events.<br>
  * Events can be then handled by the first available storage microservice to create associated {@link FileCopyRequest}.<br>
  * NOTE : Be careful that the {@link #run()} stays not transactional.
  *
@@ -135,7 +135,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     }
 
     /**
-     * Publish {@link CopyFlowItem}s for each {@link FileReference} to copy from one destination to an other one.
+     * Publish {@link FilesCopyEvent}s for each {@link FileReference} to copy from one destination to an other one.
      */
     private final Task publishCopyFlowItemsTask = () -> {
         lockingTaskExecutors.assertLocked();
@@ -143,7 +143,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         logger.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ...",
                     storageLocationSourceId,
                     storageLocationDestinationId);
-        Pageable pageRequest = PageRequest.of(0, CopyFlowItem.MAX_REQUEST_PER_GROUP);
+        Pageable pageRequest = PageRequest.of(0, FilesCopyEvent.MAX_REQUEST_PER_GROUP);
         Page<FileReference> pageResults;
         Optional<Path> sourceRootPath = sourcePlugin.getRootPath();
         logger.info("[COPY JOB] Origin source location {}", sourceRootPath.orElse(Paths.get("/")));
@@ -157,7 +157,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             }
             totalPages = pageResults.getTotalPages();
             String groupId = UUID.randomUUID().toString();
-            Set<FileCopyRequestDTO> requests = Sets.newHashSet();
+            Set<FileCopyRequestDto> requests = Sets.newHashSet();
             for (FileReference fileRef : pageResults.getContent()) {
                 try {
                     Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(),
@@ -167,7 +167,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                     if (desinationFilePath.isPresent()) {
                         nbFilesToCopy++;
                         // For each file reference located in the given path, send a copy request to the destination storage location.
-                        requests.add(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                        requests.add(FileCopyRequestDto.build(fileRef.getMetaInfo().getChecksum(),
                                                               storageLocationDestinationId,
                                                               desinationFilePath.get().toString(),
                                                               sessionOwner,
@@ -181,7 +181,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                 }
                 this.advanceCompletion();
             }
-            publisher.publish(CopyFlowItem.build(requests, groupId));
+            publisher.publish(new FilesCopyEvent(requests, groupId));
             pageRequest = pageRequest.next();
         } while (pageResults.hasNext());
         String message = String.format("Copy process found %s files to copy from %s:%s to %s:%s.",

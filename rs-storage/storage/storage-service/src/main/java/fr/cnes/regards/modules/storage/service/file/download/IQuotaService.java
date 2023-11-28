@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.storage.service.file.download;
 
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import io.vavr.control.Try;
 
 import java.util.List;
@@ -53,9 +53,11 @@ public interface IQuotaService<T> {
 
     Try<DownloadQuotaLimitsDto> upsertDownloadQuotaLimits(DownloadQuotaLimitsDto newLimits);
 
-    UserCurrentQuotas getCurrentQuotas(String userEmail);
+    UserCurrentQuotasDto getCurrentQuotas(String userEmail);
 
-    Try<List<UserCurrentQuotas>> getCurrentQuotas(String[] userEmails);
+    Try<List<UserCurrentQuotasDto>> getCurrentQuotas(String[] userEmails);
+
+    Long getMaxQuota();
 
     void removeQuotaFor(Set<String> emails);
 

@@ -2,11 +2,11 @@ package fr.cnes.regards.modules.access.services.rest.user.mock;
 
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -70,31 +70,36 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
-        return new ResponseEntity<>(new UserCurrentQuotas(authResolver.getUser(),
-                                                          USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
-                                                          USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
-                                                          CURRENT_USER_QUOTA_STUB,
-                                                          CURRENT_USER_RATE_STUB), HttpStatus.OK);
+    public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas() {
+        return new ResponseEntity<>(new UserCurrentQuotasDto(authResolver.getUser(),
+                                                             USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+                                                             USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
+                                                             CURRENT_USER_QUOTA_STUB,
+                                                             CURRENT_USER_RATE_STUB), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(String userEmail) {
-        return new ResponseEntity<>(new UserCurrentQuotas(authResolver.getUser(),
-                                                          USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
-                                                          USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
-                                                          CURRENT_USER_QUOTA_STUB,
-                                                          CURRENT_USER_RATE_STUB), HttpStatus.OK);
+    public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas(String userEmail) {
+        return new ResponseEntity<>(new UserCurrentQuotasDto(authResolver.getUser(),
+                                                             USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+                                                             USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
+                                                             CURRENT_USER_QUOTA_STUB,
+                                                             CURRENT_USER_RATE_STUB), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
+    public ResponseEntity<Long> getMaxQuota() {
+        return new ResponseEntity<>(10_000L, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<UserCurrentQuotasDto>> getCurrentQuotasList(String[] userEmails) {
         return new ResponseEntity<>(Arrays.stream(userEmails)
-                                          .map(userEmail -> new UserCurrentQuotas(userEmail,
-                                                                                  USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
-                                                                                  USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
-                                                                                  CURRENT_USER_QUOTA_STUB,
-                                                                                  CURRENT_USER_RATE_STUB))
+                                          .map(userEmail -> new UserCurrentQuotasDto(userEmail,
+                                                                                     USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+                                                                                     USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
+                                                                                     CURRENT_USER_QUOTA_STUB,
+                                                                                     CURRENT_USER_RATE_STUB))
                                           .collect(Collectors.toList()), HttpStatus.OK);
     }
 
@@ -104,7 +109,7 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() {
+    public ResponseEntity<List<EntityModel<StorageLocationDto>>> retrieve() {
         return null;
     }
 
@@ -114,7 +119,7 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
+    public ResponseEntity<Set<FileReferenceDto>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
         return null;
     }
 

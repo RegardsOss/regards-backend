@@ -47,8 +47,8 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -434,13 +434,13 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
      */
     private FeatureDeletionRequest publishFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
         fdr.setStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED);
-        List<FileDeletionRequestDTO> storageRequests = new ArrayList<>();
+        List<FileDeletionRequestDto> storageRequests = new ArrayList<>();
         for (FeatureFile file : feature.getFeature().getFiles()) {
             FeatureFileAttributes attribute = file.getAttributes();
             for (FeatureFileLocation location : file.getLocations()) {
                 // Create a storage request for each location of the file
                 if (location.getStorage() != null) {
-                    storageRequests.add(FileDeletionRequestDTO.build(attribute.getChecksum(),
+                    storageRequests.add(FileDeletionRequestDto.build(attribute.getChecksum(),
                                                                      location.getStorage(),
                                                                      feature.getFeature().getUrn().toString(),
                                                                      feature.getSessionOwner(),
@@ -455,7 +455,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         }
         // If multiple group is returned we only save the first one.
         // Multiple groups can be returned if the number of requests is over the limit in one group
-        Collection<fr.cnes.regards.modules.storage.client.RequestInfo> responseInfos = this.storageClient.delete(
+        Collection<fr.cnes.regards.modules.filecatalog.client.RequestInfo> responseInfos = this.storageClient.delete(
             storageRequests);
         if (responseInfos.size() > 1) {
             LOGGER.warn(

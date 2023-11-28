@@ -30,12 +30,13 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -78,8 +79,8 @@ public class FeatureFilesService {
     @Transactional(noRollbackFor = ModuleException.class)
     public void handleFeatureUpdateFiles(FeatureUpdateRequest request, FeatureEntity entity) throws ModuleException {
         if (!CollectionUtils.isEmpty(request.getFeature().getFiles())) {
-            Set<FileReferenceRequestDTO> referenceRequests = Sets.newHashSet();
-            Set<FileStorageRequestDTO> storageRequests = Sets.newHashSet();
+            Set<FileReferenceRequestDto> referenceRequests = Sets.newHashSet();
+            Set<FileStorageRequestDto> storageRequests = Sets.newHashSet();
 
             // For each file from feature update information, check if it's a new file or if the file already exists if there
             // is some new locations.
@@ -115,15 +116,15 @@ public class FeatureFilesService {
      * @param fileToUpdate      {@link FeatureFile} new file to add to current feature
      * @param storageLocations  {@link String}s storage locations to store new files
      * @param requestOwner      {@link String} update request owner
-     * @param referenceRequests {@link FileReferenceRequestDTO}s containing all reference requests to send to storage
-     * @param storageRequests   {@link FileStorageRequestDTO}s containing all storage requests to send to storage
+     * @param referenceRequests {@link FileReferenceRequestDto}s containing all reference requests to send to storage
+     * @param storageRequests   {@link FileStorageRequestDto}s containing all storage requests to send to storage
      */
     private void handleFeatureUpdateFile(FeatureEntity feature,
                                          FeatureFile fileToUpdate,
                                          List<StorageMetadata> storageLocations,
                                          String requestOwner,
-                                         Set<FileReferenceRequestDTO> referenceRequests,
-                                         Set<FileStorageRequestDTO> storageRequests) {
+                                         Set<FileReferenceRequestDto> referenceRequests,
+                                         Set<FileStorageRequestDto> storageRequests) {
 
         // Check if file to update in given feature is a new file or if it contains a new location.
         Optional<FeatureFile> existingFile = fileAlreadyExists(fileToUpdate, feature);
@@ -147,7 +148,7 @@ public class FeatureFilesService {
         // For each new locations, create the associated storage requests (reference or storage)
         for (FeatureFileLocation loc : newLocations) {
             if (loc.getStorage() != null) {
-                referenceRequests.add(FileReferenceRequestDTO.build(attributes.getFilename(),
+                referenceRequests.add(FileReferenceRequestDto.build(attributes.getFilename(),
                                                                     attributes.getChecksum(),
                                                                     attributes.getAlgorithm(),
                                                                     attributes.getMimeType().toString(),
@@ -162,7 +163,7 @@ public class FeatureFilesService {
                 // to given storageLocations
                 for (StorageMetadata storage : storageLocations) {
                     // Create one storage request for each storageLocation
-                    storageRequests.add(FileStorageRequestDTO.build(attributes.getFilename(),
+                    storageRequests.add(FileStorageRequestDto.build(attributes.getFilename(),
                                                                     attributes.getChecksum(),
                                                                     attributes.getAlgorithm(),
                                                                     attributes.getMimeType().toString(),
@@ -171,6 +172,16 @@ public class FeatureFilesService {
                                                                     feature.getSession(),
                                                                     loc.getUrl(),
                                                                     storage.getPluginBusinessId(),
+                                                                    new FileReferenceMetaInfoDto(attributes.getChecksum(),
+                                                                                                 attributes.getAlgorithm(),
+                                                                                                 attributes.getFilename(),
+                                                                                                 attributes.getFilesize(),
+                                                                                                 null,
+                                                                                                 null,
+                                                                                                 attributes.getMimeType()
+                                                                                                           .toString(),
+                                                                                                 attributes.getDataType()
+                                                                                                           .toString()),
                                                                     Optional.ofNullable(storage.getStorePath())));
                 }
             }
@@ -237,15 +248,15 @@ public class FeatureFilesService {
      * Update given {@link FeatureEntity} files if needed by reading storage responses.
      *
      * @param originalFeature  {@link Feature} to update
-     * @param storageResponses {@link RequestResultInfoDTO}s storage requests responses
+     * @param storageResponses {@link RequestResultInfoDto}s storage requests responses
      * @param requestedFiles   original request files
      * @return FeatureEntity updated (or not) feature
      */
     public FeatureEntity updateFeatureLocations(FeatureEntity originalFeature,
-                                                List<RequestResultInfoDTO> storageResponses,
+                                                List<RequestResultInfoDto> storageResponses,
                                                 List<FeatureFile> requestedFiles) {
         // For each feature, handle each request info from storage
-        for (RequestResultInfoDTO info : storageResponses) {
+        for (RequestResultInfoDto info : storageResponses) {
             String checksum = info.getResultFile().getMetaInfo().getChecksum();
             Optional<FeatureFile> oFileToUpdate = requestedFiles.stream()
                                                                 .filter(f -> f.getAttributes()
@@ -257,7 +268,7 @@ public class FeatureFilesService {
             String filename = info.getResultFile().getMetaInfo().getFileName();
             Long newFileSize = info.getResultFile().getMetaInfo().getFileSize();
             String newAlgorithm = info.getResultFile().getMetaInfo().getAlgorithm();
-            MimeType mimeType = info.getResultFile().getMetaInfo().getMimeType();
+            MimeType mimeType = MimeType.valueOf(info.getResultFile().getMetaInfo().getMimeType());
             DataType newDataType = DataType.parse(info.getResultFile().getMetaInfo().getType(), DataType.RAWDATA);
             // If file is present on request original files use specific metadata.
             // Else use the response metadata
@@ -307,8 +318,8 @@ public class FeatureFilesService {
 
         long subProcessStart = System.currentTimeMillis();
 
-        Set<FileReferenceRequestDTO> referenceRequests = Sets.newHashSet();
-        Set<FileStorageRequestDTO> storageRequests = Sets.newHashSet();
+        Set<FileReferenceRequestDto> referenceRequests = Sets.newHashSet();
+        Set<FileStorageRequestDto> storageRequests = Sets.newHashSet();
 
         for (FeatureFile file : fcr.getFeature().getFiles()) {
             FeatureFileAttributes attributes = file.getAttributes();
@@ -316,7 +327,7 @@ public class FeatureFilesService {
                 FeatureCreationMetadataEntity metadata = fcr.getMetadata();
                 // there is no metadata but a file location so we will update reference
                 if (!metadata.hasStorage()) {
-                    referenceRequests.add(FileReferenceRequestDTO.build(attributes.getFilename(),
+                    referenceRequests.add(FileReferenceRequestDto.build(attributes.getFilename(),
                                                                         attributes.getChecksum(),
                                                                         attributes.getAlgorithm(),
                                                                         attributes.getMimeType().toString(),
@@ -329,7 +340,7 @@ public class FeatureFilesService {
                 }
                 for (StorageMetadata storageMetadata : metadata.getStorages()) {
                     if (loc.getStorage() == null) {
-                        storageRequests.add(FileStorageRequestDTO.build(attributes.getFilename(),
+                        storageRequests.add(FileStorageRequestDto.build(attributes.getFilename(),
                                                                         attributes.getChecksum(),
                                                                         attributes.getAlgorithm(),
                                                                         attributes.getMimeType().toString(),
@@ -338,9 +349,19 @@ public class FeatureFilesService {
                                                                         metadata.getSession(),
                                                                         loc.getUrl(),
                                                                         storageMetadata.getPluginBusinessId(),
+                                                                        new FileReferenceMetaInfoDto(attributes.getChecksum(),
+                                                                                                     attributes.getAlgorithm(),
+                                                                                                     attributes.getFilename(),
+                                                                                                     attributes.getFilesize(),
+                                                                                                     null,
+                                                                                                     null,
+                                                                                                     attributes.getMimeType()
+                                                                                                               .toString(),
+                                                                                                     attributes.getDataType()
+                                                                                                               .toString()),
                                                                         Optional.ofNullable(storageMetadata.getStorePath())));
                     } else {
-                        referenceRequests.add(FileReferenceRequestDTO.build(attributes.getFilename(),
+                        referenceRequests.add(FileReferenceRequestDto.build(attributes.getFilename(),
                                                                             attributes.getChecksum(),
                                                                             attributes.getAlgorithm(),
                                                                             attributes.getMimeType().toString(),
@@ -415,10 +436,10 @@ public class FeatureFilesService {
      * @throws ModuleException thrown if too much storage requests needs to be sent
      */
     private void sendStorageRequestsToStorage(AbstractFeatureRequest request,
-                                              Collection<FileStorageRequestDTO> storageRequests)
+                                              Collection<FileStorageRequestDto> storageRequests)
         throws ModuleException {
         if (storageRequests != null && !storageRequests.isEmpty()) {
-            if (storageRequests.size() > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
+            if (storageRequests.size() > FilesReferenceEvent.MAX_REQUEST_PER_GROUP) {
                 throw new ModuleException(String.format("Error storing feature files. Too much files for a request (%s)",
                                                         storageRequests.size()));
             }
@@ -439,10 +460,10 @@ public class FeatureFilesService {
      * @throws ModuleException thrown if too much storage requests needs to be sent
      */
     private void sendReferenceRequestsToStorage(AbstractFeatureRequest request,
-                                                Collection<FileReferenceRequestDTO> referenceRequests)
+                                                Collection<FileReferenceRequestDto> referenceRequests)
         throws ModuleException {
         if (referenceRequests != null && !referenceRequests.isEmpty()) {
-            if (referenceRequests.size() > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
+            if (referenceRequests.size() > FilesReferenceEvent.MAX_REQUEST_PER_GROUP) {
                 throw new ModuleException(String.format(
                     "Error referencing feature files. Too much files for a request (%s)",
                     referenceRequests.size()));

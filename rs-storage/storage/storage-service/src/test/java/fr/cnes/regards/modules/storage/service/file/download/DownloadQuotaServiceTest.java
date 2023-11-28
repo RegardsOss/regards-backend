@@ -9,9 +9,13 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserEvent;
-import fr.cnes.regards.modules.storage.domain.database.*;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
+import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
+import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
+import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
 import fr.cnes.regards.modules.storage.service.settings.StorageSettingService;
 import io.vavr.Tuple;
@@ -346,13 +350,13 @@ public class DownloadQuotaServiceTest {
         doReturn(Tuple.of(new UserQuotaAggregate(stubQuotaCounter), new UserRateAggregate(stubRateGauge))).when(
             quotaManager).get(quota);
 
-        UserCurrentQuotas result = quotaService.getCurrentQuotas(userEmail);
+        UserCurrentQuotasDto result = quotaService.getCurrentQuotas(userEmail);
 
-        UserCurrentQuotas expected = new UserCurrentQuotas(userEmail,
-                                                           quota.getMaxQuota(),
-                                                           quota.getRateLimit(),
-                                                           stubQuotaCounter,
-                                                           stubRateGauge);
+        UserCurrentQuotasDto expected = new UserCurrentQuotasDto(userEmail,
+                                                                 quota.getMaxQuota(),
+                                                                 quota.getRateLimit(),
+                                                                 stubQuotaCounter,
+                                                                 stubRateGauge);
         assertEquals(expected, result);
     }
 
@@ -368,7 +372,7 @@ public class DownloadQuotaServiceTest {
 
         Try<DownloadQuotaLimitsDto> result = quotaService.getDownloadQuotaLimits(userEmail);
 
-        DownloadQuotaLimitsDto expected = DownloadQuotaLimitsDto.fromDownloadQuotaLimits(quota);
+        DownloadQuotaLimitsDto expected = quota.toDto();
         assertEquals(expected, result.get());
     }
 

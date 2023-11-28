@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.domain.database;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -179,4 +180,9 @@ public class FileReference {
     public void setReferenced(boolean referenced) {
         this.referenced = true;
     }
+
+    public FileReferenceDto toDto() {
+        return new FileReferenceDto(storageDate, metaInfo.toDto(), location.toDto(), owners);
+    }
+
 }

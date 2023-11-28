@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -80,5 +80,5 @@ public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUp
      *
      * @param errorRequests error requests results
      */
-    void handleStorageError(Collection<RequestResultInfoDTO> errorRequests);
+    void handleStorageError(Collection<RequestResultInfoDto> errorRequests);
 }

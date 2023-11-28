@@ -55,6 +55,7 @@
         <module>plugins-client</module>
         <module>plugins-dao</module>
         <module>plugins-domain</module>
+        <module>plugins-dto</module>
         <module>plugins-rest</module>
         <module>plugins-service</module>
     </modules>

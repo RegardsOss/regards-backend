@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
@@ -197,7 +197,7 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
                                           .next()
                                           .getStorage());
     }
-    
+
     @Test
     public void test_acquisition_processing_chain_in_running_but_inactive_job() throws ModuleException {
         // Given

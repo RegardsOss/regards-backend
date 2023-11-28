@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.storage.domain.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.filecatalog.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.dto.AbstractStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,10 +46,10 @@ public interface IStorageLocation {
     /**
      * Dispatch given storage requests in one or many working subsets. Each subset will result to a storage job.
      *
-     * @param fileReferenceRequests {@link FileStorageRequest}s to dispatch
+     * @param fileReferenceRequests {@link FileStorageRequestAggregation}s to dispatch
      * @return generated subsets.
      */
-    PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(Collection<FileStorageRequest> fileReferenceRequests);
+    PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregation> prepareForStorage(Collection<FileStorageRequestAggregation> fileReferenceRequests);
 
     /**
      * Dispatch given deletion requests in one or many working subsets. Each subset will result to a deletion job.

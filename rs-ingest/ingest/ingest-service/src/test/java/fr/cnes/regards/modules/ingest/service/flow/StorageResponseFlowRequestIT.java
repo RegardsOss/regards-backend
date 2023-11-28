@@ -24,6 +24,11 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
@@ -43,11 +48,6 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,23 +132,23 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
 
         // Generated associated storage response
         String groupId = UUID.randomUUID().toString();
-        Collection<RequestResultInfoDTO> results = Sets.newHashSet();
-        results.add(RequestResultInfoDTO.build(groupId,
+        Collection<RequestResultInfoDto> results = Sets.newHashSet();
+        results.add(RequestResultInfoDto.build(groupId,
                                                fileToStoreChecksum,
                                                storage,
                                                storePath,
                                                owners,
-                                               FileReferenceDTO.build(OffsetDateTime.now(),
-                                                                      FileReferenceMetaInfoDTO.build(fileToStoreChecksum,
-                                                                                                     "MD5",
-                                                                                                     fileName,
-                                                                                                     10L,
-                                                                                                     null,
-                                                                                                     null,
-                                                                                                     MediaType.APPLICATION_JSON,
-                                                                                                     null),
-                                                                      FileLocationDTO.build(storage, storedUrl),
-                                                                      owners),
+                                               new FileReferenceDto(OffsetDateTime.now(),
+                                                                    new FileReferenceMetaInfoDto(fileToStoreChecksum,
+                                                                                                 "MD5",
+                                                                                                 fileName,
+                                                                                                 10L,
+                                                                                                 null,
+                                                                                                 null,
+                                                                                                 MediaType.APPLICATION_JSON.toString(),
+                                                                                                 null),
+                                                                    new FileLocationDto(storage, storedUrl),
+                                                                    owners),
                                                null));
         IngestRequest request = IngestRequest.build(null,
                                                     IngestMetadata.build(sessionOwner,

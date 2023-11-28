@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 
 import java.net.URL;
 
@@ -34,24 +34,24 @@ import java.net.URL;
 public interface IStorageProgressManager {
 
     /**
-     * Notify system that the given {@link FileStorageRequest} is fully stored.
+     * Notify system that the given {@link FileStorageRequestAggregation} is fully stored.
      *
-     * @param fileReferenceRequest {@link FileStorageRequest} stored.
+     * @param fileReferenceRequest {@link FileStorageRequestAggregation} stored.
      */
-    public void storageSucceed(FileStorageRequest fileReferenceRequest, URL storedUrl, Long fileSize);
+    public void storageSucceed(FileStorageRequestAggregation fileReferenceRequest, URL storedUrl, Long fileSize);
 
     /**
-     * Notify system that the given {@link FileStorageRequest} is stored, but an asynchronous action
+     * Notify system that the given {@link FileStorageRequestAggregation} is stored, but an asynchronous action
      * is needed to fully store the file. This asynchronous action can be triggered by the plugin or
      * thanks to the {@link IStorageLocation#runPeriodicAction)}. To be fully stored after pending action
      * is over, plugin should call the {@link #storagePendingActionSucceed(String)}.
      *
-     * @param fileReferenceRequest {@link FileStorageRequest} stored.
+     * @param fileReferenceRequest {@link FileStorageRequestAggregation} stored.
      * @param storedUrl            URL to stored file
      * @param fileSize             size of the stored file in bytes
      * @param notifyAdministrators inform administrator that an action is pending on this file
      */
-    void storageSucceedWithPendingActionRemaining(FileStorageRequest fileReferenceRequest,
+    void storageSucceedWithPendingActionRemaining(FileStorageRequestAggregation fileReferenceRequest,
                                                   URL storedUrl,
                                                   Long fileSize,
                                                   Boolean notifyAdministrators);
@@ -65,11 +65,11 @@ public interface IStorageProgressManager {
     void storagePendingActionSucceed(String storedUrl);
 
     /**
-     * Notify the system that the given {@link FileStorageRequest} couldn't be stored.
+     * Notify the system that the given {@link FileStorageRequestAggregation} couldn't be stored.
      *
-     * @param fileReferenceRequest {@link FileStorageRequest} not stored.
+     * @param fileReferenceRequest {@link FileStorageRequestAggregation} not stored.
      * @param cause                {@link String} error message.
      */
-    public void storageFailed(FileStorageRequest fileReferenceRequest, String cause);
+    public void storageFailed(FileStorageRequestAggregation fileReferenceRequest, String cause);
 
 }

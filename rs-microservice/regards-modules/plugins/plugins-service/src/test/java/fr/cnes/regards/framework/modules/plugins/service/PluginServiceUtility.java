@@ -20,8 +20,8 @@ package fr.cnes.regards.framework.modules.plugins.service;
 
 import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 
 import java.util.List;
 import java.util.Set;

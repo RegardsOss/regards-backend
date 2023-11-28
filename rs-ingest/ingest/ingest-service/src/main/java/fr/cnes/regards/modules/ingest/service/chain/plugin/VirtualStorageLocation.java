@@ -27,12 +27,12 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.exception.PluginInitException;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAIPStorageMetadataUpdate;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,20 +92,20 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
 
     private void validateStorageLocationsUsingStorageMicroservice() throws PluginInitException {
         FeignSecurityManager.asSystem();
-        ResponseEntity<List<EntityModel<StorageLocationDTO>>> response = storageRestClient.retrieve();
+        ResponseEntity<List<EntityModel<StorageLocationDto>>> response = storageRestClient.retrieve();
         if (!response.hasBody() || !response.getStatusCode().is2xxSuccessful()) {
             throw new PluginInitException("Failed to retrieve Storage location list from Storage microservice");
         } else {
-            List<StorageLocationDTO> storageLocationList = HateoasUtils.unwrapList(response.getBody());
+            List<StorageLocationDto> storageLocationList = HateoasUtils.unwrapList(response.getBody());
             validateVirtualStorageLocation(storageLocationList);
             validateRealStorageLocation(storageLocationList);
         }
     }
 
-    private void validateRealStorageLocation(List<StorageLocationDTO> storageLocationList) throws PluginInitException {
+    private void validateRealStorageLocation(List<StorageLocationDto> storageLocationList) throws PluginInitException {
         for (StorageMetadata realStorageLocation : realStorageLocations) {
             String realStorageLocationName = realStorageLocation.getPluginBusinessId();
-            Optional<StorageLocationDTO> storageLocationDTO = storageLocationList.stream()
+            Optional<StorageLocationDto> storageLocationDTO = storageLocationList.stream()
                                                                                  .filter(storageLocation -> realStorageLocationName.equals(
                                                                                      storageLocation.getName()))
                                                                                  .findAny();
@@ -118,7 +118,7 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
         }
     }
 
-    private void validateVirtualStorageLocation(List<StorageLocationDTO> storageLocationList)
+    private void validateVirtualStorageLocation(List<StorageLocationDto> storageLocationList)
         throws PluginInitException {
         boolean virtualStorageIsARealStorageLocation = storageLocationList.stream()
                                                                           .anyMatch(storageLocationDTO -> storageLocationDTO.getName()

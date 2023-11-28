@@ -29,6 +29,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
@@ -37,10 +41,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,7 +157,7 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         init();
         Assert.assertEquals("3 storage in ingest metadata at the beginning", 3, aipEntity1.getStorages().size());
         Assert.assertEquals("No event before", 0, aipEntity1.getAip().getHistory().size());
-        Collection<RequestResultInfoDTO> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_3, LOCATION_4);
+        Collection<RequestResultInfoDto> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_3, LOCATION_4);
 
         AIPUpdateResult isUpdated = storageService.addAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
@@ -200,7 +200,7 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
     public void testAddAIPLocationNotUpdating() {
         init();
         // Test with unrelated FAKE_CHECKSUM_4
-        Collection<RequestResultInfoDTO> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_4, LOCATION_2);
+        Collection<RequestResultInfoDto> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_4, LOCATION_2);
         AIPUpdateResult isUpdated = storageService.addAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertFalse("Should not detect any change", isUpdated.isAipEntityUpdated());
         Assert.assertFalse("Should not detect any change", isUpdated.isAipUpdated());
@@ -218,7 +218,7 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         init();
         Assert.assertEquals("3 storage in ingest metadata at the beginning", 3, aipEntity1.getStorages().size());
         Assert.assertEquals("No event before", 0, aipEntity1.getAip().getHistory().size());
-        Collection<RequestResultInfoDTO> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_2, LOCATION_2);
+        Collection<RequestResultInfoDto> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_2, LOCATION_2);
 
         AIPUpdateResult isUpdated = storageService.removeAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
@@ -265,7 +265,7 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
     public void testRemoveAIPLocationNotUpdating() {
         init();
         // Test to remove a location not referenced by the dataobject
-        Collection<RequestResultInfoDTO> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_3, LOCATION_2);
+        Collection<RequestResultInfoDto> storeRequestsInfos = getStorageQueryResult(FAKE_CHECKSUM_3, LOCATION_2);
         AIPUpdateResult isUpdated = storageService.removeAIPLocations(aipEntity1, storeRequestsInfos);
         Assert.assertFalse("Should not detect some change", isUpdated.isAipEntityUpdated());
         Assert.assertFalse("Should not detect some change", isUpdated.isAipUpdated());
@@ -277,25 +277,25 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         Assert.assertFalse("Should not detect some change", isUpdated.isAipUpdated());
     }
 
-    private ArrayList<RequestResultInfoDTO> getStorageQueryResult(String fakeChecksum3, String location) {
-        return Lists.newArrayList(RequestResultInfoDTO.build("groupId",
+    private ArrayList<RequestResultInfoDto> getStorageQueryResult(String fakeChecksum3, String location) {
+        return Lists.newArrayList(RequestResultInfoDto.build("groupId",
                                                              fakeChecksum3,
                                                              location,
                                                              null,
                                                              Sets.newHashSet("someone"),
-                                                             FileReferenceDTO.build(OffsetDateTime.now(),
-                                                                                    FileReferenceMetaInfoDTO.build(
-                                                                                        fakeChecksum3,
-                                                                                        null,
-                                                                                        null,
-                                                                                        null,
-                                                                                        null,
-                                                                                        null,
-                                                                                        null,
-                                                                                        null),
-                                                                                    FileLocationDTO.build(location,
-                                                                                                          "http://someurl.com"),
-                                                                                    Sets.newHashSet()),
+                                                             new FileReferenceDto(OffsetDateTime.now(),
+                                                                                  new FileReferenceMetaInfoDto(
+                                                                                      fakeChecksum3,
+                                                                                      null,
+                                                                                      null,
+                                                                                      null,
+                                                                                      null,
+                                                                                      null,
+                                                                                      null,
+                                                                                      null),
+                                                                                  new FileLocationDto(location,
+                                                                                                      "http://someurl.com"),
+                                                                                  Sets.newHashSet()),
                                                              null));
     }
 }

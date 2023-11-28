@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileGroupRequestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -65,7 +65,8 @@ public class FileRequestsGroupEventHandler
 
     public void handle(FileRequestsGroupEvent event) {
         LOGGER.trace("Handling {}", event.toString());
-        if ((event.getState() == FlowItemStatus.SUCCESS) || (event.getState() == FlowItemStatus.ERROR)) {
+        if ((event.getState() == FileGroupRequestStatus.SUCCESS) || (event.getState()
+                                                                     == FileGroupRequestStatus.ERROR)) {
             switch (event.getType()) {
                 case DELETION:
                     handleDeletionGroupDone(event);
@@ -81,7 +82,7 @@ public class FileRequestsGroupEventHandler
     }
 
     private void handleDeletionGroupDone(FileRequestsGroupEvent event) {
-        if (event.getState() == FlowItemStatus.ERROR) {
+        if (event.getState() == FileGroupRequestStatus.ERROR) {
             notificationClient.notify(String.format(
                                           "Requests group %s is terminated with erros. %s success and %s errors.",
                                           event.getGroupId(),

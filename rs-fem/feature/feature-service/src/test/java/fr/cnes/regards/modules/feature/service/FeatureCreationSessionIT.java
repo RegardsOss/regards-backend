@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.internal.util.collections.Sets;
@@ -302,7 +302,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
                                                                                      pageToRequest);
         List<String> requestIds = fcrPage.stream().map(AbstractFeatureRequest::getGroupId).collect(Collectors.toList());
         String errorId = requestIds.remove(0);
-        RequestResultInfoDTO requestResultInfoDTO = new RequestResultInfoDTO();
+        RequestResultInfoDto requestResultInfoDTO = new RequestResultInfoDto();
         ReflectionTestUtils.setField(requestResultInfoDTO, "groupId", errorId);
         featureRequestService.handleStorageError(Sets.newSet(requestResultInfoDTO));
         mockStorageHelper.mockFeatureCreationStorageSuccess(new HashSet<>(requestIds));

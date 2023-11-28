@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.flow;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesCopyEvent;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,14 +34,14 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
- * Handler to handle {@link CopyFlowItem} AMQP messages.<br>
+ * Handler to handle {@link FilesCopyEvent} AMQP messages.<br>
  * Those messages are sent to copy a file reference to a given storage location<br>
  * Each message is saved in a concurrent list to handle availability request by bulk.
  *
  * @author Sébastien Binda
  */
 @Component
-public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<CopyFlowItem> {
+public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesCopyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CopyFlowHandler.class);
 
@@ -56,21 +56,21 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(CopyFlowItem.class, this);
+        subscriber.subscribeTo(FilesCopyEvent.class, this);
     }
 
     @Override
-    public void handleBatch(List<CopyFlowItem> messages) {
-        LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", messages.size());
+    public void handleBatch(List<FilesCopyEvent> messages) {
+        LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} FilesCopyEvent...", messages.size());
         long start = System.currentTimeMillis();
         fileCopyReqService.copy(messages);
-        LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms",
+        LOGGER.debug("[COPY FLOW HANDLER] {} FilesCopyEvent handled in {} ms",
                      messages.size(),
                      System.currentTimeMillis() - start);
     }
 
     @Override
-    public Errors validate(CopyFlowItem message) {
+    public Errors validate(FilesCopyEvent message) {
         return null;
     }
 

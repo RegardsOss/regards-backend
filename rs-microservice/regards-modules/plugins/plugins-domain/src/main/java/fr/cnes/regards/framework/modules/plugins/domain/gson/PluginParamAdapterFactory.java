@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.modules.plugins.domain.gson;
 
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.*;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.*;
 
 /**
  * Factory to (de)serialize {@link IPluginParam}

@@ -29,15 +29,15 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRetryRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storage.domain.flow.RetryFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
 import org.junit.Assert;
@@ -69,10 +69,10 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     private static final String SESSION = "SESSION 1";
 
     @Autowired
-    private StorageFlowItemHandler storeHandler;
+    private FilesStorageRequestHandler storeHandler;
 
     @Autowired
-    private RetryFlowItemHandler retryHandler;
+    private FilesRetryRequestEventHandler retryHandler;
 
     @Before
     public void initialize() throws ModuleException {
@@ -85,16 +85,16 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     @Purpose("Check that a storage request without checksum is denied")
     public void storeFileWithoutChecksum() {
         // Create a new bus message File reference request
-        StorageFlowItem.build(FileStorageRequestDTO.build("file.name",
-                                                          null,
-                                                          "MD5",
-                                                          "application/octet-stream",
-                                                          "owner",
-                                                          SESSION_OWNER,
-                                                          SESSION,
-                                                          originUrl,
-                                                          ONLINE_CONF_LABEL,
-                                                          Optional.empty()), UUID.randomUUID().toString());
+        new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
+                                                                 null,
+                                                                 "MD5",
+                                                                 "application/octet-stream",
+                                                                 "owner",
+                                                                 SESSION_OWNER,
+                                                                 SESSION,
+                                                                 originUrl,
+                                                                 ONLINE_CONF_LABEL,
+                                                                 Optional.empty()), UUID.randomUUID().toString());
     }
 
     /**
@@ -107,18 +107,18 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
-        StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build("file.name",
-                                                                                 checksum,
-                                                                                 "MD5",
-                                                                                 "application/octet-stream",
-                                                                                 owner,
-                                                                                 SESSION_OWNER,
-                                                                                 SESSION,
-                                                                                 originUrl,
-                                                                                 ONLINE_CONF_LABEL,
-                                                                                 Optional.empty()),
-                                                     UUID.randomUUID().toString());
-        List<StorageFlowItem> items = new ArrayList<>();
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
+                                                                                                 checksum,
+                                                                                                 "MD5",
+                                                                                                 "application/octet-stream",
+                                                                                                 owner,
+                                                                                                 SESSION_OWNER,
+                                                                                                 SESSION,
+                                                                                                 originUrl,
+                                                                                                 ONLINE_CONF_LABEL,
+                                                                                                 Optional.empty()),
+                                                                     UUID.randomUUID().toString());
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -185,18 +185,18 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
-        StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build("pending.file.name",
-                                                                                 checksum,
-                                                                                 "MD5",
-                                                                                 "application/octet-stream",
-                                                                                 owner,
-                                                                                 SESSION_OWNER,
-                                                                                 SESSION,
-                                                                                 originUrl,
-                                                                                 NEARLINE_CONF_LABEL,
-                                                                                 Optional.empty()),
-                                                     UUID.randomUUID().toString());
-        List<StorageFlowItem> items = new ArrayList<>();
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("pending.file.name",
+                                                                                                 checksum,
+                                                                                                 "MD5",
+                                                                                                 "application/octet-stream",
+                                                                                                 owner,
+                                                                                                 SESSION_OWNER,
+                                                                                                 SESSION,
+                                                                                                 originUrl,
+                                                                                                 NEARLINE_CONF_LABEL,
+                                                                                                 Optional.empty()),
+                                                                     UUID.randomUUID().toString());
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -243,29 +243,31 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                                   SESSION_OWNER,
                                                   SESSION);
 
-        StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build(fileName,
-                                                                                 checksum,
-                                                                                 algorithm,
-                                                                                 mimeType,
-                                                                                 owner,
-                                                                                 SESSION_OWNER,
-                                                                                 SESSION,
-                                                                                 originUrl,
-                                                                                 ONLINE_CONF_LABEL,
-                                                                                 Optional.empty()), groupId);
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build(fileName,
+                                                                                                 checksum,
+                                                                                                 algorithm,
+                                                                                                 mimeType,
+                                                                                                 owner,
+                                                                                                 SESSION_OWNER,
+                                                                                                 SESSION,
+                                                                                                 originUrl,
+                                                                                                 ONLINE_CONF_LABEL,
+                                                                                                 Optional.empty()),
+                                                                     groupId);
 
-        List<StorageFlowItem> items = new ArrayList<>();
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is not referenced yet
         Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
         // Check a file reference request is created
-        Collection<FileStorageRequest> fileStorageRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
+        Collection<FileStorageRequestAggregation> fileStorageRequests = stoReqService.search(ONLINE_CONF_LABEL,
+                                                                                             checksum);
         Assert.assertEquals("Existing request should have been updated", 1, fileStorageRequests.size());
         Assert.assertTrue("Updated request should be in state " + FileRequestStatus.TO_DO,
                           fileStorageRequests.stream()
-                                             .map(FileStorageRequest::getStatus)
+                                             .map(FileStorageRequestAggregation::getStatus)
                                              .allMatch(status -> FileRequestStatus.TO_DO == status));
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
@@ -293,29 +295,29 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
-        StorageFlowItem item1 = StorageFlowItem.build(FileStorageRequestDTO.build("file.name",
-                                                                                  checksum,
-                                                                                  "MD5",
-                                                                                  "application/octet-stream",
-                                                                                  owner,
-                                                                                  SESSION_OWNER,
-                                                                                  SESSION,
-                                                                                  originUrl,
-                                                                                  ONLINE_CONF_LABEL,
-                                                                                  Optional.empty()),
-                                                      UUID.randomUUID().toString());
-        StorageFlowItem item2 = StorageFlowItem.build(FileStorageRequestDTO.build("file.name",
-                                                                                  checksum,
-                                                                                  "MD5",
-                                                                                  "application/octet-stream",
-                                                                                  owner2,
-                                                                                  SESSION_OWNER,
-                                                                                  SESSION,
-                                                                                  originUrl,
-                                                                                  ONLINE_CONF_LABEL,
-                                                                                  Optional.empty()),
-                                                      UUID.randomUUID().toString());
-        List<StorageFlowItem> items = new ArrayList<>();
+        FilesStorageRequestEvent item1 = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
+                                                                                                  checksum,
+                                                                                                  "MD5",
+                                                                                                  "application/octet-stream",
+                                                                                                  owner,
+                                                                                                  SESSION_OWNER,
+                                                                                                  SESSION,
+                                                                                                  originUrl,
+                                                                                                  ONLINE_CONF_LABEL,
+                                                                                                  Optional.empty()),
+                                                                      UUID.randomUUID().toString());
+        FilesStorageRequestEvent item2 = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
+                                                                                                  checksum,
+                                                                                                  "MD5",
+                                                                                                  "application/octet-stream",
+                                                                                                  owner2,
+                                                                                                  SESSION_OWNER,
+                                                                                                  SESSION,
+                                                                                                  originUrl,
+                                                                                                  ONLINE_CONF_LABEL,
+                                                                                                  Optional.empty()),
+                                                                      UUID.randomUUID().toString());
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item1);
         items.add(item2);
         storeHandler.handleBatch(items);
@@ -392,10 +394,10 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     @Test
     public void storeFilesFlowItem() {
         // Create a new bus message File reference request
-        Set<FileStorageRequestDTO> requests = Sets.newHashSet();
+        Set<FileStorageRequestDto> requests = Sets.newHashSet();
         String cs1 = UUID.randomUUID().toString();
         String cs2 = UUID.randomUUID().toString();
-        requests.add(FileStorageRequestDTO.build("file.name",
+        requests.add(FileStorageRequestDto.build("file.name",
                                                  cs1,
                                                  "MD5",
                                                  "application/octet-stream",
@@ -405,7 +407,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                                  originUrl,
                                                  ONLINE_CONF_LABEL,
                                                  Optional.empty()));
-        requests.add(FileStorageRequestDTO.build("file.name",
+        requests.add(FileStorageRequestDto.build("file.name",
                                                  cs2,
                                                  "MD5",
                                                  "application/octet-stream",
@@ -415,9 +417,9 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                                  originUrl,
                                                  ONLINE_CONF_LABEL,
                                                  Optional.empty()));
-        StorageFlowItem item = StorageFlowItem.build(requests, UUID.randomUUID().toString());
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(requests, UUID.randomUUID().toString());
 
-        List<StorageFlowItem> items = new ArrayList<>();
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -428,8 +430,8 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
         Assert.assertFalse("File should not be referenced yet",
                            fileRefService.search(ONLINE_CONF_LABEL, cs2).isPresent());
         // Check a file reference request is created
-        Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL, cs1);
-        Collection<FileStorageRequest> storageReqs2 = stoReqService.search(ONLINE_CONF_LABEL, cs2);
+        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(ONLINE_CONF_LABEL, cs1);
+        Collection<FileStorageRequestAggregation> storageReqs2 = stoReqService.search(ONLINE_CONF_LABEL, cs2);
         Assert.assertEquals("File request should be created", 1, storageReqs.size());
         Assert.assertEquals("File request should be created", 1, storageReqs2.size());
         Assert.assertEquals("",
@@ -466,18 +468,18 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
         String storageDestination = "somewheere";
         // Create a new bus message File reference request
-        StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build("file.name",
-                                                                                 checksum,
-                                                                                 "MD5",
-                                                                                 "application/octet-stream",
-                                                                                 "owner-test",
-                                                                                 SESSION_OWNER,
-                                                                                 SESSION,
-                                                                                 originUrl,
-                                                                                 storageDestination,
-                                                                                 Optional.empty()),
-                                                     UUID.randomUUID().toString());
-        List<StorageFlowItem> items = new ArrayList<>();
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
+                                                                                                 checksum,
+                                                                                                 "MD5",
+                                                                                                 "application/octet-stream",
+                                                                                                 "owner-test",
+                                                                                                 SESSION_OWNER,
+                                                                                                 SESSION,
+                                                                                                 originUrl,
+                                                                                                 storageDestination,
+                                                                                                 Optional.empty()),
+                                                                     UUID.randomUUID().toString());
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -527,18 +529,18 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     public void storeFileFlowItem_storeError() {
         String checksum = UUID.randomUUID().toString();
         // Create a new bus message File reference request
-        StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build("error.file.name",
-                                                                                 checksum,
-                                                                                 "MD5",
-                                                                                 "application/octet-stream",
-                                                                                 "owner-test",
-                                                                                 SESSION_OWNER,
-                                                                                 SESSION,
-                                                                                 originUrl,
-                                                                                 ONLINE_CONF_LABEL,
-                                                                                 Optional.empty()),
-                                                     UUID.randomUUID().toString());
-        List<StorageFlowItem> items = new ArrayList<>();
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("error.file.name",
+                                                                                                 checksum,
+                                                                                                 "MD5",
+                                                                                                 "application/octet-stream",
+                                                                                                 "owner-test",
+                                                                                                 SESSION_OWNER,
+                                                                                                 SESSION,
+                                                                                                 originUrl,
+                                                                                                 ONLINE_CONF_LABEL,
+                                                                                                 Optional.empty()),
+                                                                     UUID.randomUUID().toString());
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -580,7 +582,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // There should be one storage request. Same as previous error one but updated to to_do thanks to new request
-        Collection<FileStorageRequest> storeRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
+        Collection<FileStorageRequestAggregation> storeRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
         Assert.assertEquals("File request still present", 1, storeRequests.size());
         // One in TO_DO state
         Assert.assertEquals("There should be one request in TO_DO state",
@@ -592,10 +594,10 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     public void retry_byGroupId() {
         String storageDestination = "somewheere";
         String owner = "retry-test";
-        Set<FileStorageRequestDTO> files = Sets.newHashSet();
+        Set<FileStorageRequestDto> files = Sets.newHashSet();
 
         // Create a new bus message File reference request
-        files.add(FileStorageRequestDTO.build("file1.test",
+        files.add(FileStorageRequestDto.build("file1.test",
                                               UUID.randomUUID().toString(),
                                               "MD5",
                                               "application/octet-stream",
@@ -605,7 +607,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                               originUrl,
                                               storageDestination,
                                               Optional.empty()));
-        files.add(FileStorageRequestDTO.build("file2.test",
+        files.add(FileStorageRequestDto.build("file2.test",
                                               UUID.randomUUID().toString(),
                                               "MD5",
                                               "application/octet-stream",
@@ -615,7 +617,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                               originUrl,
                                               storageDestination,
                                               Optional.empty()));
-        files.add(FileStorageRequestDTO.build("file3.test",
+        files.add(FileStorageRequestDto.build("file3.test",
                                               UUID.randomUUID().toString(),
                                               "MD5",
                                               "application/octet-stream",
@@ -625,19 +627,18 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                               originUrl,
                                               storageDestination,
                                               Optional.empty()));
-        StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
-        List<StorageFlowItem> items = new ArrayList<>();
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(files, UUID.randomUUID().toString());
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check request in error
-        Page<FileStorageRequest> requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(owner),
-                                                                                           FileRequestStatus.ERROR,
-                                                                                           PageRequest.of(0, 1_000));
+        Page<FileStorageRequestAggregation> requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(
+            owner), FileRequestStatus.ERROR, PageRequest.of(0, 1_000));
         Assert.assertEquals("The 3 requests should be in error", 3, requests.getTotalElements());
 
-        RetryFlowItem retry = RetryFlowItem.buildStorageRetry(Lists.newArrayList(owner));
-        TenantWrapper<RetryFlowItem> retryWrapper = TenantWrapper.build(retry, getDefaultTenant());
+        FilesRetryRequestEvent retry = FilesRetryRequestEvent.buildStorageRetry(Lists.newArrayList(owner));
+        TenantWrapper<FilesRetryRequestEvent> retryWrapper = TenantWrapper.build(retry, getDefaultTenant());
         retryHandler.handle(retryWrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
@@ -662,9 +663,9 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     public void retry_byOwners() {
         String storageDestination = "somewheere";
         List<String> owners = Lists.newArrayList("retry-test", "retry-test-2", "retry-test-3");
-        Set<FileStorageRequestDTO> files = Sets.newHashSet();
+        Set<FileStorageRequestDto> files = Sets.newHashSet();
         // Create a new bus message File reference request
-        files.add(FileStorageRequestDTO.build("file1.test",
+        files.add(FileStorageRequestDto.build("file1.test",
                                               UUID.randomUUID().toString(),
                                               "MD5",
                                               "application/octet-stream",
@@ -674,7 +675,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                               originUrl,
                                               storageDestination,
                                               Optional.empty()));
-        files.add(FileStorageRequestDTO.build("file2.test",
+        files.add(FileStorageRequestDto.build("file2.test",
                                               UUID.randomUUID().toString(),
                                               "MD5",
                                               "application/octet-stream",
@@ -684,7 +685,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                               originUrl,
                                               storageDestination,
                                               Optional.empty()));
-        files.add(FileStorageRequestDTO.build("file3.test",
+        files.add(FileStorageRequestDto.build("file3.test",
                                               UUID.randomUUID().toString(),
                                               "MD5",
                                               "application/octet-stream",
@@ -694,19 +695,20 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                               originUrl,
                                               storageDestination,
                                               Optional.empty()));
-        StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
-        List<StorageFlowItem> items = new ArrayList<>();
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(files, UUID.randomUUID().toString());
+        List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check request in error
-        Page<FileStorageRequest> requests = fileStorageRequestRepo.findByOwnersInAndStatus(owners,
-                                                                                           FileRequestStatus.ERROR,
-                                                                                           PageRequest.of(0, 1_000));
+        Page<FileStorageRequestAggregation> requests = fileStorageRequestRepo.findByOwnersInAndStatus(owners,
+                                                                                                      FileRequestStatus.ERROR,
+                                                                                                      PageRequest.of(0,
+                                                                                                                     1_000));
         Assert.assertEquals("The 3 requests should be in error", 3, requests.getTotalElements());
 
-        RetryFlowItem retry = RetryFlowItem.buildStorageRetry(owners);
-        TenantWrapper<RetryFlowItem> retryWrapper = TenantWrapper.build(retry, getDefaultTenant());
+        FilesRetryRequestEvent retry = FilesRetryRequestEvent.buildStorageRetry(owners);
+        TenantWrapper<FilesRetryRequestEvent> retryWrapper = TenantWrapper.build(retry, getDefaultTenant());
         retryHandler.handle(retryWrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 

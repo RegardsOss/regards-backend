@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import org.junit.Assert;
 import org.junit.Test;

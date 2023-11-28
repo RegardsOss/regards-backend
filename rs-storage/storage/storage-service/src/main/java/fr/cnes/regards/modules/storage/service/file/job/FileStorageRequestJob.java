@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -46,7 +46,7 @@ import java.util.Map;
 
 /**
  * Storage of file references job. This jobs is scheduled to store a bundle of file reference,
- * thanks to {@link FileStorageRequest}s.<br/>
+ * thanks to {@link FileStorageRequestAggregation}s.<br/>
  * The storage jobs are used to storage files on a specific storage location.
  *
  * @author Sébastien Binda
@@ -61,7 +61,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     public static final String DATA_STORAGE_CONF_BUSINESS_ID = "dscbid";
 
     /**
-     * JOB Parameter key for the Working subset of {@link FileStorageRequest} to handle for storage.
+     * JOB Parameter key for the Working subset of {@link FileStorageRequestAggregation} to handle for storage.
      */
     public static final String WORKING_SUB_SET = "wss";
 
@@ -119,7 +119,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
             throw new JobRuntimeException(e);
         } finally {
             // Publish event for all not handled files
-            for (FileStorageRequest req : workingSubset.getFileReferenceRequests()) {
+            for (FileStorageRequestAggregation req : workingSubset.getFileReferenceRequests()) {
                 if (!progressManager.isHandled(req)) {
                     progressManager.storageFailed(req,
                                                   String.format("File %s (checksum: %s) not handled by storage job. %s",
@@ -146,7 +146,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
      *
      * @param fileRefRequest to calculate for image dimension
      */
-    public static void calculateImageDimension(FileStorageRequest fileRefRequest) {
+    public static void calculateImageDimension(FileStorageRequestAggregation fileRefRequest) {
         try {
             if (((fileRefRequest.getMetaInfo().getHeight() == null) || (fileRefRequest.getMetaInfo().getWidth()
                                                                         == null)) && fileRefRequest.getMetaInfo()

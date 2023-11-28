@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.domain.plugin;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 
 import java.util.Collection;
 import java.util.Set;
@@ -33,7 +33,7 @@ import java.util.Set;
 public class FileRestorationWorkingSubset {
 
     /**
-     * Raw {@link FileStorageRequest}s associate
+     * Raw {@link FileStorageRequestAggregation}s associate
      */
     private final Set<FileCacheRequest> fileRestorationRequests = Sets.newHashSet();
 

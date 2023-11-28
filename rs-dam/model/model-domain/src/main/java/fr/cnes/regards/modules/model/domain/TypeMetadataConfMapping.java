@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.model.domain;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
 import java.util.Set;

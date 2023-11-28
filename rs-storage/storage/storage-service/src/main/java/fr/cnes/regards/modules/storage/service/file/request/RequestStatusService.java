@@ -20,12 +20,16 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
-import fr.cnes.regards.modules.storage.domain.database.request.*;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,13 +46,13 @@ import java.util.UUID;
  * Service to handle {@link FileRequestStatus} for new requests of all types.<br/>
  * The status of request is computed here to handle conflict between all requests.<br/>
  * <br/>
- * A {@link FileStorageRequest} cannot be performed and should be created as {@link FileRequestStatus#DELAYED} if :
+ * A {@link FileStorageRequestAggregation} cannot be performed and should be created as {@link FileRequestStatus#DELAYED} if :
  * <ul>
  *  <li> A {@link FileDeletionRequest} exists on the file to store</li>
  * </ul>
  * A {@link FileDeletionRequest} cannot be performed and should be created as {@link FileRequestStatus#DELAYED} if :
  * <ul>
- *  <li> A {@link FileStorageRequest} exists on the file to delete</li>
+ *  <li> A {@link FileStorageRequestAggregation} exists on the file to delete</li>
  *  <li> A {@link FileCopyRequest} exists on the file to delete</li>
  * </ul>
  * A {@link FileCopyRequest} cannot be performed and should be created as {@link FileRequestStatus#DELAYED} if :
@@ -86,13 +90,13 @@ public class RequestStatusService {
     private IJobInfoService jobService;
 
     /**
-     * Compute {@link FileRequestStatus} for new {@link FileStorageRequest}
+     * Compute {@link FileRequestStatus} for new {@link FileStorageRequestAggregation}
      *
      * @param request  request to compute status for
      * @param oDefault default status or empty
      * @return {@link FileRequestStatus}
      */
-    public FileRequestStatus getNewStatus(FileStorageRequest request, Optional<FileRequestStatus> oDefault) {
+    public FileRequestStatus getNewStatus(FileStorageRequestAggregation request, Optional<FileRequestStatus> oDefault) {
         FileRequestStatus status = oDefault.orElse(FileRequestStatus.TO_DO);
         String storage = request.getStorage();
         String checksum = request.getMetaInfo().getChecksum();
@@ -165,12 +169,12 @@ public class RequestStatusService {
     }
 
     /**
-     * Update delayed {@link FileStorageRequest}s that can be handled.
+     * Update delayed {@link FileStorageRequestAggregation}s that can be handled.
      */
     public void checkDelayedStorageRequests() {
         int nbUpdated = 0;
-        for (FileStorageRequest delayedRequest : storageReqRepo.findByStatus(FileRequestStatus.DELAYED,
-                                                                             PageRequest.of(0, 500))) {
+        for (FileStorageRequestAggregation delayedRequest : storageReqRepo.findByStatus(FileRequestStatus.DELAYED,
+                                                                                        PageRequest.of(0, 500))) {
             // Check new status for the delayed request
             if (getNewStatus(delayedRequest, Optional.empty()) == FileRequestStatus.TO_DO) {
                 delayedRequest.setStatus(FileRequestStatus.TO_DO);
@@ -183,7 +187,7 @@ public class RequestStatusService {
     }
 
     /**
-     * Update delayed {@link FileStorageRequest}s that can be handled.
+     * Update delayed {@link FileStorageRequestAggregation}s that can be handled.
      */
     public void checkDelayedDeleteRequests() {
         int nbUpdated = 0;
@@ -226,9 +230,9 @@ public class RequestStatusService {
     }
 
     public void stopStorageRequests() {
-        Page<FileStorageRequest> pendings = storageReqRepo.findByStatus(FileRequestStatus.PENDING,
-                                                                        PageRequest.of(0, 10_000));
-        for (FileStorageRequest r : pendings) {
+        Page<FileStorageRequestAggregation> pendings = storageReqRepo.findByStatus(FileRequestStatus.PENDING,
+                                                                                   PageRequest.of(0, 10_000));
+        for (FileStorageRequestAggregation r : pendings) {
             if (r.getJobId() != null) {
                 jobService.stopJob(UUID.fromString(r.getJobId()));
             }

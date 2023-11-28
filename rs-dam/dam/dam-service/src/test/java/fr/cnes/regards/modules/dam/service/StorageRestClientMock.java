@@ -3,14 +3,14 @@ package fr.cnes.regards.modules.dam.service;
 import com.google.common.collect.Sets;
 import feign.Response;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationConfigurationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +31,16 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() {
+    public ResponseEntity<List<EntityModel<StorageLocationDto>>> retrieve() {
         PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setInterfaceNames(Sets.newHashSet(IOnlineStorageLocation.class.getName()));
+        pluginMetaData.setInterfaceNames(Sets.newHashSet(StorageLocationDto.class.getName()));
         PluginConfiguration pluginConfiguration = new PluginConfiguration();
         pluginConfiguration.setMetaData(pluginMetaData);
-        StorageLocationConfiguration configuration = new StorageLocationConfiguration("name", pluginConfiguration, 0L);
-        StorageLocationDTO storageLocationDTO = StorageLocationDTO.build("Local", configuration)
+        StorageLocationConfigurationDto configuration = new StorageLocationConfigurationDto("name",
+                                                                                            pluginConfiguration.toDto(),
+                                                                                            StorageType.ONLINE,
+                                                                                            0L);
+        StorageLocationDto storageLocationDTO = StorageLocationDto.build("Local", configuration)
                                                                   .withAllowPhysicalDeletion()
                                                                   .withRunningProcessesInformation(true,
                                                                                                    true,
@@ -52,7 +55,7 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
+    public ResponseEntity<Set<FileReferenceDto>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
         return null;
     }
 
@@ -78,17 +81,22 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
+    public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas() {
         return null;
     }
 
     @Override
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(String userEmail) {
+    public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas(String userEmail) {
         return null;
     }
 
     @Override
-    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
+    public ResponseEntity<Long> getMaxQuota() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<List<UserCurrentQuotasDto>> getCurrentQuotasList(String[] userEmails) {
         return null;
     }
 

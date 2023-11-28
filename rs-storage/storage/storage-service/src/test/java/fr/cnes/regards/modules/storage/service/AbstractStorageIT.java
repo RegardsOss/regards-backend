@@ -27,23 +27,23 @@ import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.storage.dao.*;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
@@ -374,7 +374,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                     UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(storage, checksum);
-        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(storage, checksum);
+        Collection<FileStorageRequestAggregation> fileRefReqs = stoReqService.search(storage, checksum);
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
         Assert.assertEquals("File reference request should be in TO_STORE status",
@@ -449,28 +449,28 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                   pendingRemainingAction);
     }
 
-    protected FileStorageRequest generateRandomStorageRequest(String id, FileRequestStatus status) {
+    protected FileStorageRequestAggregation generateRandomStorageRequest(String id, FileRequestStatus status) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(id,
                                                                        "MD5",
                                                                        id,
                                                                        132L,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
-        FileStorageRequest fr = new FileStorageRequest("owner",
-                                                       fileMetaInfo,
-                                                       "file:///test/toto/" + id,
-                                                       ONLINE_CONF_LABEL,
-                                                       Optional.empty(),
-                                                       "group1",
-                                                       "sessionOwner",
-                                                       "session");
+        FileStorageRequestAggregation fr = new FileStorageRequestAggregation("owner",
+                                                                             fileMetaInfo,
+                                                                             "file:///test/toto/" + id,
+                                                                             ONLINE_CONF_LABEL,
+                                                                             Optional.empty(),
+                                                                             "group1",
+                                                                             "sessionOwner",
+                                                                             "session");
         fr.setStatus(status);
         return fr;
     }
 
-    protected FileStorageRequest generateStoreFileError(String owner,
-                                                        String storageDestination,
-                                                        String sessionOwner,
-                                                        String session)
+    protected FileStorageRequestAggregation generateStoreFileError(String owner,
+                                                                   String storageDestination,
+                                                                   String sessionOwner,
+                                                                   String session)
         throws InterruptedException, ExecutionException {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
                                                                        "MD5",
@@ -489,8 +489,8 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                     UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(destination.getStorage(),
-                                                                          fileMetaInfo.getChecksum());
+        Collection<FileStorageRequestAggregation> fileRefReqs = stoReqService.search(destination.getStorage(),
+                                                                                     fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
         // only the configured storage can be used for storage. Otherwise the request should be set in eroor.

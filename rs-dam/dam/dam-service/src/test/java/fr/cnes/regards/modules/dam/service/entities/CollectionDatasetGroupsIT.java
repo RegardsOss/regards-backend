@@ -34,16 +34,16 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.service.settings.DamSettingsService;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -550,18 +550,18 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
                                                          new HashSet<>(),
                                                          new HashSet<>());
 
-        FileReferenceDTO dto = FileReferenceDTO.build(null,
-                                                      FileReferenceMetaInfoDTO.build(files[0].getChecksum(),
-                                                                                     files[0].getDigestAlgorithm(),
-                                                                                     files[0].getFilename(),
-                                                                                     0l,
-                                                                                     0,
-                                                                                     0,
-                                                                                     null,
-                                                                                     null),
-                                                      FileLocationDTO.build("local", files[0].getUri()),
-                                                      new HashSet<>());
-        RequestResultInfoDTO info = RequestResultInfoDTO.build(creationResponse.getGroupId(),
+        FileReferenceDto dto = new FileReferenceDto(null,
+                                                    new FileReferenceMetaInfoDto(files[0].getChecksum(),
+                                                                                 files[0].getDigestAlgorithm(),
+                                                                                 files[0].getFilename(),
+                                                                                 0l,
+                                                                                 0,
+                                                                                 0,
+                                                                                 null,
+                                                                                 null),
+                                                    new FileLocationDto("local", files[0].getUri()),
+                                                    new HashSet<>());
+        RequestResultInfoDto info = RequestResultInfoDto.build(creationResponse.getGroupId(),
                                                                files[0].getChecksum(),
                                                                "Local",
                                                                files[0].getUri(),
@@ -593,18 +593,18 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
         file.setUri("/dir");
         dataset1.getFeature().getFiles().put(DataType.OTHER, file);
         dataset1 = dataSetService.update(dataset1);
-        dto = FileReferenceDTO.build(null,
-                                     FileReferenceMetaInfoDTO.build(file.getChecksum(),
-                                                                    file.getDigestAlgorithm(),
-                                                                    file.getFilename(),
-                                                                    0l,
-                                                                    0,
-                                                                    0,
-                                                                    null,
-                                                                    null),
-                                     FileLocationDTO.build("local", file.getUri()),
-                                     new HashSet<>());
-        info = RequestResultInfoDTO.build(creationResponse.getGroupId(),
+        dto = new FileReferenceDto(null,
+                                   new FileReferenceMetaInfoDto(file.getChecksum(),
+                                                                file.getDigestAlgorithm(),
+                                                                file.getFilename(),
+                                                                0l,
+                                                                0,
+                                                                0,
+                                                                null,
+                                                                null),
+                                   new FileLocationDto("local", file.getUri()),
+                                   new HashSet<>());
+        info = RequestResultInfoDto.build(creationResponse.getGroupId(),
                                           file.getChecksum(),
                                           "Local",
                                           file.getUri(),

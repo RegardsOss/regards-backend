@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,7 @@ public class CopyRequestTask implements Task {
         Long maxId = 0L;
         // Always search the first page of requests until there is no requests anymore.
         // To do so, we order on id to ensure to not handle same requests multiple times.
-        Pageable page = PageRequest.of(0, AvailabilityFlowItem.MAX_REQUEST_PER_GROUP, Direction.ASC, "id");
+        Pageable page = PageRequest.of(0, FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP, Direction.ASC, "id");
         Page<FileCopyRequest> pageResp = null;
         // Allow file availability for one day to let enough time to next storage process to be perform.
         OffsetDateTime expDate = OffsetDateTime.now().plusDays(1);

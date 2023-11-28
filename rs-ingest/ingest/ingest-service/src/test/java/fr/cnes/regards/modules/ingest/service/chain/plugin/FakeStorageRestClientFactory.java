@@ -20,11 +20,11 @@ package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import org.mockito.Mockito;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -37,18 +37,18 @@ import java.util.List;
  */
 public class FakeStorageRestClientFactory {
 
-    public static IStorageRestClient create(List<EntityModel<StorageLocationDTO>> mockStorageLocationContent) {
+    public static IStorageRestClient create(List<EntityModel<StorageLocationDto>> mockStorageLocationContent) {
         IStorageRestClient client = Mockito.mock(IStorageRestClient.class);
         Mockito.when(client.retrieve()).thenReturn(new ResponseEntity<>(mockStorageLocationContent, HttpStatus.OK));
         return client;
     }
 
-    public static List<EntityModel<StorageLocationDTO>> createResponse(List<StorageMetadata> storageMetadata,
+    public static List<EntityModel<StorageLocationDto>> createResponse(List<StorageMetadata> storageMetadata,
                                                                        boolean isOffline) {
         return storageMetadata.stream()
-                              .map(storageMeta -> StorageLocationDTO.build(storageMeta.getPluginBusinessId(),
+                              .map(storageMeta -> StorageLocationDto.build(storageMeta.getPluginBusinessId(),
                                                                            getStorageLocationConfiguration(storageMeta,
-                                                                                                           isOffline))
+                                                                                                           isOffline).toDto())
                                                                     .withAllowPhysicalDeletion())
                               .map(HateoasUtils::wrap)
                               .toList();

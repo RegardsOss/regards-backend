@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.access.services.domain;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceType;

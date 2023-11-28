@@ -19,10 +19,12 @@
 package fr.cnes.regards.modules.storage.domain.database.request;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
@@ -168,6 +170,21 @@ public class RequestResultInfo {
 
     public Set<String> getRequestOwners() {
         return requestOwners;
+    }
+
+    public RequestResultInfoDto toDto() {
+        return RequestResultInfoDto.build(getGroupId(),
+                                          getRequestChecksum(),
+                                          getRequestStorage(),
+                                          getRequestStorePath(),
+                                          getRequestOwners(),
+                                          resultFile != null ?
+                                              new FileReferenceDto(resultFile.getStorageDate(),
+                                                                   resultFile.getMetaInfo().toDto(),
+                                                                   resultFile.getLocation().toDto(),
+                                                                   requestOwners) :
+                                              null,
+                                          getErrorCause());
     }
 
 }

@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 import java.util.Collection;
 import java.util.List;

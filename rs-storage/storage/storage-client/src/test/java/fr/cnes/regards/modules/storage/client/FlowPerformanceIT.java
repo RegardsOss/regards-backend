@@ -23,12 +23,12 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.service.file.handler.FileReferenceEventHandler;
 import org.junit.Assert;
 import org.junit.Before;
@@ -154,8 +154,8 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
             String sessionOwner = "source-" + i;
             String session = "session-" + i;
 
-            Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
-            requests.add(FileReferenceRequestDTO.build("quicklook.1-" + i,
+            Set<FileReferenceRequestDto> requests = Sets.newHashSet();
+            requests.add(FileReferenceRequestDto.build("quicklook.1-" + i,
                                                        UUID.randomUUID().toString(),
                                                        "MD5",
                                                        "application/octet-stream",
@@ -165,7 +165,7 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
                                                        "file://storage/location/quicklook1",
                                                        sessionOwner,
                                                        session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.2-" + i,
+            requests.add(FileReferenceRequestDto.build("quicklook.2-" + i,
                                                        UUID.randomUUID().toString(),
                                                        "MD5",
                                                        "application/octet-stream",
@@ -175,7 +175,7 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
                                                        "file://storage/location/quicklook1",
                                                        sessionOwner,
                                                        session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.3-" + i,
+            requests.add(FileReferenceRequestDto.build("quicklook.3-" + i,
                                                        UUID.randomUUID().toString(),
                                                        "MD5",
                                                        "application/octet-stream",
@@ -185,7 +185,7 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
                                                        "file://storage/location/quicklook1",
                                                        sessionOwner,
                                                        session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.4-" + i,
+            requests.add(FileReferenceRequestDto.build("quicklook.4-" + i,
                                                        UUID.randomUUID().toString(),
                                                        "MD5",
                                                        "application/octet-stream",
@@ -196,7 +196,7 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
                                                        sessionOwner,
                                                        session));
             // Create a new bus message File reference request
-            requests.add(FileReferenceRequestDTO.build("file.name-" + i,
+            requests.add(FileReferenceRequestDto.build("file.name-" + i,
                                                        UUID.randomUUID().toString(),
                                                        "MD5",
                                                        "application/octet-stream",

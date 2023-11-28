@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -55,6 +55,8 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.dam.service.entities.exception.InvalidFileLocation;
 import fr.cnes.regards.modules.dam.service.entities.validation.AbstractEntityValidationService;
 import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
@@ -69,8 +71,6 @@ import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.model.service.validation.validator.common.NotAlterableAttributeValidator;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -928,11 +928,12 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                                                                      .findAny();
             if (oCurrent.isPresent()) {
                 AbstractEntityRequest current = oCurrent.get();
-                for (RequestResultInfoDTO request : info.getSuccessRequests()) {
+                for (RequestResultInfoDto request : info.getSuccessRequests()) {
                     AbstractEntity<? extends EntityFeature> entity = entityByUrn.get(current.getUrn());
                     // if we found a AbstractEntity matching with the urn stored in the  AbstractEntityRequest
                     if (entity != null) {
-                        // seek the file inside the AbstractEntity with the checksum matching with it inside the RequestResultInfoDTO
+                        // seek the file inside the AbstractEntity with the checksum matching with it inside the
+                        // RequestResultInfoDto
                         for (DataFile file : entity.getFiles().values()) {
                             // if the file is found we update it uri
                             if (file.getChecksum().equals(request.getResultFile().getMetaInfo().getChecksum())) {
@@ -985,7 +986,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                 treatedRequests.add(oReq.get());
                 Set<String> errors = request.getErrorRequests()
                                             .stream()
-                                            .map(RequestResultInfoDTO::getErrorCause)
+                                            .map(RequestResultInfoDto::getErrorCause)
                                             .collect(Collectors.toSet());
                 for (String error : errors) {
                     buf.append(String.format("<li>%s</li>", error));

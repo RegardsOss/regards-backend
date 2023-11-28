@@ -27,8 +27,10 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginConfigurationDto;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import io.vavr.control.Option;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -140,7 +142,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb",
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-                                    value = "fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam") })
+                                    value = "fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam") })
     private Set<IPluginParam> parameters = Sets.newHashSet();
 
     /**
@@ -203,6 +205,26 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         priorityOrder = order;
         this.label = label;
         active = Boolean.TRUE;
+    }
+
+    public PluginConfiguration(String pluginId,
+                               String label,
+                               String businessId,
+                               String version,
+                               Integer priorityOrder,
+                               Boolean active,
+                               URL iconUrl,
+                               Set<IPluginParam> parameters,
+                               PluginMetaData metaData) {
+        this.pluginId = pluginId;
+        this.label = label;
+        this.businessId = businessId;
+        this.version = version;
+        this.priorityOrder = priorityOrder;
+        this.active = active;
+        this.iconUrl = iconUrl;
+        this.parameters = parameters;
+        this.metaData = metaData;
     }
 
     /**
@@ -477,4 +499,29 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         }
         return true;
     }
+
+    public PluginConfigurationDto toDto() {
+        return new PluginConfigurationDto(pluginId,
+                                          label,
+                                          businessId,
+                                          version,
+                                          priorityOrder,
+                                          active,
+                                          iconUrl,
+                                          parameters,
+                                          metaData);
+    }
+
+    public static PluginConfiguration fromDto(PluginConfigurationDto dto) {
+        return new PluginConfiguration(dto.getPluginId(),
+                                       dto.getLabel(),
+                                       dto.getBusinessId(),
+                                       dto.getVersion(),
+                                       dto.getPriorityOrder(),
+                                       dto.isActive(),
+                                       dto.getIconUrl(),
+                                       dto.getParameters(),
+                                       dto.getMetaData());
+    }
+
 }

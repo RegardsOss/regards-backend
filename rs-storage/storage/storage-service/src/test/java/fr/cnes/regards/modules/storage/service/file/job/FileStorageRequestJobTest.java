@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.storage.service.file.job;
 
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.http.MediaType;
@@ -49,14 +49,14 @@ public class FileStorageRequestJobTest {
         String originUrl = "file://" + Paths.get("src/test/resources/input/cnes.png").toAbsolutePath().toString();
         String storage = "storage";
         String groupId = "10";
-        FileStorageRequest request = new FileStorageRequest(owner,
-                                                            metaInfos,
-                                                            originUrl,
-                                                            storage,
-                                                            Optional.empty(),
-                                                            groupId,
-                                                            sessionOwner,
-                                                            session);
+        FileStorageRequestAggregation request = new FileStorageRequestAggregation(owner,
+                                                                                  metaInfos,
+                                                                                  originUrl,
+                                                                                  storage,
+                                                                                  Optional.empty(),
+                                                                                  groupId,
+                                                                                  sessionOwner,
+                                                                                  session);
         FileStorageRequestJob.calculateImageDimension(request);
 
         Assert.assertEquals(Integer.valueOf(499), request.getMetaInfo().getWidth());

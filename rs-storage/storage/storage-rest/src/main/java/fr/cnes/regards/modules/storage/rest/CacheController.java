@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.rest;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.storage.domain.dto.cache.CacheDTO;
+import fr.cnes.regards.modules.filecatalog.dto.cache.CacheDto;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,8 +45,8 @@ public class CacheController {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<CacheDTO> getOccupation() {
-        return new ResponseEntity<CacheDTO>(CacheDTO.build(cacheService.getCacheSizeLimit(),
+    public ResponseEntity<CacheDto> getOccupation() {
+        return new ResponseEntity<CacheDto>(CacheDto.build(cacheService.getCacheSizeLimit(),
                                                            cacheService.getCacheSizeUsedBytes()), HttpStatus.OK);
     }
 

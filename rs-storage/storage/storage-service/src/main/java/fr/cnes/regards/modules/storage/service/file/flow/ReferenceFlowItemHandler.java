@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.flow;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
- * Handler to handle {@link ReferenceFlowItem} AMQP messages.<br>
+ * Handler to handle {@link FilesReferenceEvent} AMQP messages.<br>
  * Those messages are sent to create new file reference.<br>
  * Each message is saved in a concurrent list to handle availability request by bulk.
  *
@@ -42,7 +42,7 @@ import java.util.List;
  */
 @Component
 public class ReferenceFlowItemHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<ReferenceFlowItem> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesReferenceEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFlowItemHandler.class);
 
@@ -60,11 +60,11 @@ public class ReferenceFlowItemHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(ReferenceFlowItem.class, this);
+        subscriber.subscribeTo(FilesReferenceEvent.class, this);
     }
 
     @Override
-    public void handleBatch(List<ReferenceFlowItem> messages) {
+    public void handleBatch(List<FilesReferenceEvent> messages) {
         LOGGER.info("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", messages.size());
         long start = System.currentTimeMillis();
         fileRefReqService.reference(messages);
@@ -74,7 +74,7 @@ public class ReferenceFlowItemHandler
     }
 
     @Override
-    public Errors validate(ReferenceFlowItem message) {
+    public Errors validate(FilesReferenceEvent message) {
         return null;
     }
 

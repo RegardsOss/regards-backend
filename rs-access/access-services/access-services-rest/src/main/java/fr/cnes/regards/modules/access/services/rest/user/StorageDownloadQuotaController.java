@@ -24,9 +24,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,9 +97,9 @@ public class StorageDownloadQuotaController {
     @GetMapping(path = PATH_CURRENT_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get current download quota values for current user.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() throws ModuleException {
+    public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas() throws ModuleException {
         return wrapStorageErrorForFrontend(() -> storageClient.getCurrentQuotas(),
-                                           () -> new UserCurrentQuotas(authResolver.getUser()));
+                                           () -> new UserCurrentQuotasDto(authResolver.getUser()));
     }
 
     private <V> ResponseEntity<V> wrapStorageErrorForFrontend(Supplier<ResponseEntity<V>> action, Supplier<V> orElse)

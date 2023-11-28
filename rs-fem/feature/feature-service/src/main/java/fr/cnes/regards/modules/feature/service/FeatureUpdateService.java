@@ -47,9 +47,9 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -495,7 +495,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     }
 
     @Override
-    public void handleStorageError(Collection<RequestResultInfoDTO> errorRequests) {
+    public void handleStorageError(Collection<RequestResultInfoDto> errorRequests) {
         Map<String, String> errorByGroupId = Maps.newHashMap();
         errorRequests.forEach(e -> errorByGroupId.put(e.getGroupId(), e.getErrorCause()));
 

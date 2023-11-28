@@ -29,19 +29,17 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.DownloadTokenService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaExceededReporter;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
-import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
+import fr.cnes.regards.modules.storage.service.file.flow.FilesStorageRequestHandler;
 import io.vavr.control.Try;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.csv.CSVFormat;
@@ -114,7 +112,7 @@ public class FileReferenceController {
     private IAuthenticationResolver authResolver;
 
     @Autowired
-    private StorageFlowItemHandler storageHandler;
+    private FilesStorageRequestHandler storageHandler;
 
     /**
      * End-point to Download a file referenced by a storage location with the given checksum.
@@ -291,20 +289,20 @@ public class FileReferenceController {
     @RequestMapping(method = RequestMethod.POST, path = LOCATIONS_PATH)
     @ResourceAccess(description = "Get file references with matching checksums on a storage",
                     role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(
+    public ResponseEntity<Set<FileReferenceDto>> getFileReferencesWithoutOwners(
         @PathVariable(name = "storage") final String storage, @RequestBody final Set<String> checksums) {
-        Set<FileReferenceDTO> fileRefDtos = Sets.newHashSet();
+        Set<FileReferenceDto> fileRefDtos = Sets.newHashSet();
         Set<FileReference> fileRefs = fileRefService.search(storage, checksums);
-        fileRefs.forEach(fileRef -> fileRefDtos.add(FileReferenceDTO.build(fileRef.getStorageDate(),
-                                                                           FileReferenceMetaInfoDTO.build(fileRef.getMetaInfo()),
-                                                                           FileLocationDTO.build(fileRef.getLocation()),
-                                                                           Lists.newArrayList())));
+        fileRefs.forEach(fileRef -> fileRefDtos.add(new FileReferenceDto(fileRef.getStorageDate(),
+                                                                         fileRef.getMetaInfo().toDto(),
+                                                                         fileRef.getLocation().toDto(),
+                                                                         Lists.newArrayList())));
         return ResponseEntity.ok(fileRefDtos);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = STORE_PATH)
     @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> store(@Valid @RequestBody Collection<StorageFlowItem> items) {
+    public ResponseEntity<Void> store(@Valid @RequestBody Collection<FilesStorageRequestEvent> items) {
         items.stream().map(i -> TenantWrapper.build(i, tenantResolver.getTenant())).forEach(storageHandler::handle);
         return new ResponseEntity<>(HttpStatus.OK);
     }

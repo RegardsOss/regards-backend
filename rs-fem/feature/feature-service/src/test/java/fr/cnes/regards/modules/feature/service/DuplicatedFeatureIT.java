@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.service.request.FeatureStorageListener;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

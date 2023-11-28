@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;

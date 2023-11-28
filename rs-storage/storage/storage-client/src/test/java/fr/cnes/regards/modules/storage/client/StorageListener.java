@@ -20,7 +20,9 @@ package fr.cnes.regards.modules.storage.client;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
+import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -39,9 +41,9 @@ public class StorageListener implements IStorageRequestListener {
 
     private final Set<RequestInfo> granted = Sets.newHashSet();
 
-    private final ArrayListMultimap<RequestInfo, RequestResultInfoDTO> success = ArrayListMultimap.create();
+    private final ArrayListMultimap<RequestInfo, RequestResultInfoDto> success = ArrayListMultimap.create();
 
-    private final ArrayListMultimap<RequestInfo, RequestResultInfoDTO> errors = ArrayListMultimap.create();
+    private final ArrayListMultimap<RequestInfo, RequestResultInfoDto> errors = ArrayListMultimap.create();
 
     public void reset() {
         denied.clear();
@@ -160,7 +162,7 @@ public class StorageListener implements IStorageRequestListener {
             LOGGER.debug("[TEST RESULT] - Storage success for group {} with {} success",
                          ri.getGroupId(),
                          ri.getSuccessRequests().size());
-            for (RequestResultInfoDTO r : ri.getSuccessRequests()) {
+            for (RequestResultInfoDto r : ri.getSuccessRequests()) {
                 LOGGER.trace("-> {}", r.getResultFile().getMetaInfo().getFileName());
             }
             this.success.putAll(ri, ri.getSuccessRequests());
@@ -187,11 +189,11 @@ public class StorageListener implements IStorageRequestListener {
         return granted;
     }
 
-    public ArrayListMultimap<RequestInfo, RequestResultInfoDTO> getSuccess() {
+    public ArrayListMultimap<RequestInfo, RequestResultInfoDto> getSuccess() {
         return success;
     }
 
-    public ArrayListMultimap<RequestInfo, RequestResultInfoDTO> getErrors() {
+    public ArrayListMultimap<RequestInfo, RequestResultInfoDto> getErrors() {
         return errors;
     }
 

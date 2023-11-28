@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.dam.domain.models.validation;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.domain.Model;

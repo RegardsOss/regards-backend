@@ -23,11 +23,11 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.model.service.validation.AbstractFeatureValidationService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.validation.IValidationService;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -186,17 +186,17 @@ public class FeatureValidationService extends AbstractFeatureValidationService<F
                 errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
             }
 
-            if (numberOfFilesToStore > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
+            if (numberOfFilesToStore > FilesReferenceEvent.MAX_REQUEST_PER_GROUP) {
                 String message = String.format("Too many files to store for feature {}. Limit is {}.",
                                                numberOfFilesToStore,
-                                               ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+                                               FilesReferenceEvent.MAX_REQUEST_PER_GROUP);
                 errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
             }
 
-            if (numberOfFilesToReference > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
+            if (numberOfFilesToReference > FilesReferenceEvent.MAX_REQUEST_PER_GROUP) {
                 String message = String.format("Too many files to reference for feature {}. Limit is {}.",
                                                numberOfFilesToReference,
-                                               ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+                                               FilesReferenceEvent.MAX_REQUEST_PER_GROUP);
                 errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
             }
         }

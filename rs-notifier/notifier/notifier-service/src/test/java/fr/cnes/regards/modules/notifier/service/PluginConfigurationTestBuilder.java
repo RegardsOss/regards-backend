@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.notifier.service;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 
 /**
  * @author Thomas Fache

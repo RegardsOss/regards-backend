@@ -5,15 +5,15 @@ import feign.Request.Body;
 import feign.RequestTemplate;
 import feign.Response;
 import fr.cnes.regards.framework.security.autoconfigure.CustomCacheControlHeadersWriter;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceUpdateDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;
-import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
-import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
-import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import org.mockito.ArgumentMatchers;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -112,32 +112,32 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public void onFileStored(List<FileReferenceEventDTO> stored) {
+    public void onFileStored(List<FileReferenceEvent> stored) {
 
     }
 
     @Override
-    public void onFileStoreError(List<FileReferenceEventDTO> storedError) {
+    public void onFileStoreError(List<FileReferenceEvent> storedError) {
 
     }
 
     @Override
-    public void onFileAvailable(List<FileReferenceEventDTO> available) {
+    public void onFileAvailable(List<FileReferenceEvent> available) {
 
     }
 
     @Override
-    public void onFileNotAvailable(List<FileReferenceEventDTO> availabilityError) {
+    public void onFileNotAvailable(List<FileReferenceEvent> availabilityError) {
 
     }
 
     @Override
-    public void onFileDeletedForOwner(String owner, List<FileReferenceEventDTO> deletedForThisOwner) {
+    public void onFileDeletedForOwner(String owner, List<FileReferenceEvent> deletedForThisOwner) {
 
     }
 
     @Override
-    public void onFileUpdated(List<FileReferenceUpdateDTO> updatedReferences) {
+    public void onFileUpdated(List<FileReferenceUpdateDto> updatedReferences) {
 
     }
 
@@ -156,7 +156,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
+    public ResponseEntity<Set<FileReferenceDto>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
         return null;
     }
 
@@ -164,7 +164,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
      * @see fr.cnes.regards.modules.storage.client.IStorageRestClient#retrieve()
      */
     @Override
-    public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() {
+    public ResponseEntity<List<EntityModel<StorageLocationDto>>> retrieve() {
         // TODO Auto-generated method stub
         return null;
     }
@@ -191,17 +191,22 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
+    public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas() {
         return null;
     }
 
     @Override
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(String userEmail) {
+    public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas(String userEmail) {
         return null;
     }
 
     @Override
-    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
+    public ResponseEntity<Long> getMaxQuota() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<List<UserCurrentQuotasDto>> getCurrentQuotasList(String[] userEmails) {
         return null;
     }
 }
