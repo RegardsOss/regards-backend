@@ -90,6 +90,10 @@
             <groupId>fr.cnes.regards.framework.utils</groupId>
             <artifactId>response-entity-utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+            <artifactId>uiconfiguration-service</artifactId>
+        </dependency>
         <!-- Libraries -->
         <dependency>
             <groupId>io.vavr</groupId>

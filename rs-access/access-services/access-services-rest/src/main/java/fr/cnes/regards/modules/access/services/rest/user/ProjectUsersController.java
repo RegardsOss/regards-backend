@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.configuration.service.SearchHistoryService;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
@@ -117,6 +118,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
 
     private final IRolesClient rolesClient;
 
+    private final SearchHistoryService searchHistoryService;
+
     private final Function<Try<ResponseEntity<UserCurrentQuotas>>, Validation<ComposableClientException, UserCurrentQuotas>> ignoreStorageQuotaErrors = t -> t.map(
                                                                                                                                                                   ResponseEntity::getBody)
                                                                                                                                                               // special value for frontend if any error on storage or storage not deploy
@@ -137,12 +140,14 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                   IStorageRestClient storageClient,
                                   IResourceService resourceService,
                                   IAuthenticationResolver authenticationResolver,
-                                  IRolesClient rolesClient) {
+                                  IRolesClient rolesClient,
+                                  SearchHistoryService searchHistoryService) {
         this.projectUsersClient = projectUsersClient;
         this.storageClient = storageClient;
         this.resourceService = resourceService;
         this.authenticationResolver = authenticationResolver;
         this.rolesClient = rolesClient;
+        this.searchHistoryService = searchHistoryService;
     }
 
     /**
@@ -164,7 +169,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
                                                               content = @Content(schema = @Schema(implementation = SearchProjectUserParameters.class)))
         @Parameter(description = "Filter criterias for users of the project") @RequestBody
-        SearchProjectUserParameters filters,
+            SearchProjectUserParameters filters,
         @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
 
@@ -263,7 +268,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     @ResourceAccess(description = "update the project user", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUserReadDto>> updateProjectUser(@PathVariable("user_id") Long userId,
                                                                              @RequestBody
-                                                                             ProjectUserUpdateDto updatedProjectUser)
+                                                                                 ProjectUserUpdateDto updatedProjectUser)
         throws ModuleException {
         String userEmail = updatedProjectUser.getEmail();
         Tuple2<ProjectUser, DownloadQuotaLimitsDto> t = makeProjectUserAndQuotaLimitsDto(updatedProjectUser);
@@ -304,7 +309,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     @ResourceAccess(description = "Create a user of project by bypassing registration process (Administrator feature)",
                     role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUserReadDto>> createUser(@Valid @RequestBody
-                                                                      ProjectUserCreateDto projectUserCreateDto)
+                                                                          ProjectUserCreateDto projectUserCreateDto)
         throws ModuleException {
         String email = projectUserCreateDto.getEmail();
         DownloadQuotaLimitsDto limits = new DownloadQuotaLimitsDto(email,
@@ -338,6 +343,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     @DeleteMapping(USER_ID_RELATIVE_PATH)
     @ResourceAccess(description = "remove the project user", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long userId) {
+        ProjectUser projectUser = projectUsersClient.retrieveProjectUser(userId).getBody().getContent();
+        searchHistoryService.deleteAccountSearchHistory(projectUser.getEmail());
         return projectUsersClient.removeProjectUser(userId);
     }
 

@@ -92,6 +92,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     @Autowired
     private IModuleRepository repository;
 
+    @Autowired
+    private SearchHistoryService searchHistoryService;
+
     @Override
     public Module retrieveModule(final Long moduleId) throws EntityNotFoundException {
         final Optional<Module> module = repository.findById(moduleId);
@@ -162,7 +165,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             throw new EntityNotFoundException(moduleId, Module.class);
         }
         repository.deleteById(moduleId);
-
+        searchHistoryService.deleteModuleSearchHistory(moduleId);
     }
 
     /**
