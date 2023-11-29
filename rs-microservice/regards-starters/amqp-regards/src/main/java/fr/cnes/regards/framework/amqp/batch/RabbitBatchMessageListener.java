@@ -323,9 +323,10 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             methodInvoker.invoke();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
                  ClassNotFoundException ex) {
-            LOGGER.error(String.format("Fail to invoke handler %s#%s with following raw exception",
+            LOGGER.error(String.format("Fail to invoke handler %s#%s with following raw exception. Cause : %s",
                                        batchHandler.getClass().getName(),
-                                       HANDLE_METHOD_NAME), ex);
+                                       HANDLE_METHOD_NAME,
+                                       ex.getMessage()), ex);
             ArrayList<String> arrayClass = new ArrayList<>();
             if (arguments != null) {
                 for (Object argument : arguments) {

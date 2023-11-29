@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.search.rest.CatalogDownloadController;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;
 import fr.cnes.regards.modules.search.rest.FakeProductFactory;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
@@ -45,8 +46,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
                     properties = { "regards.tenant=opensearch",
                                    "spring.jpa.properties.hibernate.default_schema=opensearch" })
 public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT {
-
-    private static final String DOWNLOAD_AIP_FILE = "/downloads/{aip_id}/files/{checksum}";
 
     private static final String ERROR_MESSAGE_ON_MVN_ERROR = "Error while executing mvn request";
 
@@ -151,10 +150,24 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
     }
 
     @Test
-    public void ok_response_if_file_is_downloaded() {
+    public void ok_response_if_file_is_downloaded_with_catalog_file_name() {
         setupLicenseAccessor(LicenseVerificationStatus.ACCEPTED, LicenseAcceptationStatus.NOT_CALLED);
         setupStorageDownload(StorageDownloadStatus.NOMINAL);
-        downloadAndVerifyRequest(productFactory.validProduct(), fileFactory.validFile(), customizer().expectStatusOk());
+        downloadAndVerifyRequest(productFactory.validProduct(),
+                                 fileFactory.thumbnail().getChecksum(),
+                                 customizer().expectStatusOk()
+                                             .expectHeaderContentDispositionFileName(fileFactory.thumbnail()
+                                                                                                .getFilename()));
+    }
+
+    @Test
+    public void ok_response_if_file_is_downloaded_with_original_storage_file_name() {
+        setupLicenseAccessor(LicenseVerificationStatus.ACCEPTED, LicenseAcceptationStatus.NOT_CALLED);
+        setupStorageDownload(StorageDownloadStatus.NOMINAL);
+        downloadAndVerifyRequest(productFactory.validProduct(),
+                                 fileFactory.quicklook_hd().getChecksum(),
+                                 customizer().expectStatusOk()
+                                             .expectHeaderContentDispositionFileName(IStorageRestClientMock.STORAGE_DEFAULT_DOWNLOAD_FILE_NAME));
     }
 
     @Test
@@ -181,6 +194,10 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
     private ResultActions downloadAndVerifyRequest(UniformResourceName product,
                                                    String file,
                                                    RequestBuilderCustomizer requestVerifications) {
-        return performDefaultGet(DOWNLOAD_AIP_FILE, requestVerifications, ERROR_MESSAGE_ON_MVN_ERROR, product, file);
+        return performDefaultGet(CatalogDownloadController.PATH_DOWNLOAD + CatalogDownloadController.DOWNLOAD_AIP_FILE,
+                                 requestVerifications,
+                                 ERROR_MESSAGE_ON_MVN_ERROR,
+                                 product,
+                                 file);
     }
 }

@@ -32,11 +32,22 @@ public class ServiceProvider {
 
     private final PluginConfiguration configuration;
 
-    public ServiceProvider(String name, String authUrl, String logoutUrl, PluginConfiguration configuration) {
+    private final String descriptionFr;
+
+    private final String descriptionEn;
+
+    public ServiceProvider(String name,
+                           String authUrl,
+                           String logoutUrl,
+                           PluginConfiguration configuration,
+                           String descriptionFr,
+                           String descriptionEn) {
         this.name = name;
         this.authUrl = authUrl;
         this.logoutUrl = logoutUrl;
         this.configuration = configuration;
+        this.descriptionFr = descriptionFr;
+        this.descriptionEn = descriptionEn;
     }
 
     public String getName() {
@@ -55,6 +66,14 @@ public class ServiceProvider {
         return configuration;
     }
 
+    public String getDescriptionEn() {
+        return descriptionEn;
+    }
+
+    public String getDescriptionFr() {
+        return descriptionFr;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -64,12 +83,16 @@ public class ServiceProvider {
             return false;
         }
         ServiceProvider that = (ServiceProvider) o;
-        return Objects.equals(name, that.name) && Objects.equals(authUrl, that.authUrl) && Objects.equals(configuration,
-                                                                                                          that.configuration);
+        return Objects.equals(name, that.name)
+               && Objects.equals(authUrl, that.authUrl)
+               && Objects.equals(configuration,
+                                 that.configuration)
+               && Objects.equals(descriptionEn, that.descriptionEn)
+               && Objects.equals(descriptionFr, that.descriptionFr);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, authUrl, configuration);
+        return Objects.hash(name, authUrl, configuration, descriptionFr, descriptionEn);
     }
 }

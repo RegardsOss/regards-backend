@@ -349,7 +349,12 @@ public class ServiceProviderAuthenticationServiceTest {
 
     @Test
     public void verify_fails_when_no_service_provider_plugin_found() {
-        when(repository.findAll()).thenReturn(List.of(new ServiceProvider(PROVIDER_NAME, null, null, null)));
+        when(repository.findAll()).thenReturn(List.of(new ServiceProvider(PROVIDER_NAME,
+                                                                          null,
+                                                                          null,
+                                                                          null,
+                                                                          null,
+                                                                          null)));
 
         RuntimeException expected = new RuntimeException("Expected");
         doReturn(Try.failure(expected)).when(service).getPlugin(PROVIDER_NAME);
@@ -365,9 +370,14 @@ public class ServiceProviderAuthenticationServiceTest {
         String providerName_1 = UUID.randomUUID().toString();
         String providerName_2 = UUID.randomUUID().toString();
         String providerName_3 = UUID.randomUUID().toString();
-        when(repository.findAll()).thenReturn(List.of(new ServiceProvider(providerName_1, null, null, null),
-                                                      new ServiceProvider(providerName_2, null, null, null),
-                                                      new ServiceProvider(providerName_3, null, null, null)));
+        when(repository.findAll()).thenReturn(List.of(new ServiceProvider(providerName_1, null, null, null, null, null),
+                                                      new ServiceProvider(providerName_2, null, null, null, null, null),
+                                                      new ServiceProvider(providerName_3,
+                                                                          null,
+                                                                          null,
+                                                                          null,
+                                                                          null,
+                                                                          null)));
 
         RuntimeException expected = new RuntimeException("Expected");
 

@@ -126,6 +126,11 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
     private INotificationClient notificationClient;
 
     @Override
+    public Optional<String> getFileExtensionToExcludeInScanStep() {
+        return Optional.ofNullable(extensionAck);
+    }
+
+    @Override
     public void postProcess(Product product) {
         Stream<AcquisitionFile> acquisitionFileStream = product.getAcquisitionFiles()
                                                                .stream()
@@ -223,6 +228,7 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, ICha
                 success = true;
             } catch (FileAlreadyExistsException e) {
                 LOGGER.warn(e.getMessage(), e);
+                success = true;
             } catch (InterruptedException e) {
                 loopCount = maxLoop;
             } catch (IOException e) {

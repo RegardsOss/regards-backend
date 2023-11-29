@@ -38,11 +38,22 @@ public class ServiceProviderDto {
 
     private final PluginConfiguration pluginConfiguration;
 
-    public ServiceProviderDto(String name, String authUrl, String logoutUrl, PluginConfiguration pluginConfiguration) {
+    private final String descriptionFr;
+
+    private final String descriptionEn;
+
+    public ServiceProviderDto(String name,
+                              String authUrl,
+                              String logoutUrl,
+                              PluginConfiguration pluginConfiguration,
+                              String descriptionEn,
+                              String descriptionFr) {
         this.name = name;
         this.authUrl = authUrl;
         this.logoutUrl = logoutUrl;
         this.pluginConfiguration = pluginConfiguration;
+        this.descriptionEn = descriptionEn;
+        this.descriptionFr = descriptionFr;
     }
 
     public ServiceProviderDto(ServiceProvider serviceProvider) {
@@ -50,6 +61,8 @@ public class ServiceProviderDto {
         this.authUrl = serviceProvider.getAuthUrl();
         this.logoutUrl = serviceProvider.getLogoutUrl();
         this.pluginConfiguration = serviceProvider.getConfiguration();
+        this.descriptionFr = serviceProvider.getDescriptionFr();
+        this.descriptionEn = serviceProvider.getDescriptionEn();
     }
 
     public String getName() {
@@ -64,6 +77,14 @@ public class ServiceProviderDto {
         return pluginConfiguration;
     }
 
+    public String getDescriptionFr() {
+        return descriptionFr;
+    }
+
+    public String getDescriptionEn() {
+        return descriptionEn;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -75,15 +96,17 @@ public class ServiceProviderDto {
         ServiceProviderDto that = (ServiceProviderDto) o;
         return Objects.equals(name, that.name) && Objects.equals(authUrl, that.authUrl) && Objects.equals(
             pluginConfiguration,
-            that.pluginConfiguration);
+            that.pluginConfiguration) && Objects.equals(descriptionEn, that.descriptionEn) && Objects.equals(
+            descriptionFr,
+            that.descriptionFr);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, authUrl, pluginConfiguration);
+        return Objects.hash(name, authUrl, pluginConfiguration, descriptionFr, descriptionEn);
     }
 
     public ServiceProvider toDomain() {
-        return new ServiceProvider(name, authUrl, logoutUrl, pluginConfiguration);
+        return new ServiceProvider(name, authUrl, logoutUrl, pluginConfiguration, descriptionFr, descriptionEn);
     }
 }

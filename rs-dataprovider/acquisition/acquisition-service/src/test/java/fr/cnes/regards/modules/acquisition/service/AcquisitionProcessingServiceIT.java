@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -37,6 +38,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.*;
@@ -53,6 +55,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +67,9 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -99,6 +105,12 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
     @Autowired
     private IJobInfoRepository jobInfoRepository;
 
+    @Autowired
+    private IAcquisitionFileInfoRepository acquisitionFileInfoRepository;
+
+    @Autowired
+    private IPluginConfigurationRepository pluginConfigurationRepository;
+
     @Before
     public void initialize() throws ModuleException {
         acquisitionProcessingService.getFullChains(PageRequest.of(0, 100)).getContent().forEach(c -> {
@@ -110,6 +122,58 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
                 e.printStackTrace();
             }
         });
+    }
+
+    private final Path searchDirWithAck = Paths.get("src", "test", "resources", "data", "plugins", "scanWithAck");
+
+    @Test
+    public void test_excluding_files_glob() throws IOException, ModuleException {
+        // GIVEN
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
+        scanPlugin.setIsActive(true);
+        String label = "Scan plugin";
+        scanPlugin.setLabel(label);
+        scanPlugin.setVersion("version");
+        pluginConfigurationRepository.save(scanPlugin);
+        AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
+        fileInfo.setMandatory(Boolean.TRUE);
+        fileInfo.setComment("A comment");
+        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
+        fileInfo.setDataType(DataType.RAWDATA);
+        fileInfo.setScanPlugin(scanPlugin);
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(searchDirWithAck, null)));
+        acquisitionFileInfoRepository.save(fileInfo);
+        // WHEN test with no exclude filter
+        RegisterFilesResponse registerFilesResponse = acquisitionProcessingService.registerFilesBatch(createIteratorOn(
+            searchDirWithAck), fileInfo, Optional.empty(), 200, "session", "sessionOwner", "filter");
+        // THEN all files are registered
+        Assertions.assertEquals(8, registerFilesResponse.getNumberOfRegisteredFiles());
+
+        // WHEN test with excluding regards extension
+        registerFilesResponse = acquisitionProcessingService.registerFilesBatch(createIteratorOn(searchDirWithAck),
+                                                                                fileInfo,
+                                                                                Optional.empty(),
+                                                                                200,
+                                                                                "session",
+                                                                                "sessionOwner",
+                                                                                "regards");
+        // THEN half of files are registered (4 files .md and 4 files .regards)
+        Assertions.assertEquals(4, registerFilesResponse.getNumberOfRegisteredFiles());
+
+        // WHEN test with excluding gards extension (ends of regards)
+        registerFilesResponse = acquisitionProcessingService.registerFilesBatch(createIteratorOn(searchDirWithAck),
+                                                                                fileInfo,
+                                                                                Optional.empty(),
+                                                                                200,
+                                                                                "session",
+                                                                                "sessionOwner",
+                                                                                "gards");
+        // THEN all files are registered, because filter need to match entire extension.
+        Assertions.assertEquals(8, registerFilesResponse.getNumberOfRegisteredFiles());
+    }
+
+    private Iterator<Path> createIteratorOn(Path searchDirWithAck) throws IOException {
+        return Files.walk(searchDirWithAck).filter(path -> !Files.isDirectory(path)).iterator();
     }
 
     @Test

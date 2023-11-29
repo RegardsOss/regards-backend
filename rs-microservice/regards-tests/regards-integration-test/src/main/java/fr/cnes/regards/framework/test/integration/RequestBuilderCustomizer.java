@@ -8,6 +8,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -345,6 +346,18 @@ public class RequestBuilderCustomizer {
     }
 
     /**
+     * Add a ResultMatcher on specific Content-disposition header to be match
+     */
+    public RequestBuilderCustomizer expectHeaderContentDispositionFileName(String fileName) {
+        return expect(MockMvcResultMatchers.header()
+                                           .string(HttpHeaders.CONTENT_DISPOSITION,
+                                                   ContentDisposition.builder("attachment")
+                                                                     .filename(fileName)
+                                                                     .build()
+                                                                     .toString()));
+    }
+
+    /**
      * Add a ResultMatcher status CREATED to be matched
      */
     public RequestBuilderCustomizer expectStatusCreated() {
@@ -604,7 +617,7 @@ public class RequestBuilderCustomizer {
             fileList.add(file);
             return getMultipartRequestBuilder(authToken, fileList, urlTemplate, urlVars);
         } catch (IOException e) {
-            String message = String.format("Cannot create input stream for file %s", filePath.toString());
+            String message = String.format("Cannot create input stream for file %s", filePath);
             LOGGER.error(message, e);
             throw new AssertionError(message, e);
         }

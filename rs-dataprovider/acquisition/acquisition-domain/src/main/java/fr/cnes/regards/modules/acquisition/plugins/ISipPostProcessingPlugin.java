@@ -22,6 +22,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
+import java.util.Optional;
+
 /**
  * Acquisition chain post processing plugin
  *
@@ -37,4 +39,12 @@ public interface ISipPostProcessingPlugin {
      * @throws ModuleException if error occurs!
      */
     void postProcess(Product product) throws ModuleException;
+
+    /**
+     * Allow plugin to indicate a file extension exclude on the scanning step. This is useful when some files are
+     * created on the post process step, and must not be scanned when the acquisition chain is relaunched.
+     */
+    default Optional<String> getFileExtensionToExcludeInScanStep() {
+        return Optional.empty();
+    }
 }

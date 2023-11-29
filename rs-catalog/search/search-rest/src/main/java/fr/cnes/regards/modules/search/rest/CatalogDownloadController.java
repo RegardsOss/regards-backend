@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,12 +55,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -79,7 +78,7 @@ public class CatalogDownloadController {
 
     public static final String PATH_DOWNLOAD = "/downloads";
 
-    private static final String DOWNLOAD_AIP_FILE = "/{aip_id}/files/{checksum}";
+    public static final String DOWNLOAD_AIP_FILE = "/{aip_id}/files/{checksum}";
 
     private static final String DOWNLOAD_DAM_FILE = DOWNLOAD_AIP_FILE + "/dam";
 
@@ -138,7 +137,7 @@ public class CatalogDownloadController {
             if (damResp.status() != HttpStatus.OK.value()) {
                 LOGGER.error("Error downloading file {} from storage", checksum);
             }
-            addHeaders(damResp, response);
+            addHeaders(damResp, null, response);
             return formatDamResponse(damResp);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
@@ -258,10 +257,17 @@ public class CatalogDownloadController {
                                                                                    linkToAcceptAndDownload);
                     }
                 }
+                Optional<String> fileName = entity.getFiles()
+                                                  .values()
+                                                  .stream()
+                                                  .filter(df -> df.getChecksum().equals(checksum))
+                                                  .map(DataFile::getFilename)
+                                                  .filter(Objects::nonNull)
+                                                  .findFirst();
                 // To download through storage client we must be authenticated as user in order to
                 // impact the download quotas, but we upgrade the privileges so that the request passes.
                 FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
-                return doDownloadFile(checksum, isContentInline, response);
+                return doDownloadFile(checksum, fileName.orElse(null), isContentInline, response);
             }
         } catch (EntityOperationForbiddenException e) { // NOSONAR
             return CatalogDownloadResponse.unauthorizedAccess();
@@ -309,16 +315,17 @@ public class CatalogDownloadController {
     }
 
     private ResponseEntity<Download> doDownloadFile(String checksum,
+                                                    @Nullable String fileName,
                                                     Boolean isContentInline,
                                                     HttpServletResponse response) throws IOException {
         Response storageResponse = storageRestClient.downloadFile(checksum, isContentInline);
-        addHeaders(storageResponse, response);
+        addHeaders(storageResponse, fileName, response);
         return storageResponse.status() == HttpStatus.OK.value() ?
             CatalogDownloadResponse.successfulDownload(storageResponse) :
             CatalogDownloadResponse.failedDownload(storageResponse);
     }
 
-    private void addHeaders(Response fromStorageResponse, HttpServletResponse inResponse) {
+    private void addHeaders(Response fromStorageResponse, @Nullable String fileName, HttpServletResponse inResponse) {
         // Add storage headers in the response
         // CacheControl headers are filtered because This download endpoints must not activate cache control.
         // Headers are not added in ResponseEntity but in HttpServletResponse
@@ -329,6 +336,10 @@ public class CatalogDownloadController {
                            .stream()
                            .filter(header -> !CustomCacheControlHeadersWriter.isCacheControlHeader(header.getKey()))
                            .forEach(header -> addHeaders(header, inResponse));
+        if (fileName != null) {
+            inResponse.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                                 ContentDisposition.builder("attachment").filename(fileName).build().toString());
+        }
     }
 
     private void addHeaders(Map.Entry<String, Collection<String>> fromHeader, HttpServletResponse inResponse) {

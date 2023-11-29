@@ -58,6 +58,7 @@ public class FakeFileFactory {
 
     public DataFile quicklook_sd() {
         DataFile file = new DataFile();
+        file.setFilename("catalog_qsd_file_name.dat");
         file.setChecksum("quicklook_sd");
         file.setDataType(DataType.QUICKLOOK_SD);
         return file;
@@ -65,6 +66,7 @@ public class FakeFileFactory {
 
     public DataFile quicklook_md() {
         DataFile file = new DataFile();
+        file.setFilename("catalog_qmd_file_name.dat");
         file.setChecksum("quicklook_md");
         file.setDataType(DataType.QUICKLOOK_MD);
         return file;
@@ -72,6 +74,7 @@ public class FakeFileFactory {
 
     public DataFile quicklook_hd() {
         DataFile file = new DataFile();
+        // No filename set. Simulates use of original storage filename in catalog download result.
         file.setChecksum("quicklook_hd");
         file.setDataType(DataType.QUICKLOOK_HD);
         return file;
@@ -79,6 +82,7 @@ public class FakeFileFactory {
 
     public DataFile thumbnail() {
         DataFile file = new DataFile();
+        file.setFilename("catalog_thumbnail_file_name.dat");
         file.setChecksum("thumbnail");
         file.setDataType(DataType.THUMBNAIL);
         return file;
@@ -86,13 +90,15 @@ public class FakeFileFactory {
 
     public DataFile document() {
         DataFile file = new DataFile();
-        file.setChecksum("thumbnail");
+        file.setFilename("catalog_document_file_name.dat");
+        file.setChecksum("document");
         file.setDataType(DataType.DOCUMENT);
         return file;
     }
 
     public DataFile rawdata() {
         DataFile file = new DataFile();
+        file.setFilename("catalog_rawdata_file_name.dat");
         file.setChecksum("rawdata");
         file.setDataType(DataType.RAWDATA);
         return file;
@@ -100,6 +106,7 @@ public class FakeFileFactory {
 
     public DataFile description() {
         DataFile file = new DataFile();
+        file.setFilename("catalog_description_file_name.dat");
         file.setChecksum("description");
         file.setDataType(DataType.DESCRIPTION);
         return file;
@@ -107,6 +114,7 @@ public class FakeFileFactory {
 
     public DataFile aip() {
         DataFile file = new DataFile();
+        file.setFilename("catalog_aip_file_name.dat");
         file.setChecksum("aip_file");
         file.setDataType(DataType.AIP);
         return file;
@@ -114,6 +122,7 @@ public class FakeFileFactory {
 
     public DataFile other() {
         DataFile file = new DataFile();
+        file.setFilename("catalog_other_file_name.dat");
         file.setChecksum("other_file");
         file.setDataType(DataType.OTHER);
         return file;

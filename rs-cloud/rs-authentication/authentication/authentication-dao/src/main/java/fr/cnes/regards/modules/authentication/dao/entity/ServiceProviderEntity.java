@@ -37,6 +37,12 @@ public class ServiceProviderEntity {
     @Column(name = "logout_url")
     private String logoutUrl;
 
+    @Column(name = "description_fr", length = 255)
+    private String descriptionFr;
+
+    @Column(name = "description_en", length = 255)
+    private String descriptionEn;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "plugin_conf_id", foreignKey = @ForeignKey(name = "fk_service_provider_plugin_conf"))
     private PluginConfiguration configuration;
@@ -44,11 +50,18 @@ public class ServiceProviderEntity {
     public ServiceProviderEntity() {
     }
 
-    public ServiceProviderEntity(String name, String authUrl, String logoutUrl, PluginConfiguration configuration) {
+    public ServiceProviderEntity(String name,
+                                 String authUrl,
+                                 String logoutUrl,
+                                 PluginConfiguration configuration,
+                                 String descriptionFr,
+                                 String descriptionEn) {
         this.name = name;
         this.authUrl = authUrl;
         this.logoutUrl = logoutUrl;
         this.configuration = configuration;
+        this.descriptionFr = descriptionFr;
+        this.descriptionEn = descriptionEn;
     }
 
     public String getName() {
@@ -83,6 +96,22 @@ public class ServiceProviderEntity {
         this.configuration = configuration;
     }
 
+    public String getDescriptionFr() {
+        return descriptionFr;
+    }
+
+    public void setDescriptionFr(String descriptionFr) {
+        this.descriptionFr = descriptionFr;
+    }
+
+    public String getDescriptionEn() {
+        return descriptionEn;
+    }
+
+    public void setDescriptionEn(String descriptionEn) {
+        this.descriptionEn = descriptionEn;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -92,12 +121,16 @@ public class ServiceProviderEntity {
             return false;
         }
         ServiceProviderEntity that = (ServiceProviderEntity) o;
-        return Objects.equals(name, that.name) && Objects.equals(authUrl, that.authUrl) && Objects.equals(configuration,
-                                                                                                          that.configuration);
+        return Objects.equals(name, that.name)
+               && Objects.equals(authUrl, that.authUrl)
+               && Objects.equals(configuration,
+                                 that.configuration)
+               && Objects.equals(descriptionEn, that.descriptionEn)
+               && Objects.equals(descriptionFr, that.descriptionFr);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, authUrl, configuration);
+        return Objects.hash(name, authUrl, configuration, descriptionFr, descriptionEn);
     }
 }

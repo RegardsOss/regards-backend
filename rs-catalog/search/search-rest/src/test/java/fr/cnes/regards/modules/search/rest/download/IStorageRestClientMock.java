@@ -17,11 +17,14 @@ import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.mockito.ArgumentMatchers;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.*;
@@ -36,6 +39,8 @@ import static org.mockito.Mockito.when;
 public class IStorageRestClientMock implements IStorageRestClient, IStorageFileListener {
 
     private final IStorageRestClient storageClient;
+
+    public static final String STORAGE_DEFAULT_DOWNLOAD_FILE_NAME = "storage_file_name.dat";
 
     private FakeFileFactory files;
 
@@ -55,25 +60,42 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
                                                                                            "http error"));
         } else if (downloadStatus == StorageDownloadStatus.FAILURE) {
             when(storageClient.downloadFile(validFiles(), any())).thenReturn(storageResponse(HttpStatus.NOT_FOUND,
-                                                                                             "errors."));
+                                                                                             "errors.",
+                                                                                             null));
         } else {
             // Can't inline because response is mocked (can't mock during mock creation)
             Response invalidResponse = invalidStorageResponse();
             when(storageClient.downloadFile(eq(files.invalidFile()), any())).thenReturn(invalidResponse);
-
-            when(storageClient.downloadFile(validFiles(), any())).thenReturn(storageResponse(HttpStatus.OK, "content"));
+            when(storageClient.downloadFile(validFiles(), any())).thenReturn(storageResponse(HttpStatus.OK,
+                                                                                             "content",
+                                                                                             donwloadFileDefaultHeaders()));
 
         }
+    }
+
+    /**
+     * Simulate default download file headers from storage response.
+     */
+    private HashMap<String, Collection<String>> donwloadFileDefaultHeaders() {
+        HashMap<String, Collection<String>> headers = new HashMap<>();
+        headers.put(HttpHeaders.CONTENT_DISPOSITION,
+                    Collections.singletonList(ContentDisposition.builder("attachment")
+                                                                .filename("storage_file_name.dat")
+                                                                .build()
+                                                                .toString()));
+        return headers;
     }
 
     private String validFiles() {
         return ArgumentMatchers.argThat(s -> files.validFiles().contains(s));
     }
 
-    private Response storageResponse(HttpStatus status, String fileContent) {
+    private Response storageResponse(HttpStatus status,
+                                     String fileContent,
+                                     @Nullable Map<String, Collection<String>> addionalHeaders) {
         return Response.builder()
                        .status(status.value())
-                       .headers(headers())
+                       .headers(headers(addionalHeaders))
                        .body(fileContent.getBytes())
                        .request(request())
                        .build();
@@ -82,18 +104,21 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     private Response invalidStorageResponse() {
         return Response.builder()
                        .status(HttpStatus.OK.value())
-                       .headers(headers())
+                       .headers(headers(null))
                        .body(body())
                        .request(request())
                        .build();
     }
 
-    private Map<String, Collection<String>> headers() {
+    private Map<String, Collection<String>> headers(@Nullable Map<String, Collection<String>> additionalHeaders) {
         HashMap<String, Collection<String>> headers = new HashMap<>();
         headers.put(CustomCacheControlHeadersWriter.CACHE_CONTROL, Collections.singletonList("cache"));
         headers.put(CustomCacheControlHeadersWriter.EXPIRES, Collections.singletonList("expires"));
         headers.put(CustomCacheControlHeadersWriter.PRAGMA, Collections.singletonList("pragma"));
         headers.put("key1", Arrays.asList("value1", "value2"));
+        if (additionalHeaders != null) {
+            headers.putAll(additionalHeaders);
+        }
         return headers;
     }
 
@@ -108,7 +133,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     private Request request() {
-        return Request.create(Request.HttpMethod.GET, "url", headers(), Body.empty(), new RequestTemplate());
+        return Request.create(Request.HttpMethod.GET, "url", headers(null), Body.empty(), new RequestTemplate());
     }
 
     @Override
