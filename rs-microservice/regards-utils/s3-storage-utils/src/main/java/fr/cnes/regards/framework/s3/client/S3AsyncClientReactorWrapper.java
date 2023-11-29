@@ -19,6 +19,8 @@
 package fr.cnes.regards.framework.s3.client;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import fr.cnes.regards.framework.s3.domain.GlacierFileStatus;
+import fr.cnes.regards.framework.s3.domain.RestorationStatus;
 import fr.cnes.regards.framework.s3.domain.StorageConfig;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
 import fr.cnes.regards.framework.s3.domain.multipart.GetResponseAndStream;
@@ -87,19 +89,19 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                                                              e))
                                                                          .build();
 
-    public static final Pattern headResponseRestoreOnGoingPattern = Pattern.compile("^.*ongoing-request=\"([^\"]*)\""
-                                                                                    + ".*$");
+    public static final Pattern HEAD_RESPONSE_RESTORE_ON_GOING_PATTERN = Pattern.compile(
+        "^.*ongoing-request=\"([^\"]*)\"" + ".*$");
 
-    public static final Pattern headResponseRestoreExpirePattern = Pattern.compile("^.*expiry-date=\"([^\"]*)\".*$");
+    public static final Pattern HEAD_RESPONSE_RESTORE_EXPIRE_PATTERN = Pattern.compile("^.*expiry-date=\"([^\"]*)\".*$");
 
     private static final Set<ZoneId> PREFERRED_ZONES = Set.of(ZoneId.of("Europe/Paris"), ZoneId.of("America/Havana"));
 
-    public static final DateTimeFormatter PARSER = new DateTimeFormatterBuilder().appendPattern("E, dd MMM yyyy "
-                                                                                                + "HH:mm:ss [")
-                                                                                 .appendZoneText(TextStyle.SHORT,
-                                                                                                 PREFERRED_ZONES)
-                                                                                 .appendPattern("]")
-                                                                                 .toFormatter(Locale.ENGLISH);
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder().appendPattern(
+                                                                                                  "E, dd MMM yyyy " + "HH:mm:ss [")
+                                                                                              .appendZoneText(TextStyle.SHORT,
+                                                                                                              PREFERRED_ZONES)
+                                                                                              .appendPattern("]")
+                                                                                              .toFormatter(Locale.ENGLISH);
 
     static final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
 
@@ -175,45 +177,65 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                                           String standardStorageClass,
                                                           String key,
                                                           String bucket) {
-        GlacierFileStatus status = GlacierFileStatus.NOT_AVAILABLE;
+        RestorationStatus status = RestorationStatus.NOT_AVAILABLE;
+        ZonedDateTime expirationDate = null;
+
         if (checkIfFileIsInStandardStorageClass(response, standardStorageClass)) {
             LOGGER.debug("File ({}) in bucket ({}) is in STANDARD storage class", key, bucket);
-            status = GlacierFileStatus.AVAILABLE;
+            status = RestorationStatus.AVAILABLE;
         } else {
             LOGGER.debug("File ({}) in bucket ({}) is in GLACIER storage class", key, bucket);
             // Check if a restoration request is running.
             Boolean restoreRequestPending = checkRestoreRequestOnGoingStatus(response);
 
-            // If restoration request is done, check expiration date.
-            Boolean restoreRequestExpired = checkRestoreRequestExpiration(response);
-
-            if (restoreRequestPending != null && restoreRequestExpired != null) {
-                if (!restoreRequestPending && !restoreRequestExpired) {
-                    // If restore request exists, is not pending and not expired, file is available for download.
-                    status = GlacierFileStatus.AVAILABLE;
-                } else if (!restoreRequestPending) {
-                    // If restore request exists, is not pending and expired, file is no longer available for
-                    // download.
-                    status = GlacierFileStatus.EXPIRED;
+            Boolean restoreRequestExpired = null;
+            try {
+                expirationDate = getRestoreRequestExpiration(response);
+                if (expirationDate != null) {
+                    // If restoration request is done, check expiration date.
+                    restoreRequestExpired = expirationDate.isBefore(ZonedDateTime.now());
                 } else {
-                    // If restore request exists and is pending, file is not yet available for download.
-                    status = GlacierFileStatus.RESTORE_PENDING;
+                    restoreRequestExpired = false;
                 }
+                if (restoreRequestPending != null) {
+                    if (!restoreRequestPending && !restoreRequestExpired) {
+                        // If restore request exists, is not pending and not expired, file is available for download.
+                        status = RestorationStatus.AVAILABLE;
+                    } else if (!restoreRequestPending) {
+                        // If restore request exists, is not pending and expired, file is no longer available for
+                        // download.
+                        status = RestorationStatus.EXPIRED;
+                    } else {
+                        // If restore request exists and is pending, file is not yet available for download.
+                        status = RestorationStatus.RESTORE_PENDING;
+                    }
+                }
+            } catch (DateTimeParseException e) {
+                LOGGER.error("Head response from S3 Server is malformed. Date format for expiration date is not "
+                             + "in expected format", e);
             }
         }
-        LOGGER.info("File ({}) in bucket ({}) restore status = {}", key, bucket, status);
-        return status;
+        String logMsg = String.format("File (%s) in bucket (%s) restore status = %s", key, bucket, status);
+        if (expirationDate != null) {
+            logMsg = String.format("File (%s) in bucket (%s) restore status = %s (expiration date: %s)",
+                                   key,
+                                   bucket,
+                                   status,
+                                   expirationDate);
+        }
+        LOGGER.info(logMsg);
+
+        return new GlacierFileStatus(status, expirationDate);
     }
 
     /**
      * Check from the given s3 head response, if a restore request exists, is running or is done.
      *
-     * @return Returns null if no restoration request exists, return True if a request exists and is pending else
-     * return False.
+     * @return null if no restoration request exists; otherwise True if a request exists and is pending else False.
      */
     private static Boolean checkRestoreRequestOnGoingStatus(HeadObjectResponse response) {
         if (response.restore() != null) {
-            Matcher matcher = headResponseRestoreOnGoingPattern.matcher(response.restore().toLowerCase());
+            Matcher matcher = HEAD_RESPONSE_RESTORE_ON_GOING_PATTERN.matcher(response.restore().toLowerCase());
             if (matcher.find() && matcher.group(1) != null) {
                 return Boolean.parseBoolean(matcher.group(1));
             }
@@ -222,27 +244,23 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
     }
 
     /**
-     * Check from the given S3 head response, if the restoration requests is expired.
+     * Return the expiration date from the given S3 head response.
      *
-     * @return Returns null if date is not wellformed in response. Returns True if restoration request exists and is
-     * expired,
-     * else return False.
+     * @return the expiration date; otherwise null if the expiration date does not exist with
+     * {@link HEAD_RESPONSE_RESTORE_EXPIRE_PATTERN} pattern in response.
+     * @throws DateTimeParseException if date is not wellformed in response.
      */
-    private static Boolean checkRestoreRequestExpiration(HeadObjectResponse response) {
-        if (response.restore() != null) {
-            Matcher matcher = headResponseRestoreExpirePattern.matcher(response.restore());
-            if (matcher.find() && matcher.group(1) != null) {
-                try {
-                    ZonedDateTime zdt = ZonedDateTime.parse(matcher.group(1), PARSER);
-                    return zdt.isBefore(ZonedDateTime.now());
-                } catch (DateTimeParseException e) {
-                    LOGGER.error("Head response from S3 Server is malformed. Date format for expiration date is not "
-                                 + "in expected format", e);
-                    return null;
-                }
-            }
+    private static ZonedDateTime getRestoreRequestExpiration(HeadObjectResponse response)
+        throws DateTimeParseException {
+        ZonedDateTime expirationZoneDateTime = null;
+        if (response.restore() == null) {
+            return expirationZoneDateTime;
         }
-        return false;
+        Matcher matcher = HEAD_RESPONSE_RESTORE_EXPIRE_PATTERN.matcher(response.restore());
+        if (matcher.find() && matcher.group(1) != null) {
+            expirationZoneDateTime = ZonedDateTime.parse(matcher.group(1), DATE_TIME_FORMATTER);
+        }
+        return expirationZoneDateTime;
     }
 
     /**

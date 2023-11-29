@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.s3.client;
 
+import fr.cnes.regards.framework.s3.domain.GlacierFileStatus;
 import fr.cnes.regards.framework.s3.domain.multipart.ResponseAndStream;
 import fr.cnes.regards.framework.s3.domain.multipart.UploadedPart;
 import io.vavr.collection.List;

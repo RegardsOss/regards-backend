@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.s3.client;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
+import fr.cnes.regards.framework.s3.domain.GlacierFileStatus;
 import fr.cnes.regards.framework.s3.domain.StorageCommand.Check;
 import fr.cnes.regards.framework.s3.domain.StorageCommand.Delete;
 import fr.cnes.regards.framework.s3.domain.StorageCommand.Read;
@@ -119,6 +120,9 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
     }
 
     public Mono<RestoreObjectResponse> restore(StorageConfig config, String key, Integer days) {
+        if (days <= 0) {
+            days = 1;
+        }
         return getClient(config).restore(config.getBucket(), key, days);
     }
 

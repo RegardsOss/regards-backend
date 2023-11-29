@@ -16,12 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.s3.client;
+package fr.cnes.regards.framework.s3.domain;
 
 /**
+ * Status of stored file in the glacier.
+ *
  * @author Sébastien Binda
  **/
-public enum GlacierFileStatus {
+public enum RestorationStatus {
 
     RESTORE_PENDING,
 
