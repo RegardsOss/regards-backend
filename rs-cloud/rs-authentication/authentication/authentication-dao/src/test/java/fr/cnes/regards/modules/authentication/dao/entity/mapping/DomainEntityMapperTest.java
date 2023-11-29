@@ -45,7 +45,9 @@ public class DomainEntityMapperTest {
             ServiceProvider domain = new ServiceProvider(randomStr(),
                                                          randomStr(),
                                                          randomStr(),
-                                                         new PluginConfiguration(randomStr(), randomStr()));
+                                                         new PluginConfiguration(randomStr(), randomStr()),
+                                                         "descriptionFr",
+                                                         "descriptionEn");
             assertEquals(domain, mapper.toDomain(mapper.toEntity(domain)));
         });
     }
@@ -56,7 +58,9 @@ public class DomainEntityMapperTest {
             ServiceProviderEntity entity = new ServiceProviderEntity(randomStr(),
                                                                      randomStr(),
                                                                      randomStr(),
-                                                                     new PluginConfiguration(randomStr(), randomStr()));
+                                                                     new PluginConfiguration(randomStr(), randomStr()),
+                                                                     "descriptionFr",
+                                                                     "descriptionEn");
             assertEquals(entity, mapper.toEntity(mapper.toDomain(entity)));
         });
     }

@@ -137,7 +137,9 @@ public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTrans
         return new ServiceProvider("THEIA",
                                    "https://sso.theia-land.fr/login",
                                    "https://sso.theia-land.fr/logout",
-                                   pluginConf);
+                                   pluginConf,
+                                   "descriptionFr",
+                                   "descriptionEn");
     }
 
     private ServiceProvider makeServiceProviderNok() {
@@ -145,6 +147,11 @@ public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTrans
         pluginConf.setVersion("through");
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build("the", "desert"));
         pluginConf.setParameters(parameters);
-        return new ServiceProvider("On a horse", "with no name", "with no name", pluginConf); // La, la, la, la, la, la
+        return new ServiceProvider("On a horse",
+                                   "with no name",
+                                   "with no name",
+                                   pluginConf,
+                                   "descriptionFr",
+                                   "descriptionEn");
     }
 }
