@@ -98,7 +98,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         Mockito.clearInvocations(publisher);
 
         fileStorageRequestRepo.deleteAll();
-        fileCacheReqRepo.deleteAll();
+        fileCacheRequestRepo.deleteAll();
         jobInfoRepo.deleteAll();
         if (!storageLocationConfService.search(ONLINE_CONF_LABEL).isPresent()) {
             initDataStoragePluginConfiguration(ONLINE_CONF_LABEL, true);
@@ -406,12 +406,12 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         Assert.assertTrue("There should be checksums to restore from nearline storages", nlChecksums.size() > 0);
         // Create a new bus message File reference request
         FilesAvailabilityRequestEvent item = new FilesAvailabilityRequestEvent(nlChecksums,
-                                                                               OffsetDateTime.now().plusDays(1),
+                                                                               24,
                                                                                UUID.randomUUID().toString());
         List<FilesAvailabilityRequestEvent> items = new ArrayList<>();
         items.add(item);
         availabilityHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Assert.assertEquals("Invalid count of cache file request", nlChecksums.size(), fileCacheReqRepo.count());
+        Assert.assertEquals("Invalid count of cache file request", nlChecksums.size(), fileCacheRequestRepo.count());
     }
 }

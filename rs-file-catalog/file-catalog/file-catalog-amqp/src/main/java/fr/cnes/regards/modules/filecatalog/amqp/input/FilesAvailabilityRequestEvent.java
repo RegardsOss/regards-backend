@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.filecatalog.dto.files.FilesAvailabilityRequestDto;
 
-import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,11 +48,11 @@ public class FilesAvailabilityRequestEvent extends FilesAvailabilityRequestDto i
         super();
     }
 
-    public FilesAvailabilityRequestEvent(Set<String> checksums, OffsetDateTime expirationDate, String groupId) {
-        super(expirationDate, groupId, checksums);
+    public FilesAvailabilityRequestEvent(Set<String> checksums, int availabilityHours, String groupId) {
+        super(availabilityHours, groupId, checksums);
     }
 
-    public FilesAvailabilityRequestEvent(Collection<String> checksums, OffsetDateTime expirationDate, String groupId) {
-        super(expirationDate, groupId, new HashSet<>(checksums));
+    public FilesAvailabilityRequestEvent(Collection<String> checksums, int availabilityHours, String groupId) {
+        super(availabilityHours, groupId, new HashSet<>(checksums));
     }
 }

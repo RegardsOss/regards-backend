@@ -260,7 +260,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, int availabilityHours) {
         throw new UnsupportedOperationException();
     }
 

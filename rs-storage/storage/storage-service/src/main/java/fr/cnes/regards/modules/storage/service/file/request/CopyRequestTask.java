@@ -98,7 +98,7 @@ public class CopyRequestTask implements Task {
                                           checksums.size(),
                                           true,
                                           expDate);
-                    fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
+                    fileCacheReqService.makeAvailable(checksums, 24, fileCacheGroupId);
                 }
             }
         } while (pageResp.hasContent());

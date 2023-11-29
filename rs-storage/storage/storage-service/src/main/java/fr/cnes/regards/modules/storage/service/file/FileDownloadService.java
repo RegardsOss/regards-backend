@@ -52,7 +52,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -251,9 +250,7 @@ public class FileDownloadService {
             }
         }
         // ask for file availability and return a not available yet response
-        fileCacheReqService.makeAvailable(Sets.newHashSet(fileToDownload),
-                                          OffsetDateTime.now().plusHours(1),
-                                          UUID.randomUUID().toString());
+        fileCacheReqService.makeAvailable(Sets.newHashSet(fileToDownload), 24, UUID.randomUUID().toString());
         throw new NearlineFileNotAvailableException(String.format("File %s is not available yet. Please try later.",
                                                                   fileToDownload.getMetaInfo().getFileName()));
     }

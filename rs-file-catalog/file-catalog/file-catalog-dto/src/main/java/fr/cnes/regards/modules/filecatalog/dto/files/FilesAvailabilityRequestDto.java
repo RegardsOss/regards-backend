@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.filecatalog.dto.files;
 
-import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,26 +32,23 @@ public class FilesAvailabilityRequestDto {
     private final Set<String> checksums = new HashSet<>();
 
     /**
-     * Expiration date for files availability
+     * Number of hours for files availability
      */
-    private OffsetDateTime expirationDate;
+    private int availabilityHours;
 
     /**
      * Request business identifier
      */
     private String groupId;
 
-    public FilesAvailabilityRequestDto(OffsetDateTime expirationDate, String groupId, Set<String> checksums) {
-        if (expirationDate == null) {
-            throw new RuntimeException("expirationDate is required");
-        }
+    public FilesAvailabilityRequestDto(int availabilityHours, String groupId, Set<String> checksums) {
         if (groupId == null) {
             throw new RuntimeException("groupId is required");
         }
         if (checksums == null && checksums.size() > 0) {
             throw new RuntimeException("checksums is required");
         }
-        this.expirationDate = expirationDate;
+        this.availabilityHours = availabilityHours;
         this.groupId = groupId;
         this.checksums.addAll(checksums);
     }
@@ -65,8 +61,8 @@ public class FilesAvailabilityRequestDto {
         return checksums;
     }
 
-    public OffsetDateTime getExpirationDate() {
-        return expirationDate;
+    public int getAvailabilityHours() {
+        return availabilityHours;
     }
 
     public String getGroupId() {

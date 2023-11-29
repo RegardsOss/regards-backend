@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
+import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
@@ -40,13 +41,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -80,7 +80,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
         FileReference fileRef = this.generateRandomStoredOnlineFileReference();
         Mockito.clearInvocations(fileEventPublisher);
         fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
-                                              OffsetDateTime.now().plusDays(1),
+                                              24,
                                               UUID.randomUUID().toString());
         Assert.assertFalse("No cache request should be created",
                            fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
@@ -105,7 +105,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
     public void makeAvailable() throws InterruptedException, ExecutionException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test", Optional.empty());
         fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
-                                              OffsetDateTime.now().plusDays(1),
+                                              24,
                                               UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
@@ -122,73 +122,8 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
      */
     @Test
     public void makeAvailable_cacheFull() throws Exception {
-        // Simulate cache full 80% 8 file * 1ko (cache size limit 10ko)
-        String cacheRequestsGroupId = UUID.randomUUID().toString();
-        cacheService.addFile(UUID.randomUUID().toString(),
-                             1024L,
-                             "file",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                             DataType.RAWDATA.name(),
-                             new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1),
-                             cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(),
-                             1024L,
-                             "file",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                             DataType.RAWDATA.name(),
-                             new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1),
-                             cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(),
-                             1024L,
-                             "file",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                             DataType.RAWDATA.name(),
-                             new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1),
-                             cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(),
-                             1024L,
-                             "file",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                             DataType.RAWDATA.name(),
-                             new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1),
-                             cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(),
-                             1024L,
-                             "file",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                             DataType.RAWDATA.name(),
-                             new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1),
-                             cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(),
-                             1024L,
-                             "file",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                             DataType.RAWDATA.name(),
-                             new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1),
-                             cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(),
-                             1024L,
-                             "file",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                             DataType.RAWDATA.name(),
-                             new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().plusDays(1),
-                             cacheRequestsGroupId);
-        cacheService.addFile(UUID.randomUUID().toString(),
-                             1024L,
-                             "file",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                             DataType.RAWDATA.name(),
-                             new URL("file", null, "/plop/file"),
-                             OffsetDateTime.now().minusDays(1),
-                             cacheRequestsGroupId);
-
+        // Given : simulate cache full 80% 8 file * 1ko (cache size limit 10ko)
+        createCacheFiles();
         // Reference 5 files of 1ko each
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file-nl-1.test", Optional.empty());
         FileReference fileRef2 = this.generateRandomStoredNearlineFileReference("file-nl-2.test", Optional.empty());
@@ -200,7 +135,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                                                               fileRef3.getMetaInfo().getChecksum(),
                                                               fileRef4.getMetaInfo().getChecksum(),
                                                               fileRef5.getMetaInfo().getChecksum()),
-                                              OffsetDateTime.now().plusDays(1),
+                                              24,
                                               UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
@@ -213,27 +148,60 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef5.getMetaInfo().getChecksum()).isPresent());
 
+        // When
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
-        // Only 2 files can be restored in cache
+        // Then : only 2 files can be restored in cache
         // There should remains 3 cache  request in {@link FileRequestStatus#TO_DO} state
-        Assert.assertEquals("There should remains 3 cache  request in TO_DO state", 3, fileCacheReqRepo.count());
+        Assert.assertEquals("There should remains 3 cache request in TO_DO state", 3, fileCacheRequestRepo.count());
 
         Assert.assertEquals("There should be 10 files in cache", 10, cacheFileRepo.count());
 
-        // Simulate cache  purge. One  file is expired so one  file should be  removed from cache
+        // When: simulate cache  purge. One  file is expired so one file should be removed from cache
         cacheService.purge(false);
 
         jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
-        // One new file can be restored
-        // There should remains 2 cache  request in {@link FileRequestStatus#TO_DO} state
-        Assert.assertEquals("There should remains 2 cache  request in TO_DO state", 2, fileCacheReqRepo.count());
+        // Then : one new file can be restored
+        // There should remains 2 cache request in {@link FileRequestStatus#TO_DO} state
+        Assert.assertEquals("There should remains 2 cache request in TO_DO state", 2, fileCacheRequestRepo.count());
 
         Assert.assertEquals("There should be 10 files in cache", 10, cacheFileRepo.count());
+    }
 
+    /**
+     * Create the list of cache files in database :
+     * <ul>
+     *     <li>7 cache files with expiration date=now (+) one day</li>
+     *     <li>1 cache file with expiration date=now (-) one day(expired file)</li>
+     * </ul>
+     */
+    private void createCacheFiles() throws MalformedURLException {
+        List<CacheFile> cacheFiles = new ArrayList<>();
+
+        String cacheRequestsGroupId = UUID.randomUUID().toString();
+        for (int index = 0; index < 7; index++) {
+            cacheFiles.add(new CacheFile(UUID.randomUUID().toString(),
+                                         1024L,
+                                         "file",
+                                         MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                                         new URL("file", null, "/plop/file"),
+                                         OffsetDateTime.now().plusDays(1),
+                                         cacheRequestsGroupId,
+                                         DataType.RAWDATA.name()));
+        }
+        cacheFiles.add(new CacheFile(UUID.randomUUID().toString(),
+                                     1024L,
+                                     "file",
+                                     MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                                     new URL("file", null, "/plop/file"),
+                                     OffsetDateTime.now().minusDays(1),
+                                     cacheRequestsGroupId,
+                                     DataType.RAWDATA.name()));
+
+        cacheFileRepo.saveAll(cacheFiles);
     }
 
     @Test
@@ -241,7 +209,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("restoError.file1.test",
                                                                                Optional.empty());
         fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
-                                              OffsetDateTime.now().plusDays(1),
+                                              24,
                                               UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
@@ -274,7 +242,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                                                               fileRef2.getMetaInfo().getChecksum(),
                                                               fileRef3.getMetaInfo().getChecksum(),
                                                               fileRef4.getMetaInfo().getChecksum()),
-                                              OffsetDateTime.now().plusDays(1),
+                                              24,
                                               UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be created",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
@@ -296,7 +264,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                           Files.exists(Paths.get(cacheService.getFilePath(fileRef3.getMetaInfo().getChecksum()))));
         Assert.assertTrue("file should be restored in cache",
                           Files.exists(Paths.get(cacheService.getFilePath(fileRef4.getMetaInfo().getChecksum()))));
-        Assert.assertEquals("No cache request should remains", 0, fileCacheReqRepo.count());
+        Assert.assertEquals("No cache request should remains", 0, fileCacheRequestRepo.count());
 
     }
 
@@ -304,9 +272,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
     public void makeAvailable_without_cache() throws InterruptedException, ExecutionException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         Mockito.clearInvocations(fileEventPublisher);
-        fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef),
-                                              OffsetDateTime.now().plusDays(1),
-                                              UUID.randomUUID().toString());
+        fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef), 24, UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be done for the near line file to download",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
         Mockito.verify(fileEventPublisher, Mockito.never())
@@ -324,9 +290,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         Mockito.clearInvocations(fileEventPublisher);
         this.simulateFileInCache(fileRef.getMetaInfo().getChecksum());
-        fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef),
-                                              OffsetDateTime.now().plusDays(1),
-                                              UUID.randomUUID().toString());
+        fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef), 24, UUID.randomUUID().toString());
         Assert.assertFalse(
             "No cache request should be created for the near line file to download as it is available in cache",
             fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
@@ -338,31 +302,6 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                           Mockito.any(),
                           Mockito.any(),
                           Mockito.any());
-    }
-
-    @Test
-    public void cleanExpiredCacheRequests() throws ExecutionException, InterruptedException {
-        OffsetDateTime expirationDate = OffsetDateTime.now().minusDays(1);
-        FileReference expiredCacheRequestFile = this.generateRandomStoredNearlineFileReference();
-        fileCacheReqRepo.save(new FileCacheRequest(expiredCacheRequestFile, "target/test", expirationDate, "test"));
-
-        FileReference expiresTomorrowCacheRequestFile = this.generateRandomStoredNearlineFileReference();
-        fileCacheReqRepo.save(new FileCacheRequest(expiresTomorrowCacheRequestFile,
-                                                   "target/test",
-                                                   OffsetDateTime.now().plusDays(1),
-                                                   "test"));
-
-        Assert.assertEquals("There is only 2 file cache requests.", 2, fileCacheReqRepo.count());
-        Assert.assertTrue("One file cache requests should be expired (expirationDate < now)",
-                          fileCacheReqRepo.findByChecksum(expiredCacheRequestFile.getMetaInfo().getChecksum())
-                                          .filter(req -> req.getExpirationDate().isBefore(OffsetDateTime.now()))
-                                          .isPresent());
-        Assert.assertTrue("The other file cache requests should not be expired (expirationDate > now)",
-                          fileCacheReqRepo.findByChecksum(expiresTomorrowCacheRequestFile.getMetaInfo().getChecksum())
-                                          .filter(req -> req.getExpirationDate().isAfter(OffsetDateTime.now()))
-                                          .isPresent());
-        fileCacheRequestService.cleanExpiredCacheRequests();
-        Assert.assertEquals("After cleaning expired requests there should be one left.", 1, fileCacheReqRepo.count());
     }
 
 }

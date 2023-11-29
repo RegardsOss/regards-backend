@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -113,7 +112,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, int availabilityHours) {
         Collection<String> groupIds = Sets.newHashSet();
         int count = 0;
         if (!waitMode) {

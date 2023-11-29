@@ -109,9 +109,10 @@ public class CacheService {
                         MimeType mimeType,
                         String type,
                         URL location,
-                        OffsetDateTime expirationDate,
+                        int availabilityHours,
                         String groupId) {
         Optional<CacheFile> cacheFileOptional = findByChecksum(checksum);
+        OffsetDateTime expirationDate = OffsetDateTime.now().plusHours(availabilityHours);
         CacheFile cachedFile;
         if (!cacheFileOptional.isPresent()) {
             cachedFile = new CacheFile(checksum, fileSize, fileName, mimeType, location, expirationDate, groupId, type);

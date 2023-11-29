@@ -80,7 +80,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 /**
- * Service to handle {@link FileCacheRequest}s.
+ * Service to handle {@link FileCacheRequest} entities.
  * Those requests are created when a file reference need to be restored physically thanks to an existing {@link INearlineStorageLocation} plugin.
  *
  * @author Sébastien Binda
@@ -132,6 +132,9 @@ public class FileCacheRequestService {
     @Value("${regards.storage.cache.requests.per.job:100}")
     private Integer nbRequestsPerJob;
 
+    @Value("${regards.storage.group.requests.days.before.expiration:5}")
+    private Integer nbDaysBeforeExpiration;
+
     public FileCacheRequestService(IFileCacheRequestRepository cacheRequestRepository,
                                    IPluginService pluginService,
                                    IJobInfoService jobInfoService,
@@ -175,49 +178,50 @@ public class FileCacheRequestService {
     }
 
     /**
-     * Creates a new {@link FileCacheRequest} if does not exists already.
+     * Creates a new {@link FileCacheRequest} if does not exist already.
      *
-     * @param fileRefToRestore File that we are asking to be put into the cache
-     * @param expirationDate   Date at which the cache request expires
-     * @param groupId          Business identifier of the deletion request
+     * @param fileRefToRestore  File that we are asking to be put into the cache
+     * @param availabilityHours Duration at which the cache request expires
+     * @param groupId           Business identifier of the deletion request
      * @return {@link FileCacheRequest} created.
      */
-    public Optional<FileCacheRequest> create(FileReference fileRefToRestore,
-                                             OffsetDateTime expirationDate,
-                                             String groupId) {
+    public Optional<FileCacheRequest> create(FileReference fileRefToRestore, int availabilityHours, String groupId) {
         String checksum = fileRefToRestore.getMetaInfo().getChecksum();
-        Optional<FileCacheRequest> oFcr = cacheRequestRepository.findByChecksum(checksum);
-        FileCacheRequest request;
-        if (!oFcr.isPresent()) {
-            request = new FileCacheRequest(fileRefToRestore,
-                                           cacheService.getCacheDirectoryPath(checksum),
-                                           expirationDate,
-                                           groupId);
-            request = cacheRequestRepository.save(request);
+        Optional<FileCacheRequest> fileCacheRequestOptional = cacheRequestRepository.findByChecksum(checksum);
+
+        FileCacheRequest fileCacheRequest;
+        if (!fileCacheRequestOptional.isPresent()) {
+            fileCacheRequest = new FileCacheRequest(fileRefToRestore,
+                                                    cacheService.getCacheDirectoryPath(checksum),
+                                                    availabilityHours,
+                                                    groupId);
+            fileCacheRequest = cacheRequestRepository.save(fileCacheRequest);
             LOGGER.trace("File {} (checksum {}) is requested for cache.",
                          fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());
         } else {
-            request = oFcr.get();
-            request.setExpirationDate(expirationDate);
-            if (request.getStatus() == FileRequestStatus.ERROR) {
-                request.setStatus(reqStatusService.getNewStatus(request));
+            fileCacheRequest = fileCacheRequestOptional.get();
+            fileCacheRequest.setAvailabilityHours(availabilityHours);
+            if (fileCacheRequest.getStatus() == FileRequestStatus.ERROR) {
+                fileCacheRequest.setStatus(reqStatusService.getNewStatus(fileCacheRequest));
             }
-            request = cacheRequestRepository.save(request);
+            fileCacheRequest = cacheRequestRepository.save(fileCacheRequest);
             LOGGER.trace("File {} (checksum {}) is already requested for cache.",
                          fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());
         }
-        return Optional.of(request);
+        return Optional.of(fileCacheRequest);
     }
 
-    public void makeAvailable(Collection<FilesAvailabilityRequestEvent> items) {
-        items.forEach(i -> {
-            reqGrpService.granted(i.getGroupId(),
+    public void makeAvailable(Collection<FilesAvailabilityRequestEvent> filesAvailabilityRequestEvts) {
+        filesAvailabilityRequestEvts.forEach(availabilityRequestEvt -> {
+            reqGrpService.granted(availabilityRequestEvt.getGroupId(),
                                   FileRequestType.AVAILABILITY,
-                                  i.getChecksums().size(),
-                                  i.getExpirationDate());
-            makeAvailable(i.getChecksums(), i.getExpirationDate(), i.getGroupId());
+                                  availabilityRequestEvt.getChecksums().size(),
+                                  OffsetDateTime.now().plusDays(nbDaysBeforeExpiration));
+            makeAvailable(availabilityRequestEvt.getChecksums(),
+                          availabilityRequestEvt.getAvailabilityHours(),
+                          availabilityRequestEvt.getGroupId());
         });
     }
 
@@ -228,7 +232,7 @@ public class FileCacheRequestService {
      * @param expirationDate Availability expiration date.
      * @param groupId        Request group id
      */
-    public void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate, String groupId) {
+    public void makeAvailable(Collection<String> checksums, int availabilityHours, String groupId) {
 
         Set<FileReference> onlines = Sets.newHashSet();
         Set<FileReference> offlines = Sets.newHashSet();
@@ -298,7 +302,7 @@ public class FileCacheRequestService {
         // notifyNotAvailables(offlines, groupId); FIXME: @sbinda what should be done?
         // Handle off lines as near lines files to create new FileCacheRequests.
         nearlines.addAll(offlines);
-        makeAvailable(nearlines, expirationDate, groupId);
+        makeAvailable(nearlines, availabilityHours, groupId);
     }
 
     private void notifyUnknowns(Set<String> unkownFiles, String requestGroupId) {
@@ -421,18 +425,18 @@ public class FileCacheRequestService {
                               Long realFileSize,
                               String successMessage) {
         LOGGER.debug("[AVAILABILITY SUCCESS {}] - {}", fileReq.getChecksum(), successMessage);
-        Optional<FileCacheRequest> oRequest = cacheRequestRepository.findById(fileReq.getId());
-        if (oRequest.isPresent()) {
+        Optional<FileCacheRequest> fileCacheRequestOptional = cacheRequestRepository.findById(fileReq.getId());
+        if (fileCacheRequestOptional.isPresent()) {
             // Create the cache file associated
-            cacheService.addFile(oRequest.get().getChecksum(),
+            cacheService.addFile(fileCacheRequestOptional.get().getChecksum(),
                                  realFileSize,
-                                 oRequest.get().getFileReference().getMetaInfo().getFileName(),
-                                 oRequest.get().getFileReference().getMetaInfo().getMimeType(),
-                                 oRequest.get().getFileReference().getMetaInfo().getType(),
+                                 fileCacheRequestOptional.get().getFileReference().getMetaInfo().getFileName(),
+                                 fileCacheRequestOptional.get().getFileReference().getMetaInfo().getMimeType(),
+                                 fileCacheRequestOptional.get().getFileReference().getMetaInfo().getType(),
                                  cacheLocation,
-                                 oRequest.get().getExpirationDate(),
+                                 fileCacheRequestOptional.get().getAvailabilityHours(),
                                  fileReq.getGroupId());
-            delete(oRequest.get());
+            delete(fileCacheRequestOptional.get());
         }
         publisher.available(fileReq.getChecksum(),
                             "cache",
@@ -539,11 +543,11 @@ public class FileCacheRequestService {
      * Creates {@link FileCacheRequest} for each nearline {@link FileReference} to be available for download.
      * After copy in cache, files will be available until the given expiration date.
      *
-     * @param fileReferences Files to put into the cache
-     * @param expirationDate Files expiration date in cache
-     * @param groupId        Request group id
+     * @param fileReferences    Files to put into the cache
+     * @param availabilityHours Duration in hours of available files in the cache internal or external
+     * @param groupId           Request group id
      */
-    public void makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String groupId) {
+    public void makeAvailable(Set<FileReference> fileReferences, int availabilityHours, String groupId) {
         // Check files already available in cache
         Set<FileReference> availables = cacheService.getFilesAvailableInCache(fileReferences, groupId);
         Set<FileReference> toRestore = fileReferences.stream()
@@ -553,7 +557,7 @@ public class FileCacheRequestService {
         notifyAlreadyAvailablesInCache(availables, groupId);
         // Create a restoration request for all to restore
         for (FileReference f : toRestore) {
-            create(f, expirationDate, groupId);
+            create(f, availabilityHours, groupId);
         }
     }
 
@@ -694,7 +698,4 @@ public class FileCacheRequestService {
         cacheRequestRepository.deleteByfileReference(deletedFileRef);
     }
 
-    public void cleanExpiredCacheRequests() {
-        cacheRequestRepository.deleteByExpirationDateBefore(OffsetDateTime.now());
-    }
 }

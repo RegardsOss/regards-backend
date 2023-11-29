@@ -31,7 +31,6 @@ import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -115,12 +114,14 @@ public class StorageClient implements IStorageClient {
     }
 
     @Override
-    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
+    public Collection<RequestInfo> makeAvailable(Collection<String> checksums, int availabilityHours) {
         Collection<RequestInfo> requestInfos = Lists.newArrayList();
         // If number of files in the request is less than the maximum allowed by request then publish it
         if (checksums.size() <= FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP) {
             RequestInfo requestInfo = RequestInfo.build();
-            publisher.publish(new FilesAvailabilityRequestEvent(checksums, expirationDate, requestInfo.getGroupId()));
+            publisher.publish(new FilesAvailabilityRequestEvent(checksums,
+                                                                availabilityHours,
+                                                                requestInfo.getGroupId()));
             requestInfos.add(requestInfo);
         } else {
             // Else publish as many requests as needed.
@@ -131,7 +132,7 @@ public class StorageClient implements IStorageClient {
                 if (group.size() >= FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP) {
                     RequestInfo requestInfo = RequestInfo.build();
                     publisher.publish(new FilesAvailabilityRequestEvent(group,
-                                                                        expirationDate,
+                                                                        availabilityHours,
                                                                         requestInfo.getGroupId()));
                     requestInfos.add(requestInfo);
                     group.clear();
@@ -139,7 +140,9 @@ public class StorageClient implements IStorageClient {
             }
             if (!group.isEmpty()) {
                 RequestInfo requestInfo = RequestInfo.build();
-                publisher.publish(new FilesAvailabilityRequestEvent(group, expirationDate, requestInfo.getGroupId()));
+                publisher.publish(new FilesAvailabilityRequestEvent(group,
+                                                                    availabilityHours,
+                                                                    requestInfo.getGroupId()));
                 requestInfos.add(requestInfo);
             }
         }

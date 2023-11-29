@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.storage.client.IStorageClient;
 import io.vavr.control.Option;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -147,8 +146,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
         subscriber.subscribe(this);
 
         try {
-            storageClient.makeAvailable(dataFilesMultimap.keySet(),
-                                        OffsetDateTime.now().plusHours(subOrderAvailabilityDurationHours));
+            storageClient.makeAvailable(dataFilesMultimap.keySet(), subOrderAvailabilityDurationHours);
             dataFilesMultimap.forEach((cs, f) -> logger.debug("Order job is waiting for {} file {} - {} availability.",
                                                               dataFilesMultimap.size(),
                                                               f.getFilename(),

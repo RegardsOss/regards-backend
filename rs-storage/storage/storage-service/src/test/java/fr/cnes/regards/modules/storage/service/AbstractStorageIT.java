@@ -73,7 +73,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
@@ -144,7 +143,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
 
     @Autowired
-    protected IFileCacheRequestRepository fileCacheReqRepo;
+    protected IFileCacheRequestRepository fileCacheRequestRepo;
 
     @Autowired
     protected ICacheFileRepository cacheFileRepo;
@@ -201,7 +200,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
         copyRequestRepository.deleteAll();
         fileDeletionRequestRepo.deleteAll();
         fileStorageRequestRepo.deleteAll();
-        fileCacheReqRepo.deleteAll();
+        fileCacheRequestRepo.deleteAll();
         cacheFileRepo.deleteAll();
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
@@ -689,7 +688,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                  MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
                                  DataType.RAWDATA.name(),
                                  new URL("file", null, filePath),
-                                 OffsetDateTime.now().plusDays(1),
+                                 24,
                                  UUID.randomUUID().toString());
             // Create file on disk
             if (!Files.exists(Paths.get(filePath).getParent())) {

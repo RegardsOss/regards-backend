@@ -99,7 +99,6 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     private final Task handleRequestsTask = () -> {
         lockingTaskExecutors.assertLocked();
         handleGroupRequests();
-        handleExpiredCacheRequests();
         handleFileCacheRequests();
         handleFileStorageRequests();
         handleFileDeletionRequests();
@@ -114,10 +113,6 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     public void handleFileCacheRequests() {
         reqStatusService.checkDelayedCacheRequests();
         fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
-    }
-
-    private void handleExpiredCacheRequests() {
-        fileCacheRequestService.cleanExpiredCacheRequests();
     }
 
     public void handleFileDeletionRequests() {

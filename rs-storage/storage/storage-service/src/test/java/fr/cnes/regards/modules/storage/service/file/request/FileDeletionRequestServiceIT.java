@@ -47,7 +47,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -150,7 +149,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                           fr.getLazzyOwners().contains(owners.get(1)));
 
         // To check that cache request are deleted with fileReference add a cache request for one stored file
-        fileCacheRequestService.create(fileRef, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+        fileCacheRequestService.create(fileRef, 24, UUID.randomUUID().toString());
 
         // Delete file reference for the remaining owner
         request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
@@ -362,7 +361,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                               fr.getLazzyOwners().contains(secondOwner));
 
             // To check that cache request are deleted with fileReference add a cache request for one stored file
-            fileCacheRequestService.create(fileRef, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+            fileCacheRequestService.create(fileRef, 24, UUID.randomUUID().toString());
 
             // Delete file reference for the remaining owner
             request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),

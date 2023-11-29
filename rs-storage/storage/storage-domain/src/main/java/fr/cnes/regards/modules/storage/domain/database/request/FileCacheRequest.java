@@ -69,9 +69,11 @@ public class FileCacheRequest {
     @Column(name = "destination_path", length = FileLocation.URL_MAX_LENGTH, nullable = false)
     private String restorationDirectory;
 
-    @Column(name = "expiration_date")
-    @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime expirationDate;
+    /**
+     * Duration in hours of available files in the cache internal or external (by default 24h)
+     */
+    @Column(name = "availability_hours")
+    private int availabilityHours;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -89,7 +91,7 @@ public class FileCacheRequest {
 
     public FileCacheRequest(FileReference fileReference,
                             String restorationDirectory,
-                            OffsetDateTime expirationDate,
+                            int availabilityHours,
                             String groupId) {
         super();
         this.fileReference = fileReference;
@@ -97,7 +99,7 @@ public class FileCacheRequest {
         this.fileSize = fileReference.getMetaInfo().getFileSize();
         this.checksum = fileReference.getMetaInfo().getChecksum();
         this.restorationDirectory = restorationDirectory;
-        this.expirationDate = expirationDate;
+        this.availabilityHours = availabilityHours;
         this.groupId = groupId;
         this.creationDate = OffsetDateTime.now();
     }
@@ -151,16 +153,16 @@ public class FileCacheRequest {
         return restorationDirectory;
     }
 
-    public OffsetDateTime getExpirationDate() {
-        return expirationDate;
+    public int getAvailabilityHours() {
+        return availabilityHours;
     }
 
     public OffsetDateTime getCreationDate() {
         return creationDate;
     }
 
-    public void setExpirationDate(OffsetDateTime expirationDate) {
-        this.expirationDate = expirationDate;
+    public void setAvailabilityHours(int availabilityHours) {
+        this.availabilityHours = availabilityHours;
     }
 
     public String getGroupId() {

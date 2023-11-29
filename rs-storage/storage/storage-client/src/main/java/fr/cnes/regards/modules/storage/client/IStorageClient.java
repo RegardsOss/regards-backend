@@ -28,7 +28,6 @@ import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 
-import java.time.OffsetDateTime;
 import java.util.Collection;
 
 /**
@@ -154,14 +153,15 @@ public interface IStorageClient {
     /**
      * Requests that files identified by their checksums be put online so that they can be downloaded by a third party component.
      *
-     * @param checksums      list of file checksums
-     * @param expirationDate date until which the file must be available
-     *                       (after this date, the system could proceed to a possible cleaning of its cache, only offline files are concerned!)
+     * @param checksums         list of file checksums
+     * @param availabilityHours duration (in hours) until which the files must be available in the cache
+     *                          (after this duration, the system could proceed to a possible cleaning of its cache, only
+     *                          offline files are concerned!)
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
      * {@link FilesAvailabilityRequestEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.
      */
-    Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate);
+    Collection<RequestInfo> makeAvailable(Collection<String> checksums, int availabilityHours);
 
     /**
      * Submit a cancel request to storage microservice. The cancel request remove all requests associated to the given request group ids.

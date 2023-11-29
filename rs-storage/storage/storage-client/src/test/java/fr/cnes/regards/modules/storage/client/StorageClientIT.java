@@ -727,7 +727,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         listener.reset();
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Collection<RequestInfo> infos = client.makeAvailable(restorableFileChecksums, OffsetDateTime.now().plusDays(1));
+        Collection<RequestInfo> infos = client.makeAvailable(restorableFileChecksums, 24);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
 
@@ -752,7 +752,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Collection<RequestInfo> infos = client.makeAvailable(Sets.newHashSet(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_CHECKSUM),
-                                                             OffsetDateTime.now().plusDays(1));
+                                                             24);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
 
@@ -783,7 +783,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
             files.add(UUID.randomUUID().toString());
         }
 
-        Collection<RequestInfo> infos = client.makeAvailable(files, OffsetDateTime.now().plusDays(1));
+        Collection<RequestInfo> infos = client.makeAvailable(files, 24);
         Assert.assertEquals("There should be two requests groups", 2, infos.size());
         waitRequestEnds(2, 60);
         for (RequestInfo info : infos) {
@@ -801,7 +801,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<String> checksums = Sets.newHashSet();
         checksums.addAll(referenceFileChecksums);
-        Collection<RequestInfo> infos = client.makeAvailable(checksums, OffsetDateTime.now().plusDays(1));
+        Collection<RequestInfo> infos = client.makeAvailable(checksums, 24);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
 
@@ -839,7 +839,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         checksums.addAll(storedFileChecksums);
         int nbSuccessExpected = restorableFileChecksums.size();
         int nbErrorExpected = unrestorableFileChecksums.size() + referenceFileChecksums.size();
-        Collection<RequestInfo> infos = client.makeAvailable(checksums, OffsetDateTime.now().plusDays(1));
+        Collection<RequestInfo> infos = client.makeAvailable(checksums, 24);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
 
