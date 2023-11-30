@@ -25,7 +25,7 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**
- * A notification request event in order to notify rs-notifier
+ * An amqp message for the notification request event in order to notify rs-notifier
  * (see {link fr.cnes.regards.modules.notifier.dto.out.NotifierEvent})
  *
  * @author Stephane Cortine

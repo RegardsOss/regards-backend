@@ -29,7 +29,8 @@ import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 /**
- * An event for the request of notification with the list of recipient
+ * A notification request event with the list of recipients in order to notify rs-notifier
+ * (see {link fr.cnes.regards.modules.notifier.dto.out.NotifierEvent})
  *
  * @author Stephane Cortine
  */

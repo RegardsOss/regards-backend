@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Handler {@link FeatureRequestEvent} events
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component

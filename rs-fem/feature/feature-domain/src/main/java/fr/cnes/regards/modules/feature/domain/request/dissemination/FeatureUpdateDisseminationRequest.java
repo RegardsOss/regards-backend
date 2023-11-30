@@ -26,10 +26,9 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
-import java.util.Optional;
 
 /**
- * A request to update the {@link FeatureEntity} acknowledge on one of its recipient
+ * A request to update the {@link FeatureEntity} acknowledge and/or blocking on one of its recipient
  *
  * @author Léo Mieulet
  */
@@ -69,20 +68,30 @@ public class FeatureUpdateDisseminationRequest {
     @Column(name = "ack_required")
     private Boolean ackRequired;
 
+    @Column(name = "blocking_required")
+    private boolean blockingRequired;
+
     public FeatureUpdateDisseminationRequest() {
     }
 
     public FeatureUpdateDisseminationRequest(FeatureUniformResourceName urn,
                                              String recipientLabel,
-                                             FeatureUpdateDisseminationInfoType updateType,
-                                             Optional<Boolean> ackRequiredOpt) {
+                                             FeatureUpdateDisseminationInfoType updateType) {
         this.urn = urn;
         this.recipientLabel = recipientLabel;
         this.updateType = updateType;
         this.creationDate = OffsetDateTime.now();
-        if (ackRequiredOpt.isPresent()) {
-            this.ackRequired = ackRequiredOpt.get();
-        }
+    }
+
+    public FeatureUpdateDisseminationRequest(FeatureUniformResourceName urn,
+                                             String recipientLabel,
+                                             FeatureUpdateDisseminationInfoType updateType,
+                                             boolean ackRequired,
+                                             boolean blockingRequired) {
+        this(urn, recipientLabel, updateType);
+
+        this.ackRequired = ackRequired;
+        this.blockingRequired = blockingRequired;
     }
 
     public Long getId() {
@@ -131,5 +140,13 @@ public class FeatureUpdateDisseminationRequest {
 
     public void setAckRequired(Boolean ackRequired) {
         this.ackRequired = ackRequired;
+    }
+
+    public boolean isBlockingRequired() {
+        return blockingRequired;
+    }
+
+    public void setBlockingRequired(boolean blocking) {
+        this.blockingRequired = blocking;
     }
 }

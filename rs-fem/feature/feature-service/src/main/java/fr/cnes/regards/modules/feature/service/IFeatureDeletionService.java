@@ -76,4 +76,6 @@ public interface IFeatureDeletionService extends IAbstractFeatureService<Feature
      * @return {@link RequestsInfo}
      */
     RequestsInfo getInfo(SearchFeatureRequestParameters filters);
+
+    List<FeatureDeletionRequest> findAllByIds(Iterable ids);
 }

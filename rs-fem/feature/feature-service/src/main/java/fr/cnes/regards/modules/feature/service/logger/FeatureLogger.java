@@ -61,11 +61,17 @@ public class FeatureLogger {
 
     private static final String UPDATE_ERROR_FORMAT = PREFIX + "Feature UPDATE ERROR" + PX5;
 
+    private static final String UPDATE_UNBLOCKED_FORMAT = PREFIX
+                                                          + "Feature DELAYED after WAITING BLOCKING DISSEMINATION"
+                                                          + PX3;
+
     private static final String DELETION_DENIED_FORMAT = PREFIX + "Feature DELETION DENIED" + PX4;
 
     private static final String DELETION_GRANTED_FORMAT = PREFIX + "Feature DELETION GRANTED" + PX3;
 
     private static final String DELETION_SUCCESS_FORMAT = PREFIX + "Feature DELETED" + PX3;
+
+    private static final String DELETION_BLOCKED_FORMAT = PREFIX + "Feature WAITING BLOCKING DISSEMINATION" + PX3;
 
     private static final String NOTIFICATION_DENIED_FORMAT = PREFIX + "Feature NOTIFICATION DENIED" + PX4;
 
@@ -123,6 +129,10 @@ public class FeatureLogger {
         LOGGER.error(String.format(UPDATE_ERROR_FORMAT, requestOwner, requestId, providerId, urn, errors));
     }
 
+    public static void updateUnblocked(String requestOwner, String requestId, FeatureUniformResourceName urn) {
+        LOGGER.info(String.format(UPDATE_UNBLOCKED_FORMAT, requestOwner, requestId, urn));
+    }
+
     public static void deletionDenied(String requestOwner,
                                       String requestId,
                                       FeatureUniformResourceName urn,
@@ -136,6 +146,10 @@ public class FeatureLogger {
 
     public static void deletionSuccess(String requestOwner, String requestId, FeatureUniformResourceName urn) {
         LOGGER.info(String.format(DELETION_SUCCESS_FORMAT, requestOwner, requestId, urn));
+    }
+
+    public static void deletionBlocked(String requestOwner, String requestId, FeatureUniformResourceName urn) {
+        LOGGER.info(String.format(DELETION_BLOCKED_FORMAT, requestOwner, requestId, urn));
     }
 
     public static void notificationDenied(String requestOwner,

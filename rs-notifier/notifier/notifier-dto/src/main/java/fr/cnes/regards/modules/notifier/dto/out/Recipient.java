@@ -20,48 +20,49 @@ package fr.cnes.regards.modules.notifier.dto.out;
 
 import java.util.Objects;
 
+/**
+ * Information of recipient
+ */
 public class Recipient {
 
-    private String label;
+    private final String label;
 
-    private RecipientStatus status;
+    private final RecipientStatus status;
 
-    private boolean ackRequired;
+    private final boolean ackRequired;
 
-    public Recipient() {
-    }
+    private final boolean blockingRequired;
 
-    public Recipient(String label, RecipientStatus status, boolean ackRequired) {
+    public Recipient(String label, RecipientStatus status, boolean ackRequired, boolean blockingRequired) {
         this.label = label;
         this.status = status;
         this.ackRequired = ackRequired;
+        this.blockingRequired = blockingRequired;
+
+        if (blockingRequired && !ackRequired) {
+            throw new IllegalArgumentException(String.format("If a recipient is required the "
+                                                             + "blocking[blockingRequired: %s], "
+                                                             + "then the acknowledgment[ackRequired: %s] of "
+                                                             + "recipient is required.",
+                                                             blockingRequired,
+                                                             ackRequired));
+        }
     }
 
     public String getLabel() {
         return label;
     }
 
-    public Recipient setLabel(String label) {
-        this.label = label;
-        return this;
-    }
-
     public RecipientStatus getStatus() {
         return status;
-    }
-
-    public Recipient setStatus(RecipientStatus status) {
-        this.status = status;
-        return this;
     }
 
     public boolean isAckRequired() {
         return ackRequired;
     }
 
-    public Recipient setAckRequired(boolean ackRequired) {
-        this.ackRequired = ackRequired;
-        return this;
+    public boolean isBlockingRequired() {
+        return blockingRequired;
     }
 
     @Override

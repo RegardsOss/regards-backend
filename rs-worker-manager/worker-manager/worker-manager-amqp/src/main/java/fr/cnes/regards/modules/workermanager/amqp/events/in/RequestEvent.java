@@ -25,7 +25,8 @@ import org.springframework.amqp.core.MessageProperties;
 import javax.validation.constraints.NotNull;
 
 /**
- * Event sent to WorkerManager to submit a new request
+ * Event sent to WorkerManager to submit a new request (see
+ * {@link fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent})
  *
  * @author Sébastien Binda
  */

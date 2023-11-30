@@ -32,7 +32,7 @@ import org.springframework.validation.Validator;
 import java.util.List;
 
 /**
- * Handler to handle Feature dissemination acknowledge
+ * Handler amqp request message for {@link DisseminationAckEvent} events (feature dissemination acknowledge)
  *
  * @author Léo Mieulet
  */
@@ -67,12 +67,15 @@ public class FeatureDisseminationResponseHandler
     }
 
     @Override
-    public void handleBatch(List<DisseminationAckEvent> messages) {
-        LOGGER.debug("[DISSEMINATION ACK HANDLER] Bulk handling {} DisseminationAckEvent...", messages.size());
+    public void handleBatch(List<DisseminationAckEvent> disseminationAckEvts) {
+        LOGGER.debug("[FEATURE DISSEMINATION ACK HANDLER] Bulk handling {} DisseminationAckEvent...",
+                     disseminationAckEvts.size());
         long start = System.currentTimeMillis();
-        featureUpdateDisseminationService.saveAckRequests(messages);
-        LOGGER.debug("[DISSEMINATION ACK HANDLER] {} DisseminationAckEvent events handled in {} ms",
-                     messages.size(),
+
+        featureUpdateDisseminationService.saveAckRequests(disseminationAckEvts);
+
+        LOGGER.debug("[FEATURE DISSEMINATION ACK HANDLER] {} DisseminationAckEvent events handled in {} ms",
+                     disseminationAckEvts.size(),
                      System.currentTimeMillis() - start);
     }
 

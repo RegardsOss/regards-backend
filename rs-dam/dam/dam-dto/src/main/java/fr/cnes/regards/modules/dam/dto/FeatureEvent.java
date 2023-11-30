@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- * Event to notify data management service about a feature event like creation, update or deletion.
+ * Event to send as amqp message containing information about a feature creation/update/deletion
  *
  * @author Sébastien Binda
  */

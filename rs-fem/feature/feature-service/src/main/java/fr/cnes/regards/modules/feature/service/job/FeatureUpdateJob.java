@@ -22,7 +22,6 @@ import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.service.FeatureMetrics;
@@ -32,20 +31,18 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
+ * This job is used to update a list of features {@link FeatureUpdateRequest}.
+ *
  * @author Marc SORDI
  */
 public class FeatureUpdateJob extends AbstractFeatureJob {
 
     private List<FeatureUpdateRequest> featureUpdateRequests;
-
-    @Autowired
-    private IFeatureUpdateRequestRepository featureUpdateRequestRepo;
 
     @Autowired
     private IFeatureUpdateService featureUpdateService;
@@ -59,12 +56,11 @@ public class FeatureUpdateJob extends AbstractFeatureJob {
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
-        Type type = new TypeToken<Set<Long>>() {
+        featureUpdateRequests = this.featureUpdateService.findAllByOrderIdsByRequestDateAsc(getValue(parameters,
+                                                                                                     IDS_PARAMETER,
+                                                                                                     new TypeToken<Set<Long>>() {
 
-        }.getType();
-        featureUpdateRequests = this.featureUpdateRequestRepo.findAllByIdInOrderByRequestDateAsc(getValue(parameters,
-                                                                                                          IDS_PARAMETER,
-                                                                                                          type));
+                                                                                                     }.getType()));
     }
 
     @Override
@@ -72,12 +68,14 @@ public class FeatureUpdateJob extends AbstractFeatureJob {
         logger.info("[{}] Feature update job starts", jobInfoId);
         long start = System.currentTimeMillis();
         Timer.Sample sample = Timer.start(registry);
-        Set<FeatureEntity> updated = featureUpdateService.processRequests(featureUpdateRequests, this);
+
+        Set<FeatureEntity> updatedFeatures = featureUpdateService.processRequests(featureUpdateRequests, this);
+
         sample.stop(Timer.builder(this.getClass().getName()).tag("job", "run").register(registry));
-        updated.forEach(e -> metrics.count(e.getProviderId(),
-                                           e.getFeature().getUrn(),
-                                           FeatureUpdateState.FEATURE_UPDATED));
-        logger.info("[{}]{}{} update request(s) processed in {} ms",
+        updatedFeatures.forEach(updatedFeature -> metrics.count(updatedFeature.getProviderId(),
+                                                                updatedFeature.getFeature().getUrn(),
+                                                                FeatureUpdateState.FEATURE_UPDATED));
+        logger.info("[{}]{}{} update request(s) processed in {}ms",
                     jobInfoId,
                     INFO_TAB,
                     featureUpdateRequests.size(),

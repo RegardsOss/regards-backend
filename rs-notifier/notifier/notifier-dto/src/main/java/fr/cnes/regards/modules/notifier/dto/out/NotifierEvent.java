@@ -29,7 +29,7 @@ import java.util.Set;
 
 /**
  * A notification response event after a notification request event
- * ({@link fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent})
+ * ({@link fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent} and {@link fr.cnes.regards.modules.notifier.dto.in.SpecificRecipientNotificationRequestEvent})
  *
  * @author Sylvain VISSIERE-GUERINET
  */

@@ -49,4 +49,12 @@ public interface IRecipientNotifier {
         return "";
     }
 
+    /**
+     * Indicates if the sender should block action on the notified resource until recipient acknowledge the notification. For example this is used in swot workflow to block any FEM feature (to avoid deletion or modification) until storage-worker (notification recipient)  handled the feature files.
+     * return true for a blocking notification; otherwise false  for a classic notification(by default false)
+     */
+    default boolean isBlockingRequired() {
+        return false;
+    }
+
 }

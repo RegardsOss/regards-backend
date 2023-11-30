@@ -42,6 +42,8 @@ public class FeatureMetadata {
     @NotNull(message = MISSING_PRIORITY_LEVEL)
     private PriorityLevel priority = PriorityLevel.NORMAL;
 
+    private String acknowledgedRecipient;
+
     public List<StorageMetadata> getStorages() {
         return storages;
     }
@@ -60,6 +62,14 @@ public class FeatureMetadata {
 
     public void setPriority(PriorityLevel prioriity) {
         this.priority = prioriity;
+    }
+
+    public String getAcknowledgedRecipient() {
+        return acknowledgedRecipient;
+    }
+
+    public void setAcknowledgedRecipient(String acknowledgedRecipient) {
+        this.acknowledgedRecipient = acknowledgedRecipient;
     }
 
     /**

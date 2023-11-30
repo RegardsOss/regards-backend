@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.feature.service;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -35,7 +34,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.dao.FeatureCreationRequestSpecificationsBuilder;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
@@ -107,11 +105,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Autowired
     private IJobInfoService jobInfoService;
 
-    @Autowired
-    private IFeatureEntityRepository featureEntityRepository;
 
-    @Autowired
-    private IPublisher publisher;
 
     @Autowired
     private IFeatureValidationService validationService;

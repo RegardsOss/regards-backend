@@ -244,11 +244,8 @@ public class NotificationProcessingService {
      * @return A pair of integer, comprised of (left) number of requests in success and (right) number of requests in error
      */
     public Pair<Integer, Integer> checkCompletedRequests() {
-
         Pair<Integer, Integer> result = Pair.of(0, 0);
-
         try {
-
             Page<NotificationRequest> completedRequests = findCompletedRequests();
 
             Map<Boolean, List<NotificationRequest>> requestsByIsSuccessful = completedRequests.stream()
@@ -261,16 +258,17 @@ public class NotificationProcessingService {
             // Publish all completed requests as events
             long start = System.currentTimeMillis();
             Map<String, RecipientPluginConf> recipientsInfoCache = new HashMap<>();
-            List<NotifierEvent> events = completedRequests.getContent()
-                                                          .stream()
-                                                          .map(request -> this.mapRequestToEvent(request,
-                                                                                                 recipientsInfoCache))
-                                                          .toList();
-            LOGGER.info("{} messages calculated in {}ms", events.size(), System.currentTimeMillis() - start);
-            if (!events.isEmpty()) {
+
+            List<NotifierEvent> notifierEvents = completedRequests.getContent()
+                                                                  .stream()
+                                                                  .map(request -> mapRequestToEvent(request,
+                                                                                                    recipientsInfoCache))
+                                                                  .toList();
+            LOGGER.info("{} messages calculated in {}ms", notifierEvents.size(), System.currentTimeMillis() - start);
+            if (!notifierEvents.isEmpty()) {
                 start = System.currentTimeMillis();
-                publisher.publish(events);
-                LOGGER.info("{} messages sent in {}ms", events.size(), System.currentTimeMillis() - start);
+                publisher.publish(notifierEvents);
+                LOGGER.info("{} messages sent in {}ms", notifierEvents.size(), System.currentTimeMillis() - start);
             }
 
             // Delete all successful requests
@@ -281,7 +279,7 @@ public class NotificationProcessingService {
             if (!errorRequests.isEmpty()) {
                 notificationRequestRepository.updateState(NotificationState.ERROR,
                                                           errorRequests.stream()
-                                                                       .map(r -> r.getId())
+                                                                       .map(NotificationRequest::getId)
                                                                        .collect(Collectors.toSet()));
             }
 
@@ -342,14 +340,23 @@ public class NotificationProcessingService {
         try {
             if (recipientConf == null) {
                 IRecipientNotifier plugin = pluginService.getPlugin(pluginConfiguration.getBusinessId());
-                recipientConf = new RecipientPluginConf(plugin.getRecipientLabel(), plugin.isAckRequired());
+                recipientConf = new RecipientPluginConf(plugin.getRecipientLabel(),
+                                                        plugin.isAckRequired(),
+                                                        plugin.isBlockingRequired());
                 recipientInfosCache.put(pluginConfiguration.getBusinessId(), recipientConf);
             }
             // Only build a recipient if recipientLabel has been set
             if (StringUtils.isNotBlank(recipientConf.recipientLabel())) {
-                recipient = new Recipient(recipientConf.recipientLabel(), status, recipientConf.ackRequired());
+                recipient = new Recipient(recipientConf.recipientLabel(),
+                                          status,
+                                          recipientConf.ackRequired(),
+                                          recipientConf.blocking());
             }
+        } catch (IllegalArgumentException e) {
+            LOGGER.error(e.getMessage(), e);
+            return null;
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+            LOGGER.error(e.getMessage(), e);
             // Should never happen, hopefully, but hey, you never know - expect the unexpected to show how modern you are
             throw new RsRuntimeException(e);
         }

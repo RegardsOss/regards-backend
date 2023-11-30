@@ -29,10 +29,21 @@ import org.springframework.lang.Nullable;
 import java.util.Set;
 
 /**
- * Ingest request event
+ * An amqp message for the feature response event after a feature :
+ * <ul>
+ *     <li>creation request event : {@link fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent}
+ *     </li>
+ *     <li>deletion request event : {@link fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent}
+ *     </li>
+ *     <li>update request event : {@link fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent}</li>
+ *     <li>notification request event :
+ *     {@link fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent}
+ *     </li>
+ * </ul>
  *
  * @author Marc SORDI
  */
+// Impossible to change the name of this class : FeatureRequestEvent --> FeatureResponseEvent
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class FeatureRequestEvent implements ISubscribable {
 

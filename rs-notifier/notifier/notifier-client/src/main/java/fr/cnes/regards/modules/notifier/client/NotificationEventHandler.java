@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Handler to handle {@link NotifierEvent} events
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
