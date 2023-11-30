@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.AbstractPublisher;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -34,6 +36,7 @@ import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.event.FileAvailableEvent;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
@@ -183,6 +186,15 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
         // There should be 3 notification for online files available
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(8)).publish(Mockito.any(FileReferenceEvent.class));
+        // check if availability events are sent for available files
+        Mockito.verify(publisher, Mockito.times(6)) // 6 available files
+               .broadcast(Mockito.eq(FileAvailableEvent.EXCHANGE_NAME),
+                          Mockito.eq(Optional.empty()),
+                          Mockito.eq(Optional.of(FileAvailableEvent.ROUTING_KEY_AVAILABILITY_STATUS)),
+                          Mockito.eq(Optional.empty()),
+                          Mockito.eq(AbstractPublisher.DEFAULT_PRIORITY),
+                          Mockito.any(FileAvailableEvent.class),
+                          Mockito.eq(Maps.newHashMap()));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Set<String> availables = Sets.newHashSet();
         Set<String> notAvailables = Sets.newHashSet();

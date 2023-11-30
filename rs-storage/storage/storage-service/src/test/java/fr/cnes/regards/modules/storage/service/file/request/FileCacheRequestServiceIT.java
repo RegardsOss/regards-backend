@@ -92,6 +92,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                           Mockito.any(),
                           Mockito.any(),
                           Mockito.any(),
+                          Mockito.any(),
                           Mockito.any());
 
     }
@@ -282,6 +283,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                           Mockito.any(),
                           Mockito.any(),
                           Mockito.any(),
+                          Mockito.any(),
                           Mockito.any());
     }
 
@@ -296,6 +298,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
             fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
         Mockito.verify(fileEventPublisher, Mockito.times(1))
                .available(Mockito.any(),
+                          Mockito.any(),
                           Mockito.any(),
                           Mockito.any(),
                           Mockito.any(),

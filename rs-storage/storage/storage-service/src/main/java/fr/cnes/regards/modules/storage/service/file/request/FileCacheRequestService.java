@@ -444,7 +444,8 @@ public class FileCacheRequestService {
                             cacheLocation,
                             owners,
                             successMessage,
-                            fileReq.getGroupId());
+                            fileReq.getGroupId(),
+                            fileReq.getExpirationDate());
         // Inform group that a request is done
         reqGrpService.requestSuccess(fileReq.getGroupId(),
                                      FileRequestType.AVAILABILITY,
@@ -627,7 +628,8 @@ public class FileCacheRequestService {
                                     new URL(url),
                                     fileRef.getLazzyOwners(),
                                     message,
-                                    availabilityGroupId);
+                                    availabilityGroupId,
+                                    null);
                 reqGrpService.requestSuccess(availabilityGroupId,
                                              FileRequestType.AVAILABILITY,
                                              checksum,
@@ -668,7 +670,8 @@ public class FileCacheRequestService {
                                     availableUrl,
                                     fileRef.getLazzyOwners(),
                                     message,
-                                    groupId);
+                                    groupId,
+                                    null);
                 reqGrpService.requestSuccess(groupId,
                                              FileRequestType.AVAILABILITY,
                                              checksum,

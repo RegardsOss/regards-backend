@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
+import com.google.common.collect.Maps;
+import fr.cnes.regards.framework.amqp.AbstractPublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
@@ -26,14 +28,18 @@ import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
+import fr.cnes.regards.modules.storage.domain.event.FileAvailableEvent;
 import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.net.URL;
+import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Publisher to send AMQP message notification when there is any change on a File Reference.
@@ -232,7 +238,8 @@ public class FileReferenceEventPublisher {
                           URL url,
                           Collection<String> owners,
                           String message,
-                          String groupId) {
+                          String groupId,
+                          @Nullable OffsetDateTime expirationDate) {
         LOGGER.trace("Publishing FileReferenceEvent AVAILABLE. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum,
                                                    originStorage,
@@ -242,6 +249,13 @@ public class FileReferenceEventPublisher {
                                                    new FileLocation(availableStorage, url.toString(), false).toDto(),
                                                    null,
                                                    Sets.newHashSet(groupId)));
+        publisher.broadcast(FileAvailableEvent.EXCHANGE_NAME,
+                            Optional.empty(),
+                            Optional.of(FileAvailableEvent.ROUTING_KEY_AVAILABILITY_STATUS),
+                            Optional.empty(),
+                            AbstractPublisher.DEFAULT_PRIORITY,
+                            FileAvailableEvent.build(checksum, true, expirationDate),
+                            Maps.newHashMap());
     }
 
     public void updated(String checksum, String storage, FileReference updatedFile) {
