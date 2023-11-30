@@ -195,6 +195,9 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         } else {
             // Manage granted request
             FeatureUpdateRequest request = createFeatureUpdateRequest(featureUpdateRequestEvt);
+            
+            // Handle optional file mode
+            request.setFileUpdateMode(FeatureFileUpdateMode.parse(featureUpdateRequestEvt.getFileUpdateMode()));
 
             // Monitoring log
             FeatureLogger.updateGranted(request.getRequestOwner(),

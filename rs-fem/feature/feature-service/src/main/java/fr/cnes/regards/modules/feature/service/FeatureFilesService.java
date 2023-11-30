@@ -22,17 +22,14 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
@@ -60,11 +57,8 @@ public class FeatureFilesService {
 
     private final IStorageClient storageClient;
 
-    private final IFeatureEntityRepository featureRepository;
-
-    public FeatureFilesService(IStorageClient storageClient, IFeatureEntityRepository featureRepository) {
+    public FeatureFilesService(IStorageClient storageClient) {
         this.storageClient = storageClient;
-        this.featureRepository = featureRepository;
     }
 
     /**
@@ -78,9 +72,13 @@ public class FeatureFilesService {
      */
     @Transactional(noRollbackFor = ModuleException.class)
     public void handleFeatureUpdateFiles(FeatureUpdateRequest request, FeatureEntity entity) throws ModuleException {
+
+        LOGGER.trace("File update mode set to {} for feature {}.", request.getFileUpdateMode(), entity.getProviderId());
+
         if (!CollectionUtils.isEmpty(request.getFeature().getFiles())) {
             Set<FileReferenceRequestDto> referenceRequests = Sets.newHashSet();
             Set<FileStorageRequestDto> storageRequests = Sets.newHashSet();
+            Set<FeatureFile> existingFiles = Sets.newHashSet();
 
             // For each file from feature update information, check if it's a new file or if the file already exists if there
             // is some new locations.
@@ -89,12 +87,31 @@ public class FeatureFilesService {
                 if (request.getMetadata() != null && !CollectionUtils.isEmpty(request.getMetadata().getStorages())) {
                     storageLocations = request.getMetadata().getStorages();
                 }
-                handleFeatureUpdateFile(entity,
-                                        fileToUpdate,
-                                        storageLocations,
-                                        request.getRequestOwner(),
-                                        referenceRequests,
-                                        storageRequests);
+
+                switch (request.getFileUpdateMode()) {
+                    case APPEND -> handleFeatureUpdateFile(entity,
+                                                           fileToUpdate,
+                                                           storageLocations,
+                                                           request.getRequestOwner(),
+                                                           referenceRequests,
+                                                           storageRequests);
+                    case REPLACE -> handleFeatureUpdateFileInReplaceMode(entity,
+                                                                         fileToUpdate,
+                                                                         storageLocations,
+                                                                         request.getRequestOwner(),
+                                                                         referenceRequests,
+                                                                         storageRequests,
+                                                                         existingFiles);
+                }
+
+            }
+
+            // Handle update mode : replace or append (default)
+            if (FeatureFileUpdateMode.REPLACE.equals(request.getFileUpdateMode())) {
+                deleteOldUnwantedFiles(entity, existingFiles);
+                // And clear all existing files as each one is associated to a storage request and
+                // will be updated on success storage response.
+                entity.getFeature().getFiles().clear();
             }
 
             if (!referenceRequests.isEmpty() && storageRequests.isEmpty()) {
@@ -105,6 +122,8 @@ public class FeatureFilesService {
                 throw new ModuleException(
                     "Update request cannot be handled as both storage and reference files are provided");
             }
+        } else {
+            LOGGER.trace("No file to update for feature {}. Skipping step.", entity.getProviderId());
         }
     }
 
@@ -136,7 +155,7 @@ public class FeatureFilesService {
             existingFile.get().getLocations().addAll(newLocations);
         } else {
             // Update feature with new file and its locations
-            // If new location does not contains storage name, storageLocations is mandatory
+            // If new location does not contain storage name, storageLocations is mandatory
             newLocations = fileToUpdate.getLocations()
                                        .stream()
                                        .filter(l -> l.getStorage() != null
@@ -144,20 +163,109 @@ public class FeatureFilesService {
                                        .collect(Collectors.toSet());
         }
 
-        FeatureFileAttributes attributes = fileToUpdate.getAttributes();
-        // For each new locations, create the associated storage requests (reference or storage)
-        for (FeatureFileLocation loc : newLocations) {
+        // Create only storage requests for new feature files
+        createStorageRequests(fileToUpdate.getAttributes(),
+                              newLocations,
+                              storageLocations,
+                              feature.getUrn().toString(),
+                              requestOwner,
+                              feature.getSession(),
+                              referenceRequests,
+                              storageRequests);
+    }
+
+
+    /**
+     * Generate storage/reference requests for given {@link FeatureFile}.
+     *
+     * @param feature           {@link FeatureEntity} current feature to check for new file locations
+     * @param fileToUpdate      {@link FeatureFile} new file to add to current feature
+     * @param storageLocations  {@link String}s storage locations to store new files
+     * @param requestOwner      {@link String} update request owner
+     * @param referenceRequests {@link FileReferenceRequestDto}s containing all reference requests to send to storage
+     * @param storageRequests   {@link FileStorageRequestDto}s containing all storage requests to send to storage
+     * @param existingFiles     {@link FeatureFile}s keep track of already existing files
+     */
+    private void handleFeatureUpdateFileInReplaceMode(FeatureEntity feature,
+                                                      FeatureFile fileToUpdate,
+                                                      List<StorageMetadata> storageLocations,
+                                                      String requestOwner,
+                                                      Set<FileReferenceRequestDto> referenceRequests,
+                                                      Set<FileStorageRequestDto> storageRequests,
+                                                      Set<FeatureFile> existingFiles) {
+
+        // Check if file to update in given feature is already bind to entity
+        Optional<FeatureFile> existingFile = fileAlreadyExists(fileToUpdate, feature);
+        if (existingFile.isPresent()) {
+            existingFiles.add(existingFile.get());
+
+            // Compute storages
+            List<String> existingStorages = new ArrayList<>(existingFile.get()
+                                                                        .getLocations()
+                                                                        .stream()
+                                                                        .map(FeatureFileLocation::getStorage)
+                                                                        .filter(Objects::nonNull)
+                                                                        .toList());
+            List<String> newStorages = fileToUpdate.getLocations()
+                                                   .stream()
+                                                   .map(FeatureFileLocation::getStorage)
+                                                   .filter(Objects::nonNull)
+                                                   .toList();
+            List<String> futureStorages = storageLocations.stream().map(StorageMetadata::getPluginBusinessId).toList();
+
+            // Is there any storage to remove?
+            existingStorages.removeAll(newStorages);
+            existingStorages.removeAll(futureStorages);
+
+            if (!existingStorages.isEmpty()) {
+                // Prepare deletion request for target storages
+                Set<FileDeletionRequestDto> deletionRequestDTOS = Sets.newHashSet();
+                existingStorages
+                    .forEach(storage -> deletionRequestDTOS.add(FileDeletionRequestDto.build(existingFile.get().getAttributes()
+                                                                                                  .getChecksum(),
+                                                                                              storage,
+                                                                                             feature.getUrn()
+                                                                                                    .toString(),
+                                                                                             feature.getSessionOwner(),
+                                                                                             feature.getSession(),
+                                                                                              Boolean.FALSE)));
+                sendDeletionRequests(deletionRequestDTOS, feature);
+            }
+        }
+
+        // Create storage requests for all feature files even if they already exist to mimic a pure replacement
+        createStorageRequests(fileToUpdate.getAttributes(),
+                              fileToUpdate.getLocations(),
+                              storageLocations,
+                              feature.getUrn().toString(),
+                              requestOwner,
+                              feature.getSession(),
+                              referenceRequests,
+                              storageRequests);
+    }
+
+    private void createStorageRequests(FeatureFileAttributes attributes,
+                                       Set<FeatureFileLocation> locations,
+                                       List<StorageMetadata> storageLocations,
+                                       String fileOwner,
+                                       String sessionOwner,
+                                       String session,
+                                       Set<FileReferenceRequestDto> referenceRequests,
+                                       Set<FileStorageRequestDto> storageRequests) {
+
+        // For each location, create the associated storage requests (reference or storage)
+        for (FeatureFileLocation loc : locations) {
             if (loc.getStorage() != null) {
                 referenceRequests.add(FileReferenceRequestDto.build(attributes.getFilename(),
                                                                     attributes.getChecksum(),
                                                                     attributes.getAlgorithm(),
                                                                     attributes.getMimeType().toString(),
                                                                     attributes.getFilesize(),
-                                                                    feature.getUrn().toString(),
+                                                                    fileOwner,
                                                                     loc.getStorage(),
                                                                     loc.getUrl(),
-                                                                    requestOwner,
-                                                                    feature.getSession()));
+                                                                    sessionOwner,
+                                                                    session));
             } else {
                 // No storage location, means that we have to store the given file from local url
                 // to given storageLocations
@@ -167,9 +275,9 @@ public class FeatureFilesService {
                                                                     attributes.getChecksum(),
                                                                     attributes.getAlgorithm(),
                                                                     attributes.getMimeType().toString(),
-                                                                    feature.getUrn().toString(),
-                                                                    requestOwner,
-                                                                    feature.getSession(),
+                                                                    fileOwner,
+                                                                    sessionOwner,
+                                                                    session,
                                                                     loc.getUrl(),
                                                                     storage.getPluginBusinessId(),
                                                                     new FileReferenceMetaInfoDto(attributes.getChecksum(),
@@ -217,7 +325,7 @@ public class FeatureFilesService {
                 } else {
                     // A new location not null means a reference request, so only check if the given storage is not
                     // already associated to the current file
-                    return location.getStorage().equals(newFileLocation.getStorage());
+                    return !location.getStorage().equals(newFileLocation.getStorage());
                 }
             });
             if (isNewLocation) {
@@ -228,7 +336,7 @@ public class FeatureFilesService {
     }
 
     /**
-     * Check if {@link FeatureFile} match an existing file (by checksum comparaison) in the given {@link FeatureEntity}
+     * Check if {@link FeatureFile} matches an existing file (by checksum comparison) in the given {@link FeatureEntity}
      *
      * @param fileToCheck {@link FeatureFile} to check existence
      * @param entity      {@link FeatureEntity} to check file existence in.
@@ -263,6 +371,12 @@ public class FeatureFilesService {
                                                                               .getChecksum()
                                                                               .equals(checksum))
                                                                 .findFirst();
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Storage result for feature {} : {}", originalFeature.getProviderId(), info);
+                oFileToUpdate.ifPresent(featureFile -> LOGGER.trace("Feature file for feature {} : {}",
+                                                                    originalFeature.getProviderId(),
+                                                                    featureFile));
+            }
             String newUrl = info.getResultFile().getLocation().getUrl();
             String newStorage = info.getResultFile().getLocation().getStorage();
             String filename = info.getResultFile().getMetaInfo().getFileName();
@@ -477,4 +591,60 @@ public class FeatureFilesService {
         request.setStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED);
     }
 
+    private void deleteOldUnwantedFiles(FeatureEntity entity, Set<FeatureFile> existingFiles) {
+        Set<FileDeletionRequestDto> deletionRequestDTOS = Sets.newHashSet();
+
+        for (FeatureFile file : entity.getFeature().getFiles()) {
+            // Only delete old files
+            if (existingFiles.stream()
+                             .noneMatch(e -> e.getAttributes()
+                                              .getChecksum()
+                                              .equals(file.getAttributes().getChecksum()))) {
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("Feature file {} as {} no longer exists in updated feature {}. We request the "
+                                 + "deletion.",
+                                 file.getAttributes().getFilename(),
+                                 file.getAttributes().getChecksum(),
+                                 entity.getProviderId());
+                    file.getLocations()
+                        .forEach(location -> LOGGER.trace("Feature {} file location to delete : {} => " + "{}",
+                                                          entity.getProviderId(),
+                                                          location.getStorage(),
+                                                          location.getUrl()));
+                }
+                // Prepare deletion request(s)
+                file.getLocations()
+                    .forEach(location -> deletionRequestDTOS.add(FileDeletionRequestDto.build(file.getAttributes()
+                                                                                                  .getChecksum(),
+                                                                                              location.getStorage(),
+                                                                                              entity.getUrn()
+                                                                                                    .toString(),
+                                                                                              entity.getSessionOwner(),
+                                                                                              entity.getSession(),
+                                                                                              Boolean.FALSE)));
+            }
+        }
+
+        // Asking for deletion
+        sendDeletionRequests(deletionRequestDTOS, entity);
+    }
+
+    private void sendDeletionRequests(Set<FileDeletionRequestDto> deletionRequestDTOS, FeatureEntity entity) {
+        if (!deletionRequestDTOS.isEmpty()) {
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Requesting deletion of {} files for feature {}",
+                             deletionRequestDTOS.size(),
+                             entity.getProviderId());
+                deletionRequestDTOS.forEach(req -> LOGGER.trace("Requesting deletion of {} for storage {} and "
+                                                                + "owner {}",
+                                                                req.getChecksum(),
+                                                                req.getStorage(),
+                                                                req.getOwner()));
+            }
+            // Send deletion request(s)
+            storageClient.delete(deletionRequestDTOS);
+        } else {
+            LOGGER.trace("No file to delete for feature {}", entity.getProviderId());
+        }
+    }
 }

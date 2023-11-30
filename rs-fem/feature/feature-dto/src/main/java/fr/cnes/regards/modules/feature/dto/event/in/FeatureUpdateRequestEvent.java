@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.feature.dto.event.in;
 
-import fr.cnes.regards.framework.amqp.event.*;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
 
@@ -32,7 +35,7 @@ import java.time.OffsetDateTime;
  * @author Marc SORDI
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class FeatureUpdateRequestEvent extends AbstractRequestEvent implements ISubscribable {
+public class FeatureUpdateRequestEvent extends AbstractFeatureRequestEvent implements ISubscribable {
 
     /**
      * Patch feature : only contains changes

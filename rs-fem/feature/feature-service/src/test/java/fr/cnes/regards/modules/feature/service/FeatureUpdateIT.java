@@ -213,16 +213,23 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     @Purpose("Check update request on a feature with new files locations when storage error occurs")
     public void test_update_with_new_files() throws InterruptedException {
-        updateFeaturesFiles(5, 2, true);
+        updateFeaturesFiles(5, 2, true, null);
     }
 
     @Test
     @Purpose("Check update request on a feature with new files locations when storage error occurs")
-    public void test_update_with_files_with_new_location() throws InterruptedException {
-        updateFeaturesFiles(5, 2, false);
+    public void test_update_with_new_files_and_replace_mode() throws InterruptedException {
+        updateFeaturesFiles(5, 2, true, FeatureFileUpdateMode.REPLACE);
     }
 
-    private void updateFeaturesFiles(int nbSuccess, int nbErrors, boolean updateNewFile) throws InterruptedException {
+
+    @Test
+    @Purpose("Check update request on a feature with new files locations when storage error occurs")
+    public void test_update_with_files_with_new_location() throws InterruptedException {
+        updateFeaturesFiles(5, 2, false, null);
+    }
+
+    private void updateFeaturesFiles(int nbSuccess, int nbErrors, boolean updateNewFile, FeatureFileUpdateMode fileUpdateMode) throws InterruptedException {
         int nbFeatures = nbSuccess + nbErrors;
         int timeout = 10_000 + (nbFeatures * 100);
         // Init a feature
@@ -244,7 +251,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // Now create an update request on this feature to add referenced files
         List<FeatureUpdateRequestEvent> updates = prepareUpdateRequests(features.stream().map(f -> f.getUrn())
 
-                                                                                .collect(Collectors.toList()));
+                                                                                .collect(Collectors.toList()), fileUpdateMode);
         String newStorage = "somewhere";
         String newUrl = "file:///dir/file.txt";
         FeatureFileLocation newLocations = FeatureFileLocation.build(newUrl, newStorage);
@@ -281,7 +288,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
             Assert.assertNotNull(feature);
             Assert.assertEquals(updateNewFile ? 0 : 1, feature.getFeature().getFiles().size());
             if (!updateNewFile) {
-                Assert.assertEquals(1, feature.getFeature().getFiles().get(0).getLocations().size());
+                Assert.assertEquals(2, feature.getFeature().getFiles().get(0).getLocations().size());
             }
         });
         featureUpdateRequestRepo.findAll().stream().filter(r -> r.getState() == RequestState.SUCCESS).forEach(r -> {

@@ -355,6 +355,8 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                    .setHeader(AmqpConstants.REGARDS_REQUEST_OWNER_HEADER, creationEvent.getRequestOwner());
         updateEvent.getMessageProperties()
                    .setHeader(AmqpConstants.REGARDS_REQUEST_DATE_HEADER, creationEvent.getRequestDate().toString());
+        // Propagate file update mode
+        updateEvent.setFileUpdateMode(creationEvent.getFileUpdateMode());
         return updateEvent;
     }
 

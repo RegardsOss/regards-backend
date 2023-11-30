@@ -121,4 +121,29 @@ public class FileReferenceMetaInfoDto {
         return type;
     }
 
+    @Override
+    public String toString() {
+        return "FileReferenceMetaInfoDTO{"
+               + "checksum='"
+               + checksum
+               + '\''
+               + ", algorithm='"
+               + algorithm
+               + '\''
+               + ", fileName='"
+               + fileName
+               + '\''
+               + ", fileSize="
+               + fileSize
+               + ", height="
+               + height
+               + ", width="
+               + width
+               + ", mimeType="
+               + mimeType
+               + ", type='"
+               + type
+               + '\''
+               + '}';
+    }
 }

@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureFileUpdateMode;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
@@ -690,12 +691,20 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
     }
 
     protected List<FeatureUpdateRequestEvent> prepareUpdateRequests(List<FeatureUniformResourceName> urns) {
+        return prepareUpdateRequests(urns, null);
+    }
+
+    protected List<FeatureUpdateRequestEvent> prepareUpdateRequests(List<FeatureUniformResourceName> urns,
+                                                                    FeatureFileUpdateMode fileUpdateMode) {
         return featureRepo.findCompleteByUrnIn(urns)
                           .stream()
                           .map(f -> FeatureUpdateRequestEvent.build("test",
                                                                     FeatureMetadata.build(PriorityLevel.NORMAL),
                                                                     f.getFeature()))
                           .map(e -> {
+                              if (fileUpdateMode != null) {
+                                  e.setFileUpdateMode(fileUpdateMode.name());
+                              }
                               e.getFeature().getProperties().clear();
                               return e;
                           })

@@ -31,7 +31,7 @@ import java.time.OffsetDateTime;
  * @author Kevin Marchois
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class AbstractCreationRequestEvent extends AbstractRequestEvent implements ISubscribable {
+public class AbstractCreationRequestEvent extends AbstractFeatureRequestEvent implements ISubscribable {
 
     @Valid
     @NotNull(message = "Feature metadata is required")

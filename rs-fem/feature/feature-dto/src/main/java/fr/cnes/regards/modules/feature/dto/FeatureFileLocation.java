@@ -140,4 +140,9 @@ public class FeatureFileLocation {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "FeatureFileLocation{" + "storage='" + storage + '\'' + ", url='" + url + '\'' + '}';
+    }
 }

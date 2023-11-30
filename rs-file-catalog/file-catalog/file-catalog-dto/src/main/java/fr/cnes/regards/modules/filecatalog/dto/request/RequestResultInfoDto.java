@@ -121,4 +121,28 @@ public class RequestResultInfoDto {
         return requestOwners;
     }
 
+    @Override
+    public String toString() {
+        return "RequestResultInfoDTO{"
+               + "groupId='"
+               + groupId
+               + '\''
+               + ", requestChecksum='"
+               + requestChecksum
+               + '\''
+               + ", requestStorage='"
+               + requestStorage
+               + '\''
+               + ", requestStorePath='"
+               + requestStorePath
+               + '\''
+               + ", requestOwners="
+               + requestOwners
+               + ", resultFile="
+               + resultFile
+               + ", errorCause='"
+               + errorCause
+               + '\''
+               + '}';
+    }
 }

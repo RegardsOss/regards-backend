@@ -19,10 +19,7 @@
 package fr.cnes.regards.modules.feature.domain.request;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.StorageMetadata;
+import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.hibernate.annotations.Type;
@@ -30,13 +27,11 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.springframework.util.Assert;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -74,6 +69,10 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
 
     @Column(name = "acknowledged_recipient", length = 255, nullable = true)
     private String acknowledgedRecipient;
+
+    @Column(name = "file_update_mode", length = 20)
+    @Enumerated(EnumType.STRING)
+    private FeatureFileUpdateMode fileUpdateMode;
 
     public static FeatureUpdateRequest build(String requestId,
                                              String requestOwner,
@@ -188,4 +187,14 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
     public void setAcknowledgedRecipient(String acknowledgedRecipient) {
         this.acknowledgedRecipient = acknowledgedRecipient;
     }
+
+    public FeatureFileUpdateMode getFileUpdateMode() {
+        // Getter with default mode
+        return Objects.requireNonNullElse(fileUpdateMode, FeatureFileUpdateMode.APPEND);
+    }
+
+    public void setFileUpdateMode(FeatureFileUpdateMode mode) {
+        this.fileUpdateMode = mode;
+    }
+
 }

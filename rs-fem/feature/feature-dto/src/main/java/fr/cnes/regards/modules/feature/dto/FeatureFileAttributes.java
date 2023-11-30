@@ -219,4 +219,27 @@ public class FeatureFileAttributes {
         return attribute;
     }
 
+    @Override
+    public String toString() {
+        return "FeatureFileAttributes{"
+               + "dataType="
+               + dataType
+               + ", mimeType="
+               + mimeType
+               + ", filename='"
+               + filename
+               + '\''
+               + ", filesize="
+               + filesize
+               + ", algorithm='"
+               + algorithm
+               + '\''
+               + ", checksum='"
+               + checksum
+               + '\''
+               + ", crc32='"
+               + crc32
+               + '\''
+               + '}';
+    }
 }
