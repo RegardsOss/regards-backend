@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 import org.hibernate.cfg.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -82,7 +83,8 @@ public class InstanceDataSourceConfiguration {
                                                                  daoProperties.getMinPoolSize(),
                                                                  daoProperties.getMaxPoolSize(),
                                                                  daoProperties.getPreferredTestQuery(),
-                                                                 schemaIdentifier);
+                                                                 schemaIdentifier,
+                                                                 daoProperties.getConnectionAcquisitionThresholdLoggerLimit());
         }
         return datasource;
     }

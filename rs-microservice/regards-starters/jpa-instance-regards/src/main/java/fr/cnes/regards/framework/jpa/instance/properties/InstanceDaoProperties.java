@@ -75,6 +75,11 @@ public class InstanceDaoProperties {
     private Integer maxPoolSize = 5;
 
     /**
+     * Threshold of time in ms of connection acquisition to log warn with the connection acquisition duration time.
+     */
+    private Long connectionAcquisitionThresholdLoggerLimit = 5_000L;
+
+    /**
      * Default test query
      */
     private String preferredTestQuery = "SELECT 1";
@@ -191,4 +196,11 @@ public class InstanceDaoProperties {
         outputFile = pOutputFile;
     }
 
+    public Long getConnectionAcquisitionThresholdLoggerLimit() {
+        return connectionAcquisitionThresholdLoggerLimit;
+    }
+
+    public void setConnectionAcquisitionThresholdLoggerLimit(Long connectionAcquisitionThresholdLoggerLimit) {
+        this.connectionAcquisitionThresholdLoggerLimit = connectionAcquisitionThresholdLoggerLimit;
+    }
 }
