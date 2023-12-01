@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.domain.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.dto.NearLineFileStatusDto;
 import fr.cnes.regards.modules.storage.domain.exception.NearlineDownloadException;
 import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import org.apache.commons.lang3.NotImplementedException;
@@ -55,6 +56,16 @@ public interface INearlineStorageLocation extends IStorageLocation {
      */
     default InputStream download(FileReference fileReference)
         throws NearlineFileNotAvailableException, NearlineDownloadException {
+        throw new NotImplementedException();
+    }
+
+    /**
+     * Check if a file is available
+     *
+     * @param fileReference the file's reference
+     * @return information about the file (availability, expiration_date)
+     */
+    default NearLineFileStatusDto checkAvailability(FileReference fileReference) {
         throw new NotImplementedException();
     }
 

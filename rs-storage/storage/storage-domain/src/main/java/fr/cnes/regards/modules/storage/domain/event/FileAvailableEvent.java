@@ -28,7 +28,6 @@ import java.util.Objects;
  * Event raised to inform external applications (like GDH) that a file is now ready to download
  *
  * @author Thomas GUILLOU
- * @see <a href="https://odin.si.c-s.fr/plugins/tracker/?aid=369460">odin task</a>
  **/
 // No need to @Event annotation because this event is not used internally
 public class FileAvailableEvent implements IEvent {
@@ -45,7 +44,6 @@ public class FileAvailableEvent implements IEvent {
     /**
      * file availability.</br>
      * if true, it means that the file is located in T2 or in restoration cache
-     * if false, ??
      */
     private boolean available;
 

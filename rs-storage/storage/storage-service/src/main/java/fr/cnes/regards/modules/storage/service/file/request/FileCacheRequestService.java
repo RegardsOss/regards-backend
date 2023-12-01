@@ -445,7 +445,7 @@ public class FileCacheRequestService {
                             owners,
                             successMessage,
                             fileReq.getGroupId(),
-                            fileReq.getExpirationDate());
+                            OffsetDateTime.now().plusHours(fileReq.getAvailabilityHours()));
         // Inform group that a request is done
         reqGrpService.requestSuccess(fileReq.getGroupId(),
                                      FileRequestType.AVAILABILITY,

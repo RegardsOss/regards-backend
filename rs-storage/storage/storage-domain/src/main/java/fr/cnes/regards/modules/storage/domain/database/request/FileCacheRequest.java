@@ -72,8 +72,8 @@ public class FileCacheRequest {
     /**
      * Duration in hours of available files in the cache internal or external (by default 24h)
      */
-    @Column(name = "availability_hours")
-    private int availabilityHours;
+    @Column(name = "availability_hours", nullable = false)
+    private int availabilityHours = 24;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
