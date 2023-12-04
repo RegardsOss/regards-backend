@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,39 +18,16 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
 
 /**
- * Models a notification.<br>
+ * Light version of {@link Notification}. Does not contains message.
  *
- * @author Xavier-Alexandre Brochard
- * @author Christophe Mertz
+ * @author Théo Lasserre
  */
 @Entity
 @Table(name = "t_notification")
-public class Notification extends AbstractNotification {
+public class NotificationLight extends AbstractNotification {
 
-    /**
-     * The message
-     */
-    @NotBlank
-    @Column(name = "message")
-    private String message;
-
-    /**
-     * @return the message
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * @param pMessage the message to set
-     */
-    public void setMessage(final String pMessage) {
-        message = pMessage;
-    }
 }

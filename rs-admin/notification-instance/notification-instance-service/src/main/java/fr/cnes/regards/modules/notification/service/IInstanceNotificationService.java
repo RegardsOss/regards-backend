@@ -22,7 +22,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -71,8 +73,6 @@ public interface IInstanceNotificationService {
      */
     Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException;
 
-    void markAllNotificationAs(NotificationStatus status);
-
     /**
      * Delete a notification
      *
@@ -91,10 +91,22 @@ public interface IInstanceNotificationService {
     Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state)
         throws EntityNotFoundException;
 
-    /**
-     * Delete read notifications for current user
-     */
-    void deleteReadNotifications();
-
     Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page);
+
+    /**
+     * Retrieve the pages {@link List} of all (@link {@link INotificationWithoutMessage}s filtered by given properties
+     *
+     * @param filters  search parameters
+     * @param pageable the paging information
+     * @return The list of notifications
+     */
+    Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable);
+
+    /**
+     * Delete all notifications that match filters
+     *
+     * @param filters  search parameters
+     * @param pageable the paging information
+     */
+    void deleteNotifications(SearchNotificationParameters filters, Pageable pageable);
 }

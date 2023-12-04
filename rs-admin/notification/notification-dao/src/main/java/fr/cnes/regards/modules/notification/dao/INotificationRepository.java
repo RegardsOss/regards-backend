@@ -30,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
  *
  * @author Xavier-Alexandre Brochard
  */
+@Repository
 public interface INotificationRepository
     extends JpaRepository<Notification, Long>, JpaSpecificationExecutor<Notification> {
 

@@ -8,6 +8,7 @@ import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
@@ -15,6 +16,7 @@ import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import fr.cnes.regards.modules.notification.service.INotificationService;
 import fr.cnes.regards.modules.notification.service.SendingScheduler;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -116,58 +118,12 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                                            NotificationLevel.INFO,
                                                            "microservice").toRoles(new HashSet<>(Arrays.asList(roleName)));
 
-        performDefaultPost(NotificationController.NOTIFICATION_PATH,
+        performDefaultPost(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_CREATE_PATH,
                            notif,
                            customizer().expectStatusCreated(),
                            "error");
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         sendingScheduler.sendDaily();
-    }
-
-    @Test
-    public void testListNotif() throws EntityNotFoundException {
-        String roleName = DefaultRole.PROJECT_ADMIN.name();
-        NotificationDTO notif = new NotificationDtoBuilder("Bonne",
-                                                           "test",
-                                                           NotificationLevel.INFO,
-                                                           "microservice").toRoles(Sets.newHashSet(roleName));
-        notificationService.createNotification(notif);
-        notif = new NotificationDtoBuilder("Année",
-                                           "test",
-                                           NotificationLevel.INFO,
-                                           "microservice").toRoles(Sets.newHashSet(roleName));
-        notificationService.createNotification(notif);
-        notif = new NotificationDtoBuilder("2018",
-                                           "test",
-                                           NotificationLevel.INFO,
-                                           "microservice").toRoles(Sets.newHashSet(roleName));
-        notificationService.createNotification(notif);
-        //some lorem ipsum so we have a notification with content
-        notif = new NotificationDtoBuilder(
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sed magna turpis. Curabitur ultrices scelerisque magna pretium mollis. Sed suscipit, ligula eu tempus pretium, lorem quam vehicula urna, vel efficitur leo mauris quis mauris. Pellentesque ac ullamcorper lectus. Aliquam sed tempor massa. Proin ex massa, sodales vel turpis non, sodales rhoncus lacus. Maecenas a convallis nisi. Aliquam felis justo, pellentesque id vestibulum id, tempus sit amet dui. Quisque quis lacus vehicula, gravida lectus a, elementum erat. In vitae venenatis turpis, et venenatis lacus. Phasellus facilisis pellentesque elit, in lacinia enim placerat quis.",
-            "test",
-            NotificationLevel.INFO,
-            "microservice").toRoles(new HashSet<>(Arrays.asList(roleName)));
-        notificationService.createNotification(notif);
-        String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr", roleName);
-
-        performGet(NotificationController.NOTIFICATION_PATH,
-                   token,
-                   customizer().expectStatusOk()
-                               .expectToHaveSize(JSON_PATH_CONTENT, 4)
-                               .expect(MockMvcResultMatchers.jsonPath("$.content[0].content.message").doesNotExist())
-                               .addParameter("state", NotificationStatus.UNREAD.toString()),
-                   "Could not retrieve notifications");
-
-        performGet(NotificationController.NOTIFICATION_PATH,
-                   token,
-                   customizer().expectStatusOk()
-                               .expectToHaveSize(JSON_PATH_CONTENT, 2)
-                               .expect(MockMvcResultMatchers.jsonPath("$.content[0].content.message").doesNotExist())
-                               .addParameter("state", NotificationStatus.UNREAD.toString())
-                               .addParameter("page", "0")
-                               .addParameter("size", "2"),
-                   "Could not retrieve notifications");
     }
 
     @Test
@@ -198,26 +154,6 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void testSetNotifUnread() throws EntityNotFoundException {
-        //create a notification
-        String roleName = DefaultRole.PROJECT_ADMIN.name();
-        NotificationDTO notificationDTO = new NotificationDtoBuilder("Bonne",
-                                                                     "test",
-                                                                     NotificationLevel.INFO,
-                                                                     "microservice").toRoles(new HashSet<>(Arrays.asList(
-            roleName)));
-        Notification notification = notificationService.createNotification(notificationDTO);
-        // set the notification to read
-        notificationService.updateNotificationStatus(notification.getId(), NotificationStatus.READ);
-        // ask to set the notification to unread
-        performDefaultPut(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_UNREAD_PATH,
-                          null,
-                          customizer().expectStatusOk(),
-                          "Could not set the notification to UNREAD",
-                          notification.getId());
-    }
-
-    @Test
     public void testRetrieveNotifSetting() {
         performDefaultGet(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_SETTINGS,
                           customizer().expectStatusOk()
@@ -227,5 +163,48 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                       .expect(MockMvcResultMatchers.jsonPath("$.frequency",
                                                                              Matchers.notNullValue(Long.class))),
                           "could not retrieve notification settings");
+    }
+
+    @Test
+    public void testListNotif() throws EntityNotFoundException {
+        String roleName = DefaultRole.PROJECT_ADMIN.name();
+        NotificationDTO notif = new NotificationDtoBuilder("Bonne",
+                                                           "test",
+                                                           NotificationLevel.INFO,
+                                                           "microservice").toRoles(Sets.newHashSet(roleName));
+        notificationService.createNotification(notif);
+        notif = new NotificationDtoBuilder("Année",
+                                           "test",
+                                           NotificationLevel.INFO,
+                                           "microservice").toRoles(Sets.newHashSet(roleName));
+        notificationService.createNotification(notif);
+        notif = new NotificationDtoBuilder("2018",
+                                           "test",
+                                           NotificationLevel.INFO,
+                                           "microservice").toRoles(Sets.newHashSet(roleName));
+        notificationService.createNotification(notif);
+        //some lorem ipsum so we have a notification with content
+        notif = new NotificationDtoBuilder(
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sed magna turpis. Curabitur ultrices scelerisque magna pretium mollis. Sed suscipit, ligula eu tempus pretium, lorem quam vehicula urna, vel efficitur leo mauris quis mauris. Pellentesque ac ullamcorper lectus. Aliquam sed tempor massa. Proin ex massa, sodales vel turpis non, sodales rhoncus lacus. Maecenas a convallis nisi. Aliquam felis justo, pellentesque id vestibulum id, tempus sit amet dui. Quisque quis lacus vehicula, gravida lectus a, elementum erat. In vitae venenatis turpis, et venenatis lacus. Phasellus facilisis pellentesque elit, in lacinia enim placerat quis.",
+            "test",
+            NotificationLevel.INFO,
+            "microservice").toRoles(new HashSet<>(Arrays.asList(roleName)));
+        notificationService.createNotification(notif);
+        String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr", roleName);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        SearchNotificationParameters body = new SearchNotificationParameters().withSendersIncluded(Arrays.asList(
+            "microservice"));
+
+        performDefaultPost(NotificationController.NOTIFICATION_PATH,
+                           body,
+                           requestBuilderCustomizer,
+                           "Should return Notifications");
+
+        // Try a research with pagination and sort options
+        performDefaultPost(NotificationController.NOTIFICATION_PATH + "?page=0&size=20&sort=date,ASC",
+                           body,
+                           requestBuilderCustomizer,
+                           "Should return Notifications");
     }
 }

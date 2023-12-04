@@ -26,11 +26,18 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
+import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import fr.cnes.regards.modules.notification.service.IInstanceNotificationService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,6 +70,11 @@ public class NotificationController implements IResourceController<Notification>
     public static final String NOTIFICATION_PATH = "/notifications";
 
     /**
+     * Controller path to create a notification
+     */
+    public static final String NOTIFICATION_CREATE_PATH = "/create";
+
+    /**
      * Controller path using notification id as path variable
      */
     public static final String NOTIFICATION_ID_PATH = "/{notification_id}";
@@ -80,7 +92,7 @@ public class NotificationController implements IResourceController<Notification>
     /**
      * Controller path to delete read notifications
      */
-    public static final String NOTIFICATION_DELETE_PATH = "/read/delete";
+    public static final String NOTIFICATION_DELETE_PATH = "/delete";
 
     /**
      * Controller path using notification id as path variable
@@ -115,28 +127,29 @@ public class NotificationController implements IResourceController<Notification>
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
      * @throws EntityNotFoundException thrown when no current user could be found
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Retrieve the list of notifications for the logged user",
                     role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<PagedModel<EntityModel<INotificationWithoutMessage>>> retrieveNotifications(
-        @RequestParam(name = "state", required = false) NotificationStatus state,
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page,
-        @Parameter(hidden = true) PagedResourcesAssembler<INotificationWithoutMessage> assembler)
-        throws EntityNotFoundException {
-        Page<INotificationWithoutMessage> notifications = notificationService.retrieveNotifications(page, state);
-        return new ResponseEntity<>(notifWithoutMsgPagedResources(notifications, assembler), HttpStatus.OK);
+    public ResponseEntity<PagedModel<EntityModel<NotificationLight>>> retrieveNotifications(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+                                                              content = @Content(schema = @Schema(implementation = SearchNotificationParameters.class)))
+        @Parameter(description = "Filter criterias of notifications") @RequestBody SearchNotificationParameters filters,
+        @PageableQueryParam @PageableDefault(sort = "date", direction = Sort.Direction.ASC) Pageable pageable,
+        @Parameter(hidden = true) PagedResourcesAssembler<NotificationLight> assembler) {
+
+        return new ResponseEntity<>(notifWithoutMsgPagedResources(notificationService.findAll(filters, pageable),
+                                                                  assembler), HttpStatus.OK);
     }
 
-    private PagedModel<EntityModel<INotificationWithoutMessage>> notifWithoutMsgPagedResources(Page<INotificationWithoutMessage> notifications,
-                                                                                               PagedResourcesAssembler<INotificationWithoutMessage> assembler) {
-        final PagedModel<EntityModel<INotificationWithoutMessage>> pageResources = assembler.toModel(notifications);
+    private PagedModel<EntityModel<NotificationLight>> notifWithoutMsgPagedResources(Page<NotificationLight> notifications,
+                                                                                     PagedResourcesAssembler<NotificationLight> assembler) {
+        final PagedModel<EntityModel<NotificationLight>> pageResources = assembler.toModel(notifications);
         pageResources.forEach(resource -> resource.add(notifWithoutMsgToResource(resource.getContent()).getLinks()));
         return pageResources;
     }
 
-    public EntityModel<INotificationWithoutMessage> notifWithoutMsgToResource(INotificationWithoutMessage element,
-                                                                              Object... extras) {
-        EntityModel<INotificationWithoutMessage> resource = EntityModel.of(element);
+    public EntityModel<NotificationLight> notifWithoutMsgToResource(NotificationLight element, Object... extras) {
+        EntityModel<NotificationLight> resource = EntityModel.of(element);
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "retrieveNotification",
@@ -169,7 +182,7 @@ public class NotificationController implements IResourceController<Notification>
      * @param dto A DTO for easy parsing of the response body. Mapping to true {@link Notification} is done in service.
      * @return The sent notification as {@link Notification} wrapped in a {@link ResponseEntity}
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST, value = NOTIFICATION_CREATE_PATH)
     @ResourceAccess(description = "Define the endpoint for sending an notification to recipients")
     public ResponseEntity<Notification> createNotification(@Valid @RequestBody NotificationDTO dto) {
         Notification notification = notificationService.createNotification(dto);
@@ -209,52 +222,6 @@ public class NotificationController implements IResourceController<Notification>
     }
 
     /**
-     * Allows to set all notification to status read
-     */
-    @RequestMapping(value = NOTIFICATION_READ_ALL_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Set all unread notification as read", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Void> markAllNotificationAsRead() {
-        notificationService.markAllNotificationAs(NotificationStatus.READ);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Allows to set a notification to status unread
-     *
-     * @param id The notification <code>id</code>
-     * @return The updated {@link Notification} wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
-     */
-    @RequestMapping(value = NOTIFICATION_UNREAD_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Define the endpoint for updating the notification status",
-                    role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Notification> setNotificationUnRead(@PathVariable("notification_id") Long id)
-        throws EntityNotFoundException {
-        Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.UNREAD);
-        return new ResponseEntity<>(notification, HttpStatus.OK);
-    }
-
-    /**
-     * Allows to set all notification to status read
-     */
-    @RequestMapping(value = NOTIFICATION_UNREAD_ALL_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Set all unread notification as read", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Void> markAllNotificationAsUnread() {
-        notificationService.markAllNotificationAs(NotificationStatus.UNREAD);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Endpoint to delete read notifications
-     */
-    @RequestMapping(value = NOTIFICATION_DELETE_PATH, method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Endpoint to delete read notifications")
-    public ResponseEntity<Void> deleteNotification() {
-        notificationService.deleteReadNotifications();
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /**
      * Define the endpoint for deleting a notification
      *
      * @param id The notification <code>id</code>
@@ -266,6 +233,35 @@ public class NotificationController implements IResourceController<Notification>
     public ResponseEntity<Void> deleteNotification(@PathVariable("notification_id") Long id)
         throws EntityNotFoundException {
         notificationService.deleteNotification(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Define the endpoint for deleting the list of notifications for the logged user
+     *
+     * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
+     * @throws EntityNotFoundException thrown when no current user could be found
+     */
+    @Operation(summary = "Delete a selection of notifications.",
+               description = "Find and delete notifications from criterias defined in request body.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "201",
+                                         description = "The notification deletion will be take in account."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         content = { @Content(mediaType = "application/html") }),
+                            @ApiResponse(responseCode = "422",
+                                         description = "The notification criteria dto syntax is incorrect.",
+                                         content = { @Content(mediaType = "application/json") }) })
+    @DeleteMapping(value = NOTIFICATION_DELETE_PATH)
+    @ResourceAccess(description = "Delete the list of notifications for the logged user",
+                    role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<Void> deleteNotifications(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+                                                              content = @Content(schema = @Schema(implementation = SearchNotificationParameters.class)))
+        @Parameter(description = "Filter criterias of notifications") @RequestBody SearchNotificationParameters filters,
+        @PageableQueryParam @PageableDefault(sort = "date", direction = Sort.Direction.ASC) Pageable pageable) {
+
+        notificationService.deleteNotifications(filters, pageable);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

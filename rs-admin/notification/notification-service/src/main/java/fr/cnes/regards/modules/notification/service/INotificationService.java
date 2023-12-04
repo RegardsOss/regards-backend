@@ -22,7 +22,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -70,7 +72,7 @@ public interface INotificationService {
     Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state);
 
     /**
-     * Update the {@link Notification#status}
+     * Update the {@link Notification}
      *
      * @param pId     The notification <code>id</code>
      * @param pStatus The new status value
@@ -80,17 +82,20 @@ public interface INotificationService {
     Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException;
 
     /**
-     * Mark all notifications as specified status
-     */
-    void markAllNotificationAs(NotificationStatus status);
-
-    /**
      * Delete a notification
      *
      * @param pId The notification <code>id</code>
      * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     void deleteNotification(Long pId) throws EntityNotFoundException;
+
+    /**
+     * Delete all notifications that match filters
+     *
+     * @param filters  search parameters
+     * @param pageable the paging information
+     */
+    void deleteNotifications(SearchNotificationParameters filters, Pageable pageable);
 
     /**
      * Retrieve all notifications which should be sent
@@ -122,9 +127,11 @@ public interface INotificationService {
     Long countReadNotifications();
 
     /**
-     * Delete read notifications for current user
+     * Retrieve a notification light page matching filter
+     *
+     * @param filters  search parameters
+     * @param pageable the paging information
+     * @return a notification light page
      */
-    void deleteReadNotifications();
-
-    Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page);
+    Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable);
 }

@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.notification.service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -28,21 +28,19 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.notification.dao.INotificationLightRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.*;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationSpecificationBuilder;
+import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -59,8 +57,6 @@ import java.util.stream.Collectors;
  * @author Sylvain Vissiere-Guerinet
  */
 @Service
-@RegardsTransactional
-@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class NotificationService implements INotificationService {
 
     /**
@@ -72,6 +68,11 @@ public class NotificationService implements INotificationService {
      * CRUD repository managing notifications. Autowired by Spring.
      */
     private final INotificationRepository notificationRepository;
+
+    /**
+     * CRUD repository managing light notifications
+     */
+    private final INotificationLightRepository notificationLightRepository;
 
     private final IRoleService roleService;
 
@@ -87,7 +88,7 @@ public class NotificationService implements INotificationService {
 
     private final IAuthenticationResolver authenticationResolver;
 
-    private INotificationService self;
+    private DeleteNotificationService deleteNotificationService;
 
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
@@ -102,17 +103,20 @@ public class NotificationService implements INotificationService {
                                ApplicationEventPublisher applicationEventPublisher,
                                IAuthenticationResolver authenticationResolver,
                                @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode,
-                               INotificationService notificationService) {
+                               DeleteNotificationService deleteNotificationService,
+                               INotificationLightRepository notificationLightRepository) {
         super();
         this.notificationRepository = notificationRepository;
         this.roleService = roleService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.notificationMode = notificationMode;
         this.authenticationResolver = authenticationResolver;
-        this.self = notificationService;
+        this.deleteNotificationService = deleteNotificationService;
+        this.notificationLightRepository = notificationLightRepository;
     }
 
     @Override
+    @MultitenantTransactional
     public Notification createNotification(NotificationDTO dto) {
         Notification notification = new Notification();
         notification.setDate(OffsetDateTime.now());
@@ -138,6 +142,7 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
+    @MultitenantTransactional(readOnly = true)
     public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page) {
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
@@ -153,6 +158,7 @@ public class NotificationService implements INotificationService {
      *
      * @return all recipient role names
      */
+    @MultitenantTransactional
     private Set<String> getAllRecipientRoles(Set<String> roleRecipients) {
         return roleRecipients.stream()
                              .map(roleName -> {
@@ -172,6 +178,7 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
+    @MultitenantTransactional
     public Notification retrieveNotification(Long pId) throws EntityNotFoundException {
         Optional<Notification> notifOpt = notificationRepository.findById(pId);
         if (!notifOpt.isPresent()) {
@@ -181,6 +188,7 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
+    @MultitenantTransactional
     public Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException {
         Optional<Notification> notifOpt = notificationRepository.findById(pId);
         if (!notifOpt.isPresent()) {
@@ -192,13 +200,7 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
-    public void markAllNotificationAs(NotificationStatus status) {
-        Assert.notNull(status, "Notification status is required");
-        notificationRepository.updateAllNotificationStatusByRole(status.toString(), authenticationResolver.getRole());
-        notificationRepository.updateAllNotificationStatusByUser(status.toString(), authenticationResolver.getUser());
-    }
-
-    @Override
+    @MultitenantTransactional
     public void deleteNotification(Long pId) throws EntityNotFoundException {
         if (!notificationRepository.existsById(pId)) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
@@ -207,11 +209,13 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
+    @MultitenantTransactional(readOnly = true)
     public Page<Notification> retrieveNotificationsToSend(Pageable page) {
         return notificationRepository.findByStatus(NotificationStatus.UNREAD, page);
     }
 
     @Override
+    @MultitenantTransactional
     public Set<String> findRecipients(Notification notification) {
         Set<String> roleUsers = new HashSet<>();
         for (String roleName : notification.getRoleRecipients()) {
@@ -236,6 +240,7 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
+    @MultitenantTransactional(readOnly = true)
     public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state) {
         if (state != null) {
             if (notificationMode == NotificationMode.MULTITENANT) {
@@ -255,6 +260,7 @@ public class NotificationService implements INotificationService {
      * @see fr.cnes.regards.modules.notification.service.INotificationService#countUnreadNotifications()
      */
     @Override
+    @MultitenantTransactional
     public Long countUnreadNotifications() {
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository.countByStatus(NotificationStatus.UNREAD.toString(),
@@ -269,6 +275,7 @@ public class NotificationService implements INotificationService {
      * @see fr.cnes.regards.modules.notification.service.INotificationService#countReadNotifications()
      */
     @Override
+    @MultitenantTransactional
     public Long countReadNotifications() {
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository.countByStatus(NotificationStatus.READ.toString(),
@@ -279,25 +286,36 @@ public class NotificationService implements INotificationService {
         }
     }
 
+    /**
+     * Retrieve a notification light page matching filter
+     *
+     * @param filters  search parameters
+     * @param pageable the paging information
+     * @return a notification light page
+     */
     @Override
-    public void deleteReadNotifications() {
-        Pageable page = PageRequest.of(0, 100);
-        Page<INotificationWithoutMessage> results;
-        do {
-            // Do delete in one unique transaction, to do so use the self element
-            results = self.deleteReadNotificationsPage(page);
-        } while (results.hasNext());
+    @MultitenantTransactional(readOnly = true)
+    public Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable) {
+        long start = System.currentTimeMillis();
+
+        Page<NotificationLight> response = notificationLightRepository.findAll(new NotificationSpecificationBuilder().withParameters(
+            filters).build(), pageable);
+
+        LOG.debug("{} NOTIFICATIONS found in {}ms", response.getSize(), System.currentTimeMillis() - start);
+        return response;
     }
 
+    /**
+     * Delete notifications matching filters
+     *
+     * @param filters  search parameters
+     * @param pageable the paging information
+     */
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page) {
-        Page<INotificationWithoutMessage> results = this.retrieveNotifications(page, NotificationStatus.READ);
-        Set<Long> idsToDelete = results.getContent()
-                                       .stream()
-                                       .map(INotificationWithoutMessage::getId)
-                                       .collect(Collectors.toSet());
-        notificationRepository.deleteByIdIn(idsToDelete);
-        return results;
+    public void deleteNotifications(SearchNotificationParameters filters, Pageable pageable) {
+        Page<NotificationLight> notificationLightPage;
+        do {
+            notificationLightPage = deleteNotificationService.deleteNotificationWithFilter(filters, pageable);
+        } while (notificationLightPage.hasNext());
     }
 }

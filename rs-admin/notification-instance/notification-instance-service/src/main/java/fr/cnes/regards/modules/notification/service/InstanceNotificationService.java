@@ -25,23 +25,21 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.notification.dao.INotificationLightRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
-import fr.cnes.regards.modules.notification.domain.Notification;
-import fr.cnes.regards.modules.notification.domain.NotificationStatus;
-import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
+import fr.cnes.regards.modules.notification.domain.*;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationSpecificationBuilder;
+import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -56,7 +54,6 @@ import java.util.stream.Collectors;
  * @author Sylvain Vissiere-Guerinet
  */
 @Service
-@RegardsTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class InstanceNotificationService implements IInstanceNotificationService {
 
@@ -69,25 +66,33 @@ public class InstanceNotificationService implements IInstanceNotificationService
     private INotificationRepository notificationRepository;
 
     /**
+     * CRUD repository managing light notifications
+     */
+    private final INotificationLightRepository notificationLightRepository;
+
+    /**
      * Application event publisher
      */
     private ApplicationEventPublisher applicationEventPublisher;
 
     private IAuthenticationResolver authenticationResolver;
 
-    private IInstanceNotificationService self;
+    private InstanceDeleteNotificationService deleteNotificationService;
 
     public InstanceNotificationService(INotificationRepository notificationRepository,
                                        ApplicationEventPublisher applicationEventPublisher,
                                        IAuthenticationResolver authenticationResolver,
-                                       IInstanceNotificationService instanceNotificationService) {
+                                       InstanceDeleteNotificationService deleteNotificationService,
+                                       INotificationLightRepository notificationLightRepository) {
         this.notificationRepository = notificationRepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.authenticationResolver = authenticationResolver;
-        this.self = instanceNotificationService;
+        this.deleteNotificationService = deleteNotificationService;
+        this.notificationLightRepository = notificationLightRepository;
     }
 
     @Override
+    @RegardsTransactional
     public Notification createNotification(NotificationDTO dto) {
         Notification notification = new Notification();
         notification.setDate(OffsetDateTime.now());
@@ -114,11 +119,13 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
+    @RegardsTransactional(readOnly = true)
     public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page) {
         return notificationRepository.findAllNotificationsWithoutMessage(page);
     }
 
     @Override
+    @RegardsTransactional
     public Notification retrieveNotification(Long pId) throws EntityNotFoundException {
         Optional<Notification> notifOpt = notificationRepository.findById(pId);
         if (!notifOpt.isPresent()) {
@@ -128,6 +135,7 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
+    @RegardsTransactional
     public Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException {
         Optional<Notification> notifOpt = notificationRepository.findById(pId);
         if (!notifOpt.isPresent()) {
@@ -139,24 +147,7 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
-    public void markAllNotificationAs(NotificationStatus status) {
-        Assert.notNull(status, "Notification status is required");
-        notificationRepository.updateAllNotificationStatusByRole(status.toString(), authenticationResolver.getRole());
-        notificationRepository.updateAllNotificationStatusByUser(status.toString(), authenticationResolver.getUser());
-    }
-
-    @Override
-    public void deleteReadNotifications() {
-        Pageable page = PageRequest.of(0, 100);
-        Page<INotificationWithoutMessage> results;
-        do {
-            // Do delete in one unique transaction, to do so use the self element
-            results = self.deleteReadNotificationsPage(page);
-        } while (results.hasNext());
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @RegardsTransactional(propagation = Propagation.REQUIRES_NEW)
     public Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page) {
         Page<INotificationWithoutMessage> results = this.retrieveNotifications(page, NotificationStatus.READ);
         Set<Long> idsToDelete = results.getContent()
@@ -168,6 +159,7 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
+    @RegardsTransactional
     public void deleteNotification(Long pId) throws EntityNotFoundException {
         if (!notificationRepository.existsById(pId)) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
@@ -176,16 +168,44 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
+    @RegardsTransactional(readOnly = true)
     public Page<Notification> retrieveNotificationsToSend(Pageable page) {
         return notificationRepository.findByStatus(NotificationStatus.UNREAD, page);
     }
 
     @Override
+    @RegardsTransactional(readOnly = true)
     public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state) {
         if (state != null) {
             return notificationRepository.findAllNotificationsWithoutMessageByStatus(state, page);
         } else {
             return retrieveNotifications(page);
         }
+    }
+
+    @Override
+    @RegardsTransactional(readOnly = true)
+    public Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable) {
+        long start = System.currentTimeMillis();
+
+        Page<NotificationLight> response = notificationLightRepository.findAll(new NotificationSpecificationBuilder().withParameters(
+            filters).build(), pageable);
+
+        LOGGER.debug("{} NOTIFICATIONS instance found in {}ms", response.getSize(), System.currentTimeMillis() - start);
+        return response;
+    }
+
+    /**
+     * Delete notifications matching filters
+     *
+     * @param filters  search parameters
+     * @param pageable the paging information
+     */
+    @Override
+    public void deleteNotifications(SearchNotificationParameters filters, Pageable pageable) {
+        Page<NotificationLight> notificationLightPage;
+        do {
+            notificationLightPage = deleteNotificationService.deleteNotificationWithFilter(filters, pageable);
+        } while (notificationLightPage.hasNext());
     }
 }

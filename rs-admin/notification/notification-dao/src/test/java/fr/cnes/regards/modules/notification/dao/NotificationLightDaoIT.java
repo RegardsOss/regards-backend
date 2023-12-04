@@ -22,36 +22,40 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
-import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationSpecificationBuilder;
+import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * @author Christophe Mertz
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notif_dao" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notif_dao_light" })
 @ContextConfiguration(classes = { NotificationDaoTestConfig.class })
-public class NotificationDaoIT extends AbstractDaoTransactionalIT {
+@ActiveProfiles({ "noscheduler" })
+public class NotificationLightDaoIT extends AbstractDaoTransactionalIT {
 
     @Autowired
-    private INotificationRepository notificationRepository;
+    private INotificationLightRepository notificationLightRepository;
 
-    @Test
-    public void getAllNotifications() {
-        notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD,
-                                                                   "null",
-                                                                   DefaultRole.PROJECT_ADMIN.toString(),
-                                                                   PageRequest.of(0, 10));
+    private Set<String> createRecipients() {
+        final Set<String> pUsers = new HashSet<>();
+        pUsers.add("bob-regards@c-s.fr");
+        pUsers.add("jo-regards@c-s.fr");
+        return pUsers;
     }
 
     @Test
@@ -59,31 +63,29 @@ public class NotificationDaoIT extends AbstractDaoTransactionalIT {
 
         // Given
 
-        Assert.assertEquals(0, notificationRepository.count());
+        Assert.assertEquals(0, notificationLightRepository.count());
 
         // create a new Notification
-        final Notification notif = getNotification("Hello world!", "Bob", NotificationStatus.UNREAD);
+        final NotificationLight notif = createNotificationLight("Bob", NotificationStatus.UNREAD);
 
         // Set Recipients
-        final Set<String> pUsers = new HashSet<>();
-        pUsers.add("bob-regards@c-s.fr");
-        pUsers.add("jo-regards@c-s.fr");
+        final Set<String> pUsers = createRecipients();
         notif.setProjectUserRecipients(pUsers);
 
         // Set Roles
         notif.setRoleRecipients(Sets.newHashSet(DefaultRole.PUBLIC.name()));
 
         // Save the notification
-        final Notification notifSaved = notificationRepository.save(notif);
-        Assert.assertEquals(1, notificationRepository.count());
+        final NotificationLight notifSaved = notificationLightRepository.save(notif);
+        Assert.assertEquals(1, notificationLightRepository.count());
 
         Assert.assertNotNull(notifSaved);
         Assert.assertNotNull(notifSaved.getId());
 
-        Assert.assertTrue(notificationRepository.findById(notifSaved.getId()).isPresent());
+        Assert.assertTrue(notificationLightRepository.findById(notifSaved.getId()).isPresent());
 
         // create a second notification
-        final Notification secondNotif = getNotification("Hello Paris!", "jack", NotificationStatus.UNREAD);
+        final NotificationLight secondNotif = createNotificationLight("jack", NotificationStatus.UNREAD);
 
         // Set recipient
         secondNotif.setProjectUserRecipients(Sets.newHashSet("jack-regards@c-s.fr"));
@@ -94,27 +96,20 @@ public class NotificationDaoIT extends AbstractDaoTransactionalIT {
         // When
 
         // Save the notification
-        notificationRepository.save(secondNotif);
+        notificationLightRepository.save(secondNotif);
 
         // Then
 
-        Assert.assertEquals(2, notificationRepository.count());
+        Assert.assertEquals(2, notificationLightRepository.count());
 
     }
 
-    private Notification getNotification(String pMessage, String pSender, NotificationStatus pStatus) {
-        final Notification notif = new Notification();
-        notif.setMessage(pMessage);
+    private NotificationLight createNotificationLight(String pSender, NotificationStatus pStatus) {
+        final NotificationLight notif = new NotificationLight();
         notif.setSender(pSender);
         notif.setStatus(pStatus);
         notif.setLevel(NotificationLevel.INFO);
         return notif;
-    }
-
-    @Test
-    public void testUpdateAll() {
-        notificationRepository.updateAllNotificationStatusByRole(NotificationStatus.READ.toString(), "ADMIN");
-        notificationRepository.updateAllNotificationStatusByUser(NotificationStatus.READ.toString(), "regards@c-s.fr");
     }
 
     @Test
@@ -125,23 +120,24 @@ public class NotificationDaoIT extends AbstractDaoTransactionalIT {
         //create 2 UNREAD notification
         createNotification();
         // create read notification
-        final Notification readNotif = getNotification("Hello READ!", "Rid", NotificationStatus.READ);
+        final NotificationLight readNotif = createNotificationLight("Rid", NotificationStatus.READ);
         readNotif.setProjectUserRecipients(Sets.newHashSet("read-regards@c-s.fr"));
         readNotif.setRoleRecipients(Sets.newHashSet(DefaultRole.PROJECT_ADMIN.name()));
-        notificationRepository.save(readNotif);
+        notificationLightRepository.save(readNotif);
 
         // When
 
         // now lets retrieve them by status
-        Page<INotificationWithoutMessage> notifPage = notificationRepository.findByStatusAndRecipientsContaining(
-            NotificationStatus.UNREAD,
-            "jo-regards@c-s.fr",
-            DefaultRole.PUBLIC.toString(),
-            PageRequest.of(0, 20));
+        Pageable page = PageRequest.of(0, 100);
+        SearchNotificationParameters filters = new SearchNotificationParameters().withStatusIncluded(Arrays.asList(
+            NotificationStatus.UNREAD));
+        Page<NotificationLight> notifPage = notificationLightRepository.findAll(new NotificationSpecificationBuilder().withParameters(
+            filters).build(), page);
 
         // Then
-        
         Assert.assertTrue("There should be 2 notification: 2 notifications UNREAD for role PUBLIC",
                           notifPage.getTotalElements() == 2);
+        Assert.assertTrue("Project user recipients must be correctly set",
+                          notifPage.stream().allMatch(notification -> notification.getProjectUserRecipients() != null));
     }
 }

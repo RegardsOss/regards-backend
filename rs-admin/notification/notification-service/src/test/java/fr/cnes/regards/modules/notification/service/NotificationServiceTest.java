@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.notification.dao.INotificationLightRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
@@ -147,6 +148,11 @@ public class NotificationServiceTest {
     private INotificationRepository notificationRepository;
 
     /**
+     * CRUD repository managing light notifications.
+     */
+    private INotificationLightRepository notificationLightRepository;
+
+    /**
      * CRUD repository managing roles. Autowired by Spring.
      */
     private IRoleService roleService;
@@ -155,6 +161,8 @@ public class NotificationServiceTest {
      * Feign client for {@link ProjectUser}s. Autowired by Spring.
      */
     private IProjectUserService projectUserService;
+
+    private DeleteNotificationService deleteNotificationService;
 
     /**
      * Do some setup before each test
@@ -228,7 +236,8 @@ public class NotificationServiceTest {
                                                       Mockito.mock(ApplicationEventPublisher.class),
                                                       authenticationResolver,
                                                       NotificationMode.MULTITENANT,
-                                                      notificationService);
+                                                      deleteNotificationService,
+                                                      notificationLightRepository);
     }
 
     /**

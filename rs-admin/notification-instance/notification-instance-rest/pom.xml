@@ -40,6 +40,10 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>hateoas-regards-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>swagger-regards-starter</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

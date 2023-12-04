@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
@@ -94,7 +95,7 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
-    public void deleteNotifications() {
+    public void deleteNotifications() throws EntityNotFoundException {
 
         NotificationDTO notification = new NotificationDtoBuilder("message",
                                                                   "title",
@@ -112,23 +113,13 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
                                                   "title3",
                                                   NotificationLevel.INFO,
                                                   "moi").toRoles(Sets.newHashSet(authResolver.getRole()));
-        notificationService.createNotification(notification);
+        Notification notification1 = notificationService.createNotification(notification);
         Assert.assertTrue("notif should exists", repo.findAll().size() == 3);
 
-        notificationService.deleteReadNotifications();
+        notificationService.deleteNotification(notification1.getId());
 
         List<Notification> notifs = repo.findAll();
-        Assert.assertTrue("notif should still exists as no one is in READ status", notifs.size() == 3);
-
-        notificationService.markAllNotificationAs(NotificationStatus.READ);
-
-        notificationService.deleteReadNotifications();
-
-        notifs = repo.findAll();
-        Assert.assertEquals("One notif should remains for ADMIN role", 1, notifs.size());
-        Assert.assertTrue("One notif should remains for ADMIN role as UNREAD",
-                          notifs.get(0).getStatus() == NotificationStatus.UNREAD);
-
+        Assert.assertTrue("notif should be deleted", notifs.size() == 2);
     }
 
 }

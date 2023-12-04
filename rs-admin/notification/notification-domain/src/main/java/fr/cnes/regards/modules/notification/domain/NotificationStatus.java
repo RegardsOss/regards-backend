@@ -33,6 +33,10 @@ public enum NotificationStatus {
     /**
      * Unread status notification
      */
-    UNREAD
+    UNREAD;
 
+    @Override
+    public String toString() {
+        return this.name();
+    }
 }
