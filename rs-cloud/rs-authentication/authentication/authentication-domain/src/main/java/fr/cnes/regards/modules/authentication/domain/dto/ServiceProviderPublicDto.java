@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,6 +24,11 @@ import org.hibernate.validator.constraints.URL;
 
 import java.util.Objects;
 
+/**
+ * Service provider dto used by public interfaces
+ *
+ * @author Théo Lasserre
+ */
 public class ServiceProviderPublicDto {
 
     @ServiceProviderName
@@ -34,16 +39,28 @@ public class ServiceProviderPublicDto {
 
     private final String pluginId;
 
-    public ServiceProviderPublicDto(String name, String authUrl, String pluginId) {
+    private final String descriptionFr;
+
+    private final String descriptionEn;
+
+    public ServiceProviderPublicDto(String name,
+                                    String authUrl,
+                                    String pluginId,
+                                    String descriptionEn,
+                                    String descriptionFr) {
         this.name = name;
         this.authUrl = authUrl;
         this.pluginId = pluginId;
+        this.descriptionFr = descriptionFr;
+        this.descriptionEn = descriptionEn;
     }
 
     public ServiceProviderPublicDto(ServiceProvider serviceProvider) {
         this.name = serviceProvider.getName();
         this.authUrl = serviceProvider.getAuthUrl();
         this.pluginId = serviceProvider.getConfiguration().getPluginId();
+        this.descriptionEn = serviceProvider.getDescriptionEn();
+        this.descriptionFr = serviceProvider.getDescriptionFr();
     }
 
     public String getName() {
@@ -58,6 +75,14 @@ public class ServiceProviderPublicDto {
         return pluginId;
     }
 
+    public String getDescriptionEn() {
+        return descriptionEn;
+    }
+
+    public String getDescriptionFr() {
+        return descriptionFr;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -67,12 +92,16 @@ public class ServiceProviderPublicDto {
             return false;
         }
         ServiceProviderPublicDto that = (ServiceProviderPublicDto) o;
-        return Objects.equals(name, that.name) && Objects.equals(authUrl, that.authUrl) && Objects.equals(pluginId,
-                                                                                                          that.pluginId);
+        return Objects.equals(name, that.name)
+               && Objects.equals(authUrl, that.authUrl)
+               && Objects.equals(pluginId,
+                                 that.pluginId)
+               && Objects.equals(descriptionEn, that.descriptionEn)
+               && Objects.equals(descriptionFr, that.descriptionFr);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, authUrl, pluginId);
+        return Objects.hash(name, authUrl, pluginId, descriptionFr, descriptionEn);
     }
 }
