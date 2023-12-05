@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * This plugin is used for generating product SIP
@@ -36,8 +36,8 @@ public interface ISipGenerationPlugin {
      * Generate SIP according to specified {@link Product}
      *
      * @param product {@link Product}
-     * @return {@link SIP}
+     * @return {@link SIPDto}
      * @throws ModuleException if error occurs!
      */
-    SIP generate(Product product) throws ModuleException;
+    SIPDto generate(Product product) throws ModuleException;
 }

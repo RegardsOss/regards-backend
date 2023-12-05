@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugin;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDtoBuilder;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 import java.util.UUID;
 
@@ -47,7 +47,7 @@ public class LongLastingSIPGeneration implements ISipGenerationPlugin {
     //    private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
     @Override
-    public SIP generate(Product product) throws ModuleException {
+    public SIPDto generate(Product product) throws ModuleException {
 
         // Wait 5 seconds before SIP generation (DO NOT USE THREAD SLEEP, it will clean interrupted status)
         long startWaitingDate = System.currentTimeMillis();
@@ -56,7 +56,7 @@ public class LongLastingSIPGeneration implements ISipGenerationPlugin {
         }
 
         // Init the builder
-        SIPBuilder sipBuilder = new SIPBuilder(product.getProductName());
+        SIPDtoBuilder sipBuilder = new SIPDtoBuilder(product.getProductName());
 
         // Fill SIP with product information
         for (AcquisitionFile af : product.getActiveAcquisitionFiles()) {

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.client;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.urn.DataType;
@@ -27,7 +28,6 @@ import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingChainService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.test.IngestServiceIT;
@@ -126,10 +126,10 @@ public class IngestClientIT extends AbstractRegardsWebIT {
                                   .anyMatch(r -> r.getRequestId().equals(clientInfo.getRequestId())));
     }
 
-    private SIP create(String providerId) {
+    private SIPDto create(String providerId) {
 
         String fileName = String.format("file-%s.dat", providerId);
-        SIP sip = SIP.build(EntityType.DATA, providerId);
+        SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get("src", "main", "test", "resources", "data", fileName),
                            "MD5",

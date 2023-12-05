@@ -21,6 +21,9 @@ package fr.cnes.regards.modules.acquisition.service;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -29,9 +32,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
@@ -179,12 +179,12 @@ public class ProductService implements IProductService {
                                                       storage.getTargetTypes()));
             }
         } else {
-            List<ContentInformation> productCIList = product.getSip().getProperties().getContentInformations();
-            for (ContentInformation productCI : productCIList) {
+            List<ContentInformationDto> productCIList = product.getSip().getProperties().getContentInformations();
+            for (ContentInformationDto productCI : productCIList) {
                 if ((productCI.getDataObject() != null)
                     && (productCI.getDataObject().getLocations() != null)
                     && !productCI.getDataObject().getLocations().isEmpty()) {
-                    for (OAISDataObjectLocation location : productCI.getDataObject().getLocations()) {
+                    for (OAISDataObjectLocationDto location : productCI.getDataObject().getLocations()) {
                         if (productCI.getDataObject().getFileSize() == null) {
                             updateDataObjectFileSize(productCI.getDataObject(), product.getProductName());
                         }
@@ -971,15 +971,16 @@ public class ProductService implements IProductService {
     }
 
     /**
-     * Update file size of given {@link OAISDataObject} by accessing file on file system.
+     * Update file size of given {@link OAISDataObjectDto} by accessing file on file system.
      *
      * @throws SIPGenerationException If file is not accessible.
      */
-    private void updateDataObjectFileSize(OAISDataObject dataObject, String productName) throws SIPGenerationException {
-        Optional<OAISDataObjectLocation> firstLocation = dataObject.getLocations().stream().findFirst();
+    private void updateDataObjectFileSize(OAISDataObjectDto dataObject, String productName)
+        throws SIPGenerationException {
+        Optional<OAISDataObjectLocationDto> firstLocation = dataObject.getLocations().stream().findFirst();
         if (firstLocation.isPresent()) {
             try {
-                OAISDataObjectLocation location = firstLocation.get();
+                OAISDataObjectLocationDto location = firstLocation.get();
                 URL url = new URL(location.getUrl());
                 dataObject.setFileSize(Paths.get(url.toURI()).toFile().length());
             } catch (MalformedURLException | URISyntaxException e) {

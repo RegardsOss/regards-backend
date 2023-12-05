@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 
@@ -29,7 +30,7 @@ import javax.validation.constraints.NotNull;
  *
  * @author Marc Sordi
  */
-public class SIPCollection extends AbstractFeatureCollection<SIP> {
+public class SIPCollection extends AbstractFeatureCollection<SIPDto> {
 
     @Valid
     @NotNull(message = "Ingest metadata is required")

@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.ingest.dto.sip.flow;
 
 import fr.cnes.regards.framework.amqp.event.*;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.util.Assert;
 
@@ -48,13 +48,13 @@ public class IngestRequestFlowItem extends AbstractRequestFlowItem implements IS
 
     @Valid
     @NotNull(message = IngestValidationMessages.MISSING_SIP)
-    private SIP sip;
+    private SIPDto sip;
 
     public IngestMetadataDto getMetadata() {
         return metadata;
     }
 
-    public SIP getSip() {
+    public SIPDto getSip() {
         return sip;
     }
 
@@ -62,7 +62,7 @@ public class IngestRequestFlowItem extends AbstractRequestFlowItem implements IS
         this.metadata = metadata;
     }
 
-    public void setSip(SIP sip) {
+    public void setSip(SIPDto sip) {
         this.sip = sip;
     }
 
@@ -71,7 +71,7 @@ public class IngestRequestFlowItem extends AbstractRequestFlowItem implements IS
      * You may generate your request id using {@link #generateRequestId()} or pass your own (max 36 alphanumerical characters)<br/>
      * An {@link IngestRequestEvent} including this request id will be sent to monitor the progress of the request.
      */
-    public static IngestRequestFlowItem build(String requestId, IngestMetadataDto metadata, SIP sip) {
+    public static IngestRequestFlowItem build(String requestId, IngestMetadataDto metadata, SIPDto sip) {
         Assert.notNull(requestId, IngestValidationMessages.MISSING_REQUEST_ID);
         Assert.notNull(metadata, IngestValidationMessages.MISSING_METADATA);
         Assert.notNull(sip, IngestValidationMessages.MISSING_SIP);
@@ -86,7 +86,7 @@ public class IngestRequestFlowItem extends AbstractRequestFlowItem implements IS
      * Build a new SIP flow item with a generated unique request id.<br/>
      * An {@link IngestRequestEvent} including this request id will be sent to monitor the progress of the request.
      */
-    public static IngestRequestFlowItem build(IngestMetadataDto metadata, SIP sip) {
+    public static IngestRequestFlowItem build(IngestMetadataDto metadata, SIPDto sip) {
         return build(generateRequestId(), metadata, sip);
     }
 

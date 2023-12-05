@@ -24,6 +24,9 @@ import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
@@ -34,8 +37,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
@@ -57,7 +58,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
@@ -281,7 +281,7 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public List<AIPEntity> handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
+    public List<AIPEntity> handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIPDto> aips) {
         // first lets find out which SIP is the last
         ISipIdAndVersion latestSip = sipService.getLatestSip(sipEntity.getProviderId());
         if (latestSip == null) {
@@ -304,7 +304,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Build AIP entities and save them
         // decision whether one aip is the latest for its providerId is handled once we know an AIP is stored
         List<AIPEntity> aipEntities = aipService.createAndSave(sipEntity, aips);
-        // Attach generated AIPs to the current request
+        // Attach generated AIPs to the current requestAIPDto
         request.setAips(aipEntities);
         requestRemoteStorage(request);
 
@@ -498,14 +498,14 @@ public class IngestRequestService implements IIngestRequestService {
     /**
      * Return true if all data files associated to the given {@link ContentInformation} are stored aka location is defined
      */
-    private boolean isDataObjectStored(ContentInformation contentInformation) {
+    private boolean isDataObjectStored(ContentInformationDto contentInformation) {
         return contentInformation.getDataObject().getLocations().stream().allMatch(this::isLocationDefined);
     }
 
     /**
      * Return true if all data files associated to the given {@link ContentInformation} are stored aka location is defined
      */
-    private boolean isLocationDefined(OAISDataObjectLocation location) {
+    private boolean isLocationDefined(OAISDataObjectLocationDto location) {
         return StringUtils.isNotBlank(location.getStorage()) && StringUtils.isNotBlank(location.getUrl());
     }
 

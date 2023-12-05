@@ -20,12 +20,13 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -36,7 +37,6 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
@@ -104,9 +104,9 @@ public class AIPService implements IAIPService {
     private IRequestService requestService;
 
     @Override
-    public List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips) {
+    public List<AIPEntity> createAndSave(SIPEntity sip, List<AIPDto> aips) {
         List<AIPEntity> entities = new ArrayList<>();
-        for (AIP aip : aips) {
+        for (AIPDto aip : aips) {
             entities.add(aipRepository.save(AIPEntity.build(sip, AIPState.GENERATED, aip)));
         }
         return entities;
@@ -131,7 +131,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException {
+    public String calculateChecksum(AIPDto aip) throws NoSuchAlgorithmException, IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         writeAip(aip, os);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(os.toByteArray());
@@ -244,7 +244,7 @@ public class AIPService implements IAIPService {
             throw new EntityNotFoundException(message);
         }
 
-        AIP aip = aipEntity.getAip();
+        AIPDto aip = aipEntity.getAip();
 
         // Populate response
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + aip.getProviderId() + ".json");
@@ -264,14 +264,14 @@ public class AIPService implements IAIPService {
     /**
      * Write AIP in provided {@link OutputStream}
      */
-    private void writeAip(AIP aip, OutputStream os) throws IOException {
+    private void writeAip(AIPDto aip, OutputStream os) throws IOException {
         Writer osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
         JsonWriter writer = new JsonWriter(osw);
         if (aip.getNormalizedGeometry() == null) {
             aip.setNormalizedGeometry(IGeometry.unlocated());
         }
         writer.setIndent(JSON_INDENT);
-        gson.toJson(aip, AIP.class, writer);
+        gson.toJson(aip, AIPDto.class, writer);
         osw.flush();
         writer.flush();
     }

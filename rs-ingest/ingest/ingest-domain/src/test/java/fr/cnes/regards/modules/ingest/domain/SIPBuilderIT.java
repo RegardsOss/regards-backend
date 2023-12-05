@@ -20,14 +20,14 @@ package fr.cnes.regards.modules.ingest.domain;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import org.junit.Assert;
 import org.junit.Test;
@@ -90,7 +90,7 @@ public class SIPBuilderIT {
 
         // Create a SIP builder
         String providerId = "SIP_001";
-        SIP sip = SIP.build(EntityType.DATA, providerId);
+        SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
 
         // Fill in required content information
         sip.withDataObject(dataType, Paths.get(fileName), algorithm, checksum);
@@ -105,22 +105,22 @@ public class SIPBuilderIT {
         // Read SIPs
         SIPCollection sips = gson.fromJson(collectionString, SIPCollection.class);
         Assert.assertTrue(sips.getFeatures().size() == 1);
-        Assert.assertTrue(sips.getFeatures().get(0) instanceof SIP);
+        Assert.assertTrue(sips.getFeatures().get(0) instanceof SIPDto);
 
-        SIP one = sips.getFeatures().get(0);
+        SIPDto one = sips.getFeatures().get(0);
         Assert.assertTrue(providerId.equals(one.getId()));
         Assert.assertNotNull(one.getProperties());
 
-        List<ContentInformation> cisOne = one.getProperties().getContentInformations();
+        List<ContentInformationDto> cisOne = one.getProperties().getContentInformations();
         Assert.assertNotNull(cisOne);
         Assert.assertTrue(cisOne.size() == 1);
 
-        ContentInformation ciOne = cisOne.iterator().next();
+        ContentInformationDto ciOne = cisOne.iterator().next();
         Assert.assertNotNull(ciOne);
         Assert.assertNotNull(ciOne.getDataObject());
         Assert.assertNull(ciOne.getRepresentationInformation());
 
-        OAISDataObject dataObject = ciOne.getDataObject();
+        OAISDataObjectDto dataObject = ciOne.getDataObject();
         Assert.assertEquals(dataType, dataObject.getRegardsDataType());
         Assert.assertEquals(algorithm, dataObject.getAlgorithm());
         Assert.assertEquals(checksum, dataObject.getChecksum());
@@ -130,7 +130,7 @@ public class SIPBuilderIT {
     public void createSIPByReference() {
 
         String providerId = "refSip";
-        SIP ref = SIP.buildReference(EntityType.DATA, providerId, Paths.get("ref.xml"), "algo", "123456789a");
+        SIPDto ref = SIPDto.buildReference(EntityType.DATA, providerId, Paths.get("ref.xml"), "algo", "123456789a");
 
         String refString = gson.toJson(ref);
         LOGGER.debug(refString);

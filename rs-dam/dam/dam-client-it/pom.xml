@@ -63,6 +63,14 @@
         </dependency>
         <!-- Tests -->
         <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>oais-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>oais-gson</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>

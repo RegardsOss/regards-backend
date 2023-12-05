@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.ingest.dto.aip;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
 
 import java.util.Arrays;
@@ -9,12 +10,12 @@ import java.util.Arrays;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-public class AIPCollection extends AbstractFeatureCollection<AIP> {
+public class AIPCollection extends AbstractFeatureCollection<AIPDto> {
 
     /**
      * Constructor setting the aips as features
      */
-    public AIPCollection(AIP... aips) {
+    public AIPCollection(AIPDto... aips) {
         super();
         getFeatures().addAll(Arrays.asList(aips));
     }

@@ -20,8 +20,10 @@ package fr.cnes.regards.modules.ingest.service.flow;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
@@ -40,12 +42,10 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import org.junit.Assert;
@@ -103,7 +103,7 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
         String storage = "storage";
         String storePath = null;
         MimeType mimeType = MediaType.APPLICATION_JSON;
-        SIP sip = SIP.build(EntityType.DATA, providerId);
+        SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
         SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
                                               IngestMetadata.build(sessionOwner,
                                                                    session,
@@ -122,7 +122,7 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
         aipId.setIdentifier(OAISIdentifier.AIP);
         String fileName = UUID.randomUUID().toString();
         String storedUrl = "storage://in/the/place/" + fileToStoreChecksum;
-        AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
+        AIPDto aip = AIPDto.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
         aip.withDataObject(DataType.RAWDATA, Paths.get("file:///somewhere/", fileName), "MD5", fileToStoreChecksum);
         aip.withSyntax(mimeType);
         aip.registerContentInformation();

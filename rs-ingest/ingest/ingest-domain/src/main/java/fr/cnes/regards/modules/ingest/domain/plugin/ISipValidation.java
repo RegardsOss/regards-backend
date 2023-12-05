@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.springframework.validation.Errors;
 
 /**
@@ -34,8 +34,8 @@ public interface ISipValidation {
     /**
      * Allows to validate SIP
      *
-     * @param sip    {@link SIP} to be validated
+     * @param sip    {@link SIPDto} to be validated
      * @param errors list of validation errors
      */
-    void validate(final SIP sip, Errors errors);
+    void validate(final SIPDto sip, Errors errors);
 }

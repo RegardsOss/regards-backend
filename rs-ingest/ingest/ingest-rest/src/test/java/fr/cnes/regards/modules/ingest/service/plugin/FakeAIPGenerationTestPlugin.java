@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service.plugin;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ import java.util.List;
 public class FakeAIPGenerationTestPlugin implements IAipGeneration {
 
     @Override
-    public List<AIP> generate(SIPEntity sip, String tenant, EntityType entityType) throws AIPGenerationException {
+    public List<AIPDto> generate(SIPEntity sip, String tenant, EntityType entityType) throws AIPGenerationException {
         return null;
     }
 

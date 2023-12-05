@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.ingest.service.flow;
 
 import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.junit.Assert;
@@ -93,7 +93,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
         // Publish SIP
         long start = System.currentTimeMillis();
         for (int i = 0; i < NB_SIPS; i++) {
-            SIP sip = create(i, null);
+            SIPDto sip = create(i, null);
             publishSIPEvent(sip, TARGET_STORAGE_ID, "session", "sessionOwner", CATEGORIES);
         }
         // Wait
@@ -134,7 +134,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
         LOGGER.info("{} Ingest request(s) created in database", requestCount);
     }
 
-    protected SIP create(int i, List<String> tags) {
+    protected SIPDto create(int i, List<String> tags) {
         // Init provider id
         String providerId = String.format("provider_%07d.test", i);
 
@@ -154,7 +154,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
             Assert.fail(e.getMessage());
         }
 
-        SIP sip = SIP.build(EntityType.DATA, providerId);
+        SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA, dataFile, MD5_ALGORITHM, checksum);
         sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();

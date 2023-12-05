@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
 import org.springframework.data.domain.Page;
@@ -87,7 +87,7 @@ public interface ISIPService {
     /**
      * Compute checksum for current SIP using {@link SIPService#MD5_ALGORITHM}
      */
-    String calculateChecksum(SIP sip) throws NoSuchAlgorithmException, IOException;
+    String calculateChecksum(SIPDto sip) throws NoSuchAlgorithmException, IOException;
 
     /**
      * @return true if a {@link SIPEntity} with provided checksum is already stored
@@ -97,7 +97,7 @@ public interface ISIPService {
     /**
      * Get next version of this SIP
      */
-    Integer getNextVersion(SIP sip);
+    Integer getNextVersion(SIPDto sip);
 
     /**
      * Retrieve partial SIP avoiding mutating SIP state that may be mutated on other thread.<br/>

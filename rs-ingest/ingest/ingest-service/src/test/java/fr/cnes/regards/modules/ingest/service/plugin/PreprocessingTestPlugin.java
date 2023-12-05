@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.service.plugin;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPReference;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.exception.InvalidSIPReferenceException;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,7 +50,7 @@ public class PreprocessingTestPlugin implements ISipPreprocessing {
     private ProcessingChainTestErrorSimulator errorSimulator;
 
     @Override
-    public void preprocess(SIP pSip) throws ProcessingStepException {
+    public void preprocess(SIPDto pSip) throws ProcessingStepException {
         if (PreprocessingTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new ProcessingStepException(IngestErrorType.PREPROCESSING,
                                               "Simulated exception for step PreprocessingTestPlugin");
@@ -58,13 +58,13 @@ public class PreprocessingTestPlugin implements ISipPreprocessing {
     }
 
     @Override
-    public SIP read(SIPReference pRef) throws InvalidSIPReferenceException {
+    public SIPDto read(SIPReference pRef) throws InvalidSIPReferenceException {
         if (PreprocessingTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new InvalidSIPReferenceException(IngestErrorType.PREPROCESSING,
                                                    "Simulated exception for step PreprocessingTestPlugin");
         }
         // Simulate creation of a new SIP
-        return SIP.build(EntityType.DATA, SIP_ID_TEST);
+        return SIPDto.build(EntityType.DATA, SIP_ID_TEST);
     }
 
 }

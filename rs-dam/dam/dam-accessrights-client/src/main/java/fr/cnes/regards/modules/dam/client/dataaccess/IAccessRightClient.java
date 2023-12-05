@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.dam.client.dataaccess;
 
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;

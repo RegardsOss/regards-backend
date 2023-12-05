@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.session;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -30,9 +32,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.assertj.core.util.Sets;
 import org.junit.Assert;
@@ -84,29 +84,11 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
                                                          ingestChain,
                                                          categories,
                                                          StorageMetadata.build("AWS", "/dir1/dir2/", new HashSet<>())),
-                                    SIP.build(EntityType.DATA, providerId),
+                                    SIPDto.build(EntityType.DATA, providerId),
                                     1,
                                     SIPState.INGESTED);
-        aipEntity1 = AIPEntity.build(sipEntity,
-                                     AIPState.GENERATED,
-                                     AIP.build(sipEntity.getSip(),
-                                               OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
-                                                                                       EntityType.COLLECTION,
-                                                                                       getDefaultTenant(),
-                                                                                       1),
-                                               Optional.ofNullable(sipEntity.getSipIdUrn()),
-                                               providerId,
-                                               sipEntity.getVersion()));
-        aipEntity2 = AIPEntity.build(sipEntity,
-                                     AIPState.GENERATED,
-                                     AIP.build(sipEntity.getSip(),
-                                               OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
-                                                                                       EntityType.COLLECTION,
-                                                                                       getDefaultTenant(),
-                                                                                       1),
-                                               Optional.ofNullable(sipEntity.getSipIdUrn()),
-                                               providerId,
-                                               sipEntity.getVersion()));
+        aipEntity1 = createAIPEntity();
+        aipEntity2 = createAIPEntity();
         aips.add(aipEntity1);
         aips.add(aipEntity2);
         clearPublishedEvents();
@@ -116,6 +98,19 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         ingestRequest.setSessionOwner(sessionOwner);
         ingestRequest.setSession(session);
         ingestRequest.setAips(aips);
+    }
+
+    private AIPEntity createAIPEntity() {
+        return AIPEntity.build(sipEntity,
+                               AIPState.GENERATED,
+                               AIPDto.build(sipEntity.getSip(),
+                                            OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                                    EntityType.COLLECTION,
+                                                                                    getDefaultTenant(),
+                                                                                    1),
+                                            Optional.ofNullable(sipEntity.getSipIdUrn()),
+                                            providerId,
+                                            sipEntity.getVersion()));
     }
 
     private Map<String, Long> getResultUsingNotifs(List<StepPropertyUpdateRequestEvent> allValues) {

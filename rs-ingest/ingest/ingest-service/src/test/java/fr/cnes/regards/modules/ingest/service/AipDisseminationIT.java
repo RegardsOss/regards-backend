@@ -20,6 +20,10 @@ package fr.cnes.regards.modules.ingest.service;
 
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.integration.test.job.JobTestUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -28,8 +32,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.*;
@@ -43,11 +45,9 @@ import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.dissemination.AIPDisseminationRequestDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
 import fr.cnes.regards.modules.ingest.service.job.AipDisseminationCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.AipDisseminationJob;
@@ -300,7 +300,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
                                                              "model",
                                                              StorageMetadata.build(storage));
 
-        SIP sip = SIP.build(EntityType.DATA, providerId);
+        SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"),
                            "MD5",
@@ -316,13 +316,15 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         sipEntity.setLastUpdate(OffsetDateTime.now().minusSeconds(1));
         sipRepository.save(sipEntity);
 
-        AIP aip = AIP.build(sip,
-                            OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 67),
-                            Optional.empty(),
-                            "providerId",
-                            1);
+        AIPDto aip = AIPDto.build(sip,
+                                  OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                          EntityType.DATA,
+                                                                          "tenant",
+                                                                          67),
+                                  Optional.empty(),
+                                  "providerId",
+                                  1);
         AIPEntity aipEntity = AIPEntity.build(sipEntity, AIPState.GENERATED, aip);
-
         aipRepository.save(aipEntity);
     }
 

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -28,7 +29,6 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.info.ErrorModeHandling;
 import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
@@ -63,7 +63,7 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
     protected SIPEntity doExecute(IngestRequest request) throws ProcessingStepException {
         job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_INIT);
 
-        SIP sip = request.getSip();
+        SIPDto sip = request.getSip();
 
         //remove null tags because they have no use!
         sip.getTags().remove(null);

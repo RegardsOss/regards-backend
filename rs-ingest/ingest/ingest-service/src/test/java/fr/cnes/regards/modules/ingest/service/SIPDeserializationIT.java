@@ -21,9 +21,9 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ public class SIPDeserializationIT extends AbstractMultitenantServiceIT {
         String filename = "sip_testDeserialization.json";
         try (Reader json = new InputStreamReader(this.getClass().getResourceAsStream(filename),
                                                  StandardCharsets.UTF_8)) {
-            SIP sip = gson.fromJson(json, SIP.class);
+            SIPDto sip = gson.fromJson(json, SIPDto.class);
 
             // number from descriptiveInformation
             // should be returned as Long if it does not contains "."

@@ -21,8 +21,9 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
@@ -36,7 +37,6 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateDisseminati
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.event.DisseminationAckEvent;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
@@ -114,11 +114,11 @@ public class DisseminationAckHandlerTest {
 
     private void initMockBehaviours() {
         AIPEntity aipEntity = AIPEntity.build(AIPState.STORED,
-                                              AIP.build(EntityType.DATA,
-                                                        resourceName,
-                                                        Optional.empty(),
-                                                        "providerId",
-                                                        5));
+                                              AIPDto.build(EntityType.DATA,
+                                                           resourceName,
+                                                           Optional.empty(),
+                                                           "providerId",
+                                                           5));
         Mockito.when(aipService.findByAipIds(any())).thenReturn(new ArrayList<AIPEntity>(List.of(aipEntity)));
         Mockito.when(aipUpdateRequestRepository.findRunningRequestAndAipIdIn(any())).thenReturn(new ArrayList<>());
     }

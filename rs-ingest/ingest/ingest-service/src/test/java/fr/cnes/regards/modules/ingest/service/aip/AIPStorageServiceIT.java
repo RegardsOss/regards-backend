@@ -21,10 +21,12 @@ package fr.cnes.regards.modules.ingest.service.aip;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -38,9 +40,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +109,7 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
                                                          StorageMetadata.build(LOCATION_3,
                                                                                "/dir1/dir2/",
                                                                                new HashSet<>())),
-                                    SIP.build(EntityType.DATA, providerId),
+                                    SIPDto.build(EntityType.DATA, providerId),
                                     1,
                                     SIPState.INGESTED);
         sipEntity.getSip()
@@ -118,34 +118,34 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
                                  "MD5",
                                  FAKE_CHECKSUM_1,
                                  0L,
-                                 OAISDataObjectLocation.build("rs-storage/myfile1.txt", LOCATION),
-                                 OAISDataObjectLocation.build("rs-storage/myfile3.txt", LOCATION_3))
+                                 OAISDataObjectLocationDto.build("rs-storage/myfile1.txt", LOCATION),
+                                 OAISDataObjectLocationDto.build("rs-storage/myfile3.txt", LOCATION_3))
                  .registerContentInformation()
                  .withDataObject(DataType.DESCRIPTION,
                                  "myfile2.txt",
                                  "MD5",
                                  FAKE_CHECKSUM_2,
                                  0L,
-                                 OAISDataObjectLocation.build("rs-storage/myfile2.txt", LOCATION_2),
-                                 OAISDataObjectLocation.build("rs-storage/myfile2.txt", LOCATION_3))
+                                 OAISDataObjectLocationDto.build("rs-storage/myfile2.txt", LOCATION_2),
+                                 OAISDataObjectLocationDto.build("rs-storage/myfile2.txt", LOCATION_3))
                  .registerContentInformation()
                  .withDataObject(DataType.DOCUMENT,
                                  "myfile3.txt",
                                  "MD5",
                                  FAKE_CHECKSUM_3,
                                  0L,
-                                 OAISDataObjectLocation.build("rs-storage/myfile3.txt", LOCATION_3))
+                                 OAISDataObjectLocationDto.build("rs-storage/myfile3.txt", LOCATION_3))
                  .registerContentInformation();
         aipEntity1 = AIPEntity.build(sipEntity,
                                      AIPState.GENERATED,
-                                     AIP.build(sipEntity.getSip(),
-                                               OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
-                                                                                       EntityType.COLLECTION,
-                                                                                       getDefaultTenant(),
-                                                                                       1),
-                                               Optional.ofNullable(sipEntity.getSipIdUrn()),
-                                               providerId,
-                                               sipEntity.getVersion()));
+                                     AIPDto.build(sipEntity.getSip(),
+                                                  OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                                          EntityType.COLLECTION,
+                                                                                          getDefaultTenant(),
+                                                                                          1),
+                                                  Optional.ofNullable(sipEntity.getSipIdUrn()),
+                                                  providerId,
+                                                  sipEntity.getVersion()));
         aipEntity1.setStorages(Sets.newHashSet(LOCATION, LOCATION_2, LOCATION_3));
     }
 
@@ -163,14 +163,14 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
         Assert.assertTrue("Should detect some change", isUpdated.isAipUpdated());
         Assert.assertEquals("Now 4 storages should be defined in ingest metadata", 4, aipEntity1.getStorages().size());
-        Optional<ContentInformation> ciOp = aipEntity1.getAip()
-                                                      .getProperties()
-                                                      .getContentInformations()
-                                                      .stream()
-                                                      .filter(ci -> ci.getDataObject()
-                                                                      .getChecksum()
-                                                                      .equals(FAKE_CHECKSUM_3))
-                                                      .findFirst();
+        Optional<ContentInformationDto> ciOp = aipEntity1.getAip()
+                                                         .getProperties()
+                                                         .getContentInformations()
+                                                         .stream()
+                                                         .filter(ci -> ci.getDataObject()
+                                                                         .getChecksum()
+                                                                         .equals(FAKE_CHECKSUM_3))
+                                                         .findFirst();
         Assert.assertTrue(ciOp.isPresent());
         Assert.assertEquals("Now two locations should be defined in that dataobject",
                             2,
@@ -224,14 +224,14 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
         Assert.assertTrue("Should detect some change", isUpdated.isAipUpdated());
         Assert.assertEquals("Now 2 storages in ingest metadata remaining", 2, aipEntity1.getStorages().size());
-        Optional<ContentInformation> ciOp = aipEntity1.getAip()
-                                                      .getProperties()
-                                                      .getContentInformations()
-                                                      .stream()
-                                                      .filter(ci -> ci.getDataObject()
-                                                                      .getChecksum()
-                                                                      .equals(FAKE_CHECKSUM_2))
-                                                      .findFirst();
+        Optional<ContentInformationDto> ciOp = aipEntity1.getAip()
+                                                         .getProperties()
+                                                         .getContentInformations()
+                                                         .stream()
+                                                         .filter(ci -> ci.getDataObject()
+                                                                         .getChecksum()
+                                                                         .equals(FAKE_CHECKSUM_2))
+                                                         .findFirst();
         Assert.assertTrue(ciOp.isPresent());
         Assert.assertEquals("Still 1 location should be defined in that dataobject",
                             1,

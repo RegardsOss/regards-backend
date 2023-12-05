@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -32,7 +33,6 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.aip.DisseminationStatus;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.assertj.core.util.Sets;
@@ -164,7 +164,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
         publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
         publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
-        SIP sip = create("provider 7", TAG_2);
+        SIPDto sip = create("provider 7", TAG_2);
         sip.withAdditionalProvenanceInformation(ORIGIN_URN_ADDITIONAL_INFORMATION, TEST_ORIGIN_URN);
         publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
@@ -363,7 +363,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
         publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
         publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
-        SIP sip = create("provider 7", TAG_2);
+        SIPDto sip = create("provider 7", TAG_2);
         sip.withAdditionalProvenanceInformation(ORIGIN_URN_ADDITIONAL_INFORMATION, TEST_ORIGIN_URN);
         publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait

@@ -74,6 +74,14 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>oais-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>oais-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>oais-gson</artifactId>
+        </dependency>
         <!-- Module dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.modules.model</groupId>

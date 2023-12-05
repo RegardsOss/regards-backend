@@ -68,7 +68,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>oais-regards</artifactId>
+            <artifactId>oais-dto</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.indexer</groupId>

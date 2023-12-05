@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -89,7 +89,7 @@ public class SIPEntity extends AbstractOAISEntity {
 
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
-    private SIP sip;
+    private SIPDto sip;
 
     @Column
     private boolean last = false;
@@ -126,11 +126,11 @@ public class SIPEntity extends AbstractOAISEntity {
         this.checksum = checksum;
     }
 
-    public SIP getSip() {
+    public SIPDto getSip() {
         return sip;
     }
 
-    public void setSip(SIP sip) {
+    public void setSip(SIPDto sip) {
         this.sip = sip;
         this.setIpType(sip.getIpType());
     }
@@ -177,7 +177,7 @@ public class SIPEntity extends AbstractOAISEntity {
         return true;
     }
 
-    public static SIPEntity build(String tenant, IngestMetadata metadata, SIP sip, Integer version, SIPState state) {
+    public static SIPEntity build(String tenant, IngestMetadata metadata, SIPDto sip, Integer version, SIPState state) {
 
         SIPEntity sipEntity = new SIPEntity();
 
@@ -199,7 +199,7 @@ public class SIPEntity extends AbstractOAISEntity {
         return sipEntity;
     }
 
-    public static OaisUniformResourceName generationUrn(String tenant, SIP sip, Integer version) {
+    public static OaisUniformResourceName generationUrn(String tenant, SIPDto sip, Integer version) {
         UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
         return new OaisUniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version, null, null);
     }

@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPReference;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
@@ -32,22 +33,22 @@ import java.util.Optional;
 
 /**
  * Preprocessing step is used to do something before starting real processing calling
- * {@link ISipPreprocessing#preprocess(SIP)}.<br/>
- * If {@link SIP} is passed as reference, this step then calls the
- * {@link ISipPreprocessing#read(fr.cnes.regards.modules.ingest.dto.sip.SIPReference)} method to fulfill {@link SIP}
+ * {@link ISipPreprocessing#preprocess(SIPDto)}.<br/>
+ * If {@link SIPDto} is passed as reference, this step then calls the
+ * {@link ISipPreprocessing#read(SIPReference} method to fulfill {@link SIPDto}
  * properties.
  *
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
+public class PreprocessingStep extends AbstractIngestStep<SIPDto, SIPDto> {
 
     public PreprocessingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
     }
 
     @Override
-    public SIP doExecute(SIP sip) throws ProcessingStepException {
+    public SIPDto doExecute(SIPDto sip) throws ProcessingStepException {
         job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_PRE_PROCESSING);
 
         Optional<PluginConfiguration> conf = ingestChain.getPreProcessingPlugin();
@@ -67,7 +68,7 @@ public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
     }
 
     @Override
-    protected StepErrorInfo getStepErrorInfo(SIP sip, Exception exception) {
+    protected StepErrorInfo getStepErrorInfo(SIPDto sip, Exception exception) {
         return buildDefaultStepErrorInfo("PREPROCESSING",
                                          exception,
                                          String.format("Preprocessing fails for SIP \"%s\".", sip.getId()),

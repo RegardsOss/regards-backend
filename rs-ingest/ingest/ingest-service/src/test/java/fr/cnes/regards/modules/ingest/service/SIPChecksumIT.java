@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class SIPChecksumIT extends AbstractMultitenantServiceIT {
         String checksum;
         try (Reader json = new InputStreamReader(this.getClass().getResourceAsStream(filename),
                                                  Charset.forName("UTF-8"))) {
-            SIP sip = gson.fromJson(json, SIP.class);
+            SIPDto sip = gson.fromJson(json, SIPDto.class);
             checksum = sipService.calculateChecksum(sip);
         }
         return checksum;

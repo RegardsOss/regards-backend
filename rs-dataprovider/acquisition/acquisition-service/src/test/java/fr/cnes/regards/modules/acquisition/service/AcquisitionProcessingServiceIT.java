@@ -19,6 +19,11 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.RepresentationInformationDto;
+import fr.cnes.regards.framework.oais.dto.SyntaxDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -30,10 +35,6 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.RepresentationInformation;
-import fr.cnes.regards.framework.oais.Syntax;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -51,7 +52,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -396,16 +396,16 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
         product.setProcessingChain(chain);
         product.setProductName("ProductName");
         product.setSession("session");
-        product.setSip(SIP.build(EntityType.DATA, "providerId"));
+        product.setSip(SIPDto.build(EntityType.DATA, "providerId"));
         product.setSipState(SIPState.STORED);
         product.setState(ProductState.COMPLETED);
 
         // HANDLE SIP
-        SIP sip = product.getSip();
+        SIPDto sip = product.getSip();
         // add content information to the sip
-        ContentInformation ci = new ContentInformation();
-        RepresentationInformation ri = new RepresentationInformation();
-        Syntax syntax = new Syntax();
+        ContentInformationDto ci = new ContentInformationDto();
+        RepresentationInformationDto ri = new RepresentationInformationDto();
+        SyntaxDto syntax = new SyntaxDto();
         syntax.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         ri.setSyntax(syntax);
         ci.setRepresentationInformation(ri);
@@ -414,7 +414,7 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
                           "MD5",
                           UUID.randomUUID().toString(),
                           10L,
-                          OAISDataObjectLocation.build("file://ARCHIVE1/NODE1/sample1.dat/"));
+                          OAISDataObjectLocationDto.build("file://ARCHIVE1/NODE1/sample1.dat/"));
         sip.getProperties().getContentInformations().add(ci);
 
         // SUBMIT PRODUCT

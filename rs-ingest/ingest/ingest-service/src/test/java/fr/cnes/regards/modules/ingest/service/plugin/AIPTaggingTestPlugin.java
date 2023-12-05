@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.plugin;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,7 +47,7 @@ public class AIPTaggingTestPlugin implements IAipTagging {
     private ProcessingChainTestErrorSimulator errorSimulator;
 
     @Override
-    public void tag(List<AIP> pAips) throws TagAIPException {
+    public void tag(List<AIPDto> pAips) throws TagAIPException {
         if (AIPTaggingTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new TagAIPException(IngestErrorType.TAGGING, "Simulated exception for step AIPTaggingTestPlugin");
         }

@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.job.step;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateCategoryTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTagTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 import java.util.List;
 
 /**
- * Update step to add/remove a Descriptive property from {@link InformationPackageMap} of an {@link AIP}
+ * Update step to add/remove a Descriptive property from {@link InformationPackageMapDto} of an {@link AIPDto}
  *
  * @author Léo Mieulet
  */

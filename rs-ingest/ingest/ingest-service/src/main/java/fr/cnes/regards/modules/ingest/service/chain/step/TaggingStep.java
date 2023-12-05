@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
@@ -32,19 +32,19 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Tagging step is used to tag {@link AIP}(s) calling {@link IAipTagging#tag(List)}.
+ * Tagging step is used to tag {@link AIPDto}(s) calling {@link IAipTagging#tag(List)}.
  *
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
+public class TaggingStep extends AbstractIngestStep<List<AIPDto>, Void> {
 
     public TaggingStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
     }
 
     @Override
-    protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
+    protected Void doExecute(List<AIPDto> aips) throws ProcessingStepException {
         job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_TAGGING);
 
         Optional<PluginConfiguration> conf = ingestChain.getTagPlugin();
@@ -59,7 +59,7 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
     }
 
     @Override
-    protected StepErrorInfo getStepErrorInfo(List<AIP> aips, Exception exception) {
+    protected StepErrorInfo getStepErrorInfo(List<AIPDto> aips, Exception exception) {
         return buildDefaultStepErrorInfo("TAGGING",
                                          exception,
                                          String.format("Tagging fails for AIP of SIP \"%s\".",

@@ -86,7 +86,6 @@
         <module>feign-regards-starter</module>
         <module>security-config</module>
         <module>oais-starter</module>
-        <module>oais-regards</module>
         <module>oais-docs</module>
         <module>geojson-starter</module>
         <module>geojson-docs</module>
@@ -107,6 +106,8 @@
         <module>urn-regards-starter</module>
         <module>json-random-starter</module>
         <module>s3-starter</module>
+        <module>oais-dto</module>
+        <module>oais-gson</module>
     </modules>
 
     <dependencies>

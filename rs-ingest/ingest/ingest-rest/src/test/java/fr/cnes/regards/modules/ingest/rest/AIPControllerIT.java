@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.rest;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
@@ -40,7 +41,6 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.test.IngestServiceIT;
@@ -139,7 +139,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                           String sessionOwner,
                           String session,
                           String storage) {
-        SIP sip = SIP.build(EntityType.DATA, providerId);
+        SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"),
                            "MD5",

@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public interface IAipTagging {
     /**
      * Tag AIP
      *
-     * @param aips {@link AIP} to tag
+     * @param aips {@link AIPDto} to tag
      */
-    void tag(List<AIP> aips) throws TagAIPException;
+    void tag(List<AIPDto> aips) throws TagAIPException;
 }

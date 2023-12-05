@@ -19,14 +19,14 @@
 package fr.cnes.regards.modules.ingest.service.job.step;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateResult;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 /**
- * Update step to add/remove a {@link OAISDataObjectLocation} to an {@link AIP} {@link OAISDataObject}
+ * Update step to add/remove a {@link OAISDataObjectLocationDto} to an {@link AIPDto} {@link OAISDataObjectDto}
  *
  * @author Léo Mieulet
  */

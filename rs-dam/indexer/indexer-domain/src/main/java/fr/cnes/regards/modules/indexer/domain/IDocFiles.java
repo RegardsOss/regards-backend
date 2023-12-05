@@ -32,7 +32,12 @@ public interface IDocFiles {
 
     /**
      * List of related files. Use
-     * {@link DataFile#build(fr.cnes.regards.framework.oais.urn.DataType, String, String, org.springframework.util.MimeType, Boolean)}
+     * <p>
+     * <p>
+     * <p>
+     * <p>
+     * <p>
+     * {@link DataFile#build(fr.cnes.regards.framework.oais.dto.urn.DataType, String, String, org.springframework.util.MimeType, Boolean)}
      */
     Multimap<DataType, DataFile> getFiles();
 }

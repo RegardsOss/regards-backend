@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -45,7 +46,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
@@ -201,7 +201,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                                    String sessionOwner,
                                                    List<String> categories) {
 
-        SIP sip = create(providerId, tags);
+        SIPDto sip = create(providerId, tags);
         return ingestServiceTest.createSipEvent(sip,
                                                 storage,
                                                 session,
@@ -211,9 +211,9 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                                 VersioningMode.INC_VERSION);
     }
 
-    protected SIP create(String providerId, List<String> tags) {
+    protected SIPDto create(String providerId, List<String> tags) {
         String fileName = String.format("file-%s.dat", providerId);
-        SIP sip = SIP.build(EntityType.DATA, providerId);
+        SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get("src", "test", "resources", "data", fileName),
                            "MD5",
@@ -257,7 +257,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         return ingestProcessingService.createNewChain(newChain);
     }
 
-    protected void publishSIPEvent(SIP sip,
+    protected void publishSIPEvent(SIPDto sip,
                                    String storage,
                                    String session,
                                    String sessionOwner,
@@ -265,7 +265,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         publishSIPEvent(sip, Lists.newArrayList(storage), session, sessionOwner, categories, Optional.empty());
     }
 
-    protected void handleSipEventsWithoutAmqp(Collection<SIP> sips,
+    protected void handleSipEventsWithoutAmqp(Collection<SIPDto> sips,
                                               List<String> storages,
                                               String session,
                                               String sessionOwner,
@@ -283,13 +283,13 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                                         storagesMeta);
 
         List<IngestRequestFlowItem> events = new ArrayList<>(sips.size());
-        for (SIP sip : sips) {
+        for (SIPDto sip : sips) {
             events.add(IngestRequestFlowItem.build(mtd, sip));
         }
         requestFlowHandler.handleBatch(events);
     }
 
-    protected void publishSIPEvent(SIP sip,
+    protected void publishSIPEvent(SIPDto sip,
                                    List<String> storages,
                                    String session,
                                    String sessionOwner,
@@ -298,7 +298,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         publishSIPEvent(sip, storages, session, sessionOwner, categories, chainLabel, null);
     }
 
-    protected void publishSIPEvent(SIP sip,
+    protected void publishSIPEvent(SIPDto sip,
                                    List<String> storages,
                                    String session,
                                    String sessionOwner,
@@ -308,7 +308,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         publishSIPEvent(Sets.newHashSet(sip), storages, session, sessionOwner, categories, chainLabel, versioningMode);
     }
 
-    protected void publishSIPEvent(Collection<SIP> sips,
+    protected void publishSIPEvent(Collection<SIPDto> sips,
                                    List<String> storages,
                                    String session,
                                    String sessionOwner,

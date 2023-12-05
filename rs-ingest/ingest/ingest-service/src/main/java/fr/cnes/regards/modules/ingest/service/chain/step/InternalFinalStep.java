@@ -18,38 +18,38 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
 import java.util.List;
 
 /**
- * Persist all generated entities in database : {@link SIPEntity} including {@link SIP} and {@link AIPEntity} including {@link AIP}(s)
+ * Persist all generated entities in database : {@link SIPEntity} including {@link SIPDto} and {@link AIPEntity} including {@link AIPDto}(s)
  *
  * @author Marc SORDI
  */
-public class InternalFinalStep extends AbstractIngestStep<List<AIP>, List<AIPEntity>> {
+public class InternalFinalStep extends AbstractIngestStep<List<AIPDto>, List<AIPEntity>> {
 
     public InternalFinalStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
     }
 
     @Override
-    protected List<AIPEntity> doExecute(List<AIP> aips) throws ProcessingStepException {
+    protected List<AIPEntity> doExecute(List<AIPDto> aips) throws ProcessingStepException {
         job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_FINAL);
         return ingestRequestService.handleIngestJobSucceed(job.getCurrentRequest(), job.getCurrentEntity(), aips);
     }
 
     @Override
-    protected StepErrorInfo getStepErrorInfo(List<AIP> in, Exception exception) {
+    protected StepErrorInfo getStepErrorInfo(List<AIPDto> in, Exception exception) {
         return buildDefaultStepErrorInfo("FINAL",
                                          exception,
                                          String.format("Persisting SIP and AIP from SIP \"%s\" fails.",

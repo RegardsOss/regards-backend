@@ -119,10 +119,6 @@
             <groupId>fr.cnes.regards.modules.notifier</groupId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>oais-regards</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.framework.modules.dump</groupId>
             <artifactId>dump-service</artifactId>
         </dependency>

@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.aip;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -61,7 +61,7 @@ public class AIPEntity extends AbstractAIPEntity {
         this.setIpType(sip.getIpType());
     }
 
-    public static AIPEntity build(SIPEntity sip, AIPState state, AIP aip) {
+    public static AIPEntity build(SIPEntity sip, AIPState state, AIPDto aip) {
         AIPEntity aipEntity = AbstractAIPEntity.build(state, aip);
         aipEntity.setSip(sip);
         // Extracted from SIP

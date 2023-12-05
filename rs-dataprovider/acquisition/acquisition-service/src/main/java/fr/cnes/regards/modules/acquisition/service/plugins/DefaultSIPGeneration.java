@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDtoBuilder;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
@@ -25,8 +27,6 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -47,10 +47,10 @@ import java.security.NoSuchAlgorithmException;
 public class DefaultSIPGeneration implements ISipGenerationPlugin {
 
     @Override
-    public SIP generate(Product product) throws ModuleException {
+    public SIPDto generate(Product product) throws ModuleException {
 
         // Init the builder
-        SIPBuilder sipBuilder = new SIPBuilder(product.getProductName());
+        SIPDtoBuilder sipBuilder = new SIPDtoBuilder(product.getProductName());
 
         // Fill SIP with product information
         for (AcquisitionFile af : product.getActiveAcquisitionFiles()) {

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.rest;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
@@ -34,7 +35,6 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import org.hamcrest.Matchers;
@@ -100,7 +100,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                                null,
                                                                                STORAGE_METADATA));
 
-        SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits");
+        SIPDto firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits");
         firstSIPwithGeometry.setGeometry(IGeometry.multiPoint(IGeometry.position(5.0, 5.0),
                                                               IGeometry.position(25.0, 25.0)));
 
@@ -251,7 +251,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                                STORAGE_METADATA));
 
         // SIP 1
-        SIP sip = SIP.build(EntityType.DATA, "SIP_001");
+        SIPDto sip = SIPDto.build(EntityType.DATA, "SIP_001");
         sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO", "sdsdfm1211vd");
         sip.withSyntax("FITS(FlexibleImageTransport)",
                        "http://www.iana.org/assignments/media-types/application/fits",
@@ -259,7 +259,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         collection.add(sip.registerContentInformation());
 
         // SIP 2
-        sip = SIP.build(EntityType.DATA, "SIP_002");
+        sip = SIPDto.build(EntityType.DATA, "SIP_002");
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vsdfdsfd");
         sip.withSyntax("FITS(FlexibleImageTransport)",
                        "http://www.iana.org/assignments/media-types/application/fits",
@@ -335,9 +335,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                  "Should be able to import a partial valid SIP collection");
     }
 
-    private SIP buildSipOne(String providerId, String fileName) {
+    private SIPDto buildSipOne(String providerId, String fileName) {
 
-        SIP sip = SIP.build(EntityType.DATA, providerId);
+        SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get(fileName),
                            Paths.get(fileName).getFileName().toString(),

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.flow;
 
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -32,7 +33,6 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
@@ -119,7 +119,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         for (int s = 0; s < maxSessions; s++) {
             String session = "session" + s;// OffsetDateTime.now().toString();
             for (long i = 0; i < maxloops; i++) {
-                SIP sip = create(PROVIDER_PREFIX + i, null);
+                SIPDto sip = create(PROVIDER_PREFIX + i, null);
                 // Create event
                 publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
             }
@@ -171,7 +171,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
 
         String session = "session";// OffsetDateTime.now().toString();
         for (long i = 0; i < nbStored; i++) {
-            SIP sip = create(PROVIDER_PREFIX + i, null);
+            SIPDto sip = create(PROVIDER_PREFIX + i, null);
             // Create event
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
@@ -230,7 +230,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
 
         String session = "session";// OffsetDateTime.now().toString();
         for (long i = 0; i < nbStored; i++) {
-            SIP sip = create(PROVIDER_PREFIX + i, null);
+            SIPDto sip = create(PROVIDER_PREFIX + i, null);
             // Create event
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
@@ -277,7 +277,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         // 1. Populate catalog with products (sip/aip)
         String session = "session";// OffsetDateTime.now().toString();
         for (long i = 0; i < nbStored; i++) {
-            SIP sip = create(PROVIDER_PREFIX + i, null);
+            SIPDto sip = create(PROVIDER_PREFIX + i, null);
             // Create event
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
@@ -288,7 +288,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         // 3. Simulate errors
         storageClientMock.setBehavior(true, false);
         for (long i = 0; i < nbErrors; i++) {
-            SIP sip = create(PROVIDER_PREFIX + "_errors_" + i, null);
+            SIPDto sip = create(PROVIDER_PREFIX + "_errors_" + i, null);
             // Create event
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
@@ -298,7 +298,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
 
         // 5. Ask for new products
         for (long i = 0; i < (nbStored / 4); i++) {
-            SIP sip = create(PROVIDER_PREFIX + "new" + i, null);
+            SIPDto sip = create(PROVIDER_PREFIX + "new" + i, null);
             // Create event
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
             nbStored++;
@@ -315,7 +315,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
 
         // 7. Ask for new product without waiting ends of previous ingests
         for (long i = 0; i < (nbStored / 4); i++) {
-            SIP sip = create(PROVIDER_PREFIX + "new" + i, null);
+            SIPDto sip = create(PROVIDER_PREFIX + "new" + i, null);
             // Create event
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
             nbStored++;
@@ -342,7 +342,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         storageClientMock.setBehavior(false, true);
 
         String providerId = "requestError01";
-        SIP sip = create(providerId, null);
+        SIPDto sip = create(providerId, null);
         publishSIPEvent(sip, "fake", "errorSession", "source", CATEGORIES);
 
         // Wait

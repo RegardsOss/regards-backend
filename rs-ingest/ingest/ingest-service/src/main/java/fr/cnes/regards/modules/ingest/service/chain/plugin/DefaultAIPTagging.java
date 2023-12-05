@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 import java.util.List;
 import java.util.Map;
@@ -80,22 +80,22 @@ public class DefaultAIPTagging implements IAipTagging {
     }
 
     @Override
-    public void tag(List<AIP> aips) throws TagAIPException {
+    public void tag(List<AIPDto> aips) throws TagAIPException {
         if (aips != null) {
-            for (AIP aip : aips) {
+            for (AIPDto aip : aips) {
                 addTags(aip, tags);
                 addLinks(aip, links);
             }
         }
     }
 
-    private void addTags(AIP aip, List<String> tags) {
+    private void addTags(AIPDto aip, List<String> tags) {
         if (tags != null && !tags.isEmpty()) {
             aip.withContextTags(tags.toArray(new String[tags.size()]));
         }
     }
 
-    private void addLinks(AIP aip, Map<String, String> links) {
+    private void addLinks(AIPDto aip, Map<String, String> links) {
         if (links != null) {
             links.forEach((k, v) -> aip.withContextInformation(k, v));
         }

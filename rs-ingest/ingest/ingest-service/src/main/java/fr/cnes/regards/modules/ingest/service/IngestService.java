@@ -22,13 +22,14 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
@@ -39,7 +40,6 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
@@ -109,7 +109,7 @@ public class IngestService implements IIngestService {
         Collection<IngestRequestFlowItem> items = new ArrayList<>();
         if (sips != null) {
             IngestMetadataDto metadata = sips.getMetadata();
-            for (SIP sip : sips.getFeatures()) {
+            for (SIPDto sip : sips.getFeatures()) {
                 items.add(IngestRequestFlowItem.build(metadata, sip));
             }
         }
@@ -147,20 +147,20 @@ public class IngestService implements IIngestService {
      * @param grantedRequests collection of granted requests to populate
      */
     private IngestRequest registerIngestRequest(String requestId,
-                                                SIP sip,
+                                                SIPDto sip,
                                                 IngestMetadata ingestMetadata,
                                                 RequestInfoDto info,
                                                 Collection<IngestRequest> grantedRequests,
                                                 String sipId) {
         // Validate SIP
-        Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
+        Errors errors = new MapBindingResult(new HashMap<>(), SIPDto.class.getName());
         validator.validate(sip, errors);
 
         // Validate DescriptiveInformation against given regards model if present
         if (StringUtils.isNotBlank(ingestMetadata.getModel())) {
             errors.addAllErrors(validationService.validate(ingestMetadata.getModel(),
                                                            sip.getProperties().getDescriptiveInformation(),
-                                                           SIP.class.getName()));
+                                                           SIPDto.class.getName()));
         }
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
@@ -232,7 +232,7 @@ public class IngestService implements IIngestService {
         RequestInfoDto info = RequestInfoDto.build(source, session, "SIP Collection ingestion scheduled");
 
         int count = 1;
-        for (SIP sip : sips.getFeatures()) {
+        for (SIPDto sip : sips.getFeatures()) {
             String sipId = sip.getId() != null ? sip.getId() : "SIP n°" + count;
             // Validate and transform to request
             registerIngestRequest(null, sip, ingestMetadata, info, grantedRequests, sipId);
@@ -281,7 +281,7 @@ public class IngestService implements IIngestService {
     /**
      * Validate given SIP dataobjects to ensure storage location is configured for each needed {@link DataType} to store
      */
-    private void checkSipStorageLocations(SIP sip, IngestMetadata ingestMetadata, Errors errors) {
+    private void checkSipStorageLocations(SIPDto sip, IngestMetadata ingestMetadata, Errors errors) {
         Assert.notNull(errors, "Errors should not be null");
         if (((sip != null) & (sip.getProperties() != null))
             && (sip.getProperties().getContentInformations() != null)
@@ -294,10 +294,10 @@ public class IngestService implements IIngestService {
                     handleTypes.addAll(t);
                 }
             });
-            for (ContentInformation ci : sip.getProperties().getContentInformations()) {
+            for (ContentInformationDto ci : sip.getProperties().getContentInformations()) {
                 Double height = ci.getRepresentationInformation().getSyntax().getHeight();
                 Double width = ci.getRepresentationInformation().getSyntax().getWidth();
-                OAISDataObject dobj = ci.getDataObject();
+                OAISDataObjectDto dobj = ci.getDataObject();
                 DataType regardsDataType = dobj.getRegardsDataType();
                 // If file needed to be stored check that the data type is well configured
                 if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null) && !handleTypes.contains(
@@ -311,7 +311,7 @@ public class IngestService implements IIngestService {
                 if ((regardsDataType == DataType.QUICKLOOK_HD) || (regardsDataType == DataType.QUICKLOOK_MD) || (
                     regardsDataType
                     == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
-                    for (OAISDataObjectLocation location : dobj.getLocations()) {
+                    for (OAISDataObjectLocationDto location : dobj.getLocations()) {
                         if (!Strings.isNullOrEmpty(location.getStorage()) && ((height == null) || (width == null))) {
                             errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION",
                                           String.format(

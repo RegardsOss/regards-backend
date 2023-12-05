@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.scheduler;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -29,7 +30,6 @@ import fr.cnes.regards.modules.ingest.dao.SipDeletionSchedulerRepository;
 import fr.cnes.regards.modules.ingest.domain.scheduler.SipDeletionSchedulerEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.job.SIPBodyDeletionJob;
 import fr.cnes.regards.modules.ingest.service.settings.IngestSettingsService;
@@ -101,7 +101,7 @@ public class SipBodyDeletionSchedulerIT extends IngestMultitenantServiceIT {
         sip.setVersion(1);
         sip.setChecksum("1234567890" + number);
         sip.setSipId("test_" + number);
-        SIP rawsip = SIP.build(EntityType.DATA, "SIP_" + number);
+        SIPDto rawsip = SIPDto.build(EntityType.DATA, "SIP_" + number);
         sip.setSip(rawsip);
         return sip;
     }

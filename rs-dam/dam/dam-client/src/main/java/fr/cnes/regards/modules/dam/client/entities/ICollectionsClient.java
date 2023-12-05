@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.dam.client.entities;
 
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;

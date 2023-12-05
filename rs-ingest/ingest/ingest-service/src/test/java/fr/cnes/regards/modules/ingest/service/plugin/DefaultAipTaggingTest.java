@@ -20,8 +20,9 @@ package fr.cnes.regards.modules.ingest.service.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
@@ -30,7 +31,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.chain.plugin.DefaultAIPTagging;
 import org.junit.Assert;
 import org.junit.Test;
@@ -117,11 +117,11 @@ public class DefaultAipTaggingTest {
         String filename = "test.netcdf";
         String md5 = "plifplafplouf";
 
-        AIP single = AIP.build(EntityType.DATA,
-                               OaisUniformResourceName.fromString(aipUrn),
-                               Optional.of(OaisUniformResourceName.fromString(sipUrn)),
-                               providerId,
-                               1);
+        AIPDto single = AIPDto.build(EntityType.DATA,
+                                     OaisUniformResourceName.fromString(aipUrn),
+                                     Optional.of(OaisUniformResourceName.fromString(sipUrn)),
+                                     providerId,
+                                     1);
         single.withDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
         single.registerContentInformation();
 
@@ -129,7 +129,7 @@ public class DefaultAipTaggingTest {
 
         Assert.assertEquals(aipUrn, single.getId().toString());
         Assert.assertEquals(providerId, single.getProviderId());
-        ContentInformation ci = single.getProperties().getContentInformations().iterator().next();
+        ContentInformationDto ci = single.getProperties().getContentInformations().iterator().next();
         Assert.assertEquals(filename, ci.getDataObject().getFilename());
         Assert.assertEquals(md5, ci.getDataObject().getChecksum());
 

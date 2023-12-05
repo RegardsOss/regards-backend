@@ -19,15 +19,15 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.oais.dto.builder.PDIDtoBuilder;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDtoBuilder;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.oais.builder.PDIBuilder;
 import fr.cnes.regards.framework.utils.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,12 +54,12 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformati
     protected String configurationFile;
 
     @Override
-    public SIP generate(Product product) throws ModuleException {
+    public SIPDto generate(Product product) throws ModuleException {
 
         LOGGER.info("Start SIP generation for product <{}>", product.getProductName());
 
         // Init the builder
-        SIPBuilder sipBuilder = new SIPBuilder(product.getProductName());
+        SIPDtoBuilder sipBuilder = new SIPDtoBuilder(product.getProductName());
 
         sipBuilder.addDescriptiveInformation(PRODUCT_NAME, product.getProductName());
 
@@ -75,7 +75,7 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformati
         addStorageInfomation(sipBuilder);
 
         // Add the SIP to the SIPCollection
-        SIP aSip = sipBuilder.build();
+        SIPDto aSip = sipBuilder.build();
 
         if (LOGGER.isDebugEnabled()) {
             Gson gson = new Gson();
@@ -87,16 +87,16 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformati
         return aSip;
     }
 
-    protected void addDatasetTag(SIP aSip, String datasetSipId) {
+    protected void addDatasetTag(SIPDto aSip, String datasetSipId) {
         // If a dataSet is defined, add a tag to the PreservationDescriptionInformation
-        PDIBuilder pdiBuilder = new PDIBuilder(aSip.getProperties().getPdi());
+        PDIDtoBuilder pdiBuilder = new PDIDtoBuilder(aSip.getProperties().getPdi());
         pdiBuilder.addTags(datasetSipId);
         aSip.getProperties().setPdi(pdiBuilder.build());
     }
 
-    public abstract void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
+    public abstract void addAttributesTopSip(SIPDtoBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
         throws ModuleException;
 
-    protected abstract void addDataObjectsToSip(SIPBuilder sipBuilder, Set<AcquisitionFile> acqFiles)
+    protected abstract void addDataObjectsToSip(SIPDtoBuilder sipBuilder, Set<AcquisitionFile> acqFiles)
         throws ModuleException;
 }

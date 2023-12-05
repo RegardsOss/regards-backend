@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDtoBuilder;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 /**
  * Abstract class to provide a configurable {@link ISipGenerationPlugin} tool
@@ -47,7 +47,7 @@ public abstract class AbstractStorageInformation {
     /**
      * Add storage information read from the plugin parameter pluginIdStorageDirectoryMap
      */
-    protected void addStorageInfomation(SIPBuilder sipBuilder) {
+    protected void addStorageInfomation(SIPDtoBuilder sipBuilder) {
         if (stafStorageNode != null) {
             sipBuilder.addDescriptiveInformation(SIP_STAF_STORAGE_NODE_KEY, stafStorageNode);
         }

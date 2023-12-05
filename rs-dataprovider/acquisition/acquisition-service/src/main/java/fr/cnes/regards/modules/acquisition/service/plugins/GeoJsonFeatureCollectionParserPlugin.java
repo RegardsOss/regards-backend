@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDtoBuilder;
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.FeatureCollection;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -28,8 +30,6 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,7 +136,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
             for (Feature feature : fc.getFeatures()) {
                 String name = (String) feature.getProperties().get(featureId);
-                SIPBuilder builder = new SIPBuilder(name);
+                SIPDtoBuilder builder = new SIPDtoBuilder(name);
                 for (String property : feature.getProperties().keySet()) {
                     Object value = feature.getProperties().get(property);
                     if (value != null) {
@@ -222,7 +222,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                     builder.addContentInformation();
                 }
 
-                SIP sip = builder.build();
+                SIPDto sip = builder.build();
                 sip.setGeometry(feature.getGeometry());
 
                 if (!sip.getProperties().getContentInformations().isEmpty() || allowEmptyFeature) {

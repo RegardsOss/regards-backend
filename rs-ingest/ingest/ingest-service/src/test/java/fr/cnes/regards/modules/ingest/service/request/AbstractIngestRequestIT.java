@@ -19,9 +19,11 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -31,9 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -87,7 +87,7 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
     }
 
     protected void initSipAndAip(String checksum, String providerId) {
-        SIP sip = SIP.build(EntityType.DATA, "providerId");
+        SIPDto sip = SIPDto.build(EntityType.DATA, "providerId");
         sipEntity = SIPEntity.build(getDefaultTenant(),
                                     IngestMetadata.build("sessionOwner",
                                                          "session",
@@ -104,7 +104,7 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
         OaisUniformResourceName sipId = sipEntity.getSipIdUrn();
         OaisUniformResourceName aipId = OaisUniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
         aipId.setIdentifier(OAISIdentifier.AIP);
-        AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
+        AIPDto aip = AIPDto.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
         aipEntity = AIPEntity.build(sipEntity, AIPState.STORED, aip);
         aipEntity = aipRepo.save(aipEntity);
     }

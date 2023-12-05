@@ -20,12 +20,12 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.FileInputStream;
@@ -52,7 +52,7 @@ public class GeoJsonSIPGeneration implements ISipGenerationPlugin {
     private Gson gson;
 
     @Override
-    public SIP generate(Product product) throws ModuleException {
+    public SIPDto generate(Product product) throws ModuleException {
         if (product.getActiveAcquisitionFiles().size() != 1) {
             throw new ModuleException("Each product should have only one json file");
         }
@@ -60,7 +60,7 @@ public class GeoJsonSIPGeneration implements ISipGenerationPlugin {
         AcquisitionFile file = product.getAcquisitionFiles().iterator().next();
         Path sipFile = file.getFilePath();
         try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(sipFile.toFile())))) {
-            return gson.fromJson(reader, SIP.class);
+            return gson.fromJson(reader, SIPDto.class);
         } catch (IOException e) {
             throw new ModuleException(e);
         }

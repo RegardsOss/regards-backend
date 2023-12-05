@@ -19,17 +19,17 @@
 package fr.cnes.regards.modules.ingest.domain;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.InformationPackageProperties;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPReference;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 
 /**
- * {@link SIP} and {@link SIPCollection} validation tests
+ * {@link SIPDto} and {@link SIPCollection} validation tests
  *
  * @author Marc Sordi
  */
@@ -83,14 +83,14 @@ public class SIPValidationIT {
     }
 
     /**
-     * Check that SIP has to be passed either by reference or by regards. See {@link SIP} type constraints.
+     * Check that SIP has to be passed either by reference or by regards. See {@link SIPDto} type constraints.
      */
     @Test
     @Requirement("REGARDS_DSL_ING_PRO_130")
     @Purpose("SIP validation")
     public void emptySIP() {
 
-        SIP sip = new SIP();
+        SIPDto sip = new SIPDto();
         sip.setIpType(EntityType.DATA);
 
         validator.validate(sip, errors);
@@ -108,7 +108,7 @@ public class SIPValidationIT {
     @Purpose("SIP validation")
     public void invalidSIPReference() {
 
-        SIP sip = new SIP();
+        SIPDto sip = new SIPDto();
         sip.setId(PROVIDER_ID);
         sip.setIpType(EntityType.DATA);
         SIPReference ref = new SIPReference();
@@ -129,7 +129,7 @@ public class SIPValidationIT {
     @Purpose("SIP validation")
     public void validSIPReference() {
 
-        SIP sip = SIP.buildReference(EntityType.DATA, PROVIDER_ID, Paths.get("sip.xml"), "checksum");
+        SIPDto sip = SIPDto.buildReference(EntityType.DATA, PROVIDER_ID, Paths.get("sip.xml"), "checksum");
         validator.validate(sip, errors);
         if (errors.hasErrors()) {
             Assert.fail("Builder should properly build SIP reference");
@@ -145,7 +145,7 @@ public class SIPValidationIT {
     @Purpose("SIP validation")
     public void invalidSIPValue() {
 
-        SIP sip = new SIP();
+        SIPDto sip = new SIPDto();
         sip.setId(PROVIDER_ID);
         sip.setIpType(EntityType.DATA);
         sip.setProperties(new InformationPackageProperties());
@@ -166,7 +166,7 @@ public class SIPValidationIT {
     @Purpose("SIP validation")
     public void validSIPValue() {
 
-        SIP sip = SIP.build(EntityType.DATA, PROVIDER_ID);
+        SIPDto sip = SIPDto.build(EntityType.DATA, PROVIDER_ID);
 
         // Geometry
         sip.withGeometry(IGeometry.point(IGeometry.position(10.0, 10.0)));

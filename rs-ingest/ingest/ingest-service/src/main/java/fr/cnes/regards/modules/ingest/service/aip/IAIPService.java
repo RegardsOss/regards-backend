@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
@@ -44,13 +44,13 @@ import java.util.*;
 public interface IAIPService {
 
     /**
-     * Create and save {@link AIPEntity} from list of {@link AIP}
+     * Create and save {@link AIPEntity} from list of {@link AIPDto}
      *
      * @param sip  linked {@link SIPEntity}
-     * @param aips list of {@link AIP}
+     * @param aips list of {@link AIPDto}
      * @return list of related {@link AIPEntity}
      */
-    List<AIPEntity> createAndSave(SIPEntity sip, List<AIP> aips);
+    List<AIPEntity> createAndSave(SIPEntity sip, List<AIPDto> aips);
 
     /**
      * Update last flag for specified entity
@@ -77,7 +77,7 @@ public interface IAIPService {
     /**
      * Calculate checksum of an AIP as it will be written when AIP file is downloaded
      */
-    String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
+    String calculateChecksum(AIPDto aip) throws NoSuchAlgorithmException, IOException;
 
     /**
      * Retrieve all {@link AIPEntity}s matching filters.

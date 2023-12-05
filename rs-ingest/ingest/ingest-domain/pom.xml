@@ -40,10 +40,6 @@
             <artifactId>geojson-regards</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>oais-regards</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
             <artifactId>plugins-domain</artifactId>
         </dependency>
@@ -81,6 +77,11 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>geojson-starter</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>oais-dto</artifactId>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

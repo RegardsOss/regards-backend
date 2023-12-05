@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ import java.util.List;
 public interface IAipGeneration {
 
     /**
-     * Generate one or more {@link AIP} from given {@link SIPEntity}.<br>
+     * Generate one or more {@link AIPDto} from given {@link SIPEntity}.<br>
      * Know there are some rules about generating AIPs:
      * <ol>
      *     <li>There can be no aip of same version using the same providerId.
@@ -47,7 +47,7 @@ public interface IAipGeneration {
      * @param sip        {@link SIPEntity}
      * @param tenant     tenant to use to create AIP id
      * @param entityType {@link EntityType} to use to create AIP id
-     * @return generated {@link AIP}s
+     * @return generated {@link AIPDto}s
      */
-    List<AIP> generate(SIPEntity sip, String tenant, EntityType entityType) throws AIPGenerationException;
+    List<AIPDto> generate(SIPEntity sip, String tenant, EntityType entityType) throws AIPGenerationException;
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.ingest;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
@@ -25,7 +26,6 @@ import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.springframework.lang.Nullable;
@@ -76,7 +76,7 @@ public class IngestRequest extends AbstractRequest {
                                       IngestMetadata metadata,
                                       InternalRequestState state,
                                       IngestRequestStep step,
-                                      SIP sip) {
+                                      SIPDto sip) {
         return build(requestId, metadata, state, step, sip, null, null);
     }
 
@@ -84,7 +84,7 @@ public class IngestRequest extends AbstractRequest {
                                       IngestMetadata metadata,
                                       InternalRequestState state,
                                       IngestRequestStep step,
-                                      SIP sip,
+                                      SIPDto sip,
                                       @Nullable Set<String> errors,
                                       @Nullable IngestErrorType errorType) {
         IngestRequest request = new IngestRequest(requestId != null ? requestId : UUID.randomUUID().toString());
@@ -120,11 +120,11 @@ public class IngestRequest extends AbstractRequest {
         config.setMetadata(metadata);
     }
 
-    public SIP getSip() {
+    public SIPDto getSip() {
         return config.getSip();
     }
 
-    public void setSip(SIP sip) {
+    public void setSip(SIPDto sip) {
         config.setSip(sip);
     }
 

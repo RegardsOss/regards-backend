@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -37,9 +39,7 @@ import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.*;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
@@ -135,13 +135,13 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
         // Initializing steps
         // Step 1 : optional preprocessing
-        IProcessingStep<SIP, SIP> preStep = new PreprocessingStep(this, ingestChain);
+        IProcessingStep<SIPDto, SIPDto> preStep = new PreprocessingStep(this, ingestChain);
         beanFactory.autowireBean(preStep);
         // Step 2 : required validation
-        IProcessingStep<SIP, Void> validationStep = new ValidationStep(this, ingestChain);
+        IProcessingStep<SIPDto, Void> validationStep = new ValidationStep(this, ingestChain);
         beanFactory.autowireBean(validationStep);
         // Step 3 : required AIP generation
-        IProcessingStep<SIPEntity, List<AIP>> generationStep = new GenerationStep(this, ingestChain);
+        IProcessingStep<SIPEntity, List<AIPDto>> generationStep = new GenerationStep(this, ingestChain);
         beanFactory.autowireBean(generationStep);
         // Step 4 : optional AIP update storage metadata
         IProcessingStep<List<StorageMetadata>, Void> aipStorageMetadataUpdateStep = new AipStorageMetadataUpdateStep(
@@ -149,12 +149,12 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             ingestChain);
         beanFactory.autowireBean(aipStorageMetadataUpdateStep);
         // Step 5 : optional AIP tagging
-        IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this, ingestChain);
+        IProcessingStep<List<AIPDto>, Void> taggingStep = new TaggingStep(this, ingestChain);
         beanFactory.autowireBean(taggingStep);
         /** Step 6 : optional postprocessing has to be run after storage ends. See {@link IngestPostProcessingJob}.  */
 
         // Internal final step
-        IProcessingStep<List<AIP>, List<AIPEntity>> finalStep = new InternalFinalStep(this, ingestChain);
+        IProcessingStep<List<AIPDto>, List<AIPEntity>> finalStep = new InternalFinalStep(this, ingestChain);
         beanFactory.autowireBean(finalStep);
 
         long start = System.currentTimeMillis();
@@ -169,7 +169,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             this.request = request;
             try {
                 long start2 = System.currentTimeMillis();
-                List<AIP> aips;
+                List<AIPDto> aips;
                 // retry the process only from the step needed
                 switch (request.getStep()) {
                     case LOCAL_SCHEDULED, LOCAL_INIT, LOCAL_PRE_PROCESSING, LOCAL_VALIDATION, LOCAL_GENERATION, LOCAL_AIP_STORAGE_METADATA_UPDATE, LOCAL_TAGGING, LOCAL_POST_PROCESSING -> {
@@ -177,7 +177,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                         // Internal preparation step (no plugin involved)
                         currentEntity = initStep.execute(request);
                         // Step 1 : optional preprocessing
-                        SIP sip = preStep.execute(request.getSip());
+                        SIPDto sip = preStep.execute(request.getSip());
                         // Propagate to entity
                         currentEntity.setSip(sip);
                         // Step 2 : required validation

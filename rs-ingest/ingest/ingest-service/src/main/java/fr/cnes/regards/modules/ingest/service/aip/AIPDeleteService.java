@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.ingest.service.aip;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
@@ -130,8 +130,8 @@ public class AIPDeleteService implements IAIPDeleteService {
         for (AIPEntity aipEntity : aips) {
             String aipId = aipEntity.getAipId();
             // Retrieve all linked files
-            for (ContentInformation ci : aipEntity.getAip().getProperties().getContentInformations()) {
-                OAISDataObject dataObject = ci.getDataObject();
+            for (ContentInformationDto ci : aipEntity.getAip().getProperties().getContentInformations()) {
+                OAISDataObjectDto dataObject = ci.getDataObject();
                 filesToDelete.addAll(getFileDeletionEvents(aipId,
                                                            aipEntity.getSessionOwner(),
                                                            aipEntity.getSession(),
@@ -148,9 +148,9 @@ public class AIPDeleteService implements IAIPDeleteService {
                                                                String sessionOwner,
                                                                String session,
                                                                String fileChecksum,
-                                                               Set<OAISDataObjectLocation> locations) {
+                                                               Set<OAISDataObjectLocationDto> locations) {
         List<FileDeletionRequestDto> events = new ArrayList<>();
-        for (OAISDataObjectLocation location : locations) {
+        for (OAISDataObjectLocationDto location : locations) {
             // Ignore if the file is not yet stored
             if (location.getStorage() != null) {
                 // Create the storage delete event

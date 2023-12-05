@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -32,9 +34,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalInitialStep;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
@@ -150,7 +150,7 @@ public class InternalInitialStepTest extends IngestMultitenantServiceIT {
                                               InternalRequestState state,
                                               IngestRequestStep step,
                                               boolean replaceErrors) {
-        SIP sip = SIP.build(EntityType.DATA, providerId);
+        SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
         IngestMetadata metadata = IngestMetadata.build("owner",
                                                        "session",
                                                        OffsetDateTime.now(),
@@ -163,7 +163,7 @@ public class InternalInitialStepTest extends IngestMultitenantServiceIT {
         return ingestRequestRepository.save(request);
     }
 
-    private SIPEntity createSIPEntity(IngestMetadata metadata, SIP sip, Integer version, String sipContent) {
+    private SIPEntity createSIPEntity(IngestMetadata metadata, SIPDto sip, Integer version, String sipContent) {
         SIPEntity sipEntity = SIPEntity.build("tenant", metadata, sip, version, SIPState.INGESTED);
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity.setChecksum(Md5Utils.md5AsBase64(sipContent.getBytes()));
@@ -176,7 +176,7 @@ public class InternalInitialStepTest extends IngestMultitenantServiceIT {
                                                                               EntityType.DATA,
                                                                               "tenant",
                                                                               version);
-        AIP aip = AIP.build(sipEntity.getSip(), urn, Optional.of(sipEntity.getSipIdUrn()), providerId, version);
+        AIPDto aip = AIPDto.build(sipEntity.getSip(), urn, Optional.of(sipEntity.getSipIdUrn()), providerId, version);
         AIPEntity aipEntity = AIPEntity.build(AIPState.GENERATED, aip);
         aipEntity.setVersion(version);
         aipEntity.setProviderId(aip.getProviderId());

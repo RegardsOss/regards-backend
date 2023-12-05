@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -33,7 +34,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
@@ -95,10 +95,10 @@ public class IngestServiceWithCollisionIT extends IngestMultitenantServiceIT {
                                                                          null,
                                                                          StorageMetadata.build("disk")));
 
-        sips.add(SIP.build(EntityType.DATA, providerId)
-                    .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum)
-                    .withSyntax(MediaType.APPLICATION_XML)
-                    .registerContentInformation());
+        sips.add(SIPDto.build(EntityType.DATA, providerId)
+                       .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum)
+                       .withSyntax(MediaType.APPLICATION_XML)
+                       .registerContentInformation());
 
         // First ingestion with synchronous service
         ingestService.handleSIPCollection(sips);

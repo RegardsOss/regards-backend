@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.geojson;
 
 import com.google.common.base.Strings;
-import fr.cnes.regards.framework.oais.*;
+import fr.cnes.regards.framework.oais.dto.*;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.urn.DataType;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -55,7 +55,7 @@ public class OaisFieldDescriptors {
         /**
          * OAIS content information
          */
-        ConstrainedFields contentInformationField = new ConstrainedFields(ContentInformation.class);
+        ConstrainedFields contentInformationField = new ConstrainedFields(ContentInformationDto.class);
 
         lfd.add(contentInformationField.withPath(addPrefix("properties.contentInformations[]"),
                                                  "A set of information that is the original target of preservation or that includes part or all of that information. It is an information object composed of its content data object and its representation information."));
@@ -96,7 +96,7 @@ public class OaisFieldDescriptors {
 
         String path = addPrefix("properties.contentInformations[].representationInformation.");
 
-        ConstrainedFields representationInformationField = new ConstrainedFields(RepresentationInformation.class);
+        ConstrainedFields representationInformationField = new ConstrainedFields(RepresentationInformationDto.class);
 
         lfd.add(representationInformationField.withPath(addPrefix(path, "syntax"), "syntax", "A data objet syntax"));
         // TODO manque Semantic
@@ -109,7 +109,7 @@ public class OaisFieldDescriptors {
     private List<FieldDescriptor> buildSyntaxDescription(String prefix) {
         List<FieldDescriptor> lfd = new ArrayList<>();
 
-        ConstrainedFields syntaxField = new ConstrainedFields(Syntax.class);
+        ConstrainedFields syntaxField = new ConstrainedFields(SyntaxDto.class);
 
         lfd.add(syntaxField.withPath(addPrefix(prefix, "name"), "name", "A syntax name").optional().type(STRING));
         lfd.add(syntaxField.withPath(addPrefix(prefix, "description"), "description", "A description")
@@ -125,7 +125,7 @@ public class OaisFieldDescriptors {
     private List<FieldDescriptor> buildDataObjectDescription(String prefix) {
         List<FieldDescriptor> lfd = new ArrayList<>();
 
-        ConstrainedFields oaisDataObjectField = new ConstrainedFields(OAISDataObject.class);
+        ConstrainedFields oaisDataObjectField = new ConstrainedFields(OAISDataObjectDto.class);
 
         StringJoiner joiner = new StringJoiner(", ");
         for (DataType state : DataType.values()) {
@@ -164,7 +164,7 @@ public class OaisFieldDescriptors {
     private List<FieldDescriptor> buildPdiDescription(String prefix) {
         List<FieldDescriptor> lfd = new ArrayList<>();
 
-        ConstrainedFields preservationField = new ConstrainedFields(PreservationDescriptionInformation.class);
+        ConstrainedFields preservationField = new ConstrainedFields(PreservationDescriptionInformationDto.class);
 
         lfd.add(preservationField.withPath(addPrefix(prefix, "contextInformation.tags[]"), "tags", "A set of tags"));
         lfd.add(preservationField.withPath(addPrefix(prefix, "referenceInformation"),
@@ -190,7 +190,7 @@ public class OaisFieldDescriptors {
     private List<FieldDescriptor> buildProvenanceDescription(String prefix) {
         List<FieldDescriptor> lfd = new ArrayList<>();
 
-        ConstrainedFields provenanceField = new ConstrainedFields(ProvenanceInformation.class);
+        ConstrainedFields provenanceField = new ConstrainedFields(ProvenanceInformationDto.class);
 
         lfd.add(provenanceField.withPath(addPrefix(prefix, "history[]"), "history", "A list of events")
                                .optional()
@@ -219,7 +219,7 @@ public class OaisFieldDescriptors {
     private List<FieldDescriptor> buildEventDescription(String prefix) {
         List<FieldDescriptor> lfd = new ArrayList<>();
 
-        ConstrainedFields eventField = new ConstrainedFields(Event.class);
+        ConstrainedFields eventField = new ConstrainedFields(EventDto.class);
 
         lfd.add(eventField.withPath(addPrefix(prefix, "type"), "The event's type").optional().type(STRING));
         lfd.add(eventField.withPath(addPrefix(prefix, "comment"), "The event's comment"));
@@ -234,7 +234,7 @@ public class OaisFieldDescriptors {
     private List<FieldDescriptor> buildAccessRightDescription(String prefix) {
         List<FieldDescriptor> lfd = new ArrayList<>();
 
-        ConstrainedFields accessRightField = new ConstrainedFields(AccessRightInformation.class);
+        ConstrainedFields accessRightField = new ConstrainedFields(AccessRightInformationDto.class);
 
         lfd.add(accessRightField.withPath(addPrefix(prefix, "licence"), "The licence").optional().type(STRING));
         lfd.add(accessRightField.withPath(addPrefix(prefix, "dataRights"), "dataRights", "A data access rights"));

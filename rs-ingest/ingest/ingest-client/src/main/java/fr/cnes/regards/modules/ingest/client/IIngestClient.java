@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Client interface for requesting the ingest service
@@ -34,10 +34,10 @@ public interface IIngestClient {
      * <br/>
      *
      * @param ingestMetadata related {@link IngestMetadataDto}
-     * @param sip            the {@link SIP} to ingest
+     * @param sip            the {@link SIPDto} to ingest
      * @return {@link RequestInfo} containing a unique request id. This request id can
      * be used to identify responses in your {@link IIngestClientListener} implementation.
      * @throws IngestClientException if error occurs preparing ingestion submission
      */
-    RequestInfo ingest(IngestMetadataDto ingestMetadata, SIP sip) throws IngestClientException;
+    RequestInfo ingest(IngestMetadataDto ingestMetadata, SIPDto sip) throws IngestClientException;
 }

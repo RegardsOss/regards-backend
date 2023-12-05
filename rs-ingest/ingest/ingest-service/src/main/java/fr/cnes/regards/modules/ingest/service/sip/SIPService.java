@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.sip;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ILastSIPRepository;
@@ -28,7 +29,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.LastSIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,7 +152,7 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public String calculateChecksum(SIP sip) throws NoSuchAlgorithmException, IOException {
+    public String calculateChecksum(SIPDto sip) throws NoSuchAlgorithmException, IOException {
         String jsonSip = gson.toJson(sip);
         InputStream inputStream = new ByteArrayInputStream(jsonSip.getBytes());
         return ChecksumUtils.computeHexChecksum(inputStream, MD5_ALGORITHM);
@@ -164,7 +164,7 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Integer getNextVersion(SIP sip) {
+    public Integer getNextVersion(SIPDto sip) {
         return sipRepository.getNextVersion(sip.getId());
     }
 

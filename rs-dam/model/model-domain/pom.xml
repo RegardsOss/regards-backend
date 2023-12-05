@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>oais-regards</artifactId>
+            <artifactId>urn-regards</artifactId>
         </dependency>
         <dependency>
             <groupId>com.networknt</groupId>

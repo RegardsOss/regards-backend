@@ -20,18 +20,18 @@ package fr.cnes.regards.modules.ingest.service.chain.step;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import fr.cnes.regards.framework.oais.dto.EventType;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.oais.EventType;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IAIPLightRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.info.StepErrorInfo;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +48,7 @@ import java.util.List;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
+public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIPDto>> {
 
     @Autowired
     private Validator validator;
@@ -61,7 +61,7 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
     }
 
     @Override
-    protected List<AIP> doExecute(SIPEntity sipEntity) throws ProcessingStepException {
+    protected List<AIPDto> doExecute(SIPEntity sipEntity) throws ProcessingStepException {
         job.getCurrentRequest().setStep(IngestRequestStep.LOCAL_GENERATION);
 
         LOGGER.debug("Generating AIP(s) from SIP \"{}\"", sipEntity.getSip().getId());
@@ -71,9 +71,9 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
         // Retrieve SIP URN from internal identifier
         OaisUniformResourceName sipId = job.getCurrentEntity().getSipIdUrn();
         // Launch AIP generation
-        List<AIP> aips = generation.generate(sipEntity, sipId.getTenant(), sipId.getEntityType());
+        List<AIPDto> aips = generation.generate(sipEntity, sipId.getTenant(), sipId.getEntityType());
         // Add version to AIP
-        for (AIP aip : aips) {
+        for (AIPDto aip : aips) {
             aip.setVersion(aip.getId().getVersion());
             aip.withEvent(EventType.SUBMISSION.toString(),
                           String.format("AIP created from SIP %s(version %s).",
@@ -87,13 +87,13 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
         return aips;
     }
 
-    private void validateAips(List<AIP> aips) throws ProcessingStepException {
+    private void validateAips(List<AIPDto> aips) throws ProcessingStepException {
         // Validate all elements of the flow item
         Errors validationErrors;
         Multimap<String, Integer> versionsByProviderId = HashMultimap.create();
-        for (AIP aip : aips) {
+        for (AIPDto aip : aips) {
             // first handle issues with this aip
-            validationErrors = new MapBindingResult(new HashMap<>(), AIP.class.getName());
+            validationErrors = new MapBindingResult(new HashMap<>(), AIPDto.class.getName());
             validator.validate(aip, validationErrors);
             // now lets handle issues with all aips generated
             String providerId = aip.getProviderId();

@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
@@ -48,7 +48,7 @@ public class UniqueProviderIdSipValidation implements ISipValidation {
      * If so, fail
      */
     @Override
-    public void validate(SIP sip, Errors errors) {
+    public void validate(SIPDto sip, Errors errors) {
         if (sipService.validatedVersionExists(sip.getId())) {
             errors.reject("Existing providerId", "Only one version of SIP is allowed");
         }

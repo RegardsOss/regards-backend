@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.ingest.client;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -50,7 +50,7 @@ public class IngestClient implements IIngestClient {
     private Validator validator;
 
     @Override
-    public RequestInfo ingest(IngestMetadataDto ingestMetadata, SIP sip) throws IngestClientException {
+    public RequestInfo ingest(IngestMetadataDto ingestMetadata, SIPDto sip) throws IngestClientException {
         RequestInfo requestInfo = RequestInfo.build(sip.getId(), null, null);
         IngestRequestFlowItem item = IngestRequestFlowItem.build(requestInfo.getRequestId(), ingestMetadata, sip);
         tryValidate(item);

@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.ingest;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
@@ -47,7 +47,7 @@ public class IngestPayload {
     @NotNull(message = "Ingest request step is required")
     private IngestRequestStep step;
 
-    private SIP sip;
+    private SIPDto sip;
 
     public RequestState getState() {
         return state;
@@ -65,11 +65,11 @@ public class IngestPayload {
         this.metadata = metadata;
     }
 
-    public SIP getSip() {
+    public SIPDto getSip() {
         return sip;
     }
 
-    public void setSip(SIP sip) {
+    public void setSip(SIPDto sip) {
         this.sip = sip;
     }
 

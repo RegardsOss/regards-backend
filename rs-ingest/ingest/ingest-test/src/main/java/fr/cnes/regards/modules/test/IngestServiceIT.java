@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -40,7 +41,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -359,19 +359,19 @@ public class IngestServiceIT {
     /**
      * Send the event to ingest a new SIP
      */
-    public void sendIngestRequestEvent(SIP sip, IngestMetadataDto mtd) {
+    public void sendIngestRequestEvent(SIPDto sip, IngestMetadataDto mtd) {
         sendIngestRequestEvent(Sets.newHashSet(sip), mtd);
     }
 
-    public void sendIngestRequestEvent(Collection<SIP> sips, IngestMetadataDto mtd) {
+    public void sendIngestRequestEvent(Collection<SIPDto> sips, IngestMetadataDto mtd) {
         List<IngestRequestFlowItem> toSend = new ArrayList<>(sips.size());
-        for (SIP sip : sips) {
+        for (SIPDto sip : sips) {
             toSend.add(IngestRequestFlowItem.build(mtd, sip));
         }
         publisher.publish(toSend);
     }
 
-    public IngestRequestFlowItem createSipEvent(SIP sip,
+    public IngestRequestFlowItem createSipEvent(SIPDto sip,
                                                 String storage,
                                                 String session,
                                                 String sessionOwner,

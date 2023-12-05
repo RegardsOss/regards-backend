@@ -19,12 +19,12 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +76,7 @@ public class GeojsonParserIT extends AbstractMultitenantServiceIT {
         af.setState(AcquisitionFileState.ACQUIRED);
         product.addAcquisitionFile(af);
 
-        SIP sip = plugin.generate(product);
+        SIPDto sip = plugin.generate(product);
         Assert.assertNotNull(sip);
         Assert.assertEquals("Ain", sip.getProperties().getDescriptiveInformation().get("nom"));
         Assert.assertNotNull(sip.getGeometry());

@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
 /**
  * Result object to inform changes in an {@link AIPEntity}.
@@ -34,7 +34,7 @@ public class AIPUpdateResult {
     private boolean aipEntityUpdated = false;
 
     /**
-     * {@link AIP} has been updated
+     * {@link AIPDto} has been updated
      */
     private boolean aipUpdated = false;
 

@@ -72,6 +72,10 @@
             <artifactId>oais-starter</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>oais-gson</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.modules.templates</groupId>
             <artifactId>templates-service</artifactId>
         </dependency>

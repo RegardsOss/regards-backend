@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
@@ -26,7 +27,6 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.converters.SipStateConverter;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -134,7 +134,7 @@ public class Product {
 
     @Column(columnDefinition = "jsonb", name = "json_sip")
     @Type(type = "jsonb")
-    private SIP sip;
+    private SIPDto sip;
 
     /**
      * The unique ingest IP identifier : only available if product SIP has been properly submitted to INGEST
@@ -234,11 +234,11 @@ public class Product {
         this.session = session;
     }
 
-    public SIP getSip() {
+    public SIPDto getSip() {
         return sip;
     }
 
-    public void setSip(SIP sip) {
+    public void setSip(SIPDto sip) {
         this.sip = sip;
     }
 

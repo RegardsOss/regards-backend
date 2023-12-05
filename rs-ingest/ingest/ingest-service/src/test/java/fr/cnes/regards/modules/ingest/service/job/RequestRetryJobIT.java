@@ -20,8 +20,10 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -37,7 +39,6 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
@@ -45,7 +46,6 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
@@ -123,7 +123,7 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
         LOGGER.info("=========================> BEGIN INIT DATA FOR TESTS <=====================");
         SIPEntity sip4 = new SIPEntity();
 
-        sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
+        sip4.setSip(SIPDto.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
         sip4.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID() + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
@@ -137,21 +137,27 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
 
         sip4 = sipRepository.save(sip4);
 
-        AIP aip = AIP.build(sip4.getSip(),
-                            OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                            Optional.empty(),
-                            "SIP_001",
-                            sip4.getVersion());
+        AIPDto aip = AIPDto.build(sip4.getSip(),
+                                  OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                          EntityType.DATA,
+                                                                          "tenant",
+                                                                          1),
+                                  Optional.empty(),
+                                  "SIP_001",
+                                  sip4.getVersion());
         aip.setIpType(EntityType.DATA);
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
 
         aipEntity = aipRepository.save(aipEntity);
 
-        AIP aip2 = AIP.build(sip4.getSip(),
-                             OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                             Optional.empty(),
-                             "SIP_002",
-                             sip4.getVersion());
+        AIPDto aip2 = AIPDto.build(sip4.getSip(),
+                                   OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                           EntityType.DATA,
+                                                                           "tenant",
+                                                                           1),
+                                   Optional.empty(),
+                                   "SIP_002",
+                                   sip4.getVersion());
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 
         aipEntity2 = aipRepository.save(aipEntity2);

@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.domain.aip;
 
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -72,7 +72,7 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
     @NotNull(message = "RAW JSON AIP is required")
     @Column(columnDefinition = "jsonb", name = "rawaip", nullable = false)
     @Type(type = "jsonb")
-    private AIP aip;
+    private AIPDto aip;
 
     /**
      * Storage lists used by this AIP to store its files
@@ -114,11 +114,11 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
         this.state = state;
     }
 
-    public AIP getAip() {
+    public AIPDto getAip() {
         return aip;
     }
 
-    public void setAip(AIP aip) {
+    public void setAip(AIPDto aip) {
         this.aip = aip;
     }
 
@@ -170,7 +170,7 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
         this.disseminationInfos = disseminationInfos;
     }
 
-    public static AIPEntity build(AIPState state, AIP aip) {
+    public static AIPEntity build(AIPState state, AIPDto aip) {
         AIPEntity aipEntity = new AIPEntity();
         aipEntity.setAip(aip);
         aipEntity.setState(state);

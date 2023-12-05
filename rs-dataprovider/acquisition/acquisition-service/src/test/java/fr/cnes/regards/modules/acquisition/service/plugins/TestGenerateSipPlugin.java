@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import fr.cnes.regards.framework.oais.dto.sip.SIPDtoBuilder;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -29,7 +30,6 @@ import fr.cnes.regards.framework.utils.model.*;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +64,7 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     private static final Random random = new Random();
 
     @Override
-    protected void addDataObjectsToSip(SIPBuilder sipBuilder, Set<AcquisitionFile> acqFiles) throws ModuleException {
+    protected void addDataObjectsToSip(SIPDtoBuilder sipBuilder, Set<AcquisitionFile> acqFiles) throws ModuleException {
         for (AcquisitionFile af : acqFiles) {
             sipBuilder.getContentInformationBuilder()
                       .setDataObject(DataType.RAWDATA,
@@ -77,7 +77,7 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     }
 
     @Override
-    public void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
+    public void addAttributesTopSip(SIPDtoBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
         throws ModuleException {
         mapAttrs.forEach((k, v) -> {
             switch (v.getAttributeKey()) {

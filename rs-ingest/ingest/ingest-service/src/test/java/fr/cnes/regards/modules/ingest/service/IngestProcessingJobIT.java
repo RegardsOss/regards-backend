@@ -19,11 +19,12 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
@@ -49,7 +50,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
@@ -201,7 +201,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
         Path filePath = Paths.get("data1.fits");
         String checksum = "sdsdfm1211vd";
-        SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
+        SIPDto sip = SIPDto.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, filePath, checksum);
         sip.withSyntax("FITS(FlexibleImageTransport)",
                        "http://www.iana.org/assignments/media-types/application/fits",
@@ -228,7 +228,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                           storageArgs.getValue()
                                      .stream()
                                      .anyMatch(req -> req.getOriginUrl()
-                                                         .equals(OAISDataObjectLocation.build(filePath).getUrl())));
+                                                         .equals(OAISDataObjectLocationDto.build(filePath).getUrl())));
         Assert.assertTrue("File storage is not valid in storage request",
                           storageArgs.getValue()
                                      .stream()
@@ -292,7 +292,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
         Path filePath = Paths.get("data1.fits");
         String checksum = "sdsdfm1211vd";
-        SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
+        SIPDto sip = SIPDto.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, filePath, checksum);
         sip.withSyntax("FITS(FlexibleImageTransport)",
                        "http://www.iana.org/assignments/media-types/application/fits",
@@ -319,7 +319,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                           storageArgs.getValue()
                                      .stream()
                                      .anyMatch(req -> req.getOriginUrl()
-                                                         .equals(OAISDataObjectLocation.build(filePath).getUrl())));
+                                                         .equals(OAISDataObjectLocationDto.build(filePath).getUrl())));
         Assert.assertTrue("File storage is not valid in storage request",
                           storageArgs.getValue()
                                      .stream()
@@ -374,7 +374,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                                          null,
                                                                          STORAGE_METADATA));
 
-        SIP sip = SIP.build(EntityType.DATA, SIP_ID_TEST);
+        SIPDto sip = SIPDto.build(EntityType.DATA, SIP_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
         sip.withSyntax("FITS(FlexibleImageTransport)",
                        "http://www.iana.org/assignments/media-types/application/fits",
@@ -461,12 +461,11 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                                          CATEGORIES,
                                                                          null,
                                                                          STORAGE_METADATA));
-
-        SIP sip = SIP.buildReference(EntityType.DATA,
-                                     SIP_REF_ID_TEST,
-                                     Paths.get("src/test/resources/file_ref.xml"),
-                                     "1e2d4ab665784e43243b9b07724cd483");
-        sips.add(sip);
+        
+        sips.add(SIPDto.buildReference(EntityType.DATA,
+                                       SIP_REF_ID_TEST,
+                                       Paths.get("src/test/resources/file_ref.xml"),
+                                       "1e2d4ab665784e43243b9b07724cd483"));
 
         // Ingest
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));

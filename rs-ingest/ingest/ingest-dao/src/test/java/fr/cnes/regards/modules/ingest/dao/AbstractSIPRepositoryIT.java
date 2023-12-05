@@ -19,12 +19,12 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +62,7 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
     public void init() {
         sip1 = new SIPEntity();
 
-        sip1.setSip(SIP.build(EntityType.DATA, "SIP_001"));
+        sip1.setSip(SIPDto.build(EntityType.DATA, "SIP_001"));
         sip1.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:"
                                                          + UUID.randomUUID().toString()
                                                          + ":V1"));
@@ -79,7 +79,7 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
         sip1 = sipRepository.save(sip1);
 
         SIPEntity sip2 = new SIPEntity();
-        sip2.setSip(SIP.build(EntityType.DATA, "SIP_002"));
+        sip2.setSip(SIPDto.build(EntityType.DATA, "SIP_002"));
         sip2.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:"
                                                          + UUID.randomUUID().toString()
                                                          + ":V1"));
@@ -96,7 +96,7 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
         sip2 = sipRepository.save(sip2);
 
         SIPEntity sip3 = new SIPEntity();
-        sip3.setSip(SIP.build(EntityType.DATA, "SIP_003"));
+        sip3.setSip(SIPDto.build(EntityType.DATA, "SIP_003"));
         sip3.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:"
                                                          + UUID.randomUUID().toString()
                                                          + ":V1"));
@@ -114,7 +114,7 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
 
         SIPEntity sip4 = new SIPEntity();
 
-        sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
+        sip4.setSip(SIPDto.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
         sip4.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:"
                                                          + UUID.randomUUID().toString()
                                                          + ":V1"));
