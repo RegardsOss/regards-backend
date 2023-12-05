@@ -123,7 +123,9 @@ public final class DataSourceHelper {
                                                     Integer minPoolSize,
                                                     Integer maxPoolSize,
                                                     String preferredTestQuery,
-                                                    String schemaIdentifier) throws IOException {
+                                                    String schemaIdentifier,
+                                                    long connectionAcquisitionThresholdLoggerLimitMs)
+        throws IOException {
 
         LOGGER.info("\n{}\nCreating a HIKARI CP datasource for tenant {} with url {}\n{}", HR, tenant, url, HR);
 
@@ -150,7 +152,7 @@ public final class DataSourceHelper {
             // Postgres schema configuration
             config.setConnectionInitSql("SET search_path to " + schemaIdentifier);
 
-            return new HikariDataSource(config);
+            return new HikariDataSourceCustom(config, connectionAcquisitionThresholdLoggerLimitMs);
         }
     }
 

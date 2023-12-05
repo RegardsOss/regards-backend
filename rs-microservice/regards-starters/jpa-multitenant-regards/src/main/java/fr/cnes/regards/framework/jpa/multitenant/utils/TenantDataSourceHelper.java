@@ -74,7 +74,8 @@ public final class TenantDataSourceHelper {
                                                                  pDaoProperties.getMinPoolSize(),
                                                                  pDaoProperties.getMaxPoolSize(),
                                                                  pDaoProperties.getPreferredTestQuery(),
-                                                                 schemaIdentifier);
+                                                                 schemaIdentifier,
+                                                                 pDaoProperties.getConnectionAcquisitionThresholdLoggerLimit());
 
             // Test connection for pooled datasource
             DataSourceHelper.testConnection(dataSource, true);

@@ -73,6 +73,11 @@ public class MultitenantDaoProperties {
     private Integer maxPoolSize = 5;
 
     /**
+     * Thredshold of time in ms of connection acquisition to log warn with the connection acquisition duration time.
+     */
+    private Long connectionAcquisitionThresholdLoggerLimit = 5_000L;
+
+    /**
      * Default test query
      */
     private String preferredTestQuery = "SELECT 1";
@@ -167,4 +172,11 @@ public class MultitenantDaoProperties {
         outputFile = pOutputFile;
     }
 
+    public Long getConnectionAcquisitionThresholdLoggerLimit() {
+        return connectionAcquisitionThresholdLoggerLimit;
+    }
+
+    public void setConnectionAcquisitionThresholdLoggerLimit(Long connectionAcquisitionThredsholdLoggerLimit) {
+        this.connectionAcquisitionThresholdLoggerLimit = connectionAcquisitionThredsholdLoggerLimit;
+    }
 }

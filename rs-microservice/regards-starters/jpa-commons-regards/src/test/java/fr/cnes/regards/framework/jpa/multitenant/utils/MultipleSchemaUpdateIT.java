@@ -92,7 +92,8 @@ public class MultipleSchemaUpdateIT {
                                                              5,
                                                              20,
                                                              "SELECT 1",
-                                                             "public");
+                                                             "public",
+                                                             5000);
 
         // Set hibernate properties
         hibernateProperties = new HashMap<>();
