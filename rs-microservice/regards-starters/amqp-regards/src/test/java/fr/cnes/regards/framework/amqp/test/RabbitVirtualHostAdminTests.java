@@ -96,6 +96,7 @@ public class RabbitVirtualHostAdminTests {
                                                             null,
                                                             null,
                                                             ADDRESSES,
+                                                            false,
                                                             null);
     }
 

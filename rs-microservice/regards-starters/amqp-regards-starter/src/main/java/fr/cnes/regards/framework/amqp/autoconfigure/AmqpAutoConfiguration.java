@@ -78,6 +78,8 @@ public class AmqpAutoConfiguration {
 
     /**
      * bean providing properties from the configuration file
+     * Be careful: on this object, only 4 properties are really used,
+     * the rest is completely ignored
      */
     @Autowired
     private RabbitProperties rabbitProperties;
@@ -139,6 +141,7 @@ public class AmqpAutoConfiguration {
                                           restOperations,
                                           simpleRoutingConnectionFactory,
                                           rabbitProperties.determineAddresses(),
+                                          rabbitProperties.getSsl().getEnabled(),
                                           bootstrapProperties.getBootstrapTenants());
     }
 

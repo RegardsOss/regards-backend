@@ -35,6 +35,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestOperations;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -120,6 +121,11 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
     private final String rabbitAddresses;
 
     /**
+     * is true when rabbitAddresses must be accessed threw TLS
+     */
+    private final Boolean isSslEnabled;
+
+    /**
      * Used to retrieve all tenants
      */
     private final ITenantResolver tenantResolver;
@@ -144,6 +150,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
      * @param restOperations                 client REST
      * @param simpleRoutingConnectionFactory connection factory to handle multi-tenancy
      * @param rabbitAddresses                server addresses
+     * @param isSslEnabled                   server ssl is active
      * @param startupTenants                 tenant to manage at startup
      */
     public RabbitVirtualHostAdmin(VirtualHostMode mode,
@@ -156,6 +163,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
                                   RestOperations restOperations,
                                   MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory,
                                   String rabbitAddresses,
+                                  Boolean isSslEnabled,
                                   String[] startupTenants) {
         super();
         this.mode = mode;
@@ -168,6 +176,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
         this.amqpManagementHost = amqpManagementHost;
         this.amqpManagementPort = amqpManagementPort;
         this.rabbitAddresses = rabbitAddresses;
+        this.isSslEnabled = isSslEnabled;
         this.bootstrapTenants = startupTenants;
     }
 
@@ -309,13 +318,22 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
 
         LOGGER.info("Creating connection factory for virtual host {}", virtualHost);
 
-        String[] rabbitHostAndPort = parseRabbitAddresses(rabbitAddresses);
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
-                                                                                  Integer.parseInt(rabbitHostAndPort[1]));
+        URI uri = buildRabbitServerUri(rabbitAddresses, isSslEnabled);
+        CachingConnectionFactory connectionFactory = new CachingConnectionFactory(uri);
         connectionFactory.setVirtualHost(virtualHost);
         connectionFactory.setUsername(rabbitmqUserName);
         connectionFactory.setPassword(rabbitmqPassword);
         registerConnectionFactory(virtualHost, connectionFactory);
+    }
+
+    /**
+     * @param rabbitAddresses addresses from configuration file
+     * @param isSecurised     true when the rabbitmq server expects TLS, false OR null otherwise
+     * @return URI to connect to RabbitMQ server
+     */
+    private static URI buildRabbitServerUri(String rabbitAddresses, Boolean isSecurised) {
+        String protocol = Boolean.TRUE.equals(isSecurised) ? "amqps://" : "amqp://";
+        return URI.create(protocol + rabbitAddresses);
     }
 
     @Override
@@ -347,14 +365,6 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
 
         LOGGER.info("Removing connection factory for virtual host {}", virtualHost);
         unregisterConnectionFactory(virtualHost);
-    }
-
-    /**
-     * @param rabbitAddresses addresses from configuration file
-     * @return {host, port}
-     */
-    protected String[] parseRabbitAddresses(String rabbitAddresses) {
-        return rabbitAddresses.split(COLON);
     }
 
     private void addPermissionToAccessVhost(String virtualHost) {
