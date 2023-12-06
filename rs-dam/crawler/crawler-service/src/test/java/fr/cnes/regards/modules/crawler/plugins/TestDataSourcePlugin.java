@@ -53,7 +53,7 @@ public class TestDataSourcePlugin implements IDataSourcePlugin {
     }
 
     @Override
-    public List<DataObjectFeature> findAll(String tenant, CrawlingCursor cursor, OffsetDateTime from)
+    public List<DataObjectFeature> findAll(String tenant, CrawlingCursor cursor, OffsetDateTime from, OffsetDateTime to)
         throws DataSourceException {
         File file = Paths.get("src", "test", "resources", "validation", "json", "validationData.json").toFile();
         List<DataObjectFeature> content;

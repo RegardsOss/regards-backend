@@ -135,6 +135,7 @@ public class IFeatureEntityClientIT extends AbstractRegardsWebIT {
         ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> response = client.findAll("model",
                                                                                             OffsetDateTime.now()
                                                                                                           .minusDays(2),
+                                                                                            null,
                                                                                             //to get what was just created
                                                                                             0,
                                                                                             2,

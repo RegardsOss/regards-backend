@@ -41,7 +41,10 @@ public class FakeDataSourcePlugin implements IDataSourcePlugin {
     }
 
     @Override
-    public List<DataObjectFeature> findAll(String tenant, CrawlingCursor cursor, OffsetDateTime from) {
+    public List<DataObjectFeature> findAll(String tenant,
+                                           CrawlingCursor cursor,
+                                           OffsetDateTime from,
+                                           OffsetDateTime to) {
         return List.of();
     }
 }

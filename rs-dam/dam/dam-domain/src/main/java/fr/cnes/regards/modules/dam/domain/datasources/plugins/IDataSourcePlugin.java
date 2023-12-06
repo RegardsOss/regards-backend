@@ -55,14 +55,17 @@ public interface IDataSourcePlugin {
     /**
      * Returns a {@link List} of new entities meeting the paging restriction provided in the {@code Pageable} object.
      *
-     * @param tenant tenant to build URN
-     * @param cursor indexation position information
-     * @param from   Allows to filter the new entities created after this date parameter (can be null)
+     * @param tenant                    tenant to build URN
+     * @param cursor                    indexation position information
+     * @param lastIngestDate            Last ingestion process date
+     * @param currentIngestionStartDate Current ingestion start process date
      * @return a page of entities
      * @throws DataSourceException in case anything wrong happened
      */
-    List<DataObjectFeature> findAll(String tenant, CrawlingCursor cursor, OffsetDateTime from)
-        throws DataSourceException;
+    List<DataObjectFeature> findAll(String tenant,
+                                    CrawlingCursor cursor,
+                                    OffsetDateTime lastIngestDate,
+                                    OffsetDateTime currentIngestionStartDate) throws DataSourceException;
 
     /**
      * @return a duration in second which indicates to the service an overlapping time
