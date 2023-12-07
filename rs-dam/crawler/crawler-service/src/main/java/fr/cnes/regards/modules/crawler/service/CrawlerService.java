@@ -372,7 +372,10 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         List<DataObjectFeature> dataObjectsRetrieved;
         try {
             long start = System.currentTimeMillis();
-            dataObjectsRetrieved = dsPlugin.findAll(tenant, cursor, crawlingParameters.lastUpdateDate());
+            dataObjectsRetrieved = dsPlugin.findAll(tenant,
+                                                    cursor,
+                                                    crawlingParameters.lastUpdateDate(),
+                                                    crawlingParameters.ingestionStart());
             LOGGER.info("Searching entities (size={}, page={}, lastUpdateDate={}) from datasource plugin took {}ms",
                         cursor.getSize(),
                         cursor.getPosition(),

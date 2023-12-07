@@ -288,6 +288,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         List<String> groupIds = new ArrayList<>();
         // Clear listener if any requests
         listener.reset();
+        List<String> groupIds = new ArrayList<>();
         for (Path file : filesToStore) {
             cpt++;
             String owner = "owner-" + (cpt % 5);

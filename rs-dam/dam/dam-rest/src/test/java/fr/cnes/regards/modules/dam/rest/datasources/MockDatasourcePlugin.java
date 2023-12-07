@@ -48,7 +48,10 @@ public class MockDatasourcePlugin implements IDBDataSourcePlugin {
     }
 
     @Override
-    public List<DataObjectFeature> findAll(String tenant, CrawlingCursor cursor, OffsetDateTime from) {
+    public List<DataObjectFeature> findAll(String tenant,
+                                           CrawlingCursor cursor,
+                                           OffsetDateTime from,
+                                           OffsetDateTime to) {
         return null;
     }
 

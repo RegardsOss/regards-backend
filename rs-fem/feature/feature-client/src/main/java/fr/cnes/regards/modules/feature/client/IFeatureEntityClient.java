@@ -32,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 
 /**
@@ -47,13 +48,18 @@ public interface IFeatureEntityClient {
         @RequestBody SearchFeatureSimpleEntityParameters filters, @SpringQueryMap Pageable pageable);
 
     default ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> findAll(String model,
-                                                                              OffsetDateTime lastUpdateDate,
+                                                                              OffsetDateTime lastUpdateDateAfter,
+                                                                              @Nullable
+                                                                              OffsetDateTime lastUpdateDateBefore,
                                                                               int page,
                                                                               int size,
                                                                               Sort sort) {
         SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel(model)
                                                                                                .withLastUpdateAfter(
-                                                                                                   lastUpdateDate);
+                                                                                                   lastUpdateDateAfter);
+        if (lastUpdateDateBefore != null) {
+            filters.withLastUpdateBefore(lastUpdateDateBefore);
+        }
         return findAll(filters, PageRequest.of(page, size, sort));
     }
 }

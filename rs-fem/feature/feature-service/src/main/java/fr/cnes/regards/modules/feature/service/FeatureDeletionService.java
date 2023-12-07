@@ -429,9 +429,18 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                 }
             }
         }
+        // Filter feature to delete (not WAITING_BLOCKING_DISSEMINATION)
+        List<FeatureEntity> featureEntitiesToDelete = associatedFeatureEntities.stream()
+                                                                               .filter(featureEntity -> !featureEntitiesNotToDelete.contains(
+                                                                                   featureEntity.getId()))
+                                                                               .toList();
+        // Propagate feature to delete to RS-CATALOG
+        featureEntitiesToDelete.forEach(featureEntity -> publisher.publish(FeatureEvent.buildFeatureDeleted(
+            featureEntity.getUrn().toString())));
+
         doOnSuccess(successfulRequests.keySet());
 
-        // PREPARE PROPAGATION to NOTIFIER if required
+        // Prepare propagation to RS-NOTIFIER if required
         if (isToNotify) {
             // If notification is required, requests are not over and should be saved.
             featureDeletionRequestRepository.saveAll(successfulRequests.keySet());
@@ -444,7 +453,6 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                                                                                     featureDeletionRequest.getId()))
                                                                                 .toList());
         }
-
         // Delete features, related requests will be deleted once we know notifier has successfully sent the notification about it
         featureCreationRequestRepository.deleteByFeatureEntityIn(associatedFeatureEntities);
         featureEntityRepository.deleteAll(associatedFeatureEntities.stream()
