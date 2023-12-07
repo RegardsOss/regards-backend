@@ -93,7 +93,7 @@ public class NotificationRegistrationService {
     }
 
     /**
-     * Save all request events in
+     * Save all notification request events in database
      */
     public void registerNotificationRequests(List<? extends NotificationRequestEvent> events) {
         if (!events.isEmpty()) {

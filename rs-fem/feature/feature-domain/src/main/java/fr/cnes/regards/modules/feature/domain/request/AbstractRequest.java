@@ -181,6 +181,20 @@ public abstract class AbstractRequest {
         errors.add(error);
     }
 
+    /**
+     * Add error for this reqquest :
+     * <ul>
+     *     <li>set state : {@link RequestState.ERROR}</li>
+     *     <li>set error step</li>
+     *     <li>add error message</li>
+     * </ul>
+     */
+    public void addError(FeatureRequestStep errorStep, String errorMsg) {
+        setState(RequestState.ERROR);
+        setStep(errorStep);
+        addError(errorMsg);
+    }
+
     public FeatureRequestStep getLastExecErrorStep() {
         return lastExecErrorStep;
     }

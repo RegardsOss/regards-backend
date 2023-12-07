@@ -84,15 +84,15 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IFeatureCreationService featureService;
+    private ILockingTaskExecutors lockingTaskExecutors;
 
     @Autowired
-    private ILockingTaskExecutors lockingTaskExecutors;
+    private IFeatureCreationService featureCreationService;
 
     private final Task createTask = () -> {
         lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
-        int nb = this.featureService.scheduleRequests();
+        int nb = this.featureCreationService.scheduleRequests();
         if (nb != 0) {
             LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, CREATE_REQUESTS, System.currentTimeMillis() - start);
         }

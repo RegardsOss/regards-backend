@@ -27,7 +27,7 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**
- * Request for new feature creation using event driven mechanism
+ * An amqp message to request a {@link Feature} update.
  *
  * @author Marc SORDI
  */

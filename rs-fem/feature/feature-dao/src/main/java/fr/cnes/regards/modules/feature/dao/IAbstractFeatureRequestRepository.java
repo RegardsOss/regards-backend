@@ -57,7 +57,7 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
      * @param ids  id of {@link AbstractFeatureRequest} to update
      */
     @Modifying
-    @Query("update AbstractFeatureRequest afr set afr.step = :newStep where afr.id in :ids ")
+    @Query("UPDATE AbstractFeatureRequest afr SET afr.step = :newStep WHERE afr.id IN :ids ")
     void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
 
     /**
@@ -80,4 +80,6 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
     Long countByState(RequestState state);
 
     Page<T> findByStep(FeatureRequestStep remoteStorageRequested, Pageable pageToRequest);
+
+    List<T> findAllByUrnAndStep(FeatureUniformResourceName urn, FeatureRequestStep step);
 }

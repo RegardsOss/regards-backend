@@ -24,7 +24,8 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- * Event received by Feature Manager to acknowledge a feature has been received by a specific recipient
+ * An amqp message for event received by Feature Manager to acknowledge a feature has been received by a specific
+ * recipient.
  *
  * @author Léo Mieulet
  */
@@ -34,9 +35,6 @@ public class DisseminationAckEvent implements ISubscribable {
     private String urn;
 
     private String recipientLabel;
-
-    public DisseminationAckEvent() {
-    }
 
     public DisseminationAckEvent(String urn, String recipientLabel) {
         this.urn = urn;

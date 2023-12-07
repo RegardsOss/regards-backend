@@ -30,7 +30,7 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**
- * Request to Delete a {@link Feature}
+ * An amqp message to request a {@link Feature} deletion.
  *
  * @author Kevin Marchois
  */

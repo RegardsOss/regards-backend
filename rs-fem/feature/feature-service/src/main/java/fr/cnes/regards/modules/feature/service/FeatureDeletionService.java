@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.feature.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -29,7 +28,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
-import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.dao.FeatureDeletionRequestSpecificationBuilder;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
@@ -62,6 +64,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -80,13 +83,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionService.class);
 
     @Autowired
-    private IFeatureDeletionRequestRepository deletionRepo;
+    private IFeatureDeletionRequestRepository featureDeletionRequestRepository;
 
     @Autowired
-    private IFeatureCreationRequestRepository creationRepo;
-
-    @Autowired
-    private IPublisher publisher;
+    private IFeatureCreationRequestRepository featureCreationRequestRepository;
 
     @Autowired
     private Validator validator;
@@ -96,9 +96,6 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
     @Autowired
     private IAuthenticationResolver authResolver;
-
-    @Autowired
-    private IFeatureEntityRepository featureRepo;
 
     @Autowired
     private IStorageClient storageClient;
@@ -119,7 +116,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         List<FeatureDeletionRequest> grantedRequests = new ArrayList<>();
         RequestInfo<FeatureUniformResourceName> requestInfo = new RequestInfo<>();
         // FIXME changer ce fonctionnement!
-        Set<String> existingRequestIds = this.deletionRepo.findRequestId();
+        Set<String> existingRequestIds = this.featureDeletionRequestRepository.findRequestId();
 
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(events.stream()
                                                                                                           .map(
@@ -137,7 +134,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                      System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureDeletionRequest from a list of
-        deletionRepo.saveAll(grantedRequests);
+        featureDeletionRequestRepository.saveAll(grantedRequests);
         LOGGER.debug("------------->>> {} deletion requests registered in {} ms",
                      grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
@@ -215,14 +212,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         Set<Long> requestIds = new HashSet<>();
         List<FeatureDeletionRequest> requestsToSchedule = new ArrayList<>();
 
-        Page<FeatureDeletionRequest> dbRequests = deletionRepo.findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED,
-                                                                                      OffsetDateTime.now(),
-                                                                                      PageRequest.of(0,
-                                                                                                     properties.getMaxBulkSize(),
-                                                                                                     Sort.by(Order.asc(
-                                                                                                                 "priority"),
-                                                                                                             Order.asc(
-                                                                                                                 "requestDate"))));
+        Page<FeatureDeletionRequest> dbRequests = featureDeletionRequestRepository.findRequestsToSchedule(
+            FeatureRequestStep.LOCAL_DELAYED,
+            OffsetDateTime.now(),
+            PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
 
         if (!dbRequests.isEmpty()) {
 
@@ -239,7 +232,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                 featureSessionNotifier.incrementCount(sessionInfoByUrn.get(request.getUrn()),
                                                       FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
             }
-            deletionRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
+            featureDeletionRequestRepository.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
 
             jobParameters.add(new JobParameter(FeatureDeletionJob.IDS_PARAMETER, requestIds));
 
@@ -261,18 +254,13 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
     @Override
     public void processRequests(List<FeatureDeletionRequest> requests, FeatureDeletionJob featureDeletionJob) {
-
         // Retrieve features
-        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo.findCompleteByUrnIn(requests.stream()
-                                                                                                                   .map(
-                                                                                                                       FeatureDeletionRequest::getUrn)
-                                                                                                                   .collect(
-                                                                                                                       Collectors.toList()))
-                                                                                      .stream()
-                                                                                      .collect(Collectors.toMap(
-                                                                                          FeatureEntity::getUrn,
-                                                                                          Function.identity()));
-
+        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureEntityRepository.findCompleteByUrnIn(
+                                                                              requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toList()))
+                                                                                                  .stream()
+                                                                                                  .collect(Collectors.toMap(
+                                                                                                      FeatureEntity::getUrn,
+                                                                                                      Function.identity()));
         // Dispatch requests
         Set<FeatureDeletionRequest> requestsAlreadyDeleted = new HashSet<>();
         Map<FeatureDeletionRequest, FeatureEntity> requestsWithFiles = new HashMap<>();
@@ -291,7 +279,6 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                 requestsWithoutFiles.put(fdr, entity);
             }
         }
-
         // Manage dispatched requests
         boolean isToNotify = notificationSettingsService.isActiveNotification();
         manageRequestsAlreadyDeleted(requestsAlreadyDeleted, isToNotify, featureDeletionJob);
@@ -306,58 +293,71 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
     private void manageRequestsAlreadyDeleted(Set<FeatureDeletionRequest> requestsAlreadyDeleted,
                                               boolean isToNotify,
                                               FeatureDeletionJob featureDeletionJob) {
-        if (!requestsAlreadyDeleted.isEmpty()) {
-            // PROPAGATE to NOTIFIER if required
-            if (isToNotify) {
-                String unknown = "unknown";
-                for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
-                    // Build fake incomplete feature
-                    Feature fakeFeature = Feature.build(unknown,
-                                                        unknown,
-                                                        fdr.getUrn(),
-                                                        IGeometry.unlocated(),
-                                                        EntityType.DATA,
-                                                        unknown);
-                    fdr.setToNotify(fakeFeature, null, null);
-                    fdr.setAlreadyDeleted(true);
-                    fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
-                    featureDeletionJob.advanceCompletion();
-                }
-                deletionRepo.saveAll(requestsAlreadyDeleted);
-            } else {
-                this.deletionRepo.deleteAllInBatch(requestsAlreadyDeleted);
-            }
-
-            // PROPAGATE to CATALOG
-            requestsAlreadyDeleted.forEach(r -> publisher.publish(FeatureEvent.buildFeatureDeleted(r.getUrn()
-                                                                                                    .toString())));
-
-            // Feedbacks for already deleted features
-            Set<String> errors = Sets.newHashSet("Feature already deleted. Skipping silently!");
+        if (requestsAlreadyDeleted.isEmpty()) {
+            return;
+        }
+        // PROPAGATE to NOTIFIER if required
+        if (isToNotify) {
+            String unknown = "unknown";
             for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
-                // Monitoring log
-                FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
-                // Send feedback
-                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
-                                                            fdr.getRequestId(),
-                                                            fdr.getRequestOwner(),
-                                                            null,
-                                                            fdr.getUrn(),
-                                                            RequestState.SUCCESS,
-                                                            errors));
+                // Build fake incomplete feature
+                Feature fakeFeature = Feature.build(unknown,
+                                                    unknown,
+                                                    fdr.getUrn(),
+                                                    IGeometry.unlocated(),
+                                                    EntityType.DATA,
+                                                    unknown);
+                fdr.setToNotify(fakeFeature, null, null);
+                fdr.setAlreadyDeleted(true);
+                fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+
+                featureDeletionJob.advanceCompletion();
             }
+            featureDeletionRequestRepository.saveAll(requestsAlreadyDeleted);
+        } else {
+            this.featureDeletionRequestRepository.deleteAllInBatch(requestsAlreadyDeleted);
+        }
+
+        // PROPAGATE to CATALOG
+        requestsAlreadyDeleted.forEach(r -> publisher.publish(FeatureEvent.buildFeatureDeleted(r.getUrn().toString())));
+
+        // Feedbacks for already deleted features
+        Set<String> errors = Sets.newHashSet("Feature already deleted. Skipping silently!");
+        for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
+            // Monitoring log
+            FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
+            // Send feedback
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
+                                                        fdr.getRequestId(),
+                                                        fdr.getRequestOwner(),
+                                                        null,
+                                                        fdr.getUrn(),
+                                                        RequestState.SUCCESS,
+                                                        errors));
         }
     }
 
     private void manageRequestsWithFiles(Map<FeatureDeletionRequest, FeatureEntity> requestsWithFiles,
                                          FeatureDeletionJob featureDeletionJob) {
-        // Request file deletion
         for (Entry<FeatureDeletionRequest, FeatureEntity> entry : requestsWithFiles.entrySet()) {
-            publishFiles(entry.getKey(), entry.getValue());
+            FeatureDeletionRequest featureDeletionrequest = entry.getKey();
+            entry.getValue().getDisseminationsInfo().forEach(disseminationInfo -> {
+                if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
+                    // Monitoring log
+                    FeatureLogger.deletionBlocked(featureDeletionrequest.getRequestOwner(),
+                                                  featureDeletionrequest.getRequestId(),
+                                                  featureDeletionrequest.getUrn());
+                    featureDeletionrequest.setStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
+                }
+            });
+            // Request file deletion
+            if (featureDeletionrequest.getStep() != FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION) {
+                publishFiles(featureDeletionrequest, entry.getValue());
+            }
             featureDeletionJob.advanceCompletion();
         }
         // Save all request with files waiting for file deletion
-        this.deletionRepo.saveAll(requestsWithFiles.keySet());
+        this.featureDeletionRequestRepository.saveAll(requestsWithFiles.keySet());
         // No feedback at the moment
     }
 
@@ -369,54 +369,89 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
     private void sendFeedbacksAndClean(Map<FeatureDeletionRequest, FeatureEntity> successfulRequests,
                                        boolean isToNotify,
-                                       FeatureDeletionJob featureDeletionJob) {
+                                       @Nullable FeatureDeletionJob featureDeletionJob) {
 
-        // Remove possible null values for requests associated to feature aleady deleted.
-        List<FeatureEntity> associatedEntities = successfulRequests.values().stream().filter(Objects::nonNull).toList();
-        // PROPAGATE to CATALOG
-        associatedEntities.forEach(f -> publisher.publish(FeatureEvent.buildFeatureDeleted(f.getUrn().toString())));
+        if (successfulRequests.isEmpty()) {
+            return;
+        }
+        // Remove possible null values for requests associated to feature already deleted.
+        List<FeatureEntity> associatedFeatureEntities = successfulRequests.values()
+                                                                          .stream()
+                                                                          .filter(Objects::nonNull)
+                                                                          .toList();
 
+        List<Long> featureEntitiesNotToDelete = new ArrayList<>();
+        List<Long> featureDeletionRequestsNotToDelete = new ArrayList<>();
         // Feedbacks for deleted features
         for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : successfulRequests.entrySet()) {
-            FeatureEntity entity = entry.getValue();
-            if (entity != null) {
+
+            FeatureEntity featureEntity = entry.getValue();
+            if (featureEntity != null) {
                 FeatureDeletionRequest fdr = entry.getKey();
-                fdr.setToNotify(entity.getFeature(), entity.getSessionOwner(), entity.getSession());
+                fdr.setToNotify(featureEntity.getFeature(),
+                                featureEntity.getSessionOwner(),
+                                featureEntity.getSession());
                 // Monitoring log
                 FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
+                // Check if the deletion request must be blocked or not
+                featureEntity.getDisseminationsInfo().forEach(disseminationInfo -> {
+                    if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
+                        // Monitoring log
+                        FeatureLogger.deletionBlocked(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
+                        fdr.setStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
+
+                        featureEntitiesNotToDelete.add(featureEntity.getId());
+                        featureDeletionRequestsNotToDelete.add(fdr.getId());
+                    }
+                });
+
                 if (featureDeletionJob != null) {
                     // featureDeletionJob can be null in case this method is called outside the context of a job
                     featureDeletionJob.advanceCompletion();
                 }
-                // Publish successful request
-                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
-                                                            fdr.getRequestId(),
-                                                            fdr.getRequestOwner(),
-                                                            entity.getProviderId(),
-                                                            fdr.getUrn(),
-                                                            RequestState.SUCCESS));
-                // Update requests in case of notification
-                if (isToNotify) {
-                    fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
-                    fdr.setAlreadyDeleted(false);
+                if (fdr.getStep() != FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION) {
+                    // Publish successful request
+                    publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
+                                                                fdr.getRequestId(),
+                                                                fdr.getRequestOwner(),
+                                                                featureEntity.getProviderId(),
+                                                                fdr.getUrn(),
+                                                                RequestState.SUCCESS));
+                    // Update requests in case of notification
+                    if (isToNotify) {
+                        fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+                        fdr.setAlreadyDeleted(false);
+                    }
                 }
             }
         }
+        // Filter feature to delete (not WAITING_BLOCKING_DISSEMINATION)
+        List<FeatureEntity> featureEntitiesToDelete = associatedFeatureEntities.stream()
+                                                                               .filter(featureEntity -> !featureEntitiesNotToDelete.contains(
+                                                                                   featureEntity.getId()))
+                                                                               .toList();
+        // Propagate feature to delete to RS-CATALOG
+        featureEntitiesToDelete.forEach(featureEntity -> publisher.publish(FeatureEvent.buildFeatureDeleted(
+            featureEntity.getUrn().toString())));
+
         doOnSuccess(successfulRequests.keySet());
 
-        // PREPARE PROPAGATION to NOTIFIER if required
+        // Prepare propagation to RS-NOTIFIER if required
         if (isToNotify) {
             // If notification is required, requests are not over and should be saved.
-            deletionRepo.saveAll(successfulRequests.keySet());
+            featureDeletionRequestRepository.saveAll(successfulRequests.keySet());
         } else {
             // If no notification required, requests are over and can be deleted
             doOnTerminated(successfulRequests.keySet());
-            this.deletionRepo.deleteAllInBatch(successfulRequests.keySet());
+            featureDeletionRequestRepository.deleteAllInBatch(successfulRequests.keySet()
+                                                                                .stream()
+                                                                                .filter(featureDeletionRequest -> !featureDeletionRequestsNotToDelete.contains(
+                                                                                    featureDeletionRequest.getId()))
+                                                                                .toList());
         }
-
         // Delete features, related requests will be deleted once we know notifier has successfully sent the notification about it
-        this.creationRepo.deleteByFeatureEntityIn(associatedEntities);
-        this.featureRepo.deleteAll(associatedEntities);
+        featureCreationRequestRepository.deleteByFeatureEntityIn(associatedFeatureEntities);
+        featureEntityRepository.deleteAllInBatch(featureEntitiesToDelete);
     }
 
     private boolean haveFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
@@ -429,10 +464,9 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
     }
 
     /**
-     * Publish command to delete all contained files inside the {@link FeatureDeletionRequest} to
-     * storage
+     * Publish command to delete all contained files inside the {@link FeatureDeletionRequest} to storage
      */
-    private FeatureDeletionRequest publishFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
+    private void publishFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
         fdr.setStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED);
         List<FileDeletionRequestDTO> storageRequests = new ArrayList<>();
         for (FeatureFile file : feature.getFeature().getFiles()) {
@@ -464,24 +498,19 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         responseInfos.stream().findFirst().ifPresent(responseInfo -> {
             fdr.setGroupId(responseInfo.getGroupId());
         });
-
-        return fdr;
     }
 
     @Override
     public void processStorageRequests(Set<String> groupIds) {
-        Set<FeatureDeletionRequest> requests = this.deletionRepo.findByGroupIdIn(groupIds);
+        Set<FeatureDeletionRequest> requests = this.featureDeletionRequestRepository.findByGroupIdIn(groupIds);
 
         // Retrieve features
-        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo.findCompleteByUrnIn(requests.stream()
-                                                                                                                   .map(
-                                                                                                                       FeatureDeletionRequest::getUrn)
-                                                                                                                   .collect(
-                                                                                                                       Collectors.toList()))
-                                                                                      .stream()
-                                                                                      .collect(Collectors.toMap(
-                                                                                          FeatureEntity::getUrn,
-                                                                                          Function.identity()));
+        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureEntityRepository.findCompleteByUrnIn(
+                                                                              requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toList()))
+                                                                                                  .stream()
+                                                                                                  .collect(Collectors.toMap(
+                                                                                                      FeatureEntity::getUrn,
+                                                                                                      Function.identity()));
 
         Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests = new HashMap<>();
         for (FeatureDeletionRequest fdr : requests) {
@@ -512,8 +541,8 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
     @Override
     public Page<FeatureDeletionRequest> findRequests(SearchFeatureRequestParameters filters, Pageable page) {
-        return deletionRepo.findAll(new FeatureDeletionRequestSpecificationBuilder().withParameters(filters).build(),
-                                    page);
+        return featureDeletionRequestRepository.findAll(new FeatureDeletionRequestSpecificationBuilder().withParameters(
+            filters).build(), page);
     }
 
     @Override
@@ -524,14 +553,14 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             return RequestsInfo.build(0L);
         } else {
             filters.withStatesIncluded(List.of(RequestState.ERROR));
-            return RequestsInfo.build(deletionRepo.count(new FeatureDeletionRequestSpecificationBuilder().withParameters(
+            return RequestsInfo.build(featureDeletionRequestRepository.count(new FeatureDeletionRequestSpecificationBuilder().withParameters(
                 filters).build()));
         }
     }
 
     @Override
     protected IAbstractFeatureRequestRepository<FeatureDeletionRequest> getRequestsRepository() {
-        return deletionRepo;
+        return featureDeletionRequestRepository;
     }
 
     @Override
@@ -615,5 +644,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                                                       FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
             }
         });
+    }
+
+    @MultitenantTransactional(readOnly = true)
+    public List<FeatureDeletionRequest> findAllByIds(Iterable ids) {
+        return this.featureDeletionRequestRepository.findAllById(ids);
     }
 }

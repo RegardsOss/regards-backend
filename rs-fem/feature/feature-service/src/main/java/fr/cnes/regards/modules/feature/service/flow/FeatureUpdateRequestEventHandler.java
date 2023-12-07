@@ -37,7 +37,8 @@ import org.springframework.validation.Validator;
 import java.util.List;
 
 /**
- * This handler absorbs the incoming creation request flow
+ * Handler {@link FeatureUpdateRequestEvent} events.
+ * This handler absorbs the incoming creation request flow.
  *
  * @author Marc SORDI
  */
@@ -70,9 +71,9 @@ public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEven
     }
 
     @Override
-    public void handleBatch(List<FeatureUpdateRequestEvent> messages) {
+    public void handleBatch(List<FeatureUpdateRequestEvent> featureUpdateRequestEvts) {
         long start = System.currentTimeMillis();
-        RequestInfo<FeatureUniformResourceName> requestInfo = featureService.registerRequests(messages);
+        RequestInfo<FeatureUniformResourceName> requestInfo = featureService.registerRequests(featureUpdateRequestEvts);
         LOGGER.info("{} granted request(s) and {} denied update request(s) registered in {} ms",
                     requestInfo.getGranted().size(),
                     requestInfo.getDenied().keySet().size(),

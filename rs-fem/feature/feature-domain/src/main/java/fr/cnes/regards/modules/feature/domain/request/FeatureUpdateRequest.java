@@ -72,6 +72,9 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
     @Column(name = "sourceToNotify", length = 255)
     private String sourceToNotify;
 
+    @Column(name = "acknowledged_recipient", length = 255, nullable = true)
+    private String acknowledgedRecipient;
+
     public static FeatureUpdateRequest build(String requestId,
                                              String requestOwner,
                                              OffsetDateTime requestDate,
@@ -81,6 +84,7 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
                                              PriorityLevel priority,
                                              FeatureRequestStep step) {
         Assert.notNull(feature, "Feature is required");
+
         FeatureUpdateRequest request = new FeatureUpdateRequest();
         request.with(requestId, requestOwner, requestDate, state, step, priority, errors);
         request.setProviderId(feature.getId());
@@ -89,26 +93,28 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
         return request;
     }
 
-    public static FeatureUpdateRequest build(String requestId,
-                                             String requestOwner,
-                                             OffsetDateTime requestDate,
-                                             RequestState state,
-                                             Set<String> errors,
-                                             Feature feature,
-                                             PriorityLevel priority,
-                                             List<StorageMetadata> storages,
-                                             FeatureRequestStep step) {
+    public static FeatureUpdateRequest buildGranted(String requestId,
+                                                    String requestOwner,
+                                                    OffsetDateTime requestDate,
+                                                    Feature feature,
+                                                    PriorityLevel priority,
+                                                    List<StorageMetadata> storages,
+                                                    FeatureRequestStep step,
+                                                    String acknowledgedRecipient) {
         FeatureUpdateRequest request = build(requestId,
                                              requestOwner,
                                              requestDate,
-                                             state,
-                                             errors,
+                                             RequestState.GRANTED,
+                                             null,
                                              feature,
                                              priority,
                                              step);
+        request.acknowledgedRecipient = acknowledgedRecipient;
+
         FeatureStorageMedataEntity metadata = new FeatureStorageMedataEntity();
         metadata.setStorages(storages);
         request.setMetadata(metadata);
+
         return request;
     }
 
@@ -173,5 +179,13 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
 
     public void setMetadata(FeatureStorageMedataEntity metadata) {
         this.metadata = metadata;
+    }
+
+    public String getAcknowledgedRecipient() {
+        return acknowledgedRecipient;
+    }
+
+    public void setAcknowledgedRecipient(String acknowledgedRecipient) {
+        this.acknowledgedRecipient = acknowledgedRecipient;
     }
 }

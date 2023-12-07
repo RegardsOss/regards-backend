@@ -25,9 +25,12 @@ import java.time.OffsetDateTime;
 
 /**
  * Store info about a feature dissemination :
- * - the system that received the feature, with its name (which is an identifier)
- * - when the recipient has been contacted
- * - when it acknowledges
+ * <ul>
+ *     <li>the system that received the feature, with its name (which is an identifier)</li>
+ *     <li>when the recipient has been contacted</li>
+ *     <li>when it acknowledges</li>
+ *     <li>when it is blocking</li>
+ * </ul>
  *
  * @author Léo Mieulet
  */
@@ -62,6 +65,9 @@ public class FeatureDisseminationInfo {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime ackDate;
 
+    @Column(name = "blocking")
+    private boolean blocking;
+
     public FeatureDisseminationInfo() {
     }
 
@@ -69,15 +75,18 @@ public class FeatureDisseminationInfo {
      * @param ackRequired when false, no acknowledge message will be received
      */
     public FeatureDisseminationInfo(String label, boolean ackRequired) {
-        this.label = label;
         this.requestDate = OffsetDateTime.now();
+
+        this.label = label;
         this.setAckDateByAckRequired(ackRequired);
     }
 
     /**
-     * Update the field ackDate using provided ackRequired
-     * When true, the ackDate will be specified when the recipient notifies us
-     * When false, we won't receive a acknowledgement
+     * Update the field ackDate using provided ackRequired :
+     * <ul>
+     * <li>When true, the ackDate will be specified when the recipient notifies us</li>
+     * <li>When false, we won't receive a acknowledgement, so not blocking</li>
+     * </ul>
      */
     public final void setAckDateByAckRequired(boolean ackRequired) {
         if (ackRequired) {
@@ -117,5 +126,30 @@ public class FeatureDisseminationInfo {
 
     public void setAckDate(OffsetDateTime ackDate) {
         this.ackDate = ackDate;
+    }
+
+    public boolean isBlocking() {
+        return blocking;
+    }
+
+    public void setBlocking(boolean blocking) {
+        this.blocking = blocking;
+    }
+
+    @Override
+    public String toString() {
+        return "FeatureDisseminationInfo{"
+               + "id="
+               + id
+               + ", label='"
+               + label
+               + '\''
+               + ", requestDate="
+               + requestDate
+               + ", ackDate="
+               + ackDate
+               + ", blocking="
+               + blocking
+               + '}';
     }
 }

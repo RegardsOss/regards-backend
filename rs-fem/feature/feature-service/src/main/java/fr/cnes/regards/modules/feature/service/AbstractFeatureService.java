@@ -58,13 +58,13 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     protected static final int MAX_ENTITY_PER_PAGE = 2000;
 
     @Autowired
-    private IPublisher publisher;
+    protected IPublisher publisher;
 
     @Autowired
     private IStorageClient storageClient;
 
     @Autowired
-    private IFeatureEntityRepository featureEntityRepository;
+    protected IFeatureEntityRepository featureEntityRepository;
 
     @Override
     public void validateRequest(AbstractRequestEvent event, Errors errors) {

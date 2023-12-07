@@ -56,10 +56,10 @@ import static org.junit.Assert.*;
 public class FeatureNotifierListenerIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
-    private IFeatureCreationRequestRepository fcrRepo;
+    private IFeatureCreationRequestRepository featureCreationRequestRepository;
 
     @Autowired
-    private FeatureNotifierListener listener;
+    private FeatureNotifierListener featureNotifierListener;
 
     @Autowired
     private IFeatureUpdateDisseminationRequestRepository featureUpdateDisseminationRequestRepository;
@@ -75,9 +75,10 @@ public class FeatureNotifierListenerIT extends AbstractFeatureMultitenantService
 
     @Test
     public void testReceivingNotifierEventThatCreatesFeatureUpdateDisseminant() {
+        // Given
         initData(1);
 
-        assertEquals(1, fcrRepo.count());
+        assertEquals(1, featureCreationRequestRepository.count());
         mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         List<AbstractFeatureRequest> abstractFeatureRequests = mockNotificationSent();
@@ -90,18 +91,22 @@ public class FeatureNotifierListenerIT extends AbstractFeatureMultitenantService
         String recipientLabelNotRequired = "recipientLabelNotRequired";
         HashSet<Recipient> recipients = Sets.newLinkedHashSet(new Recipient(recipientLabelRequired,
                                                                             RecipientStatus.SUCCESS,
+                                                                            true,
                                                                             true),
                                                               new Recipient(recipientLabelNotRequired,
                                                                             RecipientStatus.SUCCESS,
+                                                                            false,
                                                                             false));
         List<NotifierEvent> notifierEvents = Lists.newArrayList(new NotifierEvent(requestId,
                                                                                   requestOwner,
                                                                                   NotificationState.SUCCESS,
                                                                                   recipients));
-        listener.onRequestSuccess(notifierEvents);
+        // When
+        featureNotifierListener.onRequestSuccess(notifierEvents);
 
+        // Then
         // the FeatureCreationRequest must be deleted
-        assertEquals(0, fcrRepo.count());
+        assertEquals(0, featureCreationRequestRepository.count());
 
         List<FeatureUpdateDisseminationRequest> featureUpdateDisseminationRequests = featureUpdateDisseminationRequestRepository.findAll();
         assertEquals("should have two update dissemination requests", 2, featureUpdateDisseminationRequests.size());

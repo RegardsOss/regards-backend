@@ -35,6 +35,11 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Repository to handle access to {@link FeatureEntity} entities.
+ *
+ * @author Patrice FABRE
+ */
 @Repository
 public interface IFeatureEntityRepository
     extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {

@@ -22,19 +22,19 @@ import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
+ * This job is used to delete a list of feature {@link FeatureDeletionRequest}
+ *
  * @author kevin
  */
 public class FeatureDeletionJob extends AbstractFeatureJob {
@@ -42,10 +42,7 @@ public class FeatureDeletionJob extends AbstractFeatureJob {
     private List<FeatureDeletionRequest> featureDeletionRequests;
 
     @Autowired
-    private IFeatureDeletionRequestRepository featureDeletionRequestRepo;
-
-    @Autowired
-    private IFeatureDeletionService featureService;
+    private IFeatureDeletionService featureDeletionService;
 
     @Autowired
     private MeterRegistry registry;
@@ -53,21 +50,23 @@ public class FeatureDeletionJob extends AbstractFeatureJob {
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
-        Type type = new TypeToken<Set<Long>>() {
+        Set<Long> featureDeletionRequestIds = getValue(parameters, IDS_PARAMETER, new TypeToken<Set<Long>>() {
 
-        }.getType();
-        featureDeletionRequests = this.featureDeletionRequestRepo.findAllById(getValue(parameters,
-                                                                                       IDS_PARAMETER,
-                                                                                       type));
+        }.getType());
+        featureDeletionRequests = featureDeletionService.findAllByIds(featureDeletionRequestIds);
     }
 
     @Override
     public void run() {
         Timer timer = Timer.builder(this.getClass().getName()).tag("job", "run").register(registry);
-        logger.info("[{}] Feature deletion job starts", jobInfoId);
+        logger.info("[{}] Feature deletion job starts. Handle {} feature deletion requests.",
+                    jobInfoId,
+                    featureDeletionRequests.size());
         long start = System.currentTimeMillis();
-        timer.record(() -> featureService.processRequests(featureDeletionRequests, this));
-        logger.info("[{}]{}{} deletion request(s) processed in {} ms",
+
+        timer.record(() -> featureDeletionService.processRequests(featureDeletionRequests, this));
+        
+        logger.info("[{}]{}{} Feature deletion request(s) processed in {}ms",
                     jobInfoId,
                     INFO_TAB,
                     featureDeletionRequests.size(),

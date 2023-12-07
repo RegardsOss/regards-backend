@@ -54,7 +54,7 @@ public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUp
     RequestInfo<FeatureUniformResourceName> registerRequests(FeatureUpdateCollection toHandle);
 
     /**
-     * Process batch of requests during job
+     * Process batch of feature update requests during job {@link FeatureUpdateJob}
      *
      * @return updated features
      */
@@ -81,4 +81,6 @@ public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUp
      * @param errorRequests error requests results
      */
     void handleStorageError(Collection<RequestResultInfoDTO> errorRequests);
+
+    List<FeatureUpdateRequest> findAllByOrderIdsByRequestDateAsc(Set<Long> ids);
 }

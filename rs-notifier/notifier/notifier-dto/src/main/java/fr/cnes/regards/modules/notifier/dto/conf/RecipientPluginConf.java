@@ -24,6 +24,7 @@ package fr.cnes.regards.modules.notifier.dto.conf;
  * @author Sébastien Binda
  **/
 public record RecipientPluginConf(String recipientLabel,
-                                  Boolean ackRequired) {
+                                  boolean ackRequired,
+                                  boolean blocking) {
 
 }

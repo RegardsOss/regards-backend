@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.feature.service;
 
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
@@ -81,8 +80,6 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     @Autowired
     private IFeatureEntityRepository featureRepo;
 
-    @Autowired
-    private IPublisher publisher;
 
     @Autowired
     private Validator validator;
@@ -296,7 +293,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                         RequestState.SUCCESS));
         }
         onSuccess(success);
-        // Successful requests are deleted now!
+        // Successful requests are deleted now in database
         abstractFeatureRequestRepo.deleteAllInBatch(success);
     }
 

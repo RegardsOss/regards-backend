@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.feature.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
@@ -29,7 +28,6 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.feature.dao.FeatureCopyRequestSpecificationsBuilder;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCopyRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
@@ -74,17 +72,12 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
     @Autowired
     private IFeatureCopyRequestRepository featureCopyRequestRepo;
 
-    @Autowired
-    private IFeatureEntityRepository featureRepo;
 
     @Autowired
     private IAuthenticationResolver authResolver;
 
     @Autowired
     private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IPublisher publisher;
 
     @Autowired
     private Validator validator;
@@ -198,15 +191,12 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
 
         Set<FeatureCopyRequest> successCopyRequest = new HashSet<>();
         // map of FeatureEntity by urn
-        Map<FeatureUniformResourceName, FeatureEntity> entitiesToUpdate = this.featureRepo.findCompleteByUrnIn(requests.stream()
-                                                                                                                       .map(
-                                                                                                                           FeatureCopyRequest::getUrn)
-                                                                                                                       .collect(
-                                                                                                                           Collectors.toList()))
-                                                                                          .stream()
-                                                                                          .collect(Collectors.toMap(
-                                                                                              FeatureEntity::getUrn,
-                                                                                              Function.identity()));
+        Map<FeatureUniformResourceName, FeatureEntity> entitiesToUpdate = featureEntityRepository.findCompleteByUrnIn(
+                                                                                                     requests.stream().map(FeatureCopyRequest::getUrn).collect(Collectors.toList()))
+                                                                                                 .stream()
+                                                                                                 .collect(Collectors.toMap(
+                                                                                                     FeatureEntity::getUrn,
+                                                                                                     Function.identity()));
         for (FeatureCopyRequest request : requests) {
             if (entitiesToUpdate.get(request.getUrn()) != null) {
                 updateFeature(entitiesToUpdate.get(request.getUrn()).getFeature(), request, successCopyRequest);

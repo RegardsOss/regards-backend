@@ -89,25 +89,27 @@ public class FeatureNotifierListener implements INotifierRequestListener {
     }
 
     @Override
-    public void onRequestSuccess(List<NotifierEvent> success) {
+    public void onRequestSuccess(List<NotifierEvent> successNotifierEvts) {
         LOG.debug(RECEIVED_FROM_NOTIFIER_FORMAT,
-                  success.size(),
+                  successNotifierEvts.size(),
                   NotifierEvent.class.getSimpleName(),
                   NotificationState.SUCCESS);
 
-        List<String> requestIds = success.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
+        List<String> requestIds = successNotifierEvts.stream()
+                                                     .map(NotifierEvent::getRequestId)
+                                                     .collect(Collectors.toList());
         Set<AbstractFeatureRequest> associatedFeatureRequests = abstractFeatureRequestRepo.findAllByRequestIdIn(
             requestIds);
-        featureUpdateDisseminationService.savePutRequests(success, associatedFeatureRequests);
-        handleFeatureNotificationRequests(success, associatedFeatureRequests);
+        featureUpdateDisseminationService.savePutRequests(successNotifierEvts, associatedFeatureRequests);
+        handleFeatureNotificationRequests(successNotifierEvts, associatedFeatureRequests);
     }
 
-    private void handleFeatureNotificationRequests(List<NotifierEvent> success,
+    private void handleFeatureNotificationRequests(List<NotifierEvent> successNotifierEvts,
                                                    Set<AbstractFeatureRequest> associatedFeatureRequests) {
         if (!associatedFeatureRequests.isEmpty()) {
             featureNotificationService.handleNotificationSuccess(associatedFeatureRequests);
             LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT,
-                      success.size(),
+                      successNotifierEvts.size(),
                       NotificationState.SUCCESS,
                       NotifierEvent.class.getSimpleName());
         }

@@ -26,6 +26,9 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
+import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
@@ -47,6 +50,7 @@ import org.junit.runners.MethodSorters;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -64,7 +68,7 @@ import static org.junit.Assert.*;
  * @author Kevin Marchois
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_deletion",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_deletion1",
                                    "regards.amqp.enabled=true",
                                    "regards.feature.max.bulk.size=10" },
                     locations = { "classpath:regards_perf.properties",
@@ -74,15 +78,20 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
+    private static final String DELETION_OWNER = "deleter";
+
     @Captor
     private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
 
     private boolean isToNotify;
 
+    @Autowired
+    private IFeatureEntityWithDisseminationRepository featureWithDisseminationRepository;
+
     @Override
     public void doInit() {
-        // check if notifications are required
-        this.isToNotify = initDefaultNotificationSettings();
+        // Check if notifications are required
+        isToNotify = initDefaultNotificationSettings();
     }
 
     /**
@@ -92,32 +101,33 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
      * because they have not files
      */
     @Test
-    public void testDeletionWithoutFiles() throws InterruptedException {
-        String deletionOwner = "deleter";
-        // mock the publish method to not broke other tests in notifier manager
+    public void test_feature_deletion_request_without_files() throws InterruptedException {
+        // Given : mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
         long featureNumberInDatabase;
         int cpt = 0;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner,
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(DELETION_OWNER,
                                                                            false,
                                                                            properties.getMaxBulkSize(),
                                                                            this.isToNotify);
 
-        this.featureDeletionService.registerRequests(events);
+        featureDeletionService.registerRequests(events);
 
-        this.featureDeletionService.scheduleRequests();
+        // When
+        featureDeletionService.scheduleRequests();
         do {
-            featureNumberInDatabase = this.featureRepo.count();
+            featureNumberInDatabase = featureRepo.count();
             Thread.sleep(1000);
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != 0));
 
-        // in that case all features hasn't be deleted
+        // In this case all features have not been deleted
         if (cpt == 100) {
-            fail("Doesn't have all features haven't be deleted");
+            fail("All features have not been deleted.");
         }
 
-        if (this.isToNotify) {
+        // Then
+        if (isToNotify) {
             mockNotificationSuccess();
             // the publisher must be called 2 times one for feature creation and one for feature deletion
             Mockito.verify(publisher, Mockito.times(2)).publish(recordsCaptor.capture());
@@ -125,7 +135,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
             assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(0).size());
             assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(1).size());
         }
-        assertEquals(0, this.featureRepo.count());
+        assertEquals(0, featureRepo.count());
     }
 
     /**
@@ -135,30 +145,27 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
      * because they have files
      */
     @Test
-    public void testDeletionWithFiles() throws InterruptedException {
-
+    public void test_feature_deletion_request_with_files() throws InterruptedException {
+        // Given
         int nbFeature = properties.getMaxBulkSize();
-        String deletionOwner = "deleter";
 
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner,
-                                                                           true,
-                                                                           nbFeature,
-                                                                           this.isToNotify);
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(DELETION_OWNER, true, nbFeature, isToNotify);
         this.featureDeletionService.registerRequests(events);
-        this.featureDeletionService.scheduleRequests();
 
+        // When
+        this.featureDeletionService.scheduleRequests();
         waitForStep(featureDeletionRequestRepo,
                     FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED,
                     nbFeature,
                     10_000);
 
+        // Then
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());
         // the publisher has been called because of storage successes (feature creation with files)
         Mockito.verify(publisher, Mockito.times(1)).publish(recordsCaptor.capture());
-
     }
 
     /**
@@ -168,26 +175,27 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
      */
     @Test
     public void testFeaturePriority() throws InterruptedException {
-
-        String deletionOwner = "deleter";
+        // Given
         int nbFeaturesBatch1 = properties.getMaxBulkSize();
         int nbFeaturesBatch2 = properties.getMaxBulkSize() / 2;
         int nbFeatures = nbFeaturesBatch1 + nbFeaturesBatch2;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner,
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(DELETION_OWNER,
                                                                            true,
                                                                            nbFeatures,
                                                                            this.isToNotify);
         this.featureDeletionService.registerRequests(events);
 
+        // When
         this.featureDeletionService.scheduleRequests();
 
         waitFeature(nbFeaturesBatch2, null, 30_000);
 
-        if (this.isToNotify) {
+        if (isToNotify) {
             // first feature batch has been successfully deleted, now let simulate notification success
             mockNotificationSuccess();
         }
-        // there should remain properties.getMaxBulkSize / 2 request to be handled (scheduleRequest only schedule properties.getMaxBulkSize requests)
+        // Then : there should remain properties.getMaxBulkSize / 2 request to be handled (scheduleRequest only
+        // schedule properties.getMaxBulkSize requests)
         List<FeatureDeletionRequest> notScheduled = this.featureDeletionRequestRepo.findAll();
         assertEquals(nbFeaturesBatch2, notScheduled.size());
         assertTrue(notScheduled.stream().allMatch(request -> PriorityLevel.NORMAL.equals(request.getPriority())));
@@ -195,64 +203,78 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void testRetrieveRequests() throws InterruptedException {
+        // Given
         int nbValid = properties.getMaxBulkSize();
         OffsetDateTime start = OffsetDateTime.now();
         // Register valid requests
-        String deletionOwner = "deleter";
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(DELETION_OWNER, true, nbValid, false);
         this.featureDeletionService.registerRequests(events);
 
-        RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                                                     new SearchFeatureRequestParameters(),
-                                                                                     PageRequest.of(0, 100));
+        // When
+        RequestsPage<FeatureRequestDTO> results = featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                                                new SearchFeatureRequestParameters(),
+                                                                                PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
-        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
-                                                         RequestState.ERROR)),
-                                                     PageRequest.of(0, 100));
+        // When
+        results = featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                    RequestState.ERROR)),
+                                                PageRequest.of(0, 100));
+
+        // Then
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
-        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
-                                                                                             RequestState.GRANTED))
-                                                                                         .withLastUpdateAfter(
-                                                                                             OffsetDateTime.now()
-                                                                                                           .plusSeconds(
-                                                                                                               5)),
-                                                     PageRequest.of(0, 100));
+        // When
+        results = featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+                                                                                        RequestState.GRANTED))
+                                                                                    .withLastUpdateAfter(OffsetDateTime.now()
+                                                                                                                       .plusSeconds(
+                                                                                                                           5)),
+                                                PageRequest.of(0, 100));
+
+        // Then
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
-        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureRequestParameters().withLastUpdateAfter(start)
-                                                                                         .withLastUpdateBefore(
-                                                                                             OffsetDateTime.now()
-                                                                                                           .plusSeconds(
-                                                                                                               5)),
-                                                     PageRequest.of(0, 100));
+        // When
+        results = featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                new SearchFeatureRequestParameters().withLastUpdateAfter(start)
+                                                                                    .withLastUpdateBefore(OffsetDateTime.now()
+                                                                                                                        .plusSeconds(
+                                                                                                                            5)),
+                                                PageRequest.of(0, 100));
+
+        // Then
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
-        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of(
-                                                         "id1")),
-                                                     PageRequest.of(0, 100));
+        // When
+        results = featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of(
+                                                    "id1")),
+                                                PageRequest.of(0, 100));
+
+        // Then
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
-        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of(
-                                                         "id2")),
-                                                     PageRequest.of(0, 100));
+        // When
+        results = featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                new SearchFeatureRequestParameters().withProviderIdsIncluded(List.of(
+                                                    "id2")),
+                                                PageRequest.of(0, 100));
 
+        // Then
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
@@ -260,23 +282,24 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void testDeleteRequests() throws InterruptedException {
-
+        // Given
         int nbValid = properties.getMaxBulkSize();
         // Register valid requests
-        String deletionOwner = "deleter";
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
-        this.featureDeletionService.registerRequests(events);
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(DELETION_OWNER, true, nbValid, false);
+        featureDeletionService.registerRequests(events);
 
         // Simulate all requests to scheduled
-        this.featureDeletionService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, nbValid * 2))
-                                   .forEach(r -> {
-                                       r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
-                                       this.featureDeletionRequestRepo.save(r);
-                                   });
+        featureDeletionService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, nbValid * 2))
+                              .forEach(r -> {
+                                  r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
+                                  this.featureDeletionRequestRepo.save(r);
+                              });
 
-        // Try delete all requests.
+        // When : try delete all requests.
         RequestHandledResponse response = this.featureDeletionService.deleteRequests(new SearchFeatureRequestParameters());
         LOGGER.info(response.getMessage());
+
+        // Then
         Assert.assertEquals("There should be 0 requests deleted as all request are processing",
                             0,
                             response.getTotalHandled());
@@ -284,9 +307,12 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
-        response = this.featureDeletionService.deleteRequests(new SearchFeatureRequestParameters().withStatesIncluded(
-            List.of(RequestState.GRANTED)));
+        // When
+        response = featureDeletionService.deleteRequests(new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+            RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
+
+        // Then
         Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests",
                             0,
                             response.getTotalHandled());
@@ -294,33 +320,35 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
-        // Simulate all requests to scheduled
-        this.featureDeletionService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, nbValid * 2))
-                                   .forEach(r -> {
-                                       r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
-                                       this.featureDeletionRequestRepo.save(r);
-                                   });
+        // When : simulate all requests to scheduled
+        featureDeletionService.findRequests(new SearchFeatureRequestParameters(), PageRequest.of(0, nbValid * 2))
+                              .forEach(r -> {
+                                  r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                                  this.featureDeletionRequestRepo.save(r);
+                              });
 
-        response = this.featureDeletionService.deleteRequests(new SearchFeatureRequestParameters());
+        response = featureDeletionService.deleteRequests(new SearchFeatureRequestParameters());
         LOGGER.info(response.getMessage());
+
+        // Then
         Assert.assertEquals("invalid number of granted delete requests", nbValid, response.getTotalHandled());
         Assert.assertEquals("invalid number of granted delete requests", nbValid, response.getTotalRequested());
-
     }
 
     @Test
     public void testRetryRequests() throws InterruptedException {
-
+        // Given
         int nbValid = properties.getMaxBulkSize();
         // Register valid requests
-        String deletionOwner = "deleter";
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(DELETION_OWNER, true, nbValid, false);
         this.featureDeletionService.registerRequests(events);
 
-        // Try delete all requests.
-        RequestHandledResponse response = this.featureDeletionService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
+        // When : try delete all requests.
+        RequestHandledResponse response = featureDeletionService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
             List.of(RequestState.ERROR)));
         LOGGER.info(response.getMessage());
+
+        // Then
         Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state",
                             0,
                             response.getTotalHandled());
@@ -328,9 +356,12 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
-        response = this.featureDeletionService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
-            List.of(RequestState.GRANTED)));
+        // When
+        response = featureDeletionService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(List.of(
+            RequestState.GRANTED)));
         LOGGER.info(response.getMessage());
+
+        // Then
         Assert.assertEquals("invalid number of GRANTED Requests", nbValid, response.getTotalHandled());
         Assert.assertEquals("invalid number GRANTED Requests", nbValid, response.getTotalRequested());
 
@@ -338,44 +369,50 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void test1SessionNotifierWithFiles() throws InterruptedException {
-
-        // Create and Delete One with Files
+        // Given : create and Delete One with Files
         List<FeatureDeletionRequestEvent> eventWithFiles = prepareDeletionTestData(owner, true, 1, true);
         featureDeletionService.registerRequests(eventWithFiles);
+
+        // When
         featureDeletionService.scheduleRequests();
         TimeUnit.SECONDS.sleep(5);
         mockNotificationSuccess();
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 
+        // Then
         checkOneDeletion();
     }
 
     @Test
     public void test1SessionNotifierWithoutFiles() throws InterruptedException {
-
-        // Create and Delete One without files
+        // Given : create and Delete One without files
         List<FeatureDeletionRequestEvent> eventWithoutFiles = prepareDeletionTestData(owner, false, 1, true);
         featureDeletionService.registerRequests(eventWithoutFiles);
+
+        // When
         featureDeletionService.scheduleRequests();
         TimeUnit.SECONDS.sleep(5);
         mockNotificationSuccess();
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 
+        // Then
         checkOneDeletion();
     }
 
     @Test
     public void test1SessionNotifierWithoutNotification() throws InterruptedException, EntityException {
-
+        // Given
         setNotificationSetting(false);
 
         // Create and Delete One without files
         List<FeatureDeletionRequestEvent> eventWithoutFiles = prepareDeletionTestData(owner, false, 1, false);
         featureDeletionService.registerRequests(eventWithoutFiles);
         TimeUnit.SECONDS.sleep(5);
+        // When
         featureDeletionService.scheduleRequests();
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 
+        // Then
         checkOneDeletion();
     }
 
@@ -466,7 +503,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void testDeletionWithCreationPendingWithURN() {
-
+        // Given
         List<FeatureCreationRequestEvent> featureCreationRequestEvents = initFeatureCreationRequestEvent(1,
                                                                                                          false,
                                                                                                          false);
@@ -483,8 +520,11 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                                                                                                     PriorityLevel.NORMAL);
 
         featureDeletionService.registerRequests(Collections.singletonList(featureDeletionRequestEvent));
+
+        // When
         featureDeletionService.scheduleRequests();
 
+        // Then
         Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(
             FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
         assertEquals(1, notScheduled.size());
@@ -492,7 +532,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void testDeletionWithCreationPendingWithoutURN() throws InterruptedException {
-
+        // Given
         prepareCreationTestData(false, 1, false, false, false);
 
         FeatureUniformResourceName urn = featureCreationRequestRepo.findAll().get(0).getUrn();
@@ -502,12 +542,89 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                                                                                                     PriorityLevel.NORMAL);
 
         featureDeletionService.registerRequests(Collections.singletonList(featureDeletionRequestEvent));
+
+        // When
         featureDeletionService.scheduleRequests();
 
+        // Then
         Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(
             FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
         assertEquals(1, notScheduled.size());
     }
+
+    @Test
+    public void test_feature_deletion_request_blocked_with_files() throws InterruptedException {
+        // Given : mock the publish method to not broke other tests in notifier manager
+        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(DELETION_OWNER, true, 1, isToNotify);
+
+        featureDeletionService.registerRequests(events);
+
+        // Create case in order to block the feature deletion request
+        FeatureEntity featureEntity = featureWithDisseminationRepository.findAll().get(0);
+        FeatureDisseminationInfo featureDisseminationInfo = new FeatureDisseminationInfo("RecipientLabel", true);
+        featureDisseminationInfo.setBlocking(true);
+
+        featureEntity.getDisseminationsInfo().add(featureDisseminationInfo);
+        featureWithDisseminationRepository.save(featureEntity);
+
+        // When
+        featureDeletionService.scheduleRequests();
+
+        Set<FeatureDeletionRequest> featureDeletionRequests;
+        int cpt = 0;
+        int maxCpt = 10;
+        do {
+            featureDeletionRequests = featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+                                                                            OffsetDateTime.now().plusDays(1));
+            Thread.sleep(1000);
+            cpt++;
+        } while ((cpt < maxCpt) && (featureDeletionRequests.size() == 0));
+
+        // Then : in this case the feature deletion request has not pass in the WAITING_BLOCKING_DISSEMINATION step
+        if (cpt == maxCpt) {
+            fail("The feature deletion request has not pass in the WAITING_BLOCKING_DISSEMINATION step.");
+        }
+    }
+
+    @Test
+    public void test_feature_deletion_request_blocked_without_files() throws InterruptedException {
+        // Given : mock the publish method to not broke other tests in notifier manager
+        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(DELETION_OWNER, false, 1, isToNotify);
+
+        featureDeletionService.registerRequests(events);
+
+        // Create case in order to block the feature deletion request
+        FeatureEntity featureEntity = featureWithDisseminationRepository.findAll().get(0);
+        FeatureDisseminationInfo featureDisseminationInfo = new FeatureDisseminationInfo("RecipientLabel", true);
+        featureDisseminationInfo.setBlocking(true);
+
+        featureEntity.getDisseminationsInfo().add(featureDisseminationInfo);
+        featureWithDisseminationRepository.save(featureEntity);
+
+        // When
+        featureDeletionService.scheduleRequests();
+
+        Set<FeatureDeletionRequest> featureDeletionRequests;
+        int cpt = 0;
+        int maxCpt = 10;
+        do {
+            featureDeletionRequests = featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+                                                                            OffsetDateTime.now().plusDays(1));
+            Thread.sleep(1000);
+            cpt++;
+        } while ((cpt < maxCpt) && (featureDeletionRequests.size() == 0));
+
+        // Then : in this case the feature deletion request has not pass in the WAITING_BLOCKING_DISSEMINATION step
+        if (cpt == maxCpt) {
+            fail("The feature deletion request has not pass in the WAITING_BLOCKING_DISSEMINATION step.");
+        }
+    }
+
+    // ---------------------
+    // -- UTILITY METHODS --
+    // ---------------------
 
     private void checkOneDeletion() throws InterruptedException {
         // Compute Session step

@@ -30,7 +30,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Another repository for {@link FeatureEntity}, but this one always fetch disseminationsInfo graph
+ * Another repository to handle access to {@link FeatureEntity} entities, but this one always fetch disseminationsInfo
+ * graph
  *
  * @author Léo Mieulet
  */

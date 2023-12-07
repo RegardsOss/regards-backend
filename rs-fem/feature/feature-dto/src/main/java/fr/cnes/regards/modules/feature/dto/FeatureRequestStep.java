@@ -59,7 +59,9 @@ public enum FeatureRequestStep {
 
     REMOTE_CREATION_ERROR(false),
 
-    REMOTE_STORAGE_ERROR(false);
+    REMOTE_STORAGE_ERROR(false),
+
+    WAITING_BLOCKING_DISSEMINATION(true);
 
     private boolean remote = false;
 
