@@ -550,7 +550,7 @@ public class FileCacheRequestService {
      */
     public void makeAvailable(Set<FileReference> fileReferences, int availabilityHours, String groupId) {
         // Check files already available in cache
-        Set<FileReference> availables = cacheService.getFilesAvailableInCache(fileReferences, groupId);
+        Set<FileReference> availables = cacheService.getAndUpdateFileCacheIfExists(fileReferences, groupId);
         Set<FileReference> toRestore = fileReferences.stream()
                                                      .filter(f -> !availables.contains(f))
                                                      .collect(Collectors.toSet());

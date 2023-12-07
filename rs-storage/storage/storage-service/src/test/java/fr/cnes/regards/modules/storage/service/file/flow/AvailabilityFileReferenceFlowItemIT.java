@@ -64,7 +64,7 @@ import java.util.concurrent.ExecutionException;
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests" },
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_file_ref_tests" },
                     locations = { "classpath:application-test.properties" })
 public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
 

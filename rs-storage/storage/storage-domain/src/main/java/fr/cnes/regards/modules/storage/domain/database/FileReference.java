@@ -81,6 +81,9 @@ public class FileReference {
     @Column(name = "referenced")
     private boolean referenced = false;
 
+    @Column(name = "nearline_confirmed")
+    private boolean nearlineConfirmed = false;
+
     public FileReference() {
         super();
     }
@@ -179,6 +182,14 @@ public class FileReference {
      */
     public void setReferenced(boolean referenced) {
         this.referenced = true;
+    }
+
+    public boolean isNearlineConfirmed() {
+        return nearlineConfirmed;
+    }
+
+    public void setNearlineConfirmed(boolean nearlineConfirmed) {
+        this.nearlineConfirmed = nearlineConfirmed;
     }
 
     public FileReferenceDto toDto() {

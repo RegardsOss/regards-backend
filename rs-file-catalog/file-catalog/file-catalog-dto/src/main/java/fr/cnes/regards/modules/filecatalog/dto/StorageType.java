@@ -19,11 +19,40 @@
 package fr.cnes.regards.modules.filecatalog.dto;
 
 /**
- * Type of storage, nearline or online
+ * Type of storage, nearline or online.
  *
  * @author Sylvain Vissiere-Guerinet
  */
 public enum StorageType {
+    /**
+     * Storage where data is always accessible
+     */
+    ONLINE(3),
+    /**
+     * Storage where a restore is needed before download
+     */
+    NEARLINE(2),
+    /**
+     * Storage where data are not accessible
+     */
+    OFFLINE(1),
+    /**
+     * Must not be used except for internal or external storage cache for Regards.
+     */
+    CACHE(0);
 
-    NEARLINE, ONLINE, OFFLINE, CACHE;
+    /**
+     * Priority of storage.
+     * Priority is used to get data from the highest priority storage if it is present
+     * on multiple storage.
+     */
+    private final int priority;
+
+    StorageType(int priority) {
+        this.priority = priority;
+    }
+
+    public int comparePriorityWith(StorageType storageType) {
+        return this.priority - storageType.priority;
+    }
 }

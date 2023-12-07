@@ -100,7 +100,7 @@ public class IngestRequestService implements IIngestRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
 
     public static final String UNEXPECTED_STEP_S_TEMPLATE = "Unexpected step \"%s\"";
-
+    
     @Autowired
     private IngestConfigurationProperties confProperties;
 

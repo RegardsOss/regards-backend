@@ -587,7 +587,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
 
     private void waitRequestEnds(int nbrequests, int maxDurationSec) throws InterruptedException {
         int loopDuration = 2_000;
-        int nbLoop = ((maxDurationSec * 100000) / loopDuration);
+        int nbLoop = ((maxDurationSec * 10000) / loopDuration);
         int loop = 0;
         while ((listener.getNbRequestEnds() < nbrequests) && (loop < nbLoop)) {
             loop++;

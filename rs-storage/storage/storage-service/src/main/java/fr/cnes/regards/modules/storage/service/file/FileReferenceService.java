@@ -339,6 +339,13 @@ public class FileReferenceService {
     }
 
     /**
+     * Store modification of given file
+     */
+    public void store(FileReference updatedFile) {
+        fileRefRepo.save(updatedFile);
+    }
+
+    /**
      *
      */
     public boolean addOwner(Long id, String owner) {

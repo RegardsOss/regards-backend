@@ -150,6 +150,7 @@ public class CacheService {
             if (toDelete.size() > 10_000) {
                 // Do deletion and restart and page 0
                 toDelete.forEach(id -> cachedFileRepository.deleteById(id));
+                cachedFileRepository.deleteAllById(toDelete);
                 toDelete.clear();
                 page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
             } else {
@@ -169,12 +170,21 @@ public class CacheService {
     }
 
     /**
-     * Retrieve all {@link FileReference}s available in cache.
+     * Retrieve a list of file from the cache by their checksums.
+     *
+     * @return {@link CacheFile}
+     */
+    public Set<CacheFile> getCacheFiles(Set<String> checksums) {
+        return cachedFileRepository.findAllByChecksumIn(checksums);
+    }
+
+    /**
+     * Retrieve all {@link FileReference}s available in cache. Cache file groupIds list is updated if the file exists.
      *
      * @param groupId new availability request business identifier. This id is added to the already existing cache files.
      * @return {@link FileReference}s available
      */
-    public Set<FileReference> getFilesAvailableInCache(Set<FileReference> fileReferences, String groupId) {
+    public Set<FileReference> getAndUpdateFileCacheIfExists(Set<FileReference> fileReferences, String groupId) {
         Set<FileReference> availables = Sets.newHashSet();
         Set<String> checksums = fileReferences.stream()
                                               .map(f -> f.getMetaInfo().getChecksum())

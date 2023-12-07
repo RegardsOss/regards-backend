@@ -26,13 +26,18 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
+import fr.cnes.regards.modules.filecatalog.dto.availability.FilesAvailabilityRequestDto;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.service.DownloadTokenService;
+import fr.cnes.regards.modules.storage.service.availability.FileAvailabilityService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaExceededReporter;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +47,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -58,6 +65,8 @@ public class FileDownloadController {
     public static final String DOWNLOAD_RESOURCE_PATH = "resources";
 
     public static final String DOWNLOAD_PATH = "/{checksum}/download";
+
+    public static final String STATUS_AVAILABILITY_PATH = "/availability/status";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDownloadController.class);
 
@@ -78,6 +87,9 @@ public class FileDownloadController {
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private FileAvailabilityService availabilityService;
 
     /**
      * End-point to Download a file referenced by a storage location with the given checksum.
@@ -197,6 +209,17 @@ public class FileDownloadController {
                                  .contentLength(downloadFile.getRealFileSize().intValue())
                                  .body(new InputStreamResource(downloadFile.getFileInputStream()));
         });
+    }
+
+    @PostMapping(path = STATUS_AVAILABILITY_PATH)
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "List of availability status of input files. If any file is "
+                                                       + "not present in response (without error), that means "
+                                                       + "that file is not found.") })
+    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid @RequestBody
+                                                                                 FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
+        return new ResponseEntity<>(availabilityService.checkFileAvailability(filesAvailabilityRequestDto),
+                                    HttpStatus.OK);
     }
 
 }

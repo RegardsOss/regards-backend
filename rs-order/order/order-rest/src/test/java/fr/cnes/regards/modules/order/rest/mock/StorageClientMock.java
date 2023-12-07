@@ -22,6 +22,8 @@ import feign.Request;
 import feign.Response;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
+import fr.cnes.regards.modules.filecatalog.dto.files.FilesAvailabilityRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
@@ -98,6 +100,11 @@ public class StorageClientMock implements IStorageRestClient {
 
     @Override
     public ResponseEntity<Set<FileReferenceDto>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
         return null;
     }
 

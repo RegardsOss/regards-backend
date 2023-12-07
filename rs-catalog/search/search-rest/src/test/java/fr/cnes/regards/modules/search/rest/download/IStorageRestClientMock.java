@@ -10,6 +10,8 @@ import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceUpdateDto;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
+import fr.cnes.regards.modules.filecatalog.dto.files.FilesAvailabilityRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;
@@ -182,6 +184,11 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
 
     @Override
     public ResponseEntity<Set<FileReferenceDto>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
         return null;
     }
 

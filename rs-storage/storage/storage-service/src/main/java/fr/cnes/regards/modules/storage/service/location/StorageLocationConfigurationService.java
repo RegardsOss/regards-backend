@@ -105,6 +105,16 @@ public class StorageLocationConfigurationService {
     }
 
     /**
+     * Search for the configuration of given storages locations.
+     *
+     * @param storageNames storage ids
+     * @return Set of {@link StorageLocationConfiguration}
+     */
+    public Set<StorageLocationConfiguration> searchByNames(Collection<String> storageNames) {
+        return storageLocConfRepo.findByNameIn(storageNames);
+    }
+
+    /**
      * Return the highest prioritized storage location for the given storage location list and the given type.
      * This method can return an empty optional value in case no configuration match the given storage location list.
      *

@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.storage.domain.event;
 
 import fr.cnes.regards.framework.amqp.event.IEvent;
+import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
 
 import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
-import java.util.Objects;
 
 /**
  * Event raised to inform external applications (like GDH) that a file is now ready to download
@@ -30,45 +30,18 @@ import java.util.Objects;
  * @author Thomas GUILLOU
  **/
 // No need to @Event annotation because this event is not used internally
-public class FileAvailableEvent implements IEvent {
+public class FileAvailableEvent extends FileAvailabilityStatusDto implements IEvent {
 
     public static final String ROUTING_KEY_AVAILABILITY_STATUS = "regards.file.availability.status";
 
     public static final String EXCHANGE_NAME = "regards.storage.file.notification";
 
-    /**
-     * md5 of file
-     */
-    private String checksum;
-
-    /**
-     * file availability.</br>
-     * if true, it means that the file is located in T2 or in restoration cache
-     */
-    private boolean available;
-
-    @Nullable
-    private OffsetDateTime expirationDate;
+    public FileAvailableEvent(String checksum, boolean available, @Nullable OffsetDateTime expirationDate) {
+        super(checksum, available, expirationDate);
+    }
 
     public static FileAvailableEvent build(String checksum, boolean available, OffsetDateTime expirationDate) {
-        FileAvailableEvent fileAvailableEvent = new FileAvailableEvent();
-        fileAvailableEvent.checksum = checksum;
-        fileAvailableEvent.available = available;
-        fileAvailableEvent.expirationDate = expirationDate;
-        return fileAvailableEvent;
-    }
-
-    public String getChecksum() {
-        return checksum;
-    }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
-    @Nullable
-    public OffsetDateTime getExpirationDate() {
-        return expirationDate;
+        return new FileAvailableEvent(checksum, available, expirationDate);
     }
 
     @Override
@@ -86,19 +59,11 @@ public class FileAvailableEvent implements IEvent {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        FileAvailableEvent that = (FileAvailableEvent) o;
-        return available == that.available && Objects.equals(checksum, that.checksum) && Objects.equals(expirationDate,
-                                                                                                        that.expirationDate);
+        return super.equals(o) && o.getClass().equals(FileAvailableEvent.class);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(checksum, available, expirationDate);
+        return super.hashCode();
     }
 }

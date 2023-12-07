@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 /**
  * Storage location configuration.
@@ -79,7 +80,7 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     private Long allocatedSizeInKo = 0L;
 
     @SuppressWarnings("unused")
-    private StorageLocationConfiguration() {
+    protected StorageLocationConfiguration() {
     }
 
     public StorageLocationConfiguration(String name, @Nullable PluginConfiguration pluginConf, Long allocatedSizeInKo) {
@@ -159,7 +160,7 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
 
     @Override
     public int hashCode() {
-        return pluginConfiguration != null ? pluginConfiguration.hashCode() : 0;
+        return Objects.hash(id, name, pluginConfiguration, storageType, priority, allocatedSizeInKo);
     }
 
     @Override

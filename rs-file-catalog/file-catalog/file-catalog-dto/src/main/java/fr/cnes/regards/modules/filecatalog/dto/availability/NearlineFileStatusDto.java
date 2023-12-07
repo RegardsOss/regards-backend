@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.domain.dto;
+package fr.cnes.regards.modules.filecatalog.dto.availability;
 
-import javax.annotation.Nullable;
+import org.springframework.lang.Nullable;
+
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
@@ -27,18 +28,19 @@ import java.util.Objects;
  *
  * @author Thomas GUILLOU
  **/
-public class NearLineFileStatusDto {
+public class NearlineFileStatusDto {
 
     /**
      * file availability.</br>
      * if true, it means that the file is located in T2 or in the restoration cache
      */
-    private boolean available;
+    private final boolean available;
 
     @Nullable
-    private OffsetDateTime expirationDate;
+    private final OffsetDateTime expirationDate;
 
-    public NearLineFileStatusDto(boolean available, @Nullable OffsetDateTime expirationDate) {
+    public NearlineFileStatusDto(boolean available, @Nullable OffsetDateTime expirationDate) {
+
         this.available = available;
         this.expirationDate = expirationDate;
     }
@@ -60,7 +62,7 @@ public class NearLineFileStatusDto {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        NearLineFileStatusDto that = (NearLineFileStatusDto) o;
+        NearlineFileStatusDto that = (NearlineFileStatusDto) o;
         return available == that.available && Objects.equals(expirationDate, that.expirationDate);
     }
 
