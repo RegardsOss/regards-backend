@@ -190,7 +190,7 @@ public class FileCacheRequestService {
         Optional<FileCacheRequest> fileCacheRequestOptional = cacheRequestRepository.findByChecksum(checksum);
 
         FileCacheRequest fileCacheRequest;
-        if (!fileCacheRequestOptional.isPresent()) {
+        if (fileCacheRequestOptional.isEmpty()) {
             fileCacheRequest = new FileCacheRequest(fileRefToRestore,
                                                     cacheService.getCacheDirectoryPath(checksum),
                                                     availabilityHours,
@@ -203,7 +203,7 @@ public class FileCacheRequestService {
             fileCacheRequest = fileCacheRequestOptional.get();
             fileCacheRequest.setAvailabilityHours(availabilityHours);
             if (fileCacheRequest.getStatus() == FileRequestStatus.ERROR) {
-                fileCacheRequest.setStatus(reqStatusService.getNewStatus(fileCacheRequest));
+                fileCacheRequest.setStatus(FileRequestStatus.TO_DO);
             }
             fileCacheRequest = cacheRequestRepository.save(fileCacheRequest);
             LOGGER.trace("File {} (checksum {}) is already requested for cache.",
@@ -329,7 +329,7 @@ public class FileCacheRequestService {
     public void retryRequest(String groupId) {
         for (FileCacheRequest request : cacheRequestRepository.findByGroupIdAndStatus(groupId,
                                                                                       FileRequestStatus.ERROR)) {
-            request.setStatus(reqStatusService.getNewStatus(request));
+            request.setStatus(FileRequestStatus.TO_DO);
             request.setErrorCause(null);
             cacheRequestRepository.save(request);
         }

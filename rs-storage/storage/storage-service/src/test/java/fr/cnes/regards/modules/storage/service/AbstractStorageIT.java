@@ -448,18 +448,20 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                   pendingRemainingAction);
     }
 
-    protected FileStorageRequestAggregation generateRandomStorageRequest(String id, FileRequestStatus status) {
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(id,
+    protected FileStorageRequestAggregation generateRandomStorageRequest(String id,
+                                                                         String checksum,
+                                                                         FileRequestStatus status) {
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
                                                                        "MD5",
-                                                                       id,
+                                                                       checksum,
                                                                        132L,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
-        FileStorageRequestAggregation fr = new FileStorageRequestAggregation("owner",
+        FileStorageRequestAggregation fr = new FileStorageRequestAggregation(UUID.randomUUID().toString(),
                                                                              fileMetaInfo,
                                                                              "file:///test/toto/" + id,
                                                                              ONLINE_CONF_LABEL,
                                                                              Optional.empty(),
-                                                                             "group1",
+                                                                             UUID.randomUUID().toString(),
                                                                              "sessionOwner",
                                                                              "session");
         fr.setStatus(status);

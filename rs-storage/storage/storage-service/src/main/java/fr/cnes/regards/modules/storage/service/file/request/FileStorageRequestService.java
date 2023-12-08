@@ -366,35 +366,20 @@ public class FileStorageRequestService {
             switch (existingReq.getStatus()) {
                 case DELAYED:
                 case TO_DO:
-                    existingReq.update(request, groupId);
-                    break;
                 case PENDING:
-                    // check whether job is still alive
-                    // to know if this request is still running, lets get all FAILED jobs since existing requests date
-                    Collection<JobInfo> jobHandlingExistingRequests = jobInfoRepo.findAllByClassNameAndParametersValueContaining(
-                        FileStorageRequestJob.class.getCanonicalName(),
-                        existingReq.getId().toString());
-                    if (jobHandlingExistingRequests.stream()
-                                                   .allMatch(jobInfo -> jobInfo.getStatus().getStatus()
-                                                                        == JobStatus.FAILED)) {
-                        existingReq.setStatus(FileRequestStatus.ERROR);
-                        sessionNotifier.decrementRunningRequests(sessionOwner, session);
-                        sessionNotifier.incrementErrorRequests(sessionOwner, session);
-                        // There is no break because we want to get into the case ERROR
-                    } else {
-                        // Then other request is pending create in one in DELAYED state so it can be handled once the
-                        // other one is over.
-                        LOGGER.info("Storage request for file {}/{} (cs={}) already pending, create a new request in "
-                                    + "delayed status.",
-                                    request.getFileName(),
-                                    request.getStorage(),
-                                    request.getChecksum());
-                        return saveNewFileStorageRequest(request,
-                                                         groupId,
-                                                         sessionOwner,
-                                                         session,
-                                                         FileRequestStatus.DELAYED);
-                    }
+                    // Create new request in DELAYED state so it can be handled once the other one is over.
+                    // Delayed identical requests are un-delayed and merge if possible during the un-delay task
+                    // see reqStatusService.checkDelayedStorageRequests
+                    LOGGER.info("Storage request for file {}/{} (checksum={}) already pending, create a new request in "
+                                + "delayed status.",
+                                request.getFileName(),
+                                request.getStorage(),
+                                request.getChecksum());
+                    return saveNewFileStorageRequest(request,
+                                                     groupId,
+                                                     sessionOwner,
+                                                     session,
+                                                     FileRequestStatus.DELAYED);
                 case ERROR:
                     // If request already exists and in ERROR status retry exiting one instead of create a new request
                     existingReq.update(request, groupId);

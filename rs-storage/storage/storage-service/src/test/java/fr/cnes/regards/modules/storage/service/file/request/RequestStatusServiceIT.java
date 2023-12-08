@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -53,25 +54,27 @@ public class RequestStatusServiceIT extends AbstractStorageIT {
     @Test
     public void test_delayed_requests() {
         // Given
-        List<FileStorageRequestAggregation> requests = new ArrayList<>();
+        List<FileStorageRequestAggregation> newRequests = new ArrayList<>();
         String id = UUID.randomUUID().toString();
-        IntStream.range(0, 10).forEach(i -> requests.add(generateRandomStorageRequest(id, FileRequestStatus.DELAYED)));
-        fileStorageRequestRepo.saveAll(requests);
+        IntStream.range(0, 10)
+                 .forEach(i -> newRequests.add(generateRandomStorageRequest(id, id, FileRequestStatus.DELAYED)));
+        fileStorageRequestRepo.saveAll(newRequests);
 
         // With try to un delayed possible requests
         requestStatusService.checkDelayedStorageRequests();
 
         // Then only one request should be un delayed
-        Assert.assertEquals(9L,
+        Assert.assertEquals(0L,
                             fileStorageRequestRepo.countByStorageAndStatus(ONLINE_CONF_LABEL, FileRequestStatus.DELAYED)
                                                   .longValue());
+        // Then there is one TO_DO request containing all 10 requests
+        List<FileStorageRequestAggregation> requests = fileStorageRequestRepo.findAllByStorageAndStatus(
+            ONLINE_CONF_LABEL,
+            FileRequestStatus.TO_DO,
+            Pageable.ofSize(10)).getContent();
 
-        // With new try to un delayed possible requests
-        requestStatusService.checkDelayedStorageRequests();
-
-        // Then there is always only one request un delayed
-        Assert.assertEquals(9L,
-                            fileStorageRequestRepo.countByStorageAndStatus(ONLINE_CONF_LABEL, FileRequestStatus.DELAYED)
-                                                  .longValue());
+        Assert.assertEquals(1L, requests.size());
+        Assert.assertEquals(10, requests.get(0).getGroupIds().size());
+        Assert.assertEquals(10, requests.get(0).getOwners().size());
     }
 }

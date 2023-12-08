@@ -38,9 +38,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Service to handle {@link FileRequestStatus} for new requests of all types.<br/>
@@ -120,16 +118,6 @@ public class RequestStatusService {
     }
 
     /**
-     * Compute {@link FileRequestStatus} for new {@link FileCacheRequest}
-     *
-     * @param request request to compute status for
-     * @return {@link FileRequestStatus}
-     */
-    public FileRequestStatus getNewStatus(FileCacheRequest request) {
-        return FileRequestStatus.TO_DO;
-    }
-
-    /**
      * Compute {@link FileRequestStatus} for new {@link FileDeletionRequest}
      *
      * @param request  request to compute status for
@@ -173,16 +161,38 @@ public class RequestStatusService {
      */
     public void checkDelayedStorageRequests() {
         int nbUpdated = 0;
+        List<FileStorageRequestAggregation> undelayedRequests = new ArrayList<>();
         for (FileStorageRequestAggregation delayedRequest : storageReqRepo.findByStatus(FileRequestStatus.DELAYED,
                                                                                         PageRequest.of(0, 500))) {
-            // Check new status for the delayed request
-            if (getNewStatus(delayedRequest, Optional.empty()) == FileRequestStatus.TO_DO) {
-                delayedRequest.setStatus(FileRequestStatus.TO_DO);
-                nbUpdated++;
+            String storage = delayedRequest.getStorage();
+            String checksum = delayedRequest.getMetaInfo().getChecksum();
+            Optional<FileStorageRequestAggregation> sameRequest = undelayedRequests.stream()
+                                                                                   .filter(ur -> ur.getStorage()
+                                                                                                   .equals(storage)
+                                                                                                 && ur.getMetaInfo()
+                                                                                                      .getChecksum()
+                                                                                                      .equals(checksum))
+                                                                                   .findFirst();
+            if (sameRequest.isEmpty()) {
+                // Check new status for the delayed request
+                if (getNewStatus(delayedRequest, Optional.empty()) == FileRequestStatus.TO_DO) {
+                    undelayedRequests.add(delayedRequest);
+                    delayedRequest.setStatus(FileRequestStatus.TO_DO);
+                    nbUpdated++;
+                }
+            } else {
+                // If an identical storage request has already been undelayed, just merge all two requests and delete
+                // the last one.
+                LOGGER.info("[STORAGE REQUEST] storage request delayed match existing one ({}/{}). Both requests are "
+                            + "merged and un-delayed", storage, checksum);
+                FileStorageRequestAggregation undelayedRequest = sameRequest.get();
+                undelayedRequest.getGroupIds().addAll(delayedRequest.getGroupIds());
+                undelayedRequest.getOwners().addAll(delayedRequest.getOwners());
+                storageReqRepo.delete(delayedRequest);
             }
         }
         if (nbUpdated > 0) {
-            LOGGER.debug("[STORAGE REQUEST] {} delayed requests can be hanle now.", nbUpdated);
+            LOGGER.debug("[STORAGE REQUEST] {} delayed requests can be handle now.", nbUpdated);
         }
     }
 
@@ -200,7 +210,7 @@ public class RequestStatusService {
             }
         }
         if (nbUpdated > 0) {
-            LOGGER.debug("[DELETE REQUEST] {} delayed requests can be hanle now.", nbUpdated);
+            LOGGER.debug("[DELETE REQUEST] {} delayed requests can be handled now.", nbUpdated);
         }
     }
 
