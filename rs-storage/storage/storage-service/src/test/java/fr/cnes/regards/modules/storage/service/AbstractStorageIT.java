@@ -449,18 +449,18 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                   pendingRemainingAction);
     }
 
-    protected FileStorageRequest generateRandomStorageRequest(String id, FileRequestStatus status) {
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(id,
+    protected FileStorageRequest generateRandomStorageRequest(String id, String checksum, FileRequestStatus status) {
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
                                                                        "MD5",
-                                                                       id,
+                                                                       checksum,
                                                                        132L,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
-        FileStorageRequest fr = new FileStorageRequest("owner",
+        FileStorageRequest fr = new FileStorageRequest(UUID.randomUUID().toString(),
                                                        fileMetaInfo,
                                                        "file:///test/toto/" + id,
                                                        ONLINE_CONF_LABEL,
                                                        Optional.empty(),
-                                                       "group1",
+                                                       UUID.randomUUID().toString(),
                                                        "sessionOwner",
                                                        "session");
         fr.setStatus(status);

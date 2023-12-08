@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursorMode;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -64,7 +65,7 @@ public interface IDataSourcePlugin {
      */
     List<DataObjectFeature> findAll(String tenant,
                                     CrawlingCursor cursor,
-                                    OffsetDateTime lastIngestDate,
+                                    @Nullable OffsetDateTime lastIngestDate,
                                     OffsetDateTime currentIngestionStartDate) throws DataSourceException;
 
     /**

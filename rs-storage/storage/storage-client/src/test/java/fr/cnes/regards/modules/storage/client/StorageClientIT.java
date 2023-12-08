@@ -79,7 +79,8 @@ import java.util.stream.Collectors;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
                                    "regards.amqp.enabled=true",
                                    "regards.storage.schedule.initial.delay=100",
-                                   "regards.storage.schedule.delay=100" },
+                                   "regards.storage.schedule.delay=100",
+                                   "regards.storage.storage.requests.per.job=15" },
                     locations = { "classpath:application-test.properties" })
 public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
@@ -102,6 +103,9 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IFileStorageRequestRepository storageReqRepo;
+
+    @Autowired
+    private IFileReferenceWithOwnersRepository fileReferenceWithOwnersRepository;
 
     @Autowired
     private IFileCopyRequestRepository copyReqRepo;
@@ -237,7 +241,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
         FileSystemUtils.deleteRecursively(Paths.get("target/store"));
         Files.createDirectory(Paths.get("target/store"));
-        int nbGroups = 110;
+        int nbGroups = 20;
         Set<Path> filesToStore = Sets.newHashSet();
         for (int i = 0; i < nbGroups; i++) {
             Path path = Paths.get("target/store/file_" + i + ".txt");
@@ -288,9 +292,15 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
             groupIds.addAll(client.store(files).stream().map(RequestInfo::getGroupId).toList());
         }
 
-        waitRequestEnds(nbGroups, 120);
+        Assert.assertEquals(nbGroups, groupIds.size());
+        waitRequestEnds(groupIds.size(), 30);
+        Optional<FileReference> commonFileRef = fileReferenceWithOwnersRepository.findByLocationStorageAndMetaInfoChecksum(
+            ONLINE_CONF,
+            csCommon);
+        Assert.assertTrue(commonFileRef.isPresent());
+        Assert.assertEquals(nbGroups, commonFileRef.get().getLazzyOwners().size());
         long nbReqErrors = storageReqRepo.countByStorageAndStatus(ONLINE_CONF, FileRequestStatus.ERROR);
-        if (nbReqErrors > 0 || listener.getErrors().size() > 0) {
+        if (nbReqErrors > 0 || !listener.getErrors().isEmpty()) {
             LOGGER.warn("Request errors detected : {}", nbReqErrors);
             LOGGER.warn("Request groups error events received : {}", listener.getErrors().size());
         }

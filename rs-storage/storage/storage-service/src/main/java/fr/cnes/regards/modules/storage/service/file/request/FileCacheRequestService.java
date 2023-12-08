@@ -201,7 +201,7 @@ public class FileCacheRequestService {
             request = oFcr.get();
             request.setExpirationDate(expirationDate);
             if (request.getStatus() == FileRequestStatus.ERROR) {
-                request.setStatus(reqStatusService.getNewStatus(request));
+                request.setStatus(FileRequestStatus.TO_DO);
             }
             request = cacheRequestRepository.save(request);
             LOGGER.trace("File {} (checksum {}) is already requested for cache.",
@@ -325,7 +325,7 @@ public class FileCacheRequestService {
     public void retryRequest(String groupId) {
         for (FileCacheRequest request : cacheRequestRepository.findByGroupIdAndStatus(groupId,
                                                                                       FileRequestStatus.ERROR)) {
-            request.setStatus(reqStatusService.getNewStatus(request));
+            request.setStatus(FileRequestStatus.TO_DO);
             request.setErrorCause(null);
             cacheRequestRepository.save(request);
         }
