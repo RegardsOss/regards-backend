@@ -42,32 +42,62 @@ pipeline {
         BRANCH_NAME_VERSION = "${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}-SNAPSHOT"
         IGNORE_HASH = ""
     }
+    parameters {
+        booleanParam(name: 'DOCKER_IMAGE_FAST_GENERATION', defaultValue: false, description: 'Enable fast docker images generation')
+        booleanParam(name: 'DOCKER_IMAGE_GENERATION', defaultValue: false, description: 'Enable docker images generation')
+        booleanParam(name: 'DEPLOY_ARTIFACTS', defaultValue: false, description: 'Enable artifacts deploy')
+        booleanParam(name: 'INCREMENTAL_BUILD', defaultValue: true, description: 'Enable incremental build (calculate hashes and dependency tree)')
+        booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip tests')
+    }
     agent { label 'unix-integration' }
     stages {
         stage('Preparation') {
             steps {
                 echo "Jenkins node name = ${env.NODE_NAME}"
                 echo "Current workspace = ${env.WORKSPACE}"
-                echo "Docker image tag = ${env.BRANCH_NAME_VERSION}"
                 echo "Docker Fast image tag = fast-${env.BRANCH_NAME_VERSION}"
-
-                sh label: "Pull docker images", script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml pull \
-                    && docker pull ' + MVN_IMAGE + ' && docker pull ' + JAVA_IMAGE
-
+                echo "Generate & deploy fast docker images = ${params.DOCKER_IMAGE_FAST_GENERATION}"
+                echo "Generate & deploy docker images = ${params.DOCKER_IMAGE_GENERATION}"
+                echo "Using incremental build = ${params.INCREMENTAL_BUILD}"
+                echo "Skip tests = ${params.SKIP_TESTS}"
+            }
+        }
+        stage('Hashes calculation') {
+            when {
+                anyOf { 
+                   expression { params.INCREMENTAL_BUILD == true }
+                }
+            }
+            steps {
                 runMavenDockerImgWithoutCoTS("Build dependency tree", "dependencies")
-
                 runMavenDockerImgWithoutCoTS("Build modules hashes", "hashes")
             }
         }
-        stage("Fast Build") {
+        stage("Compilation") {
             steps {
                 runMavenDockerImgWithoutCoTS("Build with docker profile", "compile")
-
+            }
+        }
+        stage("Fast docker image deploy") {
+            when {
+                anyOf { 
+                   expression { params.DOCKER_IMAGE_FAST_GENERATION == true }
+                   branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
+                }
+            }
+            steps {
                 runMavenDockerImgWithoutCoTS("Build/Deploy docker images", "deployFastDockerImages")
             }
         }
         stage("Tests Preparation") {
+            when {
+                anyOf { 
+                   expression { params.SKIP_TESTS == false }
+                }
+            }
             steps {
+                sh label: "Pull docker images", script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml pull \
+                        && docker pull ' + MVN_IMAGE + ' && docker pull ' + JAVA_IMAGE
                 sh label: "Launch COTS", script: 'docker-compose \
                         -f ' + CI_DIR + '/docker/docker-compose-cots.yml \
                         -p ' + PROJECT_NAME + ' \
@@ -76,6 +106,11 @@ pipeline {
         }
 
         stage('Run tests') {
+            when {
+                anyOf { 
+                   expression { params.SKIP_TESTS == false }
+                }
+            }
             parallel {
                 stage('-1-') {
                     stages {
@@ -176,13 +211,22 @@ pipeline {
         }
         stage("Deploy artifacts") {
             when {
-                branch pattern: /(master|develop.*|release.*|feature\/dma_.*|hotfix\/dma_.*)/, comparator: "REGEXP"
+                anyOf {
+                    expression { params.DEPLOY_ARTIFACTS == true }
+                    branch pattern: /(master|develop.*|release.*|feature\/dma_.*|hotfix\/dma_.*)/, comparator: "REGEXP"
+                }
             }
             steps {
                 runMavenDockerImgWithoutCoTS("Deploy Maven Artifacts", "deployMvnArtifacts")
             }
         }
         stage("Deploy Docker images") {
+            when {
+                anyOf { 
+                   expression { params.DOCKER_IMAGE_GENERATION == true }
+                   branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
+                }
+            }
             steps {
                 runMavenDockerImgWithoutCoTS("Build/Deploy stable docker images", "deployDockerImages")
             }
@@ -191,7 +235,11 @@ pipeline {
     post {
         always {
             // Always send new successfull modules hashes to nexus
-            runMavenDockerImgWithoutCoTS('POST-ALWAYS-TASK -- Send new successfull modules hashes to nexus', "updateHashes")
+            script {
+                if (params.INCREMENTAL_BUILD == true) {
+                    runMavenDockerImgWithoutCoTS('POST-ALWAYS-TASK -- Send new successfull modules hashes to nexus', "updateHashes")
+                }
+            }
         }
         failure {
             echo 'POST-FAILURE-TASK -- The build FAILED, let\'s print all COTS logs'
@@ -205,18 +253,21 @@ pipeline {
 
             sh label: "POST-FAILURE-TASK -- Print First RabbitMQ logs", script: 'cd ' + CI_DIR + ' \
                 && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-first', returnStatus: true
-
             sh label: "POST-FAILURE-TASK -- Print Second RabbitMQ logs", script: 'cd ' + CI_DIR + ' \
                 && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-second', returnStatus: true
 
             sh label: "POST-FAILURE-TASK -- Print S3 Minio logs", script: 'cd ' + CI_DIR + ' \
-                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-minio', returnStatus: true
+               && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-minio', returnStatus: true
         }
         cleanup {
-            sh label: 'POST-CLEANUP-TASK -- Stop CoTs', script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
-            sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . \
-                && chmod -R u+rwx . \
-                && chmod -R g+rwx .'
+            script {
+                if (params.SKIP_TESTS == false) {
+                    sh label: 'POST-CLEANUP-TASK -- Stop CoTs', script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
+                    sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . \
+                        && chmod -R u+rwx . \
+                        && chmod -R g+rwx .'
+                }
+            }
         }
     }
 }
