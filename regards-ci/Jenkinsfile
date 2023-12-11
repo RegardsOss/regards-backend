@@ -66,7 +66,6 @@ pipeline {
             when {
                 anyOf { 
                    expression { params.INCREMENTAL_BUILD == true }
-                   branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
                 }
             }
             steps {
