@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
@@ -78,7 +78,7 @@ public class RequestController implements IResourceController<RequestDto> {
     public static final String REQUEST_ABORT_PATH = "/abort";
 
     /**
-     * Controller path to choose multiple requests, using criteria, versioning mode after {@link fr.cnes.regards.modules.ingest.domain.sip.VersioningMode#MANUAL}
+     * Controller path to choose multiple requests, using criteria, versioning mode after {@link VersioningMode#MANUAL}
      */
     public static final String VERSIONING_CHOICE_PATH = "/versioning";
 

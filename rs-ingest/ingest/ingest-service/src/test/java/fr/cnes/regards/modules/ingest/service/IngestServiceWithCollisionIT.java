@@ -32,8 +32,8 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
@@ -87,13 +87,15 @@ public class IngestServiceWithCollisionIT extends IngestMultitenantServiceIT {
     }
 
     private void ingestSIP(String providerId, String checksum) throws EntityInvalidException {
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
-                                                                         SESSION,
-                                                                         null,
-                                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                                         Sets.newHashSet("CAT"),
-                                                                         null,
-                                                                         StorageMetadata.build("disk")));
+        IngestMetadataDto metadata = new IngestMetadataDto(SESSION_OWNER,
+                                                           SESSION,
+                                                           null,
+                                                           IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                           Sets.newHashSet("CAT"),
+                                                           null,
+                                                           null,
+                                                           new StorageDto("disk"));
+        SIPCollection sips = SIPCollection.build(metadata);
 
         sips.add(SIPDto.build(EntityType.DATA, providerId)
                        .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum)

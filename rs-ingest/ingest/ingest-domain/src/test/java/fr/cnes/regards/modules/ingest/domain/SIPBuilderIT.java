@@ -20,14 +20,14 @@ package fr.cnes.regards.modules.ingest.domain;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
 import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
-import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import org.junit.Assert;
 import org.junit.Test;
@@ -79,14 +79,14 @@ public class SIPBuilderIT {
         String algorithm = "checksumAlgorithm";
 
         // Initialize a SIP Collection builder
-        SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(sessionOwner,
-                                                                               session,
-                                                                               null,
-                                                                               ingestChain,
-                                                                               CATEGORIES,
-                                                                               null,
-                                                                               null,
-                                                                               StorageMetadata.build("test")));
+        SIPCollection collection = SIPCollection.build(new IngestMetadataDto(sessionOwner,
+                                                                             session,
+                                                                             null,
+                                                                             ingestChain,
+                                                                             CATEGORIES,
+                                                                             null,
+                                                                             null,
+                                                                             new StorageDto("test")));
 
         // Create a SIP builder
         String providerId = "SIP_001";

@@ -31,7 +31,7 @@ public enum InternalRequestState {
      */
     CREATED,
     /**
-     * Request versioning mode is {@link fr.cnes.regards.modules.ingest.domain.sip.VersioningMode#MANUAL},
+     * Request versioning mode is {@link VersioningMode#MANUAL},
      * so we need administrator decision to go further
      */
     WAITING_VERSIONING_MODE,

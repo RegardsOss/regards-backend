@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
-import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

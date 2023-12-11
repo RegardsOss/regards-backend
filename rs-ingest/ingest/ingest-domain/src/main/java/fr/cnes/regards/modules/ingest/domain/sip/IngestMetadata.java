@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.sip;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;

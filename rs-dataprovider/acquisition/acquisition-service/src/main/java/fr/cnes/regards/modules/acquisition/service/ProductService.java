@@ -54,8 +54,8 @@ import fr.cnes.regards.modules.ingest.client.IngestClientException;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,15 +168,15 @@ public class ProductService implements IProductService {
                      product.getIpId(),
                      product.getSipState());
 
-        List<StorageMetadata> storageList = new ArrayList<>();
+        List<StorageDto> storageList = new ArrayList<>();
 
         // If products have to be stored physically, save storage paths in storageList
         // else if they have to be referenced, save them in storage location content information
         if (acquisitionChain.isProductsStored()) {
             for (StorageMetadataProvider storage : acquisitionChain.getStorages()) {
-                storageList.add(StorageMetadata.build(storage.getPluginBusinessId(),
-                                                      storage.getStorePath(),
-                                                      storage.getTargetTypes()));
+                storageList.add(new StorageDto(storage.getPluginBusinessId(),
+                                               storage.getStorePath(),
+                                               storage.getTargetTypes()));
             }
         } else {
             List<ContentInformationDto> productCIList = product.getSip().getProperties().getContentInformations();
@@ -194,14 +194,14 @@ public class ProductService implements IProductService {
             }
         }
 
-        IngestMetadataDto ingestMetadata = IngestMetadataDto.build(product.getProcessingChain().getLabel(),
-                                                                   product.getSession(),
-                                                                   null,
-                                                                   product.getProcessingChain().getIngestChain(),
-                                                                   acquisitionChain.getCategories(),
-                                                                   product.getProcessingChain().getVersioningMode(),
-                                                                   null,
-                                                                   storageList);
+        IngestMetadataDto ingestMetadata = new IngestMetadataDto(product.getProcessingChain().getLabel(),
+                                                                 product.getSession(),
+                                                                 null,
+                                                                 product.getProcessingChain().getIngestChain(),
+                                                                 acquisitionChain.getCategories(),
+                                                                 product.getProcessingChain().getVersioningMode(),
+                                                                 null,
+                                                                 storageList);
         try {
             ingestClient.ingest(ingestMetadata, product.getSip());
             return save(product);

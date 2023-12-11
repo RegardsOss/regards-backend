@@ -42,6 +42,8 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorReq
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
@@ -49,7 +51,6 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
@@ -155,13 +156,15 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         waitSipCount(nbSIP);
         ingestRequestSchedulerService.scheduleRequests();
 
-        IngestMetadataDto mtd = IngestMetadataDto.build(SESSION_OWNER_0,
-                                                        SESSION_0,
-                                                        null,
-                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                        Sets.newHashSet(CATEGORIES_0),
-                                                        null,
-                                                        StorageMetadata.build(STORAGE_0));
+        IngestMetadataDto mtd = new IngestMetadataDto(SESSION_OWNER_0,
+                                                      SESSION_0,
+                                                      null,
+                                                      IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                      Sets.newHashSet(CATEGORIES_0),
+                                                      null,
+                                                      null,
+                                                      new StorageDto(STORAGE_0));
+
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 2000);
 

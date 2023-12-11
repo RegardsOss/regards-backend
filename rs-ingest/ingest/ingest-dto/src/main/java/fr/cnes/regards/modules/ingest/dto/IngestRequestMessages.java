@@ -1,5 +1,6 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -14,21 +15,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
-package fr.cnes.regards.modules.ingest.domain.mapper;
+package fr.cnes.regards.modules.ingest.dto;
 
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
-import org.mapstruct.Mapper;
+public class IngestRequestMessages {
 
-/**
- * @author Marc SORDI
- */
-@Mapper(componentModel = "spring")
-public interface IIngestMetadataMapper {
+    public static final String MISSING_METADATA = "Ingest metadata is required";
 
-    IngestMetadataDto metadataToDto(IngestMetadata metadata);
-
-    IngestMetadata dtoToMetadata(IngestMetadataDto dto);
 }

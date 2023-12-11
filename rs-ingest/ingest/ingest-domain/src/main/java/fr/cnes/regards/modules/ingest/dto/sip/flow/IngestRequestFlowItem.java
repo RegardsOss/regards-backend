@@ -22,13 +22,11 @@ import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.IngestRequestFlowItemDto;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.util.Assert;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 /**
  * Data flow item to ingest SIP using event driven mechanism.
@@ -36,35 +34,11 @@ import javax.validation.constraints.NotNull;
  * @author Marc SORDI
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class IngestRequestFlowItem extends AbstractRequestFlowItem implements ISubscribable, IMessagePropertiesAware {
+public class IngestRequestFlowItem extends IngestRequestFlowItemDto implements ISubscribable, IMessagePropertiesAware {
 
     // Prevent GSON converter from serializing this field
     @GsonIgnore
     protected MessageProperties messageProperties;
-
-    @Valid
-    @NotNull(message = IngestValidationMessages.MISSING_METADATA)
-    private IngestMetadataDto metadata;
-
-    @Valid
-    @NotNull(message = IngestValidationMessages.MISSING_SIP)
-    private SIPDto sip;
-
-    public IngestMetadataDto getMetadata() {
-        return metadata;
-    }
-
-    public SIPDto getSip() {
-        return sip;
-    }
-
-    public void setMetadata(IngestMetadataDto metadata) {
-        this.metadata = metadata;
-    }
-
-    public void setSip(SIPDto sip) {
-        this.sip = sip;
-    }
 
     /**
      * Build a new SIP flow item with a custom request id.

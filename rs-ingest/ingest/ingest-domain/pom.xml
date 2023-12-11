@@ -63,10 +63,10 @@
             <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
             <artifactId>tenant-settings-domain</artifactId>
         </dependency>
-        <!--<dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>jpa-data-regards</artifactId>
-        </dependency> -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.ingest</groupId>
+            <artifactId>ingest-dto</artifactId>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
@@ -83,5 +83,6 @@
             <artifactId>oais-dto</artifactId>
             <scope>compile</scope>
         </dependency>
+
     </dependencies>
 </project>

@@ -34,13 +34,13 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.test.IngestServiceIT;
@@ -151,13 +151,14 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         sip.withEvent(String.format("SIP %s generated", providerId));
 
         // Create event
-        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
-                                                        session,
-                                                        null,
-                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                        categories,
-                                                        null,
-                                                        StorageMetadata.build(storage));
+        IngestMetadataDto mtd = new IngestMetadataDto(sessionOwner,
+                                                      session,
+                                                      null,
+                                                      IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                      categories,
+                                                      null,
+                                                      null,
+                                                      new StorageDto(storage));
 
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
     }

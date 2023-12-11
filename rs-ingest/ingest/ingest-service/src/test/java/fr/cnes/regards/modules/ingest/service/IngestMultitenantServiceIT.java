@@ -42,10 +42,10 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
+import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
@@ -272,15 +272,15 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                               List<String> categories,
                                               Optional<String> chainLabel) {
 
-        List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
-        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
-                                                        session,
-                                                        null,
-                                                        chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
-                                                        Sets.newHashSet(categories),
-                                                        VersioningMode.INC_VERSION,
-                                                        null,
-                                                        storagesMeta);
+        List<StorageDto> storagesMeta = storages.stream().map(StorageDto::new).collect(Collectors.toList());
+        IngestMetadataDto mtd = new IngestMetadataDto(sessionOwner,
+                                                      session,
+                                                      null,
+                                                      chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
+                                                      Sets.newHashSet(categories),
+                                                      VersioningMode.INC_VERSION,
+                                                      null,
+                                                      storagesMeta);
 
         List<IngestRequestFlowItem> events = new ArrayList<>(sips.size());
         for (SIPDto sip : sips) {
@@ -316,15 +316,16 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                    Optional<String> chainLabel,
                                    VersioningMode versioningMode) {
         // Create event
-        List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
-        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
-                                                        session,
-                                                        null,
-                                                        chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
-                                                        Sets.newHashSet(categories),
-                                                        versioningMode,
-                                                        null,
-                                                        storagesMeta);
+        List<StorageDto> storagesMeta = storages.stream().map(StorageDto::new).collect(Collectors.toList());
+        IngestMetadataDto mtd = new IngestMetadataDto(sessionOwner,
+                                                      session,
+                                                      null,
+                                                      chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
+                                                      Sets.newHashSet(categories),
+                                                      versioningMode,
+                                                      null,
+                                                      storagesMeta);
+        
         ingestServiceTest.sendIngestRequestEvent(sips, mtd);
     }
 

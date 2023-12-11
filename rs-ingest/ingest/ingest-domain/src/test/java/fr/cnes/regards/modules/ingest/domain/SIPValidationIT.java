@@ -27,8 +27,8 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -214,14 +214,15 @@ public class SIPValidationIT {
     @Test
     public void validateSIPCollection() {
 
-        SIPCollection collection = SIPCollection.build(IngestMetadataDto.build("sessionOwner",
-                                                                               "session",
-                                                                               null,
-                                                                               "ingestChain",
-                                                                               Sets.newHashSet("cat 1"),
-                                                                               null,
-                                                                               null,
-                                                                               StorageMetadata.build("test")));
+        IngestMetadataDto metadata = new IngestMetadataDto("sessionOwner",
+                                                           "session",
+                                                           null,
+                                                           "ingestChain",
+                                                           Sets.newHashSet("cat 1"),
+                                                           null,
+                                                           null,
+                                                           new StorageDto("test"));
+        SIPCollection collection = SIPCollection.build(metadata);
 
         validator.validate(collection, errors);
         if (errors.hasErrors()) {

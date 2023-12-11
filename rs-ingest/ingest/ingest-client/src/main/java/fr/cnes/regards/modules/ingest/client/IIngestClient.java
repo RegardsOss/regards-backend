@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.client;
 
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
 
 /**
  * Client interface for requesting the ingest service

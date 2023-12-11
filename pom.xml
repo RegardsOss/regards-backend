@@ -1529,6 +1529,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.ingest</groupId>
+                <artifactId>ingest-dto</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.ingest</groupId>
                 <artifactId>ingest-dao</artifactId>
                 <version>${revision}</version>
             </dependency>

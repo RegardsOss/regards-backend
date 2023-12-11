@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Callback listener for ingestion request : {@link IIngestClient#ingest(fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto, fr.cnes.regards.modules.ingest.dto.sip.SIP)}
+ * Callback listener for ingestion request : {@link IIngestClient#ingest(fr.cnes.regards.modules.ingest.dto.IngestMetadataDto, fr.cnes.regards.modules.ingest.dto.sip.SIP)}
  *
  * @author Marc SORDI
  */

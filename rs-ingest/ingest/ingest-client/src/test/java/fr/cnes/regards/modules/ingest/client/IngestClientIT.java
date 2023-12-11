@@ -26,8 +26,8 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingChainService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.test.IngestServiceIT;
@@ -105,14 +105,15 @@ public class IngestClientIT extends AbstractRegardsWebIT {
         String providerId = "sipFromClient";
         Mockito.clearInvocations(listener);
         Mockito.verify(listener, Mockito.times(0)).onGranted(Mockito.anyCollection());
-        RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto.build("sessionOwner",
-                                                                             "session",
-                                                                             null,
-                                                                             IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                                             Sets.newHashSet("cat 1"),
-                                                                             null,
-                                                                             StorageMetadata.build("disk")),
-                                                     create(providerId));
+        IngestMetadataDto metadata = new IngestMetadataDto("sessionOwner",
+                                                           "session",
+                                                           null,
+                                                           IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                           Sets.newHashSet("cat 1"),
+                                                           null,
+                                                           null,
+                                                           new StorageDto("disk"));
+        RequestInfo clientInfo = ingestClient.ingest(metadata, create(providerId));
         ingestServiceTest.waitForIngestion(1, 15_000, SIPState.STORED);
 
         Thread.sleep(5_000);

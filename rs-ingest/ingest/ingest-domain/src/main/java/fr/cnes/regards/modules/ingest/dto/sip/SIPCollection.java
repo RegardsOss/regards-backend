@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.dto.sip;
 
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 
 import javax.validation.Valid;
@@ -48,7 +49,7 @@ public class SIPCollection extends AbstractFeatureCollection<SIPDto> {
      * Create a new {@link SIPCollection} with a generated unique request id.<br/>
      * An {@link IngestRequestEvent} including this request id will be sent to monitor the progress of the request.
      *
-     * @param metadata metadata built with {@link IngestMetadataDto#build(String, String, String, java.util.Set, fr.cnes.regards.modules.ingest.domain.sip.VersioningMode, String, java.util.List)}
+     * @param metadata metadata {@link IngestMetadataDto}
      * @return a {@link SIPCollection}
      */
     public static SIPCollection build(IngestMetadataDto metadata) {

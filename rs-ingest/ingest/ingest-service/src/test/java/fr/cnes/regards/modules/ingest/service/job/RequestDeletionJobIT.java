@@ -39,15 +39,15 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import org.junit.Assert;
@@ -161,13 +161,14 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
         aipEntity2 = aipRepository.save(aipEntity2);
 
-        mtd = IngestMetadataDto.build(SESSION_OWNER_0,
-                                      SESSION_0,
-                                      null,
-                                      IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                      Sets.newHashSet(CATEGORIES_0),
-                                      null,
-                                      StorageMetadata.build(STORAGE_0));
+        mtd = new IngestMetadataDto(SESSION_OWNER_0,
+                                    SESSION_0,
+                                    null,
+                                    IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                    Sets.newHashSet(CATEGORIES_0),
+                                    null,
+                                    null,
+                                    new StorageDto(STORAGE_0));
 
         aips = aipRepository.findAll();
 

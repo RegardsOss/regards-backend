@@ -38,9 +38,9 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
+import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -379,15 +379,17 @@ public class IngestServiceIT {
                                                 Optional<String> chainLabel,
                                                 VersioningMode versioningMode) {
         // Create event
-        List<StorageMetadata> storagesMeta = List.of(StorageMetadata.build(storage));
-        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
-                                                        session,
-                                                        null,
-                                                        chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
-                                                        Sets.newHashSet(categories),
-                                                        versioningMode,
-                                                        null,
-                                                        storagesMeta);
+        List<StorageDto> storagesMeta = List.of(new StorageDto(storage));
+
+        IngestMetadataDto mtd = new IngestMetadataDto(sessionOwner,
+                                                      session,
+                                                      null,
+                                                      IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                      Sets.newHashSet(categories),
+                                                      null,
+                                                      null,
+                                                      storagesMeta);
+
         return IngestRequestFlowItem.build(mtd, sip);
     }
 

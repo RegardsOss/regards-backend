@@ -19,12 +19,12 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
@@ -47,9 +47,9 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
@@ -105,7 +105,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
     private static final String SESSION = "session";
 
-    private static final StorageMetadata STORAGE_METADATA = StorageMetadata.build("disk");
+    private static final StorageDto STORAGE_METADATA = new StorageDto("disk");
 
     private static final HashSet<String> CATEGORIES = Sets.newHashSet("cat 1");
 
@@ -191,13 +191,15 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
     @Test
     public void testDefaultProcessingChain() {
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
-                                                                         SESSION,
-                                                                         null,
-                                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                                         CATEGORIES,
-                                                                         null,
-                                                                         STORAGE_METADATA));
+        IngestMetadataDto metadata = new IngestMetadataDto(SESSION_OWNER,
+                                                           SESSION,
+                                                           null,
+                                                           IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                           CATEGORIES,
+                                                           null,
+                                                           null,
+                                                           STORAGE_METADATA);
+        SIPCollection sips = SIPCollection.build(metadata);
 
         Path filePath = Paths.get("data1.fits");
         String checksum = "sdsdfm1211vd";
@@ -282,13 +284,15 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
     @Test
     public void testDefaultProcessingChainWithError() {
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
-                                                                         SESSION,
-                                                                         null,
-                                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                                         CATEGORIES,
-                                                                         null,
-                                                                         STORAGE_METADATA));
+        IngestMetadataDto metadata = new IngestMetadataDto(SESSION_OWNER,
+                                                           SESSION,
+                                                           null,
+                                                           IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                           CATEGORIES,
+                                                           null,
+                                                           null,
+                                                           STORAGE_METADATA);
+        SIPCollection sips = SIPCollection.build(metadata);
 
         Path filePath = Paths.get("data1.fits");
         String checksum = "sdsdfm1211vd";
@@ -366,13 +370,15 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
     @Test
     public void testProcessingChain() {
 
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
-                                                                         SESSION,
-                                                                         null,
-                                                                         PROCESSING_CHAIN_TEST,
-                                                                         CATEGORIES,
-                                                                         null,
-                                                                         STORAGE_METADATA));
+        IngestMetadataDto metadata = new IngestMetadataDto(SESSION_OWNER,
+                                                           SESSION,
+                                                           null,
+                                                           PROCESSING_CHAIN_TEST,
+                                                           CATEGORIES,
+                                                           null,
+                                                           null,
+                                                           STORAGE_METADATA);
+        SIPCollection sips = SIPCollection.build(metadata);
 
         SIPDto sip = SIPDto.build(EntityType.DATA, SIP_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
@@ -454,19 +460,20 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
     public void testProcessingChainByRef() {
 
         // Init a SIP with reference in database with state CREATED
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
-                                                                         SESSION,
-                                                                         null,
-                                                                         PROCESSING_CHAIN_TEST,
-                                                                         CATEGORIES,
-                                                                         null,
-                                                                         STORAGE_METADATA));
-        
+        IngestMetadataDto metadata = new IngestMetadataDto(SESSION_OWNER,
+                                                           SESSION,
+                                                           null,
+                                                           IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                           CATEGORIES,
+                                                           null,
+                                                           null,
+                                                           STORAGE_METADATA);
+        SIPCollection sips = SIPCollection.build(metadata);
+
         sips.add(SIPDto.buildReference(EntityType.DATA,
                                        SIP_REF_ID_TEST,
                                        Paths.get("src/test/resources/file_ref.xml"),
                                        "1e2d4ab665784e43243b9b07724cd483"));
-
         // Ingest
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
         ingestRequestSchedulerService.scheduleRequests();
