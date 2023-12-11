@@ -255,6 +255,8 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                         + "messages ignored", tenant, convertedMessages.size());
             // Do not send to DLQ, it is possible that a service is not available for a given tenant. In this case,
             // just ignore messages.
+            // Only ack message from rabbitmq listener
+            convertedMessages.forEach(message -> ackMessage(channel, message.getOrigin()));
         } else {
             for (BatchMessage message : convertedMessages) {
                 try {
@@ -270,6 +272,17 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             }
         }
         return validMessages;
+    }
+
+    /**
+     * Ack the given rabbitMQ message
+     */
+    protected void ackMessage(Channel channel, Message message) {
+        try {
+            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
+        } catch (IOException e) {
+            LOGGER.error("Error trying to ack a rabbitmq message.", e);
+        }
     }
 
     protected Errors invokeValidationMethod(String tenant, Object message) {
@@ -300,7 +313,8 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         }
     }
 
-    protected void invokeBatchHandler(String tenant, List<BatchMessage> validMessages) {
+    protected void invokeBatchHandler(String tenant, List<BatchMessage> validMessages)
+        throws InvocationTargetException {
 
         List<Message> originalMessages = new ArrayList<>();
         List<Object> convertedMessages = new ArrayList<>();
@@ -321,8 +335,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             methodInvoker.setArguments(arguments);
             methodInvoker.prepare();
             methodInvoker.invoke();
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
-                 ClassNotFoundException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException ex) {
             LOGGER.error(String.format("Fail to invoke handler %s#%s with following raw exception. Cause : %s",
                                        batchHandler.getClass().getName(),
                                        HANDLE_METHOD_NAME,

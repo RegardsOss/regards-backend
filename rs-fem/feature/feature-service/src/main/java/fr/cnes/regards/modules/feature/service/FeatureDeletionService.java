@@ -451,7 +451,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         }
         // Delete features, related requests will be deleted once we know notifier has successfully sent the notification about it
         featureCreationRequestRepository.deleteByFeatureEntityIn(associatedFeatureEntities);
-        featureEntityRepository.deleteAllInBatch(featureEntitiesToDelete);
+        featureEntityRepository.deleteAll(featureEntitiesToDelete);
     }
 
     private boolean haveFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
