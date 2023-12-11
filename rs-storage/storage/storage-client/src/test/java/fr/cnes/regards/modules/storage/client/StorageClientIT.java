@@ -295,8 +295,8 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         listener.reset();
         for (Path file : filesToStore) {
             cpt++;
-            String owner = "owner-" + (cpt % 5);
-            String sessionOwner = "SOURCE " + (cpt % 5);
+            String owner = "owner-" + cpt;
+            String sessionOwner = "SOURCE " + cpt;
             Set<FileStorageRequestDto> files = Sets.newHashSet();
             String cs = ChecksumUtils.computeHexChecksum(file, "MD5");
             files.add(FileStorageRequestDto.build(file.getFileName().toString(),
