@@ -236,7 +236,9 @@ pipeline {
         always {
             // Always send new successfull modules hashes to nexus
             script {
-                if (params.INCREMENTAL_BUILD == true) {
+                if (params.INCREMENTAL_BUILD == true && params.SKIP_TESTS == false) {
+                    // Only send new hashes files to nexus if tests are not skiped. The purpose of this file is to 
+                    // run tests only for modified modules. So if tests are skipped we must not send the new hashes file.
                     runMavenDockerImgWithoutCoTS('POST-ALWAYS-TASK -- Send new successfull modules hashes to nexus', "updateHashes")
                 }
             }
@@ -263,10 +265,10 @@ pipeline {
             script {
                 if (params.SKIP_TESTS == false) {
                     sh label: 'POST-CLEANUP-TASK -- Stop CoTs', script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
-                    sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . \
+                }
+                sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . \
                         && chmod -R u+rwx . \
                         && chmod -R g+rwx .'
-                }
             }
         }
     }
