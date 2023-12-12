@@ -115,15 +115,30 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
                                                 SignalType.ON_ERROR);
     }
 
+    /**
+     * Restore the given key of file.
+     * <p>By default, the lifetime of given key is 1 day.</p>
+     *
+     * @param config configuration of the s3 storage
+     * @param key    s3 key of the file to restore
+     */
     public Mono<RestoreObjectResponse> restore(StorageConfig config, String key) {
         return restore(config, key, 1);
     }
 
-    public Mono<RestoreObjectResponse> restore(StorageConfig config, String key, Integer days) {
-        if (days <= 0) {
-            days = 1;
+    /**
+     * Restore the given key of file.
+     * <p>If fileLifetimeInDays is null or <=0, the lifetime of given key is 1 day.</p>
+     *
+     * @param config             configuration of the s3 storage
+     * @param key                s3 key of the file to restore
+     * @param fileLifetimeInDays lifetime of file in days
+     */
+    public Mono<RestoreObjectResponse> restore(StorageConfig config, String key, @Nullable Integer fileLifetimeInDays) {
+        if (fileLifetimeInDays == null || fileLifetimeInDays <= 0) {
+            fileLifetimeInDays = 1;
         }
-        return getClient(config).restore(config.getBucket(), key, days);
+        return getClient(config).restore(config.getBucket(), key, fileLifetimeInDays);
     }
 
     public Mono<WriteResult> write(Write writeCmd) {
