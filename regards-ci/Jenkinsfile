@@ -251,7 +251,9 @@ pipeline {
         always {
             // Always send new successfull modules hashes to nexus
             script {
-                if (params.INCREMENTAL_BUILD == true) {
+                if (params.INCREMENTAL_BUILD == true && params.SKIP_TESTS == false) {
+                    // Only send new hashes files to nexus if tests are not skiped. The purpose of this file is to 
+                    // run tests only for modified modules. So if tests are skipped we must not send the new hashes file.
                     runMavenDockerImgWithoutCoTS('POST-ALWAYS-TASK -- Send new successfull modules hashes to nexus', "updateHashes")
                 }
             }
@@ -278,10 +280,12 @@ pipeline {
             script {
                 if (params.SKIP_TESTS == false) {
                     sh label: 'POST-CLEANUP-TASK -- Stop CoTs', script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
-                    sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . \
+                }
+                sh label: "POST-CLEANUP-TASK -- Remove maven containers", script: "/bin/bash -c 'docker ps --format \"{{ .ID }} {{ .Names }} {{ .Status }}\" | grep -E " +
+                    PROJECT_NAME.replaceAll("[^a-zA-Z0-9]", "").toLowerCase() + " | grep -E Up | cut -f 2 -d \" \" | xargs --no-run-if-empty docker rm -f '"
+                sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . \
                         && chmod -R u+rwx . \
                         && chmod -R g+rwx .'
-                }
             }
         }
     }
@@ -290,18 +294,19 @@ pipeline {
 // Return the shell to execute to run a docker container using rs-maven-ci image
 // @params label Label to display on Blue Ocean
 // @params mode Expected mode (see ci script file)
+// @params containerName postfix used when creating the docker container name
 // @params regardsMs the pom submodule to restrict on
 // @params isRequiringCots true when the container will use CoTs
 // @params isRabbitMqIdFirst should use the first rabbitMQ
 @NonCPS
-def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
+def runMavenDockerImg(label, mode, containerName, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
     // Transform PROJECT_NAME to what Docker will use for CoTS names
     // regards-oss-backend/feature%2Fimprove_jenkins_stages-31
     // become
     // regardsossbackendfeature2fimprovejenkinsstages31
     def dockerProject = PROJECT_NAME.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()
     def dockerCommand = 'docker run --rm -i                                                                    \
-                        --name ' + dockerProject + '_maven_' + regardsMs + '                                   \
+                        --name ' + dockerProject + '_maven_' + containerName + '                                   \
                         -v ${WORKSPACE}:/app_to_build                                                          \
                         -v /DATA/maven-multibranch-repository:/localRepository                                 \
                         -v /usr/bin/docker:/bin/docker                                                         \
@@ -329,17 +334,17 @@ def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst
 // Use it when you don't need any COTS
 def runMavenDockerImgWithoutCoTS(taskMainLabel, mode) {
     def label = taskMainLabel + " using maven container with mode=[" + mode + "]"
-    runMavenDockerImg(label, mode, "", false, false)
+    runMavenDockerImg(label, mode, mode, "", false, false)
 }
 
 // Use it when you want CoTS and you are the parallel "One"
 def runMavenDockerImgParallelOne(mode, regardsMs) {
     def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and first RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, true, true)
+    runMavenDockerImg(label, mode, regardsMs, regardsMs, true, true)
 }
 
 // Use it when you want CoTS and you are the parallel "Two"
 def runMavenDockerImgParallelTwo(mode, regardsMs) {
     def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and second RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, true, false)
+    runMavenDockerImg(label, mode, regardsMs, regardsMs, true, false)
 }

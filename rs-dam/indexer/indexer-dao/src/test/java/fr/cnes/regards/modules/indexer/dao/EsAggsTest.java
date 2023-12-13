@@ -18,6 +18,7 @@ import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -26,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -37,6 +40,16 @@ import java.util.stream.Stream;
  * @author oroussel
  */
 public class EsAggsTest {
+
+    /**
+     * 150 Mb file size to generate
+     */
+    public static final int BIG_FILE_SIZE_IN_BYTES = 1024 * 1024 * 150;
+
+    /**
+     * 5 Mb file size to generate
+     */
+    public static final int MEDIUM_FILE_SIZE_IN_BYTES = 1024 * 1024 * 5;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsAggsTest.class);
 
@@ -111,7 +124,7 @@ public class EsAggsTest {
         return randomSet;
     }
 
-    private void createData() {
+    private void createDatas() throws IOException {
         if (repository.indexExists(INDEX)) {
             repository.deleteAll(INDEX);
         } else {
@@ -122,19 +135,37 @@ public class EsAggsTest {
         File rootDir = Paths.get("src/test/resources/testdir").toFile();
         for (File file : rootDir.listFiles()) {
             System.out.println(file.getName() + ", " + file.length());
-            Data data = new Data();
-            data.setDocId(file.getName());
-            data.setTags(randomTags());
-            data.getFiles().put(DataType.RAWDATA, new DataFile(file, DataType.RAWDATA));
-            data.getFiles().put(DataType.QUICKLOOK_HD, new DataFile(file, DataType.QUICKLOOK_HD));
-            datas.add(data);
+            datas.add(buildData(file));
         }
+        datas.add(buildDataFromGeneratedFile("jean.tar.gz", BIG_FILE_SIZE_IN_BYTES));
+        datas.add(buildDataFromGeneratedFile("Pierre.mp4", MEDIUM_FILE_SIZE_IN_BYTES));
         repository.saveBulk(INDEX, datas);
     }
 
+    @NotNull
+    private static Data buildData(File file) {
+        Data data = new Data();
+        data.setDocId(file.getName());
+        data.setTags(randomTags());
+        data.getFiles().put(DataType.RAWDATA, new DataFile(file, DataType.RAWDATA));
+        data.getFiles().put(DataType.QUICKLOOK_HD, new DataFile(file, DataType.QUICKLOOK_HD));
+        return data;
+    }
+
+    private @NotNull Data buildDataFromGeneratedFile(String fileName, int fileSize) throws IOException {
+
+        File file = new File("src/test/resources/testdir/" + fileName);
+        file.getParentFile().mkdirs();
+
+        try (RandomAccessFile f = new RandomAccessFile(file, "rw")) {
+            f.setLength(fileSize);
+            return buildData(file);
+        }
+    }
+
     @Test
-    public void test() {
-        createData();
+    public void test() throws IOException {
+        createDatas();
         DocFilesSummary summary = new DocFilesSummary();
         SimpleSearchKey<Data> searchKey = new SimpleSearchKey<>(TYPE, Data.class);
         searchKey.setSearchIndex(INDEX);
@@ -149,7 +180,7 @@ public class EsAggsTest {
         Assert.assertEquals(12, summary.getDocumentsCount());
         // 24 because 12 RAWDATA and 12 QUICKLOOKS
         Assert.assertEquals(24, summary.getFilesCount());
-        Assert.assertEquals(90210386, summary.getFilesSize());
+        Assert.assertEquals(327237376, summary.getFilesSize());
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("FIFI"));
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("RIRI"));
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("LOULOU"));
