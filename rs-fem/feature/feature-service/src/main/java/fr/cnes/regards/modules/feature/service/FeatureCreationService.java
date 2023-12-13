@@ -253,7 +253,8 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             String defaultMessageTemplate = "Creation request with this URN already exists in %s";
             if (existingRequestUrns.contains(urn)) {
                 errors.rejectValue(rejectField, errorCode, String.format(defaultMessageTemplate, "existing requests"));
-            } else if (grantedRequests.stream().anyMatch(request -> request.getUrn().equals(urn))) {
+            } else if (grantedRequests.stream()
+                                      .anyMatch(request -> request.getUrn() != null && request.getUrn().equals(urn))) {
                 errors.rejectValue(rejectField, errorCode, String.format(defaultMessageTemplate, "granted requests"));
             } else if (newUpdateRequests.stream().anyMatch(request -> request.getFeature().getUrn().equals(urn))) {
                 errors.rejectValue(rejectField,
