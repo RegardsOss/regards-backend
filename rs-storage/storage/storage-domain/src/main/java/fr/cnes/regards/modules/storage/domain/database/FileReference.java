@@ -181,7 +181,7 @@ public class FileReference {
      * @param referenced if the file is referenced
      */
     public void setReferenced(boolean referenced) {
-        this.referenced = true;
+        this.referenced = referenced;
     }
 
     public boolean isNearlineConfirmed() {
