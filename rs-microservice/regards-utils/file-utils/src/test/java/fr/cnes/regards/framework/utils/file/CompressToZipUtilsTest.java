@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -80,13 +81,29 @@ public class CompressToZipUtilsTest {
             + "to test specifically this case.")
     public void givenLargeFiles_whenCompressedToZip_thenZipCreated() throws IOException {
         // GIVEN
+        generateBigFile();
         Path zipDestPath = WORKSPACE_PATH.resolve("large_zip.zip");
         // WHEN
         CompressToZipUtils.compressDirectoriesToZip(LARGE_FILES_PATH, zipDestPath);
         // THEN
         File zipFileCreated = zipDestPath.toFile();
         Assertions.assertThat(zipFileCreated).exists();
-        Assertions.assertThat(zipFileCreated).hasSize(150045904L);
+        Assertions.assertThat(zipFileCreated).hasSize(1528904L);
+    }
+
+    /**
+     * Generate random file containing only 0 bits
+     * As this file will be compressed, the zip will be very small
+     */
+    //
+    private void generateBigFile() throws IOException {
+        File file = new File(LARGE_FILES_PATH.toFile(), "large_file.raw");
+        file.getParentFile().mkdirs();
+
+        try (RandomAccessFile f = new RandomAccessFile(file, "rw")) {
+            // 1.5 gb file size
+            f.setLength(1024 * 1024 * 1500);
+        }
     }
 
     @Test
