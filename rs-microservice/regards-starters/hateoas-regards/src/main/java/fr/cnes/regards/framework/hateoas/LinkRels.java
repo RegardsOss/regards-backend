@@ -73,6 +73,11 @@ public final class LinkRels {
      */
     public static final LinkRelation LIST = LinkRelation.of("list");
 
+    /**
+     * Delete
+     */
+    public static final LinkRelation NOTIFY = LinkRelation.of("notify");
+
     private LinkRels() {
     }
 }

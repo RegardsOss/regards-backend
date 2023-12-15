@@ -45,7 +45,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -166,12 +165,12 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "notifyFeatures",
-                                LinkRelation.of("notify"),
+                                LinkRels.NOTIFY,
                                 MethodParamFactory.build(RecipientsSearchFeatureSimpleEntityParameters.class));
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "deleteFeatures",
-                                LinkRelation.of("delete"),
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(SearchFeatureSimpleEntityParameters.class));
         return resource;
     }
