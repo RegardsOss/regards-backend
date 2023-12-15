@@ -47,6 +47,9 @@ public interface IFeatureEntityWithDisseminationRepository
     List<FeatureEntity> findByUrnIn(Set<FeatureUniformResourceName> urn, Sort sort);
 
     @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
+    List<FeatureEntity> findByIdIn(Set<Long> ids, Sort sort);
+
+    @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
     FeatureEntity findByUrn(FeatureUniformResourceName urn);
 
     @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
