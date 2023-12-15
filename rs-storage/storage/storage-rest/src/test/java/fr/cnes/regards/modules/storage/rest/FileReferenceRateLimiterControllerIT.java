@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import io.vavr.collection.List;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.http.HttpStatus;
@@ -70,6 +71,7 @@ import static org.junit.Assert.*;
 @ActiveProfiles(value = { "testAmqp", "default", "test" }, inheritProfiles = false)
 public class FileReferenceRateLimiterControllerIT extends AbstractFileReferenceControllerIT {
 
+    @Ignore("this test requires a lot of CPU to be able to succeed, thing we dont have on our CI")
     @Test
     public void rate_limiting_ends_eventually() throws InterruptedException {
 
