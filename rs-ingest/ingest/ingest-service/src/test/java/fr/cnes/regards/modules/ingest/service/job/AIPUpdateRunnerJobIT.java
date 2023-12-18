@@ -177,7 +177,7 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
         if (!isToNotify) {
             // Wait STORE_META request over
-            ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
+            ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000, getDefaultTenant());
         } else {
             notificationService.handleNotificationSuccess(Sets.newHashSet(ingestRequestRepository.findAll()));
         }
@@ -295,17 +295,17 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
                                                       .filter(aipInfo -> aipInfo.getLabel().equals(LABEL_2))
                                                       .findFirst()
                                                       .get();
-            Assert.assertFalse(disseminationInfo0.getAckDate() == null);
-            Assert.assertTrue(disseminationInfo1.getAckDate() == null);
+            Assert.assertNotNull(disseminationInfo0.getAckDate());
+            Assert.assertNull(disseminationInfo1.getAckDate());
             Assert.assertFalse(disseminationInfo0.getDate().isAfter(INITIAL_DATE));
             Assert.assertTrue(disseminationInfo1.getDate().isAfter(INITIAL_DATE));
-            Assert.assertFalse(disseminationInfo2.getDate() == null);
+            Assert.assertNotNull(disseminationInfo2.getDate());
         }
     }
 
     @Test
     public void testUpdateAIPFileLocationJob() throws InterruptedException {
-        ingestServiceTest.waitAllRequestsFinished(20_000);
+        ingestServiceTest.waitAllRequestsFinished(20_000, getDefaultTenant());
         storageClient.setBehavior(true, true);
         initData();
 

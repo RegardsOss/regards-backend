@@ -48,9 +48,9 @@ import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.settings.IngestSettingsService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
@@ -60,6 +60,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static fr.cnes.regards.modules.ingest.service.TestData.*;
 
@@ -120,7 +121,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // ---------------------------------- INGEST REQUESTS ----------------------------------
         int nbSIP = 3;
         initData(nbSIP);
-        testRequestsSuccess(nbSIP); //simulate notification success
+        testRequestsSuccess(nbSIP, THREE_SECONDS, TimeUnit.MILLISECONDS); //simulate notification success
 
         // --------------------------------- UPDATE REQUESTS -----------------------------------
         // Update all aips
@@ -131,17 +132,15 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList()));
-        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
-        testRequestsSuccess(nbSIP);
+        testRequestsSuccess(nbSIP, THREE_SECONDS * nbSIP, TimeUnit.MILLISECONDS);
 
         // --------------------------------- DELETION REQUESTS ---------------------------------
         // Delete all aips
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
         dto.withSession(SESSION);
         oaisDeletionService.registerOAISDeletionCreator(dto);
-        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
-        assertDeletedAIPs(nbSIP);
-        testRequestsSuccess(nbSIP);
+        assertDeletedAIPs(nbSIP, FIVE_SECONDS, TimeUnit.MILLISECONDS);
+        testRequestsSuccess(nbSIP, THREE_SECONDS, TimeUnit.MILLISECONDS);
     }
 
     @Test
@@ -155,12 +154,11 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Create ingest requests
         initData(nbSIP);
         // Simulate notification errors
-        testRequestsError(nbSIP);
+        testRequestsError(nbSIP, THREE_SECONDS, TimeUnit.MILLISECONDS);
         // Retry requests
         requestService.scheduleRequestRetryJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.INGEST)));
-        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
-        testRequestsSuccess(nbSIP);
+        testRequestsSuccess(nbSIP, THREE_SECONDS * nbSIP, TimeUnit.MILLISECONDS);
 
         // --------------------------------- UPDATE REQUESTS -----------------------------------
         // Create aip update requests
@@ -171,29 +169,25 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList(),
                                                                        Lists.newArrayList()));
-        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         // Simulate notification errors
-        testRequestsError(nbSIP);
+        testRequestsError(nbSIP, nbSIP * THREE_SECONDS * nbSIP, TimeUnit.MILLISECONDS);
         // Retry requests
         requestService.scheduleRequestRetryJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.UPDATE)));
-        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
-        testRequestsSuccess(nbSIP);
+        testRequestsSuccess(nbSIP, THREE_SECONDS * nbSIP, TimeUnit.MILLISECONDS);
 
         // --------------------------------- DELETION REQUESTS ---------------------------------
         // Create aip deletion requests
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
         dto.withSession(SESSION);
         oaisDeletionService.registerOAISDeletionCreator(dto);
-        ingestServiceTest.waitDuring(FIVE_SECONDS * nbSIP);
-        assertDeletedAIPs(nbSIP);
+        assertDeletedAIPs(nbSIP, FIVE_SECONDS, TimeUnit.MILLISECONDS);
         // Simulate notification errors
-        testRequestsError(nbSIP);
+        testRequestsError(nbSIP, FIVE_SECONDS, TimeUnit.MILLISECONDS);
         // Retry requests
         requestService.scheduleRequestRetryJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.OAIS_DELETION)));
-        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
-        testRequestsSuccess(nbSIP);
+        testRequestsSuccess(nbSIP, THREE_SECONDS * nbSIP, TimeUnit.MILLISECONDS);
     }
 
     //----------------------------------
@@ -219,46 +213,69 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
     /**
      * Verify and simulate notification success
      */
-    private void testRequestsSuccess(int nbRequestsExpected) {
-        // test requests are not deleted and ready to be notified
-        List<AbstractRequest> abstractRequests = abstractRequestRepository.findAll();
-        Assert.assertEquals("The number of requests created is not expected",
+    private void testRequestsSuccess(int nbRequestsExpected, long timeout, TimeUnit unit) {
+        Awaitility.await().atMost(timeout, unit).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            // test requests are not deleted and ready to be notified
+            List<AbstractRequest> abstractRequests = abstractRequestRepository.findAll();
+            if (nbRequestsExpected == abstractRequests.size()) {
+                if (!checkNotificationStateAndStep(abstractRequests, "notify")) {
+                    return false;
+                }
+
+                // simulate notifications are in success
+                if (!abstractRequests.isEmpty()) {
+                    notificationService.handleNotificationSuccess(Sets.newHashSet(abstractRequests));
+                }
+                long count = abstractRequestRepository.count();
+                if (count != 0) {
+                    LOGGER.warn("All requests should have been deleted {}", count);
+                }
+                return count == 0;
+            } else {
+                LOGGER.warn("The number of requests created is not expected {}/{}",
                             nbRequestsExpected,
                             abstractRequests.size());
-        checkNotificationStateAndStep(abstractRequests, "notify");
-
-        // simulate notifications are in success
-        if (!abstractRequests.isEmpty()) {
-            notificationService.handleNotificationSuccess(Sets.newHashSet(abstractRequests));
-        }
-        // all requests should be deleted
-        Assert.assertEquals("All requests should have been deleted", 0L, abstractRequestRepository.count());
+            }
+            return false;
+        });
     }
 
     /**
      * Verify and simulate notification error
      */
-    private void testRequestsError(int nbRequestsExpected) {
-        // test requests are not deleted and ready to be notified
-        List<AbstractRequest> abstractRequests = abstractRequestRepository.findAll();
-        Assert.assertEquals("The number of requests created is not expected",
-                            nbRequestsExpected,
-                            abstractRequests.size());
-        checkNotificationStateAndStep(abstractRequests, "notify");
+    private void testRequestsError(int nbRequestsExpected, long timeout, TimeUnit unit) {
+        Awaitility.await().atMost(timeout, unit).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            // test requests are not deleted and ready to be notified
+            List<AbstractRequest> abstractRequests = abstractRequestRepository.findAll();
+            if (abstractRequests.size() != nbRequestsExpected) {
+                LOGGER.warn("The number of requests created is not expected {}/{}",
+                            abstractRequests.size(),
+                            nbRequestsExpected);
+                return false;
+            }
+            if (!checkNotificationStateAndStep(abstractRequests, "notify")) {
+                return false;
+            }
 
-        // simulate notifications are in error
-        notificationService.handleNotificationError(Sets.newHashSet(abstractRequests));
-        // all requests should be present with error state and step
-        Assert.assertEquals("All requests should have been kept",
-                            nbRequestsExpected,
-                            abstractRequestRepository.count());
-        checkNotificationStateAndStep(abstractRequests, "notify_error");
+            // simulate notifications are in error
+            notificationService.handleNotificationError(Sets.newHashSet(abstractRequests));
+            // all requests should be present with error state and step
+            long count = abstractRequestRepository.count();
+            if (nbRequestsExpected != count) {
+                LOGGER.warn("All requests should have been kept {}/{}", count, nbRequestsExpected);
+                return false;
+            }
+
+            return checkNotificationStateAndStep(abstractRequests, "notify_error");
+        });
     }
 
     /**
      * Verify steps and state of requests
      */
-    private void checkNotificationStateAndStep(List<AbstractRequest> abstractRequests, String step) {
+    private boolean checkNotificationStateAndStep(List<AbstractRequest> abstractRequests, String step) {
         IngestRequestStep ingest_step = null;
         InternalRequestState state = null;
         DeletionRequestStep deletion_step = null;
@@ -280,40 +297,44 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Check states and steps of requests
         Iterator<AbstractRequest> it = abstractRequests.iterator();
         AbstractRequest abstractRequest;
-        Assertions.assertTrue(it.hasNext(), "Request list is empty");
+        if (!it.hasNext()) {
+            LOGGER.warn("Request list is empty");
+            return false;
+        }
         while (it.hasNext()) {
             abstractRequest = it.next();
             // check state
-            Assertions.assertEquals(state, abstractRequest.getState(), "The request state is not the expected one");
-            Assertions.assertEquals(errorType, abstractRequest.getErrorType());
+            if (state != null && !state.equals(abstractRequest.getState()) || (errorType != null
+                                                                               && !abstractRequest.getErrorType()
+                                                                                                  .equals(errorType))) {
+                LOGGER.warn("The request state is not the expected one");
+                return false;
+            }
             // check steps of different requests
-            if (abstractRequest instanceof IngestRequest ingestRequest) {
-                Assertions.assertEquals(ingest_step,
-                                        ingestRequest.getStep(),
-                                        "The request step is not the expected one");
+            if (ingest_step != null && abstractRequest instanceof IngestRequest ingestRequest) {
+                // The request step is not the expected one
+                return ingest_step.equals(ingestRequest.getStep());
+            } else if (deletion_step != null && abstractRequest instanceof OAISDeletionRequest deletionRequest) {
+                // The request step is not the expected one
+                return deletion_step.equals(deletionRequest.getStep());
             }
-            if (abstractRequest instanceof OAISDeletionRequest deletionRequest) {
-                Assertions.assertEquals(deletion_step,
-                                        deletionRequest.getStep(),
-                                        "The request step is not the expected one");
-            }
-            //update request
-
         }
+        return true;
     }
 
     /**
      * Verify AIPs are deleted after an OAIS Deletion Request
      */
-    public void assertDeletedAIPs(long nbAipDeletedExpected) {
-        List<AIPEntity> aips = aipRepository.findAll();
-        long nb = 0;
-        for (AIPEntity aip : aips) {
-            if (aip.getState() == AIPState.DELETED) {
-                nb = nb + 1;
+    public void assertDeletedAIPs(long nbAipDeletedExpected, long timeout, TimeUnit unit) {
+        Awaitility.await().atMost(timeout, unit).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            long count = aipRepository.findAll().stream().filter(a -> a.getState() == AIPState.DELETED).count();
+            if (nbAipDeletedExpected != count) {
+                LOGGER.warn("AIPs were supposed to be marked as deleted {}/{}", count, nbAipDeletedExpected);
             }
-        }
-        Assert.assertEquals("AIPs were supposed to be marked as deleted", nbAipDeletedExpected, nb);
+            return nbAipDeletedExpected == count;
+        });
+
     }
 
     /**

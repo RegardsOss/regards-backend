@@ -152,10 +152,10 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
         // Wait STORE_META request over
         // delete requests, if notification are active mock success of notifications to delete ingest requests
         if (!initDefaultNotificationSettings()) {
-            ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
+            ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000, getDefaultTenant());
         } else {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
-            ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+            ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000, getDefaultTenant());
         }
     }
 

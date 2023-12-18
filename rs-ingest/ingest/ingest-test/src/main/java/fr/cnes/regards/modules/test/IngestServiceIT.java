@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -33,6 +32,7 @@ import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRe
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @ActiveProfiles("test")
@@ -319,24 +321,11 @@ public class IngestServiceIT {
     /**
      * Helper method that waits all requests have been processed
      */
-    public void waitAllRequestsFinished(long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        do {
-            if (checkAllRequestsFinished()) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout waiting for all requests finished.");
-            }
-        } while (true);
+    public void waitAllRequestsFinished(long timeout, String tenant) {
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            return checkAllRequestsFinished();
+        });
     }
 
     public boolean checkAllRequestsFinished() {

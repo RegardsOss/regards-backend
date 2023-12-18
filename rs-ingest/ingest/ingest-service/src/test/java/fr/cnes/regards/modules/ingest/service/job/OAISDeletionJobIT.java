@@ -173,7 +173,7 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
         long wait = FIVE_SECONDS * 3;
         if (!isToNotify) {
-            ingestServiceTest.waitAllRequestsFinished(wait);
+            ingestServiceTest.waitAllRequestsFinished(wait, getDefaultTenant());
         } else {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
@@ -197,7 +197,7 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
     @Purpose("Check deletion process for a list of SIPS. Check two deletion modes. Complete deletion or mark as "
              + "deleted")
     public void testDeletionJobSucceed() {
-        ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * 3);
+        ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * 3, getDefaultTenant());
         storageClient.setBehavior(true, true);
         initData();
         // delete 2 SIPs linked to SESSION_OWNER_0, SESSION_0
@@ -270,7 +270,7 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
         // waitUntilNbDeletionRequestInErrorReach(FIVE_SECONDS, 2);
         long wait = FIVE_SECONDS * 10;
         if (!isToNotify) {
-            ingestServiceTest.waitAllRequestsFinished(wait);
+            ingestServiceTest.waitAllRequestsFinished(wait, getDefaultTenant());
         } else {
             ingestServiceTest.waitDuring(wait);
             mockNotificationSuccess(RequestTypeConstant.OAIS_DELETION_VALUE);

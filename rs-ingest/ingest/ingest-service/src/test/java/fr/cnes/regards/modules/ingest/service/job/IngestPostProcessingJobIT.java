@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessFailTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -46,13 +47,16 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Sebastien Binda
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=post_process_job_it",
-                                   "regards.amqp.enabled=true" },
+                                   "regards.amqp.enabled=true",
+                                   "regards.ingest.aip.post-process.bulk.delay.init=100",
+                                   "regards.ingest.aip.post-process.bulk.delay=100" },
                     locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
@@ -142,12 +146,11 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
 
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
-        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
         if (!isToNotify) {
-            ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * nbSIP);
+            ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * nbSIP, getDefaultTenant());
         } else {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
-            ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+            ingestServiceTest.waitAllRequestsFinished(TWO_SECONDS * nbSIP, getDefaultTenant());
         }
     }
 
@@ -157,6 +160,11 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
         // Creates a test chain with default post processing plugin
         createChainWithPostProcess(CHAIN_PP_LABEL, AIPPostProcessTestPlugin.class);
         initData(CHAIN_PP_LABEL);
+        // Wait for postprocess requests ends
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return aipPostProcessRepo.count() == 0;
+        });
         Assert.assertEquals(0, aipPostProcessRepo.count());
 
     }

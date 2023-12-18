@@ -203,9 +203,9 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         deletionService.registerOAISDeletionCreator(dto);
 
         // 6. Wait for all  deletion + new ingestion ends
-        ingestServiceTest.waitAllRequestsFinished(180_000);
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
         ingestServiceTest.waitForIngestion(nbStored - nbDeleted, 100000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(180_000);
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
 
     }
 
@@ -246,9 +246,9 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         aipService.registerUpdatesCreator(updateDto);
 
         // 5. Wait for all 1000 deletion + 500 new ingestion ends
-        ingestServiceTest.waitAllRequestsFinished(180_000);
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
         ingestServiceTest.waitForIngestion(nbStored, 100000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(180_000);
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
     }
 
     /**
@@ -332,7 +332,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         ingestServiceTest.waitForIngestion(nbDeleted, 100000, SIPState.DELETED);
         long count = nbStored - nbDeleted;
         ingestServiceTest.waitForIngestion(count, count * 1000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(180_000);
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
     }
 
     @Test

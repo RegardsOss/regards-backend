@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -29,6 +28,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.*;
@@ -349,7 +349,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
         // Wait for all requests to finish in case of no notification else delete requests
         if (!initDefaultNotificationSettings()) {
-            ingestServiceTest.waitAllRequestsFinished(nbSIP * 1000L);
+            ingestServiceTest.waitAllRequestsFinished(nbSIP * 1000L, getDefaultTenant());
         } else {
             ingestRequestRepository.deleteAll();
             Assert.assertEquals("All ingest requests should have been deleted", 0L, ingestRequestRepository.count());

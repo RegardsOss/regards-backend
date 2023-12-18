@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.ingest.rest;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -176,7 +176,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -218,7 +218,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(2, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.expectToHaveSize("$.content", 2);
         requestBuilderCustomizer.expectIsNotEmpty(
@@ -248,7 +248,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -277,7 +277,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -306,7 +306,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -335,7 +335,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -360,7 +360,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
