@@ -206,7 +206,7 @@ public class FileDownloadService {
      * Download a file from an ONLINE storage location.
      */
     @Transactional(readOnly = true)
-    private InputStream downloadOnline(FileReference fileToDownload, StorageLocationConfiguration storagePluginConf)
+    public InputStream downloadOnline(FileReference fileToDownload, StorageLocationConfiguration storagePluginConf)
         throws ModuleException {
         try {
             IOnlineStorageLocation plugin = pluginService.getPlugin(storagePluginConf.getPluginConfiguration()
@@ -238,7 +238,7 @@ public class FileDownloadService {
     @Transactional(noRollbackFor = EntityNotFoundException.class)
     public InputStream download(FileReference fileToDownload)
         throws EntityNotFoundException, NearlineFileNotAvailableException {
-        Optional<CacheFile> ocf = cachedFileService.getCacheFile(fileToDownload.getMetaInfo().getChecksum());
+        Optional<CacheFile> ocf = cachedFileService.findByChecksum(fileToDownload.getMetaInfo().getChecksum());
         if (ocf.isPresent()) {
             // File is in cache and can be download
             try {

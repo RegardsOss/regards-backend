@@ -57,12 +57,16 @@ public class FileCacheRequest {
     @JoinColumn(name = "file_ref_id", nullable = false)
     private FileReference fileReference;
 
-    @Column(name = "checksum", length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH, nullable = false)
+    @Column(name = "checksum", length = FileReferenceMetaInfo.CHECKSUM_MAX_LENGTH, nullable = false, unique = true)
     private String checksum;
 
     @Column(name = "storage", length = FileLocation.STORAGE_MAX_LENGTH, nullable = false)
     private String storage;
 
+    /**
+     * File size provided by the request (be careful, this data is not maybe the real size of file).
+     * For the unit {@link FileReferenceMetaInfo#fileSize}.
+     */
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
 
@@ -181,4 +185,22 @@ public class FileCacheRequest {
         this.jobId = jobId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        FileCacheRequest that = (FileCacheRequest) o;
+
+        return checksum.equals(that.checksum);
+    }
+
+    @Override
+    public int hashCode() {
+        return checksum.hashCode();
+    }
 }

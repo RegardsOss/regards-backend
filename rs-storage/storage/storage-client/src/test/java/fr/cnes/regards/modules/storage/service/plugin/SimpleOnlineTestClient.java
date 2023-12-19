@@ -47,6 +47,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
+ * Plugin handling the storage on local file system
+ *
  * @author Binda sébastien
  */
 @Plugin(author = "REGARDS Team",

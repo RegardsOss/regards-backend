@@ -169,7 +169,7 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         throws InterruptedException, ExecutionException, EntityNotFoundException, IOException,
         NearlineFileNotAvailableException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
-        this.simulateFileInCache(fileRef.getMetaInfo().getChecksum());
+        this.simulateFileInInternalCache(fileRef.getMetaInfo().getChecksum());
         InputStream stream = downloadService.download(fileRef);
         Assert.assertNotNull(stream);
         stream.close();

@@ -65,7 +65,7 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
 
     private int nbRequestToHandle = 0;
 
-    private String plgBusinessId;
+    private String pluginBusinessId;
 
     private FileRestorationWorkingSubset workingSubset;
 
@@ -73,7 +73,7 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
         // lets instantiate the plugin to use
-        plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
+        pluginBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         nbRequestToHandle = workingSubset.getFileRestorationRequests().size();
     }
@@ -87,7 +87,8 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
         INearlineStorageLocation storagePlugin;
         String errorCause = null;
         try {
-            storagePlugin = pluginService.getPlugin(plgBusinessId);
+            storagePlugin = pluginService.getPlugin(pluginBusinessId);
+            progressManager.setPluginBusinessId(pluginBusinessId);
             storagePlugin.retrieve(workingSubset, progressManager);
         } catch (Exception e) {
             // throwing new runtime allows us to make the job fail.

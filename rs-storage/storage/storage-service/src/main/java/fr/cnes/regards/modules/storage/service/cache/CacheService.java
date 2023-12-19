@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfigurat
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.job.CacheCleanJob;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -88,7 +90,7 @@ public class CacheService {
     private int BULK_SIZE;
 
     @Autowired
-    private ICacheFileRepository cachedFileRepository;
+    private ICacheFileRepository cacheFileRepository;
 
     @Autowired
     private IDynamicTenantSettingService dynamicTenantSettingService;
@@ -100,8 +102,8 @@ public class CacheService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * Creates a new cache file if the checksum does not match an existing file.
-     * If file already exists in cache, updates the associated information.
+     * Creates a new cache file in database if the checksum does not match an existing file.
+     * If file already exists in internal or external cache, updates the associated information in database.
      */
     public void addFile(String checksum,
                         Long fileSize,
@@ -109,26 +111,77 @@ public class CacheService {
                         MimeType mimeType,
                         String type,
                         URL location,
-                        int availabilityHours,
-                        String groupId) {
+                        OffsetDateTime expirationDate,
+                        String groupId,
+                        @Nullable String externalCachePlugin) {
         Optional<CacheFile> cacheFileOptional = findByChecksum(checksum);
-        OffsetDateTime expirationDate = OffsetDateTime.now().plusHours(availabilityHours);
-        CacheFile cachedFile;
+        CacheFile cacheFile;
         if (!cacheFileOptional.isPresent()) {
-            cachedFile = new CacheFile(checksum, fileSize, fileName, mimeType, location, expirationDate, groupId, type);
+            // To be created in database
+            cacheFile = createCacheFile(checksum,
+                                        fileSize,
+                                        fileName,
+                                        mimeType,
+                                        type,
+                                        location,
+                                        expirationDate,
+                                        groupId,
+                                        externalCachePlugin);
         } else {
-            cachedFile = cacheFileOptional.get();
-            if (expirationDate.isAfter(cachedFile.getExpirationDate())) {
-                cachedFile.setExpirationDate(expirationDate);
+            // To be updated in database
+            cacheFile = cacheFileOptional.get();
+            if (expirationDate.isAfter(cacheFile.getExpirationDate())) {
+                cacheFile.setExpirationDate(expirationDate);
             }
-            cachedFile.setFileSize(fileSize);
+            cacheFile.setFileSize(fileSize);
         }
-        cachedFileRepository.save(cachedFile);
+        cacheFileRepository.save(cacheFile);
     }
 
+    /**
+     * Creates a new cache file (internal cache or external cache).
+     */
+    private CacheFile createCacheFile(String checksum,
+                                      Long fileSize,
+                                      String fileName,
+                                      MimeType mimeType,
+                                      String type,
+                                      URL location,
+                                      OffsetDateTime expirationDate,
+                                      String groupId,
+                                      @Nullable String externalCachePlugin) {
+        if (StringUtils.isBlank(externalCachePlugin)) {
+            // Internal cache
+            return CacheFile.buildFileInternalCache(checksum,
+                                                    fileSize,
+                                                    fileName,
+                                                    mimeType,
+                                                    location,
+                                                    expirationDate,
+                                                    groupId,
+                                                    type);
+        } else {
+            // External cache
+            return CacheFile.buildFileExternalCache(checksum,
+                                                    fileSize,
+                                                    fileName,
+                                                    mimeType,
+                                                    location,
+                                                    expirationDate,
+                                                    groupId,
+                                                    type,
+                                                    externalCachePlugin);
+        }
+    }
+
+    /**
+     * Retrieve a file from the cache by its checksum.
+     *
+     * @return {@link CacheFile}
+     */
     @MultitenantTransactional(readOnly = true)
     public Optional<CacheFile> findByChecksum(String checksum) {
-        return cachedFileRepository.findOneByChecksum(checksum);
+        return cacheFileRepository.findOneByChecksum(checksum);
     }
 
     /**
@@ -139,7 +192,7 @@ public class CacheService {
         Pageable page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
         Set<Long> toDelete = Sets.newHashSet();
         do {
-            shouldBeAvailableSet = cachedFileRepository.findAll(page);
+            shouldBeAvailableSet = cacheFileRepository.findAll(page);
             for (CacheFile shouldBeAvailable : shouldBeAvailableSet) {
                 Path path = Paths.get(shouldBeAvailable.getLocation().getPath());
                 if (Files.notExists(path)) {
@@ -149,24 +202,14 @@ public class CacheService {
             }
             if (toDelete.size() > 10_000) {
                 // Do deletion and restart and page 0
-                toDelete.forEach(id -> cachedFileRepository.deleteById(id));
-                cachedFileRepository.deleteAllById(toDelete);
+                cacheFileRepository.deleteAllById(toDelete);
                 toDelete.clear();
                 page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
             } else {
                 page = page.next();
             }
         } while (shouldBeAvailableSet.hasNext());
-        toDelete.forEach(id -> cachedFileRepository.deleteById(id));
-    }
-
-    /**
-     * Retrieve a file from the cache by is checksum.
-     *
-     * @return {@link CacheFile}
-     */
-    public Optional<CacheFile> getCacheFile(String checksum) {
-        return cachedFileRepository.findOneByChecksum(checksum);
+        cacheFileRepository.deleteAllById(toDelete);
     }
 
     /**
@@ -175,7 +218,7 @@ public class CacheService {
      * @return {@link CacheFile}
      */
     public Set<CacheFile> getCacheFiles(Set<String> checksums) {
-        return cachedFileRepository.findAllByChecksumIn(checksums);
+        return cacheFileRepository.findAllByChecksumIn(checksums);
     }
 
     /**
@@ -189,11 +232,11 @@ public class CacheService {
         Set<String> checksums = fileReferences.stream()
                                               .map(f -> f.getMetaInfo().getChecksum())
                                               .collect(Collectors.toSet());
-        Set<CacheFile> cacheFiles = cachedFileRepository.findAllByChecksumIn(checksums);
+        Set<CacheFile> cacheFiles = cacheFileRepository.findAllByChecksumIn(checksums);
         Set<String> cacheFileChecksums = cacheFiles.stream().map(cf -> {
             // Add new request id to the cache file
             cf.addGroupId(groupId);
-            cachedFileRepository.save(cf);
+            cacheFileRepository.save(cf);
             return cf.getChecksum();
         }).collect(Collectors.toSet());
         for (FileReference f : fileReferences) {
@@ -209,12 +252,14 @@ public class CacheService {
      *
      * @return {@link Long}
      */
+    @MultitenantTransactional(readOnly = true)
     public Long getCacheSizeUsedBytes() {
-        return cachedFileRepository.getTotalFileSize();
+        return cacheFileRepository.getTotalFileSize();
     }
 
+    @MultitenantTransactional(readOnly = true)
     public Long getCacheSizeUsedKB() {
-        return cachedFileRepository.getTotalFileSize() / 1024;
+        return cacheFileRepository.getTotalFileSize() / 1024;
     }
 
     /**
@@ -234,9 +279,9 @@ public class CacheService {
         Page<CacheFile> files;
         do {
             if (force) {
-                files = cachedFileRepository.findAll(page);
+                files = cacheFileRepository.findAll(page);
             } else {
-                files = cachedFileRepository.findByExpirationDateBefore(OffsetDateTime.now(), page);
+                files = cacheFileRepository.findByExpirationDateBefore(OffsetDateTime.now(), page);
             }
             deleteCachedFiles(files.getContent());
             nbPurged = nbPurged + files.getNumberOfElements();
@@ -268,7 +313,7 @@ public class CacheService {
                                  cachedFile.getExpirationDate().toString(),
                                  fileLocation);
                     Files.delete(fileLocation);
-                    cachedFileRepository.delete(cachedFile);
+                    cacheFileRepository.delete(cachedFile);
                     LOGGER.debug(" [CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
                                  cachedFile.getChecksum(),
                                  cachedFile.getExpirationDate().toString(),
@@ -276,7 +321,7 @@ public class CacheService {
                 } catch (NoSuchFileException e) {
                     // File does not exists, just log a warning and do delete file in db.
                     LOGGER.warn(e.getMessage(), e);
-                    cachedFileRepository.delete(cachedFile);
+                    cacheFileRepository.delete(cachedFile);
                     LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
                                  cachedFile.getChecksum(),
                                  cachedFile.getExpirationDate().toString(),
@@ -287,14 +332,14 @@ public class CacheService {
                 }
             } else {
                 LOGGER.error("File to delete {} does not exists", fileLocation);
-                cachedFileRepository.delete(cachedFile);
+                cacheFileRepository.delete(cachedFile);
                 LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
                              cachedFile.getChecksum(),
                              cachedFile.getExpirationDate().toString(),
                              fileLocation);
             }
         } else {
-            cachedFileRepository.delete(cachedFile);
+            cacheFileRepository.delete(cachedFile);
             LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}).",
                          cachedFile.getChecksum(),
                          cachedFile.getExpirationDate().toString());
@@ -357,8 +402,9 @@ public class CacheService {
                                               "Max cache size setting has not been initialized"));
     }
 
+    @MultitenantTransactional(readOnly = true)
     public long getTotalCachedFiles() {
-        return cachedFileRepository.count();
+        return cacheFileRepository.count();
     }
 
     public StorageLocationDto toStorageLocation() {
@@ -369,8 +415,9 @@ public class CacheService {
                                  .withFilesInformation(getTotalCachedFiles(), 0, getCacheSizeUsedKB());
     }
 
+    @MultitenantTransactional(readOnly = true)
     public boolean isCacheEmpty() {
-        return cachedFileRepository.count() == 0;
+        return cacheFileRepository.count() == 0;
     }
 
     public void scheduleCacheCleanUp(String jobOwner, boolean forceDelete) {

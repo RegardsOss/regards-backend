@@ -333,7 +333,9 @@ public class FileAvailabilityServiceIT extends AbstractDaoIT {
                              null,
                              OffsetDateTime.now().plusHours(1),
                              "groupId",
-                             "type");
+                             "type",
+                             true,
+                             null);
     }
 
     private StorageLocationConfiguration buildStorage(String name) {

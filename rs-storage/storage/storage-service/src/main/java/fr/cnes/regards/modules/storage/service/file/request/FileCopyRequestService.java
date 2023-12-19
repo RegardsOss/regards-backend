@@ -285,7 +285,7 @@ public class FileCopyRequestService {
         LOGGER.debug("[COPY SUCCESS] {}", successMessage);
 
         // Check if associated cache file is always present
-        Optional<CacheFile> oCf = cacheService.getCacheFile(request.getMetaInfo().getChecksum());
+        Optional<CacheFile> oCf = cacheService.findByChecksum(request.getMetaInfo().getChecksum());
         if (oCf.isPresent()) {
             // If it is present, check if an other availability request was used for this
             if (!oCf.get().getGroupIds().stream().anyMatch(id -> !id.equals(request.getFileCacheGroupId()))) {

@@ -47,6 +47,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
+ * Plugin handling the storage on internal cache
+ *
  * @author Binda sébastien
  */
 @Plugin(author = "REGARDS Team",
@@ -221,7 +223,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                         }
                         LOGGER.info("Retrieve file with size {}", filePath.toFile().length());
                     }
-                    progressManager.restoreSucceed(f, filePath);
+                    progressManager.restoreSucceededInternalCache(f, filePath);
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                     progressManager.restoreFailed(f, e.getMessage());

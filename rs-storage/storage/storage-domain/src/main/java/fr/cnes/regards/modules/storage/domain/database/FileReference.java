@@ -195,5 +195,5 @@ public class FileReference {
     public FileReferenceDto toDto() {
         return new FileReferenceDto(storageDate, metaInfo.toDto(), location.toDto(), owners);
     }
-
+    
 }

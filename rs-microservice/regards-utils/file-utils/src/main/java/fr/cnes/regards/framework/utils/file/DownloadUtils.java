@@ -37,6 +37,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -61,6 +62,8 @@ public final class DownloadUtils {
 
     public static final int CLIENT_THREAD_CAP = 100;
 
+    private static final String HTTP_VERB_HEAD = "HEAD";
+
     /**
      * Client singleton for usage in the DownloadUtils
      */
@@ -72,11 +75,11 @@ public final class DownloadUtils {
     /**
      * Check if the file in the given URL exists.
      *
-     * @param source          The URL to check
-     * @param proxy           the proxy to use if needed
-     * @param nonProxyHosts   the list of hosts for which the proxy is not needed
-     * @param pConnectTimeout the time the process will wait while trying to connect, can be null
-     * @param knownS3Servers  the list of known S3 hosts, the process will use the specific s3 download algorithm if the downloaded file belong to one of these hosts
+     * @param source         The URL to check
+     * @param proxy          the proxy to use if needed
+     * @param nonProxyHosts  the list of hosts for which the proxy is not needed
+     * @param timeoutInMS    the time in milliseconds the process will wait while trying to connect, can be null
+     * @param knownS3Servers the list of known S3 hosts, the process will use the specific s3 download algorithm if the downloaded file belong to one of these hosts
      * @return true if the file exists
      * @throws IOException                   when there is an error during the connection
      * @throws UnsupportedOperationException when the source protocol is not http or file
@@ -85,9 +88,9 @@ public final class DownloadUtils {
                                  Proxy proxy,
                                  List<S3Server> knownS3Servers,
                                  Collection<String> nonProxyHosts,
-                                 Integer pConnectTimeout) throws IOException, UnsupportedOperationException {
+                                 @Nullable Integer timeoutInMS) throws IOException, UnsupportedOperationException {
 
-        URLConnection connection = getConnectionThroughProxy(source, proxy, nonProxyHosts, pConnectTimeout);
+        URLConnection connection = getConnectionThroughProxy(source, proxy, nonProxyHosts, timeoutInMS);
 
         //Filesystem
         if (source.getProtocol().equals("file")) {
@@ -103,7 +106,7 @@ public final class DownloadUtils {
             } else {
                 //Regular download
                 HttpURLConnection conn = (HttpURLConnection) connection;
-                conn.setRequestMethod("HEAD");
+                conn.setRequestMethod(HTTP_VERB_HEAD);
                 connection.connect();
                 int responseCode = conn.getResponseCode();
                 conn.disconnect();
@@ -213,14 +216,14 @@ public final class DownloadUtils {
                                   Path destination,
                                   String checksumAlgorithm,
                                   Collection<String> nonProxyHosts,
-                                  Integer pConnectTimeout,
+                                  Integer timeoutInMS,
                                   List<S3Server> knownS3Servers) throws IOException, NoSuchAlgorithmException {
         return downloadThroughProxy(source,
                                     destination,
                                     checksumAlgorithm,
                                     Proxy.NO_PROXY,
                                     nonProxyHosts,
-                                    pConnectTimeout,
+                                    timeoutInMS,
                                     knownS3Servers);
     }
 
@@ -233,7 +236,7 @@ public final class DownloadUtils {
      * @param checksumAlgorithm the algorithm used to compute the checksum of the downloaded file
      * @param proxy             the proxy to use if needed
      * @param nonProxyHosts     the list of hosts for which the proxy is not needed
-     * @param pConnectTimeout   the time the process will wait while trying to connect, can be null
+     * @param timeoutInMS       the time the process will wait while trying to connect, can be null
      * @param knownS3Servers    the list of known S3 hosts, the process will use the specific s3 download algorithm if the downloaded file belong to one of these hosts
      * @return checksum, computed using the provided algorithm, of the file created at destination
      */
@@ -242,14 +245,14 @@ public final class DownloadUtils {
                                               String checksumAlgorithm,
                                               Proxy proxy,
                                               Collection<String> nonProxyHosts,
-                                              Integer pConnectTimeout,
+                                              Integer timeoutInMS,
                                               List<S3Server> knownS3Servers)
         throws NoSuchAlgorithmException, IOException {
         try (OutputStream os = Files.newOutputStream(destination, StandardOpenOption.CREATE);
             InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source,
                                                                                 proxy,
                                                                                 nonProxyHosts,
-                                                                                pConnectTimeout,
+                                                                                timeoutInMS,
                                                                                 knownS3Servers);
             // lets compute the checksum during the copy!
             DigestInputStream dis = new DigestInputStream(sourceStream, MessageDigest.getInstance(checksumAlgorithm))) {
@@ -269,7 +272,7 @@ public final class DownloadUtils {
                                                    Path destination,
                                                    String checksumAlgorithm,
                                                    String expectedChecksum,
-                                                   Integer pConnectionTimeout,
+                                                   Integer connectionTimeout,
                                                    List<S3Server> knownS3Servers)
         throws IOException, NoSuchAlgorithmException {
         return downloadAndCheckChecksum(source,
@@ -278,7 +281,7 @@ public final class DownloadUtils {
                                         expectedChecksum,
                                         Proxy.NO_PROXY,
                                         Sets.newHashSet(),
-                                        pConnectionTimeout,
+                                        connectionTimeout,
                                         knownS3Servers);
     }
 
@@ -313,7 +316,7 @@ public final class DownloadUtils {
                                                    String expectedChecksum,
                                                    Proxy proxy,
                                                    Collection<String> nonProxyHosts,
-                                                   Integer pConnectionTimeout,
+                                                   Integer connectionTimeout,
                                                    List<S3Server> knownS3Servers)
         throws IOException, NoSuchAlgorithmException {
         String checksum = downloadThroughProxy(source,
@@ -321,7 +324,7 @@ public final class DownloadUtils {
                                                checksumAlgorithm,
                                                proxy,
                                                nonProxyHosts,
-                                               pConnectionTimeout,
+                                               connectionTimeout,
                                                knownS3Servers);
         return checksum.equalsIgnoreCase(expectedChecksum);
     }
@@ -351,14 +354,15 @@ public final class DownloadUtils {
     public static InputStream getInputStreamThroughProxy(URL source,
                                                          Proxy proxy,
                                                          Collection<String> nonProxyHosts,
-                                                         Integer pConnectTimeout,
+                                                         Integer timeoutInMS,
                                                          List<S3Server> knownS3Servers) throws IOException {
-        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, pConnectTimeout, knownS3Servers, null, null);
+        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, timeoutInMS, knownS3Servers, null, null);
 
     }
 
     /**
-     * @param pConnectTimeout  Sets a specified timeout value, in milliseconds, to be used when opening a communications link to the resource referenced by this URLConnection
+     * @param timeoutInMS      Sets a specified timeout value, in milliseconds, to be used when opening a
+     *                         communications link to the resource referenced by this URLConnection
      * @param maxContentLength Maximum content length of file to decide if the file can be downloaded directly or must be saved first to a local temporary file.
      *                         If the file size is lower than this limit, download will use the original source while downloading.
      *                         If the file size is bigger than this limit, a local temporary file will be created and the resulting InputStream will be from this temporary file.
@@ -367,7 +371,7 @@ public final class DownloadUtils {
     public static InputStream getInputStreamThroughProxy(URL source,
                                                          Proxy proxy,
                                                          Collection<String> nonProxyHosts,
-                                                         Integer pConnectTimeout,
+                                                         Integer timeoutInMS,
                                                          List<S3Server> knownS3Servers,
                                                          Long maxContentLength,
                                                          Path tmpWorkspacePath) throws IOException {
@@ -389,7 +393,7 @@ public final class DownloadUtils {
             return getInputStreamThroughProxyFromRegularSource(source,
                                                                proxy,
                                                                nonProxyHosts,
-                                                               pConnectTimeout,
+                                                               timeoutInMS,
                                                                maxContentLength,
                                                                tmpWorkspacePath);
         }
@@ -485,38 +489,38 @@ public final class DownloadUtils {
     /**
      * works as {@link DownloadUtils#getContentLengthThroughProxy} without proxy.
      */
-    public static Long getContentLength(URL source, Integer pConnectTimeout, List<S3Server> knownS3Servers)
+    public static Long getContentLength(URL source, Integer timeoutInMS, List<S3Server> knownS3Servers)
         throws IOException {
-        return getContentLengthThroughProxy(source, Proxy.NO_PROXY, Sets.newHashSet(), pConnectTimeout, knownS3Servers);
+        return getContentLengthThroughProxy(source, Proxy.NO_PROXY, Sets.newHashSet(), timeoutInMS, knownS3Servers);
     }
 
     /**
      * Retrieve the file size of the source file
      *
-     * @param source          the url of the file to download
-     * @param proxy           the proxy to use if needed
-     * @param nonProxyHosts   the list of hosts for which the proxy is not needed
-     * @param pConnectTimeout the time the process will wait while trying to connect, can be null
-     * @param knownS3Servers  the list of known S3 hosts, the process will use the specific s3 download algorithm if the downloaded file belong to one of these hosts
-     * @return checksum, computed using the provided algorithm, of the file created at destination
+     * @param source         the url of the file
+     * @param proxy          the proxy to use if needed
+     * @param nonProxyHosts  the list of hosts for which the proxy is not needed
+     * @param timeoutInMS    the time in milliseonds the process will wait while trying to connect, can be null
+     * @param knownS3Servers the list of known S3 hosts, the process will use the specific s3 download algorithm if the downloaded file belong to one of these hosts
+     * @return the size of the file located in given source
      */
     public static Long getContentLengthThroughProxy(URL source,
                                                     Proxy proxy,
                                                     Collection<String> nonProxyHosts,
-                                                    Integer pConnectTimeout,
-                                                    List<S3Server> knownS3Servers) throws IOException {
+                                                    @Nullable Integer timeoutInMS,
+                                                    @Nullable List<S3Server> knownS3Servers) throws IOException {
 
-        URLConnection connection = getConnectionThroughProxy(source, proxy, nonProxyHosts, pConnectTimeout);
+        URLConnection urlConnection = getConnectionThroughProxy(source, proxy, nonProxyHosts, timeoutInMS);
 
-        //Filesystem
+        //File system
         if (source.getProtocol().equals("file")) {
-            return connection.getContentLengthLong();
+            return urlConnection.getContentLengthLong();
         }
 
         if (source.getProtocol().equals("http") || source.getProtocol().equals("https")) {
             Optional<S3Server> s3Server = S3ServerUtils.isUrlFromS3Server(source, knownS3Servers);
             if (s3Server.isPresent()) {
-                //S3
+                //S3 server
                 S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(source, s3Server.get());
                 try {
                     return getContentLengthS3(keyAndStorage.key(), keyAndStorage.storageConfig());
@@ -524,23 +528,22 @@ public final class DownloadUtils {
                     throw new FileNotFoundException(String.format("File %s not found on S3 server", source));
                 }
             } else {
-                //Regular download
-                HttpURLConnection conn = (HttpURLConnection) connection;
-                conn.setRequestMethod("HEAD");
-                connection.connect();
-                int responseCode = conn.getResponseCode();
-                conn.disconnect();
+                //Regular server
+                HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+                httpURLConnection.setRequestMethod(HTTP_VERB_HEAD);
+                urlConnection.connect();
+                int responseCode = httpURLConnection.getResponseCode();
+                httpURLConnection.disconnect();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
-                    return connection.getContentLengthLong();
+                    return urlConnection.getContentLengthLong();
                 } else {
                     throw new ConnectException(String.format(
                         "Error during http/https access for URL %s, got response code : %d",
                         source,
-                        conn.getResponseCode()));
+                        responseCode));
                 }
             }
         }
-
         throw new UnsupportedOperationException(String.format("Unsupported protocol %s for URL %s",
                                                               source.getProtocol(),
                                                               source));
@@ -564,20 +567,20 @@ public final class DownloadUtils {
     /**
      * Get an InputStream of the file to download
      *
-     * @param source          the file to download
-     * @param proxy           the proxy to use if needed
-     * @param nonProxyHosts   the list of hosts for which the proxy is not needed
-     * @param pConnectTimeout the time the process will wait while trying to connect, can be null
+     * @param source        the file to download
+     * @param proxy         the proxy to use if needed
+     * @param nonProxyHosts the list of hosts for which the proxy is not needed
+     * @param timeoutInMS   the time the process will wait while trying to connect, can be null
      * @return an InputStream of the file
      * @throws IOException when there is an error during connection opening
      */
     private static InputStream getInputStreamThroughProxyFromRegularSource(URL source,
                                                                            Proxy proxy,
                                                                            Collection<String> nonProxyHosts,
-                                                                           Integer pConnectTimeout,
+                                                                           Integer timeoutInMS,
                                                                            Long maxContentLength,
                                                                            Path tmpWorkspacePath) throws IOException {
-        URLConnection connection = getConnectionThroughProxy(source, proxy, nonProxyHosts, pConnectTimeout);
+        URLConnection connection = getConnectionThroughProxy(source, proxy, nonProxyHosts, timeoutInMS);
         connection.connect();
 
         // Handle specific case of HTTP URLs.
@@ -590,7 +593,7 @@ public final class DownloadUtils {
                     conn.getResponseCode()));
             }
             if (maxContentLength != null
-                && getContentLengthThroughProxy(source, proxy, nonProxyHosts, pConnectTimeout, new ArrayList<>())
+                && getContentLengthThroughProxy(source, proxy, nonProxyHosts, timeoutInMS, new ArrayList<>())
                    > maxContentLength) {
                 InputStream httpInputStream = connection.getInputStream();
                 return getInputStreamUsingTmpFile(tmpWorkspacePath, UUID.randomUUID(), httpInputStream);
@@ -603,27 +606,27 @@ public final class DownloadUtils {
     /**
      * Open the connection through proxy
      *
-     * @param source          the url of the file where we will attempt to connect
-     * @param proxy           the proxy to use if needed
-     * @param nonProxyHosts   the list of hosts for which the proxy is not needed
-     * @param pConnectTimeout the time the process will wait while trying to connect, can be null
+     * @param source        the url of the file where we will attempt to connect
+     * @param proxy         the proxy to use if needed
+     * @param nonProxyHosts the list of hosts for which the proxy is not needed
+     * @param timeoutInMS   the time in milliseconds the process will wait while trying to connect, can be null
      * @return the open connection ready to be connected to
      * @throws IOException when there is an error during connection opening
      */
     private static URLConnection getConnectionThroughProxy(URL source,
                                                            Proxy proxy,
                                                            Collection<String> nonProxyHosts,
-                                                           Integer pConnectTimeout) throws IOException {
-        URLConnection connection;
+                                                           @Nullable Integer timeoutInMS) throws IOException {
+        URLConnection urlConnection;
         if (needProxy(source, nonProxyHosts)) {
-            connection = source.openConnection(proxy);
+            urlConnection = source.openConnection(proxy);
         } else {
-            connection = source.openConnection();
+            urlConnection = source.openConnection();
         }
-        connection.setDoInput(true); //that's the default but lets set it explicitly for understanding
-        if (pConnectTimeout != null) {
-            connection.setConnectTimeout(pConnectTimeout);
+        urlConnection.setDoInput(true); //that's the default but let's set it explicitly for understanding
+        if (timeoutInMS != null) {
+            urlConnection.setConnectTimeout(timeoutInMS);
         }
-        return connection;
+        return urlConnection;
     }
 }

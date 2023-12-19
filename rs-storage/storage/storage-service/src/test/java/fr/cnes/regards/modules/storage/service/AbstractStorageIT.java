@@ -73,6 +73,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
@@ -143,10 +144,10 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
 
     @Autowired
-    protected IFileCacheRequestRepository fileCacheRequestRepo;
+    protected IFileCacheRequestRepository fileCacheRequestRepository;
 
     @Autowired
-    protected ICacheFileRepository cacheFileRepo;
+    protected ICacheFileRepository cacheFileRepository;
 
     @Autowired
     protected IFileStorageRequestRepository fileStorageRequestRepo;
@@ -161,7 +162,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected IJobInfoRepository jobInfoRepo;
 
     @Autowired
-    protected IGroupRequestInfoRepository grpReqInfoRepo;
+    protected IGroupRequestInfoRepository groupRequestInfoRepository;
 
     @Autowired
     protected StorageLocationConfigurationService storageLocationConfService;
@@ -173,7 +174,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected RequestStatusService reqStatusService;
 
     @Autowired
-    protected IRequestGroupRepository groupRepo;
+    protected IRequestGroupRepository requestGroupRepository;
 
     @Autowired
     protected ITemplateRepository templateRepo;
@@ -196,16 +197,16 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
             Assert.fail(e.getMessage());
         }
         templateRepo.deleteAll();
-        grpReqInfoRepo.deleteAll();
+        groupRequestInfoRepository.deleteAll();
         copyRequestRepository.deleteAll();
         fileDeletionRequestRepo.deleteAll();
         fileStorageRequestRepo.deleteAll();
-        fileCacheRequestRepo.deleteAll();
-        cacheFileRepo.deleteAll();
+        fileCacheRequestRepository.deleteAll();
+        cacheFileRepository.deleteAll();
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
         downloadTokenRepo.deleteAll();
-        groupRepo.deleteAll();
+        requestGroupRepository.deleteAll();
 
         storageLocationService.getAllLocations().forEach(f -> {
             try {
@@ -681,7 +682,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                          .count());
     }
 
-    protected void simulateFileInCache(String checksum) {
+    protected void simulateFileInInternalCache(String checksum) {
         try {
             String filePath = cacheService.getFilePath(checksum);
             cacheService.addFile(checksum,
@@ -690,8 +691,9 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                  MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
                                  DataType.RAWDATA.name(),
                                  new URL("file", null, filePath),
-                                 24,
-                                 UUID.randomUUID().toString());
+                                 OffsetDateTime.now().plusDays(1),
+                                 UUID.randomUUID().toString(),
+                                 null);
             // Create file on disk
             if (!Files.exists(Paths.get(filePath).getParent())) {
                 Files.createDirectories(Paths.get(filePath).getParent());

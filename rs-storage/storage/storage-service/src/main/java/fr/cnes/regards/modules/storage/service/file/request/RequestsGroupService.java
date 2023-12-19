@@ -113,6 +113,10 @@ public class RequestsGroupService {
         requestDone(groupId, type, checksum, storage, storePath, owners, fileRef, false, null);
     }
 
+    public void availibilityRequestSuccess(String groupId, String checksum, Collection<String> owners) {
+        requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, null, null, owners, null);
+    }
+
     /**
      * Handle new request error for the given groupId.<br>
      */
@@ -406,6 +410,7 @@ public class RequestsGroupService {
         gInfo.setResultFile(fileRef);
         gInfo.setError(error);
         gInfo.setErrorCause(errorCause);
+
         groupReqInfoRepository.save(gInfo);
     }
 

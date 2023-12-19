@@ -47,7 +47,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,17 +88,12 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
-    public void createCacheFile() throws MalformedURLException {
+    public void create_cacheFile_in_internalCache() throws MalformedURLException {
         // Given : initialize new file in cache
         String checksum = UUID.randomUUID().toString();
-        int availabilityHours = 24;
+        OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1).truncatedTo(ChronoUnit.MICROS);
 
-        OffsetDateTime expirationDate = OffsetDateTime.now()
-                                                      .plusHours(availabilityHours)
-                                                      .atZoneSameInstant(ZoneOffset.UTC)
-                                                      .toOffsetDateTime()
-                                                      .truncatedTo(ChronoUnit.SECONDS);
-        Assert.assertFalse("File should not referenced in cache", cacheService.getCacheFile(checksum).isPresent());
+        Assert.assertFalse("File should not referenced in cache", cacheService.findByChecksum(checksum).isPresent());
 
         // When
         cacheService.addFile(checksum,
@@ -108,24 +102,21 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
                              DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/test.file.test"),
-                             availabilityHours,
-                             UUID.randomUUID().toString());
-        Optional<CacheFile> cacheFileOptional = cacheService.getCacheFile(checksum);
+                             expirationDate,
+                             UUID.randomUUID().toString(),
+                             null);
+        Optional<CacheFile> cacheFileOptional = cacheService.findByChecksum(checksum);
 
         // Then
         Assert.assertTrue("File should be referenced in cache", cacheFileOptional.isPresent());
-        Assert.assertTrue("Invalid expiration date truncated in second",
-                          expirationDate.isEqual(cacheFileOptional.get()
-                                                                  .getExpirationDate()
-                                                                  .truncatedTo(ChronoUnit.SECONDS)));
+        Assert.assertTrue("File should be in internal cache", cacheFileOptional.get().isInternalCache());
+        Assert.assertNull("Businness identifier of plugin must be null because internal cache",
+                          cacheFileOptional.get().getExternalCachePlugin());
+        Assert.assertTrue("Invalid expiration date",
+                          expirationDate.isEqual(cacheFileOptional.get().getExpirationDate()));
 
         // Given : try to reference again the same file in cache
-        availabilityHours = 2 * availabilityHours;
-        OffsetDateTime newExpirationDate = OffsetDateTime.now()
-                                                         .plusHours(availabilityHours)
-                                                         .atZoneSameInstant(ZoneOffset.UTC)
-                                                         .toOffsetDateTime()
-                                                         .truncatedTo(ChronoUnit.SECONDS);
+        OffsetDateTime newExpirationDate = OffsetDateTime.now().plusDays(2).truncatedTo(ChronoUnit.MICROS);
 
         // When
         cacheService.addFile(checksum,
@@ -134,21 +125,51 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
                              DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/test.file.test"),
-                             availabilityHours,
-                             UUID.randomUUID().toString());
-        cacheFileOptional = cacheService.getCacheFile(checksum);
+                             newExpirationDate,
+                             UUID.randomUUID().toString(),
+                             null);
+        cacheFileOptional = cacheService.findByChecksum(checksum);
 
         // Then
         Assert.assertTrue("File should be referenced in cache", cacheFileOptional.isPresent());
-        Assert.assertTrue("Invalid expiration date truncated in second",
-                          newExpirationDate.isEqual(cacheFileOptional.get()
-                                                                     .getExpirationDate()
-                                                                     .truncatedTo(ChronoUnit.SECONDS)));
+        Assert.assertTrue("Invalid expiration date",
+                          newExpirationDate.isEqual(cacheFileOptional.get().getExpirationDate()));
+    }
+
+    @Test
+    public void create_cacheFile_in_externalCache() throws MalformedURLException {
+        // Given : initialize new file in cache
+        String checksum = UUID.randomUUID().toString();
+        OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1).truncatedTo(ChronoUnit.MICROS);
+
+        Assert.assertFalse("File should not referenced in cache", cacheService.findByChecksum(checksum).isPresent());
+
+        // When
+        cacheService.addFile(checksum,
+                             123L,
+                             "test.file.test",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
+                             new URL("http", null, "/plop/test.file.test"),
+                             expirationDate,
+                             UUID.randomUUID().toString(),
+                             "business_identifier_plugin");
+        Optional<CacheFile> cacheFileOptional = cacheService.findByChecksum(checksum);
+
+        // Then
+        Assert.assertTrue("File should be referenced in cache", cacheFileOptional.isPresent());
+        Assert.assertFalse("File should be in external cache", cacheFileOptional.get().isInternalCache());
+        Assert.assertEquals("Businness identifier of plugin must exist because external cache",
+                            "business_identifier_plugin",
+                            cacheFileOptional.get().getExternalCachePlugin());
+        Assert.assertTrue("Invalid expiration date",
+                          expirationDate.isEqual(cacheFileOptional.get().getExpirationDate()));
     }
 
     @Test
     public void calculateCacheSize() throws MalformedURLException {
         // Given
+        OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
         for (int i = 0; i < 10; i++) {
             cacheService.addFile(UUID.randomUUID().toString(),
                                  10L,
@@ -156,8 +177,9 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                                  MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
                                  DataType.RAWDATA.name(),
                                  new URL("file", null, "/plop/test.file.test"),
-                                 24,
-                                 UUID.randomUUID().toString());
+                                 expirationDate,
+                                 UUID.randomUUID().toString(),
+                                 null);
         }
         // When, then
         Assert.assertEquals("Total size not valid", 100L, cacheService.getCacheSizeUsedBytes().longValue());
@@ -177,14 +199,14 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         for (int index = 0; index < 50; index++) {
             expirationDate = expirationDate.plusDays(1);
 
-            cacheFiles.add(new CacheFile(UUID.randomUUID().toString(),
-                                         10L,
-                                         "test.file.test" + index,
-                                         MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                                         new URL("file", null, "/plop/test.file.test" + index),
-                                         expirationDate,
-                                         UUID.randomUUID().toString(),
-                                         DataType.RAWDATA.name()));
+            cacheFiles.add(CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
+                                                            10L,
+                                                            "test.file.test" + index,
+                                                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                                                            new URL("file", null, "/plop/test.file.test" + index),
+                                                            expirationDate,
+                                                            UUID.randomUUID().toString(),
+                                                            DataType.RAWDATA.name()));
         }
         cacheFileRepository.saveAll(cacheFiles);
         Assert.assertEquals("There should be 50 files in cache", 50, cacheFileRepository.findAll().size());
@@ -199,7 +221,6 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         // When: as we do not have create files on disk, all files in cache are invalid and should deleted
         // log of WARN type : Dirty cache file in database : /plop/test.file.test<index>
         cacheService.checkDiskDBCoherence();
-        //runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Then
         Assert.assertEquals("There should be 0 files in cache", 0, cacheFileRepository.findAll().size());
@@ -216,14 +237,14 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         for (int index = 0; index < 50; index++) {
             expirationDate = expirationDate.plusDays(1);
 
-            cacheFiles.add(new CacheFile(UUID.randomUUID().toString(),
-                                         10L,
-                                         "test.file.test" + index,
-                                         MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                                         new URL("file", null, "/plop/test.file.test" + index),
-                                         expirationDate,
-                                         UUID.randomUUID().toString(),
-                                         DataType.RAWDATA.name()));
+            cacheFiles.add(CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
+                                                            10L,
+                                                            "test.file.test" + index,
+                                                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                                                            new URL("file", null, "/plop/test.file.test" + index),
+                                                            expirationDate,
+                                                            UUID.randomUUID().toString(),
+                                                            DataType.RAWDATA.name()));
         }
         cacheFileRepository.saveAll(cacheFiles);
         Assert.assertEquals("There should be 1000 files in cache", 50, cacheFileRepository.findAll().size());
@@ -245,14 +266,14 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         // Initilaize files in cache does not exist on disk
         List<CacheFile> files = Lists.newArrayList();
         for (int index = 0; index < nbFiles; index++) {
-            files.add(new CacheFile(UUID.randomUUID().toString(),
-                                    12L,
-                                    "plip" + index + ".test",
-                                    MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
-                                    new URL("file:/plop/plip_" + index + ".test"),
-                                    OffsetDateTime.now().plusDays(1),
-                                    UUID.randomUUID().toString(),
-                                    DataType.RAWDATA.name()));
+            files.add(CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
+                                                       12L,
+                                                       "plip" + index + ".test",
+                                                       MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
+                                                       new URL("file:/plop/plip_" + index + ".test"),
+                                                       OffsetDateTime.now().plusDays(1),
+                                                       UUID.randomUUID().toString(),
+                                                       DataType.RAWDATA.name()));
         }
         cacheFileRepository.saveAll(files);
 
@@ -264,14 +285,14 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         }
         String checksum = UUID.randomUUID().toString();
         try {
-            cacheFileRepository.save(new CacheFile(checksum,
-                                                   12L,
-                                                   path.getFileName().toString(),
-                                                   MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
-                                                   new URL("file:" + path.toAbsolutePath()),
-                                                   OffsetDateTime.now().plusDays(1),
-                                                   UUID.randomUUID().toString(),
-                                                   DataType.RAWDATA.name()));
+            cacheFileRepository.save(CacheFile.buildFileInternalCache(checksum,
+                                                                      12L,
+                                                                      path.getFileName().toString(),
+                                                                      MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
+                                                                      new URL("file:" + path.toAbsolutePath()),
+                                                                      OffsetDateTime.now().plusDays(1),
+                                                                      UUID.randomUUID().toString(),
+                                                                      DataType.RAWDATA.name()));
         } catch (MalformedURLException e) {
             Assert.fail(e.getMessage());
         }

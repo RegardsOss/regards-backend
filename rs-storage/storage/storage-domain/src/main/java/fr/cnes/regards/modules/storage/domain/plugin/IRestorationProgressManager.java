@@ -21,12 +21,16 @@ package fr.cnes.regards.modules.storage.domain.plugin;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 
+import javax.annotation.Nullable;
+import java.net.URL;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
 
 /**
- * The ProgressManager is used by {@link IStorageLocation} plugins to notidy the upper service of storage action results :
+ * The ProgressManager is used by {@link IStorageLocation} plugins to notify the upper service of storage action results :
  * <ul>
- * <li>Restoration succeed {@link #restoreSucceed}</li>
+ * <li>Restoration succeed in the internal cache{@link #restoreSucceed}</li>
+ * <li>Restoration succeed in the external cache{@link #restoreSucceedExternalCache}</li>
  * <li>Restoration failed {@link #restoreFailed}</li>
  * </ul>
  *
@@ -35,18 +39,32 @@ import java.nio.file.Path;
 public interface IRestorationProgressManager {
 
     /**
-     * Notify system that the given {@link FileReference} is restored.
+     * Notify system that the given {@link FileReference} is restored from the internal cache.
      *
-     * @param FileCacheRequest {@link FileCacheRequest} restored.
+     * @param fileCacheRequest file cache request restored.
+     * @param restoredFilePath path of restored file
      */
-    public void restoreSucceed(FileCacheRequest fileRequest, Path restoredFilePath);
+    void restoreSucceededInternalCache(FileCacheRequest fileCacheRequest, Path restoredFilePath);
 
     /**
      * Notify the system that the given {@link FileReference} couldn't be restored.
      *
-     * @param FileCacheRequest {@link FileCacheRequest} not restored.
-     * @param cause            {@link String} error message.
+     * @param fileCacheRequest file cache request not restored.
+     * @param cause            error message.
      */
-    public void restoreFailed(FileCacheRequest fileRequest, String cause);
+    void restoreFailed(FileCacheRequest fileCacheRequest, String cause);
+
+    /**
+     * Notify system that the given {@link FileReference} is restored from the external cache.
+     *
+     * @param fileCacheRequest file cache request restored.
+     * @param restoredFileUrl  url of restored file
+     * @param fileSize         size of restored file
+     * @param expirationDate   expiration of file in external cache
+     */
+    void restoreSucceededExternalCache(FileCacheRequest fileCacheRequest,
+                                       URL restoredFileUrl,
+                                       @Nullable Long fileSize,
+                                       OffsetDateTime expirationDate);
 
 }

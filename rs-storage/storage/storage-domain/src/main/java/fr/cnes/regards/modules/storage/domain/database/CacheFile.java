@@ -5,6 +5,7 @@ import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import org.springframework.util.MimeType;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
@@ -84,8 +85,8 @@ public class CacheFile {
     private final Set<String> groupIds = Sets.newHashSet();
 
     /**
-     * True when the file is stored inside internal REGARDS cache, false when file is in external cache.
-     * By default, the file is inside internal REGARDS cache.
+     * True when the file is stored inside internal REGARDS cache, false when file is stored inside external cache.
+     * By default, the file is stored inside internal REGARDS cache.
      */
     @Column(name = "internal_cache")
     private boolean internalCache = true;
@@ -103,9 +104,6 @@ public class CacheFile {
         fileSize = 0L;
     }
 
-    /**
-     * Constructor initializing a file managed by an external cache
-     */
     public CacheFile(String checksum,
                      Long fileSize,
                      String fileName,
@@ -114,24 +112,8 @@ public class CacheFile {
                      OffsetDateTime expirationDate,
                      String groupId,
                      String type,
-                     String externalCachePlugin) {
-        this(checksum, fileSize, fileName, mimeType, location, expirationDate, groupId, type);
-        // Set external cache in DATALAKE
-        this.internalCache = false;
-        this.externalCachePlugin = externalCachePlugin;
-    }
-
-    /**
-     * Constructor initializing the internal cache(in REGARDS) file from the parameters.
-     */
-    public CacheFile(String checksum,
-                     Long fileSize,
-                     String fileName,
-                     MimeType mimeType,
-                     URL location,
-                     OffsetDateTime expirationDate,
-                     String groupId,
-                     String type) {
+                     boolean internalCache,
+                     @Nullable String externalCachePlugin) {
         this.checksum = checksum;
         this.fileSize = fileSize;
         this.location = location;
@@ -140,6 +122,8 @@ public class CacheFile {
         this.fileName = fileName;
         this.mimeType = mimeType;
         this.type = type;
+        this.internalCache = internalCache;
+        this.externalCachePlugin = externalCachePlugin;
     }
 
     public Long getId() {
@@ -210,6 +194,14 @@ public class CacheFile {
         this.type = type;
     }
 
+    public boolean isInternalCache() {
+        return internalCache;
+    }
+
+    public String getExternalCachePlugin() {
+        return externalCachePlugin;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -253,5 +245,54 @@ public class CacheFile {
                + ", externalCachePlugin="
                + externalCachePlugin
                + "]";
+    }
+
+    /**
+     * Build a file managed by an internal cache.
+     */
+    public static CacheFile buildFileInternalCache(String checksum,
+                                                   Long fileSize,
+                                                   String fileName,
+                                                   MimeType mimeType,
+                                                   URL location,
+                                                   OffsetDateTime expirationDate,
+                                                   String groupId,
+                                                   String type) {
+        return new CacheFile(checksum,
+                             fileSize,
+                             fileName,
+                             mimeType,
+                             location,
+                             expirationDate,
+                             groupId,
+                             type,
+                             true,
+                             null);
+
+    }
+
+    /**
+     * Build a file managed by an external cache.
+     */
+    public static CacheFile buildFileExternalCache(String checksum,
+                                                   Long fileSize,
+                                                   String fileName,
+                                                   MimeType mimeType,
+                                                   URL location,
+                                                   OffsetDateTime expirationDate,
+                                                   String groupId,
+                                                   String type,
+                                                   String externalCachePlugin) {
+        return new CacheFile(checksum,
+                             fileSize,
+                             fileName,
+                             mimeType,
+                             location,
+                             expirationDate,
+                             groupId,
+                             type,
+                             false,
+                             externalCachePlugin);
+
     }
 }
