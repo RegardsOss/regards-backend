@@ -68,7 +68,7 @@ import static org.junit.Assert.*;
  * @author Kevin Marchois
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_deletion1",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_deletion",
                                    "regards.amqp.enabled=true",
                                    "regards.feature.max.bulk.size=10" },
                     locations = { "classpath:regards_perf.properties",

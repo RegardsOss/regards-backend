@@ -501,6 +501,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                 LOGGER.warn("Not acknowledge for a unfound recipient.");
             }
         }
+
+        featureEntity.updateDisseminationPending();
     }
 
     @Override

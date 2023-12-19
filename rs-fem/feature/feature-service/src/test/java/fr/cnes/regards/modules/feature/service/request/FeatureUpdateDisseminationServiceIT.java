@@ -209,7 +209,7 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         // the FeatureCreationRequest must be deleted
         assertEquals(0, featureCreationRequestRepository.count());
 
-        // And two FeatureUpdateDissemination requests created
+        // And 2 FeatureUpdateDissemination requests created
         updateDisseminationRequests = featureUpdateDisseminationRequestRepository.findAll();
         Assert.assertEquals("should requests exists", 3, updateDisseminationRequests.size());
 
