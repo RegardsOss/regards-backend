@@ -32,17 +32,20 @@ public class NearlineFileStatusDto {
 
     /**
      * file availability.</br>
-     * if true, it means that the file is located in T2 or in the restoration cache
+     * if true, it means that the file is located in T2 or in the restoration cache (=external cache)
      */
     private final boolean available;
 
     @Nullable
     private final OffsetDateTime expirationDate;
 
-    public NearlineFileStatusDto(boolean available, @Nullable OffsetDateTime expirationDate) {
+    @Nullable
+    private String message;
 
+    public NearlineFileStatusDto(boolean available, @Nullable OffsetDateTime expirationDate, @Nullable String message) {
         this.available = available;
         this.expirationDate = expirationDate;
+        this.message = message;
     }
 
     public boolean isAvailable() {
@@ -52,6 +55,11 @@ public class NearlineFileStatusDto {
     @Nullable
     public OffsetDateTime getExpirationDate() {
         return expirationDate;
+    }
+
+    @Nullable
+    public String getMessage() {
+        return message;
     }
 
     @Override

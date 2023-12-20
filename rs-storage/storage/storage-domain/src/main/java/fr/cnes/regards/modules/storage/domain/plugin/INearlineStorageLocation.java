@@ -29,8 +29,8 @@ import java.io.InputStream;
 
 /**
  * Plugin to handle NEARLINE storage location. <br/>
- * A nearline storage location is a location where files cannot be accessed synchronously.<br/>
- * Files need to be restored in cache before they can be access for download.<br/>
+ * A nearline storage location is a location where files can not be accessed synchronously.<br/>
+ * Files need to be restored in cache before they can be accessed for download.<br/>
  * See {@link fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent} for more information.
  *
  * @author Sébastien Binda
@@ -47,7 +47,7 @@ public interface INearlineStorageLocation extends IStorageLocation {
     void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager);
 
     /**
-     * Download file if it is available in cache.
+     * Download file if it is available (call {@link INearlineStorageLocation#checkAvailability(FileReference)}).
      *
      * @param fileReference the file's reference
      * @return input stream of file in cache

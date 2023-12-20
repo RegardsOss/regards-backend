@@ -57,9 +57,9 @@ public class StorageNearlineMocked implements INearlineStorageLocation {
     public NearlineFileStatusDto checkAvailability(FileReference fileReference) {
         checkAvailabilityCallNumber++;
         if (fileReference.getMetaInfo().getFileName().endsWith(T3_PATTERN)) {
-            return new NearlineFileStatusDto(false, null);
+            return new NearlineFileStatusDto(false, null, "file is not available");
         } else {
-            return new NearlineFileStatusDto(true, OffsetDateTime.now().plusHours(1));
+            return new NearlineFileStatusDto(true, OffsetDateTime.now().plusHours(1), "file is available");
         }
     }
 
