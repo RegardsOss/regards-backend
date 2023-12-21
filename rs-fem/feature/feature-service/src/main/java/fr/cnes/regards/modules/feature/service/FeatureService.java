@@ -82,12 +82,12 @@ public class FeatureService implements IFeatureService {
         // 2. fetch full entities for objects in this page
         Page<FeatureSimpleEntity> featureSimpleEntities = featureSimpleEntityRepository.findAll(new FeatureSimpleEntitySpecificationBuilder().withParameters(
             filters).build(), pageable);
-        List<FeatureEntity> featureEntities = featureWithDisseminationRepo.findByUrnIn(featureSimpleEntities.stream()
-                                                                                                            .map(
-                                                                                                                FeatureSimpleEntity::getUrn)
-                                                                                                            .collect(
-                                                                                                                Collectors.toSet()),
-                                                                                       featureSimpleEntities.getSort());
+        List<FeatureEntity> featureEntities = featureWithDisseminationRepo.findByIdIn(featureSimpleEntities.stream()
+                                                                                                           .map(
+                                                                                                               FeatureSimpleEntity::getId)
+                                                                                                           .collect(
+                                                                                                               Collectors.toSet()),
+                                                                                      featureSimpleEntities.getSort());
 
         List<FeatureEntityDto> featureEntityDtos = featureEntities.stream()
                                                                   .map(entity -> initDataObjectFeature(entity, true))

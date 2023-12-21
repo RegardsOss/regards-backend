@@ -145,6 +145,7 @@ public class FeatureUpdateDisseminationService {
             featureEntity.updateDisseminationPending();
         }
         notifySessions(sessionInfos);
+
         featureWithDisseminationRepository.saveAll(featureEntities);
         featureUpdateDisseminationRequestRepository.deleteAllInBatch(results);
     }
@@ -169,7 +170,8 @@ public class FeatureUpdateDisseminationService {
         if (featureRecipientToUpdate.isPresent()) {
             // Reset an existing feature recipient as this recipient has been re-notified
             featureRecipientToUpdate.get().setRequestDate(request.getCreationDate());
-            featureRecipientToUpdate.get().setAckDateByAckRequired(request.getAckRequired());
+
+            featureRecipientToUpdate.get().setAckDateForNewDissiminationRequest(request);
 
             handleBlockingDissemination(featureRecipientToUpdate.get(), featureEntity);
         } else {

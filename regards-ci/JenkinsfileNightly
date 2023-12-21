@@ -262,16 +262,17 @@ pipeline {
 // @params mode Expected mode (see ci script file)
 // @params containerName postfix used when creating the docker container name
 // @params regardsMs the pom submodule to restrict on
+// @params nbMaxCpu maximum number of cpu the container can use
 // @params isRequiringCots true when the container will use CoTs
 // @params isRabbitMqIdFirst should use the first rabbitMQ
 @NonCPS
-def runMavenDockerImg(label, mode, containerName, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
+def runMavenDockerImg(label, mode, containerName, regardsMs, nbMaxCpu, isRequiringCots, isRabbitMqIdFirst) {
     // Transform PROJECT_NAME to what Docker will use for CoTS names
     // regards-oss-backend/feature%2Fimprove_jenkins_stages-31
     // become
     // regardsossbackendfeature2fimprovejenkinsstages31
     def dockerProject = PROJECT_NAME.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()
-    def dockerCommand = 'docker run --rm -i                                                                    \
+    def dockerCommand = 'docker run --rm -i  --cpus=' + nbMaxCpu + '                                           \
                         --name ' + dockerProject + '_maven_' + regardsMs + '                                   \
                         -v ${WORKSPACE}:/app_to_build                                                          \
                         -v /DATA/maven-multibranch-repository:/localRepository                                 \
@@ -301,17 +302,17 @@ def runMavenDockerImg(label, mode, containerName, regardsMs, isRequiringCots, is
 // Use it when you don't need any COTS
 def runMavenDockerImgWithoutCoTS(taskMainLabel, mode) {
     def label = taskMainLabel + " using maven container with mode=[" + mode + "]"
-    runMavenDockerImg(label, mode, mode, "", false, false)
+    runMavenDockerImg(label, mode, mode, "", 4, false, false)
 }
 
 // Use it when you want CoTS and you are the parallel "One"
 def runMavenDockerImgParallelOne(mode, regardsMs) {
     def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and first RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, regardsMs, true, true)
+    runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, true)
 }
 
 // Use it when you want CoTS and you are the parallel "Two"
 def runMavenDockerImgParallelTwo(mode, regardsMs) {
     def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and second RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, regardsMs, true, false)
+    runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, false)
 }

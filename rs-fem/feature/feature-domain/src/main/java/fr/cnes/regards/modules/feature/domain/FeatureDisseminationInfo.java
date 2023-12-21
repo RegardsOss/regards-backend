@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
@@ -59,7 +60,8 @@ public class FeatureDisseminationInfo {
     private OffsetDateTime requestDate;
 
     /**
-     * When broadcast recipient acknowledge the diffusion
+     * Date of acknowledge.
+     * This date is updated to indicate the recipient has acknowledged the diffusion.
      */
     @Column(name = "ack_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
@@ -68,29 +70,46 @@ public class FeatureDisseminationInfo {
     @Column(name = "blocking")
     private boolean blocking;
 
+    /**
+     * Constructor
+     */
     public FeatureDisseminationInfo() {
     }
 
     /**
+     * Constructor
+     * <p>
+     * Update the date of acknowledge using provided ackRequired :
+     * <ul>
+     * <li>When true, the date of acknowledge will be specified when the recipient notifies us</li>
+     * <li>When false, we won't receive a acknowledgement, so not blocking</li>
+     * </ul>
+     *
+     * @param label       the name of the broadcast recipient
      * @param ackRequired when false, no acknowledge message will be received
      */
     public FeatureDisseminationInfo(String label, boolean ackRequired) {
         this.requestDate = OffsetDateTime.now();
-
         this.label = label;
-        this.setAckDateByAckRequired(ackRequired);
+
+        if (ackRequired) {
+            this.ackDate = null;
+        } else {
+            this.ackDate = this.requestDate;
+        }
     }
 
     /**
-     * Update the field ackDate using provided ackRequired :
-     * <ul>
-     * <li>When true, the ackDate will be specified when the recipient notifies us</li>
-     * <li>When false, we won't receive a acknowledgement, so not blocking</li>
-     * </ul>
+     * Set the date of acknowledge after a new request of dissimination.
+     * <p>
+     * The date of acknowledge is reset if the new dissemination request has been created after the previous dissemination request date of acknowledge. This date verification allow to handle the case where the event of notification sent is handled after the ack event. In this case we don't want to reset ack date cause the ack has been handled before.
+     * the feature is re-disseminated and we need to put dissemination in pending.
      */
-    public final void setAckDateByAckRequired(boolean ackRequired) {
-        if (ackRequired) {
-            this.ackDate = null;
+    public void setAckDateForNewDissiminationRequest(FeatureUpdateDisseminationRequest request) {
+        if (request.getAckRequired()) {
+            if (this.ackDate != null && request.getCreationDate().isAfter(this.ackDate)) {
+                this.ackDate = null;
+            }
         } else {
             this.ackDate = this.requestDate;
         }
