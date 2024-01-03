@@ -51,8 +51,8 @@ public class SearchFeatureSimpleEntityParameters implements AbstractSearchParame
     @Schema(description = "Filter on range of date for last update")
     private DatesRangeRestriction lastUpdate = new DatesRangeRestriction();
 
-    @Schema(description = "Filter on dissemination pending", example = "TRUE|FALSE")
-    private Boolean disseminationPending;
+    @Schema(description = "Filter on dissemination status", example = "NONE|PENDING|DONE")
+    private DisseminationFilterStatusEnum disseminationStatus;
 
     public String getModel() {
         return model;
@@ -133,19 +133,16 @@ public class SearchFeatureSimpleEntityParameters implements AbstractSearchParame
         return this;
     }
 
-    public Boolean getDisseminationPending() {
-        return disseminationPending;
+    public DisseminationFilterStatusEnum getDisseminationStatus() {
+        return disseminationStatus;
     }
 
-    public void setDisseminationPending(Boolean disseminationPending) {
-        if (disseminationPending == null) {
-            disseminationPending = Boolean.FALSE;
-        }
-        this.disseminationPending = disseminationPending;
+    public void setDisseminationStatus(DisseminationFilterStatusEnum disseminationStatus) {
+        this.disseminationStatus = disseminationStatus;
     }
 
-    public SearchFeatureSimpleEntityParameters withDisseminationPending(Boolean disseminationPending) {
-        setDisseminationPending(disseminationPending);
+    public SearchFeatureSimpleEntityParameters withDisseminationStatus(DisseminationFilterStatusEnum disseminationStatus) {
+        setDisseminationStatus(disseminationStatus);
         return this;
     }
 

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.domain.DisseminationFilterStatusEnum;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
@@ -84,6 +85,7 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
                                            featureModelName);
 
         firstFeature.setProviderId("providerId1");
+        firstFeature.setDisseminationPending(true);
         featureRepo.save(firstFeature);
 
         dateAfterCreatedFirstFeature = OffsetDateTime.now();
@@ -247,15 +249,28 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         Pageable page = PageRequest.of(0, 10);
 
         SearchFeatureSimpleEntityParameters selection = new SearchFeatureSimpleEntityParameters();
-        selection.withDisseminationPending(false);
-        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withDisseminationPending(
-            Boolean.FALSE);
+        selection.withDisseminationStatus(DisseminationFilterStatusEnum.DONE);
+        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withDisseminationStatus(
+            DisseminationFilterStatusEnum.DONE);
         // When
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
         Page<FeatureEntityDto> featureEntityDtos = featureService.findAll(filters, page);
         // When
-        assertEquals(2, results.getNumberOfElements());
-        assertEquals(2, featureEntityDtos.getNumberOfElements());
+        assertEquals(1, results.getNumberOfElements());
+        assertEquals(1, featureEntityDtos.getNumberOfElements());
+        assertEquals("providerId2", results.getContent().get(0).getProviderId());
+
+        // Given
+        selection = new SearchFeatureSimpleEntityParameters();
+        selection.withDisseminationStatus(DisseminationFilterStatusEnum.PENDING);
+        filters = new SearchFeatureSimpleEntityParameters().withDisseminationStatus(DisseminationFilterStatusEnum.PENDING);
+        // When
+        results = featureService.findAll(selection, page);
+        featureEntityDtos = featureService.findAll(filters, page);
+        // When
+        assertEquals(1, results.getNumberOfElements());
+        assertEquals(1, featureEntityDtos.getNumberOfElements());
+        assertEquals("providerId1", results.getContent().get(0).getProviderId());
     }
 
 }
