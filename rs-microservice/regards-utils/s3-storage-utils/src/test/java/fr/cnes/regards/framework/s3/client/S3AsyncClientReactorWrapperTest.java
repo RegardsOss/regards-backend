@@ -126,7 +126,11 @@ public class S3AsyncClientReactorWrapperTest {
     @Test
     public void test_head_restore_response_AVAILABLE_in_STANDARD() {
         // Given head response indicates that file is stored on standard class (no need restoration)
-        HeadObjectResponse responseMock = HeadObjectResponse.builder().storageClass(StorageClass.STANDARD).build();
+        Long fileSize = 100L;
+        HeadObjectResponse responseMock = HeadObjectResponse.builder()
+                                                            .storageClass(StorageClass.STANDARD)
+                                                            .contentLength(fileSize)
+                                                            .build();
 
         // When
         GlacierFileStatus glacierFileStatus = S3AsyncClientReactorWrapper.checkHeadRestoreState(responseMock,
@@ -137,6 +141,7 @@ public class S3AsyncClientReactorWrapperTest {
         // Then
         assertEquals(RestorationStatus.AVAILABLE, glacierFileStatus.getStatus());
         assertNull(glacierFileStatus.getExpirationDate());
+        assertEquals(fileSize, glacierFileStatus.getFileSize());
     }
 
 }

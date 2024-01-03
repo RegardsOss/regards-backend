@@ -70,6 +70,11 @@ public class FileCacheRequest {
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
 
+    /**
+     * Restoration directory for the internal cache.
+     * This directory will not be useful for external cache but the request can't know if the file will be restored in
+     * internal cache or external cache, so the directory is always set.
+     */
     @Column(name = "destination_path", length = FileLocation.URL_MAX_LENGTH, nullable = false)
     private String restorationDirectory;
 

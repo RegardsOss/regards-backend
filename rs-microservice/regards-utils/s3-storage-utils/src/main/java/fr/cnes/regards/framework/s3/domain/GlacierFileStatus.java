@@ -22,24 +22,33 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 
 /**
+ * Information about a file stored in the Glacier (storage in S3 server: nearline type).
+ *
  * @author Stephane Cortine
  */
 public class GlacierFileStatus {
 
     private final RestorationStatus status;
 
+    private final Long fileSize;
+
     /**
      * Expiration date of the file into the glacier
      */
     private final ZonedDateTime expirationDate;
 
-    public GlacierFileStatus(RestorationStatus status, @Nullable ZonedDateTime expirationDate) {
+    public GlacierFileStatus(RestorationStatus status, Long fileSize, @Nullable ZonedDateTime expirationDate) {
         this.status = status;
+        this.fileSize = fileSize;
         this.expirationDate = expirationDate;
     }
 
     public RestorationStatus getStatus() {
         return status;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
     }
 
     public ZonedDateTime getExpirationDate() {
@@ -48,6 +57,13 @@ public class GlacierFileStatus {
 
     @Override
     public String toString() {
-        return "GlacierFile[" + "status=" + status + ", expirationDate=" + expirationDate + ']';
+        return "GlacierFileStatus{"
+               + "status="
+               + status
+               + ", fileSize="
+               + fileSize
+               + ", expirationDate="
+               + expirationDate
+               + '}';
     }
 }

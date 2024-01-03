@@ -171,7 +171,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
     }
 
     /**
-     * Check if the S3 head request response indicates that the file is restored and available for download.
+     * Check if the S3 head request response indicates that the file is restored, available for download and return its size.
      */
     public static GlacierFileStatus checkHeadRestoreState(HeadObjectResponse response,
                                                           String standardStorageClass,
@@ -225,7 +225,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         }
         LOGGER.info(logMsg);
 
-        return new GlacierFileStatus(status, expirationDate);
+        return new GlacierFileStatus(status, response.contentLength(), expirationDate);
     }
 
     /**
