@@ -164,11 +164,11 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
                         SESSION_OWNER_1,
                         CATEGORIES_0);
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
 
         if (!isToNotify) {
             // Wait STORE_META request over
-            ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
+            ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000, getDefaultTenant());
         } else {
             notificationService.handleNotificationSuccess(Sets.newHashSet(ingestRequestRepository.findAll()));
         }
@@ -248,7 +248,7 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
     @Test
     public void testUpdateAIPFileLocationJob() throws InterruptedException {
-        ingestServiceTest.waitAllRequestsFinished(20_000);
+        ingestServiceTest.waitAllRequestsFinished(20_000, getDefaultTenant());
         storageClient.setBehavior(true, true);
         initData();
 

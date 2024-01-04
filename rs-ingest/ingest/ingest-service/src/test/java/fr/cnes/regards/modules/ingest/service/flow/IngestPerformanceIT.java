@@ -123,16 +123,13 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
                 // Create event
                 publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
             }
-            //            try {
-            //                // FIXME remove only for specific concurrent tests
-            //                Thread.sleep(30_000);
-            //            } catch (InterruptedException e) {
-            //                LOGGER.error(e.getMessage(), e);
-            //            }
         }
 
         // 2. Wait
-        ingestServiceTest.waitForIngestion(maxloops * maxSessions, maxloops * maxSessions * 10000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(maxloops * maxSessions,
+                                           maxloops * maxSessions * 10000,
+                                           SIPState.STORED,
+                                           getDefaultTenant());
 
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms",
                     (maxloops * maxSessions) + existingItems,
@@ -176,7 +173,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
         // 2. Wait
-        ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED, getDefaultTenant());
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", nbStored, System.currentTimeMillis() - start);
 
         // 3. Simulate an update request in error
@@ -203,9 +200,9 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         deletionService.registerOAISDeletionCreator(dto);
 
         // 6. Wait for all  deletion + new ingestion ends
-        ingestServiceTest.waitAllRequestsFinished(180_000);
-        ingestServiceTest.waitForIngestion(nbStored - nbDeleted, 100000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(180_000);
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
+        ingestServiceTest.waitForIngestion(nbStored - nbDeleted, 100000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
 
     }
 
@@ -235,7 +232,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
         // 2. Wait
-        ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED, getDefaultTenant());
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", nbStored, System.currentTimeMillis() - start);
 
         // 3. Ask for product updates
@@ -246,9 +243,9 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         aipService.registerUpdatesCreator(updateDto);
 
         // 5. Wait for all 1000 deletion + 500 new ingestion ends
-        ingestServiceTest.waitAllRequestsFinished(180_000);
-        ingestServiceTest.waitForIngestion(nbStored, 100000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(180_000);
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
+        ingestServiceTest.waitForIngestion(nbStored, 100000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
     }
 
     /**
@@ -282,7 +279,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
         // 2. Wait ingestion ends
-        ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED, getDefaultTenant());
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", nbStored, System.currentTimeMillis() - start);
 
         // 3. Simulate errors
@@ -293,7 +290,10 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
         // 4. Wait errors done
-        ingestServiceTest.waitForIngestRequest(nbErrors, nbErrors * 10000, InternalRequestState.ERROR);
+        ingestServiceTest.waitForIngestRequest(nbErrors,
+                                               nbErrors * 10000,
+                                               InternalRequestState.ERROR,
+                                               getDefaultTenant());
         storageClientMock.setBehavior(true, true);
 
         // 5. Ask for new products
@@ -329,10 +329,10 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         LOGGER.info("===============> Update sents !!");
 
         // 9. Wait for all deletion and ingestion ends
-        ingestServiceTest.waitForIngestion(nbDeleted, 100000, SIPState.DELETED);
+        ingestServiceTest.waitForIngestion(nbDeleted, 100000, SIPState.DELETED, getDefaultTenant());
         long count = nbStored - nbDeleted;
-        ingestServiceTest.waitForIngestion(count, count * 1000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(180_000);
+        ingestServiceTest.waitForIngestion(count, count * 1000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(180_000, getDefaultTenant());
     }
 
     @Test
@@ -346,15 +346,15 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         publishSIPEvent(sip, "fake", "errorSession", "source", CATEGORIES);
 
         // Wait
-        ingestServiceTest.waitForAIP(1, 30_000, AIPState.GENERATED);
-        ingestServiceTest.waitForIngestRequest(1, 30_000, InternalRequestState.ERROR);
+        ingestServiceTest.waitForAIP(1, 30_000, AIPState.GENERATED, getDefaultTenant());
+        ingestServiceTest.waitForIngestRequest(1, 30_000, InternalRequestState.ERROR, getDefaultTenant());
 
         // Remove request
         SearchRequestParameters filters = new SearchRequestParameters().withProviderIdsIncluded(Set.of(providerId));
         requestService.scheduleRequestDeletionJob(filters);
 
         // Wait
-        ingestServiceTest.waitForIngestRequest(0, 30_000, null);
+        ingestServiceTest.waitForIngestRequest(0, 30_000, null, getDefaultTenant());
 
     }
 }

@@ -76,10 +76,7 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
         createRunStepEvents(nbStepRequests, nbSources);
 
         // wait for stepPropertyUpdateRequestEvent to be stored in database
-        boolean isEventRegistered = waitForStepPropertyEventsStored(nbStepRequests);
-        if (!isEventRegistered) {
-            Assert.fail("Events were not stored in database");
-        }
+        waitForStepPropertyEventsStored(nbStepRequests);
 
         // Schedule jobs
         long start = System.currentTimeMillis();
@@ -89,13 +86,9 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
         agentJobSnapshotService.scheduleJob();
 
         // wait for job to be in success state
-        boolean isJobSuccess = waitForJobSuccesses(AgentSnapshotJob.class.getName(), nbSources, timeout);
+        waitForJobSuccesses(AgentSnapshotJob.class.getName(), nbSources, timeout);
         LOGGER.info("Performance test handled in {}ms to create SessionSteps from {} step requests from {} different "
                     + "source", System.currentTimeMillis() - start, nbStepRequests, nbSources);
-        if (!isJobSuccess) {
-            Assert.fail(String.format("The number of jobs in success state is not expected. Check if all jobs were "
-                                      + "created in the required amount of time (max. %d ms)", timeout));
-        }
 
         checkResult(nbSources);
     }

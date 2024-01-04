@@ -158,7 +158,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         // Wait order ends.
         waitForStatus(order.getId(), OrderStatus.RUNNING);
 
-        Thread.sleep(1_500);
+        Thread.sleep(500);
         orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
@@ -200,7 +200,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         });
         Assert.assertFalse(orderService.loadComplete(order.getId()).isWaitingForUser());
 
-        Thread.sleep(1_500);
+        Thread.sleep(500);
         orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
@@ -242,7 +242,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         });
         Assert.assertFalse(orderService.loadComplete(order.getId()).isWaitingForUser());
 
-        Thread.sleep(1_500);
+        Thread.sleep(500);
         orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
@@ -268,7 +268,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
 
         Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
         waitForStatus(order.getId(), OrderStatus.RUNNING);
-        Thread.sleep(1_500);
+        Thread.sleep(500);
 
         orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
@@ -285,7 +285,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
         Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
         waitForStatus(order.getId(), OrderStatus.RUNNING);
-        Thread.sleep(1_500);
+        Thread.sleep(500);
 
         orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
@@ -307,7 +307,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
 
         Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
         waitForStatus(order.getId(), OrderStatus.RUNNING);
-        Thread.sleep(1_500);
+        Thread.sleep(500);
 
         orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
@@ -391,7 +391,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         Assertions.assertThrows(CannotRestartOrderException.class,
                                 () -> orderService.restart(order.getId(), "restartWhenNotDone", URL));
 
-        Thread.sleep(1_500);
+        Thread.sleep(500);
         orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
 
@@ -666,7 +666,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         dataFile.setOnline(false);
         dataFile.setUri(orderDataFileUri);
         dataFile.setReference(false);
-        dataFile.setFilesize(67170l);
+        dataFile.setFilesize(67170L);
         datasetFeature.getFiles().put(DataType.RAWDATA, dataFile);
         ResponseEntity<Dataset> datasetResponseEntity = new ResponseEntity<>(dataset, HttpStatus.OK);
         Mockito.when(datasetClient.retrieveDataset(Mockito.anyString())).thenReturn(datasetResponseEntity);

@@ -123,7 +123,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
                                                                          StorageMetadata.build("disk")));
         sips.add(SIP.build(EntityType.DATA, providerId));
         ingestService.handleSIPCollection(sips);
-        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS, getDefaultTenant());
 
         // Check that the SIP is STORED
         SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
@@ -158,7 +158,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
                                                                          StorageMetadata.build("disk")));
         sips.add(SIP.build(EntityType.DATA, providerId));
         ingestService.handleSIPCollection(sips);
-        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS, getDefaultTenant());
 
         // Check that the SIP is STORED
         SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
@@ -184,11 +184,11 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
         // Ingest SIP
         String providerId = "SIP_002";
         ingestSIP(providerId, "zaasfsdfsdlfkmsldgfml12df");
-        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS, getDefaultTenant());
 
         // Ingest next SIP version
         ingestSIP(providerId, "yaasfsdfsdlfkmsldgfml12df");
-        ingestServiceTest.waitForIngestion(2, TEN_SECONDS);
+        ingestServiceTest.waitForIngestion(2, TEN_SECONDS, getDefaultTenant());
 
         // Check remove storage requested
         List<IngestRequest> requests = ingestRequestRepository.findAll();

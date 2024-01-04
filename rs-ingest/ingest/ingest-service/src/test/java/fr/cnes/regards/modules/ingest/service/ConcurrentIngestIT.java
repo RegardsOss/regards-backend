@@ -125,14 +125,14 @@ public class ConcurrentIngestIT extends IngestMultitenantServiceIT {
         ingestRequestSchedulerService.scheduleRequests();
 
         // Then
-        ingestServiceTest.waitForIngestion(2, 10000);
+        ingestServiceTest.waitForIngestion(2, 10000, getDefaultTenant());
 
         // When
         requestService.unblockRequests(RequestTypeEnum.INGEST);
         ingestRequestSchedulerService.scheduleRequests();
 
         // Then
-        ingestServiceTest.waitForIngestion(4, 10000);
+        ingestServiceTest.waitForIngestion(4, 10000, getDefaultTenant());
         List<SIPEntity> sips = sipRepository.findAll();
         sips.sort(Comparator.comparing(AbstractOAISEntity::getCreationDate));
         Assertions.assertEquals(4, sips.size(), "Expected 4 sips");

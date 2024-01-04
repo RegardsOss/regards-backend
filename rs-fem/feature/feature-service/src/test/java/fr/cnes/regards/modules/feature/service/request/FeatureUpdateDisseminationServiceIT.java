@@ -69,6 +69,7 @@ import static org.junit.Assert.*;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_dissemination_it",
                                    "regards.amqp.enabled=true",
+                                   "regards.feature.delay.before.processing=1",
                                    "spring.task.scheduling.pool.size=2",
                                    "regards.feature.metrics.enabled=true" },
                     locations = { "classpath:regards_perf.properties",
@@ -309,7 +310,7 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         }
 
         // we wait for delay before schedule
-        Thread.sleep((this.properties.getDelayBeforeProcessing() * 1000) + 1000);
+        Thread.sleep((this.properties.getDelayBeforeProcessing() * 1000) + 100);
         this.featureUpdateService.scheduleRequests();
 
         // save FeatureUpdateDissemination requests

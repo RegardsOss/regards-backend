@@ -86,9 +86,9 @@ public class SessionDeleteIT extends IngestMultitenantServiceIT {
 
         // wait for deletion of all aips linked to SOURCE 1
         long wait = FIVE_SECONDS * 10;
-        ingestServiceTest.waitAllRequestsFinished(wait);
+        ingestServiceTest.waitAllRequestsFinished(wait, getDefaultTenant());
         ingestServiceTest.waitDuring(TWO_SECONDS * 5);
-        ingestServiceTest.waitAllRequestsFinished(wait);
+        ingestServiceTest.waitAllRequestsFinished(wait, getDefaultTenant());
 
         // test aips linked to SOURCE 1 are not present
         SearchAIPsParameters filters = new SearchAIPsParameters().withSessionOwner(SOURCE_1);
@@ -112,9 +112,9 @@ public class SessionDeleteIT extends IngestMultitenantServiceIT {
 
         // wait for deletion of all aips linked to SESSION 1 of SOURCE 1
         long wait = FIVE_SECONDS * 10;
-        ingestServiceTest.waitAllRequestsFinished(wait);
+        ingestServiceTest.waitAllRequestsFinished(wait, getDefaultTenant());
         ingestServiceTest.waitDuring(TWO_SECONDS * 5);
-        ingestServiceTest.waitAllRequestsFinished(wait);
+        ingestServiceTest.waitAllRequestsFinished(wait, getDefaultTenant());
 
         // test aips linked to SESSION 1 of SOURCE 1 are not present
 
@@ -157,7 +157,7 @@ public class SessionDeleteIT extends IngestMultitenantServiceIT {
                         SOURCE_2,
                         Lists.newArrayList("CATEGORIES_0"));
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
         long wait = FIVE_SECONDS * 3;
 
         mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);

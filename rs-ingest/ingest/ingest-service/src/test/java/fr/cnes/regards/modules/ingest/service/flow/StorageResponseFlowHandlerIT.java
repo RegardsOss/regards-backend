@@ -97,7 +97,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
             publishSIPEvent(sip, TARGET_STORAGE_ID, "session", "sessionOwner", CATEGORIES);
         }
         // Wait
-        ingestServiceTest.waitForIngestion(NB_SIPS, NB_SIPS * 1000);
+        ingestServiceTest.waitForIngestion(NB_SIPS, NB_SIPS * 1000, getDefaultTenant());
         LOGGER.info("{} SIP(s) INGESTED in {} ms", NB_SIPS, System.currentTimeMillis() - start);
 
         // Wait for storage responses
@@ -118,7 +118,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
     public void waitIngestRequests(long requests, long timeout) {
         // Wait
         long requestCount;
-        OffsetDateTime end = OffsetDateTime.now().plus(timeout, ChronoUnit.SECONDS);
+        OffsetDateTime end = OffsetDateTime.now().plusSeconds(timeout);
         do {
             requestCount = ingestRequestRepository.count();
             if (requestCount == requests) {

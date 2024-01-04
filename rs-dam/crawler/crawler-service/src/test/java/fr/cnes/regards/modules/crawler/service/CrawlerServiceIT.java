@@ -304,8 +304,8 @@ public class CrawlerServiceIT {
         final Optional<DeletedEntity> deletedEntityOpt = deletedEntityRepository.findOneByIpId(coll1.getIpId());
         Assert.assertTrue(deletedEntityOpt.isPresent());
         final DeletedEntity deletedEntity = deletedEntityOpt.get();
-        Assert.assertTrue(coll1.getCreationDate().equals(deletedEntity.getCreationDate()));
-        Assert.assertTrue(coll1.getLastUpdate().equals(deletedEntity.getLastUpdate()));
+        Assert.assertEquals(coll1.getCreationDate(), deletedEntity.getCreationDate());
+        Assert.assertEquals(coll1.getLastUpdate(), deletedEntity.getLastUpdate());
         Assert.assertTrue(deletedEntity.getDeletionDate().isAfter(suppressDate));
         Assert.assertTrue(deletedEntity.getDeletionDate().isBefore(now));
     }

@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +70,7 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -565,24 +567,16 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         listener.reset();
     }
 
-    private void waitRequestEnds(int nbrequests, int maxDurationSec) throws InterruptedException {
-        int loopDuration = 2_000;
-        int nbLoop = ((maxDurationSec * 1000) / loopDuration);
-        int loop = 0;
-        while ((listener.getNbRequestEnds() < nbrequests) && (loop < nbLoop)) {
-            loop++;
-            Thread.sleep(loopDuration);
-        }
-        if (listener.getNbRequestEnds() < nbrequests) {
-            String message = String.format("Number of requests requested for end not reached %d/%d",
-                                           listener.getNbRequestEnds(),
-                                           nbrequests);
-            Assert.fail(message);
-        }
+    private void waitRequestEnds(int nbRequests, int maxDurationSec) {
+        Awaitility.await().atMost(maxDurationSec, TimeUnit.SECONDS).until(() -> {
+            long count = listener.getNbRequestEnds();
+            LOGGER.info("Waiting Number of requests requested for end {}/{}", count, nbRequests);
+            return count >= nbRequests;
+        });
     }
 
     @Test
-    public void referenceFile() throws InterruptedException {
+    public void referenceFile() {
         String owner = "refe-test";
         String sessionOwner = "source1";
         String session = "session1";

@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -78,12 +77,9 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
     @Autowired
     IngestServiceIT ingestServiceTest;
 
-    @Autowired
-    private IIngestSettingsService ingestSettingsService;
-
     @Before
     public void init() throws InterruptedException {
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
     }
 
     protected void initSipAndAip(String checksum, String providerId) {
@@ -116,7 +112,7 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
 
     @After
     public void doAfter() {
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
     }
 
 }

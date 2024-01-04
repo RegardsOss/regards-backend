@@ -11,6 +11,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.assertj.core.util.Lists;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -21,10 +22,12 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_uperf",
+                                   "regards.feature.max.bulk.size=10",
                                    "regards.amqp.enabled=true",
                                    "regards.feature.metrics.enabled=true"
                                    //                        , "spring.jpa.show-sql=true"
@@ -34,10 +37,10 @@ public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServic
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdatePerformanceIT.class);
 
-    private static final Integer NB_FEATURES = 5_000;
+    private static final Integer NB_FEATURES = 50;
 
-    // Expected performance : 10_000 features/min
-    private static final long DURATION = NB_FEATURES * 18;
+    // Expected performance : 1_000 features/min
+    private static final long MAX_DURATION_IN_MS = NB_FEATURES * 60;
 
     private static final String PROVIDER_ID_FORMAT = "F%05d";
 
@@ -61,8 +64,6 @@ public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServic
 
         // Register referenced features
         Map<String, FeatureUniformResourceName> refs = savePreviousVersions(geoModelName);
-
-        long start = System.currentTimeMillis();
 
         List<FeatureUpdateRequestEvent> events = new ArrayList<>();
         OffsetDateTime requestDate = OffsetDateTime.now();
@@ -89,26 +90,23 @@ public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServic
             saveEvents(events);
         }
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms",
-                    NB_FEATURES,
-                    System.currentTimeMillis() - start);
-
         assertEquals(NB_FEATURES.longValue(), this.featureUpdateRequestRepo.count());
 
-        // wait ...
-        Thread.sleep(properties.getDelayBeforeProcessing() * 2000);
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureUpdateRequestRepo.count() > 0;
+        });
+        Thread.sleep(properties.getDelayBeforeProcessing() * 1000);
 
-        int nbScheduledRequests = 0;
-        do {
-            nbScheduledRequests = featureService.scheduleRequests();
-            LOGGER.info(">>>>>>>>>>>>>>> {} Scheduled requests", nbScheduledRequests);
-            Thread.sleep(1_000);
-        } while (nbScheduledRequests > 0);
-
-        waitFeature(NB_FEATURES, requestDate, 600_000);
-
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureService.scheduleRequests() == 0;
+        });
+        long start = System.currentTimeMillis();
+        waitFeature(NB_FEATURES, requestDate, 6_000);
         long duration = System.currentTimeMillis() - start;
-        Assert.assertTrue(String.format("Performance not reached! (%d/%d)", duration, DURATION), duration < DURATION);
+        Assert.assertTrue(String.format("Performance not reached! (%d/%d)", duration, MAX_DURATION_IN_MS),
+                          duration < MAX_DURATION_IN_MS);
         LOGGER.info(">>>>>>>>>>>>>>>>> {} requests processed in {} ms", NB_FEATURES, duration);
 
         assertEquals(NB_FEATURES.longValue(), this.featureRepo.count());

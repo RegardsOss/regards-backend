@@ -87,8 +87,6 @@ public class JobEndIT {
         Thread.sleep(1_500);
         jobInfoFromDb = jobInfoRepos.findById(longJob.getId()).get();
         Assert.assertTrue(jobInfoFromDb.getStatus().getPercentCompleted() > percent);
-
-        Thread.sleep(5_000);
     }
 
     @Test
@@ -106,8 +104,6 @@ public class JobEndIT {
         Assert.assertEquals(JobStatus.SUCCEEDED, randomFloatJob.getStatus().getStatus());
         Assert.assertNotNull(randomFloatJob.getResult());
         Assert.assertTrue(randomFloatJob.getResult() instanceof Float);
-
-        Thread.sleep(5_000);
     }
 
     @SuppressWarnings("rawtypes")
@@ -132,8 +128,6 @@ public class JobEndIT {
         Assert.assertEquals(1.0, ((Map) doubleJob.getResult()).get("toto"));
         Assert.assertEquals(3.0, ((Map) doubleJob.getResult()).get("titi"));
         Assert.assertEquals(2.0, ((Map) doubleJob.getResult()).get("tutu"));
-
-        Thread.sleep(5_000);
     }
 
     @Test
@@ -159,8 +153,6 @@ public class JobEndIT {
         Assert.assertNotNull(((Toto) totoJob.getResult()).getList());
         Assert.assertEquals(1, ((Toto) totoJob.getResult()).getList().size());
         Assert.assertEquals(titi, ((Toto) totoJob.getResult()).getList().get(0));
-
-        Thread.sleep(5_000);
     }
 
     @Test

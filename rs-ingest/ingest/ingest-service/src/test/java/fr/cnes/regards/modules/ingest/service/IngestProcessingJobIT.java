@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -77,6 +78,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test class to verify {@link IngestProcessingJob}.
@@ -212,7 +214,11 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         // Ingest
         Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
         ingestService.handleIngestRequests(items);
-        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
+            return resultSip != null && resultSip.getState() == SIPState.INGESTED;
+        });
 
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
         Assert.assertNotNull(resultSip);
@@ -303,7 +309,11 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         // Ingest
         Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
         ingestService.handleIngestRequests(items);
-        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
+            return resultSip != null && resultSip.getState() == SIPState.INGESTED;
+        });
 
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_DEFAULT_CHAIN_ID_TEST);
         Assert.assertNotNull(resultSip);
@@ -384,17 +394,27 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
         // Simulate an error on each step
         simulateProcessingError(sips, PreprocessingTestPlugin.class);
+        ingestRequestRepo.deleteAllInBatch();
         simulateProcessingError(sips, ValidationTestPlugin.class);
+        ingestRequestRepo.deleteAllInBatch();
         simulateProcessingError(sips, AIPGenerationTestPlugin.class);
+        ingestRequestRepo.deleteAllInBatch();
         simulateProcessingError(sips, AIPStorageMetadataTestPlugin.class);
+        ingestRequestRepo.deleteAllInBatch();
         simulateProcessingError(sips, AIPTaggingTestPlugin.class);
+        ingestRequestRepo.deleteAllInBatch();
 
         // Simulate a full process without error
         stepErrorSimulator.setSimulateErrorForStep(null);
 
         // Ingest
-        ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
-        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
+        Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
+        ingestService.handleIngestRequests(items);
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_ID_TEST);
+            return resultSip != null && resultSip.getState() == SIPState.INGESTED;
+        });
 
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_ID_TEST);
         Assert.assertNotNull(resultSip);
@@ -418,8 +438,14 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         stepErrorSimulator.setSimulateErrorForStep(errorClass);
 
         // Ingest
-        ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
-        ingestServiceTest.waitDuring(TWO_SECONDS);
+        Collection<IngestRequestFlowItem> items = IngestService.sipToFlow(sips);
+        ingestService.handleIngestRequests(items);
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return ingestRequestRepo.findByProviderIdInAndStateIn(items.stream().map(i -> i.getSip().getId()).toList(),
+                                                                  List.of(InternalRequestState.ERROR)).size()
+                   == items.size();
+        });
 
         // Detect request error and no SIP or AIP is persisted
         ArgumentCaptor<IngestRequest> ingestRequestCaptor = ArgumentCaptor.forClass(IngestRequest.class);
@@ -446,7 +472,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         Assert.assertNotNull(sipCaptor.getValue());
 
         // No sip ingested
-        ingestServiceTest.waitForIngestion(0, FIVE_SECONDS);
+        ingestServiceTest.waitForIngestion(0, FIVE_SECONDS, getDefaultTenant());
     }
 
     @Purpose("Test fully configured process chain to ingest a new SIP provided by reference")
@@ -471,7 +497,11 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         // Ingest
         ingestService.handleIngestRequests(IngestService.sipToFlow(sips));
         ingestRequestSchedulerService.scheduleRequests();
-        ingestServiceTest.waitForIngestion(1, FIVE_SECONDS);
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_REF_ID_TEST);
+            return resultSip != null && resultSip.getState() == SIPState.STORED;
+        });
 
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_REF_ID_TEST);
         Assert.assertNotNull(resultSip);

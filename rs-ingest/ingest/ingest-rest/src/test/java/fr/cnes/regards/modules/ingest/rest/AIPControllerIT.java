@@ -125,7 +125,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         storageClient.setBehavior(true, true);
         // Clean everything
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
 
         // resend the event of AppReady to reinit default data
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class),
@@ -174,8 +174,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), "ESA", OffsetDateTime.now().toString(), "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -216,8 +216,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                   "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(2, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitForIngestion(2, 10000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.expectToHaveSize("$.content", 2);
         requestBuilderCustomizer.expectIsNotEmpty(
@@ -246,8 +246,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -275,8 +275,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -304,8 +304,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -333,8 +333,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #10", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -358,8 +358,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         createAIP("my object #11", Sets.newHashSet(category, "CAT 2"), sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(10000);
+        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         // Add request parameters documentation
@@ -666,6 +666,6 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     @After
     public void doAfter() {
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
     }
 }

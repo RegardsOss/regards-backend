@@ -99,7 +99,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
 
         // lets submit the first SIP
         publishSIPEvent(create(PROVIDER_ID, TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
@@ -132,7 +132,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
 
         // lets submit the second SIP with different TAGS so it is accepted by system
         publishSIPEvent(create(PROVIDER_ID, TAG_1), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED, getDefaultTenant());
         // lets check that second SIP version is the latest
         sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two SIP with providerId \"%s\" at this time",
@@ -201,7 +201,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         CATEGORIES_0,
                         Optional.empty(),
                         VersioningMode.REPLACE);
-        ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
@@ -240,9 +240,9 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         CATEGORIES_0,
                         Optional.empty(),
                         VersioningMode.REPLACE);
-        ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED, getDefaultTenant());
         // once the 2 AIPs are stored, we ask for the deletion of the old one, so lets wait for this deletion
-        ingestServiceTest.waitForAIP(1, 20_000, AIPState.DELETED);
+        ingestServiceTest.waitForAIP(1, 20_000, AIPState.DELETED, getDefaultTenant());
         // lets check that second SIP version is the latest
         sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two SIP with providerId \"%s\" at this time",
@@ -311,7 +311,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         CATEGORIES_0,
                         Optional.empty(),
                         VersioningMode.INC_VERSION);
-        ingestServiceTest.waitForAIP(4, 20_000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(4, 20_000, AIPState.STORED, getDefaultTenant());
     }
 
     @Test
@@ -329,8 +329,8 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
 
         // once the 2 new AIPs are stored, we ask for the deletion of the old ones, so lets wait for this deletion
         // 3 = V1 which has already been deleted previously, V2 which is replaced by V3 and V2 which should be replaced by V4
-        ingestServiceTest.waitForAIP(3, 40_000, AIPState.DELETED);
-        ingestServiceTest.waitForAIP(1, 1_000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(3, 40_000, AIPState.DELETED, getDefaultTenant());
+        ingestServiceTest.waitForAIP(1, 1_000, AIPState.STORED, getDefaultTenant());
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only four SIP with providerId \"%s\" at this time",
@@ -407,7 +407,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         CATEGORIES_0,
                         Optional.empty(),
                         VersioningMode.IGNORE);
-        ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
@@ -446,7 +446,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         CATEGORIES_0,
                         Optional.empty(),
                         VersioningMode.IGNORE);
-        ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.IGNORED);
+        ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.IGNORED, getDefaultTenant());
 
         // Well nothing should have changed
         // lets check that first SIP version is the latest
@@ -499,7 +499,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         CATEGORIES_0,
                         Optional.empty(),
                         VersioningMode.MANUAL);
-        ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
@@ -538,7 +538,10 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         CATEGORIES_0,
                         Optional.empty(),
                         VersioningMode.MANUAL);
-        ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.WAITING_VERSIONING_MODE);
+        ingestServiceTest.waitForIngestRequest(1,
+                                               20_000,
+                                               InternalRequestState.WAITING_VERSIONING_MODE,
+                                               getDefaultTenant());
 
         // Well nothing should have changed
         // lets check that first SIP version is the latest
@@ -590,13 +593,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
         // Run job to set version mode to INC_VERSION
         job.run();
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED, getDefaultTenant());
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two SIP with providerId \"%s\" at this time",
@@ -659,14 +656,10 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                                })
                                .ifPresent(request -> ingestRequestService.fromWaitingTo(Lists.newArrayList(request),
                                                                                         VersioningMode.REPLACE));
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
+
+        ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED, getDefaultTenant());
         // once the 2 AIPs are stored, we ask for the deletion of the old one, so lets wait for this deletion
-        ingestServiceTest.waitForAIP(1, 20_000, AIPState.DELETED);
+        ingestServiceTest.waitForAIP(1, 20_000, AIPState.DELETED, getDefaultTenant());
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two SIP with providerId \"%s\" at this time",
@@ -734,13 +727,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         }).ifPresent(request -> ingestRequestService.fromWaitingTo(Lists.newArrayList(request), VersioningMode.IGNORE));
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.IGNORED);
+        ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.IGNORED, getDefaultTenant());
 
         // Well nothing should have changed
         // lets check that first SIP version is the latest

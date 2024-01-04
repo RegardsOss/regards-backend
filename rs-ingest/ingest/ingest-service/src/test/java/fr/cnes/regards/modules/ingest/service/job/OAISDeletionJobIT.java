@@ -108,27 +108,11 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
         this.isToNotify = initDefaultNotificationSettings();
     }
 
-    public void waitUntilNbDeletionRequestInErrorReach(long timeout, long nbError) {
-
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        do {
-            long count = oaisDeletionRequestRepository.countByState(InternalRequestState.ERROR);
-            LOGGER.info("{} Current request in error", count);
-            if (count == nbError) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout");
-            }
-        } while (true);
+    public void waitUntilNbDeletionRequestInErrorReach(long timeout, long nbError, String tenant) {
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            return oaisDeletionRequestRepository.countByState(InternalRequestState.ERROR) == nbError;
+        });
     }
 
     public void assertAipCount(long expectedCount, long timeout) {
@@ -170,10 +154,10 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
         publishSIPEvent(create("5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_0);
         publishSIPEvent(create("6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
         long wait = FIVE_SECONDS * 3;
         if (!isToNotify) {
-            ingestServiceTest.waitAllRequestsFinished(wait);
+            ingestServiceTest.waitAllRequestsFinished(wait, getDefaultTenant());
         } else {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
@@ -197,7 +181,7 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
     @Purpose("Check deletion process for a list of SIPS. Check two deletion modes. Complete deletion or mark as "
              + "deleted")
     public void testDeletionJobSucceed() {
-        ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * 3);
+        ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * 3, getDefaultTenant());
         storageClient.setBehavior(true, true);
         initData();
         // delete 2 SIPs linked to SESSION_OWNER_0, SESSION_0
@@ -267,10 +251,9 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY);
         dto.withSessionOwner(SESSION_OWNER_0).withSession(SESSION_0);
         oaisDeletionService.registerOAISDeletionCreator(dto);
-        // waitUntilNbDeletionRequestInErrorReach(FIVE_SECONDS, 2);
         long wait = FIVE_SECONDS * 10;
         if (!isToNotify) {
-            ingestServiceTest.waitAllRequestsFinished(wait);
+            ingestServiceTest.waitAllRequestsFinished(wait, getDefaultTenant());
         } else {
             ingestServiceTest.waitDuring(wait);
             mockNotificationSuccess(RequestTypeConstant.OAIS_DELETION_VALUE);

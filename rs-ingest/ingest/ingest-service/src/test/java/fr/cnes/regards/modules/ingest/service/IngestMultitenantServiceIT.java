@@ -159,7 +159,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     public void init() throws Exception {
         LOGGER.info("-------------> Test initialization !!!");
         // clear AMQP queues and repositories
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
         jobService.cleanAndRestart();
 
         // simulate application started and ready
@@ -349,10 +349,10 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
             schedulerService.scheduleRequests();
         }
         // Wait for SIP ingestion
-        ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED, getDefaultTenant());
         // Wait for all requests to finish in case of no notification else delete requests
         if (!initDefaultNotificationSettings()) {
-            ingestServiceTest.waitAllRequestsFinished(nbSIP * 1000L);
+            ingestServiceTest.waitAllRequestsFinished(nbSIP * 1000L, getDefaultTenant());
         } else {
             ingestRequestRepository.deleteAll();
             Assert.assertEquals("All ingest requests should have been deleted", 0L, ingestRequestRepository.count());

@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.service.file.handler.FileReferenceEventHandler;
-import org.junit.Assert;
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -46,6 +46,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Performances tests for creating and store new file references.
@@ -127,24 +128,16 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
         }
     }
 
-    private void waitRequestEnds(int nbrequests, int maxDurationSec) throws InterruptedException {
-        int loopDuration = 2_000;
-        int nbLoop = ((maxDurationSec * 1000) / loopDuration);
-        int loop = 0;
-        while ((listener.getNbRequestEnds() < nbrequests) && (loop < nbLoop)) {
-            loop++;
-            Thread.sleep(loopDuration);
-        }
-        if (listener.getNbRequestEnds() < nbrequests) {
-            String message = String.format("Number of requests requested for end not reached %d/%d",
-                                           listener.getNbRequestEnds(),
-                                           nbrequests);
-            Assert.fail(message);
-        }
+    private void waitRequestEnds(int nbRequests, int maxDurationSec) {
+        Awaitility.await().atMost(maxDurationSec, TimeUnit.SECONDS).until(() -> {
+            long count = listener.getNbRequestEnds();
+            LOGGER.info("Waiting Number of requests requested for end {}/{}", count, nbRequests);
+            return count == nbRequests;
+        });
     }
 
     @Test
-    public void referenceFiles() throws InterruptedException {
+    public void referenceFiles() {
         LOGGER.info(" --------     REFERENCE TEST     --------- ");
         String refStorage = "storage-1";
         int nbRrequests = 0;

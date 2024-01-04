@@ -285,11 +285,14 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
     protected void waitFeature(long expected, @Nullable OffsetDateTime from, long timeout) {
         Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
+            long count = 0;
             if (from != null) {
-                return expected == featureRepo.countByLastUpdateGreaterThan(from);
+                count = featureRepo.countByLastUpdateGreaterThan(from);
             } else {
-                return expected == featureRepo.count();
+                count = featureRepo.count();
             }
+            LOGGER.info("features created : {}/{}", count, expected);
+            return count == expected;
         });
     }
 

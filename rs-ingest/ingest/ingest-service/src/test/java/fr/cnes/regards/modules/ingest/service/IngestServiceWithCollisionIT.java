@@ -121,13 +121,13 @@ public class IngestServiceWithCollisionIT extends IngestMultitenantServiceIT {
         String checksum = "zaasfsdfsdlfkmsldgfml12df";
         ingestSIP(providerId, checksum);
         ingestRequestSchedulerService.scheduleRequests();
-        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS, getDefaultTenant());
 
         SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
         Assert.assertNotNull(entity);
-        Assert.assertTrue(providerId.equals(entity.getProviderId()));
-        Assert.assertTrue(entity.getVersion() == 1);
-        Assert.assertTrue(SIPState.INGESTED.equals(entity.getState()));
+        Assert.assertEquals(providerId, entity.getProviderId());
+        Assert.assertEquals(1, (int) entity.getVersion());
+        Assert.assertEquals(SIPState.INGESTED, entity.getState());
 
         // Re-ingest same SIP
         ingestSIP(providerId, checksum);
@@ -146,6 +146,6 @@ public class IngestServiceWithCollisionIT extends IngestMultitenantServiceIT {
         Assert.assertEquals(IngestErrorType.INITIAL_SIP_ALREADY_EXISTS, request.getErrorType());
 
         // Check repository
-        ingestServiceTest.waitForIngestion(1, TWO_SECONDS);
+        ingestServiceTest.waitForIngestion(1, TWO_SECONDS, getDefaultTenant());
     }
 }

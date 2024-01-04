@@ -163,7 +163,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
                                                         null,
                                                         StorageMetadata.build(STORAGE_0));
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 2000);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 2000, getDefaultTenant());
 
         List<AIPEntity> aips = aipRepository.findAll();
 

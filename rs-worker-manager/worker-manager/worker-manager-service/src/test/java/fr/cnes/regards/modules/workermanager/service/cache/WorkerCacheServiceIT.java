@@ -164,9 +164,6 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
                                                                  workerCacheService.getWorkerTypeByContentType(
                                                                      contentType)));
 
-        // The cache will remove the last heartbeat
-        //        Thread.sleep(workerCacheService.EXPIRE_IN_CACHE_DURATION * 1000);
-
         Awaitility.await().atMost(workerCacheService.expireInCacheDurationInSeconds * 2, TimeUnit.SECONDS).until(() -> {
                                                                                                                      runtimeTenantResolver.forceTenant(getDefaultTenant());
                                                                                                                      return Optional.empty()

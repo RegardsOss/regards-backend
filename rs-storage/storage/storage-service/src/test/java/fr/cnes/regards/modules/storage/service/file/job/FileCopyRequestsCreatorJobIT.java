@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.net.MalformedURLException;
@@ -46,6 +47,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Sébastien Binda
  */
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_job_test" },
                     locations = { "classpath:application-test.properties" })
 public class FileCopyRequestsCreatorJobIT extends AbstractStorageIT {
