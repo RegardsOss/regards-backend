@@ -69,4 +69,11 @@ public interface INearlineStorageLocation extends IStorageLocation {
         throw new NotImplementedException();
     }
 
+    /**
+     * @return true if the plugin uses a internal cache; otherwise false if the plugin uses a external cache.
+     */
+    default boolean isInternalCache() {
+        return true;
+    }
+
 }

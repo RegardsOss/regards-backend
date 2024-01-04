@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * JOB to run verification of cache files coherence.
+ * JOB to run verification of internal cache files coherence.
  * <ul>
  * <li> Does files in database always exists on disk ?</li>
  * <li> Does files on disk always exists in database ?</li>
@@ -40,7 +40,7 @@ public class CacheVerificationJob extends AbstractJob<Void> {
     public void run() {
         long start = System.currentTimeMillis();
         cacheService.checkDiskDBCoherence();
-        logger.debug("[CACHE CONSISTENCY CHECKING JOB] Cache consistency check done in {}ms",
+        logger.debug("[CACHE CONSISTENCY CHECKING JOB] Internal cache consistency check done in {}ms",
                      System.currentTimeMillis() - start);
     }
 }

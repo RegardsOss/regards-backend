@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.filecatalog.dto.StorageType;
@@ -58,6 +57,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -66,10 +66,11 @@ import java.util.stream.Collectors;
  * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineStorageLocation}
  * plugin.<br/>
  * When a file is requested by restore method this service retrieve the file from the
- * nearline datastorage plugin and copy it into his internal cache (Local disk)<br/>
- * As the cache maximum size is limited, this service queues the file requests and handle them when it is possible<br/>
+ * nearline datastorage plugin and copy it into its internal cache (Local disk) or into its external cache.<br/>
+ * As the internal cache maximum size is limited, this service queues the file requests and handle them when it is
+ * possible<br/>
  * <p>
- * Files in cache are purged when :
+ * Files in internal cache are purged when :
  * <ul>
  * <li>Files are outdated in cache ({@link CacheFile#getExpirationDate()} date is past.</li>
  * <li>Cache is full and no outdated files are in cache, then the older {@link CacheFile}s are deleted.</li>
@@ -97,9 +98,6 @@ public class CacheService {
 
     @Autowired
     private IJobInfoService jobService;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Creates a new cache file in database if the checksum does not match an existing file.
@@ -185,18 +183,20 @@ public class CacheService {
     }
 
     /**
-     * Check coherence between database and physical files in cache location.
+     * Check coherence between database and physical files in internal cache.
+     * If physical file does not exist in internal cache, delete entity in database.
      */
     public void checkDiskDBCoherence() {
         Page<CacheFile> shouldBeAvailableSet;
         Pageable page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
-        Set<Long> toDelete = Sets.newHashSet();
+        Set<Long> toDelete = new HashSet<>();
+
         do {
-            shouldBeAvailableSet = cacheFileRepository.findAll(page);
+            shouldBeAvailableSet = cacheFileRepository.findAllByInternalCacheTrue(page);
             for (CacheFile shouldBeAvailable : shouldBeAvailableSet) {
                 Path path = Paths.get(shouldBeAvailable.getLocation().getPath());
                 if (Files.notExists(path)) {
-                    LOGGER.warn("Dirty cache file in database : {}", path);
+                    LOGGER.warn("Dirty internal cache file in database : {}", path);
                     toDelete.add(shouldBeAvailable.getId());
                 }
             }
@@ -248,28 +248,15 @@ public class CacheService {
     }
 
     /**
-     * Return the current size of the cache in bytes.
-     *
-     * @return {@link Long}
+     * Delete files in database from cache :
+     * <ul>
+     *     <li>If force mode is true, so all files are deleted in the internal and external cache.</li>
+     *     <li>If force mode is false, so all out dated files are deleted in the internal cache.</li>
+     * </ul>
      */
-    @MultitenantTransactional(readOnly = true)
-    public Long getCacheSizeUsedBytes() {
-        return cacheFileRepository.getTotalFileSize();
-    }
-
-    @MultitenantTransactional(readOnly = true)
-    public Long getCacheSizeUsedKB() {
-        return cacheFileRepository.getTotalFileSize() / 1024;
-    }
-
-    /**
-     * Delete files from cache.
-     * Il force mode is true, so all files are deleted.
-     * If foce mode is false, so all out dated files are deleted.
-     */
-    public int purge(boolean force) {
+    public int purge(boolean forceMode) {
         int nbPurged = 0;
-        if (force) {
+        if (forceMode) {
             LOGGER.debug("Deleting all (force mode activated) files from cache. Current date : {}",
                          OffsetDateTime.now());
         } else {
@@ -278,10 +265,10 @@ public class CacheService {
         Pageable page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
         Page<CacheFile> files;
         do {
-            if (force) {
+            if (forceMode) {
                 files = cacheFileRepository.findAll(page);
             } else {
-                files = cacheFileRepository.findByExpirationDateBefore(OffsetDateTime.now(), page);
+                files = cacheFileRepository.findByExpirationDateBeforeAndInternalCacheTrue(OffsetDateTime.now(), page);
             }
             deleteCachedFiles(files.getContent());
             nbPurged = nbPurged + files.getNumberOfElements();
@@ -292,7 +279,7 @@ public class CacheService {
     /**
      * Delete all given {@link CacheFile}s.<br/>
      * <ul>
-     * <li>1. Disk deletion of the physical files</li>
+     * <li>1. Disk deletion of the physical files in internal cache</li>
      * <li>2. Database deletion of the {@link CacheFile}s
      * </ul>
      *
@@ -347,7 +334,7 @@ public class CacheService {
     }
 
     /**
-     * Retrieve the path of the cache for te curent tenant.
+     * Retrieve the path of the internal cache for te curent tenant.
      */
     public Path getTenantCachePath() {
         return dynamicTenantSettingService.read(StorageSetting.CACHE_PATH_NAME)
@@ -357,7 +344,7 @@ public class CacheService {
     }
 
     /**
-     * Calculate a file path in the cache system by creating a sub folder for each 2 character of its checksum.
+     * Calculate a file path in the internal cache system by creating a sub folder for each 2 character of its checksum.
      *
      * @return file path
      */
@@ -366,7 +353,7 @@ public class CacheService {
     }
 
     /**
-     * Calculate a file path in the cache system by creating a sub folder for each 2 character of its checksum.
+     * Calculate a file path in the internal cache system by creating a sub folder for each 2 character of its checksum.
      *
      * @return file path
      */
@@ -383,41 +370,69 @@ public class CacheService {
     }
 
     /**
-     * Return the free space in Bytes of the current tenant cache.
+     * Return the current size of the used internal cache in Bytes.
      */
-    public Long getFreeSpaceInBytes() {
-        Long currentCacheTotalSize = getCacheSizeUsedBytes();
-        Long cacheMaxSizeInOctets = getMaxCacheSizeKo() * 1024;
-        return cacheMaxSizeInOctets - currentCacheTotalSize;
+    @MultitenantTransactional(readOnly = true)
+    public Long getCacheSizeUsedBytes() {
+        return cacheFileRepository.getTotalFileSizeInternalCache();
     }
 
-    public Long getCacheSizeLimit() {
+    /**
+     * Return the current size of the used internal cache in Kilo-bytes.
+     */
+    public Long getCacheSizeUsedKBytes() {
+        return getCacheSizeUsedBytes() / 1024;
+    }
+
+    /**
+     * Return the free space of the current tenant internal cache in Bytes.
+     */
+    public Long getFreeSpaceInBytes() {
+        return getMaxCacheSizeBytes() - getCacheSizeUsedBytes();
+    }
+
+    /**
+     * Return the limit size of internal cache in Bytes.
+     */
+    public Long getMaxCacheSizeBytes() {
         return getMaxCacheSizeKo() * 1024;
     }
 
+    /**
+     * Return the maximum size of internal cache in Kilo-octets.
+     */
     private Long getMaxCacheSizeKo() {
         return dynamicTenantSettingService.read(StorageSetting.CACHE_MAX_SIZE_NAME)
                                           .map(settingDto -> (Long) settingDto.getValue())
                                           .orElseThrow(() -> new RsRuntimeException(
-                                              "Max cache size setting has not been initialized"));
+                                              "Max internal cache size setting has not been initialized"));
     }
 
-    @MultitenantTransactional(readOnly = true)
-    public long getTotalCachedFiles() {
-        return cacheFileRepository.count();
-    }
-
-    public StorageLocationDto toStorageLocation() {
+    /**
+     * Build the storage location of internal cache :
+     * <ul>
+     *     <li>this location allows to physically delete files</li>
+     *     <li>the number of files stored into internal cache</li>
+     *     <li>the size of used internal cache in Kilo-bytes</li>
+     * </ul>
+     */
+    public StorageLocationDto buildStorageLocation() {
         StorageLocationConfiguration conf = new StorageLocationConfiguration(CACHE_NAME, null, getMaxCacheSizeKo());
         conf.setStorageType(StorageType.CACHE);
+
         return StorageLocationDto.build(CACHE_NAME, conf.toDto())
                                  .withAllowPhysicalDeletion()
-                                 .withFilesInformation(getTotalCachedFiles(), 0, getCacheSizeUsedKB());
+                                 .withFilesInformation(cacheFileRepository.countCacheFileByInternalCacheTrue(),
+                                                       0,
+                                                       getCacheSizeUsedKBytes());
     }
 
+    /**
+     * Is the internal cache empty ?
+     */
     @MultitenantTransactional(readOnly = true)
     public boolean isCacheEmpty() {
-        return cacheFileRepository.count() == 0;
+        return cacheFileRepository.countCacheFileByInternalCacheTrue() == 0;
     }
 
     public void scheduleCacheCleanUp(String jobOwner, boolean forceDelete) {

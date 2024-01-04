@@ -39,7 +39,7 @@ public class CacheFile {
     private String checksum;
 
     /**
-     * The cache file size
+     * The cache file size in Bytes
      */
     @Column(name = "file_size")
     private Long fileSize;

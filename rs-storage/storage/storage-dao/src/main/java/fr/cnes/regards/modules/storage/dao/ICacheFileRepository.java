@@ -50,13 +50,15 @@ public interface ICacheFileRepository extends JpaRepository<CacheFile, Long> {
      */
     Optional<CacheFile> findOneByChecksum(String checksum);
 
+    Page<CacheFile> findAllByInternalCacheTrue(Pageable pageable);
+
     /**
-     * Retrieve all {@link CacheFile}s with expiration date before the given {@link OffsetDateTime}
+     * Retrieve all {@link CacheFile}s with expiration date before the given {@link OffsetDateTime} in internal cache
      *
      * @param pEpirationDate {@link OffsetDateTime}
      * @return {@link Set}<{@link CacheFile}
      */
-    Page<CacheFile> findByExpirationDateBefore(OffsetDateTime pEpirationDate, Pageable pageable);
+    Page<CacheFile> findByExpirationDateBeforeAndInternalCacheTrue(OffsetDateTime pEpirationDate, Pageable pageable);
 
     /**
      * Remove a {@link CacheFile} by his checksum.
@@ -65,6 +67,8 @@ public interface ICacheFileRepository extends JpaRepository<CacheFile, Long> {
      */
     void removeByChecksum(String checksum);
 
-    @Query("select coalesce(sum(cf.fileSize), 0) from CacheFile cf")
-    Long getTotalFileSize();
+    @Query("SELECT COALESCE(SUM(cf.fileSize), 0) FROM CacheFile cf WHERE cf.internalCache=true")
+    Long getTotalFileSizeInternalCache();
+
+    long countCacheFileByInternalCacheTrue();
 }

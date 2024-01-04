@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.storage.service.cache.job;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,8 +44,7 @@ public class CacheCleanJob extends AbstractJob<Void> {
     private boolean forceMode = false;
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-        throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters) {
         forceMode = parameters.get(FORCE_PARAMETER_NAME).getValue();
     }
 

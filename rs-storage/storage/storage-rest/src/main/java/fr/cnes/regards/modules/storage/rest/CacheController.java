@@ -46,7 +46,7 @@ public class CacheController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<CacheDto> getOccupation() {
-        return new ResponseEntity<CacheDto>(CacheDto.build(cacheService.getCacheSizeLimit(),
+        return new ResponseEntity<CacheDto>(CacheDto.build(cacheService.getMaxCacheSizeBytes(),
                                                            cacheService.getCacheSizeUsedBytes()), HttpStatus.OK);
     }
 

@@ -176,7 +176,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
                     role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<EntityModel<StorageLocationDto>>> retrieve() throws ModuleException {
         List<StorageLocationDto> storageLocations = new ArrayList<>(storageLocationService.getAllLocations());
-        storageLocations.add(cacheService.toStorageLocation());
+        storageLocations.add(cacheService.buildStorageLocation());
 
         storageLocations.sort(Comparator.comparing(StorageLocationDto::getName));
 

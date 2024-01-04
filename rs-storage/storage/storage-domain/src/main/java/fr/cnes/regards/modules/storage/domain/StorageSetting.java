@@ -33,6 +33,9 @@ public final class StorageSetting {
 
     public static final String CACHE_PATH_NAME = "tenantCachePath";
 
+    /**
+     * Maximum size of internal cache in Kilo-octets
+     */
     public static final String CACHE_MAX_SIZE_NAME = "cacheMaxSize";
 
     public static final DynamicTenantSetting MAX_QUOTA = new DynamicTenantSetting(MAX_QUOTA_NAME,

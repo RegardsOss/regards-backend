@@ -59,7 +59,7 @@ public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomiz
 
     @Override
     public boolean canBeModified(DynamicTenantSetting dynamicTenantSetting) {
-        //Tenant cache path can only be modified if there is no CacheFile referenced at the moment
+        //Tenant cache path can only be modified if there is no CacheFile referenced at the moment in internal cache.
         return cacheService.isCacheEmpty();
     }
 

@@ -528,38 +528,68 @@ public class FileCacheRequestService {
     }
 
     /**
-     * Return all the request that can be restored in cache to not reach the cache size limit.
+     * Return all the request that can be restored in internal cache to not reach the internal cache size limit.
+     * Requests of external cache are ignored, so its requests can always be restored.
      */
     private List<FileCacheRequest> calculateRestorables(Collection<FileCacheRequest> requests) {
-        List<FileCacheRequest> restorables = Lists.newArrayList();
-        // Calculate cache size available by adding cache file sizes sum and already queued requests
+        List<FileCacheRequest> restorablesInternalCacheRequest = new ArrayList<>();
+
+        // Calculate internal cache size available by adding internal cache file sizes sum and already queued requests
         Long availableCacheSize = cacheService.getFreeSpaceInBytes();
-        Long occupation = 100 - ((availableCacheSize / cacheService.getCacheSizeLimit()) * 100);
         Long pendingSize = fileCacheRequestRepository.getPendingFileSize();
         long availableSize = availableCacheSize - pendingSize;
-        Iterator<FileCacheRequest> it = requests.iterator();
-        boolean cacheLimitReached = false;
+
+        Iterator<FileCacheRequest> iterator = findAllInternalCacheFileRequest(requests).iterator();
+        boolean internalCacheLimitReached = false;
         Long totalSize = 0L;
-        while (it.hasNext()) {
-            FileCacheRequest request = it.next();
-            if ((totalSize + request.getFileSize()) <= availableSize) {
-                restorables.add(request);
-                totalSize += request.getFileSize();
+        while (iterator.hasNext()) {
+            FileCacheRequest internalCacheRequest = iterator.next();
+
+            if ((totalSize + internalCacheRequest.getFileSize()) <= availableSize) {
+                restorablesInternalCacheRequest.add(internalCacheRequest);
+                totalSize += internalCacheRequest.getFileSize();
             } else {
-                cacheLimitReached = true;
+                internalCacheLimitReached = true;
             }
         }
-        if (cacheLimitReached) {
+        if (internalCacheLimitReached) {
             if (!globalCacheLimitReached) {
-                String message = String.format("One or many files to restore has been locked cause cache is full (%s%%)",
-                                               occupation);
-                notificationClient.notify(message, "Cache is full", NotificationLevel.WARNING, DefaultRole.ADMIN);
+                Long occupation = 100 - ((availableCacheSize / cacheService.getMaxCacheSizeBytes()) * 100);
+
+                notificationClient.notify(String.format(
+                    "One or many files to restore has been locked cause internal cache is full (%s%%)",
+                    occupation), "Internal cache is full", NotificationLevel.WARNING, DefaultRole.ADMIN);
                 globalCacheLimitReached = true;
             }
         } else {
             globalCacheLimitReached = false;
         }
-        return restorables;
+        return restorablesInternalCacheRequest;
+    }
+
+    /**
+     * Filter requests in order to return only requests for internal cache.
+     */
+    private Collection<FileCacheRequest> findAllInternalCacheFileRequest(Collection<FileCacheRequest> requests) {
+        Set<FileCacheRequest> fileInternalCacheRequests = new HashSet<>();
+        // Requests grouped by storage in order to find the plugin
+        Map<String, List<FileCacheRequest>> groupByStorage = requests.stream()
+                                                                     .collect(Collectors.groupingBy(FileCacheRequest::getStorage));
+        for (Map.Entry<String, List<FileCacheRequest>> storage : groupByStorage.entrySet()) {
+            try {
+                PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage.getKey());
+                INearlineStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
+
+                if (storagePlugin.isInternalCache()) {
+                    // Add all requests for internal cache
+                    fileInternalCacheRequests.addAll(storage.getValue());
+                }
+            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                LOGGER.warn("Impossible to get the plugin with the storage {} in order to know if internal cache or "
+                            + "external cache, cause {}", storage.getKey(), e.getMessage());
+            }
+        }
+        return fileInternalCacheRequests;
     }
 
     /**
