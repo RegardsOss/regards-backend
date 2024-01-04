@@ -20,10 +20,6 @@ package fr.cnes.regards.modules.ingest.service;
 
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
-import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
-import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.integration.test.job.JobTestUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -32,6 +28,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.*;
@@ -129,7 +129,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
     public void init() throws Exception {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Clean everything
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
         Mockito.reset(notifierClient);
     }
 

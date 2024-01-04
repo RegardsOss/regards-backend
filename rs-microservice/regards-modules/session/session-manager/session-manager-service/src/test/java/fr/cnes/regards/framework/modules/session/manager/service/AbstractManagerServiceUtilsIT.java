@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepos
 import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerStepAggregationRepository;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,6 +49,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Iliana Ghazali
@@ -209,22 +211,13 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
     //  SESSION UTILS
     // --------------
 
-    protected void waitForSessionStepEventsStored(int nbEvents) throws InterruptedException {
-        long count, now = System.currentTimeMillis(), end = now + 200000L;
-        LOGGER.info("Waiting for session steps to be saved ...");
-        do {
-            count = this.sessionStepRepo.count();
-            now = System.currentTimeMillis();
-            if (count != nbEvents) {
-                Thread.sleep(5000L);
-            }
-        } while (count != nbEvents && now <= end);
-
-        if (count != nbEvents) {
-            Assert.fail(String.format("Events were not stored in database. Expected %d events but was %d.",
-                                      nbEvents,
-                                      count));
-        }
+    protected void waitForSessionStepEventsStored(int nbEvents) {
+        Awaitility.await().atMost(200, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            long count = this.sessionStepRepo.count();
+            LOGGER.info("Waiting for session steps to be saved {}/{}...", count, nbEvents);
+            return count == nbEvents;
+        });
     }
 
     protected void waitForSnapshotUpdateSuccesses() throws InterruptedException {
@@ -242,7 +235,7 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
             snapshotProcessList = this.snapshotProcessRepo.findAll();
             now = System.currentTimeMillis();
             if (count != processSize) {
-                Thread.sleep(5000L);
+                Thread.sleep(500L);
             }
         } while (count != processSize && now <= end);
 
@@ -253,25 +246,17 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
 
     }
 
-    protected void waitForJobStates(String jobName, int nbJobs, long timeout, JobStatus[] jobStatuses)
-        throws InterruptedException {
-        long count, now = System.currentTimeMillis(), end = now + timeout;
-        LOGGER.info("Waiting for {} jobs of type {} to be in at least one of the following states {} ...",
-                    nbJobs,
-                    jobName,
-                    Arrays.toString(jobStatuses));
-        do {
-            count = jobInfoService.retrieveJobsCount(jobName, jobStatuses);
-            now = System.currentTimeMillis();
-            if (count != nbJobs) {
-                Thread.sleep(100L);
-            }
-        } while (count != nbJobs && now <= end);
-
-        if (count != nbJobs) {
-            Assert.fail(String.format("Unexpected number of snapshot jobs created. Expected %d jobs but was %d.",
-                                      nbJobs,
-                                      this.jobInfoRepo.countByClassNameAndStatusStatusIn(jobName, jobStatuses)));
-        }
+    protected void waitForJobStates(String jobName, int nbJobs, long timeout, JobStatus[] jobStatuses) {
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            long count = jobInfoService.retrieveJobsCount(jobName, jobStatuses);
+            LOGGER.info("Waiting for {} jobs of type {} to be in at least one of the following states {} ---> {}/{}...",
+                        nbJobs,
+                        jobName,
+                        Arrays.toString(jobStatuses),
+                        count,
+                        nbJobs);
+            return count == nbJobs;
+        });
     }
 }

@@ -148,7 +148,7 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
         ingestRequestSchedulerService.scheduleRequests();
 
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
         // Wait STORE_META request over
         // delete requests, if notification are active mock success of notifications to delete ingest requests
         if (!initDefaultNotificationSettings()) {

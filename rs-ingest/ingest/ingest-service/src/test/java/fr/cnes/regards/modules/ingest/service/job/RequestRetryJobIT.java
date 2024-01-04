@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Léo Mieulet
@@ -216,28 +218,11 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
      * @param timeout       in ms
      */
     public void waitForErrorRequestReach(long expectedTasks, long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long errorRequestCount;
-        do {
-            Pageable unpaged = Pageable.unpaged();
-            errorRequestCount = requestService.findRequests(new SearchRequestParameters().withRequestStatesIncluded(Set.of(
-                InternalRequestState.ERROR)), Pageable.unpaged()).getTotalElements();
-            LOGGER.info("{} UpdateRequest(s) existing in database", errorRequestCount);
-            if (errorRequestCount == expectedTasks) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout");
-            }
-        } while (true);
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return requestService.findRequests(new SearchRequestParameters().withRequestStatesIncluded(Set.of(
+                InternalRequestState.ERROR)), Pageable.unpaged()).getTotalElements() == expectedTasks;
+        });
     }
 
     @Test

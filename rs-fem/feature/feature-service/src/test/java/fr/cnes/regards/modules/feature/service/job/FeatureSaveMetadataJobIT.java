@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.dump.FeatureSaveMetadataService;
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -51,6 +52,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test for {@link FeatureSaveMetadataJob}
@@ -99,7 +101,11 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceI
         JobInfo jobInfo = runSaveMetadataJob();
         Assert.assertNotEquals(null, jobInfo);
         UUID jobInfoId = jobInfo.getId();
-        Thread.sleep(1000);
+        Awaitility.await().atMost(2, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            Optional<JobInfo> ji = jobInfoRepository.findById(jobInfoId);
+            return ji.isPresent() && (ji.get().getStatus().getStatus() == JobStatus.SUCCEEDED);
+        });
 
         // CHECK RESULTS
         // Check job info is successful
@@ -114,8 +120,9 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceI
         // Check folder target/workspace/<microservice>/ exists and contains 1 dump
         Assert.assertTrue("The dump location does not exist", Files.exists(this.dumpLocation));
         LOGGER.info("this.dumpLocation.toFile().listFiles().length={}", this.dumpLocation.toFile().listFiles().length);
-        Assert.assertTrue("The dump location does not contains one zip",
-                          this.dumpLocation.toFile().listFiles().length == 1);
+        Assert.assertEquals("The dump location does not contains one zip",
+                            1,
+                            this.dumpLocation.toFile().listFiles().length);
     }
 
     @Test
@@ -137,13 +144,19 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceI
             Assert.assertTrue("DuplicateUniqueNameException was expected",
                               e.getMessage().contains("DuplicateUniqueNameException"));
         }
-        Thread.sleep(1000);
 
         // Check job info in ERROR
         Pageable pageToRequest = PageRequest.of(0, 100);
+        Awaitility.await().atMost(2, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return !jobInfoRepository.findByClassNameAndStatusStatusIn(FeatureSaveMetadataJob.class.getName(),
+                                                                       JobStatus.values(),
+                                                                       pageToRequest).isEmpty();
+        });
         Page<JobInfo> errorJobInfo = jobInfoRepository.findByClassNameAndStatusStatusIn(FeatureSaveMetadataJob.class.getName(),
                                                                                         JobStatus.values(),
                                                                                         pageToRequest);
+
         Assert.assertEquals(1L, errorJobInfo.getTotalElements());
         Assert.assertEquals(JobStatus.FAILED, errorJobInfo.getContent().get(0).getStatus().getStatus());
 

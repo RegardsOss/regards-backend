@@ -20,10 +20,6 @@ package fr.cnes.regards.modules.test;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -62,10 +58,6 @@ import java.util.concurrent.TimeUnit;
 public class IngestServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceIT.class);
-
-    public static final String NEW_SIP_S_IN_DATABASE_TEMPLATE = "{} new SIP(s) {} in database";
-
-    public static final String ALL_STATUS = "ALL_STATUS";
 
     @Autowired
     protected IIngestRequestRepository ingestRequestRepository;
@@ -109,25 +101,13 @@ public class IngestServiceIT {
     @Autowired
     private IPluginConfigurationRepository pluginConfRepo;
 
-    @Autowired(required = false)
-    private IAmqpAdmin amqpAdmin;
-
-    @Autowired(required = false)
-    private IRabbitVirtualHostAdmin vhostAdmin;
-
-    @Autowired
-    private ISubscriber subscriber;
-
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private ILockingTaskExecutors lockingTaskExecutors;
 
     /**
      * Clean everything a test can use, to prepare the empty environment for the next test
      */
-    public void init() {
+    public void init(String tenant) {
         boolean done = false;
         int loop = 0;
         do {
@@ -144,10 +124,10 @@ public class IngestServiceIT {
                 snapshotProcessRepository.deleteAllInBatch();
                 stepPropertyUpdateRequestRepository.deleteAllInBatch();
                 sessionStepRepository.deleteAllInBatch();
-                done = checkAllRequestsFinished();
+                done = checkAllRequestsFinished(tenant);
                 if (!done) {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                         LOGGER.error(e.getMessage(), e);
                         done = true;
@@ -160,12 +140,12 @@ public class IngestServiceIT {
         } while (!done && (loop < 5));
     }
 
-    public void waitForIngestion(long expectedSips) {
-        waitForIngestion(expectedSips, expectedSips * 1000);
+    public void waitForIngestion(long expectedSips, String tenant) {
+        waitForIngestion(expectedSips, expectedSips * 1000, tenant);
     }
 
-    public void waitForIngestion(long expectedSips, long timeout) {
-        waitForIngestion(expectedSips, timeout, null);
+    public void waitForIngestion(long expectedSips, long timeout, String tenant) {
+        waitForIngestion(expectedSips, timeout, null, tenant);
     }
 
     /**
@@ -174,161 +154,68 @@ public class IngestServiceIT {
      * @param expectedSips expected count of sips in database
      * @param timeout      in ms
      */
-    public void waitForIngestion(long expectedSips, long timeout, SIPState sipState) {
+    public void waitForIngestion(long expectedSips, long timeout, SIPState sipState, String tenant) {
         long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long sipCount = 0;
-        do {
-            long newCount = 0;
-            long totalCount = sipRepository.count();
+        try {
+            Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(tenant);
+                if (sipState != null) {
+                    return sipRepository.countByState(sipState) == expectedSips;
+                }
+                return sipRepository.count() == expectedSips;
+            });
+        } catch (Exception e) {
+            long count = 0;
             if (sipState != null) {
-                newCount = sipRepository.countByState(sipState);
+                count = sipRepository.countByState(sipState);
             } else {
-                newCount = totalCount;
+                count = sipRepository.count();
             }
-            if (newCount != sipCount) {
-                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE,
-                            newCount - sipCount,
-                            sipState != null ? sipState.toString() : ALL_STATUS);
-            }
-            sipCount = newCount;
-            if (timerStop(expectedSips,
-                          end,
-                          sipCount,
-                          String.format(
-                              "Timeout after waiting %s ms for %s SIPs in %s. Actual=%s. Total count %s (no specific status)",
-                              timeout,
-                              expectedSips,
-                              sipState != null ? sipState.toString() : ALL_STATUS,
-                              sipCount,
-                              totalCount))) {
-                break;
-            }
-        } while (true);
+            Assert.fail(String.format("Error waiting for %s ingestion done in %s ms. Number of ingestion done = %s",
+                                      expectedSips,
+                                      timeout,
+                                      count));
+        }
     }
 
     /**
      * Helper method to wait for AIP ingestion
      */
-    public void waitForAIP(long expectedSips, long timeout, AIPState aipState) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long aipCount = 0;
-        do {
-            long newCount = 0;
-            long totalCount = aipRepository.count();
+    public void waitForAIP(long expectedSips, long timeout, AIPState aipState, String tenant) {
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(tenant);
             if (aipState != null) {
-                newCount = aipRepository.countByState(aipState);
-            } else {
-                newCount = totalCount;
+                return aipRepository.countByState(aipState) == expectedSips;
             }
-            if (newCount != aipCount) {
-                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE,
-                            newCount - aipCount,
-                            aipState != null ? aipState.toString() : ALL_STATUS);
-            }
-            aipCount = newCount;
-            if (timerStop(expectedSips,
-                          end,
-                          aipCount,
-                          String.format(
-                              "Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
-                              expectedSips,
-                              aipState != null ? aipState.toString() : ALL_STATUS,
-                              aipCount,
-                              totalCount))) {
-                break;
-            }
-        } while (true);
+            return aipRepository.count() == expectedSips;
+        });
     }
 
     /**
      * Helper method to wait for ingest request state
      */
-    public void waitForIngestRequest(long expectedSips, long timeout, InternalRequestState requestState) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long requestCount = 0;
-        do {
-            long newCount = 0;
-            long totalCount = ingestRequestRepository.count();
+    public void waitForIngestRequest(long expectedSips,
+                                     long timeout,
+                                     InternalRequestState requestState,
+                                     String tenant) {
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(tenant);
             if (requestState != null) {
-                newCount = ingestRequestRepository.countByState(requestState);
-            } else {
-                newCount = totalCount;
+                return ingestRequestRepository.countByState(requestState) == expectedSips;
             }
-            if (newCount != requestCount) {
-                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE,
-                            newCount - requestCount,
-                            requestState != null ? requestState.toString() : ALL_STATUS);
-            }
-            requestCount = newCount;
-            if (timerStop(expectedSips,
-                          end,
-                          requestCount,
-                          String.format(
-                              "Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
-                              expectedSips,
-                              requestState != null ? requestState.toString() : ALL_STATUS,
-                              requestCount,
-                              totalCount))) {
-                break;
-            }
-        } while (true);
-    }
-
-    private boolean timerStop(long expectedSips, long end, long sipCount, String errorMessage) {
-        if (sipCount >= expectedSips) {
-            return true;
-        }
-        long now = System.currentTimeMillis();
-        if (end > now) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Assert.fail("Thread interrupted");
-            }
-        } else {
-            Assert.fail(errorMessage);
-        }
-        return false;
-    }
-
-    /**
-     * Helper method to wait for DB ingestion
-     *
-     * @param expectedTasks expected count of task in db
-     * @param timeout       in ms
-     */
-    public void waitForRequestReach(long expectedTasks, long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long taskCount;
-        do {
-            taskCount = abstractRequestRepository.count();
-            LOGGER.debug("{} UpdateRequest(s) created in database", taskCount);
-            if (timerStop(expectedTasks,
-                          end,
-                          taskCount,
-                          String.format("Timeout after waiting for %s request tasks ends. Actual=%s",
-                                        expectedTasks,
-                                        taskCount))) {
-                break;
-            }
-        } while (true);
+            return ingestRequestRepository.count() == expectedSips;
+        });
     }
 
     /**
      * Helper method that waits all requests have been processed
      */
     public void waitAllRequestsFinished(long timeout, String tenant) {
-        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
-            runtimeTenantResolver.forceTenant(tenant);
-            return checkAllRequestsFinished();
-        });
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> checkAllRequestsFinished(tenant));
     }
 
-    public boolean checkAllRequestsFinished() {
+    public boolean checkAllRequestsFinished(String tenant) {
+        runtimeTenantResolver.forceTenant(tenant);
         long count = abstractRequestRepository.countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED,
                                                                               InternalRequestState.CREATED,
                                                                               InternalRequestState.RUNNING,

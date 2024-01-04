@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Léo Mieulet
@@ -213,27 +215,11 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
      * @param expectedTasks expected count of task in db
      * @param timeout       in ms
      */
-    public void waitForRequestReach(long expectedTasks, long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long taskCount;
-        do {
-            taskCount = abstractRequestRepository.count();
-            LOGGER.info("{} UpdateRequest(s) existing in database", taskCount);
-            if (taskCount == expectedTasks) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout");
-            }
-        } while (true);
+    public void waitForRequestReach(long expectedTasks, long timeout, String tenant) {
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            return abstractRequestRepository.count() == expectedTasks;
+        });
     }
 
     @Test
@@ -242,14 +228,14 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
         Assert.assertEquals("Something went wrong while creating requests", 5, abstractRequestRepository.count());
         requestService.scheduleRequestDeletionJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.AIP_UPDATES_CREATOR)));
-        waitForRequestReach(5, 20_000);
+        waitForRequestReach(5, 20_000, getDefaultTenant());
 
         requestService.scheduleRequestDeletionJob(new SearchRequestParameters().withSession(SESSION_0)
                                                                                .withSessionOwner(SESSION_OWNER_0));
-        waitForRequestReach(1, 10_000);
+        waitForRequestReach(1, 10_000, getDefaultTenant());
 
         requestService.scheduleRequestDeletionJob(new SearchRequestParameters());
-        waitForRequestReach(0, 10_000);
+        waitForRequestReach(0, 10_000, getDefaultTenant());
 
         List<IngestRequestEvent> events = getPublishedEvents(IngestRequestEvent.class);
         Assert.assertEquals("There sould be one ingestion event sent to inform deletion", 1, events.size());

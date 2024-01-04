@@ -81,6 +81,7 @@ import static org.junit.Assert.*;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_update",
                                    "regards.amqp.enabled=true",
+                                   "regards.feature.delay.before.processing=1",
                                    "regards.feature.metrics.enabled=true" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
@@ -120,13 +121,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         featureCreationService.registerRequests(events);
 
         featureCreationService.scheduleRequests();
-        int cpt = 0;
-        long featureNumberInDatabase;
-        do {
-            featureNumberInDatabase = featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != 1));
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == 1;
+        });
         FeatureEntity featureEntity = featureRepo.findAll().get(0);
 
         // Create case in order to block the feature deletion request
@@ -178,13 +176,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         featureCreationService.registerRequests(events);
 
         featureCreationService.scheduleRequests();
-        int cpt = 0;
-        long featureNumberInDatabase;
-        do {
-            featureNumberInDatabase = featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != 3));
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == 3;
+        });
         List<FeatureEntity> entities = featureRepo.findAll();
 
         // Simulate a deletion running request
@@ -338,13 +333,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         this.featureCreationService.registerRequests(events);
 
         this.featureCreationService.scheduleRequests();
-        int cpt = 0;
-        long featureNumberInDatabase;
-        do {
-            featureNumberInDatabase = this.featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != 3));
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == 3;
+        });
         List<FeatureEntity> entities = super.featureRepo.findAll();
         mockStorageHelper.mockFeatureCreationStorageSuccess();
         mockNotificationSuccess();
@@ -481,7 +473,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         this.featureUpdateService.registerRequests(updateEvents);
 
         // we wait for delay before schedule
-        Thread.sleep((this.properties.getDelayBeforeProcessing() * 1000) + 1000);
+        Thread.sleep((this.properties.getDelayBeforeProcessing() * 1000) + 100);
         this.featureUpdateService.scheduleRequests();
 
         int nbMinimalExpectedRequests = properties.getMaxBulkSize() / 2;

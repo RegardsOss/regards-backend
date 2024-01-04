@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -115,11 +116,10 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
         // When
         featureDeletionService.scheduleRequests();
-        do {
-            featureNumberInDatabase = featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != 0));
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == 0;
+        });
 
         // In this case all features have not been deleted
         if (cpt == 100) {
@@ -572,19 +572,11 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         featureDeletionService.scheduleRequests();
 
         Set<FeatureDeletionRequest> featureDeletionRequests;
-        int cpt = 0;
-        int maxCpt = 10;
-        do {
-            featureDeletionRequests = featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
-                                                                            OffsetDateTime.now().plusDays(1));
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < maxCpt) && (featureDeletionRequests.size() == 0));
-
-        // Then : in this case the feature deletion request has not pass in the WAITING_BLOCKING_DISSEMINATION step
-        if (cpt == maxCpt) {
-            fail("The feature deletion request has not pass in the WAITING_BLOCKING_DISSEMINATION step.");
-        }
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return !featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+                                                          OffsetDateTime.now().plusDays(1)).isEmpty();
+        });
     }
 
     @Test
@@ -607,19 +599,11 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         featureDeletionService.scheduleRequests();
 
         Set<FeatureDeletionRequest> featureDeletionRequests;
-        int cpt = 0;
-        int maxCpt = 10;
-        do {
-            featureDeletionRequests = featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
-                                                                            OffsetDateTime.now().plusDays(1));
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < maxCpt) && (featureDeletionRequests.size() == 0));
-
-        // Then : in this case the feature deletion request has not pass in the WAITING_BLOCKING_DISSEMINATION step
-        if (cpt == maxCpt) {
-            fail("The feature deletion request has not pass in the WAITING_BLOCKING_DISSEMINATION step.");
-        }
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return !featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+                                                          OffsetDateTime.now().plusDays(1)).isEmpty();
+        });
     }
 
     // ---------------------

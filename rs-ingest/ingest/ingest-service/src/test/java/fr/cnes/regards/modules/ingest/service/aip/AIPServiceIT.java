@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
@@ -114,7 +114,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         storageClient.setBehavior(true, true);
 
         publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        ingestServiceTest.waitForIngestion(1, 20000);
+        ingestServiceTest.waitForIngestion(1, 20000, getDefaultTenant());
 
         Page<AIPEntity> results = aipService.findByFilters(new SearchAIPsParameters(), PageRequest.of(0, 100));
 
@@ -168,7 +168,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         sip.withAdditionalProvenanceInformation(ORIGIN_URN_ADDITIONAL_INFORMATION, TEST_ORIGIN_URN);
         publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
 
         // When
         Page<AIPEntity> results = aipService.findByFilters(new SearchAIPsParameters().withTagsIncluded(TAG_0)
@@ -279,7 +279,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
 
         Page<AIPEntity> allAips = aipService.findByFilters(new SearchAIPsParameters(), PageRequest.of(0, 100));
         Set<String> aipIds = allAips.stream().map(AIPEntity::getAipId).collect(Collectors.toSet());
@@ -367,7 +367,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         sip.withAdditionalProvenanceInformation(ORIGIN_URN_ADDITIONAL_INFORMATION, TEST_ORIGIN_URN);
         publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
 
         // When search with DisseminationStatus to NONE
         Page<AIPEntity> results = aipService.findByFilters(new SearchAIPsParameters().withDisseminationStatusIncluded(

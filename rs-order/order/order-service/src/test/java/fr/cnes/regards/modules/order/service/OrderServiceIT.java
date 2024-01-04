@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import org.awaitility.Awaitility;
 import org.junit.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -79,7 +80,6 @@ import java.net.URISyntaxException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -254,7 +254,7 @@ public class OrderServiceIT {
         order.setLabel("test order 1");
         order.setStatus(OrderStatus.DONE);
         order.setCreationDate(OffsetDateTime.now());
-        order.setExpirationDate(OffsetDateTime.now().plus(3, ChronoUnit.DAYS));
+        order.setExpirationDate(OffsetDateTime.now().plusDays(3));
         order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         orderRepos.save(order);
 
@@ -363,7 +363,7 @@ public class OrderServiceIT {
         order.setOwner(USER_EMAIL);
         order.setLabel("ds1 order");
         order.setCreationDate(OffsetDateTime.now());
-        order.setExpirationDate(OffsetDateTime.now().plus(3, ChronoUnit.DAYS));
+        order.setExpirationDate(OffsetDateTime.now().plusDays(3));
         order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
         order = orderRepos.save(order);
 
@@ -435,13 +435,17 @@ public class OrderServiceIT {
     @Requirement("REGARDS_DSL_STO_CMD_050")
     @Requirement("REGARDS_DSL_STO_ARC_470")
     @Requirement("REGARDS_DSL_STO_ARC_490")
-    public void testBucketsJobs() throws InterruptedException, EntityInvalidException {
+    public void testBucketsJobs() throws EntityInvalidException {
 
         Basket basket = OrderTestUtils.getBasketSingleSelection("testBucketsJobs");
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
-        Thread.sleep(5_000);
+        Long orderId = order.getId();
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            tenantResolver.forceTenant("ORDER");
+            return jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED).size() == 2;
+        });
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());
 
@@ -469,7 +473,11 @@ public class OrderServiceIT {
         // Act as true downloads
         orderJobService.manageUserOrderStorageFilesJobInfos(basket.getOwner());
         // Re-wait a while to permit execution of last jobInfo
-        Thread.sleep(10_000);
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            tenantResolver.forceTenant("ORDER");
+            Order o = orderService.loadSimple(orderId);
+            return o != null && o.getStatus().equals(OrderStatus.DONE);
+        });
 
         files = dataFileRepos.findAllAvailables(order.getId());
         order = orderService.loadSimple(order.getId());
@@ -488,7 +496,7 @@ public class OrderServiceIT {
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
-        order.setExpirationDate(OffsetDateTime.now().minus(1, ChronoUnit.DAYS));
+        order.setExpirationDate(OffsetDateTime.now().minusDays(1));
         orderRepos.save(order);
 
         orderMaintenanceService.cleanExpiredOrders();
@@ -509,7 +517,7 @@ public class OrderServiceIT {
         // Create an order with no available files count and no availableUpdateDate (null)
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
-        order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order.setExpirationDate(order.getCreationDate().plusDays(3));
         order.setOwner(USER_EMAIL);
         order.setLabel("Ego");
         order.setStatus(OrderStatus.PENDING);
@@ -529,7 +537,7 @@ public class OrderServiceIT {
         Mockito.verifyNoInteractions(emailClient);
 
         // Change available update date (-4 days)
-        order.setAvailableUpdateDate(OffsetDateTime.now().minus(4, ChronoUnit.DAYS));
+        order.setAvailableUpdateDate(OffsetDateTime.now().minusDays(4));
         order.setStatus(OrderStatus.DONE);
         orderRepos.save(order);
 

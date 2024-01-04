@@ -207,7 +207,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
                             getRandomSessionOwner(),
                             getRandomCategories());
         }
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000L, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000L, SIPState.STORED, getDefaultTenant());
     }
 
     /**

@@ -147,8 +147,7 @@ public class JWTServiceIT {
         String token = jwtService.generateToken(TENANT,
                                                 LOGIN,
                                                 EMAIL,
-                                                ROLE,
-                                                OffsetDateTime.now().plus(3, ChronoUnit.DAYS),
+                                                ROLE, OffsetDateTime.now().plusDays(3),
                                                 addParams,
                                                 null,
                                                 true);
@@ -175,7 +174,7 @@ public class JWTServiceIT {
                                                        addParams,
                                                        null,
                                                        false);
-        Thread.sleep(1_000);
+        Thread.sleep(100);
         try {
             claims = jwtService.parseClaims(expiredToken);
             Assert.fail("An exception should have been thrown here caused to an expired token");

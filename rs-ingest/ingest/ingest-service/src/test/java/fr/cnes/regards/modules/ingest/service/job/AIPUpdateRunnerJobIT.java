@@ -173,7 +173,7 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
                         SESSION_OWNER_1,
                         CATEGORIES_0);
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
 
         if (!isToNotify) {
             // Wait STORE_META request over

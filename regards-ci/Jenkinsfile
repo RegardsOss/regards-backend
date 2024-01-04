@@ -47,6 +47,7 @@ pipeline {
         booleanParam(name: 'DEPLOY_ARTIFACTS', defaultValue: false, description: 'Enable artifacts deploy')
         booleanParam(name: 'INCREMENTAL_BUILD', defaultValue: true, description: 'Enable incremental build (calculate hashes and dependency tree)')
         booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip tests')
+        booleanParam(name: 'STOP_BUILD_ON_TEST_ERROR', defaultValue: true, description: 'Stop the build when some microservice test fails')
     }
     agent { label 'unix-integration' }
     stages {
@@ -54,11 +55,13 @@ pipeline {
             steps {
                 echo "Jenkins node name = ${env.NODE_NAME}"
                 echo "Current workspace = ${env.WORKSPACE}"
+                echo "Artefacts version saved inside local repository (available on all jenkins slaves) = ${env.BRANCH_NAME_VERSION}"
                 echo "Docker Fast image tag = fast-${env.BRANCH_NAME_VERSION}"
                 echo "Generate & deploy fast docker images = ${params.DOCKER_IMAGE_FAST_GENERATION}"
                 echo "Generate & deploy docker images = ${params.DOCKER_IMAGE_GENERATION}"
                 echo "Using incremental build = ${params.INCREMENTAL_BUILD}"
                 echo "Skip tests = ${params.SKIP_TESTS}"
+                echo "Stop the build when some microservice test fails = ${params.STOP_BUILD_ON_TEST_ERROR}"
             }
         }
         stage('Hashes calculation') {
@@ -113,95 +116,93 @@ pipeline {
             parallel {
                 stage('-1-') {
                     stages {
-                        // Please you use here the method [...]One (runMavenDockerImgParallelOne)
                         stage('Bom') {
                             steps {
-                                runMavenDockerImgParallelOne("tests", "rs-bom")
+                                runMavenDockerImg("tests", "rs-bom", params.STOP_BUILD_ON_TEST_ERROR, true)
                             }
                         }
                         stage('Microservice') {
                             steps {
-                                runMavenDockerImgParallelOne("tests", "rs-microservice")
+                                runMavenDockerImg("tests", "rs-microservice", params.STOP_BUILD_ON_TEST_ERROR, true)
                             }
                         }
                         stage('Cloud') {
                             steps {
-                                runMavenDockerImgParallelOne("tests", "rs-cloud")
+                                runMavenDockerImg("tests", "rs-cloud", params.STOP_BUILD_ON_TEST_ERROR, true)
                             }
                         }
                         stage('Ingest') {
                             steps {
-                                runMavenDockerImgParallelOne("tests", "rs-ingest")
+                                runMavenDockerImg("tests", "rs-ingest", params.STOP_BUILD_ON_TEST_ERROR, true)
                             }
                         }
                         stage('Fem') {
                             steps {
-                                runMavenDockerImgParallelOne("tests", "rs-fem")
+                                runMavenDockerImg("tests", "rs-fem", params.STOP_BUILD_ON_TEST_ERROR, true)
                             }
                         }
                         stage('Worker manager') {
                             steps {
-                                runMavenDockerImgParallelOne("tests", "rs-worker-manager")
+                                runMavenDockerImg("tests", "rs-worker-manager", params.STOP_BUILD_ON_TEST_ERROR, true)
                             }
                         }
                         stage('Lta manager') {
                             steps {
-                                runMavenDockerImgParallelOne("tests", "rs-lta-manager")
+                                runMavenDockerImg("tests", "rs-lta-manager", params.STOP_BUILD_ON_TEST_ERROR, true)
                             }
                         }
                         stage('Delivery') {
                             steps {
-                                runMavenDockerImgParallelOne("tests", "rs-delivery")
+                                runMavenDockerImg("tests", "rs-delivery", params.STOP_BUILD_ON_TEST_ERROR, true)
                             }
                         }
                     }
                 }
                 stage('-2-') {
-                    // Please you use here the method [...]Two (runMavenDockerImgParallelTwo)
                     stages {
                         stage('Admin') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-admin")
+                                runMavenDockerImg("tests", "rs-admin", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('Dam') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-dam")
+                                runMavenDockerImg("tests", "rs-dam", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('Catalog') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-catalog")
+                                runMavenDockerImg("tests", "rs-catalog", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('Access') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-access")
+                                runMavenDockerImg("tests", "rs-access", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('Notifier') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-notifier")
+                                runMavenDockerImg("tests", "rs-notifier", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('Storage') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-storage")
+                                runMavenDockerImg("tests", "rs-storage", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('Dataprovider') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-dataprovider")
+                                runMavenDockerImg("tests", "rs-dataprovider", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('Order') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-order")
+                                runMavenDockerImg("tests", "rs-order", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('processing') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-processing")
+                                runMavenDockerImg("tests", "rs-processing", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('File Catalog') {
@@ -338,14 +339,14 @@ def runMavenDockerImgWithoutCoTS(taskMainLabel, mode) {
     runMavenDockerImg(label, mode, mode, "", 4, false, false)
 }
 
-// Use it when you want CoTS and you are the parallel "One"
-def runMavenDockerImgParallelOne(mode, regardsMs) {
-    def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and first RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, true)
-}
-
-// Use it when you want CoTS and you are the parallel "Two"
-def runMavenDockerImgParallelTwo(mode, regardsMs) {
-    def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and second RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, false)
+// Use it when you want CoTS
+def runMavenDockerImg(mode, regardsMs, failOnError, useParallelOne) {
+    def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and first RabbitMQ?=[" + useParallelOne + "]"
+    if(failOnError){
+        runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, useParallelOne)
+    } else {
+        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+            runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, useParallelOne)
+        }
+    }
 }

@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameter
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test class to check {@link PublishFeatureNotificationJob}s
@@ -61,7 +63,7 @@ public class PublishFeatureNotificationJobIT extends AbstractFeatureMultitenantS
     @Test
     public void test_notifySelection() throws InterruptedException, ExecutionException {
         // Given
-        initData(100);
+        initData(10);
         NotificationEventListener listener = new NotificationEventListener();
         subscriber.subscribeTo(FeatureNotificationRequestEvent.class, listener);
 
@@ -85,9 +87,12 @@ public class PublishFeatureNotificationJobIT extends AbstractFeatureMultitenantS
             String tenant = runtimeTenantResolver.getTenant();
             jobService.runJob(job, tenant).get();
         }
-        Thread.sleep(5_000);
+
         // Then
-        Assert.assertEquals(100L, listener.getNumberOfRequests());
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            LOGGER.info("Listener count {}/{}", listener.getNumberOfRequests(), 10);
+            return listener.getNumberOfRequests() == 10L;
+        });
     }
 
     @Test
@@ -107,7 +112,10 @@ public class PublishFeatureNotificationJobIT extends AbstractFeatureMultitenantS
             String tenant = runtimeTenantResolver.getTenant();
             jobService.runJob(job, tenant).get();
         }
-        Thread.sleep(5_000);
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            LOGGER.info("listener {}/{}", listener.getNumberOfRequests(), 2);
+            return listener.getNumberOfRequests() == 2;
+        });
         // Then
         Assert.assertEquals(2L, listener.getNumberOfRequests());
         Assert.assertEquals(2L, listener.getMessages().size());

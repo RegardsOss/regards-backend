@@ -28,6 +28,8 @@ import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameter
 public class FeatureSimpleEntitySpecificationBuilder
     extends AbstractSpecificationsBuilder<FeatureSimpleEntity, SearchFeatureSimpleEntityParameters> {
 
+    private static final String DISSEMINATION_PENDING_FILED = "disseminationPending";
+
     @Override
     protected void addSpecificationsFromParameters() {
         if (parameters != null) {
@@ -42,7 +44,23 @@ public class FeatureSimpleEntitySpecificationBuilder
             specifications.add(after("lastUpdate", parameters.getLastUpdate().getAfter()));
             specifications.add(before("lastUpdate", parameters.getLastUpdate().getBefore()));
 
-            specifications.add(equals("disseminationPending", parameters.getDisseminationPending()));
+            if (parameters.getDisseminationStatus() != null) {
+                switch (parameters.getDisseminationStatus()) {
+                    case NONE -> {
+                        specifications.add(isNull(DISSEMINATION_PENDING_FILED));
+                    }
+                    case PENDING -> {
+                        specifications.add(equals(DISSEMINATION_PENDING_FILED, true));
+                    }
+                    case DONE -> {
+                        specifications.add(equals(DISSEMINATION_PENDING_FILED, false));
+                    }
+                    default -> {
+                        // nothing to do
+                    }
+                }
+            }
+
         }
     }
 }

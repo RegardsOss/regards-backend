@@ -145,7 +145,7 @@ public class AIPServiceSearchIT extends IngestMultitenantServiceIT {
         ingestRequestFlowHandler.handleBatch(sipEvents);
         waitSipCount(nbSIP);
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
     }
 
     @Test

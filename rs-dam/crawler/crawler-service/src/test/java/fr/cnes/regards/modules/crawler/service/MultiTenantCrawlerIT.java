@@ -17,7 +17,6 @@ import fr.cnes.regards.modules.model.service.IModelService;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -40,9 +39,6 @@ public class MultiTenantCrawlerIT {
     private static final String TENANT1 = "MICKEY";
 
     private static final String TENANT2 = "DONALD";
-
-    @Value("${spring.application.name:}")
-    private String toTestPropertiesExists;
 
     @Autowired
     private MultitenantFlattenedAttributeAdapterFactoryEventHandler gsonAttributeFactoryHandler;

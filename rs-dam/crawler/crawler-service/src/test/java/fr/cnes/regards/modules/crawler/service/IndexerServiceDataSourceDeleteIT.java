@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
@@ -27,16 +26,16 @@ import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.data.domain.Page;
+
+import java.util.concurrent.TimeUnit;
 
 public class IndexerServiceDataSourceDeleteIT extends AbstractIndexerServiceDataSourceIT {
 
     @Test
-    public void testDeleteByDatasource()
-        throws InactiveDatasourceException, ModuleException, InterruptedException, NotFinishedException,
-        FirstFindException {
+    public void testDeleteByDatasource() throws ModuleException, NotFinishedException, FirstFindException {
         String tenant = runtimeTenantResolver.getTenant();
 
         // Creation
@@ -51,19 +50,16 @@ public class IndexerServiceDataSourceDeleteIT extends AbstractIndexerServiceData
         Long datasourceId = dataSourcePluginConf.getId();
         SimpleSearchKey<DataObject> key = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
         key.setSearchIndex(tenant);
-        Page<DataObject> result = esRepos.search(key, 10, ICriterion.all());
-        Assert.assertEquals(4, result.getContent().size());
+        Assert.assertEquals(4, esRepos.count(key, ICriterion.all()).intValue());
 
         // Delete all from this datasource
         long nbDeleted = esRepos.deleteByDatasource(tenant, datasourceId);
         Assert.assertEquals(4, nbDeleted);
-        int loop = 0;
-        while (!result.isEmpty() && (loop < 10)) {
-            Thread.sleep(500);
-            result = esRepos.search(key, 10, ICriterion.all());
-            loop++;
-        }
-        Assert.assertEquals(0, result.getContent().size());
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            return esRepos.count(key, ICriterion.all()) == 0;
+        });
+        Assert.assertEquals(0, esRepos.count(key, ICriterion.all()).intValue());
     }
 
 }

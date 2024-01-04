@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.order.test.StorageClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import org.junit.Assert;
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -48,6 +48,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -158,30 +160,24 @@ public abstract class AbstractOrderServiceIT extends AbstractMultitenantServiceI
         simulateApplicationStartedEvent();
     }
 
-    protected void waitForStatus(Long orderId, OrderStatus status) throws InterruptedException {
-        int loop = 0;
-        while (!orderService.loadComplete(orderId).getStatus().equals(status) && (loop < 20)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertEquals(status, orderService.loadSimple(orderId).getStatus());
+    protected void waitForStatus(Long orderId, OrderStatus status) {
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return orderService.loadComplete(orderId).getStatus().equals(status);
+        });
     }
 
-    protected void waitForPausedStatus(Long orderId) throws InterruptedException {
-        int loop = 0;
-        while (!orderService.isPaused(orderId) && (loop < 20)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertTrue(orderService.isPaused(orderId));
+    protected void waitForPausedStatus(Long orderId) {
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return orderService.isPaused(orderId);
+        });
     }
 
-    protected void waitForWaitingForUser(Long orderId) throws InterruptedException {
-        int loop = 0;
-        while (!orderService.loadComplete(orderId).isWaitingForUser() && (loop < 30)) {
-            Thread.sleep(1_000);
-            loop++;
-        }
-        Assert.assertTrue(orderService.loadComplete(orderId).isWaitingForUser());
+    protected void waitForWaitingForUser(Long orderId) {
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return orderService.loadComplete(orderId).isWaitingForUser();
+        });
     }
 }

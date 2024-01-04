@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnaps
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Utils for tests
@@ -165,18 +167,12 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
     //  SESSION UTILS
     // --------------
 
-    protected boolean waitForStepPropertyEventsStored(int nbEvents) throws InterruptedException {
-        long count, now = System.currentTimeMillis(), end = now + 200000L;
+    protected void waitForStepPropertyEventsStored(int nbEvents) {
         LOGGER.info("Waiting for step property requests to be saved ...");
-        do {
-            count = this.stepPropertyRepo.count();
-            now = System.currentTimeMillis();
-            LOGGER.info("{} / {} step properties", count, nbEvents);
-            if (count != nbEvents) {
-                Thread.sleep(5000L);
-            }
-        } while (count != nbEvents && now <= end);
-        return count == nbEvents;
+        Awaitility.await().atMost(200, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return this.stepPropertyRepo.count() == nbEvents;
+        });
     }
 
     protected boolean waitForSnapshotUpdateSuccesses() throws InterruptedException {
@@ -184,32 +180,31 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
         long now = System.currentTimeMillis(), end = now + 200000L;
         List<SnapshotProcess> snapshotProcessList = this.snapshotProcessRepo.findAll();
         int processSize = snapshotProcessList.size();
-        LOGGER.info("Waiting for snapshot update ...");
+
         do {
+            count = 0;
             for (SnapshotProcess snapshotProcess : snapshotProcessList) {
                 if (snapshotProcess.getLastUpdateDate() != null && snapshotProcess.getJobId() == null) {
                     count++;
                 }
             }
             snapshotProcessList = this.snapshotProcessRepo.findAll();
+            LOGGER.info("Waiting for snapshot update {}/{}...", count, processSize);
             now = System.currentTimeMillis();
             if (count != processSize) {
-                Thread.sleep(5000L);
+                Thread.sleep(500L);
             }
         } while (count != processSize && now <= end);
         return count == processSize;
     }
 
-    protected boolean waitForJobSuccesses(String jobName, int nbJobs, long timeout) throws InterruptedException {
-        long count, start = System.currentTimeMillis();
+    protected void waitForJobSuccesses(String jobName, int nbJobs, long timeout) {
         LOGGER.info("Waiting for jobs to be in success state ...");
-        do {
-            count = jobInfoService.retrieveJobsCount(jobName, JobStatus.SUCCEEDED);
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            long count = jobInfoService.retrieveJobsCount(jobName, JobStatus.SUCCEEDED);
             LOGGER.info("{} / {} jobs SUCCEEDED ({})", count, nbJobs, jobName);
-            if (count < nbJobs) {
-                Thread.sleep(5000L);
-            }
-        } while (count < nbJobs && System.currentTimeMillis() <= start + timeout);
-        return count == nbJobs;
+            return count == nbJobs;
+        });
     }
 }

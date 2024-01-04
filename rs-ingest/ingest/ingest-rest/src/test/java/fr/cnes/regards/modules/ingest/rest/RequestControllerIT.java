@@ -85,7 +85,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
     public void init() throws Exception {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Clean everything
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
         runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
 
@@ -352,7 +352,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
 
     @After
     public void doAfter() {
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
     }
 
 }

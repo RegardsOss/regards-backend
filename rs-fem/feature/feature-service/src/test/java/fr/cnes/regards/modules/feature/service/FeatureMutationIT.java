@@ -49,6 +49,7 @@ import java.util.List;
  * @author Marc SORDI
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_mutation",
+                                   "regards.feature.delay.before.processing=1",
                                    "regards.amqp.enabled=true" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
@@ -132,9 +133,6 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceIT {
         featureUpdateService.scheduleRequests();
 
         // Wait for feature creation
-        waitUpdateRequestDeletion(0, 10_000); // FIXME detect update with last update
-
-        // Do assertion
-        // FIXME
+        waitUpdateRequestDeletion(0, 10_000);
     }
 }

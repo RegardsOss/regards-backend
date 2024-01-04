@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingChainService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.test.IngestServiceIT;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,6 +50,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test asychronous ingestion client
@@ -88,7 +90,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         storageClientMock.setBehavior(true, true);
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
         procCahinService.initDefaultServiceConfiguration();
         listener.clear();
     }
@@ -114,9 +116,9 @@ public class IngestClientIT extends AbstractRegardsWebIT {
                                                            null,
                                                            new StorageDto("disk"));
         RequestInfo clientInfo = ingestClient.ingest(metadata, create(providerId));
-        ingestServiceTest.waitForIngestion(1, 15_000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(1, 15_000, SIPState.STORED, getDefaultTenant());
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> (long) listener.getSuccess().size() >= 1);
 
-        Thread.sleep(5_000);
         Assert.assertTrue("Missing granted request response",
                           listener.getGranted()
                                   .stream()
@@ -146,7 +148,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
 
     @After
     public void doAfter() {
-        ingestServiceTest.init();
+        ingestServiceTest.init(getDefaultTenant());
         listener.clear();
     }
 }

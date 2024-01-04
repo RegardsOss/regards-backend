@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
 import fr.cnes.regards.modules.order.service.commons.AbstractOrderServiceIT;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -49,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Thomas GUILLOU
@@ -152,12 +154,12 @@ public class OrderDataFileServiceIT extends AbstractOrderServiceIT {
                                                                              && orderDataFileDTO.getVersion() == 1));
     }
 
-    protected void waitForStatus(Long orderId, OrderStatus status) throws InterruptedException {
+    protected void waitForStatus(Long orderId, OrderStatus status) {
         int loop = 0;
-        while (!orderService.loadComplete(orderId).getStatus().equals(status) && (loop < 20)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return orderService.loadComplete(orderId).getStatus().equals(status);
+        });
         Assert.assertEquals(status, orderService.loadSimple(orderId).getStatus());
     }
 }

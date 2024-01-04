@@ -108,6 +108,14 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
+    protected Specification<T> isNull(String pathToField) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.isNull(getPath(root, pathToField));
+    }
+
+    protected Specification<T> isNotNull(String pathToField) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.isNotNull(getPath(root, pathToField));
+    }
+
     @SuppressWarnings("unchecked")
     protected Specification<T> like(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {

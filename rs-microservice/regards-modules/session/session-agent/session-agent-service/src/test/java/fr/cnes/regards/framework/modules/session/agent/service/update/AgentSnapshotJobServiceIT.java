@@ -61,10 +61,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsIT {
         int nbEvents = createRun1StepEvents();
 
         // wait for stepPropertyUpdateRequestEvent to be stored in database
-        boolean isEventRegistered = waitForStepPropertyEventsStored(nbEvents);
-        if (!isEventRegistered) {
-            Assert.fail("Events were not stored in database");
-        }
+        waitForStepPropertyEventsStored(nbEvents);
 
         // retrieve associated snapshot processes
         List<SnapshotProcess> snapshotProcessesCreated = this.snapshotProcessRepo.findAll();
@@ -72,10 +69,8 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsIT {
 
         // wait for job to be in success state
         agentJobSnapshotService.scheduleJob();
-        boolean isJobAgentSuccess = waitForJobSuccesses(AgentSnapshotJob.class.getName(), 3, 20000L);
-        if (!isJobAgentSuccess) {
-            Assert.fail("AgentSnapshotJobs were not launched or were not in success state");
-        }
+        waitForJobSuccesses(AgentSnapshotJob.class.getName(), 3, 20000L);
+
         // wait for snapshot process to be updated
         boolean isSnapshotProcessesUpdated = waitForSnapshotUpdateSuccesses();
         if (!isSnapshotProcessesUpdated) {
@@ -92,17 +87,11 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsIT {
 
         // create stepPropertyUpdateRequestEvents
         nbEvents += createRun2StepEvents();
-        isEventRegistered = waitForStepPropertyEventsStored(nbEvents);
-        if (!isEventRegistered) {
-            Assert.fail("Events were not stored in database");
-        }
+        waitForStepPropertyEventsStored(nbEvents);
 
         // wait for job to be in success state
         agentJobSnapshotService.scheduleJob();
-        isJobAgentSuccess = waitForJobSuccesses(AgentSnapshotJob.class.getName(), 4, 20000L);
-        if (!isJobAgentSuccess) {
-            Assert.fail("AgentSnapshotJobs were not launched or were not in success state");
-        }
+        waitForJobSuccesses(AgentSnapshotJob.class.getName(), 4, 20000L);
 
         // wait for snapshot process to be updated
         isSnapshotProcessesUpdated = waitForSnapshotUpdateSuccesses();

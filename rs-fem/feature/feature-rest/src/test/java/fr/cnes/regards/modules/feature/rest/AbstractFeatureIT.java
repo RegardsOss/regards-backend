@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.model.service.exception.ImportException;
 import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
 import org.assertj.core.util.Lists;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Before;
 import org.mockito.Mockito;
@@ -58,6 +59,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Sébastien Binda
@@ -136,7 +138,7 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
             Assert.assertEquals(1, featureService.registerRequests(features).getGranted().size());
         }
         featureService.scheduleRequests();
-        waitFeature(nbFeatures, start, 10000);
+        waitFeature(nbFeatures, start, 10000, getDefaultTenant());
     }
 
     /**
@@ -205,7 +207,7 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
         feature.withFiles(FeatureFile.build(FeatureFileAttributes.build(DataType.RAWDATA,
                                                                         MimeType.valueOf("application/xml"),
                                                                         "filename",
-                                                                        100l,
+                                                                        100L,
                                                                         "MD5",
                                                                         "checksum"),
                                             FeatureFileLocation.build("http://www.test.com/filename.xml")));
@@ -243,31 +245,14 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
      * @param from     feature updated after from date. May be <code>null</code>.
      * @param timeout  timeout in milliseconds
      */
-    protected void waitFeature(long expected, @Nullable OffsetDateTime from, long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long entityCount;
-        do {
+    protected void waitFeature(long expected, @Nullable OffsetDateTime from, long timeout, String tenant) {
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
             if (from != null) {
-                entityCount = featureRepo.countByLastUpdateGreaterThan(from);
-            } else {
-                entityCount = featureRepo.count();
+                runtimeTenantResolver.forceTenant(tenant);
+                return featureRepo.countByLastUpdateGreaterThan(from) == expected;
             }
-            LOGGER.trace("{} feature(s) created in database", entityCount);
-            if (entityCount == expected) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout only " + entityCount + " feature in database instead of " + expected);
-            }
-        } while (true);
+            return featureRepo.count() == expected;
+        });
     }
 
 }

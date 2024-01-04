@@ -153,7 +153,7 @@ public class SessionDeleteIT extends IngestMultitenantServiceIT {
                         SOURCE_2,
                         Lists.newArrayList("CATEGORIES_0"));
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
         long wait = FIVE_SECONDS * 3;
 
         mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);

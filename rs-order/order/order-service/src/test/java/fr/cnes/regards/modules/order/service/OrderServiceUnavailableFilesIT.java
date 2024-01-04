@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.order.test.ServiceConfigurationWithFilesNotAvaila
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -64,6 +65,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author oroussel
@@ -153,7 +155,11 @@ public class OrderServiceUnavailableFilesIT {
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket, basket.getOwner(), "http://perdu.com", 240);
-        Thread.sleep(10_000);
+        Long orderId = order.getId();
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            tenantResolver.forceTenant("ORDER");
+            return jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED).size() == 2;
+        });
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());
 
@@ -181,7 +187,11 @@ public class OrderServiceUnavailableFilesIT {
         // Act as true downloads
         orderJobService.manageUserOrderStorageFilesJobInfos(basket.getOwner());
         // Re-wait a while to permit execution of last jobInfo
-        Thread.sleep(10_000);
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            tenantResolver.forceTenant("ORDER");
+            Order o = orderService.loadSimple(orderId);
+            return o != null && o.getStatus().equals(OrderStatus.FAILED);
+        });
 
         files = dataFileRepos.findAllAvailables(order.getId());
         order = orderService.loadSimple(order.getId());

@@ -145,7 +145,8 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
                         Optional.of(chain));
 
         // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED, getDefaultTenant());
+        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
         if (!isToNotify) {
             ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * nbSIP, getDefaultTenant());
         } else {
