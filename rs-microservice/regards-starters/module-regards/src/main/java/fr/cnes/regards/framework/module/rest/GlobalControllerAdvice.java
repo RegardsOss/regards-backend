@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.WebUtils;
 
@@ -277,6 +278,16 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<ServerErrorResponse> handleDataIntegrityViolation(final DataIntegrityViolationException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                              .body(new ServerErrorResponse(exception.getCause().getCause().getMessage(), exception));
+    }
+
+    /**
+     * Exception handler catching spring {@link ResponseStatusException},
+     * to avoid handleThrowable method which return status 500, and return correct status.
+     */
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ServerErrorResponse> handleResponseStatusException(ResponseStatusException exception) {
+        return ResponseEntity.status(exception.getStatus())
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     /**

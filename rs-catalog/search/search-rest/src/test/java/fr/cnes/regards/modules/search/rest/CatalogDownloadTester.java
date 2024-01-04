@@ -26,13 +26,18 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.search.domain.download.Download;
-import fr.cnes.regards.modules.search.rest.download.*;
-import fr.cnes.regards.modules.search.service.IBusinessSearchService;
+import fr.cnes.regards.modules.search.rest.download.CatalogSearchServiceMock;
+import fr.cnes.regards.modules.search.rest.download.IStorageRestClientMock;
+import fr.cnes.regards.modules.search.rest.download.StorageDownloadStatus;
+import fr.cnes.regards.modules.search.rest.license.LicenseAcceptationStatus;
+import fr.cnes.regards.modules.search.rest.license.LicenseClientMock;
+import fr.cnes.regards.modules.search.rest.license.LicenseVerificationStatus;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.LicenseAccessorService;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
+import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -64,9 +69,11 @@ public class CatalogDownloadTester {
         ReflectionTestUtils.setField(controller, "authResolver", mockUser());
         ReflectionTestUtils.setField(controller, "runtimeTenantResolver", mockTenant());
         ReflectionTestUtils.setField(controller, "searchService", mockAccessVerification());
-        ReflectionTestUtils.setField(controller, "businessSearchService", mockBusinessSearchService());
         licenseClient = mockLicenseClient(verificationStatus, acceptationStatus);
-        ReflectionTestUtils.setField(controller, "licenseAccessor", mockLicenseAccesses());
+        LicenseAccessorService licenseAccessorServiceMock = mockLicenseAccesses();
+        DataAccessRightService dataAccessRightService = mockAccessRightService(licenseAccessorServiceMock);
+        ReflectionTestUtils.setField(controller, "dataAccessRightService", dataAccessRightService);
+        ReflectionTestUtils.setField(controller, "licenseAccessor", licenseAccessorServiceMock);
         ReflectionTestUtils.setField(controller, "storageRestClient", mockFileDownload(downloadStatus));
 
         servletResponse = mock(HttpServletResponse.class);
@@ -99,12 +106,10 @@ public class CatalogDownloadTester {
     }
 
     private ICatalogSearchService mockAccessVerification() {
-        // On ne mocke que la vérification d'accès.
-        // On n'a pas besoin d'initialiser complétement le service
-        // qui a plusieurs responsabilités.
-        IAccessRightFilter accessRightFilterMock = Mockito.mock(IAccessRightFilter.class);
+        // Mock access rights to simulate list of groups null (aka admin user)
+        IAccessRightFilter accessRightFilterMock = mock(IAccessRightFilter.class);
         try {
-            Mockito.when(accessRightFilterMock.getUserAccessGroups()).thenReturn(null);
+            when(accessRightFilterMock.getUserAccessGroups()).thenReturn(null);
         } catch (AccessRightFilterException e) {
             throw new RuntimeException(e);
         }
@@ -113,20 +118,20 @@ public class CatalogDownloadTester {
         return searchService;
     }
 
-    private IBusinessSearchService mockBusinessSearchService() {
-        IBusinessSearchService businessSearchServiceMock = Mockito.mock(IBusinessSearchService.class);
+    private DataAccessRightService mockAccessRightService(LicenseAccessorService licenseAccessorServiceMock) {
+        IAccessRightFilter accessRightFilterMock = mock(IAccessRightFilter.class);
+        DataAccessRightService dataAccessRightService = new DataAccessRightService(accessRightFilterMock,
+                                                                                   licenseAccessorServiceMock);
         try {
-            when(businessSearchServiceMock.isContentAccessGranted(Mockito.any())).thenReturn(true);
+            when(accessRightFilterMock.getUserAccessGroups()).thenReturn(null);
         } catch (AccessRightFilterException e) {
             throw new RuntimeException(e);
         }
-        return businessSearchServiceMock;
+        return dataAccessRightService;
     }
 
-    private LicenseAccessor mockLicenseAccesses() {
-        ISubscriber subscriber = mock(ISubscriber.class);
-        LicenseAccessor licenseAccessor = new LicenseAccessor(licenseClient, subscriber);
-        return licenseAccessor;
+    private LicenseAccessorService mockLicenseAccesses() {
+        return new LicenseAccessorService(licenseClient, mock(ISubscriber.class), mockUser(), mockTenant());
     }
 
     private ILicenseClient mockLicenseClient(LicenseVerificationStatus verificationStatus,

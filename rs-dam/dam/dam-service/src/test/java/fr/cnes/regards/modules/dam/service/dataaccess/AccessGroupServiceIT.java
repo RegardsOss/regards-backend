@@ -73,7 +73,7 @@ public class AccessGroupServiceIT extends AbstractRegardsServiceTransactionalIT 
         // When
         accessGroupService.createAccessGroup(duplicatedAccessGroup);
     }
-    
+
     @Test
     public void testCreateAccessGroupByDefault() throws EntityAlreadyExistsException {
         // Given

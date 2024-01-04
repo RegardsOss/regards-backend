@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.autoconfigure.CustomCacheControlHeadersWriter;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
@@ -38,10 +37,11 @@ import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.search.domain.download.Download;
 import fr.cnes.regards.modules.search.rest.download.CatalogDownloadResponse;
-import fr.cnes.regards.modules.search.rest.download.LicenseAccessor;
-import fr.cnes.regards.modules.search.service.IBusinessSearchService;
+import fr.cnes.regards.modules.search.service.AccessStatus;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.LicenseAccessorService;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
+import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +58,10 @@ import org.springframework.web.client.HttpServerErrorException;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -94,18 +97,8 @@ public class CatalogDownloadController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogDownloadController.class);
 
-    private static final List<DataType> PUBLIC_FILES = Arrays.asList(DataType.QUICKLOOK_SD,
-                                                                     DataType.QUICKLOOK_MD,
-                                                                     DataType.QUICKLOOK_HD,
-                                                                     DataType.THUMBNAIL,
-                                                                     DataType.DOCUMENT,
-                                                                     DataType.DESCRIPTION);
-
     @Autowired
     private ICatalogSearchService searchService;
-
-    @Autowired
-    private IBusinessSearchService businessSearchService;
 
     @Autowired
     private IStorageRestClient storageRestClient;
@@ -114,13 +107,16 @@ public class CatalogDownloadController {
     private IAttachmentClient attachmentClient;
 
     @Autowired
-    private LicenseAccessor licenseAccessor;
+    private LicenseAccessorService licenseAccessor;
 
     @Autowired
     private IAuthenticationResolver authResolver;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private DataAccessRightService dataAccessRightService;
 
     @RequestMapping(path = DOWNLOAD_DAM_FILE, method = RequestMethod.GET, produces = ALL_VALUE)
     @ResourceAccess(description = "Proxy download for dam locally stored files", role = DefaultRole.PUBLIC)
@@ -178,10 +174,9 @@ public class CatalogDownloadController {
         HttpStatus status = HttpStatus.OK;
         try {
             AbstractEntity<?> entity = searchService.get(UniformResourceName.fromString(productUrn));
-            if (!businessSearchService.isContentAccessGranted(entity)) {
-                status = HttpStatus.FORBIDDEN;
-            } else if (isPrivateFile(entity, fileChecksum) && isLicenseUnaccepted()) {
-                status = HttpStatus.LOCKED;
+            switch (dataAccessRightService.checkFileAccess(entity, fileChecksum)) {
+                case FORBIDDEN -> status = HttpStatus.FORBIDDEN;
+                case LOCKED -> status = HttpStatus.LOCKED;
             }
         } catch (EntityOperationForbiddenException e) { // NOSONAR
             status = HttpStatus.FORBIDDEN;
@@ -241,14 +236,10 @@ public class CatalogDownloadController {
             AbstractEntity<?> entity = searchService.get(UniformResourceName.fromString(aipId));
             if (entity instanceof DataObject dataObject) {
 
-                // Check if file has public access or not
-                if (isPrivateFile(entity, checksum)) {
-                    // If not public access, check if logged-in user has access to this file
-                    if (!businessSearchService.isContentAccessGranted(dataObject)) {
-                        return CatalogDownloadResponse.unauthorizedAccess();
-                    }
-                    // Check if user has accepted associated license
-                    if (isLicenseUnaccepted()) {
+                AccessStatus fileAccessStatus = dataAccessRightService.checkFileAccess(dataObject, checksum);
+                switch (fileAccessStatus) {
+                    case FORBIDDEN, NOT_FOUND -> CatalogDownloadResponse.unauthorizedAccess();
+                    case LOCKED -> {
                         String linkToAcceptAndDownload = linkToDownloadWithLicense(aipId,
                                                                                    checksum,
                                                                                    isContentInline,
@@ -257,6 +248,7 @@ public class CatalogDownloadController {
                                                                                    linkToAcceptAndDownload);
                     }
                 }
+
                 Optional<String> fileName = entity.getFiles()
                                                   .values()
                                                   .stream()
@@ -277,20 +269,6 @@ public class CatalogDownloadController {
             FeignSecurityManager.reset();
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-    }
-
-    /**
-     * Check if file is not restricted to entity access rights
-     */
-    private boolean isPrivateFile(AbstractEntity<?> entity, String checksum) {
-        return entity.getFiles()
-                     .values()
-                     .stream()
-                     .filter(file -> file.getChecksum().equals(checksum))
-                     .findFirst()
-                     .map(DataFile::getDataType)
-                     .filter(PUBLIC_FILES::contains)
-                     .isEmpty();
     }
 
     private LicenseDTO retrieveLicense() throws ExecutionException {

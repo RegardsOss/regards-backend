@@ -171,7 +171,7 @@ public class AccessRightFilter implements IAccessRightFilter {
         ICriterion groupCriterion = ICriterion.in(StaticProperties.GROUPS, StringMatchType.KEYWORD, accessGroupNames);
 
         if (addDataFileAccessRights) {
-            // For each group check in metadata property if group have file access enabled
+            // For each group, check in metadata property if the group have file access enabled
             List<ICriterion> fileAccessCriterionRights = accessGroupNames.stream().map(accessGroupName -> {
                 String property = String.format("%s.%s.%s",
                                                 StaticProperties.META_DATA_GROUPS,

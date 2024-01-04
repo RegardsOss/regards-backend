@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.filecatalog.dto.files.FilesAvailabilityRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.files.FilesRestorationRequestDto;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -40,19 +40,19 @@ import java.util.Set;
  * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class FilesAvailabilityRequestEvent extends FilesAvailabilityRequestDto implements ISubscribable {
+public class FilesRestorationRequestEvent extends FilesRestorationRequestDto implements ISubscribable {
 
     public static final int MAX_REQUEST_PER_GROUP = 1000;
 
-    public FilesAvailabilityRequestEvent() {
+    public FilesRestorationRequestEvent() {
         super();
     }
 
-    public FilesAvailabilityRequestEvent(Set<String> checksums, int availabilityHours, String groupId) {
+    public FilesRestorationRequestEvent(Set<String> checksums, int availabilityHours, String groupId) {
         super(availabilityHours, groupId, checksums);
     }
 
-    public FilesAvailabilityRequestEvent(Collection<String> checksums, int availabilityHours, String groupId) {
+    public FilesRestorationRequestEvent(Collection<String> checksums, int availabilityHours, String groupId) {
         super(availabilityHours, groupId, new HashSet<>(checksums));
     }
 }

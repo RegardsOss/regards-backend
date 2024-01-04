@@ -16,14 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.download;
+package fr.cnes.regards.modules.search.service;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
@@ -45,14 +47,23 @@ import java.util.stream.Collectors;
  * @author Thomas Fache
  **/
 @Service
-public class LicenseAccessor {
+public class LicenseAccessorService {
 
     private final LoadingCache<String, LicenseDTO> licenseCache;
 
     private final ILicenseClient licenceClient;
 
-    public LicenseAccessor(ILicenseClient theLicenceClient, ISubscriber subscriber) {
+    private final IAuthenticationResolver authResolver;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    public LicenseAccessorService(ILicenseClient theLicenceClient,
+                                  ISubscriber subscriber,
+                                  IAuthenticationResolver authResolver,
+                                  IRuntimeTenantResolver runtimeTenantResolver) {
         licenceClient = theLicenceClient;
+        this.authResolver = authResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
         licenseCache = initCache();
         subscriber.subscribeTo(LicenseEvent.class, new LicenseEventHandler());
     }
@@ -82,6 +93,10 @@ public class LicenseAccessor {
         }
     }
 
+    public boolean currentUserHasAcceptedLicense() throws ExecutionException {
+        return retrieveLicense(authResolver.getUser(), runtimeTenantResolver.getTenant()).isAccepted();
+    }
+
     public LicenseDTO retrieveLicense(String forUser, String forTenant) throws ExecutionException {
         return licenseCache.get(cacheKey(forUser, forTenant));
     }
@@ -93,7 +108,7 @@ public class LicenseAccessor {
         }
         LicenseDTO licenseDTO = ResponseEntityUtils.extractContentOrThrow(licenseResponse,
                                                                           "License acceptation failed : response body is empty");
-        licenseCache.put(cacheKey(cacheKey(forUser, forTenant), ""), licenseDTO);
+        licenseCache.put(cacheKey(forUser, forTenant), licenseDTO);
     }
 
     private String cacheKey(String forUser, String forTenant) {

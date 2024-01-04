@@ -29,7 +29,9 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -83,6 +86,12 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
 
     @Autowired
     private Gson gson;
+
+    @MockBean
+    private ILicenseClient licenseClient;
+
+    @MockBean
+    private IStorageRestClient storageRestClient;
 
     @Before
     public void init() {

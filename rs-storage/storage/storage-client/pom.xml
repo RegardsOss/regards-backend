@@ -87,6 +87,36 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+            <artifactId>jobs-dao</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+            <artifactId>session-commons-dao</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>plugin-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+            <artifactId>session-agent-dao</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>file-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.storage</groupId>
+            <artifactId>storage-service</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.modules.storage</groupId>
             <artifactId>storage-rest</artifactId>
             <scope>test</scope>

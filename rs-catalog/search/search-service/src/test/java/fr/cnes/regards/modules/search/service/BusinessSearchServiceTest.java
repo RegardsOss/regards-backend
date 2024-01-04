@@ -27,64 +27,56 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
-import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
+import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
- * Unit test for {@link BusinessSearchServiceIT}.
+ * Unit test for {@link BusinessSearchService}.
  *
  * @author Théo Lasserre
  */
-public class BusinessSearchServiceIT {
-
-    /**
-     * Class under test
-     */
-    private BusinessSearchService businessSearchService;
-
-    /**
-     * Service handling the access groups in criterion.
-     */
-    private IAccessRightFilter accessRightFilter;
+@RunWith(MockitoJUnitRunner.class)
+public class BusinessSearchServiceTest {
 
     /**
      * Catalog search service (entity level search service)
      */
+    @Mock
     protected ICatalogSearchService catalogSearchService;
 
-    @Before
-    public void setUp() {
-        // Declare mocks
-        accessRightFilter = Mockito.mock(IAccessRightFilter.class);
-        catalogSearchService = Mockito.mock(ICatalogSearchService.class);
+    @Mock
+    private DataAccessRightService dataAccessRightService;
 
-        // Instantiate the tested class
-        businessSearchService = new BusinessSearchService(catalogSearchService, accessRightFilter);
-    }
+    /**
+     * Class under test
+     */
+    @InjectMocks
+    private BusinessSearchService businessSearchService;
 
     /**
      * Test searching datasets
      */
     @Test
     public void doSearchShouldReturnDatasetsWithAccessGrantedSet()
-        throws SearchException, OpenSearchUnknownParameter, AccessRightFilterException {
+        throws SearchException, OpenSearchUnknownParameter, AccessRightFilterException, ExecutionException {
         // Prepare test
         SearchType searchType = SearchType.DATASETS;
         PagedResourcesAssembler<Dataset> assembler = SampleDataUtils.ASSEMBLER_DATASET;
         Pageable pageable = SampleDataUtils.PAGEABLE;
 
-        // Admin
-        Mockito.when(accessRightFilter.getUserAccessGroups()).thenReturn(null);
+        Mockito.when(dataAccessRightService.checkContentAccess(Mockito.any())).thenReturn(AccessStatus.GRANTED);
 
         // Define expected values
         ICriterion expectedCriterion = SampleDataUtils.SIMPLE_STRING_MATCH_CRITERION;
@@ -103,9 +95,6 @@ public class BusinessSearchServiceIT {
                                                  Mockito.any(SearchType.class),
                                                  Mockito.any(),
                                                  Mockito.any(Pageable.class))).thenReturn(expectedSearchResult);
-
-        PagedModel<EntityModel<Dataset>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATASET;
-        Mockito.when(assembler.toModel(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
         FacetPage<EntityFeature> facetPage = businessSearchService.search(expectedCriterion,
@@ -126,11 +115,13 @@ public class BusinessSearchServiceIT {
      */
     @Test
     public void doSearchShouldReturnDatasetsWithNoAccessGrantedSet()
-        throws SearchException, OpenSearchUnknownParameter {
+        throws SearchException, OpenSearchUnknownParameter, AccessRightFilterException, ExecutionException {
         // Prepare test
         SearchType searchType = SearchType.DATASETS;
         PagedResourcesAssembler<Dataset> assembler = SampleDataUtils.ASSEMBLER_DATASET;
         Pageable pageable = SampleDataUtils.PAGEABLE;
+
+        Mockito.when(dataAccessRightService.checkContentAccess(Mockito.any())).thenReturn(AccessStatus.FORBIDDEN);
 
         // Define expected values
         ICriterion expectedCriterion = SampleDataUtils.SIMPLE_STRING_MATCH_CRITERION;
@@ -149,9 +140,6 @@ public class BusinessSearchServiceIT {
                                                  Mockito.any(SearchType.class),
                                                  Mockito.any(),
                                                  Mockito.any(Pageable.class))).thenReturn(expectedSearchResult);
-
-        PagedModel<EntityModel<Dataset>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATASET;
-        Mockito.when(assembler.toModel(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
         FacetPage<EntityFeature> facetPage = businessSearchService.search(expectedCriterion,

@@ -158,7 +158,7 @@ public interface IStorageClient {
      *                          (after this duration, the system could proceed to a possible cleaning of its cache, only
      *                          offline files are concerned!)
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
-     * {@link FilesAvailabilityRequestEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
+     * {@link FilesRestorationRequestEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.
      */
     Collection<RequestInfo> makeAvailable(Collection<String> checksums, int availabilityHours);

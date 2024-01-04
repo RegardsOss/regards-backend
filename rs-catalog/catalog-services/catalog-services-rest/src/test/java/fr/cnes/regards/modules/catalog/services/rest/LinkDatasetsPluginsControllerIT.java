@@ -19,17 +19,20 @@
 package fr.cnes.regards.modules.catalog.services.rest;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
@@ -41,6 +44,12 @@ import java.util.UUID;
 @TestPropertySource(locations = "classpath:test.properties")
 @MultitenantTransactional
 public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactionalIT {
+
+    @MockBean
+    private ILicenseClient licenseClient;
+
+    @MockBean
+    private IStorageRestClient storageRestClient;
 
     private static final Logger LOG = LoggerFactory.getLogger(LinkDatasetsPluginsControllerIT.class);
 

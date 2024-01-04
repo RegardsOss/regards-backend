@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.notification.service;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -34,7 +35,6 @@ import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
-import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.junit.Assert;
@@ -82,6 +82,9 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
 
     @MockBean
     private IStorageDownloadQuotaRestClient storageDownloadQuotaRestClient;
+
+    @MockBean
+    private IResourceService resourceService;
 
     @Before
     public void init() throws EntityException {

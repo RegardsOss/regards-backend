@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.order.test;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
@@ -120,7 +120,7 @@ public class StorageClientMock implements IStorageClient {
             List<FileReferenceEvent> notAvailable = new ArrayList<>();
             List<FileReferenceEvent> available = new ArrayList<>();
             for (String c : checksums) {
-                if (count > FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP) {
+                if (count > FilesRestorationRequestEvent.MAX_REQUEST_PER_GROUP) {
                     count = 0;
                 }
                 if (count == 0) {

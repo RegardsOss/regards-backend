@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import fr.cnes.regards.modules.search.rest.download.LicenseVerificationStatus;
+import fr.cnes.regards.modules.search.rest.license.LicenseVerificationStatus;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,42 +39,42 @@ public class FileDownloadStatusTest {
     }
 
     @Test
-    public void send_not_found_response_if_no_product_is_found() throws Exception {
+    public void send_not_found_response_if_no_product_is_found() {
         CatalogDownloadTester controller = new CatalogDownloadTester();
         response = controller.testProductAccess(products.unknownProduct(), files.validFile());
         assertResponseIsEmptyWithStatus(HttpStatus.NOT_FOUND);
     }
 
     @Test
-    public void send_forbidden_response_if_product_access_is_unauthorized() throws Exception {
+    public void send_forbidden_response_if_product_access_is_unauthorized() {
         CatalogDownloadTester controller = new CatalogDownloadTester();
         response = controller.testProductAccess(products.unauthorizedProduct(), files.validFile());
         assertResponseIsEmptyWithStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test
-    public void send_internal_error_response_if_license_check_failed() throws Exception {
+    public void send_internal_error_response_if_license_check_failed() {
         CatalogDownloadTester controller = new CatalogDownloadTester(LicenseVerificationStatus.HTTP_ERROR);
         response = controller.testProductAccess(products.authorizedProduct(), files.validFile());
         assertResponseIsEmptyWithStatus(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test
-    public void send_locked_response_if_license_is_not_accepted() throws Exception {
+    public void send_locked_response_if_license_is_not_accepted() {
         CatalogDownloadTester controller = new CatalogDownloadTester(LicenseVerificationStatus.NOT_ACCEPTED);
         response = controller.testProductAccess(products.authorizedProduct(), files.rawdata().getChecksum());
         assertResponseIsEmptyWithStatus(HttpStatus.LOCKED);
     }
 
     @Test
-    public void send_ok_response_if_file_is_license_free() throws Exception {
+    public void send_ok_response_if_file_is_license_free() {
         CatalogDownloadTester controller = new CatalogDownloadTester(LicenseVerificationStatus.NOT_ACCEPTED);
         response = controller.testProductAccess(products.authorizedProduct(), files.thumbnail().getChecksum());
         assertResponseIsEmptyWithStatus(HttpStatus.OK);
     }
 
     @Test
-    public void send_ok_response_if_license_and_privileges_are_valid() throws Exception {
+    public void send_ok_response_if_license_and_privileges_are_valid() {
         CatalogDownloadTester controller = new CatalogDownloadTester();
         response = controller.testProductAccess(products.authorizedProduct(), files.validFile());
         assertResponseIsEmptyWithStatus(HttpStatus.OK);

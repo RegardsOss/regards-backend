@@ -19,8 +19,10 @@
 package fr.cnes.regards.modules.storage.service.availability;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
@@ -36,6 +38,7 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -50,6 +53,9 @@ import java.util.stream.Collectors;
 public class FileAvailabilityService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileAvailabilityService.class);
+
+    @Value("${regards.storage.availability.request.product.bulk.limit:100}")
+    private int maxBulkSize;
 
     private final FileReferenceService fileReferenceService;
 
@@ -72,9 +78,13 @@ public class FileAvailabilityService {
     /**
      * Compute file availability for all input files.
      */
-    public List<FileAvailabilityStatusDto> checkFileAvailability(FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
+    @MultitenantTransactional
+    public List<FileAvailabilityStatusDto> checkFileAvailability(FilesAvailabilityRequestDto filesAvailabilityRequestDto)
+        throws EntityInvalidException {
+        validateRequest(filesAvailabilityRequestDto);
         List<FileAvailabilityStatusDto> fileAvailabilityResponse = new ArrayList<>();
         Set<String> allInputChecksums = filesAvailabilityRequestDto.getChecksums();
+        LOGGER.info("Check availability of {} files", allInputChecksums.size());
         // firstly, get files in cache, and build response available for each
         fileAvailabilityResponse.addAll(buildAvailabilityStatusForCachedFiles(allInputChecksums));
 
@@ -87,15 +97,18 @@ public class FileAvailabilityService {
         return fileAvailabilityResponse;
     }
 
+    private void validateRequest(FilesAvailabilityRequestDto filesAvailabilityRequestDto)
+        throws EntityInvalidException {
+        if (filesAvailabilityRequestDto.getChecksums().size() > maxBulkSize) {
+            throw new EntityInvalidException("A maximum of "
+                                             + maxBulkSize
+                                             + " products per call is allowed. This behaviour is to avoid flooding the datalake");
+        }
+    }
+
+    @MultitenantTransactional
     public Collection<FileAvailabilityStatusDto> buildAvailabilityStatusForFileReferences(Set<FileReference> fileReferences) {
-        // get storage name used for these files
-        List<String> allStoragesReferenced = fileReferences.stream()
-                                                           .map(FileReference::getLocation)
-                                                           .map(FileLocation::getStorage)
-                                                           .distinct()
-                                                           .toList();
-        // retrieve storages
-        Set<StorageLocationConfiguration> storagesUsed = storageConfigurationService.searchByNames(allStoragesReferenced);
+        Set<StorageLocationConfiguration> storagesUsed = searchAndComputeStoragesUsedOf(fileReferences);
         // retrieve storage configuration grouped by names
         Map<StorageType, List<FileReference>> fileReferenceGrouped = groupFileByStorageType(fileReferences,
                                                                                             storagesUsed);
@@ -107,8 +120,24 @@ public class FileAvailabilityService {
         return fileAvailabilities;
     }
 
-    @MultitenantTransactional
+    private Set<StorageLocationConfiguration> searchAndComputeStoragesUsedOf(Set<FileReference> fileReferences) {
+        // get storage name used for these files
+        List<String> allStoragesReferenced = fileReferences.stream()
+                                                           .map(FileReference::getLocation)
+                                                           .map(FileLocation::getStorage)
+                                                           .distinct()
+                                                           .toList();
+        // retrieve storages
+        Set<StorageLocationConfiguration> storagesUsed = storageConfigurationService.searchByNames(allStoragesReferenced);
+        if (allStoragesReferenced.size() != storagesUsed.size()) {
+            LOGGER.warn("One or many storages used in availability request have problem : configuration cannot be found");
+            LOGGER.debug("Storages extracted from fileReference : " + allStoragesReferenced);
+            LOGGER.debug("Storages computed from storage repository (except for web) : " + storagesUsed);
+        }
+        return storagesUsed;
+    }
 
+    @MultitenantTransactional
     public List<FileAvailabilityStatusDto> manageAvailabilityStatusForNearlineFiles(List<FileReference> fileReferencesNearline,
                                                                                     Set<StorageLocationConfiguration> storageUsed) {
         List<FileAvailabilityStatusDto> fileAvailabilities = new ArrayList<>();
@@ -145,14 +174,23 @@ public class FileAvailabilityService {
             // the plugin is not available, so the file is not available too.
             return FileAvailabilityBuilder.buildNotAvailable(file);
         } else {
-            NearlineFileStatusDto fileAvailability = optPlugin.get().checkAvailability(file);
-            if (fileAvailability.isAvailable()) {
-                return FileAvailabilityBuilder.buildAvailable(file, fileAvailability.getExpirationDate());
-            } else {
-                // file is not available from storage, that means file is stored on T3 and need restoration
-                // that means file is now nearline.
-                file.setNearlineConfirmed(true);
-                fileReferenceService.store(file);
+            try {
+                NearlineFileStatusDto fileAvailability = optPlugin.get().checkAvailability(file);
+                if (fileAvailability.isAvailable()) {
+                    return FileAvailabilityBuilder.buildAvailable(file, fileAvailability.getExpirationDate());
+                } else {
+                    // file is not available from storage, that means file is stored on T3 and need restoration
+                    // that means file is now nearline.
+                    file.setNearlineConfirmed(true);
+                    fileReferenceService.store(file);
+                    return FileAvailabilityBuilder.buildNotAvailable(file);
+                }
+            } catch (Exception e) {
+                LOGGER.error(
+                    "An error occurred while calling buildAvailable method of plugin of storage {}, for file {}",
+                    file.getLocation().getStorage(),
+                    file.getMetaInfo().getFileName(),
+                    e);
                 return FileAvailabilityBuilder.buildNotAvailable(file);
             }
         }
@@ -162,12 +200,12 @@ public class FileAvailabilityService {
         return fileReferencesOffline.stream().map(FileAvailabilityBuilder::buildNotAvailable).toList();
     }
 
-    public static List<FileAvailabilityStatusDto> manageAvailabilityStatusForOnlineFiles(List<FileReference> fileReferencesOnline) {
+    public List<FileAvailabilityStatusDto> manageAvailabilityStatusForOnlineFiles(List<FileReference> fileReferencesOnline) {
         return fileReferencesOnline.stream().map(FileAvailabilityBuilder::buildAvailable).toList();
     }
 
-    private static List<String> getChecksumNotIncludeIn(Set<String> checksums,
-                                                        List<FileAvailabilityStatusDto> checksumsToCheck) {
+    private List<String> getChecksumNotIncludeIn(Set<String> checksums,
+                                                 List<FileAvailabilityStatusDto> checksumsToCheck) {
         List<String> checksumsToRemove = checksumsToCheck.stream().map(FileAvailabilityStatusDto::getChecksum).toList();
         return checksums.stream().filter(checksum -> !checksumsToRemove.contains(checksum)).toList();
     }
@@ -189,8 +227,14 @@ public class FileAvailabilityService {
     private Map<StorageType, List<FileReference>> groupFileByStorageType(Set<FileReference> fileReferenceSet,
                                                                          Set<StorageLocationConfiguration> storagesUsed) {
         Map<String, StorageLocationConfiguration> storagesUsedIndexed = indexStorageConfigurations(storagesUsed);
+        // manage the special case of "web" storage.This storage is not real,
+        // and all files in "web" are considered unavailable
+        List<FileReference> fileReferences = fileReferenceSet.stream()
+                                                             .filter(file -> !"web".equalsIgnoreCase(file.getLocation()
+                                                                                                         .getStorage()))
+                                                             .toList();
         // keep only files with the highest storage type priority
-        List<FileReference> fileReferences = sortFileReferenceByStoragePriority(fileReferenceSet, storagesUsedIndexed);
+        fileReferences = sortFileReferenceByStoragePriority(fileReferences, storagesUsedIndexed);
         fileReferences = deleteDuplicatedFileReference(fileReferences);
 
         // init map with an empty list by storage type
@@ -260,14 +304,18 @@ public class FileAvailabilityService {
     /**
      * Sort file reference depending on their storage type priority, most priority first
      */
-    private static List<FileReference> sortFileReferenceByStoragePriority(Set<FileReference> fileReferences,
+    private static List<FileReference> sortFileReferenceByStoragePriority(List<FileReference> fileReferences,
                                                                           Map<String, StorageLocationConfiguration> mapStoragesByName) {
         List<FileReference> fileReferencesAsList = new ArrayList<>(fileReferences);
-        fileReferencesAsList.sort((o1, o2) -> {
-            StorageType storageType1 = mapStoragesByName.get(o1.getLocation().getStorage()).getStorageType();
-            StorageType storageType2 = mapStoragesByName.get(o2.getLocation().getStorage()).getStorageType();
-            return storageType2.comparePriorityWith(storageType1);
-        });
+        try {
+            fileReferencesAsList.sort((o1, o2) -> {
+                StorageType storageType1 = mapStoragesByName.get(o1.getLocation().getStorage()).getStorageType();
+                StorageType storageType2 = mapStoragesByName.get(o2.getLocation().getStorage()).getStorageType();
+                return storageType2.comparePriorityWith(storageType1);
+            });
+        } catch (NullPointerException e) {
+            throw new RsRuntimeException("Error in storage configuration : ", e);
+        }
 
         return fileReferencesAsList;
     }

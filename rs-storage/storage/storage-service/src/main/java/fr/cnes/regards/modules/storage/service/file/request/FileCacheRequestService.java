@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
@@ -214,8 +214,8 @@ public class FileCacheRequestService {
         return Optional.of(fileCacheRequest);
     }
 
-    public void makeAvailable(Collection<FilesAvailabilityRequestEvent> filesAvailabilityRequestEvts) {
-        filesAvailabilityRequestEvts.forEach(availabilityRequestEvt -> {
+    public void makeAvailable(Collection<FilesRestorationRequestEvent> filesRestorationRequestEvents) {
+        filesRestorationRequestEvents.forEach(availabilityRequestEvt -> {
             reqGrpService.granted(availabilityRequestEvt.getGroupId(),
                                   FileRequestType.AVAILABILITY,
                                   availabilityRequestEvt.getChecksums().size(),
@@ -230,7 +230,7 @@ public class FileCacheRequestService {
      * Ensure availability of given files by their checksum for download.
      *
      * @param checksums         Checksums to be made available
-     * @param availabilityHours Availability expiration hour.
+     * @param availabilityHours Duration in hours of available files in the cache internal or external
      * @param groupId           Request group id
      */
     public void makeAvailable(Collection<String> checksums, int availabilityHours, String groupId) {

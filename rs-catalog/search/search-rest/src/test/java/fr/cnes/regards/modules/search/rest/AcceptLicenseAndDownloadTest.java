@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.search.rest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.search.domain.download.Download;
 import fr.cnes.regards.modules.search.domain.download.ValidDownload;
-import fr.cnes.regards.modules.search.rest.download.LicenseAcceptationStatus;
+import fr.cnes.regards.modules.search.rest.license.LicenseAcceptationStatus;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -192,4 +192,10 @@ public interface ICatalogSearchService {
                                                                 OffsetDateTime from,
                                                                 OffsetDateTime to,
                                                                 ZoneOffset timeZone);
+
+    /**
+     * Retrieve products metadata from their urns
+     */
+    List<DataObject> searchByUrnIn(Set<UniformResourceName> urns)
+        throws SearchException, OpenSearchUnknownParameter, EntityOperationForbiddenException;
 }

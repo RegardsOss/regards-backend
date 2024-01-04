@@ -22,9 +22,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
@@ -405,10 +405,10 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepository.count());
         Assert.assertTrue("There should be checksums to restore from nearline storages", nlChecksums.size() > 0);
         // Create a new bus message File reference request
-        FilesAvailabilityRequestEvent item = new FilesAvailabilityRequestEvent(nlChecksums,
-                                                                               24,
-                                                                               UUID.randomUUID().toString());
-        List<FilesAvailabilityRequestEvent> items = new ArrayList<>();
+        FilesRestorationRequestEvent item = new FilesRestorationRequestEvent(nlChecksums,
+                                                                             24,
+                                                                             UUID.randomUUID().toString());
+        List<FilesRestorationRequestEvent> items = new ArrayList<>();
         items.add(item);
         availabilityHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());

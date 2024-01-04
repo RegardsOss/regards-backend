@@ -18,12 +18,16 @@
  */
 package fr.cnes.regards.modules.filecatalog.dto.availability;
 
+import com.google.gson.annotations.SerializedName;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.lang.Nullable;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
+ * Availability status of a file
+ *
  * @author Thomas GUILLOU
  **/
 public class FileAvailabilityStatusDto {
@@ -35,11 +39,14 @@ public class FileAvailabilityStatusDto {
 
     /**
      * file availability.</br>
-     * if true, it means that the file is located in T2 or in the restoration cache
+     * if true, it means that the file is located in T2 or in the restoration cache (or is in online storage)
      */
+    @Schema(description = "File availability")
     protected final boolean available;
 
+    @SerializedName(value = "expiration_date")
     @Nullable
+    @Schema(description = "Indicate date where the file will be not available anymore.")
     protected final OffsetDateTime expirationDate;
 
     public FileAvailabilityStatusDto(String checksum, boolean available, @Nullable OffsetDateTime expirationDate) {

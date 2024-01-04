@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRetryRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
@@ -67,9 +67,9 @@ import java.util.concurrent.ExecutionException;
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_file_ref_tests" },
                     locations = { "classpath:application-test.properties" })
-public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
+public class AvailabilityFileReferenceIT extends AbstractStorageIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AvailabilityFileReferenceFlowItemIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AvailabilityFileReferenceIT.class);
 
     private static final String SESSION_OWNER_1 = "SOURCE 1";
 
@@ -158,8 +158,8 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
                                                 checksum);
         Mockito.clearInvocations(publisher);
         String groupId = UUID.randomUUID().toString();
-        FilesAvailabilityRequestEvent request = new FilesAvailabilityRequestEvent(checksums, 24, groupId);
-        List<FilesAvailabilityRequestEvent> items = new ArrayList<>();
+        FilesRestorationRequestEvent request = new FilesRestorationRequestEvent(checksums, 24, groupId);
+        List<FilesRestorationRequestEvent> items = new ArrayList<>();
         items.add(request);
         handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
@@ -238,11 +238,11 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
                              null);
         // Simulate availability request on this file
         Mockito.clearInvocations(publisher);
-        FilesAvailabilityRequestEvent request = new FilesAvailabilityRequestEvent(Sets.newHashSet(file1.getMetaInfo()
-                                                                                                       .getChecksum()),
-                                                                                  24,
-                                                                                  UUID.randomUUID().toString());
-        List<FilesAvailabilityRequestEvent> items = new ArrayList<>();
+        FilesRestorationRequestEvent request = new FilesRestorationRequestEvent(Sets.newHashSet(file1.getMetaInfo()
+                                                                                                     .getChecksum()),
+                                                                                24,
+                                                                                UUID.randomUUID().toString());
+        List<FilesRestorationRequestEvent> items = new ArrayList<>();
         items.add(request);
         handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
@@ -278,8 +278,8 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
                                                 file4.getMetaInfo().getChecksum());
 
         String groupId = UUID.randomUUID().toString();
-        FilesAvailabilityRequestEvent request = new FilesAvailabilityRequestEvent(checksums, 24, groupId);
-        List<FilesAvailabilityRequestEvent> items = new ArrayList<>();
+        FilesRestorationRequestEvent request = new FilesRestorationRequestEvent(checksums, 24, groupId);
+        List<FilesRestorationRequestEvent> items = new ArrayList<>();
         items.add(request);
         handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.rest;
 
 import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -47,7 +48,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -216,8 +216,8 @@ public class FileDownloadController {
                                          description = "List of availability status of input files. If any file is "
                                                        + "not present in response (without error), that means "
                                                        + "that file is not found.") })
-    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid @RequestBody
-                                                                                 FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
+    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(
+        @RequestBody FilesAvailabilityRequestDto filesAvailabilityRequestDto) throws EntityInvalidException {
         return new ResponseEntity<>(availabilityService.checkFileAvailability(filesAvailabilityRequestDto),
                                     HttpStatus.OK);
     }

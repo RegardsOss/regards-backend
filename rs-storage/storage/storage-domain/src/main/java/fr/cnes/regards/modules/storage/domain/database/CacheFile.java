@@ -92,7 +92,7 @@ public class CacheFile {
     private boolean internalCache = true;
 
     /**
-     * Businness identifier of plugin to access file in external cache.
+     * Business identifier of plugin to access file in external cache.
      */
     @Column(name = "external_cache_plugin", nullable = true)
     private String externalCachePlugin;
@@ -124,6 +124,14 @@ public class CacheFile {
         this.type = type;
         this.internalCache = internalCache;
         this.externalCachePlugin = externalCachePlugin;
+    }
+
+    public boolean isInternalCache() {
+        return internalCache;
+    }
+
+    public @Nullable String getExternalCachePlugin() {
+        return externalCachePlugin;
     }
 
     public Long getId() {
@@ -192,14 +200,6 @@ public class CacheFile {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public boolean isInternalCache() {
-        return internalCache;
-    }
-
-    public String getExternalCachePlugin() {
-        return externalCachePlugin;
     }
 
     @Override

@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
-import fr.cnes.regards.modules.filecatalog.dto.files.FilesAvailabilityRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.availability.FilesAvailabilityRequestDto;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -76,7 +76,9 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
     ResponseEntity<Set<FileReferenceDto>> getFileReferencesWithoutOwners(
         @PathVariable(name = "storage") final String storage, @RequestBody final Set<String> checksums);
 
-    @PostMapping(path = STATUS_AVAILABILITY_PATH)
+    @RequestMapping(method = RequestMethod.POST,
+                    path = STATUS_AVAILABILITY_PATH,
+                    consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid @RequestBody
                                                                           FilesAvailabilityRequestDto filesAvailabilityRequestDto);
 }

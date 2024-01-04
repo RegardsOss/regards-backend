@@ -117,11 +117,9 @@ public class StorageClient implements IStorageClient {
     public Collection<RequestInfo> makeAvailable(Collection<String> checksums, int availabilityHours) {
         Collection<RequestInfo> requestInfos = Lists.newArrayList();
         // If number of files in the request is less than the maximum allowed by request then publish it
-        if (checksums.size() <= FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP) {
+        if (checksums.size() <= FilesRestorationRequestEvent.MAX_REQUEST_PER_GROUP) {
             RequestInfo requestInfo = RequestInfo.build();
-            publisher.publish(new FilesAvailabilityRequestEvent(checksums,
-                                                                availabilityHours,
-                                                                requestInfo.getGroupId()));
+            publisher.publish(new FilesRestorationRequestEvent(checksums, availabilityHours, requestInfo.getGroupId()));
             requestInfos.add(requestInfo);
         } else {
             // Else publish as many requests as needed.
@@ -129,20 +127,18 @@ public class StorageClient implements IStorageClient {
             Iterator<String> it = checksums.iterator();
             while (it.hasNext()) {
                 group.add(it.next());
-                if (group.size() >= FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP) {
+                if (group.size() >= FilesRestorationRequestEvent.MAX_REQUEST_PER_GROUP) {
                     RequestInfo requestInfo = RequestInfo.build();
-                    publisher.publish(new FilesAvailabilityRequestEvent(group,
-                                                                        availabilityHours,
-                                                                        requestInfo.getGroupId()));
+                    publisher.publish(new FilesRestorationRequestEvent(group,
+                                                                       availabilityHours,
+                                                                       requestInfo.getGroupId()));
                     requestInfos.add(requestInfo);
                     group.clear();
                 }
             }
             if (!group.isEmpty()) {
                 RequestInfo requestInfo = RequestInfo.build();
-                publisher.publish(new FilesAvailabilityRequestEvent(group,
-                                                                    availabilityHours,
-                                                                    requestInfo.getGroupId()));
+                publisher.publish(new FilesRestorationRequestEvent(group, availabilityHours, requestInfo.getGroupId()));
                 requestInfos.add(requestInfo);
             }
         }

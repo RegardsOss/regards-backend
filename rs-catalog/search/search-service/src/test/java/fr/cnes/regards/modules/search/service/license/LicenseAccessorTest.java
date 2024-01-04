@@ -16,16 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest;
+package fr.cnes.regards.modules.search.service.license;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.LicenseAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.LicenseEvent;
-import fr.cnes.regards.modules.search.rest.download.LicenseAcceptationStatus;
-import fr.cnes.regards.modules.search.rest.download.LicenseAccessor;
-import fr.cnes.regards.modules.search.rest.download.LicenseClientMock;
-import fr.cnes.regards.modules.search.rest.download.LicenseVerificationStatus;
+import fr.cnes.regards.modules.search.service.LicenseAccessorService;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -42,20 +39,21 @@ public class LicenseAccessorTest {
 
     private static final String OTHER_PROJECT = "OTHER_PROJECT";
 
-    private final LicenseAccessor licenseAccessor;
+    private final LicenseAccessorService licenseAccessor;
 
     private final LicenseClientMock licenseClient;
 
-    private final LicenseAccessor.LicenseEventHandler eventHandler;
+    private final LicenseAccessorService.LicenseEventHandler eventHandler;
 
     public LicenseAccessorTest() {
         licenseClient = new LicenseClientMock();
         licenseClient.setup(LicenseVerificationStatus.ACCEPTED, LicenseAcceptationStatus.ACCEPTED);
 
         ISubscriber subscriber = mock(ISubscriber.class);
-        ArgumentCaptor<LicenseAccessor.LicenseEventHandler> handlerCaptor = ArgumentCaptor.forClass(LicenseAccessor.LicenseEventHandler.class);
+        ArgumentCaptor<LicenseAccessorService.LicenseEventHandler> handlerCaptor = ArgumentCaptor.forClass(
+            LicenseAccessorService.LicenseEventHandler.class);
 
-        licenseAccessor = new LicenseAccessor(licenseClient, subscriber);
+        licenseAccessor = new LicenseAccessorService(licenseClient, subscriber, null, null);
         verify(subscriber, times(1)).subscribeTo(eq(LicenseEvent.class), handlerCaptor.capture());
 
         eventHandler = handlerCaptor.getValue();

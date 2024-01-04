@@ -33,10 +33,12 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
 import fr.cnes.regards.modules.search.service.engine.SearchEngineDispatcher;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -66,6 +68,9 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     protected IEntityLinkBuilder linkBuilder;
+
+    @MockBean
+    protected IStorageRestClient storageRestClient;
 
     private static final String DATASET1_URN = "URN:AIP:"
                                                + EntityType.DATASET.toString()

@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * @author Thibaud Michaudel
  **/
-public class FilesAvailabilityRequestDto {
+public class FilesRestorationRequestDto {
 
     /**
      * Checksums of files to make available for download
@@ -41,11 +41,11 @@ public class FilesAvailabilityRequestDto {
      */
     private String groupId;
 
-    public FilesAvailabilityRequestDto(int availabilityHours, String groupId, Set<String> checksums) {
+    public FilesRestorationRequestDto(int availabilityHours, String groupId, Set<String> checksums) {
         if (groupId == null) {
             throw new RuntimeException("groupId is required");
         }
-        if (checksums == null && checksums.size() > 0) {
+        if (checksums == null || checksums.isEmpty()) {
             throw new RuntimeException("checksums is required");
         }
         this.availabilityHours = availabilityHours;
@@ -53,7 +53,7 @@ public class FilesAvailabilityRequestDto {
         this.checksums.addAll(checksums);
     }
 
-    public FilesAvailabilityRequestDto() {
+    public FilesRestorationRequestDto() {
 
     }
 

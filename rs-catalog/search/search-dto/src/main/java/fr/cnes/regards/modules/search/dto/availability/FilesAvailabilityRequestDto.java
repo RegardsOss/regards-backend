@@ -16,26 +16,33 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.filecatalog.dto.availability;
+package fr.cnes.regards.modules.search.dto.availability;
 
+import com.google.gson.annotations.SerializedName;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import javax.validation.constraints.NotEmpty;
 import java.util.Objects;
 import java.util.Set;
 
 /**
- * Input request body of availability endpoint
+ * payload of the product availability endpoint
  *
  * @author Thomas GUILLOU
  **/
 public class FilesAvailabilityRequestDto {
-    
-    private final Set<String> checksums;
 
-    public FilesAvailabilityRequestDto(Set<String> checksums) {
-        this.checksums = checksums;
+    @NotEmpty
+    @Schema(description = "list of urn of products")
+    @SerializedName("product_ids")
+    private final Set<String> productIds;
+
+    public FilesAvailabilityRequestDto(Set<String> productIds) {
+        this.productIds = productIds;
     }
 
-    public Set<String> getChecksums() {
-        return checksums;
+    public Set<String> getProductIds() {
+        return productIds;
     }
 
     @Override
@@ -47,16 +54,16 @@ public class FilesAvailabilityRequestDto {
             return false;
         }
         FilesAvailabilityRequestDto that = (FilesAvailabilityRequestDto) o;
-        return Objects.equals(checksums, that.checksums);
+        return Objects.equals(productIds, that.productIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(checksums);
+        return Objects.hash(productIds);
     }
 
     @Override
     public String toString() {
-        return "FilesAvailabilityRequestDto{" + "checksums=" + checksums + '}';
+        return "FileAvailabilityRequestDto{" + "productIds=" + productIds + '}';
     }
 }

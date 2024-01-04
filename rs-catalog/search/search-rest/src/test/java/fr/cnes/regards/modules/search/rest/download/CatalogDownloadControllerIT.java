@@ -27,11 +27,17 @@ import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.rest.CatalogDownloadController;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;
 import fr.cnes.regards.modules.search.rest.FakeProductFactory;
+import fr.cnes.regards.modules.search.rest.license.LicenseAcceptationStatus;
+import fr.cnes.regards.modules.search.rest.license.LicenseClientMock;
+import fr.cnes.regards.modules.search.rest.license.LicenseVerificationStatus;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.LicenseAccessorService;
+import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +65,7 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
     protected IEsRepository esRepository;
 
     @Autowired
-    private LicenseAccessor licenseAccessor;
+    private LicenseAccessorService licenseAccessor;
 
     @Autowired
     private ILicenseClient licenseClient;
@@ -69,6 +75,9 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
 
     @Autowired
     private ICatalogSearchService searchService;
+
+    @Mock
+    private DataAccessRightService dataAccessRightService;
 
     public CatalogDownloadControllerIT() {
         fileFactory = new FakeFileFactory();
@@ -116,7 +125,7 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
                                                                                  LicenseClientMock.LINK_TO_LICENCE);
 
         ResultActions mvcResult = downloadAndVerifyRequest(productFactory.validProduct(),
-                                                           fileFactory.validFile(),
+                                                           fileFactory.document().getChecksum(),
                                                            requestVerifications);
         verifyLinkToAcceptLicense(mvcResult);
     }

@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.flow;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,14 +32,14 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
- * Handler of bus message events {@link FilesAvailabilityRequestEvent}s.<br>
+ * Handler of bus message events {@link FilesRestorationRequestEvent}s.<br>
  * Each message is saved in a concurrent list to handle availability request by bulk.
  *
  * @author Sébastien Binda
  */
 @Component
 public class AvailabilityFlowItemHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesAvailabilityRequestEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesRestorationRequestEvent> {
 
     @Value("${regards.storage.availability.items.bulk.size:10}")
     private final int BULK_SIZE = 1000;
@@ -52,11 +52,11 @@ public class AvailabilityFlowItemHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(FilesAvailabilityRequestEvent.class, this);
+        subscriber.subscribeTo(FilesRestorationRequestEvent.class, this);
     }
 
     @Override
-    public void handleBatch(List<FilesAvailabilityRequestEvent> messages) {
+    public void handleBatch(List<FilesRestorationRequestEvent> messages) {
         LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} FilesAvailabilityRequestEvent...",
                      messages.size());
         long start = System.currentTimeMillis();
@@ -67,7 +67,7 @@ public class AvailabilityFlowItemHandler
     }
 
     @Override
-    public Errors validate(FilesAvailabilityRequestEvent message) {
+    public Errors validate(FilesRestorationRequestEvent message) {
         return null;
     }
 

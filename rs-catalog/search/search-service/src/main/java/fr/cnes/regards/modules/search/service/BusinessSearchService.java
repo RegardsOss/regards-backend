@@ -24,10 +24,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectGroup;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
@@ -36,15 +34,14 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
 import fr.cnes.regards.modules.opensearch.service.parser.GeometryCriterionBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
-import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
+import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -59,18 +56,16 @@ public class BusinessSearchService implements IBusinessSearchService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BusinessSearchService.class);
 
     /**
-     * Service handling the access groups in criterion.
-     */
-    private final IAccessRightFilter accessRightFilter;
-
-    /**
      * Catalog search service (entity level search service)
      */
     protected ICatalogSearchService catalogSearchService;
 
-    public BusinessSearchService(ICatalogSearchService catalogSearchService, IAccessRightFilter accessRightFilter) {
+    protected final DataAccessRightService dataAccessRightService;
+
+    public BusinessSearchService(ICatalogSearchService catalogSearchService,
+                                 DataAccessRightService dataAccessRightService) {
         this.catalogSearchService = catalogSearchService;
-        this.accessRightFilter = accessRightFilter;
+        this.dataAccessRightService = dataAccessRightService;
     }
 
     @SuppressWarnings("unchecked")
@@ -88,9 +83,12 @@ public class BusinessSearchService implements IBusinessSearchService {
                 Dataset dataset = (Dataset) entity;
                 try {
                     // Check dataset access rights for data object and for data files access
-                    dataset.getFeature().setDataObjectsFilesAccessGranted(isContentAccessGranted(dataset));
-                    dataset.getFeature().setDataObjectsAccessGranted(isDatasetDataObjectsAccessGranted(dataset));
-                } catch (AccessRightFilterException e) {
+                    dataset.getFeature()
+                           .setDataObjectsFilesAccessGranted(dataAccessRightService.checkContentAccess(dataset)
+                                                                                   .isGranted());
+                    dataset.getFeature()
+                           .setDataObjectsAccessGranted(dataAccessRightService.isDatasetDataObjectsAccessGranted(dataset));
+                } catch (AccessRightFilterException | ExecutionException e) {
                     LOGGER.warn("Unable to calculate user right to order dataset \"{}\"..", entity.getLabel(), e);
                 }
             }
@@ -98,64 +96,6 @@ public class BusinessSearchService implements IBusinessSearchService {
 
         // Build facet page with features
         return new FacetPage<>(features, facetPage.getFacets(), facetPage.getPageable(), facetPage.getTotalElements());
-    }
-
-    /**
-     * Check if current user has right to access content (files) of given entity.
-     * Given entity can be Dataset or DataObject
-     *
-     * @return either true or false
-     */
-    @Override
-    public boolean isContentAccessGranted(AbstractEntity<?> entity) throws AccessRightFilterException {
-        Map<String, DataObjectGroup> datasetObjectsGroupsMap;
-        final Set<String> userAccessGroups = accessRightFilter.getUserAccessGroups();
-        if (userAccessGroups == null) {
-            // access groups is null for admin users. Admin have always access
-            return true;
-        }
-        if (entity instanceof Dataset dataset) {
-            datasetObjectsGroupsMap = dataset.getMetadata().getDataObjectsGroups();
-            List<DataObjectGroup> dataObjectGroups = userAccessGroups.stream()
-                                                                     .filter(datasetObjectsGroupsMap::containsKey)
-                                                                     .map(datasetObjectsGroupsMap::get)
-                                                                     .toList();
-            return dataObjectGroups.stream()
-                                   .anyMatch(dataobjectGroup -> dataobjectGroup.getDataObjectAccess()
-                                                                && dataobjectGroup.getDataFileAccess());
-        } else if (entity instanceof DataObject dataObject) {
-            return dataObject.getMetadata()
-                             .getGroupsAccessRightsMap()
-                             .entrySet()
-                             .stream()
-                             .anyMatch(entry -> userAccessGroups.contains(entry.getKey()) && entry.getValue());
-
-        }
-        return false;
-    }
-
-    /**
-     * Check if current user has right to access data objects of given dataset.
-     * Given entity can be Dataset or DataObject
-     *
-     * @return either true or false
-     */
-    public boolean isDatasetDataObjectsAccessGranted(AbstractEntity<?> entity) throws AccessRightFilterException {
-        Map<String, DataObjectGroup> datasetObjectsGroupsMap;
-        final Set<String> userAccessGroups = accessRightFilter.getUserAccessGroups();
-        if (userAccessGroups == null) {
-            // access groups is null for admin users. Admin have always access
-            return true;
-        }
-        if (entity instanceof Dataset dataset) {
-            datasetObjectsGroupsMap = dataset.getMetadata().getDataObjectsGroups();
-            List<DataObjectGroup> dataObjectGroups = userAccessGroups.stream()
-                                                                     .filter(datasetObjectsGroupsMap::containsKey)
-                                                                     .map(datasetObjectsGroupsMap::get)
-                                                                     .toList();
-            return dataObjectGroups.stream().anyMatch(DataObjectGroup::getDataObjectAccess);
-        }
-        return false;
     }
 
     @Override

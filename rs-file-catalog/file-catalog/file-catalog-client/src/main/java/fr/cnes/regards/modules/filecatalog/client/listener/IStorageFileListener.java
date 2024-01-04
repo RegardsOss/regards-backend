@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.filecatalog.client.listener;
 
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceUpdateDto;
 
@@ -43,12 +43,12 @@ public interface IStorageFileListener {
     void onFileStoreError(List<FileReferenceEvent> storedError);
 
     /**
-     * Callback when a file is available for download. Next to a {@link FilesAvailabilityRequestEvent} request.
+     * Callback when a file is available for download. Next to a {@link FilesRestorationRequestEvent} request.
      */
     void onFileAvailable(List<FileReferenceEvent> available);
 
     /**
-     * Callback when a file is not available for download. Next to a {@link FilesAvailabilityRequestEvent} request.
+     * Callback when a file is not available for download. Next to a {@link FilesRestorationRequestEvent} request.
      */
     void onFileNotAvailable(List<FileReferenceEvent> availabilityError);
 

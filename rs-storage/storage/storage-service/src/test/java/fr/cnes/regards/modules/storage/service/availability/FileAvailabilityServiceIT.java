@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.availability;
 
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -49,8 +50,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -105,24 +104,6 @@ public class FileAvailabilityServiceIT extends AbstractDaoIT {
         fileReferenceRepository.deleteAll();
         storageLocationConfigurationRepository.deleteAll();
         initStoragesAndPlugins();
-        HttpURLConnection httpURLConnection = new HttpURLConnection(null) {
-
-            @Override
-            public void connect() throws IOException {
-
-            }
-
-            @Override
-            public void disconnect() {
-
-            }
-
-            @Override
-            public boolean usingProxy() {
-                return false;
-            }
-        };
-
     }
 
     private void initStoragesAndPlugins() throws ModuleException, NotAvailablePluginConfigurationException {
@@ -137,7 +118,7 @@ public class FileAvailabilityServiceIT extends AbstractDaoIT {
     }
 
     @Test
-    public void test_availability_response() {
+    public void test_availability_response() throws EntityInvalidException {
         // GIVEN a file cached
         storeCacheFiles(FILE_1);
         // WHEN requesting availability of this file
@@ -162,7 +143,7 @@ public class FileAvailabilityServiceIT extends AbstractDaoIT {
     }
 
     @Test
-    public void test_offline_to_cache() {
+    public void test_offline_to_cache() throws EntityInvalidException {
         // GIVEN files offline
         storeOfflineFiles(FILE_1);
         storeOfflineFiles(FILE_2);
@@ -184,7 +165,7 @@ public class FileAvailabilityServiceIT extends AbstractDaoIT {
     }
 
     @Test
-    public void test_offline_to_online() {
+    public void test_offline_to_online() throws EntityInvalidException {
         // GIVEN files offline
         storeOfflineFiles(FILE_1);
         storeOfflineFiles(FILE_2);
@@ -206,7 +187,7 @@ public class FileAvailabilityServiceIT extends AbstractDaoIT {
     }
 
     @Test
-    public void test_nearline_confirmed() throws ModuleException, NotAvailablePluginConfigurationException {
+    public void test_nearline_confirmed() throws EntityInvalidException {
         // GIVEN a file stored in T3
         storeT3Files(FILE_T3);
         // WHEN requesting availability of this file
@@ -232,7 +213,7 @@ public class FileAvailabilityServiceIT extends AbstractDaoIT {
     }
 
     @Test
-    public void test_nearline_T2_to_T3() throws ModuleException, NotAvailablePluginConfigurationException {
+    public void test_nearline_T2_to_T3() throws EntityInvalidException {
         // GIVEN a file stored in T2
         storeT2Files(FILE_NEARLINE);
         // WHEN requesting availability of these files

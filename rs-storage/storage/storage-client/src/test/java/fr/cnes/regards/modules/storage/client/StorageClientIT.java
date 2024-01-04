@@ -32,9 +32,9 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRep
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesAvailabilityRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
@@ -790,7 +790,7 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
     @Test
     public void availabilityWithMultipleRequests() throws InterruptedException {
         Set<String> files = Sets.newHashSet();
-        for (int i = 0; i < (FilesAvailabilityRequestEvent.MAX_REQUEST_PER_GROUP + 1); i++) {
+        for (int i = 0; i < (FilesRestorationRequestEvent.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(UUID.randomUUID().toString());
         }
 

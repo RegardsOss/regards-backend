@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.download;
+package fr.cnes.regards.modules.search.service.license;
 
-public enum LicenseAcceptationStatus {
-    ACCEPTED, FAILURE, HTTP_ERROR, NOT_CALLED
+public enum LicenseVerificationStatus {
+    ACCEPTED, NOT_ACCEPTED, FAILURE, HTTP_ERROR
 }

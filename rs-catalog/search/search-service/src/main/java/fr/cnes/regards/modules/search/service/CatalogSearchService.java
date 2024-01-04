@@ -568,7 +568,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             AttributeModel attModel = finder.findByName(propertyPath);
             // Only DATE_RANGE property is available for date histogram
             if (!(PropertyType.DATE_RANGE.equals(attModel.getType())
-                || PropertyType.DATE_ISO8601.equals(attModel.getType()))) {
+                  || PropertyType.DATE_ISO8601.equals(attModel.getType()))) {
                 String errorMessage = String.format("Unexpected type for attribute : %s, %s or %s type required!",
                                                     propertyPath,
                                                     PropertyType.DATE_RANGE,
@@ -577,7 +577,6 @@ public class CatalogSearchService implements ICatalogSearchService {
                 throw new IllegalArgumentException(errorMessage);
             }
             attributePath = attModel.getFullJsonPath();
-
 
         } catch (OpenSearchUnknownParameter e) {
             String errorMessage = String.format("Unknown attribute : %s", propertyPath);
@@ -599,10 +598,45 @@ public class CatalogSearchService implements ICatalogSearchService {
                                                                                                           "",
                                                                                                           timeZone)));
         // Search on DATA only
-        Aggregations aggregations = searchService.getAggregationsFor(searchKey,
-                                                                     tmpCriterion,
-                                                                     aggregationBuilders,
-                                                                     0);
+        Aggregations aggregations = searchService.getAggregationsFor(searchKey, tmpCriterion, aggregationBuilders, 0);
         return aggregations.get(DATE_HISTOGRAM_AGGREGATION_NAME);
+    }
+
+    @Override
+    public List<DataObject> searchByUrnIn(Set<UniformResourceName> urns)
+        throws SearchException, OpenSearchUnknownParameter, EntityOperationForbiddenException {
+        Map<Boolean, List<UniformResourceName>> urnGroupedByLast = urns.stream()
+                                                                       .collect(Collectors.groupingBy(
+                                                                           UniformResourceName::isLast));
+        try {
+            ICriterion criterion = accessRightFilter.addAccessRights(null);
+            criterion = addCriterionForUrns(urnGroupedByLast, true, criterion, "virtualId");
+            criterion = addCriterionForUrns(urnGroupedByLast, false, criterion, "ipId");
+            FacetPage<DataObject> results = search(criterion,
+                                                   SearchType.DATAOBJECTS,
+                                                   null,
+                                                   Pageable.ofSize(urns.size()));
+            return results.getContent();
+        } catch (AccessRightFilterException e) {
+            LOGGER.error("You do not have access to any data object", e);
+            throw new EntityOperationForbiddenException("You do not have access to any data object : "
+                                                        + e.getMessage());
+        }
+    }
+
+    private static ICriterion addCriterionForUrns(Map<Boolean, List<UniformResourceName>> urnGroupedByLast,
+                                                  boolean isLast,
+                                                  ICriterion criterion,
+                                                  String esField) {
+        if (urnGroupedByLast.containsKey(isLast)) {
+            List<String> urns = urnGroupedByLast.get(isLast).stream().map(UniformResourceName::toString).toList();
+            ICriterion newCriterion = ICriterion.in(esField, StringMatchType.KEYWORD, urns.toArray(new String[0]));
+            if ((criterion != null) && !criterion.equals(ICriterion.all())) {
+                criterion = ICriterion.and(criterion, newCriterion);
+            } else {
+                criterion = newCriterion;
+            }
+        }
+        return criterion;
     }
 }

@@ -24,8 +24,8 @@ import fr.cnes.regards.modules.search.domain.download.Download;
 import fr.cnes.regards.modules.search.domain.download.FailedDownload;
 import fr.cnes.regards.modules.search.domain.download.MissingLicenseDownload;
 import fr.cnes.regards.modules.search.domain.download.ValidDownload;
-import fr.cnes.regards.modules.search.rest.download.LicenseVerificationStatus;
 import fr.cnes.regards.modules.search.rest.download.StorageDownloadStatus;
+import fr.cnes.regards.modules.search.rest.license.LicenseVerificationStatus;
 import org.junit.Test;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
@@ -50,14 +50,14 @@ public class CatalogDownloadTest {
     }
 
     @Test
-    public void fail_if_product_is_invalid() throws Exception {
+    public void fail_if_product_is_invalid() {
         CatalogDownloadTester downloader = new CatalogDownloadTester();
         assertThatIllegalArgumentException().isThrownBy(() -> downloader.downloadFile(productFactory.invalidProduct(),
                                                                                       fileFactory.validFile()));
     }
 
     @Test
-    public void fail_if_product_is_not_found() throws Exception {
+    public void fail_if_product_is_not_found() {
         CatalogDownloadTester downloader = new CatalogDownloadTester();
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> downloader.downloadFile(productFactory.unknownProduct()
                                                                                                                         .toString(),

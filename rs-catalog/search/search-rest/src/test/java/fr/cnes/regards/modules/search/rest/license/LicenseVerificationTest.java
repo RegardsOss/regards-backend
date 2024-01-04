@@ -16,10 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest;
+package fr.cnes.regards.modules.search.rest.license;
 
 import fr.cnes.regards.modules.search.domain.download.Download;
-import fr.cnes.regards.modules.search.rest.download.LicenseVerificationStatus;
+import fr.cnes.regards.modules.search.rest.CatalogDownloadTester;
+import fr.cnes.regards.modules.search.rest.FakeFileFactory;
+import fr.cnes.regards.modules.search.rest.FakeProductFactory;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,14 +68,6 @@ public class LicenseVerificationTest {
         CatalogDownloadTester downloader = new CatalogDownloadTester(LicenseVerificationStatus.NOT_ACCEPTED);
         ResponseEntity<Download> response = downloader.downloadFile(productFactory.authorizedProduct().toString(),
                                                                     fileFactory.thumbnail().getChecksum());
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    }
-
-    @Test
-    public void dont_verify_license_for_document() throws Exception {
-        CatalogDownloadTester downloader = new CatalogDownloadTester(LicenseVerificationStatus.NOT_ACCEPTED);
-        ResponseEntity<Download> response = downloader.downloadFile(productFactory.authorizedProduct().toString(),
-                                                                    fileFactory.document().getChecksum());
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 

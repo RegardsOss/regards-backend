@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceUpdateDto;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
-import fr.cnes.regards.modules.filecatalog.dto.files.FilesAvailabilityRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.availability.FilesAvailabilityRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;

@@ -16,26 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.filecatalog.dto.availability;
+package fr.cnes.regards.modules.search.dto.availability;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
- * Input request body of availability endpoint
+ * GDH format for availability status responses of the product availability endpoint
  *
  * @author Thomas GUILLOU
  **/
-public class FilesAvailabilityRequestDto {
-    
-    private final Set<String> checksums;
+public class FilesAvailabilityResponseDto {
 
-    public FilesAvailabilityRequestDto(Set<String> checksums) {
-        this.checksums = checksums;
+    @Schema(description = "list of availability status of products")
+    private final List<ProductFilesStatusDto> products;
+
+    public FilesAvailabilityResponseDto(List<ProductFilesStatusDto> productStatus) {
+        this.products = productStatus;
     }
 
-    public Set<String> getChecksums() {
-        return checksums;
+    public List<ProductFilesStatusDto> getProducts() {
+        return products;
     }
 
     @Override
@@ -46,17 +49,17 @@ public class FilesAvailabilityRequestDto {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        FilesAvailabilityRequestDto that = (FilesAvailabilityRequestDto) o;
-        return Objects.equals(checksums, that.checksums);
+        FilesAvailabilityResponseDto that = (FilesAvailabilityResponseDto) o;
+        return Objects.equals(products, that.products);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(checksums);
+        return Objects.hash(products);
     }
 
     @Override
     public String toString() {
-        return "FilesAvailabilityRequestDto{" + "checksums=" + checksums + '}';
+        return "FilesAvailabilityResponseDTO{" + "products=" + products + '}';
     }
 }
