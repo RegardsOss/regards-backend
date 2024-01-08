@@ -28,6 +28,8 @@ import org.springframework.lang.Nullable;
  **/
 public class StorageLocationConfigurationDto {
 
+    private Long id;
+
     private String name;
 
     private PluginConfigurationDto pluginConfiguration;
@@ -38,11 +40,13 @@ public class StorageLocationConfigurationDto {
 
     private Long allocatedSizeInKo = 0L;
 
-    public StorageLocationConfigurationDto(String name,
+    public StorageLocationConfigurationDto(Long id,
+                                           String name,
                                            @Nullable PluginConfigurationDto pluginConfiguration,
                                            StorageType storageType,
                                            Long priority,
                                            Long allocatedSizeInKo) {
+        this.id = id;
         this.name = name;
         this.pluginConfiguration = pluginConfiguration;
         this.storageType = storageType;

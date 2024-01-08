@@ -178,7 +178,8 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     }
 
     public StorageLocationConfigurationDto toDto() {
-        return new StorageLocationConfigurationDto(name,
+        return new StorageLocationConfigurationDto(id,
+                                                   name,
                                                    pluginConfiguration != null ? pluginConfiguration.toDto() : null,
                                                    storageType,
                                                    priority,
