@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
@@ -571,19 +573,26 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Override
     protected void sessionInfoUpdateForRetry(Collection<FeatureUpdateRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
-                                                                                                            .map(request -> request.getFeature()
-                                                                                                                                   .getUrn())
-                                                                                                            .collect(
-                                                                                                                Collectors.toSet()));
-        Map<FeatureUniformResourceName, FeatureRequestStep> errorStepByUrn = requests.stream()
-                                                                                     .collect(Collectors.toMap(
-                                                                                         FeatureUpdateRequest::getUrn,
-                                                                                         FeatureUpdateRequest::getLastExecErrorStep));
-        sessionInfoByUrn.forEach((urn, entity) -> {
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_UPDATE_REQUESTS);
-            if (FeatureRequestStep.REMOTE_NOTIFICATION_ERROR.equals(errorStepByUrn.get(urn))) {
-                featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
+        // Retrieve LightEntity associated to each update request to retry
+        Map<FeatureUniformResourceName, ILightFeatureEntity> entitiesByUrn = getSessionInfoByUrn(requests.stream()
+                                                                                                         .map(request -> request.getFeature()
+                                                                                                                                .getUrn())
+                                                                                                         .collect(
+                                                                                                             Collectors.toSet()));
+        // Groups requests by entity urn
+        ArrayListMultimap<FeatureUniformResourceName, FeatureUpdateRequest> requestsByFeatureUrn = requests.stream()
+                                                                                                           .collect(
+                                                                                                               Multimaps.toMultimap(
+                                                                                                                   FeatureUpdateRequest::getUrn,
+                                                                                                                   f -> f,
+                                                                                                                   ArrayListMultimap::create));
+        // For each request, check if request state is a retryable state, is so decrement session error count and
+        // increment session update request running.
+        requestsByFeatureUrn.forEach((urn, request) -> {
+            if (request.getLastExecErrorStep().isRetryableErrorStep()) {
+                ILightFeatureEntity requestEntity = entitiesByUrn.get(urn);
+                featureSessionNotifier.decrementCount(requestEntity, FeatureSessionProperty.IN_ERROR_UPDATE_REQUESTS);
+                featureSessionNotifier.incrementCount(requestEntity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
             }
         });
     }
