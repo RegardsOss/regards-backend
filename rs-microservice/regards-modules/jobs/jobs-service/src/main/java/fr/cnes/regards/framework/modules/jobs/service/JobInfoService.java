@@ -44,7 +44,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -247,27 +246,13 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
-    @Scheduled(fixedDelayString = "${regards.jobs.out.of.date.cleaning.rate.ms:3600000}", initialDelay = 30_000)
-    @Transactional(propagation = Propagation.SUPPORTS)
-    public void cleanOutOfDateJobs() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            self.cleanOutOfDateJobsOnTenant();
-        }
-        runtimeTenantResolver.clearTenant();
-    }
-
-    @Override
     public void cleanOutOfDateJobsOnTenant() {
-        Set<JobInfo> jobs = new HashSet<>();
-        // Add expired jobs
-        jobs.addAll(jobInfoRepository.findExpiredJobs());
-        // Add succeeded jobs since configured retention days
-        jobs.addAll(jobInfoRepository.findSucceededJobsSince(succeededJobsRetentionDays));
-        // Add failed or aborted jobs since configured retention days
-        jobs.addAll(jobInfoRepository.findFailedOrAbortedJobsSince(failedJobsRetentionDays));
-        // Remove all these jobs
-        jobInfoRepository.deleteAll(jobs);
+        // Delete expired jobs
+        jobInfoRepository.deleteExpiredJobs();
+        // Delete succeeded jobs since configured retention days
+        jobInfoRepository.deleteSucceededJobsSince(succeededJobsRetentionDays);
+        // Delete failed or aborted jobs since configured retention days
+        jobInfoRepository.deleteFailedAndAbortJobsSince(failedJobsRetentionDays);
     }
 
     @Override
