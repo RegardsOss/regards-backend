@@ -27,56 +27,60 @@ package fr.cnes.regards.modules.feature.dto;
 public enum FeatureRequestStep {
 
     // Not granted before db persist
-    LOCAL_DENIED(false),
+    LOCAL_DENIED(false, false),
 
     // Request processing is delayed to handle concurrent asynchronous update
     // Manager waits for a configurable delay before scheduling feature update job.
-    LOCAL_DELAYED(false),
+    LOCAL_DELAYED(false, false),
 
     // Awaiting processing
-    LOCAL_SCHEDULED(true),
+    LOCAL_SCHEDULED(true, false),
 
     // ERROR
     // - update cannot be done because feature doesn't exist anymore
-    LOCAL_ERROR(false),
+    LOCAL_ERROR(false, true),
 
-    LOCAL_NOTIFICATION_ERROR(false),
+    LOCAL_NOTIFICATION_ERROR(false, true),
 
     // Delete files
-    REMOTE_STORAGE_DELETION_REQUESTED(true, true, true), // Store files
-    REMOTE_STORAGE_REQUESTED(true, true, true),
+    REMOTE_STORAGE_DELETION_REQUESTED(true, true, true, false), // Store files
+    REMOTE_STORAGE_REQUESTED(true, true, true, false),
 
     // this request handling still needs to be notified
-    LOCAL_TO_BE_NOTIFIED(false),
+    LOCAL_TO_BE_NOTIFIED(false, false),
 
-    REMOTE_NOTIFICATION_REQUESTED(true, true, true),
+    REMOTE_NOTIFICATION_REQUESTED(true, true, true, false),
 
-    REMOTE_NOTIFICATION_SUCCESS(false),
+    REMOTE_NOTIFICATION_SUCCESS(false, false),
 
-    REMOTE_NOTIFICATION_ERROR(false),
+    REMOTE_NOTIFICATION_ERROR(false, true),
 
-    REMOTE_CREATION_REQUESTED(true),
+    REMOTE_CREATION_REQUESTED(true, false),
 
-    REMOTE_CREATION_ERROR(false),
+    REMOTE_CREATION_ERROR(false, true),
 
-    REMOTE_STORAGE_ERROR(false),
+    REMOTE_STORAGE_ERROR(false, true),
 
-    WAITING_BLOCKING_DISSEMINATION(true);
+    WAITING_BLOCKING_DISSEMINATION(true, false);
 
     private boolean remote = false;
 
-    private boolean processing;
+    private final boolean processing;
 
     private boolean timeout = false;
 
-    FeatureRequestStep(boolean processing) {
+    private final boolean retryableErrorStep;
+
+    FeatureRequestStep(boolean processing, boolean retryableErrorStep) {
         this.processing = processing;
+        this.retryableErrorStep = retryableErrorStep;
     }
 
-    FeatureRequestStep(boolean processing, boolean remote, boolean timeout) {
+    FeatureRequestStep(boolean processing, boolean remote, boolean timeout, boolean retryableErrorStep) {
         this.remote = remote;
         this.timeout = timeout;
         this.processing = processing;
+        this.retryableErrorStep = retryableErrorStep;
     }
 
     /**
@@ -95,6 +99,10 @@ public enum FeatureRequestStep {
 
     public boolean isProcessing() {
         return processing;
+    }
+
+    public boolean isRetryableErrorStep() {
+        return retryableErrorStep;
     }
 
 }

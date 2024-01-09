@@ -45,15 +45,21 @@ import java.time.OffsetDateTime;
 @EnableScheduling
 public class JobInfoTaskScheduler extends AbstractTaskScheduler {
 
+    public static final String UPDATE_PENDING_TRIGGER_JOBS_TITLE = "Update pending jobs to be triggered scheduling";
+
+    public static final Long MAX_TASK_DELAY = 120L; // In second
+
     private static final Logger LOGGER = LoggerFactory.getLogger(JobInfoTaskScheduler.class);
 
     private static final String UPDATE_PENDING_TRIGGER_JOBS = "UPDATE PENDING JOBS TO BE TRIGGERED";
 
-    public static final String UPDATE_PENDING_TRIGGER_JOBS_TITLE = "Update pending jobs to be triggered scheduling";
-
     private static final String UPDATE_PENDING_TRIGGER_JOBS_LOCK = "updatePendingJobsToBeTriggered";
 
-    public static final Long MAX_TASK_DELAY = 5L; // In second
+    private static final String CLEAN_OUT_OF_DATE_JOBS = "CLEAN OUT OF DATE JOBS";
+
+    private static final String CLEAN_OUT_OF_DATE_JOBS_TITLE = "Cleaning out of date jobs";
+
+    private static final String CLEAN_OUT_OF_DATE_JOBS_LOCK = "cleanOutOfDateJobsLock";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -83,21 +89,45 @@ public class JobInfoTaskScheduler extends AbstractTaskScheduler {
         jobInfoService.updatePendingJobsToBeTriggered(currentDateTime, poolSize);
     };
 
+    private final LockingTaskExecutor.Task cleanDeletableJobsTask = () -> {
+        lockingTaskExecutors.assertLocked();
+        LOGGER.debug("[{}] Running clean deletable jobs task", INSTANCE_RANDOM_ID);
+        jobInfoService.cleanOutOfDateJobsOnTenant();
+    };
+
     /**
      * Periodically check if pending jobs have to be triggered (only if a trigger timestamp is present).
      * Change the job status to QUEUED if the trigger date is expired in order to launch the job execution.
      */
     @Scheduled(fixedDelayString = "${regards.jobs.trigger.update.rate.ms:60000}")
     public void triggerPendingJobs() {
+        runScheduledTask(triggerPendingJobTask,
+                         UPDATE_PENDING_TRIGGER_JOBS_LOCK,
+                         UPDATE_PENDING_TRIGGER_JOBS,
+                         UPDATE_PENDING_TRIGGER_JOBS_TITLE);
+    }
+
+    @Scheduled(fixedDelayString = "${regards.jobs.out.of.date.cleaning.rate.ms:3600000}", initialDelay = 30_000)
+    public void cleanOutOfDateJobs() {
+        runScheduledTask(cleanDeletableJobsTask,
+                         CLEAN_OUT_OF_DATE_JOBS_LOCK,
+                         CLEAN_OUT_OF_DATE_JOBS,
+                         CLEAN_OUT_OF_DATE_JOBS_TITLE);
+    }
+
+    private void runScheduledTask(LockingTaskExecutor.Task taskToRun,
+                                  String lockName,
+                                  String taskName,
+                                  String taskTitle) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                lockingTaskExecutors.executeWithLock(triggerPendingJobTask,
-                                                     new LockConfiguration(UPDATE_PENDING_TRIGGER_JOBS_LOCK,
+                lockingTaskExecutors.executeWithLock(taskToRun,
+                                                     new LockConfiguration(lockName,
                                                                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
-                handleSchedulingError(UPDATE_PENDING_TRIGGER_JOBS, UPDATE_PENDING_TRIGGER_JOBS_TITLE, e);
+                handleSchedulingError(taskName, taskTitle, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

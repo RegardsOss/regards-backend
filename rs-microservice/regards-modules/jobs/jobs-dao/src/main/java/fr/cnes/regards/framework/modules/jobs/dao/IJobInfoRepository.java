@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.dao;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import org.springframework.data.domain.Page;
@@ -92,23 +93,51 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     Long countByStatusStatusIn(JobStatus... statuses);
 
-    /**
-     * Search jobs expired at given date (only unlocked)
-     */
-    List<JobInfo> findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime expireDate,
-                                                                            Boolean locked,
-                                                                            JobStatus... statuses);
+    @MultitenantTransactional
+    default void deleteExpiredJobs() {
+        deleteExpiredJobs(OffsetDateTime.now(),
+                          List.of(JobStatus.QUEUED.name(), JobStatus.TO_BE_RUN.name(), JobStatus.RUNNING.name()));
+    }
 
     /**
-     * Search currently expired jobs
+     * Delete all succeeded jobs finished since a given number of days ago.
      */
-    default List<JobInfo> findExpiredJobs() {
-        return findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime.now(),
-                                                                         false,
-                                                                         JobStatus.QUEUED,
-                                                                         JobStatus.TO_BE_RUN,
-                                                                         JobStatus.RUNNING);
+    @MultitenantTransactional
+    default void deleteSucceededJobsSince(int days) {
+        deleteFinishedJobsByStatusAndStopDateLessThan(OffsetDateTime.now().minusDays(days),
+                                                      List.of(JobStatus.SUCCEEDED.name()));
     }
+
+    /**
+     * Delete all failed or aborted jobs finished since a given number of days ago.
+     */
+    @MultitenantTransactional
+    default void deleteFailedAndAbortJobsSince(int days) {
+        deleteFinishedJobsByStatusAndStopDateLessThan(OffsetDateTime.now().minusDays(days),
+                                                      List.of(JobStatus.FAILED.name(), JobStatus.ABORTED.name()));
+    }
+
+    /**
+     * Delete all jobs by given statuses and stop date
+     */
+    @Modifying
+    @Query(value = "DELETE FROM {h-schema}t_job_info WHERE locked = false AND stop_date <= :stopDate AND "
+                   + "status "
+                   + "IN (:statuses) ", nativeQuery = true)
+    @MultitenantTransactional
+    void deleteFinishedJobsByStatusAndStopDateLessThan(@Param("stopDate") OffsetDateTime stopDate,
+                                                       @Param("statuses") List<String> statuses);
+
+    /**
+     * Delete all expired jobs with given statuses
+     */
+    @Modifying
+    @Query(value = "DELETE FROM {h-schema}t_job_info WHERE locked = false AND expire_date <= :expirationDate AND "
+                   + "status IN "
+                   + "(:statuses)", nativeQuery = true)
+    @MultitenantTransactional
+    void deleteExpiredJobs(@Param("expirationDate") OffsetDateTime expirationDate,
+                           @Param("statuses") List<String> statuses);
 
     /**
      * Search jobs with given status at given date (only unlocked)
