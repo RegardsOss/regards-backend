@@ -207,17 +207,17 @@ pipeline {
                         }
                         stage('File Catalog') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-file-catalog")
+                                runMavenDockerImg("tests", "rs-file-catalog", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('File Access') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-file-access")
+                                runMavenDockerImg("tests", "rs-file-access", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                         stage('File Packager') {
                             steps {
-                                runMavenDockerImgParallelTwo("tests", "rs-file-packager")
+                                runMavenDockerImg("tests", "rs-file-packager", params.STOP_BUILD_ON_TEST_ERROR, false)
                             }
                         }
                     }
