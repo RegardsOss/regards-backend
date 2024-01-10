@@ -62,6 +62,12 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
     @Column(name = "already_deleted")
     private boolean alreadyDeleted;
 
+    /**
+     * This parameter can be used to force deletion of feature waiting for a blocking dissemination ack.
+     */
+    @Column(name = "force_deletion")
+    private boolean forceDeletion;
+
     public static FeatureDeletionRequest build(String requestId,
                                                String requestOwner,
                                                OffsetDateTime requestDate,
@@ -117,5 +123,9 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
 
     public String getSourceToNotify() {
         return sourceToNotify;
+    }
+
+    public boolean isForceDeletion() {
+        return forceDeletion;
     }
 }

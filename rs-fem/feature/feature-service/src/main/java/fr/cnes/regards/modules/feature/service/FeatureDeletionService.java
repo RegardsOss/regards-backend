@@ -341,22 +341,26 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                                          FeatureDeletionJob featureDeletionJob) {
         for (Entry<FeatureDeletionRequest, FeatureEntity> entry : requestsWithFiles.entrySet()) {
             FeatureDeletionRequest featureDeletionrequest = entry.getKey();
-            entry.getValue().getDisseminationsInfo().forEach(disseminationInfo -> {
-                if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
-                    // Monitoring log
-                    FeatureLogger.deletionBlocked(featureDeletionrequest.getRequestOwner(),
-                                                  featureDeletionrequest.getRequestId(),
-                                                  featureDeletionrequest.getUrn());
-                    featureDeletionrequest.setStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
-                }
-            });
+            // If request is not set a force deletion, check if a dissemination is pending on the feature to delete.
+            // If so, the deletion request must be blocked until dissemination is recieved.
+            if (!entry.getKey().isForceDeletion()) {
+                entry.getValue().getDisseminationsInfo().forEach(disseminationInfo -> {
+                    if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
+                        // Monitoring log
+                        FeatureLogger.deletionBlocked(featureDeletionrequest.getRequestOwner(),
+                                                      featureDeletionrequest.getRequestId(),
+                                                      featureDeletionrequest.getUrn());
+                        featureDeletionrequest.setStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
+                    }
+                });
+            }
             // Request file deletion
             if (featureDeletionrequest.getStep() != FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION) {
                 publishFiles(featureDeletionrequest, entry.getValue());
             }
             featureDeletionJob.advanceCompletion();
         }
-        // Save all request with files waiting for file deletion
+        // Save all request with files waiting for file deletion or new status waiting for dissemination
         this.featureDeletionRequestRepository.saveAll(requestsWithFiles.keySet());
         // No feedback at the moment
     }
@@ -391,25 +395,29 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                 fdr.setToNotify(featureEntity.getFeature(),
                                 featureEntity.getSessionOwner(),
                                 featureEntity.getSession());
-                // Monitoring log
-                FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
-                // Check if the deletion request must be blocked or not
-                featureEntity.getDisseminationsInfo().forEach(disseminationInfo -> {
-                    if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
-                        // Monitoring log
-                        FeatureLogger.deletionBlocked(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
-                        fdr.setStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
 
-                        featureEntitiesNotToDelete.add(featureEntity.getId());
-                        featureDeletionRequestsNotToDelete.add(fdr.getId());
-                    }
-                });
+                // If request is not set a force deletion, check if a dissemination is pending on the feature to delete.
+                // If so, the deletion request must be blocked until dissemination is received.
+                if (!entry.getKey().isForceDeletion()) {
+                    featureEntity.getDisseminationsInfo().forEach(disseminationInfo -> {
+                        if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
+                            // Monitoring log
+                            FeatureLogger.deletionBlocked(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
+                            fdr.setStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
+
+                            featureEntitiesNotToDelete.add(featureEntity.getId());
+                            featureDeletionRequestsNotToDelete.add(fdr.getId());
+                        }
+                    });
+                }
 
                 if (featureDeletionJob != null) {
                     // featureDeletionJob can be null in case this method is called outside the context of a job
                     featureDeletionJob.advanceCompletion();
                 }
                 if (fdr.getStep() != FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION) {
+                    // Monitoring log
+                    FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
                     // Publish successful request
                     publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
                                                                 fdr.getRequestId(),
