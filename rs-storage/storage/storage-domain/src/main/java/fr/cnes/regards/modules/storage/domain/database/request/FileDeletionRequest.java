@@ -41,6 +41,9 @@ import java.time.OffsetDateTime;
                                                columnNames = { "file_reference" }) })
 public class FileDeletionRequest {
 
+    // FIXME: the attribute "id" does not exists on the real DB
+    // don't know why, but it's fileReference that's used as the ID of this table
+    // please fix this issue when creating neo-storage...
     @Id
     @SequenceGenerator(name = "fileDeletioneSequence", initialValue = 1, sequenceName = "seq_file_deletion")
     @GeneratedValue(generator = "fileDeletioneSequence", strategy = GenerationType.SEQUENCE)

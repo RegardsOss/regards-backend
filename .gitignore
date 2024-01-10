@@ -61,5 +61,4 @@ Thumbs.db
 ######################
 **/.hash
 **/.deps.hash
-**/scripts/data*/
 **/.flattened-pom.xml
