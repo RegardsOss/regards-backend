@@ -215,4 +215,13 @@ public class SearchService implements ISearchService {
         addProjectInfos(searchKey);
         return repository.getAggregationsFor(searchKey, criterion, aggregationBuilders, limit);
     }
+
+    @Override
+    public <T extends IIndexable> Map<String, AggregationSearchContextResponse> getMultiAggregationsFor(Map<String, AggregationSearchContext<T>> searchRequests) {
+        for (Map.Entry<String, AggregationSearchContext<T>> entry : searchRequests.entrySet()) {
+            // As record is not strictly immutable, mutate current search key referenced object.
+            addProjectInfos(entry.getValue().searchKey());
+        }
+        return repository.getMultiAggregationsFor(searchRequests);
+    }
 }

@@ -52,10 +52,7 @@ import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonMerger;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
-import fr.cnes.regards.modules.indexer.domain.IDocFiles;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.SearchKey;
-import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.*;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.*;
 import fr.cnes.regards.modules.indexer.domain.facet.*;
@@ -93,10 +90,7 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.ClearScrollRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.action.search.*;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.*;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
@@ -1553,6 +1547,61 @@ public class EsRepository implements IEsRepository {
         } catch (IOException e) {
             throw new RsRuntimeException(e);
         }
+    }
+
+
+    @Override
+    public <T extends IIndexable> Aggregations getAggregationsFor(AggregationSearchContext<T> searchRequest) {
+        return getAggregationsFor(searchRequest.searchKey(),
+                                  searchRequest.criterion(),
+                                  searchRequest.aggregations(),
+                                  searchRequest.limit());
+    }
+
+    @Override
+    public <T extends IIndexable> Map<String, AggregationSearchContextResponse> getMultiAggregationsFor(Map<String, AggregationSearchContext<T>> searchRequests) {
+        Map<String, Integer> responseIndexes = new HashMap<>();
+        Map<String, AggregationSearchContextResponse> results = new HashMap<>();
+        Integer currentIndex = 0;
+        MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+
+        // Initialize all requests
+        for (Map.Entry<String, AggregationSearchContext<T>> entry : searchRequests.entrySet()) {
+            responseIndexes.put(entry.getKey(), currentIndex);
+            multiSearchRequest.add(createSearchRequestForAggregations(entry.getValue()));
+            currentIndex++;
+        }
+
+        // Launch parallel requests
+        try {
+            final MultiSearchResponse response = client.msearch(multiSearchRequest, searchOptions);
+            // Build response
+            responseIndexes.forEach((key, index) -> {
+                MultiSearchResponse.Item item = response.getResponses()[index];
+                if (item.isFailure()) {
+                    LOGGER.error(item.getFailureMessage());
+                    results.put(key,
+                                new AggregationSearchContextResponse(null, item.isFailure(), item.getFailureMessage()));
+                } else {
+                    results.put(key,
+                                new AggregationSearchContextResponse(item.getResponse().getAggregations(),
+                                                                     item.isFailure(),
+                                                                     null));
+                }
+            });
+            return results;
+        } catch (IOException e) {
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    private <T extends IIndexable> SearchRequest createSearchRequestForAggregations(AggregationSearchContext<T> searchRequest) {
+        SearchSourceBuilder builder =
+            createSourceBuilder4Agg(addTypes(searchRequest.criterion(), searchRequest.searchKey().getSearchTypes()),
+                                                              0,
+                                                              searchRequest.limit());
+        searchRequest.aggregations().forEach(builder::aggregation);
+        return new SearchRequest( searchRequest.searchKey().getSearchIndex()).source(builder);
     }
 
     @Override

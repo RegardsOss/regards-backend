@@ -157,6 +157,10 @@ public interface ISearchService {
                                                            ICriterion criterion,
                                                            Collection<AggregationBuilder> aggregationBuilders,
                                                            int limit);
+
+    <T extends IIndexable> Map<String, AggregationSearchContextResponse> getMultiAggregationsFor(Map<String,
+        AggregationSearchContext<T>> searchRequests);
+
     /**
      * Compute a DocFilesSummary for given request distributing results based on disciminantProperty for given file
      * types

@@ -21,9 +21,7 @@ package fr.cnes.regards.modules.indexer.dao;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.indexer.dao.converter.LinkedHashMapToSort;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
-import fr.cnes.regards.modules.indexer.domain.IDocFiles;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.*;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
@@ -451,6 +449,21 @@ public interface IEsRepository {
                                                            ICriterion criterion,
                                                            Collection<AggregationBuilder> aggs,
                                                            int limit);
+
+    /**
+     * Retrieve the desired specific aggregations.
+     * @param searchRequest aggregation search context as a record
+     * @return the aggregations
+     */
+    <T extends IIndexable> Aggregations getAggregationsFor(AggregationSearchContext<T> searchRequest);
+
+    /**
+     * Retrieve the desired specific aggregations. This method is used to retrieve aggregations using parallel search
+     * requests.
+     * @param searchRequests multiple aggregation search contexts as a map
+     * @return all corresponding aggregations as a map
+     */
+    <T extends IIndexable> Map<String, AggregationSearchContextResponse> getMultiAggregationsFor(Map<String, AggregationSearchContext<T>> searchRequests);
 
     /**
      * Retrieve stats for each given attribute

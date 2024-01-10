@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.search.domain.ParsedDateHistogramResponse;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
 import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -42,9 +43,10 @@ import org.elasticsearch.search.aggregations.bucket.histogram.ParsedDateHistogra
 import org.springframework.data.domain.Pageable;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -182,7 +184,7 @@ public interface ICatalogSearchService {
      * @param dateHistogramInterval date histogram interval
      * @param from                  histogram start datetime
      * @param to                    histogram end datetime
-     * @param timeZone              {@link ZoneOffset} for search context
+     * @param zoneId                {@link ZoneId} for search context
      * @return {@link ParsedDateHistogram}
      */
     <T extends IIndexable> ParsedDateHistogram getDateHistogram(SearchKey<?, T> searchKey,
@@ -191,7 +193,27 @@ public interface ICatalogSearchService {
                                                                 DateHistogramInterval dateHistogramInterval,
                                                                 OffsetDateTime from,
                                                                 OffsetDateTime to,
-                                                                ZoneOffset timeZone);
+                                                                ZoneId zoneId);
+
+    /**
+     * Retrieve date histograms with same settings for multiple subsets of data objects
+     *
+     * @param searchKey             identify target entity types
+     * @param propertyPath          property path
+     * @param criteria              Map of {@link ICriterion}s representing subsets of data objects
+     * @param dateHistogramInterval date histogram interval
+     * @param from                  histogram start datetime
+     * @param to                    histogram end datetime
+     * @param zoneId                {@link ZoneId} for search context
+     * @return {@link ParsedDateHistogramResponse}
+     */
+    <T extends IIndexable> Map<String, ParsedDateHistogramResponse> getDateHistograms(SearchKey<?, T> searchKey,
+                                                                                      String propertyPath,
+                                                                                      Map<String, ICriterion> criteria,
+                                                                                      DateHistogramInterval dateHistogramInterval,
+                                                                                      OffsetDateTime from,
+                                                                                      OffsetDateTime to,
+                                                                                      ZoneId zoneId);
 
     /**
      * Retrieve products metadata from their urns
