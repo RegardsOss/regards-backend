@@ -287,6 +287,16 @@ public class FileReferenceService {
     }
 
     /**
+     * Search for all {@link FileReference}s associated to the given urls.
+     *
+     * @return {@link FileReference}s
+     */
+    @Transactional(readOnly = true)
+    public Set<FileReference> searchByUrls(Collection<String> urls) {
+        return fileRefRepo.findByLocationUrlIn(urls);
+    }
+
+    /**
      * Search for all {@link FileReference}s associated to the given checksum.
      *
      * @return {@link FileReference}s

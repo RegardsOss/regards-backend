@@ -45,7 +45,6 @@ import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurati
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,43 +69,61 @@ public class FileReferenceRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestService.class);
 
-    @Autowired
-    private FileReferenceEventPublisher fileRefEventPublisher;
+    private final FileReferenceEventPublisher fileRefEventPublisher;
 
-    @Autowired
-    private RequestsGroupService reqGrpService;
+    private final RequestsGroupService reqGrpService;
 
-    @Autowired
-    private FileDeletionRequestService fileDeletionRequestService;
+    private final FileDeletionRequestService fileDeletionRequestService;
 
-    @Autowired
-    private FileReferenceService fileRefService;
+    private final FileReferenceService fileRefService;
 
-    @Autowired
-    private Validator validator;
+    private final Validator validator;
 
-    @Autowired
-    private IPluginService pluginService;
+    private final IPluginService pluginService;
 
-    @Autowired
-    private StoragePluginConfigurationHandler storagePluginConfHandler;
+    private final StoragePluginConfigurationHandler storagePluginConfHandler;
 
-    @Autowired
-    private SessionNotifier sessionNotifier;
+    private final SessionNotifier sessionNotifier;
 
     @Value("${regards.storage.reference.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
+
+    public FileReferenceRequestService(FileReferenceEventPublisher fileRefEventPublisher,
+                                       RequestsGroupService reqGrpService,
+                                       FileDeletionRequestService fileDeletionRequestService,
+                                       FileReferenceService fileRefService,
+                                       Validator validator,
+                                       IPluginService pluginService,
+                                       StoragePluginConfigurationHandler storagePluginConfHandler,
+                                       SessionNotifier sessionNotifier) {
+        this.fileRefEventPublisher = fileRefEventPublisher;
+        this.reqGrpService = reqGrpService;
+        this.fileDeletionRequestService = fileDeletionRequestService;
+        this.fileRefService = fileRefService;
+        this.validator = validator;
+        this.pluginService = pluginService;
+        this.storagePluginConfHandler = storagePluginConfHandler;
+        this.sessionNotifier = sessionNotifier;
+    }
 
     /**
      * Initialize new reference requests from Flow items.
      */
     public void reference(List<FilesReferenceEvent> list) {
-        Set<FileReference> existingOnes = fileRefService.search(list.stream()
-                                                                    .map(FilesReferenceEvent::getFiles)
-                                                                    .flatMap(Set::stream)
-                                                                    .map(FileReferenceRequestDto::getChecksum)
-                                                                    .collect(Collectors.toSet()));
-        Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(existingOnes);
+        Set<FileReference> existingOnesWithSameChecksum = fileRefService.search(list.stream()
+                                                                                    .map(FilesReferenceEvent::getFiles)
+                                                                                    .flatMap(Set::stream)
+                                                                                    .map(FileReferenceRequestDto::getChecksum)
+                                                                                    .collect(Collectors.toSet()));
+
+        Set<FileReference> existingOnesWithSameUrl = fileRefService.searchByUrls(list.stream()
+                                                                                     .map(FilesReferenceEvent::getFiles)
+                                                                                     .flatMap(Set::stream)
+                                                                                     .map(FileReferenceRequestDto::getUrl)
+                                                                                     .collect(Collectors.toSet()));
+        Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(
+            existingOnesWithSameChecksum);
+
         for (FilesReferenceEvent item : list) {
             Errors errors = item.validate(validator);
             if (errors.hasErrors()) {
@@ -125,20 +142,25 @@ public class FileReferenceRequestService {
                                       FileRequestType.REFERENCE,
                                       item.getFiles().size(),
                                       getRequestExpirationDate());
-                reference(item.getFiles(), item.getGroupId(), existingOnes, existingDeletionRequests);
+                reference(item.getFiles(),
+                          item.getGroupId(),
+                          existingOnesWithSameChecksum,
+                          existingOnesWithSameUrl,
+                          existingDeletionRequests);
             }
         }
     }
 
     /**
-     * Initialize new reference requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
+     * Initialize new reference requests for a given group identifier. Parameter existingOnesWithSameChecksum is passed to improve performance in bulk creation to
      * avoid requesting {@link IFileReferenceRepository} on each request.
      *
      * @return referenced files
      */
     private Collection<FileReference> reference(Collection<FileReferenceRequestDto> requests,
                                                 String groupId,
-                                                Collection<FileReference> existingOnes,
+                                                Collection<FileReference> existingOnesWithSameChecksum,
+                                                Collection<FileReference> existingOnesWithSameUrl,
                                                 Collection<FileDeletionRequest> existingDeletionRequests) {
         Set<FileReference> fileRefs = Sets.newHashSet();
         for (FileReferenceRequestDto file : requests) {
@@ -151,72 +173,107 @@ public class FileReferenceRequestService {
             this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
 
             // Check if the file already exists for the storage destination
-            Optional<FileReference> oFileRef = existingOnes.stream()
-                                                           .filter(f -> f.getMetaInfo()
-                                                                         .getChecksum()
-                                                                         .equals(file.getChecksum()) && f.getLocation()
-                                                                                                         .getStorage()
-                                                                                                         .equals(file.getStorage()))
-                                                           .findFirst();
-            Optional<FileDeletionRequest> oFileDeletionReq = existingDeletionRequests.stream()
-                                                                                     .filter(r -> r.getFileReference()
-                                                                                                   .getMetaInfo()
-                                                                                                   .getChecksum()
-                                                                                                   .equals(file.getChecksum())
-                                                                                                  && r.getFileReference()
-                                                                                                      .getLocation()
-                                                                                                      .getStorage()
-                                                                                                      .equals(file.getStorage()))
-                                                                                     .findFirst();
-            try {
-                FileReferenceResult fileRefResult = reference(file,
-                                                              oFileRef,
-                                                              oFileDeletionReq,
-                                                              Sets.newHashSet(groupId),
-                                                              true,
-                                                              false);
-                FileReference fileRef = fileRefResult.getFileReference();
-                reqGrpService.requestSuccess(groupId,
-                                             FileRequestType.REFERENCE,
-                                             fileRef.getMetaInfo().getChecksum(),
-                                             fileRef.getLocation().getStorage(),
-                                             null,
-                                             Lists.newArrayList(file.getOwner()),
-                                             fileRef);
-                fileRefs.add(fileRef);
-                // Add newly created fileRef to existing file refs in case of the requests contains multiple time the same file to reference
-                existingOnes.add(fileRef);
-                // Notify reference success to session agent
-                this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
-                if (fileRefResult.getStatus() != FileReferenceResultStatusEnum.UNMODIFIED) {
-                    this.sessionNotifier.incrementReferencedFiles(sessionOwner, session);
+            Optional<FileReference> oFileRef = existingOnesWithSameChecksum.stream()
+                                                                           .filter(f -> f.getMetaInfo()
+                                                                                         .getChecksum()
+                                                                                         .equals(file.getChecksum())
+                                                                                        && f.getLocation()
+                                                                                            .getStorage()
+                                                                                            .equals(file.getStorage()))
+                                                                           .findFirst();
+
+            Optional<FileReference> oFileRefSameUrl = existingOnesWithSameUrl.stream()
+                                                                             .filter(f -> f.getLocation()
+                                                                                           .getUrl()
+                                                                                           .equals(file.getUrl())
+                                                                                          && f.getLocation()
+                                                                                              .getStorage()
+                                                                                              .equals(file.getStorage()))
+                                                                             .findFirst();
+            if (oFileRefSameUrl.isPresent() && !oFileRefSameUrl.get()
+                                                               .getMetaInfo()
+                                                               .getChecksum()
+                                                               .equals(file.getChecksum())) {
+                // A file with the same referenced url already exists but has a different checksum
+                handleError(groupId,
+                            file,
+                            sessionOwner,
+                            session,
+                            String.format("The new file %s and the new file %s both reference the same url %s, but "
+                                          + "their checksums don't match.",
+                                          file.getChecksum(),
+                                          oFileRefSameUrl.get().getMetaInfo().getChecksum(),
+                                          file.getUrl()));
+            } else {
+
+                Optional<FileDeletionRequest> oFileDeletionReq = existingDeletionRequests.stream()
+                                                                                         .filter(r -> r.getFileReference()
+                                                                                                       .getMetaInfo()
+                                                                                                       .getChecksum()
+                                                                                                       .equals(file.getChecksum())
+                                                                                                      && r.getFileReference()
+                                                                                                          .getLocation()
+                                                                                                          .getStorage()
+                                                                                                          .equals(file.getStorage()))
+                                                                                         .findFirst();
+                try {
+                    FileReferenceResult fileRefResult = reference(file,
+                                                                  oFileRef,
+                                                                  oFileDeletionReq,
+                                                                  Sets.newHashSet(groupId),
+                                                                  true,
+                                                                  false);
+                    FileReference fileRef = fileRefResult.getFileReference();
+                    reqGrpService.requestSuccess(groupId,
+                                                 FileRequestType.REFERENCE,
+                                                 fileRef.getMetaInfo().getChecksum(),
+                                                 fileRef.getLocation().getStorage(),
+                                                 null,
+                                                 Lists.newArrayList(file.getOwner()),
+                                                 fileRef);
+                    fileRefs.add(fileRef);
+                    // Add newly created fileRef to existing file refs in case of the requests contains multiple time the same file to reference
+                    existingOnesWithSameChecksum.add(fileRef);
+                    // Notify reference success to session agent
+                    this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+                    if (fileRefResult.getStatus() != FileReferenceResultStatusEnum.UNMODIFIED) {
+                        this.sessionNotifier.incrementReferencedFiles(sessionOwner, session);
+                    }
+                } catch (ModuleException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    handleError(groupId, file, sessionOwner, session, e.getMessage());
+                } finally {
+                    LOGGER.trace("[REFERENCE REQUEST] New reference request ({}) handled in {}ms",
+                                 file.getFileName(),
+                                 System.currentTimeMillis() - start);
                 }
-            } catch (ModuleException e) {
-                LOGGER.error(e.getMessage(), e);
-                fileRefEventPublisher.storeError(file.getChecksum(),
-                                                 Sets.newHashSet(file.getOwner()),
-                                                 file.getStorage(),
-                                                 e.getMessage(),
-                                                 Sets.newHashSet(groupId));
-                reqGrpService.requestError(groupId,
-                                           FileRequestType.REFERENCE,
-                                           file.getChecksum(),
-                                           file.getStorage(),
-                                           null,
-                                           Sets.newHashSet(file.getOwner()),
-                                           e.getMessage());
-                // notify error request to the session agent
-                this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
-                // NOTE : As reference requests are not retryable, session errors for those requests are set in info
-                // status and not error status. Else, the errors could not be recovered.
-                this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
-            } finally {
-                LOGGER.trace("[REFERENCE REQUEST] New reference request ({}) handled in {}ms",
-                             file.getFileName(),
-                             System.currentTimeMillis() - start);
             }
         }
         return fileRefs;
+    }
+
+    private void handleError(String groupId,
+                             FileReferenceRequestDto file,
+                             String sessionOwner,
+                             String session,
+                             String errorMessage) {
+        fileRefEventPublisher.storeError(file.getChecksum(),
+                                         Sets.newHashSet(file.getOwner()),
+                                         file.getStorage(),
+                                         errorMessage,
+                                         Sets.newHashSet(groupId));
+        reqGrpService.requestError(groupId,
+                                   FileRequestType.REFERENCE,
+                                   file.getChecksum(),
+                                   file.getStorage(),
+                                   null,
+                                   Sets.newHashSet(file.getOwner()),
+                                   errorMessage);
+        // notify error request to the session agent
+        this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+        // NOTE : As reference requests are not retryable, session errors for those requests are set in info
+        // status and not error status. Else, the errors could not be recovered.
+        this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
     }
 
     /**

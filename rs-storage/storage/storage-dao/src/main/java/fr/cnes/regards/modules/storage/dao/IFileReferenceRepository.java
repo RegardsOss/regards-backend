@@ -53,6 +53,8 @@ public interface IFileReferenceRepository
 
     Set<FileReference> findByMetaInfoChecksum(String checksum);
 
+    Set<FileReference> findByLocationUrlIn(Collection<String> urls);
+
     Set<FileReference> findByMetaInfoChecksumIn(Collection<String> checksums);
 
     @Query(

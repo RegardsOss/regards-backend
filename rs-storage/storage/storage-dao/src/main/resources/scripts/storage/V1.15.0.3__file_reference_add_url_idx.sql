@@ -1,0 +1,1 @@
+create index if not exists idx_file_reference_url on t_file_reference (url);
