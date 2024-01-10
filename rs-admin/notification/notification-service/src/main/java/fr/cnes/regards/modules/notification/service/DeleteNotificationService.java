@@ -62,6 +62,7 @@ public class DeleteNotificationService {
         notificationLightRepository.deleteByIdIn(notificationLightPage.stream()
                                                                       .map(NotificationLight::getId)
                                                                       .collect(Collectors.toList()));
+
         return notificationLightPage;
     }
 }

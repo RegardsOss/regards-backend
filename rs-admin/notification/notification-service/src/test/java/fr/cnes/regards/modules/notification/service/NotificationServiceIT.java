@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -35,6 +34,7 @@ import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.junit.Assert;
@@ -42,10 +42,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-
-import java.util.List;
 
 /**
  * @author sbinda
@@ -69,7 +68,7 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     private IAuthenticationResolver authResolver;
 
     @Autowired
-    private INotificationRepository repo;
+    private INotificationRepository notificationRepository;
 
     @MockBean
     private IAccessGroupClient accessGroupClient;
@@ -89,40 +88,62 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     @Before
     public void init() throws EntityException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        repo.deleteAll();
+        notificationRepository.deleteAll();
+
         if (!roleService.existByName(authResolver.getRole())) {
             roleService.createRole(new Role(authResolver.getRole(),
                                             roleService.retrieveRole(DefaultRole.REGISTERED_USER.toString())));
         }
-
     }
 
     @Test
-    public void deleteNotifications() throws EntityNotFoundException {
+    public void test_delete_notification() throws EntityNotFoundException {
+        // Given
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title",
+                                                                          NotificationLevel.INFO,
+                                                                          "moi").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.ADMIN.toString()), Sets.newHashSet("jeanclaude")));
 
-        NotificationDTO notification = new NotificationDtoBuilder("message",
-                                                                  "title",
-                                                                  NotificationLevel.INFO,
-                                                                  "moi").toRolesAndUsers(Sets.newHashSet(DefaultRole.ADMIN.toString()),
-                                                                                         Sets.newHashSet("jeanclaude"));
-        notificationService.createNotification(notification);
+        notificationService.createNotification(new NotificationDtoBuilder("message2",
+                                                                          "title2",
+                                                                          NotificationLevel.INFO,
+                                                                          "moi").toRolesAndUsers(Sets.newHashSet(
+            authResolver.getRole()), Sets.newHashSet(authResolver.getUser())));
 
-        notification = new NotificationDtoBuilder("message2", "title2", NotificationLevel.INFO, "moi").toRolesAndUsers(
-            Sets.newHashSet(authResolver.getRole()),
-            Sets.newHashSet(authResolver.getUser()));
-        notificationService.createNotification(notification);
+        Notification notification = notificationService.createNotification(new NotificationDtoBuilder("message3",
+                                                                                                      "title3",
+                                                                                                      NotificationLevel.INFO,
+                                                                                                      "moi").toRoles(
+            Sets.newHashSet(authResolver.getRole())));
 
-        notification = new NotificationDtoBuilder("message3",
-                                                  "title3",
-                                                  NotificationLevel.INFO,
-                                                  "moi").toRoles(Sets.newHashSet(authResolver.getRole()));
-        Notification notification1 = notificationService.createNotification(notification);
-        Assert.assertTrue("notif should exists", repo.findAll().size() == 3);
+        Assert.assertTrue("notif should exists", notificationRepository.findAll().size() == 3);
 
-        notificationService.deleteNotification(notification1.getId());
+        // When
+        notificationService.deleteNotification(notification.getId());
 
-        List<Notification> notifs = repo.findAll();
-        Assert.assertTrue("notif should be deleted", notifs.size() == 2);
+        // Then
+        Assert.assertTrue("notif should be deleted", notificationRepository.findAll().size() == 2);
+    }
+
+    @Test
+    public void test_deletion_notification_with_filter() {
+        // Given
+        Notification notification = notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                                                      "title",
+                                                                                                      NotificationLevel.INFO,
+                                                                                                      "moi").toRolesAndUsers(
+            Sets.newHashSet(DefaultRole.ADMIN.toString()),
+            Sets.newHashSet("jeanclaude")));
+
+        SearchNotificationParameters filters = new SearchNotificationParameters();
+        filters.withIdsIncluded(notification.getId());
+
+        // When
+        notificationService.deleteNotifications(filters, PageRequest.of(0, 10));
+
+        // Then
+        Assert.assertTrue("notif should be deleted", notificationRepository.findAll().size() == 0);
     }
 
 }

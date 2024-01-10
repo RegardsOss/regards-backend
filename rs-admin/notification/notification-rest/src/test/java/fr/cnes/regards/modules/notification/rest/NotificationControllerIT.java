@@ -15,7 +15,6 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
-import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import fr.cnes.regards.modules.notification.service.INotificationService;
 import fr.cnes.regards.modules.notification.service.SendingScheduler;
@@ -206,5 +205,28 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                            body,
                            requestBuilderCustomizer,
                            "Should return Notifications");
+    }
+
+    @Test
+    public void testDeleteNotifications() {
+        String roleName = DefaultRole.PROJECT_ADMIN.name();
+        NotificationDTO notif = new NotificationDtoBuilder("test message",
+                                                           "test",
+                                                           NotificationLevel.INFO,
+                                                           "microservice").toRoles(new HashSet<>(Arrays.asList(roleName)));
+
+        performDefaultPost(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_CREATE_PATH,
+                           notif,
+                           customizer().expectStatusCreated(),
+                           "error");
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusNoContent();
+        SearchNotificationParameters body = new SearchNotificationParameters().withSendersIncluded(Arrays.asList(
+            "microservice"));
+
+        performDefaultDelete(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_DELETE_PATH,
+                             body,
+                             requestBuilderCustomizer,
+                             "error delete multiple notifications");
     }
 }

@@ -244,8 +244,8 @@ public class NotificationController implements IResourceController<Notification>
      */
     @Operation(summary = "Delete a selection of notifications.",
                description = "Find and delete notifications from criterias defined in request body.")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201",
-                                         description = "The notification deletion will be take in account."),
+    @ApiResponses(value = { @ApiResponse(responseCode = "204",
+                                         description = "The notification deletion has been taken into account.\""),
                             @ApiResponse(responseCode = "403",
                                          description = "The endpoint is not accessible for the user.",
                                          content = { @Content(mediaType = "application/html") }),
