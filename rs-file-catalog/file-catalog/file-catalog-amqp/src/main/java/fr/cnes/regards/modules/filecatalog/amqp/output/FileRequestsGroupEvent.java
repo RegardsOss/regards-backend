@@ -33,8 +33,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Bus message response of a request like StorageFlowItem,
- * ReferenceFlowItem or FilesDeletionEvent.<br/>
+ * Bus message response of a request like {@link fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent},
+ * {@link fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent} or {@link fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent}.<br/>
  * <br/>
  * FileRequestEventState :<ul>
  * <li> GRANTED : sent when the request is handled.</li>

@@ -62,9 +62,9 @@ import java.util.concurrent.TimeUnit;
                                    "regards.storage.reference.items.bulk.size=10" },
                     locations = { "classpath:application-local.properties" })
 @Ignore("Performances tests")
-public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
+public class FileReferencesPerformanceIT extends AbstractRegardsTransactionalIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferencesPerformanceIT.class);
 
     @Autowired
     protected FileReferenceEventHandler fileRefEventHandler;

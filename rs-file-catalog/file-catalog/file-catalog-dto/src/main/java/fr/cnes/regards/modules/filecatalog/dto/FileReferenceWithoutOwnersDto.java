@@ -54,7 +54,7 @@ public class FileReferenceWithoutOwnersDto {
 
     /**
      * Business request identifier associated to the FileReference. Those identifiers are the identifier of file request.
-     * See StorageFlowItem, FilesDeletionEvent and ReferenceFlowItem for more information about
+     * See FilesStorageRequestEvent, FilesDeletionEvent and FilesReferenceEvent for more information about
      * file requests.
      */
     private final Set<String> groupIds = new HashSet<>();

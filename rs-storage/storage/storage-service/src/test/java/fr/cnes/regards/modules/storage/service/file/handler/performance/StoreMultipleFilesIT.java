@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.file.flow.performance;
+package fr.cnes.regards.modules.storage.service.file.handler.performance;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.show-sql=false",
-                                   "spring.jpa.properties.hibernate.default_schema=storage_flow_tests",
+                                   "spring.jpa.properties.hibernate.default_schema=storage_events_tests",
                                    "regards.amqp.enabled=true",
                                    "regards.storage.schedule.initial.delay=100",
                                    "regards.storage.schedule.delay=50",
@@ -60,9 +60,9 @@ import java.util.concurrent.TimeUnit;
                     locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp" })
 @Ignore("Performances tests")
-public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageIT {
+public class StoreMultipleFilesIT extends AbstractStorageIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferencePerformanceIT.class);
 
     private static final String FILE_REF_OWNER = "owner";
 
@@ -106,7 +106,7 @@ public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageIT {
 
     @Test
     @Purpose("Test if all 'storedFile' notification are received in case of duplicated file (same checksum)")
-    public void storeFileFlowItemMultipleTimes() throws InterruptedException {
+    public void store_multiple_files_same_checksum() throws InterruptedException {
         // init checksum, it must be the same for all files
         String checksum = UUID.randomUUID().toString();
 

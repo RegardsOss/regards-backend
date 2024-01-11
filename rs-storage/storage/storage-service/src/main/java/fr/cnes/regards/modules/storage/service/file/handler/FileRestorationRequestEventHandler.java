@@ -16,15 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.file.flow;
+package fr.cnes.regards.modules.storage.service.file.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
-import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
+import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -35,48 +32,41 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
- * Handler to handle {@link FilesReferenceEvent} AMQP messages.<br>
- * Those messages are sent to create new file reference.<br>
+ * Handler of bus message events {@link FilesRestorationRequestEvent}s.<br>
  * Each message is saved in a concurrent list to handle availability request by bulk.
  *
  * @author Sébastien Binda
  */
 @Component
-public class FilesStorageRequestHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesStorageRequestEvent> {
+public class FileRestorationRequestEventHandler
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesRestorationRequestEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FilesStorageRequestHandler.class);
+    @Value("${regards.storage.availability.items.bulk.size:10}")
+    private final int BULK_SIZE = 1000;
 
-    /**
-     * Bulk size limit to handle messages
-     * NOTE : Over 100 performance are decreased
-     */
-    @Value("${regards.storage.store.items.bulk.size:10}")
-    private int BULK_SIZE;
+    @Autowired
+    private FileCacheRequestService fileCacheReqService;
 
     @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
-    private FileStorageRequestService fileStorageReqService;
-
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(FilesStorageRequestEvent.class, this);
+        subscriber.subscribeTo(FilesRestorationRequestEvent.class, this);
     }
 
     @Override
-    public void handleBatch(List<FilesStorageRequestEvent> messages) {
-        LOGGER.debug("[STORAGE FLOW HANDLER] Bulk saving {} FilesStorageRequestEvent...", messages.size());
+    public void handleBatch(List<FilesRestorationRequestEvent> messages) {
+        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} FilesRestorationRequestEvent...", messages.size());
         long start = System.currentTimeMillis();
-        fileStorageReqService.store(messages);
-        LOGGER.info("[STORAGE FLOW HANDLER] {} FilesStorageRequestEvent handled in {} ms",
-                    messages.size(),
-                    System.currentTimeMillis() - start);
+        fileCacheReqService.makeAvailable(messages);
+        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} FilesRestorationRequestEvent handled in {} ms",
+                     messages.size(),
+                     System.currentTimeMillis() - start);
     }
 
     @Override
-    public Errors validate(FilesStorageRequestEvent message) {
+    public Errors validate(FilesRestorationRequestEvent message) {
         return null;
     }
 
@@ -85,8 +75,4 @@ public class FilesStorageRequestHandler
         return BULK_SIZE;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

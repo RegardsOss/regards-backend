@@ -57,7 +57,7 @@ public class FilesStorageRequestDto {
 
     @Override
     public String toString() {
-        return "FileStorageFlowItem [" + (files != null ? "files=" + files + ", " : "") + (groupId != null ?
+        return "FilesStorageRequestDto [" + (files != null ? "files=" + files + ", " : "") + (groupId != null ?
             "groupId=" + groupId :
             "") + "]";
     }

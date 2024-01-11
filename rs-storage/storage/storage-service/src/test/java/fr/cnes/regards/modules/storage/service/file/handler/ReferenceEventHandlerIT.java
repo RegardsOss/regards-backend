@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.file.flow;
+package fr.cnes.regards.modules.storage.service.file.handler;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -56,9 +56,9 @@ import java.util.concurrent.ExecutionException;
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
                     locations = { "classpath:application-test.properties" })
-public class ReferenceFileFlowItemIT extends AbstractStorageIT {
+public class ReferenceEventHandlerIT extends AbstractStorageIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFileFlowItemIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceEventHandlerIT.class);
 
     private static final String SESSION_OWNER_1 = "SOURCE 1";
 
@@ -67,7 +67,7 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
     private static final String SESSION_1 = "SESSION 1";
 
     @Autowired
-    private ReferenceFlowItemHandler handler;
+    private FilesReferenceEventHandler handler;
 
     @Before
     public void initialize() throws ModuleException {
@@ -80,7 +80,7 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
      * The file is not stored by the service as the origin storage and the destination storage are identical
      */
     @Test
-    public void addFileRefFlowItem() throws InterruptedException {
+    public void add_file_reference() throws InterruptedException {
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
@@ -144,7 +144,7 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
     }
 
     @Test
-    public void addFileRefFlowItemsWithSameChecksum() throws InterruptedException {
+    public void add_file_reference_same_checksum() throws InterruptedException {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "somewhere";
@@ -187,7 +187,7 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
     }
 
     @Test
-    public void addFileRefFlowItemsWithoutChecksum() throws InterruptedException {
+    public void add_file_reference_no_checksum() throws InterruptedException {
 
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
@@ -243,7 +243,7 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
      * The file is not stored by the service as the origin storage and the destination storage are identical
      */
     @Test
-    public void addFileRefFlowItemAlreadyExists() throws InterruptedException, ExecutionException {
+    public void add_file_reference_already_exists() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         FileReference fileRef = this.generateStoredFileReference(checksum,
@@ -342,7 +342,7 @@ public class ReferenceFileFlowItemIT extends AbstractStorageIT {
      * The file is not stored by the service as the origin storage and the destination storage are identical
      */
     @Test
-    public void addFileRefFlowItemWithSameChecksum() throws InterruptedException, ExecutionException {
+    public void add_file_reference_already_stored() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "aStorage";

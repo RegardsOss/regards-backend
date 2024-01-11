@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.file.flow.performance;
+package fr.cnes.regards.modules.storage.service.file.handler.performance;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -36,10 +36,10 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
-import fr.cnes.regards.modules.storage.service.file.flow.AvailabilityFlowItemHandler;
-import fr.cnes.regards.modules.storage.service.file.flow.DeletionFlowHandler;
-import fr.cnes.regards.modules.storage.service.file.flow.FilesStorageRequestHandler;
-import fr.cnes.regards.modules.storage.service.file.flow.ReferenceFlowItemHandler;
+import fr.cnes.regards.modules.storage.service.file.handler.FileRestorationRequestEventHandler;
+import fr.cnes.regards.modules.storage.service.file.handler.FilesDeletionEventHandler;
+import fr.cnes.regards.modules.storage.service.file.handler.FilesReferenceEventHandler;
+import fr.cnes.regards.modules.storage.service.file.handler.FilesStorageRequestEventHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -68,9 +68,9 @@ import java.util.*;
                                    "spring.jpa.properties.hibernate.default_schema=storage_perf_tests" },
                     locations = { "classpath:application-test.properties" })
 @Ignore("Performances tests")
-public class FlowPerformanceIT extends AbstractStorageIT {
+public class FileReferencePerformanceIT extends AbstractStorageIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferencePerformanceIT.class);
 
     private static final String FILE_REF_OWNER = "owner";
 
@@ -81,16 +81,16 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     private final Set<String> nlChecksums = Sets.newHashSet();
 
     @Autowired
-    private ReferenceFlowItemHandler referenceFlowHandler;
+    private FilesReferenceEventHandler filesReferenceEventHandler;
 
     @Autowired
-    private FilesStorageRequestHandler storeFlowHandler;
+    private FilesStorageRequestEventHandler filesStorageRequestHandler;
 
     @Autowired
-    private AvailabilityFlowItemHandler availabilityHandler;
+    private FileRestorationRequestEventHandler fileRestorationRequestEventHandler;
 
     @Autowired
-    private DeletionFlowHandler deleteHandler;
+    private FilesDeletionEventHandler filesDeletionEventHandler;
 
     @Before
     public void initialize() throws ModuleException {
@@ -157,7 +157,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     }
 
     @Test
-    public void referenceFileWithManyOwners() {
+    public void reference_file_with_many_owners() {
         String checksum = UUID.randomUUID().toString();
         Set<FileReferenceRequestDto> requests = Sets.newHashSet();
         List<FilesReferenceEvent> items = new ArrayList<>();
@@ -178,13 +178,13 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                        sessionOwner,
                                                        session));
             items.add(new FilesReferenceEvent(requests, UUID.randomUUID().toString()));
-            referenceFlowHandler.handleBatch(items);
+            filesReferenceEventHandler.handleBatch(items);
         }
 
     }
 
     @Test
-    public void referenceFiles() throws InterruptedException {
+    public void reference_files() throws InterruptedException {
         LOGGER.info(" --------     REFERENCE TEST     --------- ");
         String refStorage = "storage-1";
         String storage = "storage" + UUID.randomUUID().toString();
@@ -247,13 +247,13 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                        sessionOwner,
                                                        session));
             items.add(new FilesReferenceEvent(requests, UUID.randomUUID().toString()));
-            if (items.size() >= referenceFlowHandler.getBatchSize()) {
-                referenceFlowHandler.handleBatch(items);
+            if (items.size() >= filesReferenceEventHandler.getBatchSize()) {
+                filesReferenceEventHandler.handleBatch(items);
                 items.clear();
             }
         }
         if (items.size() > 0) {
-            referenceFlowHandler.handleBatch(items);
+            filesReferenceEventHandler.handleBatch(items);
             items.clear();
         }
 
@@ -272,7 +272,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     }
 
     @Test
-    public void storeFiles() throws InterruptedException {
+    public void store_files() throws InterruptedException {
         LOGGER.info(" --------     STORE TEST     --------- ");
         OffsetDateTime now = OffsetDateTime.now();
         List<FilesStorageRequestEvent> items = Lists.newArrayList();
@@ -292,12 +292,12 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                    UUID.randomUUID().toString()));
 
             // Publish request
-            if (items.size() > storeFlowHandler.getBatchSize()) {
-                storeFlowHandler.handleBatch(items);
+            if (items.size() > filesStorageRequestHandler.getBatchSize()) {
+                filesStorageRequestHandler.handleBatch(items);
                 items.clear();
             }
         }
-        storeFlowHandler.handleBatch(items);
+        filesStorageRequestHandler.handleBatch(items);
 
         Assert.assertEquals("There should be 5000 file storage request created",
                             5000,
@@ -342,7 +342,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     }
 
     @Test
-    public void deleteReferencedFiles() throws InterruptedException {
+    public void delete_referenced_file() throws InterruptedException {
         LOGGER.info(" --------     DELETE TEST     --------- ");
         int nbToDelete = 500;
         Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
@@ -355,12 +355,12 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                                    SESSION_OWNER,
                                                                    SESSION,
                                                                    false), UUID.randomUUID().toString()));
-            if (items.size() > deleteHandler.getBatchSize()) {
-                deleteHandler.handleBatch(items);
+            if (items.size() > filesDeletionEventHandler.getBatchSize()) {
+                filesDeletionEventHandler.handleBatch(items);
                 items.clear();
             }
         }
-        deleteHandler.handleBatch(items);
+        filesDeletionEventHandler.handleBatch(items);
 
         page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
 
@@ -368,7 +368,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     }
 
     @Test
-    public void deleteStoredFiles() throws InterruptedException {
+    public void delete_stored_file() throws InterruptedException {
         LOGGER.info(" --------     DELETE TEST     --------- ");
         int nbToDelete = 500;
         List<FilesDeletionEvent> items = Lists.newArrayList();
@@ -381,12 +381,12 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                                    SESSION_OWNER,
                                                                    SESSION,
                                                                    false), UUID.randomUUID().toString()));
-            if (items.size() > deleteHandler.getBatchSize()) {
-                deleteHandler.handleBatch(items);
+            if (items.size() > filesDeletionEventHandler.getBatchSize()) {
+                filesDeletionEventHandler.handleBatch(items);
                 items.clear();
             }
         }
-        deleteHandler.handleBatch(items);
+        filesDeletionEventHandler.handleBatch(items);
         LOGGER.info("Waiting ....");
         int loops = 0;
         Page<FileDeletionRequest> pageDel = null;
@@ -400,7 +400,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
     }
 
     @Test
-    public void makeAvailableFlowItem() throws InterruptedException {
+    public void restore_file() throws InterruptedException {
         LOGGER.info(" --------     AVAILABILITY TEST     --------- ");
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepository.count());
         Assert.assertTrue("There should be checksums to restore from nearline storages", nlChecksums.size() > 0);
@@ -410,7 +410,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                                              UUID.randomUUID().toString());
         List<FilesRestorationRequestEvent> items = new ArrayList<>();
         items.add(item);
-        availabilityHandler.handleBatch(items);
+        fileRestorationRequestEventHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Assert.assertEquals("Invalid count of cache file request",
                             nlChecksums.size(),

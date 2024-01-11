@@ -63,12 +63,7 @@ public class FilesReferenceDto {
 
     @Override
     public String toString() {
-        return "FileReferenceFlowItem ["
-               + "files="
-               + files
-               + ", "
-               + (groupId != null ? "groupId=" + groupId : "")
-               + "]";
+        return "FilesReferenceDto [" + "files=" + files + ", " + (groupId != null ? "groupId=" + groupId : "") + "]";
     }
 
 }

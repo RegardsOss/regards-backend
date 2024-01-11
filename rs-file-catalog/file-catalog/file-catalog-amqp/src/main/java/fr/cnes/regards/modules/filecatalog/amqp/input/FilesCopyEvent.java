@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Flow message to request file(s) reference copy.<br/>
+ * Event to request file(s) reference copy.<br/>
  * A copy request will store the file on a different storage if needed and return a success state as if it was a
  * store request<br/>
  * <br/>

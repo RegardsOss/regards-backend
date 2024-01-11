@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.file.flow;
+package fr.cnes.regards.modules.storage.service.file.handler;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -82,7 +82,7 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
     FileStorageRequestService fileStorageRequestService;
 
     @Autowired
-    private AvailabilityFlowItemHandler handler;
+    private FileRestorationRequestEventHandler handler;
 
     @Autowired
     private FilesRetryRequestEventHandler retryHandler;

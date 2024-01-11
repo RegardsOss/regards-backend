@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Flow message to request file(s) reference deletion.<br/>
+ * Event to request file(s) reference deletion.<br/>
  * A deletion request is always a success as the only action is to remove the requesting owner to the file(s)<br/>
  * When a file does not belongs to any owner anymore, then a deletion request is made for stored files (ONLINE and NEARLINE).<br/>
  * <br/>
@@ -46,7 +46,7 @@ import java.util.stream.Stream;
 public class FilesDeletionEvent extends FilesDeletionDto implements ISubscribable {
 
     /**
-     * Maximum number of Request per flow item
+     * Maximum number of Request per event
      */
     public static final int MAX_REQUEST_PER_GROUP = 100;
 

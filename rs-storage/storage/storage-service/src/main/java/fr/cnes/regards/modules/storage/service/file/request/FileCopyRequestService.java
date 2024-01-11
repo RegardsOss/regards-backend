@@ -115,7 +115,7 @@ public class FileCopyRequestService {
     private Integer nbDaysBeforeExpiration;
 
     /**
-     * Initialize new copy requests from Flow items.
+     * Initialize new copy request from events.
      */
     public void copy(Collection<FilesCopyEvent> items) {
         for (FilesCopyEvent item : items) {
@@ -253,7 +253,7 @@ public class FileCopyRequestService {
                                                  new LockConfiguration(COPY_PROCESS_LOCK,
                                                                        Instant.now().plusSeconds(1200)));
         } catch (Throwable e) {
-            LOGGER.trace("[COPY FLOW HANDLER] Copy process delayed. A copy process is already running.", e);
+            LOGGER.trace("[FILES COPY REQUEST SERVICE] Copy process delayed. A copy process is already running.", e);
         }
     }
 

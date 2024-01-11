@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.storage.service.file.flow;/*
+package fr.cnes.regards.modules.storage.service.file.handler;/*
  * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.

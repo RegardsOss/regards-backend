@@ -420,9 +420,9 @@ public class FileDeletionRequestService {
     }
 
     /**
-     * Initialize new deletion requests from Flow items.
+     * Initialize new deletion request events.
      *
-     * @param list deletion flow items to transform into deletion requests
+     * @param list deletion events to transform into deletion requests
      */
     public void handle(List<FilesDeletionEvent> list) {
         Set<String> checksums = list.stream()

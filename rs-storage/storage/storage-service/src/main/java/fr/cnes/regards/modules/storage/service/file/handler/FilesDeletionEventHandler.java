@@ -16,12 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.file.flow;
+package fr.cnes.regards.modules.storage.service.file.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
-import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
+import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -32,41 +34,44 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
- * Handler of bus message events {@link FilesRestorationRequestEvent}s.<br>
+ * Handler to handle {@link FilesDeletionEvent} AMQP messages.<br>
+ * Those messages are sent to delete a file reference for one owner.<br>
  * Each message is saved in a concurrent list to handle availability request by bulk.
  *
  * @author Sébastien Binda
  */
 @Component
-public class AvailabilityFlowItemHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesRestorationRequestEvent> {
+public class FilesDeletionEventHandler
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesDeletionEvent> {
 
-    @Value("${regards.storage.availability.items.bulk.size:10}")
-    private final int BULK_SIZE = 1000;
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilesDeletionEventHandler.class);
 
-    @Autowired
-    private FileCacheRequestService fileCacheReqService;
+    @Value("${regards.storage.deletion.items.bulk.size:10}")
+    private int BULK_SIZE;
 
     @Autowired
     private ISubscriber subscriber;
 
+    @Autowired
+    private FileDeletionRequestService fileDelReqService;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(FilesRestorationRequestEvent.class, this);
+        subscriber.subscribeTo(FilesDeletionEvent.class, this);
     }
 
     @Override
-    public void handleBatch(List<FilesRestorationRequestEvent> messages) {
-        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} FilesRestorationRequestEvent...", messages.size());
+    public void handleBatch(List<FilesDeletionEvent> messages) {
+        LOGGER.debug("[FILES DELETION EVENT HANDLER] Bulk saving {} FilesDeletionEvent...", messages.size());
         long start = System.currentTimeMillis();
-        fileCacheReqService.makeAvailable(messages);
-        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} FilesRestorationRequestEvent handled in {} ms",
+        fileDelReqService.handle(messages);
+        LOGGER.debug("[FILES DELETION EVENT HANDLER] {} FilesDeletionEvent handled in {} ms",
                      messages.size(),
                      System.currentTimeMillis() - start);
     }
 
     @Override
-    public Errors validate(FilesRestorationRequestEvent message) {
+    public Errors validate(FilesDeletionEvent message) {
         return null;
     }
 

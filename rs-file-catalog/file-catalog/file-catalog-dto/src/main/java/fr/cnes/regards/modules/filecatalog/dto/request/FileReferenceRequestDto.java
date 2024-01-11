@@ -35,7 +35,7 @@ import javax.validation.constraints.NotNull;
  * <li> Owner of the file who ask for deletion </li>
  * <li> Url to access file in the storage location </li>
  * </ul>
- * See ReferenceFlowItem for more information about reference request process.
+ * See FilesReferenceEvent for more information about reference request process.
  *
  * @author Sébastien Binda
  */

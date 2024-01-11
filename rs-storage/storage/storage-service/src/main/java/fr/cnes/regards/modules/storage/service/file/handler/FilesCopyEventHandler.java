@@ -16,12 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.file.flow;
+package fr.cnes.regards.modules.storage.service.file.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
-import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesCopyEvent;
+import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,44 +34,44 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
- * Handler to handle {@link FilesDeletionEvent} AMQP messages.<br>
- * Those messages are sent to delete a file reference for one owner.<br>
+ * Handler to handle {@link FilesCopyEvent} AMQP messages.<br>
+ * Those messages are sent to copy a file reference to a given storage location<br>
  * Each message is saved in a concurrent list to handle availability request by bulk.
  *
  * @author Sébastien Binda
  */
 @Component
-public class DeletionFlowHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesDeletionEvent> {
+public class FilesCopyEventHandler
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesCopyEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeletionFlowHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilesCopyEventHandler.class);
 
-    @Value("${regards.storage.deletion.items.bulk.size:10}")
+    @Value("${regards.storage.copy.items.bulk.size:10}")
     private int BULK_SIZE;
 
     @Autowired
     private ISubscriber subscriber;
 
     @Autowired
-    private FileDeletionRequestService fileDelReqService;
+    private FileCopyRequestService fileCopyReqService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(FilesDeletionEvent.class, this);
+        subscriber.subscribeTo(FilesCopyEvent.class, this);
     }
 
     @Override
-    public void handleBatch(List<FilesDeletionEvent> messages) {
-        LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", messages.size());
+    public void handleBatch(List<FilesCopyEvent> messages) {
+        LOGGER.debug("[FILES COPY EVENT HANDLER] Bulk saving {} FilesCopyEvent...", messages.size());
         long start = System.currentTimeMillis();
-        fileDelReqService.handle(messages);
-        LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms",
+        fileCopyReqService.copy(messages);
+        LOGGER.debug("[FILES COPY EVENT HANDLER] {} FilesCopyEvent handled in {} ms",
                      messages.size(),
                      System.currentTimeMillis() - start);
     }
 
     @Override
-    public Errors validate(FilesDeletionEvent message) {
+    public Errors validate(FilesCopyEvent message) {
         return null;
     }
 

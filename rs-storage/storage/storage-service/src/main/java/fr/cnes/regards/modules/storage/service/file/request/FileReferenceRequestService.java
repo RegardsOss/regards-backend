@@ -107,7 +107,7 @@ public class FileReferenceRequestService {
     }
 
     /**
-     * Initialize new reference requests from Flow items.
+     * Initialize new reference requests from events.
      */
     public void reference(List<FilesReferenceEvent> list) {
         Set<FileReference> existingOnesWithSameChecksum = fileRefService.search(list.stream()

@@ -63,11 +63,6 @@ public class FilesCopyDto {
 
     @Override
     public String toString() {
-        return "DeleteFileRefFlowItem ["
-               + "files="
-               + files
-               + ", "
-               + (groupId != null ? "groupId=" + groupId : "")
-               + "]";
+        return "FilesCopyDto [" + "files=" + files + ", " + (groupId != null ? "groupId=" + groupId : "") + "]";
     }
 }

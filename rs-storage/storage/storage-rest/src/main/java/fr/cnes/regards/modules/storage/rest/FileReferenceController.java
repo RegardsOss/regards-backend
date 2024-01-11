@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaExceededReporter;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
-import fr.cnes.regards.modules.storage.service.file.flow.FilesStorageRequestHandler;
+import fr.cnes.regards.modules.storage.service.file.handler.FilesStorageRequestEventHandler;
 import io.vavr.control.Try;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.csv.CSVFormat;
@@ -113,7 +113,7 @@ public class FileReferenceController {
     private IAuthenticationResolver authResolver;
 
     @Autowired
-    private FilesStorageRequestHandler storageHandler;
+    private FilesStorageRequestEventHandler storageHandler;
 
     /**
      * End-point to Download a file referenced by a storage location with the given checksum.

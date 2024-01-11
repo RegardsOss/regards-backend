@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.file.flow;
+package fr.cnes.regards.modules.storage.service.file.handler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -63,14 +63,14 @@ import java.util.*;
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
                     locations = { "classpath:application-test.properties" })
-public class StoreFileFlowItemIT extends AbstractStorageIT {
+public class StoreFileEventIT extends AbstractStorageIT {
 
     private static final String SESSION_OWNER = "SOURCE 1";
 
     private static final String SESSION = "SESSION 1";
 
     @Autowired
-    private FilesStorageRequestHandler storeHandler;
+    private FilesStorageRequestEventHandler storeHandler;
 
     @Autowired
     private FilesRetryRequestEventHandler retryHandler;
@@ -87,7 +87,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     @Test(expected = IllegalArgumentException.class)
     @Requirement("REGARDS_DSL_STO_AIP_080")
     @Purpose("Check that a storage request without checksum is denied")
-    public void storeFileWithoutChecksum() {
+    public void store_file_no_checksum() {
         // Create a new bus message File reference request
         new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
                                                                  null,
@@ -106,7 +106,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
      * The file is not stored by the service as the origin storage and the destination storage are identical
      */
     @Test
-    public void storeFileFlowItem() {
+    public void store_file_already_stored() {
         String owner = "new-owner";
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
@@ -184,7 +184,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     }
 
     @Test
-    public void storeFileNearLineWithPendingActionRemaining() {
+    public void store_file_nearline_with_pending_actions() {
         String owner = "new-owner";
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
@@ -216,7 +216,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     }
 
     @Test
-    public void storeFileFlowItemWhilePreviousRequestExists() {
+    public void store_file_while_previous_request_exists() {
         String owner = "new-owner";
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
@@ -323,7 +323,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
      * The file is not stored by the service as the origin storage and the destination storage are identical
      */
     @Test
-    public void storeSameFileFlowItem() {
+    public void store_same_file() {
         String owner = "new-owner";
         String owner2 = owner + "23";
         String checksum = UUID.randomUUID().toString();
@@ -458,7 +458,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
     }
 
     @Test
-    public void storeFilesFlowItem() {
+    public void store_files() {
         // Create a new bus message File reference request
         Set<FileStorageRequestDto> requests = Sets.newHashSet();
         String cs1 = UUID.randomUUID().toString();
@@ -530,7 +530,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
      * The file is not stored by the service as the origin storage and the destination storage are identical
      */
     @Test
-    public void storeFileFlowItem_unknownStorage() {
+    public void store_file_unknown_storage() {
         String checksum = UUID.randomUUID().toString();
         String storageDestination = "somewheere";
         // Create a new bus message File reference request
@@ -592,7 +592,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
      * Test request to reference and store a file. An error should be thrown during storage by plugin
      */
     @Test
-    public void storeFileFlowItem_storeError() {
+    public void store_file_error() {
         String checksum = UUID.randomUUID().toString();
         // Create a new bus message File reference request
         FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("error.file.name",

@@ -137,7 +137,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     /**
      * Publish {@link FilesCopyEvent}s for each {@link FileReference} to copy from one destination to an other one.
      */
-    private final Task publishCopyFlowItemsTask = () -> {
+    private final Task publishCopyFilesCopyEventTask = () -> {
         lockingTaskExecutors.assertLocked();
         long start = System.currentTimeMillis();
         logger.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ...",
@@ -202,7 +202,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     @Override
     public void run() {
         try {
-            lockingTaskExecutors.executeWithLock(publishCopyFlowItemsTask,
+            lockingTaskExecutors.executeWithLock(publishCopyFilesCopyEventTask,
                                                  new LockConfiguration(FileCopyRequestService.COPY_PROCESS_LOCK,
                                                                        Instant.now().plusSeconds(300)));
         } catch (Throwable e) {

@@ -36,7 +36,7 @@ import java.util.Optional;
  * <li> Owner of the file who ask for storage </li>
  * <li> originUrl where to access file to store. Must be locally accessible (file protocol for example) </li>
  * </ul>
- * See StorageFlowItem for more information about storage request process.
+ * See FilesStorageRequestEvent for more information about storage request process.
  *
  * @author Sébastien Binda
  */

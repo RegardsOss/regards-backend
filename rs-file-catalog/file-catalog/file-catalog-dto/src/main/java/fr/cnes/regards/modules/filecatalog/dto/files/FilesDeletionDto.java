@@ -67,7 +67,7 @@ public class FilesDeletionDto {
 
     @Override
     public String toString() {
-        return "DeleteFileRefFlowItem [" + (files != null ? "files=" + files + ", " : "") + (groupId != null ?
+        return "FilesDeletionDto [" + (files != null ? "files=" + files + ", " : "") + (groupId != null ?
             "groupId=" + groupId :
             "") + "]";
     }

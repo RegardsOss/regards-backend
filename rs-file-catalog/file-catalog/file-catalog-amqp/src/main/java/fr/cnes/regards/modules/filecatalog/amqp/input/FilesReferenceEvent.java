@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Flow message to request a new file reference.<br/>
+ * Event to request a new file reference.<br/>
  * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
@@ -47,7 +47,7 @@ import java.util.stream.Stream;
 public class FilesReferenceEvent extends FilesReferenceDto implements ISubscribable {
 
     /**
-     * Maximum number of Request per flow item
+     * Maximum number of Request per event
      */
     public static final int MAX_REQUEST_PER_GROUP = 100;
 

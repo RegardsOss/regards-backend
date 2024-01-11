@@ -180,7 +180,7 @@ public class FileStorageRequestService {
     }
 
     /**
-     * Initialize new storage requests from Flow items.
+     * Initialize new storage requests from events.
      *
      * @param list storage requests
      */

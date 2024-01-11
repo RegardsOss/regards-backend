@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.filecatalog.dto.request.FileRetryRequestDto;
 import java.util.Collection;
 
 /**
- * Flow message to to retry error requests.<br/>
+ * Event to to retry error requests.<br/>
  * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *

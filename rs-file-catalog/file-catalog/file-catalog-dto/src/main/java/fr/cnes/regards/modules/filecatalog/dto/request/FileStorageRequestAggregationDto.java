@@ -36,7 +36,7 @@ import java.util.Set;
  * <li> Owners referencing the file </li>
  * <li> originUrl where to access file to store. Must be locally accessible (file protocol for example) </li>
  * </ul>
- * See StorageFlowItem for more information about storage request process.
+ * See FilesStorageRequestEvent for more information about storage request process.
  *
  * @author Thibaud Michaudel
  */
