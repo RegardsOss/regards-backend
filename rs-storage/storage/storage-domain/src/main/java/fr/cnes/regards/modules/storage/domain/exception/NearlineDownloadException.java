@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.storage.domain.exception;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
- * Exception when a error is raised during the downloading of file from NEARLINE storage.
+ * Exception when an error is raised during the downloading of file from NEARLINE storage.
  *
  * @author Stephane Cortine
  */

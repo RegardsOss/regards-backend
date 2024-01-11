@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -31,11 +30,13 @@ import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineDownloadException;
 import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
+import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
-import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import io.vavr.control.Option;
@@ -52,6 +53,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -94,10 +96,7 @@ public class FileDownloadService {
     private FileCacheRequestService fileCacheReqService;
 
     @Autowired
-    private IAuthenticationResolver authResolver;
-
-    @Autowired
-    private IQuotaService<DownloadableFile> downloadQuotaService;
+    private FileReferenceService fileReferenceService;
 
     /**
      * Download a file thanks to its checksum. If the file is stored in multiple storage location,
@@ -178,20 +177,85 @@ public class FileDownloadService {
      */
     private Try<Callable<DownloadableFile>> downloadCacheFile(String checksum) {
         return Option.ofOptional(cachedFileService.findByChecksum(checksum)).toTry().map(cachedFileToDownload -> () -> {
-            try {
-                Long fileSize = cachedFileToDownload.getFileSize();
-                String fileName = cachedFileToDownload.getFileName();
-                MimeType mimeType = cachedFileToDownload.getMimeType();
-                FileInputStream is = new FileInputStream(cachedFileToDownload.getLocation().getPath());
-                return isRawData(cachedFileToDownload) ?
-                    new QuotaLimitedDownloadableFile(is, fileSize, fileName, mimeType) :
-                    new StandardDownloadableFile(is, fileSize, fileName, mimeType);
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new EntityNotFoundException(String.format("File %s not found in cache system",
-                                                                cachedFileToDownload.getLocation().getPath()));
+            if (cachedFileToDownload.isInternalCache()) {
+                return downloadFromInternalCacheFile(cachedFileToDownload);
+            } else {
+                return downloadFromExternalCacheFile(cachedFileToDownload, checksum);
             }
         });
+    }
+
+    private DownloadableFile downloadFromExternalCacheFile(CacheFile cachedFileToDownload, String checksum)
+        throws ModuleException {
+        if (cachedFileToDownload.getExpirationDate().isBefore(OffsetDateTime.now())) {
+            cachedFileService.delete(cachedFileToDownload);
+            throw new NearlineFileNotAvailableException(String.format("Nearline file %s with checksum %s has expired",
+                                           cachedFileToDownload.getFileName(),
+                                           cachedFileToDownload.getChecksum()));
+        }
+
+        // file is cached in an external cache, we download it with corresponding plugin
+        try {
+            INearlineStorageLocation plugin = pluginService.getPlugin(cachedFileToDownload.getExternalCachePlugin());
+            // we got checksum and plugin associated of the cached file.
+            // we don't need to retrieve exact FileReference in database.
+            // instead, we recreate a fileReference with needed information.
+            FileReference fakeFileReference = simulateFileReferenceFromCacheFile(checksum, cachedFileToDownload);
+            InputStream download = plugin.download(fakeFileReference);
+            return new StandardDownloadableFile(download,
+                                                cachedFileToDownload.getFileSize(),
+                                                cachedFileToDownload.getFileName(),
+                                                cachedFileToDownload.getMimeType());
+        } catch (NearlineFileNotAvailableException e) {
+            LOGGER.error("Nearline file {} with checksum {} is not available",
+                         cachedFileToDownload.getFileName(),
+                         cachedFileToDownload.getChecksum(),
+                         e);
+            cachedFileService.delete(cachedFileToDownload);
+            throw e;
+        } catch (NearlineDownloadException e) {
+            LOGGER.error("An error occurred while downloading external cached file {}", checksum, e);
+            throw e;
+        } catch (NotAvailablePluginConfigurationException e) {
+            String message = String.format("Plugin %s is not available, cannot retrieve external cache file %s",
+                                           cachedFileToDownload.getExternalCachePlugin(),
+                                           cachedFileToDownload.getFileName());
+            LOGGER.error(message);
+            throw new ModuleException(message, e);
+        }
+    }
+
+    private DownloadableFile downloadFromInternalCacheFile(CacheFile cachedFileToDownload)
+        throws EntityNotFoundException {
+        try {
+            Long fileSize = cachedFileToDownload.getFileSize();
+            String fileName = cachedFileToDownload.getFileName();
+            MimeType mimeType = cachedFileToDownload.getMimeType();
+            FileInputStream is = new FileInputStream(cachedFileToDownload.getLocation().getPath());
+            return isRawData(cachedFileToDownload) ?
+                new QuotaLimitedDownloadableFile(is, fileSize, fileName, mimeType) :
+                new StandardDownloadableFile(is, fileSize, fileName, mimeType);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new EntityNotFoundException(String.format("File %s not found in cache system",
+                                                            cachedFileToDownload.getLocation().getPath()));
+        }
+    }
+
+    /**
+     * Create and complete a FileReference with maximum information stored in a CacheFile.
+     */
+    private static FileReference simulateFileReferenceFromCacheFile(String checksum, CacheFile cachedFileToDownload) {
+        FileReference fileReference = new FileReference();
+        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum,
+                                                                   "MD5",
+                                                                   cachedFileToDownload.getFileName(),
+                                                                   cachedFileToDownload.getFileSize(),
+                                                                   cachedFileToDownload.getMimeType());
+        metaInfo.setType(cachedFileToDownload.getType());
+        fileReference.setMetaInfo(metaInfo);
+        fileReference.setNearlineConfirmed(false);
+        return fileReference;
     }
 
     private boolean isRawData(CacheFile cachedFile) {

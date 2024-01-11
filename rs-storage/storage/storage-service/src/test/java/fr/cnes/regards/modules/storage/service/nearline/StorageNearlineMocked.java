@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.availability;
+package fr.cnes.regards.modules.storage.service.nearline;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.filecatalog.dto.availability.NearlineFileStatusDto;
@@ -24,8 +24,12 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineDownloadException;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.domain.plugin.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
@@ -55,6 +59,8 @@ public class StorageNearlineMocked implements INearlineStorageLocation {
 
     @Override
     public NearlineFileStatusDto checkAvailability(FileReference fileReference) {
+        // simulate T2 or T3 from the name of file ->
+        // a file ending with T3 pattern will be considered not available (stored in T3), all others are available (stored in T2)
         checkAvailabilityCallNumber++;
         if (fileReference.getMetaInfo().getFileName().endsWith(T3_PATTERN)) {
             return new NearlineFileStatusDto(false, null, "file is not available");
@@ -62,6 +68,14 @@ public class StorageNearlineMocked implements INearlineStorageLocation {
             return new NearlineFileStatusDto(true, OffsetDateTime.now().plusHours(1), "file is available");
         }
     }
+
+    @Override
+    public InputStream download(FileReference fileReference)
+        throws NearlineFileNotAvailableException, NearlineDownloadException {
+        return new ByteArrayInputStream(new byte[10]);
+    }
+
+    // --- NOT USED METHODS ---
 
     @Override
     public void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager) {
@@ -90,7 +104,6 @@ public class StorageNearlineMocked implements INearlineStorageLocation {
 
     @Override
     public void store(FileStorageWorkingSubset workingSet, IStorageProgressManager progressManager) {
-
     }
 
     @Override

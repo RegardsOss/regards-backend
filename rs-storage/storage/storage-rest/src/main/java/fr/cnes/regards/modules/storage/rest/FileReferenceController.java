@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.service.DownloadTokenService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -141,6 +142,14 @@ public class FileReferenceController {
                                                                          LOGGER.debug(t.getMessage(), t);
                                                                          return new ResponseEntity<>(HttpStatus.NOT_FOUND);
                                                                      })
+                                                                     .recover(NearlineFileNotAvailableException.class,
+                                                                              t -> {
+                                                                                  LOGGER.warn(String.format(
+                                                                                      "Unable to download nearline file with checksum=%s. Cause file is expired or does not exists on any known storage location",
+                                                                                      checksum));
+                                                                                  LOGGER.debug(t.getMessage(), t);
+                                                                                  return new ResponseEntity<>(HttpStatus.GONE);
+                                                                              })
                                                                      .recover(ModuleException.class, t -> {
                                                                          LOGGER.error(t.getMessage(), t);
                                                                          return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -171,6 +180,13 @@ public class FileReferenceController {
         return Try.of(() -> downloadService.downloadFile(checksum))
                   .mapTry(Callable::call)
                   .flatMap(dlFile -> downloadFile(dlFile, isContentInline, response))
+                  .recover(NearlineFileNotAvailableException.class, t -> {
+                      LOGGER.warn(String.format(
+                          "Unable to download nearline file with checksum=%s. Cause file is expired or does not exists on any known storage location",
+                          checksum));
+                      LOGGER.debug(t.getMessage(), t);
+                      return new ResponseEntity<>(HttpStatus.GONE);
+                  })
                   .recover(ModuleException.class, t -> {
                       LOGGER.error(t.getMessage());
                       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -202,6 +218,7 @@ public class FileReferenceController {
                                                                                                                .getBytes()),
                                                                            HttpStatus.TOO_MANY_REQUESTS);
                                            });
+
             }
             // no quota handling, just download
             return downloadFile(dlFile, isContentInline, response);

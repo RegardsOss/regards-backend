@@ -192,7 +192,11 @@ public class FileAvailabilityService {
         return ResponseEntityUtils.extractBodyOrThrow(storageResponse, ERROR_AVAILABILITY_MESSAGE);
     }
 
+    /**
+     * Check if the product list size doesn't exceed the max configured.
+     */
     private void validateInput(Set<String> productIds) throws FileAvailabilityException {
+        // Need to validate manually (without @Size of javax in payload dto) because size is configurable.
         if (productIds.size() > maxBulkSize) {
             throw new FileAvailabilityException(NotAvailabilityCauseEnum.TOO_MUCH_PRODUCTS,
                                                 "A maximum of "

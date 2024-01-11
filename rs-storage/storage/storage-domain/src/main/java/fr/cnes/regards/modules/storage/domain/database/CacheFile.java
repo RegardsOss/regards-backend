@@ -104,16 +104,16 @@ public class CacheFile {
         fileSize = 0L;
     }
 
-    public CacheFile(String checksum,
-                     Long fileSize,
-                     String fileName,
-                     MimeType mimeType,
-                     URL location,
-                     OffsetDateTime expirationDate,
-                     String groupId,
-                     String type,
-                     boolean internalCache,
-                     @Nullable String externalCachePlugin) {
+    protected CacheFile(String checksum,
+                        Long fileSize,
+                        String fileName,
+                        MimeType mimeType,
+                        URL location,
+                        OffsetDateTime expirationDate,
+                        String groupId,
+                        String type,
+                        boolean internalCache,
+                        @Nullable String externalCachePlugin) {
         this.checksum = checksum;
         this.fileSize = fileSize;
         this.location = location;

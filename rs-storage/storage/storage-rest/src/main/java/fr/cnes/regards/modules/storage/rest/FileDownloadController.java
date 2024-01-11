@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStat
 import fr.cnes.regards.modules.filecatalog.dto.availability.FilesAvailabilityRequestDto;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.service.DownloadTokenService;
 import fr.cnes.regards.modules.storage.service.availability.FileAvailabilityService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
@@ -112,6 +113,12 @@ public class FileDownloadController {
                 checksum));
             LOGGER.debug(t.getMessage(), t);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }).recover(NearlineFileNotAvailableException.class, t -> {
+            LOGGER.warn(String.format(
+                "Unable to download nearline file with checksum=%s. Cause file is expired or does not exists on any known storage location",
+                checksum));
+            LOGGER.debug(t.getMessage(), t);
+            return new ResponseEntity<>(HttpStatus.GONE);
         }).recover(ModuleException.class, t -> {
             LOGGER.error(t.getMessage(), t);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -140,6 +147,13 @@ public class FileDownloadController {
         return Try.of(() -> downloadService.downloadFile(checksum))
                   .mapTry(Callable::call)
                   .flatMap(dlFile -> downloadFile(dlFile, isContentInline))
+                  .recover(NearlineFileNotAvailableException.class, t -> {
+                      LOGGER.warn(String.format(
+                          "Unable to download nearline file with checksum=%s. Cause file is expired or does not exists on any known storage location",
+                          checksum));
+                      LOGGER.debug(t.getMessage(), t);
+                      return new ResponseEntity<>(HttpStatus.GONE);
+                  })
                   .recover(ModuleException.class, t -> {
                       LOGGER.error(t.getMessage());
                       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
