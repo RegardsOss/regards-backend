@@ -72,7 +72,6 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
     @Autowired
     private IFeatureCopyRequestRepository featureCopyRequestRepo;
 
-
     @Autowired
     private IAuthenticationResolver authResolver;
 

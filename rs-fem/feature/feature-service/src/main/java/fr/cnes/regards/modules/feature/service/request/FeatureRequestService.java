@@ -248,6 +248,7 @@ public class FeatureRequestService implements IFeatureRequestService {
         // Handle successful update and create requests
         featureCreationService.handleSuccessfulCreation(creationRequests);
         featureUpdateService.doOnSuccess(updateRequests);
+
         LOGGER.debug("------------->>> {} features updated from {} storage responses "
                      + "associated to {} creation requests and {} update requests in {} ms",
                      updatedFeatures.size(),
@@ -255,7 +256,6 @@ public class FeatureRequestService implements IFeatureRequestService {
                      creationRequests.size(),
                      updateRequests.size(),
                      System.currentTimeMillis() - scheduleStart);
-
     }
 
     @Override

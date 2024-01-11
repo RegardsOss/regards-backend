@@ -105,8 +105,6 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Autowired
     private IJobInfoService jobInfoService;
 
-
-
     @Autowired
     private IFeatureValidationService validationService;
 
@@ -256,7 +254,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             } else if (grantedRequests.stream().anyMatch(request -> request.getUrn().equals(urn))) {
                 errors.rejectValue(rejectField, errorCode, String.format(defaultMessageTemplate, "granted requests"));
             } else if (newUpdateRequests.stream().anyMatch(request -> request.getFeature().getUrn().equals(urn))) {
-                errors.rejectValue(rejectField, errorCode, String.format(defaultMessageTemplate, "new update requests"));
+                errors.rejectValue(rejectField,
+                                   errorCode,
+                                   String.format(defaultMessageTemplate, "new update requests"));
             } else {
                 // Check if provided URN match an existing feature
                 if (existingEntityUrns.contains(urn)) {

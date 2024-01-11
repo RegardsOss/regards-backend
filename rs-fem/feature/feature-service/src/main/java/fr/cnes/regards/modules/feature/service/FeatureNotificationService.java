@@ -80,7 +80,6 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     @Autowired
     private IFeatureEntityRepository featureRepo;
 
-
     @Autowired
     private Validator validator;
 
