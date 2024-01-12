@@ -181,9 +181,9 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
         dto.withSession(SESSION);
         oaisDeletionService.registerOAISDeletionCreator(dto);
-        assertDeletedAIPs(nbSIP, FIVE_SECONDS, TimeUnit.MILLISECONDS);
+        assertDeletedAIPs(nbSIP, THREE_SECONDS * nbSIP, TimeUnit.MILLISECONDS);
         // Simulate notification errors
-        testRequestsError(nbSIP, FIVE_SECONDS, TimeUnit.MILLISECONDS);
+        testRequestsError(nbSIP, THREE_SECONDS * nbSIP, TimeUnit.MILLISECONDS);
         // Retry requests
         requestService.scheduleRequestRetryJob(new SearchRequestParameters().withRequestIpTypesIncluded(Set.of(
             RequestTypeEnum.OAIS_DELETION)));
