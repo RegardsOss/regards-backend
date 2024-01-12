@@ -33,7 +33,7 @@ import java.util.Set;
 public class FilesAvailabilityRequestDto {
 
     @NotEmpty
-    @Schema(description = "list of urn of products")
+    @Schema(name = "product_ids", description = "list of urn of products")
     @SerializedName("product_ids")
     private final Set<String> productIds;
 

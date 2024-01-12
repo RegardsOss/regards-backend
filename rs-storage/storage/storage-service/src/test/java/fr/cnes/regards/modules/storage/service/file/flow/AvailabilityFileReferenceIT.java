@@ -103,10 +103,9 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
 
     @Test
     @Requirement("REGARDS_DSL_STO_AIP_140")
-    @Purpose("Check that a availability request is well handled when a new bus message is received")
-    public void FilesAvailabilityRequestEvent() throws InterruptedException, ExecutionException {
-
-        LOGGER.info("--> FilesAvailabilityRequestEvent");
+    @Purpose("Check that a restoration request is well handled when a new bus message is received")
+    public void test_files_restoration_request_event() throws InterruptedException, ExecutionException {
+        LOGGER.info("--> FilesRestorationRequestEvent");
         // Simulate storage of 3 files in a near line location
         FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test", Optional.empty());
         FileReference file2 = this.generateRandomStoredNearlineFileReference("file.nearline.2.test", Optional.empty());
@@ -187,7 +186,7 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
         // There should be 3 notification for online files available
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(8)).publish(Mockito.any(FileReferenceEvent.class));
-        // check if availability events are sent for available files
+        // check if restoration events are sent for available files
         Mockito.verify(publisher, Mockito.times(6)) // 6 available files
                .broadcast(Mockito.eq(FileAvailableEvent.EXCHANGE_NAME),
                           Mockito.eq(Optional.empty()),

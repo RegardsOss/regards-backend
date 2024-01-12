@@ -57,11 +57,10 @@ public class AvailabilityFlowItemHandler
 
     @Override
     public void handleBatch(List<FilesRestorationRequestEvent> messages) {
-        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} FilesAvailabilityRequestEvent...",
-                     messages.size());
+        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} FilesRestorationRequestEvent...", messages.size());
         long start = System.currentTimeMillis();
         fileCacheReqService.makeAvailable(messages);
-        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} FilesAvailabilityRequestEvent handled in {} ms",
+        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} FilesRestorationRequestEvent handled in {} ms",
                      messages.size(),
                      System.currentTimeMillis() - start);
     }

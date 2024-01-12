@@ -62,7 +62,7 @@ public class FileAvailabilityController {
                             @ApiResponse(responseCode = "400", description = "Too much products or files in input") })
     @ResourceAccess(description = "Get file availability of all files of all input products",
                     role = DefaultRole.EXPLOIT)
-    public ResponseEntity<FilesAvailabilityResponseDto> fileAvailability(
+    public ResponseEntity<FilesAvailabilityResponseDto> filesAvailability(
         @RequestBody FilesAvailabilityRequestDto filesAvailabilityRequestDto) throws ModuleException {
         try {
             return new ResponseEntity<>(fileAvailabilityService.checkAvailability(filesAvailabilityRequestDto.getProductIds()),
