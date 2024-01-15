@@ -30,9 +30,13 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -40,6 +44,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test for {@link AgentSnapshotJobService}
@@ -49,6 +54,8 @@ import java.util.Optional;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_job_service_it" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
 public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsIT {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotJobServiceIT.class);
 
     @Autowired
     private AgentSnapshotJobService agentJobSnapshotService;
@@ -63,9 +70,16 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsIT {
         // wait for stepPropertyUpdateRequestEvent to be stored in database
         waitForStepPropertyEventsStored(nbEvents);
 
-        // retrieve associated snapshot processes
-        List<SnapshotProcess> snapshotProcessesCreated = this.snapshotProcessRepo.findAll();
-        Assert.assertEquals("Wrong number of snapshot process created", 3, snapshotProcessesCreated.size());
+        // retrieve associated snapshot process
+        try {
+            Awaitility.await().atMost(1, TimeUnit.SECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                return this.snapshotProcessRepo.findAll().size() == 3;
+            });
+        } catch (ConditionTimeoutException e) {
+            LOGGER.error("Wrong number of snapshot process created");
+            throw e;
+        }
 
         // wait for job to be in success state
         agentJobSnapshotService.scheduleJob();
@@ -83,7 +97,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsIT {
         // ---- RUN 2 ----
         // init parameters
         Mockito.clearInvocations(publisher);
-        snapshotProcessesCreated = this.snapshotProcessRepo.findAll();
+        List<SnapshotProcess> snapshotProcessesCreated = this.snapshotProcessRepo.findAll();
 
         // create stepPropertyUpdateRequestEvents
         nbEvents += createRun2StepEvents();
