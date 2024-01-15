@@ -24,11 +24,13 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.FileStorageWorkingSubset;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
-import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storage.service.glacier.GlacierArchiveService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +82,9 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private GlacierArchiveService glacierArchiveService;
+
     private FileStorageWorkingSubset workingSubset;
 
     private String plgBusinessId;
@@ -100,6 +105,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
         FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileStorageReqService,
                                                                                           fileRefService,
                                                                                           storageLocationService,
+                                                                                          glacierArchiveService,
                                                                                           this);
 
         nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
@@ -119,12 +125,13 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
             throw new JobRuntimeException(e);
         } finally {
             // Publish event for all not handled files
-            for (FileStorageRequestAggregation req : workingSubset.getFileReferenceRequests()) {
-                if (!progressManager.isHandled(req)) {
-                    progressManager.storageFailed(req,
+            for (FileStorageRequestAggregationDto requestDto : workingSubset.getFileReferenceRequests()) {
+                FileStorageRequestAggregation request = FileStorageRequestAggregation.fromDto(requestDto);
+                if (!progressManager.isHandled(request)) {
+                    progressManager.storageFailed(request.toDto(),
                                                   String.format("File %s (checksum: %s) not handled by storage job. %s",
-                                                                req.getMetaInfo().getFileName(),
-                                                                req.getMetaInfo().getChecksum(),
+                                                                requestDto.getMetaInfo().getFileName(),
+                                                                requestDto.getMetaInfo().getChecksum(),
                                                                 errorCause));
                 }
             }
@@ -146,14 +153,12 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
      *
      * @param fileRefRequest to calculate for image dimension
      */
-    public static void calculateImageDimension(FileStorageRequestAggregation fileRefRequest) {
+    public static void calculateImageDimension(FileStorageRequestAggregationDto fileRefRequest) {
         try {
             if (((fileRefRequest.getMetaInfo().getHeight() == null) || (fileRefRequest.getMetaInfo().getWidth()
-                                                                        == null)) && fileRefRequest.getMetaInfo()
-                                                                                                   .getMimeType()
-                                                                                                   .isCompatibleWith(
-                                                                                                       MediaType.valueOf(
-                                                                                                           "image/*"))) {
+                                                                        == null))
+                && MediaType.valueOf(fileRefRequest.getMetaInfo().getMimeType())
+                            .isCompatibleWith(MediaType.valueOf("image/*"))) {
                 URL localUrl = new URL(fileRefRequest.getOriginUrl());
                 if (localUrl.getProtocol().equals("file")) {
                     Path filePath = Paths.get(localUrl.toURI().getPath());

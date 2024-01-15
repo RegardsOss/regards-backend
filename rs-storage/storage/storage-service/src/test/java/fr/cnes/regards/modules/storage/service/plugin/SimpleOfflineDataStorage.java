@@ -21,11 +21,11 @@ package fr.cnes.regards.modules.storage.service.plugin;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
-import fr.cnes.regards.modules.storage.domain.plugin.*;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
 import org.apache.commons.lang.NotImplementedException;
 
 import java.io.IOException;
@@ -51,7 +51,7 @@ public class SimpleOfflineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregation> prepareForStorage(Collection<FileStorageRequestAggregation> fileReferenceRequests) {
+    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregationDto> prepareForStorage(Collection<FileStorageRequestAggregationDto> fileReferenceRequests) {
         throw new NotImplementedException();
     }
 
@@ -61,7 +61,7 @@ public class SimpleOfflineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests) {
+    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequestDto> prepareForDeletion(Collection<FileDeletionRequestDto> fileDeletionRequests) {
         throw new NotImplementedException();
     }
 
@@ -71,12 +71,12 @@ public class SimpleOfflineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public InputStream retrieve(FileReference fileRef) throws ModuleException {
+    public InputStream retrieve(FileReferenceWithoutOwnersDto fileRef) throws ModuleException {
         throw new NotImplementedException();
     }
 
     @Override
-    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(Collection<FileCacheRequest> requests) {
+    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequestDto> prepareForRestoration(Collection<FileCacheRequestDto> requests) {
         throw new NotImplementedException();
     }
 

@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
@@ -172,7 +172,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     // Wrapper also collect events
                     if (aipWrapper.hasDeletionRequests()) {
                         // Request files deletion
-                        Collection<FileDeletionRequestDto> deletionRequests = aipWrapper.getDeletionRequests();
+                        Collection<FileDeletionDto> deletionRequests = aipWrapper.getDeletionRequests();
                         logger.trace("[AIP {}] Run {} deletion requests on storage.",
                                      aipWrapper.getAip().getAipId(),
                                      deletionRequests.size());

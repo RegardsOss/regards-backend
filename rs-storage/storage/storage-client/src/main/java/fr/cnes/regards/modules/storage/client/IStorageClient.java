@@ -23,8 +23,8 @@ import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 
@@ -111,44 +111,44 @@ public interface IStorageClient {
      * It is necessary to specify the owner as the file can be owned by several owners (multiple references).<br/>
      * As a result, the file will be really deleted if and only if no other owner remains!
      *
-     * @param file {@link FileDeletionRequestDto} information about file to delete
+     * @param file {@link FileDeletionDto} information about file to delete
      * @return {@link RequestInfo} containing a unique request id. This request id can
      * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
-    RequestInfo delete(FileDeletionRequestDto file);
+    RequestInfo delete(FileDeletionDto file);
 
     /**
      * Requests the deletion of a collection of  files identified by there checksum on the specified storage.<br/>
      * It is necessary to specify the owner as the file can be owned by several owners (multiple references).<br/>
      * As a result, the file will be really deleted if and only if no other owner remains!
      *
-     * @param files {@link FileDeletionRequestDto}s information about files to delete
+     * @param files {@link FileDeletionDto}s information about files to delete
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
      * {@link FilesDeletionEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.
      */
-    Collection<RequestInfo> delete(Collection<FileDeletionRequestDto> files);
+    Collection<RequestInfo> delete(Collection<FileDeletionDto> files);
 
     /**
      * Requests the copy of a file identified is checksum to a specified storage.<br/>
      * New copied files will be referenced with the same owners as the original files.<br/>
      *
-     * @param file {@link FileCopyRequestDto} information about file to copy
+     * @param file {@link FileCopyDto} information about file to copy
      * @return {@link RequestInfo} containing a unique request id. This request id can
      * be used to identify responses in {@link IStorageRequestListener} and {@link IStorageFileListener} implementation.
      */
-    RequestInfo copy(FileCopyRequestDto file);
+    RequestInfo copy(FileCopyDto file);
 
     /**
      * Requests the copy of a collection of files identified by there checksum to a specified storage.<br/>
      * New copied files will be referenced with the same owners as the original files.<br/>
      *
-     * @param files {@link FileCopyRequestDto} information about files to copy
+     * @param files {@link FileCopyDto} information about files to copy
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
      * {@link FilesCopyEvent#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.
      */
-    Collection<RequestInfo> copy(Collection<FileCopyRequestDto> files);
+    Collection<RequestInfo> copy(Collection<FileCopyDto> files);
 
     /**
      * Requests that files identified by their checksums be put online so that they can be downloaded by a third party component.

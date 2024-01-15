@@ -25,17 +25,14 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.INearlineStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IOnlineStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.NearlineDownloadException;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
-import fr.cnes.regards.modules.storage.domain.database.CacheFile;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.exception.NearlineDownloadException;
-import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
+import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
@@ -190,8 +187,8 @@ public class FileDownloadService {
         if (cachedFileToDownload.getExpirationDate().isBefore(OffsetDateTime.now())) {
             cachedFileService.delete(cachedFileToDownload);
             throw new NearlineFileNotAvailableException(String.format("Nearline file %s with checksum %s has expired",
-                                           cachedFileToDownload.getFileName(),
-                                           cachedFileToDownload.getChecksum()));
+                                                                      cachedFileToDownload.getFileName(),
+                                                                      cachedFileToDownload.getChecksum()));
         }
 
         // file is cached in an external cache, we download it with corresponding plugin
@@ -201,7 +198,7 @@ public class FileDownloadService {
             // we don't need to retrieve exact FileReference in database.
             // instead, we recreate a fileReference with needed information.
             FileReference fakeFileReference = simulateFileReferenceFromCacheFile(checksum, cachedFileToDownload);
-            InputStream download = plugin.download(fakeFileReference);
+            InputStream download = plugin.download(fakeFileReference.toDtoWithoutOwners());
             return new StandardDownloadableFile(download,
                                                 cachedFileToDownload.getFileSize(),
                                                 cachedFileToDownload.getFileName(),
@@ -252,9 +249,11 @@ public class FileDownloadService {
                                                                    cachedFileToDownload.getFileName(),
                                                                    cachedFileToDownload.getFileSize(),
                                                                    cachedFileToDownload.getMimeType());
+        FileLocation location = new FileLocation();
         metaInfo.setType(cachedFileToDownload.getType());
         fileReference.setMetaInfo(metaInfo);
         fileReference.setNearlineConfirmed(false);
+        fileReference.setLocation(location);
         return fileReference;
     }
 
@@ -275,7 +274,7 @@ public class FileDownloadService {
         try {
             IOnlineStorageLocation plugin = pluginService.getPlugin(storagePluginConf.getPluginConfiguration()
                                                                                      .getBusinessId());
-            return plugin.retrieve(fileToDownload);
+            return plugin.retrieve(fileToDownload.toDtoWithoutOwners());
         } catch (NotAvailablePluginConfigurationException e) {
             throw new ModuleException(String.format(
                 "Unable to download file %s (checksum : %s) as its storage location %s is not active.",

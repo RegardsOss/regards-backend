@@ -29,16 +29,16 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.INearlineStorageLocation;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesCopyEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
@@ -130,24 +130,24 @@ public class FileCopyRequestService {
     /**
      * Initialize new copy requests for a given group identifier
      */
-    public void copy(Collection<FileCopyRequestDto> requests, String groupId) {
-        for (FileCopyRequestDto request : requests) {
+    public void copy(Collection<FileCopyDto> requests, String groupId) {
+        for (FileCopyDto request : requests) {
             // copy the file
             copy(request, groupId);
         }
     }
 
     /**
-     * Handle a {@link FileCopyRequestDto}.<br>
+     * Handle a {@link FileCopyDto}.<br>
      * If a copy request with the same parameters already exists, this method does not creates a new one.<br>
      * If the file to copy is well referenced, then a new copy request is created.<br>
      * The copy request should be handled next by the {@link FileRequestScheduler#handleFileCopyRequests()} method.
      *
-     * @param requestDto {@link FileCopyRequestDto} to handle.
+     * @param requestDto {@link FileCopyDto} to handle.
      * @param groupId    request group identifier.
      * @return {@link FileCopyRequest} created if any.
      */
-    public Optional<FileCopyRequest> copy(FileCopyRequestDto requestDto, String groupId) {
+    public Optional<FileCopyRequest> copy(FileCopyDto requestDto, String groupId) {
         // notify the copy request to the session agent
         String sessionOwner = requestDto.getSessionOwner();
         String session = requestDto.getSession();
@@ -217,14 +217,12 @@ public class FileCopyRequestService {
     /**
      * Handle the case of a copy requests already exists.<br>
      *
-     * @param requestDto {@link FileCopyRequestDto} new request to handle.
+     * @param requestDto {@link FileCopyDto} new request to handle.
      * @param request    {@link FileCopyRequest} existing request.
      * @param newGroupId New request group idenfitier.
      * @return updated {@link FileCopyRequest}
      */
-    private FileCopyRequest handleAlreadyExists(FileCopyRequestDto requestDto,
-                                                FileCopyRequest request,
-                                                String newGroupId) {
+    private FileCopyRequest handleAlreadyExists(FileCopyDto requestDto, FileCopyRequest request, String newGroupId) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
             // decrement the number of errors to the session agent
             String sessionOwner = requestDto.getSessionOwner();
@@ -260,13 +258,13 @@ public class FileCopyRequestService {
     }
 
     /**
-     * Handle many {@link FileCopyRequestDto} to copy files to a given storage location.
+     * Handle many {@link FileCopyDto} to copy files to a given storage location.
      *
      * @param requests copy requests
      * @param groupId  business request identifier
      */
-    public void handle(Collection<FileCopyRequestDto> requests, String groupId) {
-        for (FileCopyRequestDto request : requests) {
+    public void handle(Collection<FileCopyDto> requests, String groupId) {
+        for (FileCopyDto request : requests) {
             copy(request, groupId);
         }
     }

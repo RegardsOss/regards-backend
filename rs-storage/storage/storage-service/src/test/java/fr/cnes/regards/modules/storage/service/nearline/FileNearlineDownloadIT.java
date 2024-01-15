@@ -23,11 +23,11 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.NearlineDownloadException;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
-import fr.cnes.regards.modules.storage.domain.exception.NearlineDownloadException;
-import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,7 +87,7 @@ public class FileNearlineDownloadIT extends AbstractDaoIT {
         try {
             downloadableFile = fileDownloadService.downloadFile(FILE_1).call();
         } catch (Exception e) {
-            Assertions.fail("download should success here");
+            Assertions.fail("download should succeed here");
         }
         // THEN download don't fail
         Assertions.assertEquals(FILE_1, downloadableFile.getFileName());

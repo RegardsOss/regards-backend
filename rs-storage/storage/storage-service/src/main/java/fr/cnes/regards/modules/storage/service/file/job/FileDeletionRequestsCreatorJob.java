@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -96,7 +96,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
                     storage,
                     forceDelete);
         String requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
-        Set<FileDeletionRequestDto> deletionRequests = Sets.newHashSet();
+        Set<FileDeletionDto> deletionRequests = Sets.newHashSet();
 
         // Search for all file references of the given storage location
         do {
@@ -104,12 +104,12 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             pageResults = fileRefService.searchWithOwners(storage, pageRequest);
             for (FileReference fileRef : pageResults.getContent()) {
                 for (String owner : fileRef.getLazzyOwners()) {
-                    deletionRequests.add(FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                      storage,
-                                                                      owner,
-                                                                      sessionOwner,
-                                                                      session,
-                                                                      forceDelete));
+                    deletionRequests.add(FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                               storage,
+                                                               owner,
+                                                               sessionOwner,
+                                                               session,
+                                                               forceDelete));
                     if (deletionRequests.size() == FilesDeletionEvent.MAX_REQUEST_PER_GROUP) {
                         publisher.publish(new FilesDeletionEvent(deletionRequests, requestGroupId));
                         deletionRequests.clear();

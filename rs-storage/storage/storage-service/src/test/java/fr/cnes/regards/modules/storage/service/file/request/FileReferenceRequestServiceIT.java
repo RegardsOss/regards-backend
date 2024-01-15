@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -93,12 +93,12 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
 
         // Remove all his owners
         String deletionReqId = UUID.randomUUID().toString();
-        FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRefChecksum,
-                                                                      fileRefStorage,
-                                                                      fileRefOwner,
-                                                                      SESSION_OWNER_1,
-                                                                      SESSION_1,
-                                                                      false);
+        FileDeletionDto request = FileDeletionDto.build(fileRefChecksum,
+                                                        fileRefStorage,
+                                                        fileRefOwner,
+                                                        SESSION_OWNER_1,
+                                                        SESSION_1,
+                                                        false);
         fileDeletionRequestService.handle(Sets.newHashSet(request), deletionReqId);
 
         Optional<FileReference> oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
@@ -143,7 +143,7 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileDeletionRequestService,
                                                                                     storageLocationService,
                                                                                     new FileDeletionRequestJob());
-        manager.deletionSucceed(fdr);
+        manager.deletionSucceed(fdr.toDto());
         fileRefEventHandler.handleBatch(Lists.newArrayList(FileReferenceEvent.build(fileRefChecksum,
                                                                                     fileRefStorage,
                                                                                     FileReferenceEventType.FULLY_DELETED,

@@ -21,12 +21,17 @@ package fr.cnes.regards.modules.storage.domain.database;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -99,10 +104,30 @@ public class FileReference {
         Assert.notNull(metaInfo, "File reference needs meta informations to be created");
         Assert.notNull(location, "File reference needs a storage location to be created");
 
-        this.owners.addAll(owners);
+        if (owners != null) {
+            this.owners.addAll(owners);
+        }
         this.metaInfo = metaInfo;
         this.location = location;
         this.storageDate = OffsetDateTime.now();
+    }
+
+    private FileReference(Long id,
+                          OffsetDateTime storageDate,
+                          FileReferenceMetaInfo metaInfo,
+                          FileLocation location,
+                          Set<String> owners,
+                          boolean referenced,
+                          boolean nearlineConfirmed) {
+        this.id = id;
+        this.storageDate = storageDate;
+        this.metaInfo = metaInfo;
+        this.location = location;
+        if (owners != null) {
+            this.owners.addAll(owners);
+        }
+        this.referenced = referenced;
+        this.nearlineConfirmed = nearlineConfirmed;
     }
 
     /**
@@ -192,8 +217,73 @@ public class FileReference {
         this.nearlineConfirmed = nearlineConfirmed;
     }
 
-    public FileReferenceDto toDto() {
-        return new FileReferenceDto(storageDate, metaInfo.toDto(), location.toDto(), owners);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FileReference that = (FileReference) o;
+        return referenced == that.referenced
+               && Objects.equals(id, that.id)
+               && Objects.equals(storageDate,
+                                 that.storageDate)
+               && Objects.equals(owners, that.owners)
+               && Objects.equals(metaInfo, that.metaInfo)
+               && Objects.equals(location, that.location);
     }
-    
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, storageDate, metaInfo, location, referenced);
+    }
+
+    public FileReferenceDto toDto() {
+        return new FileReferenceDto(id,
+                                    storageDate,
+                                    metaInfo.toDto(),
+                                    location.toDto(),
+                                    owners,
+                                    referenced,
+                                    nearlineConfirmed);
+    }
+
+    public FileReferenceWithoutOwnersDto toDtoWithoutOwners() {
+        return new FileReferenceWithoutOwnersDto(id,
+                                                 storageDate,
+                                                 metaInfo.toDto(),
+                                                 location.toDto(),
+                                                 referenced,
+                                                 nearlineConfirmed);
+    }
+
+    public static FileReference fromDto(FileReferenceDto dto) {
+        FileReferenceMetaInfoDto metaInfo = dto.getMetaInfo();
+        Assert.notNull(metaInfo, "File reference needs meta informations to be created");
+        FileLocationDto location = dto.getLocation();
+        Assert.notNull(location, "File reference needs a storage location to be created");
+        return new FileReference(dto.getId(),
+                                 dto.getStorageDate(),
+                                 FileReferenceMetaInfo.buildFromDto(metaInfo),
+                                 FileLocation.buildFromDto(location),
+                                 new HashSet<>(dto.getOwners()),
+                                 dto.isReferenced(),
+                                 dto.isNearlineConfirmed());
+    }
+
+    public static FileReference fromDto(FileReferenceWithoutOwnersDto dto) {
+        FileReferenceMetaInfoDto metaInfo = dto.getMetaInfo();
+        Assert.notNull(metaInfo, "File reference needs meta informations to be created");
+        FileLocationDto location = dto.getLocation();
+        Assert.notNull(location, "File reference needs a storage location to be created");
+        return new FileReference(dto.getId(),
+                                 dto.getStorageDate(),
+                                 FileReferenceMetaInfo.buildFromDto(dto.getMetaInfo()),
+                                 FileLocation.buildFromDto(dto.getLocation()),
+                                 null,
+                                 dto.isReferenced(),
+                                 dto.isNearlineConfirmed());
+    }
 }

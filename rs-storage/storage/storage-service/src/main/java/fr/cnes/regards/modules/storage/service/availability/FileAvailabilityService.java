@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.INearlineStorageLocation;
 import fr.cnes.regards.modules.filecatalog.dto.StorageType;
 import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
 import fr.cnes.regards.modules.filecatalog.dto.availability.FilesAvailabilityRequestDto;
@@ -32,7 +33,6 @@ import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
@@ -175,7 +175,7 @@ public class FileAvailabilityService {
             return FileAvailabilityBuilder.buildNotAvailable(file);
         } else {
             try {
-                NearlineFileStatusDto fileAvailability = optPlugin.get().checkAvailability(file);
+                NearlineFileStatusDto fileAvailability = optPlugin.get().checkAvailability(file.toDtoWithoutOwners());
                 if (fileAvailability.isAvailable()) {
                     return FileAvailabilityBuilder.buildAvailable(file, fileAvailability.getExpirationDate());
                 } else {

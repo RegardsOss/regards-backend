@@ -97,12 +97,27 @@ public class FileReferenceMetaInfoDto {
         return algorithm;
     }
 
+    //fileName is not final as the real fileName might be calculated later in the process
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
     public String getFileName() {
         return fileName;
     }
 
+    //fileSize is not final as the real fileSize might be calculated later in the process
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
     public Long getFileSize() {
         return fileSize;
+    }
+
+    //height is not final as the real height might be calculated later in the process
+    public void setHeight(Integer height) {
+        this.height = height;
     }
 
     public Integer getHeight() {
@@ -111,6 +126,11 @@ public class FileReferenceMetaInfoDto {
 
     public Integer getWidth() {
         return width;
+    }
+
+    //width is not final as the real width might be calculated later in the process
+    public void setWidth(Integer width) {
+        this.width = width;
     }
 
     public String getMimeType() {

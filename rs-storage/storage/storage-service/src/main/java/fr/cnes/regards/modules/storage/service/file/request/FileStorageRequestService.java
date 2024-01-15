@@ -38,9 +38,14 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.FileReferenceResultStatusEnum;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.FileStorageWorkingSubset;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.PreparationResponse;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestResultDto;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
@@ -49,12 +54,9 @@ import fr.cnes.regards.modules.storage.domain.FileReferenceResult;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
-import fr.cnes.regards.modules.storage.domain.plugin.FileReferenceResultStatusEnum;
-import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -671,13 +673,16 @@ public class FileStorageRequestService {
                                                       Collection<FileStorageRequestAggregation> fileStorageRequests) {
         LOGGER.debug("Nb requests to schedule for storage {} = {}", storage, fileStorageRequests.size());
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
-        Collection<FileStorageRequestAggregation> remainingRequests = Sets.newHashSet();
-        remainingRequests.addAll(fileStorageRequests);
+        Collection<FileStorageRequestAggregationDto> remainingRequests = Sets.newHashSet();
+        List<FileStorageRequestAggregationDto> dtoList = fileStorageRequests.stream()
+                                                                            .map(FileStorageRequestAggregation::toDto)
+                                                                            .toList();
+        remainingRequests.addAll(dtoList);
         try {
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
-            PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregation> response = storagePlugin.prepareForStorage(
-                fileStorageRequests);
+            PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregationDto> response = storagePlugin.prepareForStorage(
+                dtoList);
             for (FileStorageWorkingSubset ws : response.getWorkingSubsets()) {
                 if (!ws.getFileReferenceRequests().isEmpty()) {
                     LOGGER.debug("Scheduling 1 storage job for {} requests.", ws.getFileReferenceRequests().size());
@@ -686,12 +691,14 @@ public class FileStorageRequestService {
                 }
             }
             // Handle preparation errors
-            for (Entry<FileStorageRequestAggregation, String> request : response.getPreparationErrors().entrySet()) {
-                this.handleStorageNotAvailable(request.getKey(), Optional.ofNullable(request.getValue()));
+            for (Entry<FileStorageRequestAggregationDto, String> request : response.getPreparationErrors().entrySet()) {
+                this.handleStorageNotAvailable(FileStorageRequestAggregation.fromDto(request.getKey()),
+                                               Optional.ofNullable(request.getValue()));
             }
             // Handle request not handled by the plugin preparation step.
-            for (FileStorageRequestAggregation req : remainingRequests) {
-                this.handleStorageNotAvailable(req, Optional.of("Request has not been handled by plugin."));
+            for (FileStorageRequestAggregationDto req : remainingRequests) {
+                this.handleStorageNotAvailable(FileStorageRequestAggregation.fromDto(req),
+                                               Optional.of("Request has " + "not been " + "handled by plugin."));
             }
         } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
@@ -778,6 +785,40 @@ public class FileStorageRequestService {
                 System.currentTimeMillis() - start);
         }
         return fileStorageRequest;
+    }
+
+    /**
+     * Create a new {@link FileStorageRequestAggregation} by copying the owners of another
+     *
+     * @param fileCopyRequest the copy request
+     * @param metaInfo        meta information of the file to store
+     * @param originUrl       file origin location
+     * @param groupId         Business identifier of the deletion request
+     * @param sessionOwner    session owner to which belongs created storage request
+     * @param session         session to which belongs created storage request
+     */
+    public FileStorageRequestAggregation createNewFileStorageRequestFromCopy(FileCopyRequest fileCopyRequest,
+                                                                             String originStorage,
+                                                                             FileReferenceMetaInfo metaInfo,
+                                                                             String originUrl,
+                                                                             String groupId,
+                                                                             String sessionOwner,
+                                                                             String session) {
+
+        Collection<String> owners = fileRefService.findWithOwnersByLocationStorageAndMetaInfoChecksum(originStorage,
+                                                                                                      metaInfo.getChecksum())
+                                                  .orElseThrow()
+                                                  .getLazzyOwners();
+        return createNewFileStorageRequest(owners,
+                                           metaInfo,
+                                           originUrl,
+                                           fileCopyRequest.getStorage(),
+                                           Optional.ofNullable(fileCopyRequest.getStorageSubDirectory()),
+                                           groupId,
+                                           Optional.empty(),
+                                           Optional.empty(),
+                                           sessionOwner,
+                                           session);
     }
 
     /**
@@ -983,7 +1024,7 @@ public class FileStorageRequestService {
                 List<FileStorageRequestAggregation> fileStorageRequests = fileStorageRequestRepo.findAllById(
                     workingSubset.getFileReferenceRequests()
                                  .stream()
-                                 .map(FileStorageRequestAggregation::getId)
+                                 .map(FileStorageRequestAggregationDto::getId)
                                  .toList());
                 fileStorageRequests.stream()
                                    .filter(fileStorageRequest -> FileRequestStatus.RUNNING_STATUS.contains(

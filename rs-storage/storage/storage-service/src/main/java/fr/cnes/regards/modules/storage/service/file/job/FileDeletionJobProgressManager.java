@@ -20,9 +20,10 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IDeletionProgressManager;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.plugin.IDeletionProgressManager;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.slf4j.Logger;
@@ -59,7 +60,8 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
     }
 
     @Override
-    public void deletionFailed(FileDeletionRequest fileDeletionRequest, String cause) {
+    public void deletionFailed(FileDeletionRequestDto fileDeletionRequestDto, String cause) {
+        FileDeletionRequest fileDeletionRequest = FileDeletionRequest.fromDto(fileDeletionRequestDto);
         FileReference fileRef = fileDeletionRequest.getFileReference();
         LOGGER.error("[DELETION ERROR] - Deletion error for file {} from {} (checksum: {}). Cause : {}",
                      fileRef.getMetaInfo().getFileName(),
@@ -72,7 +74,8 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
     }
 
     @Override
-    public void deletionSucceed(FileDeletionRequest fileDeletionRequest) {
+    public void deletionSucceed(FileDeletionRequestDto fileDeletionRequestDto) {
+        FileDeletionRequest fileDeletionRequest = FileDeletionRequest.fromDto(fileDeletionRequestDto);
         FileReference fileRef = fileDeletionRequest.getFileReference();
         String successMessage = String.format("File %s successfully deleted from %s (checksum: %s)",
                                               fileRef.getMetaInfo().getFileName(),
@@ -86,9 +89,9 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
     }
 
     @Override
-    public void deletionSucceedWithPendingAction(FileDeletionRequest fileDeletionRequest) {
-        this.deletionSucceed(fileDeletionRequest);
-        storageLocationService.updateLocationPendingAction(fileDeletionRequest.getStorage(), true);
+    public void deletionSucceedWithPendingAction(FileDeletionRequestDto fileDeletionRequestDto) {
+        this.deletionSucceed(fileDeletionRequestDto);
+        storageLocationService.updateLocationPendingAction(fileDeletionRequestDto.getStorage(), true);
     }
 
     public boolean isHandled(FileDeletionRequest req) {

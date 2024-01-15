@@ -72,7 +72,7 @@ public class FileCacheJobProgressManagerTest {
         FileCacheRequest fileCacheRequest = createFileCacheRequest();
 
         // When
-        fileCacheJobProgressManager.restoreSucceededInternalCache(fileCacheRequest, pathInputFile);
+        fileCacheJobProgressManager.restoreSucceededInternalCache(fileCacheRequest.toDto(), pathInputFile);
 
         // Then
         ArgumentCaptor<Long> fileSizeCaptor = ArgumentCaptor.forClass(Long.class);
@@ -99,7 +99,7 @@ public class FileCacheJobProgressManagerTest {
         FileCacheRequest fileCacheRequest = createFileCacheRequest();
 
         // When
-        fileCacheJobProgressManager.restoreSucceededInternalCache(fileCacheRequest, pathInputFile);
+        fileCacheJobProgressManager.restoreSucceededInternalCache(fileCacheRequest.toDto(), pathInputFile);
 
         // Then
         ArgumentCaptor<String> causeCaptor = ArgumentCaptor.forClass(String.class);
@@ -123,7 +123,7 @@ public class FileCacheJobProgressManagerTest {
         OffsetDateTime expirationDate = OffsetDateTime.now().plusHours(1);
 
         // When
-        fileCacheJobProgressManager.restoreSucceededExternalCache(fileCacheRequest,
+        fileCacheJobProgressManager.restoreSucceededExternalCache(fileCacheRequest.toDto(),
                                                                   createFakeUrl(),
                                                                   fileSize,
                                                                   expirationDate);
@@ -156,7 +156,7 @@ public class FileCacheJobProgressManagerTest {
         FileCacheRequest fileCacheRequest = createFileCacheRequest();
 
         // When
-        fileCacheJobProgressManager.restoreSucceededExternalCache(fileCacheRequest,
+        fileCacheJobProgressManager.restoreSucceededExternalCache(fileCacheRequest.toDto(),
                                                                   createFakeUrl(),
                                                                   fileSize,
                                                                   OffsetDateTime.now());
@@ -183,7 +183,7 @@ public class FileCacheJobProgressManagerTest {
         OffsetDateTime expirationDate = OffsetDateTime.now().plusHours(10);
 
         // When
-        fileCacheJobProgressManager.restoreSucceededExternalCache(fileCacheRequest,
+        fileCacheJobProgressManager.restoreSucceededExternalCache(fileCacheRequest.toDto(),
                                                                   createFakeUrl(),
                                                                   fileSize,
                                                                   expirationDate);
@@ -216,7 +216,7 @@ public class FileCacheJobProgressManagerTest {
         FileCacheRequest fileCacheRequest = createFileCacheRequest();
 
         // When
-        fileCacheJobProgressManager.restoreFailed(fileCacheRequest, cause);
+        fileCacheJobProgressManager.restoreFailed(fileCacheRequest.toDto(), cause);
 
         // Then
         ArgumentCaptor<String> causeCaptor = ArgumentCaptor.forClass(String.class);

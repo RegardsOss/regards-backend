@@ -20,11 +20,12 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IRestorationProgressManager;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageProgressManager;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.plugin.IRestorationProgressManager;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -71,7 +72,8 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
     }
 
     @Override
-    public void restoreSucceededInternalCache(FileCacheRequest fileCacheRequest, Path restoredFilePath) {
+    public void restoreSucceededInternalCache(FileCacheRequestDto fileReqDto, Path restoredFilePath) {
+        FileCacheRequest fileCacheRequest = FileCacheRequest.fromDto(fileReqDto);
         FileReference fileRef = fileCacheRequest.getFileReference();
         // Check file exists in cache
         if (Files.exists(restoredFilePath)) {
@@ -95,7 +97,7 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                 handled.add(fileCacheRequest);
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
-                restoreFailed(fileCacheRequest, e.getMessage());
+                restoreFailed(fileReqDto, e.getMessage());
                 try {
                     Files.delete(restoredFilePath);
                 } catch (IOException e1) {
@@ -104,40 +106,42 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                 }
             }
         } else {
-            restoreFailed(fileCacheRequest,
+            restoreFailed(fileReqDto,
                           String.format(
                               "Unknown error during file %s restoration in internal cache. Storage location plugin "
                               + "indicates that the file is restored but file does not exists at %s.",
-                              fileCacheRequest.getChecksum(),
+                              fileReqDto.getChecksum(),
                               restoredFilePath));
         }
     }
 
     @Override
-    public void restoreFailed(FileCacheRequest fileCacheRequest, String cause) {
+    public void restoreFailed(FileCacheRequestDto fileCacheRequestDto, String cause) {
         job.advanceCompletion();
+        FileCacheRequest fileCacheRequest = FileCacheRequest.fromDto(fileCacheRequestDto);
         fileCacheRequestService.handleError(fileCacheRequest, cause);
         handled.add(fileCacheRequest);
     }
 
     @Override
-    public void restoreSucceededExternalCache(FileCacheRequest fileCacheRequest,
+    public void restoreSucceededExternalCache(FileCacheRequestDto fileCacheRequestDto,
                                               URL restoredFileUrl,
                                               @Nullable Long fileSize,
                                               OffsetDateTime expirationDate) {
+        FileCacheRequest fileCacheRequest = FileCacheRequest.fromDto(fileCacheRequestDto);
         if (StringUtils.isBlank(pluginBusinessId)) {
-            restoreFailed(fileCacheRequest,
+            restoreFailed(fileCacheRequestDto,
                           String.format(
                               "Error during file %s restoration in external cache. Businness identifier of plugin to "
                               + "access file in external cache is undefined.",
-                              fileCacheRequest.getChecksum()));
+                              fileCacheRequestDto.getChecksum()));
             return;
         }
         FileReference fileRef = fileCacheRequest.getFileReference();
         Long newFileSize = fileSize;
         if (newFileSize == null) {
             LOGGER.debug("The plugin returned an empty file size, so use the size indicated in the request");
-            newFileSize = fileCacheRequest.getFileSize();
+            newFileSize = fileCacheRequestDto.getFileSize();
         }
 
         fileCacheRequestService.handleSuccessExternalCache(fileCacheRequest,

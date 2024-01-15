@@ -21,8 +21,8 @@ package fr.cnes.regards.framework.s3.test;
 
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
-import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Stream;
@@ -69,7 +69,8 @@ public final class S3FileTestUtils {
     public static void store(FileStorageWorkingSubset workingSet,
                              S3Server s3Server,
                              FileIdentificationEnum fileIdentification) {
-        Stream.ofAll(workingSet.getFileReferenceRequests()).flatMap(request -> Try.of(() -> {
+        Stream.ofAll(workingSet.getFileReferenceRequests()).flatMap(requestDto -> Try.of(() -> {
+            FileStorageRequestAggregation request = FileStorageRequestAggregation.fromDto(requestDto);
             LOGGER.info("Start storing {}", request.getOriginUrl());
             URL sourceUrl = new URL(request.getOriginUrl());
 

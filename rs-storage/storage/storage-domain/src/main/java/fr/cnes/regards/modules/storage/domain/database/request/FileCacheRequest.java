@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.domain.database.request;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -118,6 +119,32 @@ public class FileCacheRequest {
         this.creationDate = OffsetDateTime.now();
     }
 
+    private FileCacheRequest(Long id,
+                             String groupId,
+                             FileReference fileReference,
+                             String checksum,
+                             String storage,
+                             Long fileSize,
+                             String restorationDirectory,
+                             int availabilityHours,
+                             FileRequestStatus status,
+                             String errorCause,
+                             OffsetDateTime creationDate,
+                             String jobId) {
+        this.id = id;
+        this.groupId = groupId;
+        this.fileReference = fileReference;
+        this.checksum = checksum;
+        this.storage = storage;
+        this.fileSize = fileSize;
+        this.restorationDirectory = restorationDirectory;
+        this.availabilityHours = availabilityHours;
+        this.status = status;
+        this.errorCause = errorCause;
+        this.creationDate = creationDate;
+        this.jobId = jobId;
+    }
+
     public Long getId() {
         return id;
     }
@@ -207,5 +234,35 @@ public class FileCacheRequest {
     @Override
     public int hashCode() {
         return checksum.hashCode();
+    }
+
+    public FileCacheRequestDto toDto() {
+        return new FileCacheRequestDto(id,
+                                       groupId,
+                                       fileReference.toDtoWithoutOwners(),
+                                       checksum,
+                                       storage,
+                                       fileSize,
+                                       restorationDirectory,
+                                       availabilityHours,
+                                       status,
+                                       errorCause,
+                                       creationDate,
+                                       jobId);
+    }
+
+    public static FileCacheRequest fromDto(FileCacheRequestDto dto) {
+        return new FileCacheRequest(dto.getId(),
+                                    dto.getGroupId(),
+                                    FileReference.fromDto(dto.getFileReference()),
+                                    dto.getChecksum(),
+                                    dto.getStorage(),
+                                    dto.getFileSize(),
+                                    dto.getRestorationDirectory(),
+                                    dto.getAvailabilityHours(),
+                                    dto.getStatus(),
+                                    dto.getErrorCause(),
+                                    dto.getCreationDate(),
+                                    dto.getJobId());
     }
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.junit.Assert;
@@ -49,14 +50,14 @@ public class FileStorageRequestJobTest {
         String originUrl = "file://" + Paths.get("src/test/resources/input/cnes.png").toAbsolutePath().toString();
         String storage = "storage";
         String groupId = "10";
-        FileStorageRequestAggregation request = new FileStorageRequestAggregation(owner,
-                                                                                  metaInfos,
-                                                                                  originUrl,
-                                                                                  storage,
-                                                                                  Optional.empty(),
-                                                                                  groupId,
-                                                                                  sessionOwner,
-                                                                                  session);
+        FileStorageRequestAggregationDto request = new FileStorageRequestAggregation(owner,
+                                                                                     metaInfos,
+                                                                                     originUrl,
+                                                                                     storage,
+                                                                                     Optional.empty(),
+                                                                                     groupId,
+                                                                                     sessionOwner,
+                                                                                     session).toDto();
         FileStorageRequestJob.calculateImageDimension(request);
 
         Assert.assertEquals(Integer.valueOf(499), request.getMetaInfo().getWidth());

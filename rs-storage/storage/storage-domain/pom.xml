@@ -66,8 +66,16 @@
             <artifactId>tenant-settings-domain</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.modules.fileaccess.plugin</groupId>
+            <artifactId>file-access-plugin-domain</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.modules.filecatalog</groupId>
             <artifactId>file-catalog-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.fileaccess.plugin</groupId>
+            <artifactId>file-access-plugin-dto</artifactId>
         </dependency>
         <!-- Test -->
         <dependency>

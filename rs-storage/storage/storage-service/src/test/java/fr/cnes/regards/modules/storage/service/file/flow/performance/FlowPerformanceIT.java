@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.storage.dao.FileReferenceSpecification;
@@ -349,12 +349,12 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         Long total = page.getTotalElements();
         List<FilesDeletionEvent> items = Lists.newArrayList();
         for (FileReference fileRef : page.getContent()) {
-            items.add(new FilesDeletionEvent(FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                          fileRef.getLocation().getStorage(),
-                                                                          FILE_REF_OWNER,
-                                                                          SESSION_OWNER,
-                                                                          SESSION,
-                                                                          false), UUID.randomUUID().toString()));
+            items.add(new FilesDeletionEvent(FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                                   fileRef.getLocation().getStorage(),
+                                                                   FILE_REF_OWNER,
+                                                                   SESSION_OWNER,
+                                                                   SESSION,
+                                                                   false), UUID.randomUUID().toString()));
             if (items.size() > deleteHandler.getBatchSize()) {
                 deleteHandler.handleBatch(items);
                 items.clear();
@@ -375,12 +375,12 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         Page<FileReference> page = fileRefService.search(NEARLINE_CONF_LABEL,
                                                          PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         for (FileReference fileRef : page.getContent()) {
-            items.add(new FilesDeletionEvent(FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                          fileRef.getLocation().getStorage(),
-                                                                          FILE_REF_OWNER,
-                                                                          SESSION_OWNER,
-                                                                          SESSION,
-                                                                          false), UUID.randomUUID().toString()));
+            items.add(new FilesDeletionEvent(FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                                   fileRef.getLocation().getStorage(),
+                                                                   FILE_REF_OWNER,
+                                                                   SESSION_OWNER,
+                                                                   SESSION,
+                                                                   false), UUID.randomUUID().toString()));
             if (items.size() > deleteHandler.getBatchSize()) {
                 deleteHandler.handleBatch(items);
                 items.clear();

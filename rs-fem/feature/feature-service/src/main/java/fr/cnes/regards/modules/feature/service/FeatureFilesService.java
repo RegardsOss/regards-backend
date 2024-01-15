@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
@@ -175,7 +175,6 @@ public class FeatureFilesService {
                               storageRequests);
     }
 
-
     /**
      * Generate storage/reference requests for given {@link FeatureFile}.
      *
@@ -220,16 +219,16 @@ public class FeatureFilesService {
 
             if (!existingStorages.isEmpty()) {
                 // Prepare deletion request for target storages
-                Set<FileDeletionRequestDto> deletionRequestDTOS = Sets.newHashSet();
-                existingStorages
-                    .forEach(storage -> deletionRequestDTOS.add(FileDeletionRequestDto.build(existingFile.get().getAttributes()
-                                                                                                  .getChecksum(),
-                                                                                              storage,
-                                                                                             feature.getUrn()
-                                                                                                    .toString(),
-                                                                                             feature.getSessionOwner(),
-                                                                                             feature.getSession(),
-                                                                                              Boolean.FALSE)));
+                Set<FileDeletionDto> deletionRequestDTOS = Sets.newHashSet();
+                existingStorages.forEach(storage -> deletionRequestDTOS.add(FileDeletionDto.build(existingFile.get()
+                                                                                                              .getAttributes()
+                                                                                                              .getChecksum(),
+                                                                                                  storage,
+                                                                                                  feature.getUrn()
+                                                                                                         .toString(),
+                                                                                                  feature.getSessionOwner(),
+                                                                                                  feature.getSession(),
+                                                                                                  Boolean.FALSE)));
                 sendDeletionRequests(deletionRequestDTOS, feature);
             }
         }
@@ -594,7 +593,7 @@ public class FeatureFilesService {
     }
 
     private void deleteOldUnwantedFiles(FeatureEntity entity, Set<FeatureFile> existingFiles) {
-        Set<FileDeletionRequestDto> deletionRequestDTOS = Sets.newHashSet();
+        Set<FileDeletionDto> deletionRequestDTOS = Sets.newHashSet();
 
         for (FeatureFile file : entity.getFeature().getFiles()) {
             // Only delete old files
@@ -616,14 +615,13 @@ public class FeatureFilesService {
                 }
                 // Prepare deletion request(s)
                 file.getLocations()
-                    .forEach(location -> deletionRequestDTOS.add(FileDeletionRequestDto.build(file.getAttributes()
-                                                                                                  .getChecksum(),
-                                                                                              location.getStorage(),
-                                                                                              entity.getUrn()
-                                                                                                    .toString(),
-                                                                                              entity.getSessionOwner(),
-                                                                                              entity.getSession(),
-                                                                                              Boolean.FALSE)));
+                    .forEach(location -> deletionRequestDTOS.add(FileDeletionDto.build(file.getAttributes()
+                                                                                           .getChecksum(),
+                                                                                       location.getStorage(),
+                                                                                       entity.getUrn().toString(),
+                                                                                       entity.getSessionOwner(),
+                                                                                       entity.getSession(),
+                                                                                       Boolean.FALSE)));
             }
         }
 
@@ -631,7 +629,7 @@ public class FeatureFilesService {
         sendDeletionRequests(deletionRequestDTOS, entity);
     }
 
-    private void sendDeletionRequests(Set<FileDeletionRequestDto> deletionRequestDTOS, FeatureEntity entity) {
+    private void sendDeletionRequests(Set<FileDeletionDto> deletionRequestDTOS, FeatureEntity entity) {
         if (!deletionRequestDTOS.isEmpty()) {
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace("Requesting deletion of {} files for feature {}",

@@ -121,5 +121,10 @@
             <artifactId>storage-rest</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.fileaccess.plugin</groupId>
+            <artifactId>file-access-plugin-domain</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.domain.database.request;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -123,6 +124,30 @@ public class FileDeletionRequest {
                                String session) {
         this(fileReference, forceDelete, groupId, sessionOwner, session);
         this.status = status;
+    }
+
+    private FileDeletionRequest(Long id,
+                                String groupId,
+                                FileRequestStatus status,
+                                String storage,
+                                FileReference fileReference,
+                                boolean forceDelete,
+                                String errorCause,
+                                OffsetDateTime creationDate,
+                                String jobId,
+                                String sessionOwner,
+                                String session) {
+        this.id = id;
+        this.groupId = groupId;
+        this.status = status;
+        this.storage = storage;
+        this.fileReference = fileReference;
+        this.forceDelete = forceDelete;
+        this.errorCause = errorCause;
+        this.creationDate = creationDate;
+        this.jobId = jobId;
+        this.sessionOwner = sessionOwner;
+        this.session = session;
     }
 
     public Long getId() {
@@ -234,6 +259,34 @@ public class FileDeletionRequest {
         } else {
             return id.equals(other.id);
         }
+    }
+
+    public FileDeletionRequestDto toDto() {
+        return new FileDeletionRequestDto(id,
+                                          groupId,
+                                          status,
+                                          storage,
+                                          fileReference.toDtoWithoutOwners(),
+                                          forceDelete,
+                                          errorCause,
+                                          creationDate,
+                                          jobId,
+                                          sessionOwner,
+                                          session);
+    }
+
+    public static FileDeletionRequest fromDto(FileDeletionRequestDto dto) {
+        return new FileDeletionRequest(dto.getId(),
+                                       dto.getGroupId(),
+                                       dto.getStatus(),
+                                       dto.getStorage(),
+                                       FileReference.fromDto(dto.getFileReference()),
+                                       dto.isForceDelete(),
+                                       dto.getErrorCause(),
+                                       dto.getCreationDate(),
+                                       dto.getJobId(),
+                                       dto.getSessionOwner(),
+                                       dto.getSession());
     }
 
 }

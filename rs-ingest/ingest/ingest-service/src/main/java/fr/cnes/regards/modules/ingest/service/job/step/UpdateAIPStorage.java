@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.service.job.step;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPRemoveStorageTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
@@ -54,8 +54,8 @@ public class UpdateAIPStorage implements IUpdateStep {
                 "Update tasks are not allowed to delete all location of AIP files. To do so use delete AIP instead.");
         } else {
             // Remove the storage from the AIP and retrieve the list of events to send
-            Collection<FileDeletionRequestDto> deletionRequests = aipStorageService.removeStorages(aipWrapper.getAip(),
-                                                                                                   removeStorageTask.getStorages());
+            Collection<FileDeletionDto> deletionRequests = aipStorageService.removeStorages(aipWrapper.getAip(),
+                                                                                            removeStorageTask.getStorages());
 
             if (!deletionRequests.isEmpty()) {
                 aipWrapper.markAsUpdated(true);

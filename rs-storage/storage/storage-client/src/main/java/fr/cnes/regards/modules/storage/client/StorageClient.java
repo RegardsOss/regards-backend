@@ -24,8 +24,8 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.modules.filecatalog.amqp.input.*;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,26 +51,26 @@ public class StorageClient implements IStorageClient {
     private IPublisher publisher;
 
     @Override
-    public RequestInfo copy(FileCopyRequestDto file) {
+    public RequestInfo copy(FileCopyDto file) {
         RequestInfo requestInfo = RequestInfo.build();
         publisher.publish(new FilesCopyEvent(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
-    public Collection<RequestInfo> copy(Collection<FileCopyRequestDto> files) {
+    public Collection<RequestInfo> copy(Collection<FileCopyDto> files) {
         return publish(FilesCopyEvent::new, files, FilesCopyEvent.MAX_REQUEST_PER_GROUP);
     }
 
     @Override
-    public RequestInfo delete(FileDeletionRequestDto file) {
+    public RequestInfo delete(FileDeletionDto file) {
         RequestInfo requestInfo = RequestInfo.build();
         publisher.publish(new FilesDeletionEvent(file, requestInfo.getGroupId()));
         return requestInfo;
     }
 
     @Override
-    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDto> files) {
+    public Collection<RequestInfo> delete(Collection<FileDeletionDto> files) {
         return publish(FilesDeletionEvent::new, files, FilesDeletionEvent.MAX_REQUEST_PER_GROUP);
     }
 

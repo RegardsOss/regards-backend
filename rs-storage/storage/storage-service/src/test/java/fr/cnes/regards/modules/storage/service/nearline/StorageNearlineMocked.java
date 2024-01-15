@@ -19,14 +19,12 @@
 package fr.cnes.regards.modules.storage.service.nearline;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.filecatalog.dto.availability.NearlineFileStatusDto;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
-import fr.cnes.regards.modules.storage.domain.exception.NearlineDownloadException;
-import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
-import fr.cnes.regards.modules.storage.domain.plugin.*;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -58,7 +56,7 @@ public class StorageNearlineMocked implements INearlineStorageLocation {
     }
 
     @Override
-    public NearlineFileStatusDto checkAvailability(FileReference fileReference) {
+    public NearlineFileStatusDto checkAvailability(FileReferenceWithoutOwnersDto fileReference) {
         // simulate T2 or T3 from the name of file ->
         // a file ending with T3 pattern will be considered not available (stored in T3), all others are available (stored in T2)
         checkAvailabilityCallNumber++;
@@ -70,7 +68,7 @@ public class StorageNearlineMocked implements INearlineStorageLocation {
     }
 
     @Override
-    public InputStream download(FileReference fileReference)
+    public InputStream download(FileReferenceWithoutOwnersDto fileReference)
         throws NearlineFileNotAvailableException, NearlineDownloadException {
         return new ByteArrayInputStream(new byte[10]);
     }
@@ -83,17 +81,17 @@ public class StorageNearlineMocked implements INearlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregation> prepareForStorage(Collection<FileStorageRequestAggregation> fileReferenceRequests) {
+    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregationDto> prepareForStorage(Collection<FileStorageRequestAggregationDto> fileReferenceRequests) {
         return null;
     }
 
     @Override
-    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests) {
+    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequestDto> prepareForDeletion(Collection<FileDeletionRequestDto> fileDeletionRequests) {
         return null;
     }
 
     @Override
-    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(Collection<FileCacheRequest> requests) {
+    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequestDto> prepareForRestoration(Collection<FileCacheRequestDto> requests) {
         return null;
     }
 

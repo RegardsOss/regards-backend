@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
@@ -592,10 +592,10 @@ public class AIPStorageService implements IAIPStorageService {
     }
 
     @Override
-    public Collection<FileDeletionRequestDto> removeStorages(AIPEntity aip, List<String> removedStorages) {
+    public Collection<FileDeletionDto> removeStorages(AIPEntity aip, List<String> removedStorages) {
 
         // Build file reference requests
-        Collection<FileDeletionRequestDto> filesToRemove = new ArrayList<>();
+        Collection<FileDeletionDto> filesToRemove = new ArrayList<>();
 
         // Compute the new list of storage location (for files)
         Set<String> currentStorages = aip.getStorages();
@@ -623,12 +623,12 @@ public class AIPStorageService implements IAIPStorageService {
                                  loc.getStorage(),
                                  dataObject.getFilename(),
                                  aip.getProviderId());
-                    filesToRemove.add(FileDeletionRequestDto.build(dataObject.getChecksum(),
-                                                                   loc.getStorage(),
-                                                                   aip.getAipId(),
-                                                                   aip.getSessionOwner(),
-                                                                   aip.getSession(),
-                                                                   false));
+                    filesToRemove.add(FileDeletionDto.build(dataObject.getChecksum(),
+                                                            loc.getStorage(),
+                                                            aip.getAipId(),
+                                                            aip.getSessionOwner(),
+                                                            aip.getSession(),
+                                                            false));
                     // Remove location from AIPs.
                     // If storage deletion fails, the deletion can be rerun manually from storage interface.
                     dataObject.getLocations().remove(loc);

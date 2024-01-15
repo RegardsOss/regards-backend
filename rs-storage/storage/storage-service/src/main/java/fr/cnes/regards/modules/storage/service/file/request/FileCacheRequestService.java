@@ -35,6 +35,11 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.FileRestorationWorkingSubset;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.INearlineStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.PreparationResponse;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
@@ -44,10 +49,6 @@ import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
 import fr.cnes.regards.modules.storage.service.DownloadTokenService;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
@@ -385,14 +386,15 @@ public class FileCacheRequestService {
                 try {
                     PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
                     IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
-                    PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> response = storagePlugin.prepareForRestoration(
-                        requests);
+                    PreparationResponse<FileRestorationWorkingSubset, FileCacheRequestDto> response = storagePlugin.prepareForRestoration(
+                        requests.stream().map(FileCacheRequest::toDto).toList());
                     for (FileRestorationWorkingSubset ws : response.getWorkingSubsets()) {
                         jobInfoList.add(scheduleJob(ws, conf.getBusinessId()));
                     }
                     // Handle errors
-                    for (Entry<FileCacheRequest, String> error : response.getPreparationErrors().entrySet()) {
-                        this.handleStorageNotAvailable(error.getKey(), Optional.ofNullable(error.getValue()));
+                    for (Entry<FileCacheRequestDto, String> error : response.getPreparationErrors().entrySet()) {
+                        this.handleStorageNotAvailable(FileCacheRequest.fromDto(error.getKey()),
+                                                       Optional.ofNullable(error.getValue()));
                     }
                 } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                     LOGGER.error(e.getMessage(), e);

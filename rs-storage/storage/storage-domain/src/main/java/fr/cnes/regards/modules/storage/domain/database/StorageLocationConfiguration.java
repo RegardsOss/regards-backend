@@ -20,10 +20,10 @@ package fr.cnes.regards.modules.storage.domain.database;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.INearlineStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IOnlineStorageLocation;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationConfigurationDto;
 import fr.cnes.regards.modules.filecatalog.dto.StorageType;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
 
 import javax.annotation.Nullable;
 import javax.persistence.*;

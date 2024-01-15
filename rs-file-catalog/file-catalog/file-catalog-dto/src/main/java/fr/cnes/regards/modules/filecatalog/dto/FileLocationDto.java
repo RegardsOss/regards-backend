@@ -35,9 +35,16 @@ public class FileLocationDto {
      */
     private final String url;
 
-    public FileLocationDto(String storage, String url) {
+    private final boolean pendingActionRemaining;
+
+    public FileLocationDto(String storage, String url, boolean pendingActionRemaining) {
         this.storage = storage;
         this.url = url;
+        this.pendingActionRemaining = pendingActionRemaining;
+    }
+
+    public FileLocationDto(String storage, String url) {
+        this(storage, url, false);
     }
 
     public String getStorage() {
@@ -46,6 +53,10 @@ public class FileLocationDto {
 
     public String getUrl() {
         return url;
+    }
+
+    public boolean isPendingActionRemaining() {
+        return pendingActionRemaining;
     }
 
     @Override

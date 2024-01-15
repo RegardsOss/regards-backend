@@ -28,6 +28,8 @@ import java.util.*;
  */
 public class FileReferenceDto {
 
+    private Long id;
+
     private String checksum;
 
     private String originStorage;
@@ -59,6 +61,10 @@ public class FileReferenceDto {
      */
     private final Set<String> groupIds = new HashSet<>();
 
+    private boolean referenced = false;
+
+    private boolean nearlineConfirmed;
+
     public FileReferenceDto() {
     }
 
@@ -81,6 +87,19 @@ public class FileReferenceDto {
         }
     }
 
+    public FileReferenceDto(Long id,
+                            OffsetDateTime storageDate,
+                            FileReferenceMetaInfoDto metaInfo,
+                            FileLocationDto location,
+                            Collection<String> owners,
+                            boolean referenced,
+                            boolean nearlineConfirmed) {
+        this(storageDate, metaInfo, location, owners);
+        this.id = id;
+        this.referenced = referenced;
+        this.nearlineConfirmed = nearlineConfirmed;
+    }
+
     public FileReferenceDto(String checksum,
                             String originStorage,
                             FileReferenceMetaInfoDto metaInfo,
@@ -98,6 +117,10 @@ public class FileReferenceDto {
             this.owners.addAll(owners);
         }
         this.groupIds.addAll(groupIds);
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public OffsetDateTime getStorageDate() {
@@ -126,5 +149,13 @@ public class FileReferenceDto {
 
     public String getOriginStorage() {
         return originStorage;
+    }
+
+    public boolean isReferenced() {
+        return referenced;
+    }
+
+    public boolean isNearlineConfirmed() {
+        return nearlineConfirmed;
     }
 }

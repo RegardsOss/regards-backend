@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntityRequest;
 import fr.cnes.regards.modules.dam.service.entities.IStorageService;
 import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
@@ -135,21 +135,20 @@ public class StoragePlugin implements IStorageService {
                 this.entityRequestRepo.saveAll(infos);
             }
             // manage deleted file in toUpdate and present in oldEntity
-            Collection<FileDeletionRequestDto> filesToDelete = oldEntity.getFiles()
-                                                                        .values()
-                                                                        .stream()
-                                                                        .filter(file -> !toUpdate.getFiles()
-                                                                                                 .values()
-                                                                                                 .stream()
-                                                                                                 .anyMatch(f -> f.getChecksum()
-                                                                                                                 .equals(
-                                                                                                                     file.getChecksum())))
-                                                                        // no need to delete external files
-                                                                        .filter(file -> Boolean.FALSE.equals(file.isReference()))
-                                                                        .map(entry -> initDeletionRequest(entry,
-                                                                                                          toUpdate.getIpId()
-                                                                                                                  .toString()))
-                                                                        .collect(Collectors.toSet());
+            Collection<FileDeletionDto> filesToDelete = oldEntity.getFiles()
+                                                                 .values()
+                                                                 .stream()
+                                                                 .filter(file -> !toUpdate.getFiles()
+                                                                                          .values()
+                                                                                          .stream()
+                                                                                          .anyMatch(f -> f.getChecksum()
+                                                                                                          .equals(file.getChecksum())))
+                                                                 // no need to delete external files
+                                                                 .filter(file -> Boolean.FALSE.equals(file.isReference()))
+                                                                 .map(entry -> initDeletionRequest(entry,
+                                                                                                   toUpdate.getIpId()
+                                                                                                           .toString()))
+                                                                 .collect(Collectors.toSet());
             if (!filesToDelete.isEmpty()) {
                 this.storageClient.delete(filesToDelete);
             }
@@ -164,13 +163,13 @@ public class StoragePlugin implements IStorageService {
     public void delete(AbstractEntity<?> toDelete) {
         if (!StringUtils.isEmpty(damSettingsService.getStorageLocation())) {
 
-            Collection<FileDeletionRequestDto> files = toDelete.getFiles()
-                                                               .values()
-                                                               .stream()
-                                                               .map(entry -> initDeletionRequest(entry,
-                                                                                                 toDelete.getIpId()
-                                                                                                         .toString()))
-                                                               .collect(Collectors.toList());
+            Collection<FileDeletionDto> files = toDelete.getFiles()
+                                                        .values()
+                                                        .stream()
+                                                        .map(entry -> initDeletionRequest(entry,
+                                                                                          toDelete.getIpId()
+                                                                                                  .toString()))
+                                                        .collect(Collectors.toList());
             if (!files.isEmpty()) {
                 this.storageClient.delete(files);
             }
@@ -214,12 +213,12 @@ public class StoragePlugin implements IStorageService {
         return originUrl;
     }
 
-    private FileDeletionRequestDto initDeletionRequest(DataFile file, String urn) {
-        return FileDeletionRequestDto.build(file.getChecksum(),
-                                            damSettingsService.getStorageLocation(),
-                                            urn,
-                                            null,
-                                            null,
-                                            false);
+    private FileDeletionDto initDeletionRequest(DataFile file, String urn) {
+        return FileDeletionDto.build(file.getChecksum(),
+                                     damSettingsService.getStorageLocation(),
+                                     urn,
+                                     null,
+                                     null,
+                                     false);
     }
 }

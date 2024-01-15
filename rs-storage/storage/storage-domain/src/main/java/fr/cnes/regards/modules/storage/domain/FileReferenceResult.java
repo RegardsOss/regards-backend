@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import fr.cnes.regards.modules.fileaccess.plugin.domain.FileReferenceResultStatusEnum;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.plugin.FileReferenceResultStatusEnum;
 
 /**
  * POJO to represent a reference action result. A reference action can result with 3 types :

@@ -26,11 +26,12 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
-import fr.cnes.regards.modules.storage.domain.plugin.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -108,7 +109,7 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregation> prepareForStorage(Collection<FileStorageRequestAggregation> fileReferenceRequests) {
+    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregationDto> prepareForStorage(Collection<FileStorageRequestAggregationDto> fileReferenceRequests) {
         Collection<FileStorageWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileStorageWorkingSubset(fileReferenceRequests));
         return PreparationResponse.build(workingSubSets, Maps.newHashMap());
@@ -120,7 +121,7 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
         String tenant = runtimeTenantResolver.getTenant();
         workingSubset.getFileReferenceRequests().stream().forEach(data -> {
             runtimeTenantResolver.forceTenant(tenant);
-            doStore(progressManager, data);
+            doStore(progressManager, FileStorageRequestAggregation.fromDto(data));
         });
     }
 
@@ -140,7 +141,7 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
             LOGGER.debug("File {} ignored for storage", fileName);
             return;
         } else if (Pattern.matches(errorFilePattern, fileName)) {
-            progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
+            progressManager.storageFailed(fileRefRequest.toDto(), "Specific error generated for tests");
         } else {
             String directory;
             if (fileRefRequest.getStorageSubDirectory() == null) {
@@ -161,16 +162,16 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
                 }
                 LOGGER.debug("[SImpleOnLine Plugin] Storage succeed for file {}",
                              fileRefRequest.getMetaInfo().getFileName());
-                progressManager.storageSucceed(fileRefRequest, new URL("file", null, storedUrl), 10L);
+                progressManager.storageSucceed(fileRefRequest.toDto(), new URL("file", null, storedUrl), 10L);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
-                progressManager.storageFailed(fileRefRequest, e.getMessage());
+                progressManager.storageFailed(fileRefRequest.toDto(), e.getMessage());
             }
         }
     }
 
     @Override
-    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests) {
+    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequestDto> prepareForDeletion(Collection<FileDeletionRequestDto> fileDeletionRequests) {
         Collection<FileDeletionWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileDeletionWorkingSubset(Sets.newHashSet(fileDeletionRequests)));
         return PreparationResponse.build(workingSubSets, Maps.newHashMap());
@@ -189,7 +190,7 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
     }
 
     @Override
-    public InputStream retrieve(FileReference fileRef) throws ModuleException {
+    public InputStream retrieve(FileReferenceWithoutOwnersDto fileRef) throws ModuleException {
         try {
             return Files.newInputStream(Paths.get(fileRef.getLocation().getUrl()));
         } catch (IOException e) {
@@ -201,7 +202,7 @@ public class SimpleOnlineTestClient implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(Collection<FileCacheRequest> requests) {
+    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequestDto> prepareForRestoration(Collection<FileCacheRequestDto> requests) {
         Collection<FileRestorationWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileRestorationWorkingSubset(Sets.newHashSet(requests)));
         return PreparationResponse.build(workingSubSets, Maps.newHashMap());

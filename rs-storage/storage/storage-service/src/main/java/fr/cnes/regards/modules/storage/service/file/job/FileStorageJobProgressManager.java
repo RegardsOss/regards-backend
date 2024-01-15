@@ -20,12 +20,14 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IPeriodicActionProgressManager;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageProgressManager;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestResultDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
-import fr.cnes.regards.modules.storage.domain.plugin.IPeriodicActionProgressManager;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import fr.cnes.regards.modules.storage.service.glacier.GlacierArchiveService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,27 +61,28 @@ public class FileStorageJobProgressManager extends PeriodicActionProgressManager
     public FileStorageJobProgressManager(FileStorageRequestService storageRequestService,
                                          FileReferenceService fileRefService,
                                          StorageLocationService storageLocationService,
+                                         GlacierArchiveService glacierArchiveService,
                                          IJob<?> job) {
-        super(fileRefService, storageLocationService);
+        super(fileRefService, storageLocationService, glacierArchiveService);
         this.job = job;
         this.storageRequestService = storageRequestService;
         this.storageLocationService = storageLocationService;
     }
 
     @Override
-    public void storageSucceed(FileStorageRequestAggregation fileReferenceRequest, URL storedUrl, Long fileSize) {
+    public void storageSucceed(FileStorageRequestAggregationDto fileReferenceRequest, URL storedUrl, Long fileSize) {
         storageSucceed(fileReferenceRequest, storedUrl, fileSize, false, false, true);
     }
 
     @Override
-    public void storageSucceedWithPendingActionRemaining(FileStorageRequestAggregation fileReferenceRequest,
+    public void storageSucceedWithPendingActionRemaining(FileStorageRequestAggregationDto fileReferenceRequest,
                                                          URL storedUrl,
                                                          Long fileSize,
                                                          Boolean notifyAdministrators) {
         storageSucceed(fileReferenceRequest, storedUrl, fileSize, true, notifyAdministrators, false);
     }
 
-    private void storageSucceed(FileStorageRequestAggregation request,
+    private void storageSucceed(FileStorageRequestAggregationDto request,
                                 URL storedUrl,
                                 Long fileSize,
                                 boolean pendingActionRemaining,
@@ -100,7 +103,7 @@ public class FileStorageJobProgressManager extends PeriodicActionProgressManager
                       request.getMetaInfo().getChecksum(),
                       request.getStorage(),
                       storedUrl);
-            FileStorageRequestResultDto requestDto = FileStorageRequestResultDto.build(request.toDto(),
+            FileStorageRequestResultDto requestDto = FileStorageRequestResultDto.build(request,
                                                                                        storedUrl.toString(),
                                                                                        fileSize,
                                                                                        pendingActionRemaining,
@@ -118,7 +121,7 @@ public class FileStorageJobProgressManager extends PeriodicActionProgressManager
     }
 
     @Override
-    public void storageFailed(FileStorageRequestAggregation request, String cause) {
+    public void storageFailed(FileStorageRequestAggregationDto request, String cause) {
         // We do not save the new error stored file to avoid performance leak by committing files one by one in the database.
         // Files are saved in one transaction thanks to the bulkSave method.
         LOG.error("[STORE ERROR {}] - Store error for file {} (id={})in {}. Cause : {}",
@@ -127,7 +130,7 @@ public class FileStorageJobProgressManager extends PeriodicActionProgressManager
                   request.getId(),
                   request.getStorage(),
                   cause);
-        handledRequests.add(FileStorageRequestResultDto.build(request.toDto(), null, null, false, false).error(cause));
+        handledRequests.add(FileStorageRequestResultDto.build(request, null, null, false, false).error(cause));
         job.advanceCompletion();
     }
 

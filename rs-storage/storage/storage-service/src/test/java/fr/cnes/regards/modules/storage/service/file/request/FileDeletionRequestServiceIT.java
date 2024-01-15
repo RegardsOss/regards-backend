@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
@@ -130,12 +130,12 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
         FileReference fileRef = oFileRef.get();
 
         // Delete file reference for one owner
-        FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                      fileRef.getLocation().getStorage(),
-                                                                      owners.get(0),
-                                                                      SESSION_OWNER_1,
-                                                                      SESSION_1,
-                                                                      false);
+        FileDeletionDto request = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                        fileRef.getLocation().getStorage(),
+                                                        owners.get(0),
+                                                        SESSION_OWNER_1,
+                                                        SESSION_1,
+                                                        false);
         fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
         // File reference should still exists for the remaining owner
@@ -152,12 +152,12 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
         fileCacheRequestService.create(fileRef, 24, UUID.randomUUID().toString());
 
         // Delete file reference for the remaining owner
-        request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                               fileRef.getLocation().getStorage(),
-                                               owners.get(1),
-                                               SESSION_OWNER_2,
-                                               SESSION_1,
-                                               false);
+        request = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                        fileRef.getLocation().getStorage(),
+                                        owners.get(1),
+                                        SESSION_OWNER_2,
+                                        SESSION_1,
+                                        false);
         fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
         // File reference should be deleted
@@ -197,24 +197,24 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
         fileRef = oFileRef.get();
 
         // Create deletion request for each owner
-        FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                      fileRef.getLocation().getStorage(),
-                                                                      firstOwner,
-                                                                      SESSION_OWNER_1,
-                                                                      SESSION_1,
-                                                                      false);
-        FileDeletionRequestDto request2 = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                       fileRef.getLocation().getStorage(),
-                                                                       secondOwner,
-                                                                       SESSION_OWNER_2,
-                                                                       SESSION_1,
-                                                                       false);
-        FileDeletionRequestDto request3 = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                       fileRef.getLocation().getStorage(),
-                                                                       "other-owner",
-                                                                       SESSION_OWNER_3,
-                                                                       SESSION_1,
-                                                                       false);
+        FileDeletionDto request = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                        fileRef.getLocation().getStorage(),
+                                                        firstOwner,
+                                                        SESSION_OWNER_1,
+                                                        SESSION_1,
+                                                        false);
+        FileDeletionDto request2 = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                         fileRef.getLocation().getStorage(),
+                                                         secondOwner,
+                                                         SESSION_OWNER_2,
+                                                         SESSION_1,
+                                                         false);
+        FileDeletionDto request3 = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                         fileRef.getLocation().getStorage(),
+                                                         "other-owner",
+                                                         SESSION_OWNER_3,
+                                                         SESSION_1,
+                                                         false);
         fileDeletionRequestService.handle(Sets.newHashSet(request, request2, request3), UUID.randomUUID().toString());
 
         // Re-submit same request for one owner
@@ -244,12 +244,12 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                           fileRef.getLazzyOwners().contains(firstOwner));
 
         // Delete file reference
-        FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                      fileRef.getLocation().getStorage(),
-                                                                      firstOwner,
-                                                                      SESSION_OWNER_1,
-                                                                      SESSION_1,
-                                                                      false);
+        FileDeletionDto request = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                        fileRef.getLocation().getStorage(),
+                                                        firstOwner,
+                                                        SESSION_OWNER_1,
+                                                        SESSION_1,
+                                                        false);
         fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
         // File reference should still exists with no owners
@@ -343,12 +343,12 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
             filePathToDelete = Paths.get(new URL(fileRef.getLocation().getUrl()).getPath());
 
             // Delete file reference for one owner
-            FileDeletionRequestDto request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                          fileRef.getLocation().getStorage(),
-                                                                          firstOwner,
-                                                                          SESSION_OWNER_1,
-                                                                          SESSION_1,
-                                                                          false);
+            FileDeletionDto request = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                            fileRef.getLocation().getStorage(),
+                                                            firstOwner,
+                                                            SESSION_OWNER_1,
+                                                            SESSION_1,
+                                                            false);
             fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
             // File reference should still exists for the remaining owner
@@ -364,12 +364,12 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
             fileCacheRequestService.create(fileRef, 24, UUID.randomUUID().toString());
 
             // Delete file reference for the remaining owner
-            request = FileDeletionRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                   fileRef.getLocation().getStorage(),
-                                                   secondOwner,
-                                                   SESSION_OWNER_2,
-                                                   SESSION_1,
-                                                   false);
+            request = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
+                                            fileRef.getLocation().getStorage(),
+                                            secondOwner,
+                                            SESSION_OWNER_2,
+                                            SESSION_1,
+                                            false);
             fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
             // File reference should still exists with no owners

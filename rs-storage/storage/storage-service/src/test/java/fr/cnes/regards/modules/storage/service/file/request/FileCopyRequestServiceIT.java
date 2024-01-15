@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileGroupRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -136,10 +136,10 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFile() throws InterruptedException, ExecutionException {
         String requestGroup = UUID.randomUUID().toString();
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
-        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                                    ONLINE_CONF_LABEL,
-                                                                                    SESSION_OWNER,
-                                                                                    SESSION));
+        Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                                      ONLINE_CONF_LABEL,
+                                                                      SESSION_OWNER,
+                                                                      SESSION));
         fileCopyRequestService.copy(Sets.newHashSet(new FilesCopyEvent(requests, requestGroup)));
         // A new copy request should be created
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
@@ -299,11 +299,11 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFileInSubDir() throws InterruptedException, ExecutionException {
         String copyDestinationPath = "dir/test/copy";
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
-        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                                    ONLINE_CONF_LABEL,
-                                                                                    copyDestinationPath,
-                                                                                    SESSION_OWNER,
-                                                                                    SESSION));
+        Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                                      ONLINE_CONF_LABEL,
+                                                                      copyDestinationPath,
+                                                                      SESSION_OWNER,
+                                                                      SESSION));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         // A new copy request should be created
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
@@ -394,10 +394,10 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
                                                     SESSION_OWNER,
                                                     SESSION,
                                                     false).get();
-        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                                    storageCopyDest,
-                                                                                    SESSION_OWNER,
-                                                                                    SESSION));
+        Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                                      storageCopyDest,
+                                                                      SESSION_OWNER,
+                                                                      SESSION));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
                                                                        storageCopyDest);
@@ -439,10 +439,10 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFile_error_unknownFile() {
         String storage = "somewhere";
         String unknownChecksum = UUID.randomUUID().toString();
-        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(unknownChecksum,
-                                                                                    storage,
-                                                                                    SESSION_OWNER,
-                                                                                    SESSION));
+        Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(unknownChecksum,
+                                                                      storage,
+                                                                      SESSION_OWNER,
+                                                                      SESSION));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(unknownChecksum, storage);
         Assert.assertFalse("There should not be a copy request created", oReq.isPresent());

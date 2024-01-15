@@ -19,8 +19,9 @@
 package fr.cnes.regards.modules.storage.service.file.job;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.storage.domain.plugin.IPeriodicActionProgressManager;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IPeriodicActionProgressManager;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storage.service.glacier.GlacierArchiveService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,8 @@ public class PeriodicActionProgressManager implements IPeriodicActionProgressMan
 
     private final FileReferenceService fileRefService;
 
+    private final GlacierArchiveService glacierArchiveService;
+
     private final StorageLocationService storageLocationService;
 
     private final Set<String> pendingActionSucceedUrls = Sets.newHashSet();
@@ -41,9 +44,11 @@ public class PeriodicActionProgressManager implements IPeriodicActionProgressMan
     private final Set<Path> pendingActionErrorPaths = Sets.newHashSet();
 
     public PeriodicActionProgressManager(FileReferenceService fileRefService,
-                                         StorageLocationService storageLocationService) {
+                                         StorageLocationService storageLocationService,
+                                         GlacierArchiveService glacierArchiveService) {
         this.fileRefService = fileRefService;
         this.storageLocationService = storageLocationService;
+        this.glacierArchiveService = glacierArchiveService;
     }
 
     protected void bulkSavePendings() {
@@ -77,6 +82,16 @@ public class PeriodicActionProgressManager implements IPeriodicActionProgressMan
             "[STORE PENDING ACTION ERROR] Remaining pending action is over with error for file {}. Action will be automatically retried later",
             pendingActionErrorPath);
         pendingActionErrorPaths.add(pendingActionErrorPath);
+    }
+
+    @Override
+    public void archiveStored(String storage, String url, String checksum, Long archiveSize) {
+        glacierArchiveService.saveGlacierArchive(storage, url, checksum, archiveSize);
+    }
+
+    @Override
+    public void archiveDeleted(String storage, String url) {
+        glacierArchiveService.deleteGlacierArchive(storage, url);
     }
 
 }

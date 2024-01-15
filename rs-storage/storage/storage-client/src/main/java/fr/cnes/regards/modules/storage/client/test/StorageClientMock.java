@@ -182,7 +182,7 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo delete(FileDeletionRequestDto file) {
+    public RequestInfo delete(FileDeletionDto file) {
         checkInit();
         RequestInfo requestInfo = RequestInfo.build();
 
@@ -243,18 +243,18 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDto> files) {
+    public Collection<RequestInfo> delete(Collection<FileDeletionDto> files) {
         return Sets.newHashSet(delete(files.iterator().next()));
     }
 
     @Override
-    public RequestInfo copy(FileCopyRequestDto file) {
+    public RequestInfo copy(FileCopyDto file) {
         // Not implemented yet
         throw new UnsupportedOperationException(UNSUPORTED);
     }
 
     @Override
-    public Collection<RequestInfo> copy(Collection<FileCopyRequestDto> files) {
+    public Collection<RequestInfo> copy(Collection<FileCopyDto> files) {
         // Not implemented yet
         throw new UnsupportedOperationException(UNSUPORTED);
     }

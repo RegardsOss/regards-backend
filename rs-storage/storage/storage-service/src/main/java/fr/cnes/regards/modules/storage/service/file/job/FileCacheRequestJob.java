@@ -25,11 +25,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.FileRestorationWorkingSubset;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.INearlineStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
-import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -96,9 +97,9 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
             throw new JobRuntimeException(e);
         } finally {
             // Publish event for all not handled files
-            for (FileCacheRequest req : workingSubset.getFileRestorationRequests()) {
-                if (!progressManager.isHandled(req)) {
-                    FileReference fileRef = req.getFileReference();
+            for (FileCacheRequestDto req : workingSubset.getFileRestorationRequests()) {
+                if (!progressManager.isHandled(FileCacheRequest.fromDto(req))) {
+                    FileReferenceWithoutOwnersDto fileRef = req.getFileReference();
                     progressManager.restoreFailed(req,
                                                   String.format("File %s (checksum: %s) not handled by storage job. %s",
                                                                 fileRef.getMetaInfo().getFileName(),

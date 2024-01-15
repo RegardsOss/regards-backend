@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -73,5 +73,5 @@ public interface IAIPStorageService {
      * @param removedStorages list of storage metadata that will be removed from the AIP
      * @return the list of events to sent to storage, empty if nothing have been done
      */
-    Collection<FileDeletionRequestDto> removeStorages(AIPEntity aip, List<String> removedStorages);
+    Collection<FileDeletionDto> removeStorages(AIPEntity aip, List<String> removedStorages);
 }

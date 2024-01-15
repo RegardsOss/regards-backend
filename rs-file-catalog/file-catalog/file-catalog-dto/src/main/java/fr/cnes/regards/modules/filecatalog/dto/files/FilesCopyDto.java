@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.filecatalog.dto.files;
 
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,14 +31,14 @@ public class FilesCopyDto {
     /**
      * Files to delete information
      */
-    private final Set<FileCopyRequestDto> files = new HashSet<>();
+    private final Set<FileCopyDto> files = new HashSet<>();
 
     /**
      * Business request identifier
      */
     private String groupId;
 
-    public FilesCopyDto(String groupId, Set<FileCopyRequestDto> files) {
+    public FilesCopyDto(String groupId, Set<FileCopyDto> files) {
         if (groupId == null) {
             throw new IllegalArgumentException("groupId is required");
         }
@@ -57,7 +57,7 @@ public class FilesCopyDto {
         return groupId;
     }
 
-    public Set<FileCopyRequestDto> getFiles() {
+    public Set<FileCopyDto> getFiles() {
         return files;
     }
 

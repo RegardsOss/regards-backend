@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -476,18 +476,18 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
      */
     private void publishFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
         fdr.setStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED);
-        List<FileDeletionRequestDto> storageRequests = new ArrayList<>();
+        List<FileDeletionDto> storageRequests = new ArrayList<>();
         for (FeatureFile file : feature.getFeature().getFiles()) {
             FeatureFileAttributes attribute = file.getAttributes();
             for (FeatureFileLocation location : file.getLocations()) {
                 // Create a storage request for each location of the file
                 if (location.getStorage() != null) {
-                    storageRequests.add(FileDeletionRequestDto.build(attribute.getChecksum(),
-                                                                     location.getStorage(),
-                                                                     feature.getFeature().getUrn().toString(),
-                                                                     feature.getSessionOwner(),
-                                                                     feature.getSession(),
-                                                                     false));
+                    storageRequests.add(FileDeletionDto.build(attribute.getChecksum(),
+                                                              location.getStorage(),
+                                                              feature.getFeature().getUrn().toString(),
+                                                              feature.getSessionOwner(),
+                                                              feature.getSession(),
+                                                              false));
                 } else {
                     LOGGER.warn("Location is null for file url=[{}], which means this feature file location has never "
                                 + "been saved", location.getUrl());

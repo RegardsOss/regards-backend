@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
 import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
@@ -101,13 +101,12 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
      */
     @Test
     public void deleteFlowItemNotExists() {
-        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionRequestDto.build(UUID.randomUUID().toString(),
-                                                                                      "some-stprage",
-                                                                                      "owner",
-                                                                                      SESSION_OWNER_1,
-                                                                                      SESSION_1,
-                                                                                      false),
-                                                         UUID.randomUUID().toString());
+        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(UUID.randomUUID().toString(),
+                                                                               "some-stprage",
+                                                                               "owner",
+                                                                               SESSION_OWNER_1,
+                                                                               SESSION_1,
+                                                                               false), UUID.randomUUID().toString());
         List<FilesDeletionEvent> items = new ArrayList<>();
         items.add(item);
         deletionFlowHandler.handleBatch(items);
@@ -139,13 +138,12 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
         String owner = "owner";
         this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1, false);
         Mockito.clearInvocations(publisher);
-        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionRequestDto.build(checksum,
-                                                                                      storage,
-                                                                                      owner,
-                                                                                      SESSION_OWNER_1,
-                                                                                      SESSION_1,
-                                                                                      false),
-                                                         UUID.randomUUID().toString());
+        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
+                                                                               storage,
+                                                                               owner,
+                                                                               SESSION_OWNER_1,
+                                                                               SESSION_1,
+                                                                               false), UUID.randomUUID().toString());
         List<FilesDeletionEvent> items = new ArrayList<>();
         items.add(item);
         deletionFlowHandler.handleBatch(items);
@@ -207,13 +205,12 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
         this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1, false);
         this.referenceFile(checksum, "other-owner", null, "file.test", storage, SESSION_OWNER_2, SESSION_1, false);
         Mockito.clearInvocations(publisher);
-        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionRequestDto.build(checksum,
-                                                                                      storage,
-                                                                                      owner,
-                                                                                      SESSION_OWNER_1,
-                                                                                      SESSION_1,
-                                                                                      false),
-                                                         UUID.randomUUID().toString());
+        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
+                                                                               storage,
+                                                                               owner,
+                                                                               SESSION_OWNER_1,
+                                                                               SESSION_1,
+                                                                               false), UUID.randomUUID().toString());
         List<FilesDeletionEvent> items = new ArrayList<>();
         items.add(item);
         deletionFlowHandler.handleBatch(items);
@@ -267,13 +264,12 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
                                                                  SESSION_1);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
-        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionRequestDto.build(checksum,
-                                                                                      storage,
-                                                                                      owner,
-                                                                                      SESSION_OWNER_1,
-                                                                                      SESSION_1,
-                                                                                      false),
-                                                         UUID.randomUUID().toString());
+        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
+                                                                               storage,
+                                                                               owner,
+                                                                               SESSION_OWNER_1,
+                                                                               SESSION_1,
+                                                                               false), UUID.randomUUID().toString());
         List<FilesDeletionEvent> items = new ArrayList<>();
         items.add(item);
         deletionFlowHandler.handleBatch(items);
@@ -364,13 +360,12 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
                                                                  SESSION_1);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
-        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionRequestDto.build(checksum,
-                                                                                      storage,
-                                                                                      owner,
-                                                                                      SESSION_OWNER_1,
-                                                                                      SESSION_1,
-                                                                                      false),
-                                                         UUID.randomUUID().toString());
+        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
+                                                                               storage,
+                                                                               owner,
+                                                                               SESSION_OWNER_1,
+                                                                               SESSION_1,
+                                                                               false), UUID.randomUUID().toString());
         List<FilesDeletionEvent> items = new ArrayList<>();
         items.add(item);
         deletionFlowHandler.handleBatch(items);
@@ -455,13 +450,12 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
                                                                  SESSION_1);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
-        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionRequestDto.build(checksum,
-                                                                                      storage,
-                                                                                      owner,
-                                                                                      SESSION_OWNER_1,
-                                                                                      SESSION_1,
-                                                                                      true),
-                                                         UUID.randomUUID().toString());
+        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
+                                                                               storage,
+                                                                               owner,
+                                                                               SESSION_OWNER_1,
+                                                                               SESSION_1,
+                                                                               true), UUID.randomUUID().toString());
         List<FilesDeletionEvent> items = new ArrayList<>();
         items.add(item);
         deletionFlowHandler.handleBatch(items);
@@ -558,13 +552,12 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
         Mockito.clearInvocations(publisher);
 
         // DELETE FILE REFERENCE
-        FilesDeletionEvent delItem = new FilesDeletionEvent(FileDeletionRequestDto.build(checksum,
-                                                                                         storage,
-                                                                                         owner,
-                                                                                         SESSION_OWNER_1,
-                                                                                         SESSION_1,
-                                                                                         false),
-                                                            UUID.randomUUID().toString());
+        FilesDeletionEvent delItem = new FilesDeletionEvent(FileDeletionDto.build(checksum,
+                                                                                  storage,
+                                                                                  owner,
+                                                                                  SESSION_OWNER_1,
+                                                                                  SESSION_1,
+                                                                                  false), UUID.randomUUID().toString());
         deletionFlowHandler.handleBatch(Lists.newArrayList(delItem));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 

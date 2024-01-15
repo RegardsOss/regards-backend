@@ -275,18 +275,15 @@ public class FileReferenceEventHandler
             String sessionOwner = copyReq.getSessionOwner();
             String session = copyReq.getSession();
             sessionNotifier.incrementStoreRequests(sessionOwner, session);
-            FileStorageRequestAggregation r = fileStorageRequestService.createNewFileStorageRequest(availableEvent.getOwners(),
-                                                                                                    fileMeta,
-                                                                                                    availableEvent.getLocation()
-                                                                                                                  .getUrl(),
-                                                                                                    copyReq.getStorage(),
-                                                                                                    Optional.ofNullable(
-                                                                                                        copyReq.getStorageSubDirectory()),
-                                                                                                    storageGroupId,
-                                                                                                    Optional.empty(),
-                                                                                                    Optional.empty(),
-                                                                                                    sessionOwner,
-                                                                                                    session);
+            FileStorageRequestAggregation r = fileStorageRequestService.createNewFileStorageRequestFromCopy(copyReq,
+                                                                                                            availableEvent.getOriginStorage(),
+                                                                                                            fileMeta,
+                                                                                                            availableEvent.getLocation()
+                                                                                                                          .getUrl(),
+                                                                                                            storageGroupId,
+                                                                                                            sessionOwner,
+                                                                                                            session);
+
             copyReq.setFileStorageGroupId(storageGroupId);
             fileCopyRequestService.update(copyReq);
             LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",

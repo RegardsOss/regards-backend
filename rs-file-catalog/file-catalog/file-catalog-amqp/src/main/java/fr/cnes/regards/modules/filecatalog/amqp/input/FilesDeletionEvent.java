@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.filecatalog.dto.files.FilesDeletionDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -59,15 +59,15 @@ public class FilesDeletionEvent extends FilesDeletionDto implements ISubscribabl
         super();
     }
 
-    public FilesDeletionEvent(Set<FileDeletionRequestDto> files, String groupId) {
+    public FilesDeletionEvent(Set<FileDeletionDto> files, String groupId) {
         super(groupId, files);
     }
 
-    public FilesDeletionEvent(Collection<FileDeletionRequestDto> files, String groupId) {
+    public FilesDeletionEvent(Collection<FileDeletionDto> files, String groupId) {
         super(groupId, new HashSet<>(files));
     }
 
-    public FilesDeletionEvent(FileDeletionRequestDto file, String groupId) {
+    public FilesDeletionEvent(FileDeletionDto file, String groupId) {
         super(groupId, Stream.of(file).collect(Collectors.toSet()));
     }
 }

@@ -26,13 +26,16 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storage.service.glacier.GlacierArchiveService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Storage Job to trigger periodic actions on a given store location.
@@ -56,6 +59,9 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
     @Autowired
     private FileReferenceService fileRefService;
 
+    @Autowired
+    private GlacierArchiveService glacierArchiveService;
+
     @Value("${regards.storage.check.periodic.action.enabled:true}")
     private boolean checkPeriodicActionEnabled;
 
@@ -67,13 +73,17 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
             IStorageLocation storagePlugin = pluginService.getPlugin(storageLocation);
             if (storagePlugin.hasPeriodicAction()) {
                 PeriodicActionProgressManager progressManager = new PeriodicActionProgressManager(fileRefService,
-                                                                                                  storageLocationService);
+                                                                                                  storageLocationService,
+                                                                                                  glacierArchiveService);
                 storagePlugin.runPeriodicAction(progressManager);
                 // Save remaining pending action status for run step.
                 progressManager.bulkSavePendings();
                 if (checkPeriodicActionEnabled) {
                     storagePlugin.runCheckPendingAction(progressManager,
-                                                        fileRefService.searchPendingActionsRemaining(storageLocation));
+                                                        fileRefService.searchPendingActionsRemaining(storageLocation)
+                                                                      .stream()
+                                                                      .map(FileReference::toDtoWithoutOwners)
+                                                                      .collect(Collectors.toSet()));
                     // Save remaining pending action status for check step.
                     progressManager.bulkSavePendings();
                 }

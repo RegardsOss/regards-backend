@@ -1799,6 +1799,17 @@
                 <artifactId>file-access-amqp</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <!--File Plugin Access -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.fileaccess.plugin</groupId>
+                <artifactId>file-access-plugin-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.fileaccess.plugin</groupId>
+                <artifactId>file-access-plugin-dto</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <!--File Packager -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.filepackager</groupId>

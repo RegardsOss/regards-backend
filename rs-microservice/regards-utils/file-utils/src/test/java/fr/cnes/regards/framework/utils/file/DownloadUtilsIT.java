@@ -26,9 +26,9 @@ import fr.cnes.regards.framework.s3.test.S3BucketTestUtils;
 import fr.cnes.regards.framework.s3.test.S3FileTestUtils;
 import fr.cnes.regards.framework.test.integration.RegardsActiveProfileResolver;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
-import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import org.apache.commons.io.FileUtils;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
@@ -354,7 +354,7 @@ public class DownloadUtilsIT {
         fileReferenceMetaInfo.setChecksum(checksum);
         fileStorageRequest.setMetaInfo(fileReferenceMetaInfo);
 
-        S3FileTestUtils.store(new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest)),
+        S3FileTestUtils.store(new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest.toDto())),
                               testServer,
                               FileIdentificationEnum.FILENAME);
         return checksum;
@@ -372,7 +372,7 @@ public class DownloadUtilsIT {
         fileReferenceMetaInfo.setChecksum("040befd332b3ce3d7d5f12943771af4e");
         fileStorageRequest.setMetaInfo(fileReferenceMetaInfo);
 
-        S3FileTestUtils.store(new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest)),
+        S3FileTestUtils.store(new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest.toDto())),
                               testServer,
                               FileIdentificationEnum.FILENAME);
     }
@@ -389,7 +389,7 @@ public class DownloadUtilsIT {
         fileReferenceMetaInfo.setChecksum("9dad4a34995d58e0a55aebaed5029f43");
         fileStorageRequest.setMetaInfo(fileReferenceMetaInfo);
 
-        S3FileTestUtils.store(new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest)),
+        S3FileTestUtils.store(new FileStorageWorkingSubset(Collections.singletonList(fileStorageRequest.toDto())),
                               testServer,
                               FileIdentificationEnum.FILENAME);
     }

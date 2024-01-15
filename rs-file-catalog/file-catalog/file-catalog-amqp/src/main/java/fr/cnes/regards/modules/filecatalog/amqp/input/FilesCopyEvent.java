@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.filecatalog.dto.files.FilesCopyDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,9 +33,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Flow message to request file(s) reference deletion.<br/>
- * A deletion request is always a success as the only action is to remove the requesting owner to the file(s)<br/>
- * When a file does not belongs to any owner anymore, then a deletion request is made for stored files (ONLINE and NEARLINE).<br/>
+ * Flow message to request file(s) reference copy.<br/>
+ * A copy request will store the file on a different storage if needed and return a success state as if it was a
+ * store request<br/>
  * <br/>
  * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
@@ -51,15 +51,15 @@ public class FilesCopyEvent extends FilesCopyDto implements ISubscribable {
         super();
     }
 
-    public FilesCopyEvent(Set<FileCopyRequestDto> files, String groupId) {
+    public FilesCopyEvent(Set<FileCopyDto> files, String groupId) {
         super(groupId, files);
     }
 
-    public FilesCopyEvent(Collection<FileCopyRequestDto> files, String groupId) {
+    public FilesCopyEvent(Collection<FileCopyDto> files, String groupId) {
         super(groupId, new HashSet<>(files));
     }
 
-    public FilesCopyEvent(FileCopyRequestDto file, String groupId) {
+    public FilesCopyEvent(FileCopyDto file, String groupId) {
         super(groupId, Stream.of(file).collect(Collectors.toSet()));
     }
 }

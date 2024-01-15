@@ -692,12 +692,12 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         listener.reset();
 
         // Delete it
-        RequestInfo deleteInfo = client.delete(FileDeletionRequestDto.build(checksum,
-                                                                            ONLINE_CONF,
-                                                                            owner,
-                                                                            SESSION_OWNER,
-                                                                            SESSION,
-                                                                            false));
+        RequestInfo deleteInfo = client.delete(FileDeletionDto.build(checksum,
+                                                                     ONLINE_CONF,
+                                                                     owner,
+                                                                     SESSION_OWNER,
+                                                                     SESSION,
+                                                                     false));
 
         waitRequestEnds(1, 60);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(deleteInfo));
@@ -708,14 +708,14 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void deleteWithMultipleGroups() throws InterruptedException {
-        Set<FileDeletionRequestDto> files = Sets.newHashSet();
+        Set<FileDeletionDto> files = Sets.newHashSet();
         for (int i = 0; i < (FilesDeletionEvent.MAX_REQUEST_PER_GROUP + 1); i++) {
-            files.add(FileDeletionRequestDto.build(UUID.randomUUID().toString(),
-                                                   ONLINE_CONF,
-                                                   "owner",
-                                                   SESSION_OWNER,
-                                                   SESSION,
-                                                   false));
+            files.add(FileDeletionDto.build(UUID.randomUUID().toString(),
+                                            ONLINE_CONF,
+                                            "owner",
+                                            SESSION_OWNER,
+                                            SESSION,
+                                            false));
         }
         Collection<RequestInfo> infos = client.delete(files);
         Assert.assertEquals("There should be two requests groups", 2, infos.size());
@@ -882,12 +882,12 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         this.storeFile();
         listener.reset();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Set<FileCopyRequestDto> requests = restorableFileChecksums.stream()
-                                                                  .map(f -> FileCopyRequestDto.build(f,
-                                                                                                     NEARLINE_CONF_2,
-                                                                                                     SESSION_OWNER,
-                                                                                                     SESSION))
-                                                                  .collect(Collectors.toSet());
+        Set<FileCopyDto> requests = restorableFileChecksums.stream()
+                                                           .map(f -> FileCopyDto.build(f,
+                                                                                       NEARLINE_CONF_2,
+                                                                                       SESSION_OWNER,
+                                                                                       SESSION))
+                                                           .collect(Collectors.toSet());
         Collection<RequestInfo> infos = client.copy(requests);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
@@ -914,10 +914,10 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        Set<FileCopyRequestDto> requests = Sets.newHashSet(FileCopyRequestDto.build(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_CHECKSUM,
-                                                                                    ONLINE_CONF,
-                                                                                    SESSION_OWNER,
-                                                                                    SESSION));
+        Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_CHECKSUM,
+                                                                      ONLINE_CONF,
+                                                                      SESSION_OWNER,
+                                                                      SESSION));
         Collection<RequestInfo> infos = client.copy(requests);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
@@ -936,12 +936,12 @@ public class StorageClientIT extends AbstractMultitenantServiceIT {
         this.storeFile();
         listener.reset();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Set<FileCopyRequestDto> requests = storedFileChecksums.stream()
-                                                              .map(f -> FileCopyRequestDto.build(f,
-                                                                                                 NEARLINE_CONF_2,
-                                                                                                 SESSION_OWNER,
-                                                                                                 SESSION))
-                                                              .collect(Collectors.toSet());
+        Set<FileCopyDto> requests = storedFileChecksums.stream()
+                                                       .map(f -> FileCopyDto.build(f,
+                                                                                   NEARLINE_CONF_2,
+                                                                                   SESSION_OWNER,
+                                                                                   SESSION))
+                                                       .collect(Collectors.toSet());
         Collection<RequestInfo> infos = client.copy(requests);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();

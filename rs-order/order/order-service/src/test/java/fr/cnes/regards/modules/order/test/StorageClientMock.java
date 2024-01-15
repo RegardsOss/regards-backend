@@ -26,8 +26,8 @@ import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
 import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
 import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
@@ -92,22 +92,22 @@ public class StorageClientMock implements IStorageClient {
     }
 
     @Override
-    public RequestInfo delete(FileDeletionRequestDto file) {
+    public RequestInfo delete(FileDeletionDto file) {
         return null;
     }
 
     @Override
-    public Collection<RequestInfo> delete(Collection<FileDeletionRequestDto> files) {
+    public Collection<RequestInfo> delete(Collection<FileDeletionDto> files) {
         return null;
     }
 
     @Override
-    public RequestInfo copy(FileCopyRequestDto file) {
+    public RequestInfo copy(FileCopyDto file) {
         return null;
     }
 
     @Override
-    public Collection<RequestInfo> copy(Collection<FileCopyRequestDto> files) {
+    public Collection<RequestInfo> copy(Collection<FileCopyDto> files) {
         return null;
     }
 

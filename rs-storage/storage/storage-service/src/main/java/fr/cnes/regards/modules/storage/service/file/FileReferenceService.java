@@ -337,6 +337,11 @@ public class FileReferenceService {
         return fileRefRepo.findByLocationStorageAndLocationPendingActionRemaining(storage, true);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<FileReference> findWithOwnersByLocationStorageAndMetaInfoChecksum(String storage, String checksum) {
+        return fileRefWithOwnersRepo.findByLocationStorageAndMetaInfoChecksum(storage, checksum);
+    }
+
     /**
      * Update the given fileReference
      */

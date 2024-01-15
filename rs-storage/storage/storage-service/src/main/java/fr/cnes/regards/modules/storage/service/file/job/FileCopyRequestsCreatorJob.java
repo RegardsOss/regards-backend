@@ -31,12 +31,12 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesCopyEvent;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyRequestDto;
+import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -157,7 +157,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             }
             totalPages = pageResults.getTotalPages();
             String groupId = UUID.randomUUID().toString();
-            Set<FileCopyRequestDto> requests = Sets.newHashSet();
+            Set<FileCopyDto> requests = Sets.newHashSet();
             for (FileReference fileRef : pageResults.getContent()) {
                 try {
                     Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(),
@@ -167,11 +167,11 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                     if (desinationFilePath.isPresent()) {
                         nbFilesToCopy++;
                         // For each file reference located in the given path, send a copy request to the destination storage location.
-                        requests.add(FileCopyRequestDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                              storageLocationDestinationId,
-                                                              desinationFilePath.get().toString(),
-                                                              sessionOwner,
-                                                              session));
+                        requests.add(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                       storageLocationDestinationId,
+                                                       desinationFilePath.get().toString(),
+                                                       sessionOwner,
+                                                       session));
                     }
                 } catch (MalformedURLException | ModuleException e) {
                     logger.error(String.format("Unable to handle file reference %s for copy from %s to %s. Cause:",

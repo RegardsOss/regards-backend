@@ -29,9 +29,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginCon
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IOnlineStorageLocation;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -57,5 +57,6 @@
         <module>bootstrap-file-access</module>
         <module>file-access-code-coverage</module>
         <module>file-access</module>
+        <module>file-access-plugin</module>
     </modules>
 </project>

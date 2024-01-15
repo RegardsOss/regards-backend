@@ -115,6 +115,8 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     Optional<FileStorageRequestAggregation> findByMetaInfoChecksum(String checksum);
 
+    Optional<FileStorageRequestAggregation> findByStorageAndMetaInfoChecksum(String storage, String checksum);
+
     List<FileStorageRequestAggregation> findByGroupIdsAndStatusNotIn(String group,
                                                                      Collection<FileRequestStatus> runningStatus);
 }
