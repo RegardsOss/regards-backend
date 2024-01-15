@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.dto.sip;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.format.annotation.DateTimeFormat;

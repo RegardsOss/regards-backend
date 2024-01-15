@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;

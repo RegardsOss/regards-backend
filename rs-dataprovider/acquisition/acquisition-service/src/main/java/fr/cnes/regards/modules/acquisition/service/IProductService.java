@@ -25,8 +25,8 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
-import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.ISipState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

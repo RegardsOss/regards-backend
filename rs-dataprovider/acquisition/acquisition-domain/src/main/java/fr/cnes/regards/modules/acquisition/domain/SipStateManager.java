@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.ISipState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 
 /**
  * {@link ISipState} utils

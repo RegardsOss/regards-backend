@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
 import org.springframework.data.domain.Page;

@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.aip.DisseminationStatus;
+import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.DisseminationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.Valid;

@@ -3,7 +3,7 @@ package fr.cnes.regards.modules.acquisition.service.session;
 import com.google.common.base.Strings;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+import fr.cnes.regards.modules.ingest.dto.ISipState;
 
 public class SessionChangingStateProbe {
 

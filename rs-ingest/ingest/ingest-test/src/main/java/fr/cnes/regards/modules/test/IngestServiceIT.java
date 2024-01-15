@@ -30,10 +30,10 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRep
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.dao.*;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
+import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;

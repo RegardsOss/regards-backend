@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.modules.session.commons.service.delete.ISession
 import fr.cnes.regards.framework.modules.session.commons.service.delete.ISourceDeleteService;
 import fr.cnes.regards.modules.ingest.dao.AIPSpecificationsBuilder;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;

@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

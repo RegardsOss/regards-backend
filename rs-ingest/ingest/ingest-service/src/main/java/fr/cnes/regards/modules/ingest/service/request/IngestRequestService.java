@@ -24,9 +24,6 @@ import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
-import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
-import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
@@ -37,6 +34,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
@@ -56,7 +55,8 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.StorageType;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
+import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
@@ -100,7 +100,7 @@ public class IngestRequestService implements IIngestRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
 
     public static final String UNEXPECTED_STEP_S_TEMPLATE = "Unexpected step \"%s\"";
-    
+
     @Autowired
     private IngestConfigurationProperties confProperties;
 

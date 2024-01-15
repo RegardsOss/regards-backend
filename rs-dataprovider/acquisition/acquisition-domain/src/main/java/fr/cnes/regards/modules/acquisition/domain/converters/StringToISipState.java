@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.acquisition.domain.converters;
 
 import fr.cnes.regards.modules.acquisition.domain.SipStateManager;
-import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+import fr.cnes.regards.modules.ingest.dto.ISipState;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 

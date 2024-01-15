@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.junit.Assert;

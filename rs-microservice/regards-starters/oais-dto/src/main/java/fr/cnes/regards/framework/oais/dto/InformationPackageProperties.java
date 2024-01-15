@@ -138,7 +138,6 @@ public class InformationPackageProperties {
 
     /**
      * Only used to fulfil this object with fluent API
-     * //
      */
     @GsonIgnore
     @JsonIgnore

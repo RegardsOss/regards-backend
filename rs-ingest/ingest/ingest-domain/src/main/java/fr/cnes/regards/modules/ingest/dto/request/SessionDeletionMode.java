@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 
 /**
  * Deletion mode

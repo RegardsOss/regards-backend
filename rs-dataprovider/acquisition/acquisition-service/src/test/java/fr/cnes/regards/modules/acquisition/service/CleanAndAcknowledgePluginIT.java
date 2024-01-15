@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.service.plugins.*;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;

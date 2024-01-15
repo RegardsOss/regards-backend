@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.service.job.step;
 
-import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
-import fr.cnes.regards.modules.ingest.domain.aip.DisseminationStatus;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateDisseminationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.dto.DisseminationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.sip;
+package fr.cnes.regards.modules.ingest.dto;
 
 /**
  * Interface representing a SIP state (for state extension)

@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.aip;
+package fr.cnes.regards.modules.ingest.dto;
 
 /**
  * The status of the dissemination of an AIP.
  * This status concerns the dissemination to all Regards destinations.
  *
- * @author Thomas GUILLOU
+ * @author mnguyen0
  **/
 public enum DisseminationStatus {
     /**

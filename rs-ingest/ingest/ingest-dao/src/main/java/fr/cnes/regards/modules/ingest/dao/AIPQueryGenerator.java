@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.framework.jpa.utils.CustomPostgresDialect;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
+import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 
 import java.sql.Timestamp;

@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SipDeletionSchedulerRepository;
 import fr.cnes.regards.modules.ingest.domain.scheduler.SipDeletionSchedulerEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.job.SIPBodyDeletionJob;
 import fr.cnes.regards.modules.ingest.service.settings.IngestSettingsService;

@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.LastSIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

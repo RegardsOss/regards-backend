@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.converters.SipStateConverter;
-import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+import fr.cnes.regards.modules.ingest.dto.ISipState;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
