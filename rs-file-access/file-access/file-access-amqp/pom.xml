@@ -57,7 +57,12 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.fileaccess</groupId>
             <artifactId>file-access-dto</artifactId>
-            <version>${revision}</version>
+        </dependency>
+
+        <!-- Regards -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>amqp-regards</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -53,6 +53,7 @@
     </developers>
 
     <dependencies>
+        <!-- Module -->
         <dependency>
             <groupId>fr.cnes.regards.modules.fileaccess</groupId>
             <artifactId>file-access-dao</artifactId>
@@ -61,9 +62,15 @@
             <groupId>fr.cnes.regards.modules.fileaccess</groupId>
             <artifactId>file-access-domain</artifactId>
         </dependency>
+
+        <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>module-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+            <artifactId>file-catalog-amqp</artifactId>
         </dependency>
         <!-- Test dependencies -->
         <dependency>
