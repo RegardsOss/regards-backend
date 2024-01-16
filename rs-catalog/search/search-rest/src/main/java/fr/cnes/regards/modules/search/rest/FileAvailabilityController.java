@@ -33,7 +33,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 /**
+ * Controller to get availability of all files of product(s).
+ *
  * @author Thomas GUILLOU
  **/
 @RestController
@@ -63,7 +67,7 @@ public class FileAvailabilityController {
     @ResourceAccess(description = "Get file availability of all files of all input products",
                     role = DefaultRole.EXPLOIT)
     public ResponseEntity<FilesAvailabilityResponseDto> filesAvailability(
-        @RequestBody FilesAvailabilityRequestDto filesAvailabilityRequestDto) throws ModuleException {
+        @RequestBody @Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) throws ModuleException {
         try {
             return new ResponseEntity<>(fileAvailabilityService.checkAvailability(filesAvailabilityRequestDto.getProductIds()),
                                         HttpStatus.OK);

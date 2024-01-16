@@ -47,18 +47,28 @@ public class FileAvailabilityControllerIT extends AbstractRegardsIT {
         String url = FileAvailabilityController.AVAILABILITY_ROOT_PATH
                      + FileAvailabilityController.AVAILABILITY_OF_PRODUCTS_PATH;
         FilesAvailabilityRequestDto request = new FilesAvailabilityRequestDto(Set.of());
-        performDefaultPost(url, request, customizer().expectStatusOk(), "");
+        
+        performDefaultPost(url, request, customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY), "");
     }
 
     @Test
     public void test_files_availabilities_endpoint_too_many_elements() {
         String url = FileAvailabilityController.AVAILABILITY_ROOT_PATH
                      + FileAvailabilityController.AVAILABILITY_OF_PRODUCTS_PATH;
-        FilesAvailabilityRequestDto request = new FilesAvailabilityRequestDto(IntStream.range(0, 113)
+        FilesAvailabilityRequestDto request = new FilesAvailabilityRequestDto(IntStream.range(0, 101)
                                                                                        .mapToObj(t -> buildURN())
                                                                                        .map(Objects::toString)
                                                                                        .collect(Collectors.toSet()));
+
         performDefaultPost(url, request, customizer().expectStatus(HttpStatus.BAD_REQUEST), "");
+    }
+
+    @Test
+    public void test_files_availabilities_endpoint_product_unknown() {
+        String url = FileAvailabilityController.AVAILABILITY_ROOT_PATH
+                     + FileAvailabilityController.AVAILABILITY_OF_PRODUCT_PATH;
+
+        performDefaultGet(url, customizer().expectStatus(HttpStatus.INTERNAL_SERVER_ERROR), "", buildURN().toString());
     }
 
     private UniformResourceName buildURN() {

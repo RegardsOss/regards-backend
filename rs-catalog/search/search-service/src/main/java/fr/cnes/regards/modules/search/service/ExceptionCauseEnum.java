@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.search.service.availability;
+package fr.cnes.regards.modules.search.service;
 
 import org.springframework.http.HttpStatus;
 
@@ -26,7 +26,7 @@ import org.springframework.http.HttpStatus;
  *
  * @author tguillou
  */
-public enum NotAvailabilityCauseEnum {
+public enum ExceptionCauseEnum {
     NOT_FOUND(HttpStatus.NOT_FOUND),
     FORBIDDEN(HttpStatus.FORBIDDEN),
     TOO_MUCH_PRODUCTS(HttpStatus.BAD_REQUEST),
@@ -38,7 +38,7 @@ public enum NotAvailabilityCauseEnum {
     /**
      * @param httpStatus corresponding httpStatus
      */
-    NotAvailabilityCauseEnum(HttpStatus httpStatus) {
+    ExceptionCauseEnum(HttpStatus httpStatus) {
         this.httpStatus = httpStatus;
     }
 

@@ -123,22 +123,24 @@ public class StorageClient implements IStorageClient {
             requestInfos.add(requestInfo);
         } else {
             // Else publish as many requests as needed.
-            List<String> group = Lists.newArrayList();
+            List<String> groupChecksums = Lists.newArrayList();
             Iterator<String> it = checksums.iterator();
             while (it.hasNext()) {
-                group.add(it.next());
-                if (group.size() >= FilesRestorationRequestEvent.MAX_REQUEST_PER_GROUP) {
+                groupChecksums.add(it.next());
+                if (groupChecksums.size() >= FilesRestorationRequestEvent.MAX_REQUEST_PER_GROUP) {
                     RequestInfo requestInfo = RequestInfo.build();
-                    publisher.publish(new FilesRestorationRequestEvent(group,
+                    publisher.publish(new FilesRestorationRequestEvent(groupChecksums,
                                                                        availabilityHours,
                                                                        requestInfo.getGroupId()));
                     requestInfos.add(requestInfo);
-                    group.clear();
+                    groupChecksums.clear();
                 }
             }
-            if (!group.isEmpty()) {
+            if (!groupChecksums.isEmpty()) {
                 RequestInfo requestInfo = RequestInfo.build();
-                publisher.publish(new FilesRestorationRequestEvent(group, availabilityHours, requestInfo.getGroupId()));
+                publisher.publish(new FilesRestorationRequestEvent(groupChecksums,
+                                                                   availabilityHours,
+                                                                   requestInfo.getGroupId()));
                 requestInfos.add(requestInfo);
             }
         }

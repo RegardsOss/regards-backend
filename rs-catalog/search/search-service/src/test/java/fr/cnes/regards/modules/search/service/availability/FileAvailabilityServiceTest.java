@@ -32,16 +32,18 @@ import fr.cnes.regards.modules.filecatalog.dto.availability.FilesAvailabilityReq
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.search.dto.availability.FilesAvailabilityResponseDto;
 import fr.cnes.regards.modules.search.dto.availability.ProductFilesStatusDto;
-import fr.cnes.regards.modules.search.service.AccessStatus;
 import fr.cnes.regards.modules.search.service.CatalogSearchService;
-import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
+import fr.cnes.regards.modules.search.service.ExceptionCauseEnum;
 import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -75,9 +77,6 @@ public class FileAvailabilityServiceTest {
     @InjectMocks
     private FileAvailabilityService fileAvailabilityService;
 
-    @Captor
-    private ArgumentCaptor<Object> recordsCaptor;
-
     private static final UniformResourceName PRODUCT_1 = buildURN("file1");
 
     private static final UniformResourceName PRODUCT_2 = buildURN("file2");
@@ -93,12 +92,6 @@ public class FileAvailabilityServiceTest {
 
     @Before
     public void init() {
-        // common mock : consider all files as available
-        try {
-            Mockito.when(dataAccessRightService.checkContentAccess(Mockito.any())).thenReturn(AccessStatus.GRANTED);
-        } catch (AccessRightFilterException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
         // field annotated @Value are not completed because we don't use spring
         // we need to set these configurable properties manually
         ReflectionTestUtils.setField(fileAvailabilityService, "maxBulkSize", 100);
@@ -110,15 +103,17 @@ public class FileAvailabilityServiceTest {
         List<DataObject> searchResult = List.of(buildProductWithFiles(PRODUCT_1, DATAOBJECT_URN1),
                                                 buildProductWithFiles(PRODUCT_2, DATAOBJECT_URN2, DATAOBJECT_URN3));
         Mockito.when(catalogSearchService.searchByUrnIn(Mockito.any())).thenReturn(searchResult);
+
+        Mockito.when(dataAccessRightService.removeProductsWhereAccessRightNotGranted(Mockito.any()))
+               .thenReturn(searchResult);
         // don't care about return values of storage here, we control only given params of the storage client
         Mockito.when(storageRestClient.checkFileAvailability(Mockito.any())).thenReturn(ResponseEntity.ok(List.of()));
-
-        ArgumentCaptor<FilesAvailabilityRequestDto> requestCaptor = ArgumentCaptor.forClass(FilesAvailabilityRequestDto.class);
 
         // WHEN check availability to these 2 products
         fileAvailabilityService.checkAvailability(Set.of(PRODUCT_1.toString(), PRODUCT_2.toString()));
 
         // THEN check if storage request contains these 3 files (checksums)
+        ArgumentCaptor<FilesAvailabilityRequestDto> requestCaptor = ArgumentCaptor.forClass(FilesAvailabilityRequestDto.class);
         Mockito.verify(storageRestClient, Mockito.times(1)).checkFileAvailability(requestCaptor.capture());
         FilesAvailabilityRequestDto requestSent = requestCaptor.getAllValues().get(0);
         Assertions.assertEquals(3, requestSent.getChecksums().size());
@@ -130,16 +125,21 @@ public class FileAvailabilityServiceTest {
     @Test
     public void test_same_checksum_on_multiple_files() throws ModuleException {
         // GIVEN 3 files duplicated in 2 dataObjects
-        // don't care about return values of storage here. We control only given params of the storage client
-        Mockito.when(storageRestClient.checkFileAvailability(Mockito.any())).thenReturn(ResponseEntity.ok(List.of()));
-        ArgumentCaptor<FilesAvailabilityRequestDto> requestCaptor = ArgumentCaptor.forClass(FilesAvailabilityRequestDto.class);
         List<DataObject> searchResult = List.of(buildProductWithFiles(PRODUCT_1, DATAOBJECT_URN1, DATAOBJECT_URN2),
                                                 buildProductWithFiles(PRODUCT_2, DATAOBJECT_URN1, DATAOBJECT_URN2));
         Mockito.when(catalogSearchService.searchByUrnIn(Mockito.any())).thenReturn(searchResult);
+
+        Mockito.when(dataAccessRightService.removeProductsWhereAccessRightNotGranted(Mockito.any()))
+               .thenReturn(searchResult);
+
+        // don't care about return values of storage here. We control only given params of the storage client
+        Mockito.when(storageRestClient.checkFileAvailability(Mockito.any())).thenReturn(ResponseEntity.ok(List.of()));
+
         //WHEN requesting only 2 products
         fileAvailabilityService.checkAvailability(Set.of(PRODUCT_1.toString(), PRODUCT_2.toString()));
 
         // THEN only these 2 files are asked to storage
+        ArgumentCaptor<FilesAvailabilityRequestDto> requestCaptor = ArgumentCaptor.forClass(FilesAvailabilityRequestDto.class);
         Mockito.verify(storageRestClient, Mockito.times(1)).checkFileAvailability(requestCaptor.capture());
         FilesAvailabilityRequestDto requestSent = requestCaptor.getAllValues().get(0);
         Assertions.assertEquals(2, requestSent.getChecksums().size());
@@ -151,6 +151,9 @@ public class FileAvailabilityServiceTest {
         List<DataObject> searchResult = List.of(buildProductWithFiles(PRODUCT_1, DATAOBJECT_URN1),
                                                 buildProductWithFiles(PRODUCT_2, DATAOBJECT_URN2, DATAOBJECT_URN3));
         Mockito.when(catalogSearchService.searchByUrnIn(Mockito.any())).thenReturn(searchResult);
+
+        Mockito.when(dataAccessRightService.removeProductsWhereAccessRightNotGranted(Mockito.any()))
+               .thenReturn(searchResult);
         // Mock storage response OK
         // providerID, checksum and urn are identical for this test
         List<FileAvailabilityStatusDto> storageResult = List.of(new FileAvailabilityStatusDto(DATAOBJECT_URN1.toString(),
@@ -189,6 +192,9 @@ public class FileAvailabilityServiceTest {
         List<DataObject> searchResult = List.of(buildProductWithFiles(PRODUCT_1, DATAOBJECT_URN1, DATAOBJECT_URN2),
                                                 buildProductWithFiles(PRODUCT_2, DATAOBJECT_URN2, DATAOBJECT_URN3));
         Mockito.when(catalogSearchService.searchByUrnIn(Mockito.any())).thenReturn(searchResult);
+
+        Mockito.when(dataAccessRightService.removeProductsWhereAccessRightNotGranted(Mockito.any()))
+               .thenReturn(searchResult);
         // Mock storage response OK
         // providerID, checksum and urn are identical for this test
         List<FileAvailabilityStatusDto> storageResult = List.of(new FileAvailabilityStatusDto(DATAOBJECT_URN1.toString(),
@@ -228,6 +234,9 @@ public class FileAvailabilityServiceTest {
         List<DataObject> searchResult = List.of(buildProductWithFiles(PRODUCT_1, DATAOBJECT_URN1),
                                                 buildProductWithFiles(PRODUCT_2, DATAOBJECT_URN2, DATAOBJECT_URN3));
         Mockito.when(catalogSearchService.searchByUrnIn(Mockito.any())).thenReturn(searchResult);
+
+        Mockito.when(dataAccessRightService.removeProductsWhereAccessRightNotGranted(Mockito.any()))
+               .thenReturn(searchResult);
         // Mock storage response OK
         // providerID, checksum and urn are identical for this test
         List<FileAvailabilityStatusDto> storageResult = List.of(new FileAvailabilityStatusDto(DATAOBJECT_URN1.toString(),
@@ -259,6 +268,10 @@ public class FileAvailabilityServiceTest {
         List<DataObject> searchResult = List.of(buildProductWithFiles(PRODUCT_1, DATAOBJECT_URN1),
                                                 buildProductWithFiles(PRODUCT_2, DATAOBJECT_URN2, DATAOBJECT_URN3));
         Mockito.when(catalogSearchService.searchByUrnIn(Mockito.any())).thenReturn(searchResult);
+
+        Mockito.when(dataAccessRightService.removeProductsWhereAccessRightNotGranted(Mockito.any()))
+               .thenReturn(searchResult);
+
         Mockito.when(storageRestClient.checkFileAvailability(Mockito.any()))
                .thenThrow(FeignException.ServiceUnavailable.class);
         // WHEN request only 2 files
@@ -283,6 +296,10 @@ public class FileAvailabilityServiceTest {
                     .getFiles()
                     .get(DataType.RAWDATA)
                     .addAll(IntStream.range(0, 110).mapToObj(i -> buildDataFile(buildRandomURN())).toList());
+
+        Mockito.when(dataAccessRightService.removeProductsWhereAccessRightNotGranted(Mockito.any()))
+               .thenReturn(searchResult);
+
         Mockito.when(catalogSearchService.searchByUrnIn(Mockito.any())).thenReturn(searchResult);
         // WHEN request only 2 files
         try {
@@ -302,6 +319,9 @@ public class FileAvailabilityServiceTest {
         // GIVEN 1 files for 1 product
         List<DataObject> searchResult = List.of(buildProductWithFiles(PRODUCT_1, DATAOBJECT_URN1));
         Mockito.when(catalogSearchService.searchByUrnIn(Mockito.any())).thenReturn(searchResult);
+
+        Mockito.when(dataAccessRightService.removeProductsWhereAccessRightNotGranted(Mockito.any()))
+               .thenReturn(searchResult);
         // Mock storage response OK
         // providerID, checksum and urn are identical for this test
         List<FileAvailabilityStatusDto> storageResult = List.of(new FileAvailabilityStatusDto(DATAOBJECT_URN1.toString(),
@@ -329,7 +349,7 @@ public class FileAvailabilityServiceTest {
             Assertions.fail("check availability call must failed");
         } catch (FileAvailabilityException e) {
             // THEN return NOT FOUND
-            Assertions.assertEquals(NotAvailabilityCauseEnum.NOT_FOUND, e.getNotAvailabilityCause());
+            Assertions.assertEquals(ExceptionCauseEnum.NOT_FOUND, e.getNotAvailabilityCause());
         }
     }
 
@@ -340,25 +360,15 @@ public class FileAvailabilityServiceTest {
         Mockito.when(catalogSearchService.searchByUrnIn(Mockito.any())).thenReturn(searchResult);
 
         // mock access right to FORBIDDEN
-        Mockito.when(dataAccessRightService.checkContentAccess(Mockito.any())).thenReturn(AccessStatus.FORBIDDEN);
+        Mockito.when(dataAccessRightService.removeProductsWhereAccessRightNotGranted(Mockito.any()))
+               .thenReturn(List.of());
         try {
             // WHEN requesting availability of this product
             ProductFilesStatusDto response = fileAvailabilityService.checkAvailability(PRODUCT_1.toString());
             Assertions.fail("check availability call must failed");
         } catch (FileAvailabilityException e) {
             // THEN availability method must fail and throw
-            Assertions.assertEquals(NotAvailabilityCauseEnum.FORBIDDEN, e.getNotAvailabilityCause());
-        }
-
-        // mock access right to NOT FOUND
-        Mockito.when(dataAccessRightService.checkContentAccess(Mockito.any())).thenReturn(AccessStatus.NOT_FOUND);
-        try {
-            // WHEN requesting availability of this product
-            ProductFilesStatusDto response = fileAvailabilityService.checkAvailability(PRODUCT_1.toString());
-            Assertions.fail("check availability call must failed");
-        } catch (FileAvailabilityException e) {
-            // THEN availability method must fail and throw
-            Assertions.assertEquals(NotAvailabilityCauseEnum.FORBIDDEN, e.getNotAvailabilityCause());
+            Assertions.assertEquals(ExceptionCauseEnum.FORBIDDEN, e.getNotAvailabilityCause());
         }
     }
 
@@ -368,6 +378,10 @@ public class FileAvailabilityServiceTest {
 
     private UniformResourceName buildRandomURN() {
         return UniformResourceName.build("id", EntityType.DATA, "id", UUID.randomUUID(), 1);
+    }
+
+    private static UniformResourceName buildURN(String id) {
+        return UniformResourceName.build(id, EntityType.DATA, "tenant_test", UUID.randomUUID(), 1);
     }
 
     private DataObject buildProductWithFiles(UniformResourceName id, UniformResourceName... files) {
@@ -380,6 +394,7 @@ public class FileAvailabilityServiceTest {
         // create dataObject and attach feature
         DataObject dataObject = new DataObject();
         dataObject.setFeature(feature);
+
         return dataObject;
     }
 
@@ -398,10 +413,8 @@ public class FileAvailabilityServiceTest {
         dataFile.setDigestAlgorithm("MD5");
         dataFile.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         dataFile.setDataType(DataType.RAWDATA);
+
         return dataFile;
     }
 
-    private static UniformResourceName buildURN(String id) {
-        return UniformResourceName.build(id, EntityType.DATA, "tenant_test", UUID.randomUUID(), 1);
-    }
 }

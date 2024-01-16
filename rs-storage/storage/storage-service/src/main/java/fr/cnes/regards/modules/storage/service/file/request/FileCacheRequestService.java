@@ -119,7 +119,7 @@ public class FileCacheRequestService {
 
     private final FileReferenceService fileRefService;
 
-    private final StorageLocationConfigurationService pStorageService;
+    private final StorageLocationConfigurationService storageLocationConfigurationService;
 
     private final DownloadTokenService downloadTokenService;
 
@@ -147,7 +147,7 @@ public class FileCacheRequestService {
                                    FileReferenceEventPublisher publisher,
                                    RequestsGroupService reqGrpService,
                                    FileReferenceService fileRefService,
-                                   StorageLocationConfigurationService pStorageService,
+                                   StorageLocationConfigurationService storageLocationConfigurationService,
                                    DownloadTokenService downloadTokenService,
                                    RequestStatusService reqStatusService,
                                    INotificationClient notificationClient,
@@ -163,7 +163,7 @@ public class FileCacheRequestService {
         this.publisher = publisher;
         this.reqGrpService = reqGrpService;
         this.fileRefService = fileRefService;
-        this.pStorageService = pStorageService;
+        this.storageLocationConfigurationService = storageLocationConfigurationService;
         this.downloadTokenService = downloadTokenService;
         this.reqStatusService = reqStatusService;
         this.notificationClient = notificationClient;
@@ -180,7 +180,7 @@ public class FileCacheRequestService {
     }
 
     /**
-     * Creates a new {@link FileCacheRequest} if does not exist already.
+     * Creates a new {@link FileCacheRequest} if does not exist already; otherwise update it.
      *
      * @param fileRefToRestore  File that we are asking to be put into the cache
      * @param availabilityHours Duration at which the cache request expires
@@ -197,6 +197,7 @@ public class FileCacheRequestService {
                                                     cacheService.getCacheDirectoryPath(checksum),
                                                     availabilityHours,
                                                     groupId);
+            // Save in database
             fileCacheRequest = fileCacheRequestRepository.save(fileCacheRequest);
             LOGGER.trace("File {} (checksum {}) is requested for cache.",
                          fileRefToRestore.getMetaInfo().getFileName(),
@@ -207,6 +208,7 @@ public class FileCacheRequestService {
             if (fileCacheRequest.getStatus() == FileRequestStatus.ERROR) {
                 fileCacheRequest.setStatus(FileRequestStatus.TO_DO);
             }
+            // Update in database
             fileCacheRequest = fileCacheRequestRepository.save(fileCacheRequest);
             LOGGER.trace("File {} (checksum {}) is already requested for cache.",
                          fileRefToRestore.getMetaInfo().getFileName(),
@@ -249,7 +251,8 @@ public class FileCacheRequestService {
                                                                                             .getStorage());
         Set<String> remainingStorages = Sets.newHashSet(filesByStorage.keySet());
 
-        Optional<StorageLocationConfiguration> storage = pStorageService.searchActiveHigherPriority(remainingStorages);
+        Optional<StorageLocationConfiguration> storage = storageLocationConfigurationService.searchActiveHigherPriority(
+            remainingStorages);
         // Handle storage by priority
         while (storage.isPresent() && !remainingStorages.isEmpty() && !remainingChecksums.isEmpty()) {
             // For each storage dispatch files in online, near line and not available
@@ -281,7 +284,7 @@ public class FileCacheRequestService {
             // Remove handled storage
             remainingStorages.remove(storageName);
             // Retrieve the new highest storage priority with the remaining ones
-            storage = pStorageService.searchActiveHigherPriority(remainingStorages);
+            storage = storageLocationConfigurationService.searchActiveHigherPriority(remainingStorages);
         }
         if (!remainingChecksums.isEmpty()) {
             for (String cs : remainingChecksums) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,36 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-
-package fr.cnes.regards.modules.search.service.availability;
+package fr.cnes.regards.modules.search.service.restoration;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.search.service.ExceptionCauseEnum;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Exceptions throws in AvailabilityService. Can be convert in ResponseStatusException easily
- *
- * @author tguillou
+ * @author Stephane Cortine
  */
-public class FileAvailabilityException extends ModuleException {
+public class FileRestoreException extends ModuleException {
 
-    private final ExceptionCauseEnum notAvailabilityCause;
+    private final ExceptionCauseEnum cause;
 
-    public FileAvailabilityException(ExceptionCauseEnum notAvailabilityCause, String message) {
+    public FileRestoreException(ExceptionCauseEnum cause, String message) {
         super(message);
-        this.notAvailabilityCause = notAvailabilityCause;
+        this.cause = cause;
     }
 
-    public ExceptionCauseEnum getNotAvailabilityCause() {
-        return notAvailabilityCause;
-    }
-
-    /**
-     * Throw a responseStatusException is an easy way to return a custom status with custom message
-     * without "modifying" endpoint nominal response dto, or create custom spring controller advices.
-     */
     public ResponseStatusException convertToResponseStatusException() {
-        return new ResponseStatusException(notAvailabilityCause.getCorrespondingHttpsStatus(), super.getMessage());
+        return new ResponseStatusException(cause.getCorrespondingHttpsStatus(), super.getMessage());
     }
 }

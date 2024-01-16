@@ -34,8 +34,8 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
 import fr.cnes.regards.modules.search.dto.availability.FilesAvailabilityResponseDto;
 import fr.cnes.regards.modules.search.dto.availability.ProductFilesStatusDto;
 import fr.cnes.regards.modules.search.service.CatalogSearchService;
+import fr.cnes.regards.modules.search.service.ExceptionCauseEnum;
 import fr.cnes.regards.modules.search.service.SearchException;
-import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.slf4j.Logger;
@@ -49,11 +49,10 @@ import org.springframework.web.client.HttpServerErrorException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
- * Service that contains method utils to check availability of files.
+ * Service that contains methods to check availability of files thanks to product identifier(s).
  *
  * @author Thomas GUILLOU
  **/
@@ -85,23 +84,23 @@ public class FileAvailabilityService {
      * Compute availability of all files of the input product.
      */
     public ProductFilesStatusDto checkAvailability(String productId) throws ModuleException {
-        LOGGER.info("Checking file availability of product with urn {}.", productId);
+        LOGGER.info("Checking files availability of product with urn {}.", productId);
         // 1) Find products from their Ids, and from GROUP access rights
         List<DataObject> dataObjects = findProductsByIds(Set.of(productId));
         if (dataObjects.isEmpty()) {
-            throw new FileAvailabilityException(NotAvailabilityCauseEnum.NOT_FOUND,
+            throw new FileAvailabilityException(ExceptionCauseEnum.NOT_FOUND,
                                                 "Product " + productId + " cannot be found");
         }
         // 2) Filter products where access rights to FILES is not granted
-        dataObjects = removeProductsWhereAccessRightNotGranted(dataObjects);
+        dataObjects = dataAccessRightService.removeProductsWhereAccessRightNotGranted(dataObjects);
         if (dataObjects.isEmpty()) {
-            throw new FileAvailabilityException(NotAvailabilityCauseEnum.FORBIDDEN,
+            throw new FileAvailabilityException(ExceptionCauseEnum.FORBIDDEN,
                                                 "Current user has not access to product " + productId + ".");
         }
         // 3) Retrieve files of this product
-        Collection<DataFile> allFiles = dataObjects.get(0).getFiles().values();
+        Collection<DataFile> allFilesOfProduct = dataObjects.get(0).getFiles().values();
         // 4) get checksums for all these files and create availability request
-        Set<String> checksums = allFiles.stream().map(DataFile::getChecksum).collect(Collectors.toSet());
+        Set<String> checksums = allFilesOfProduct.stream().map(DataFile::getChecksum).collect(Collectors.toSet());
         FilesAvailabilityRequestDto availabilityRequest = new FilesAvailabilityRequestDto(checksums);
         // 5) send availability request to storage
         List<FileAvailabilityStatusDto> fileAvailabilityStatusDtos = sendAvailabilityRequestToStorage(
@@ -119,24 +118,24 @@ public class FileAvailabilityService {
         if (productIds.isEmpty()) {
             return new FilesAvailabilityResponseDto(List.of());
         }
-        LOGGER.info("Checking file availability of {} products", productIds.size());
+        LOGGER.info("Checking files availability of {} products", productIds.size());
         // 1) Find products from their Ids, and from GROUP access rights
         List<DataObject> dataObjects = findProductsByIds(productIds);
         // 2) Filter products where access rights to FILES is not granted
-        dataObjects = removeProductsWhereAccessRightNotGranted(dataObjects);
+        dataObjects = dataAccessRightService.removeProductsWhereAccessRightNotGranted(dataObjects);
         // 3) Retrieve all files of these products
         Set<DataFile> allFilesOfAllProducts = dataObjects.stream()
                                                          .flatMap(dataObject -> dataObject.getFiles().values().stream())
                                                          .collect(Collectors.toSet());
 
-        // to avoid flooding datalake, avoid sending request with more than 100 elements
-        if (allFilesOfAllProducts.size() >= maxBulkSize) {
+        // to avoid flooding datalake, avoid sending request with more than configured elements number
+        if (allFilesOfAllProducts.size() > maxBulkSize) {
             String errorMessage = String.format(
                 "Too many files : Cannot compute more than %s files in once : found %s files",
                 maxBulkSize,
                 allFilesOfAllProducts.size());
             LOGGER.error(errorMessage);
-            throw new FileAvailabilityException(NotAvailabilityCauseEnum.TOO_MANY_FILES, errorMessage);
+            throw new FileAvailabilityException(ExceptionCauseEnum.TOO_MANY_FILES, errorMessage);
         }
         // 4) get checksums for all these files and create availability request
         Set<String> checksums = allFilesOfAllProducts.stream().map(DataFile::getChecksum).collect(Collectors.toSet());
@@ -149,18 +148,6 @@ public class FileAvailabilityService {
                                                                                 fileAvailabilityStatusDtos));
     }
 
-    private List<DataObject> removeProductsWhereAccessRightNotGranted(List<DataObject> dataObjects) {
-        return dataObjects.stream().filter(product -> {
-            try {
-                return dataAccessRightService.checkContentAccess(product).isGranted();
-            } catch (AccessRightFilterException | ExecutionException e) { // NOSONAR
-                LOGGER.error("Error while trying to calculate access rights of product with provideId {}",
-                             product.getProviderId());
-                return false;
-            }
-        }).toList();
-    }
-
     private List<DataObject> findProductsByIds(Set<String> productIds)
         throws SearchException, OpenSearchUnknownParameter, EntityOperationForbiddenException,
         FileAvailabilityException {
@@ -171,7 +158,7 @@ public class FileAvailabilityService {
             return catalogSearchService.searchByUrnIn(urns);
         } catch (IllegalArgumentException e) {
             LOGGER.error("One of many productIds don't respect URN format", e);
-            throw new FileAvailabilityException(NotAvailabilityCauseEnum.BAD_REQUEST,
+            throw new FileAvailabilityException(ExceptionCauseEnum.BAD_REQUEST,
                                                 "One of many productIds don't respect URN format");
         }
     }
@@ -198,7 +185,7 @@ public class FileAvailabilityService {
     private void validateInput(Set<String> productIds) throws FileAvailabilityException {
         // Need to validate manually (without @Size of javax in payload dto) because size is configurable.
         if (productIds.size() > maxBulkSize) {
-            throw new FileAvailabilityException(NotAvailabilityCauseEnum.TOO_MUCH_PRODUCTS,
+            throw new FileAvailabilityException(ExceptionCauseEnum.TOO_MUCH_PRODUCTS,
                                                 "A maximum of "
                                                 + maxBulkSize
                                                 + " productIds per call is allowed. This behaviour is to avoid flooding the datalake");

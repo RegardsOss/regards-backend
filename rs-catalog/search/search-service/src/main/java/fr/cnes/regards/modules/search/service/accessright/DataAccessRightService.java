@@ -137,6 +137,19 @@ public class DataAccessRightService {
         return checkContentAccess(entity, Optional.empty());
     }
 
+    public List<DataObject> removeProductsWhereAccessRightNotGranted(List<DataObject> dataObjects) {
+        return dataObjects.stream().filter(product -> {
+            try {
+                return checkContentAccess(product).isGranted();
+            } catch (AccessRightFilterException | ExecutionException e) {
+                LOGGER.error("Error while trying to calculate access rights of product with provideId {}",
+                             product.getProviderId(),
+                             e);
+                return false;
+            }
+        }).toList();
+    }
+
     /**
      * Check if file is not restricted to entity access rights
      */
@@ -151,7 +164,7 @@ public class DataAccessRightService {
                      .isEmpty();
     }
 
-    private static AccessStatus getContentAccessOfDataObject(DataObject dataObject, Set<String> userAccessGroups) {
+    private AccessStatus getContentAccessOfDataObject(DataObject dataObject, Set<String> userAccessGroups) {
         boolean isAccessGranted = dataObject.getMetadata()
                                             .getGroupsAccessRightsMap()
                                             .entrySet()
@@ -161,7 +174,7 @@ public class DataAccessRightService {
         return isAccessGranted ? AccessStatus.GRANTED : AccessStatus.FORBIDDEN;
     }
 
-    private static AccessStatus getContentAccessOfDataset(Dataset dataset, Set<String> userAccessGroups) {
+    private AccessStatus getContentAccessOfDataset(Dataset dataset, Set<String> userAccessGroups) {
         Map<String, DataObjectGroup> datasetObjectsGroupsMap;
         datasetObjectsGroupsMap = dataset.getMetadata().getDataObjectsGroups();
         List<DataObjectGroup> dataObjectGroups = userAccessGroups.stream()
