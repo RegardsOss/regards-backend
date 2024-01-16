@@ -101,6 +101,11 @@ public class FileDownloadService {
      * <li>Only Files on an {@link IOnlineStorageLocation} location can be download</li>
      * <li>Use the {@link StorageLocationConfiguration} configuration with the highest priority</li>
      * </ul>
+     * WARNING : the return of the downloadFile is a Callable ! That means the real download will be done
+     * only when downloadFile(checksum).call() is done. Some repository access is not done here, but inside the Callable
+     * That means the method which call this callable must
+     * - be not transactional
+     * - or be transactional with option noRollbackFor = { NearlineFileNotAvailableException.class }
      *
      * @param checksum Checksum of the file to download
      */
