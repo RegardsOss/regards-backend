@@ -1758,6 +1758,7 @@ public class EsRepository implements IEsRepository {
             if (e.getResponse().getStatusLine().getStatusCode() == HttpStatus.SC_NOT_FOUND) {
                 return false;
             }
+            LOGGER.error("Failed to retrieve ES mapping on attribute {}", attribute);
             throw e;
         }
         return false;
