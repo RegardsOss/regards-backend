@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.fileaccess.plugin.dto;
 
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;

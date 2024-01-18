@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.storage.service.file.download;
 
-import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
-import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 import io.vavr.control.Try;
 
 import java.util.List;

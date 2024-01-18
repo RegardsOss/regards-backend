@@ -55,8 +55,22 @@
     <dependencies>
         <!-- Regards -->
         <dependency>
-            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
-            <artifactId>file-catalog-dto</artifactId>
+            <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+            <artifactId>plugins-dto</artifactId>
+        </dependency>
+
+        <!-- External -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
         </dependency>
     </dependencies>
 </project>

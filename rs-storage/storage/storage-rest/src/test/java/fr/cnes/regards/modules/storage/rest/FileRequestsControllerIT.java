@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.storage.rest;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;

@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

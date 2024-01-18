@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
-import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileLocationDto;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;

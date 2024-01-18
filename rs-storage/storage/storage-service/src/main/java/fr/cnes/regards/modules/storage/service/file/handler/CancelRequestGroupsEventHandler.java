@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.filecatalog.amqp.input.CancelRequestEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.input.CancelRequestEvent;
 import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

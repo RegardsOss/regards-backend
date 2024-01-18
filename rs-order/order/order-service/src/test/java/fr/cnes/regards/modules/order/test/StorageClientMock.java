@@ -19,17 +19,17 @@
 package fr.cnes.regards.modules.order.test;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
-import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
-import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FilesRestorationRequestEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEventType;
+import fr.cnes.regards.modules.fileaccess.dto.FileLocationDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileCopyDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
-import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

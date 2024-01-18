@@ -21,13 +21,13 @@ package fr.cnes.regards.modules.storage.client;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.modules.filecatalog.amqp.input.*;
+import fr.cnes.regards.modules.fileaccess.amqp.input.*;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileCopyDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileCopyDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

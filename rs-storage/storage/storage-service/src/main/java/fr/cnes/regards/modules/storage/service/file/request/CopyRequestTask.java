@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FilesRestorationRequestEvent;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;

@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.domain.request.update;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -43,7 +43,7 @@ public class AIPUpdateFileLocationTask extends AbstractAIPUpdateTask {
     @Column(columnDefinition = "jsonb", name = "payload")
     @Type(type = "jsonb",
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-                                    value = "fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto") })
+                                    value = "fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto") })
     private List<RequestResultInfoDto> fileLocationUpdates;
 
     public List<RequestResultInfoDto> getFileLocationUpdates() {

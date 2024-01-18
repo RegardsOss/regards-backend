@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.fileaccess.plugin.domain;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;

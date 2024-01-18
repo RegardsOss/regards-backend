@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.fileaccess.plugin.domain;
 
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 
 import java.net.URL;
 

@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.fileaccess.plugin.domain;
 
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 
 /**
  * The ProgressManager is used by {@link IStorageLocation} plugins to notify the upper service of storage action results :

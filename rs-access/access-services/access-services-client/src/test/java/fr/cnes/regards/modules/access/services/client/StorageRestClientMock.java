@@ -1,12 +1,12 @@
 package fr.cnes.regards.modules.access.services.client;
 
 import feign.Response;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
-import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
-import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
-import fr.cnes.regards.modules.filecatalog.dto.availability.FilesAvailabilityRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
-import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
+import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
+import fr.cnes.regards.modules.fileaccess.dto.availability.FilesAvailabilityRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
+import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;

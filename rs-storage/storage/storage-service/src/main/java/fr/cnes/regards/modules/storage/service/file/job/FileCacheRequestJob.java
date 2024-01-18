@@ -25,10 +25,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.INearlineStorageLocation;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;

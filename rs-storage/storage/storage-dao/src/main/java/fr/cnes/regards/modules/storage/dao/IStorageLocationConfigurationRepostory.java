@@ -1,6 +1,6 @@
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.modules.filecatalog.dto.StorageType;
+import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 

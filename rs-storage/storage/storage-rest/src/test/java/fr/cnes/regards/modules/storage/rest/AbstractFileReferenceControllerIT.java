@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.filecatalog.dto.StorageType;
+import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;

@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.filecatalog.dto.StorageType;
+import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;

@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

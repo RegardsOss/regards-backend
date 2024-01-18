@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

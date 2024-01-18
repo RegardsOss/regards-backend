@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import org.junit.Assert;

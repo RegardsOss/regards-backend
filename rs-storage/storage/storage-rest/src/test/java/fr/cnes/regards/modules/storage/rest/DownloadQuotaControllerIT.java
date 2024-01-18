@@ -23,7 +23,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.dao.entity.mapping.DomainEntityMapper;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;

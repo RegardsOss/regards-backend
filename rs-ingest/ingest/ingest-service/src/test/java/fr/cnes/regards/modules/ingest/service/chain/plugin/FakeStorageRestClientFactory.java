@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
-import fr.cnes.regards.modules.filecatalog.dto.StorageType;
+import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
+import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;

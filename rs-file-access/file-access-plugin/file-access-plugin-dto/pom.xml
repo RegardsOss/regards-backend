@@ -54,8 +54,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
-            <artifactId>file-catalog-dto</artifactId>
+            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+            <artifactId>file-access-dto</artifactId>
         </dependency>
     </dependencies>
 </project>

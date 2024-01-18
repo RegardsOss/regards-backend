@@ -39,7 +39,7 @@ import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;

@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.rest;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.filecatalog.dto.cache.CacheDto;
+import fr.cnes.regards.modules.fileaccess.dto.cache.CacheDto;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -21,11 +21,11 @@ package fr.cnes.regards.modules.storage.service.plugin;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import org.apache.commons.lang.NotImplementedException;
 
 import java.io.IOException;

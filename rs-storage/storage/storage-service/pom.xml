@@ -53,14 +53,7 @@
     </developers>
 
     <dependencies>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.storage</groupId>
-            <artifactId>storage-dao</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.storage</groupId>
-            <artifactId>storage-domain</artifactId>
-        </dependency>
+        <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
             <artifactId>plugins-service</artifactId>
@@ -82,12 +75,6 @@
             <artifactId>amqp-regards-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>
-                spring-cloud-starter-netflix-eureka-client
-            </artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.modules.accessrights</groupId>
             <artifactId>accessrights-client</artifactId>
         </dependency>
@@ -100,14 +87,13 @@
             <artifactId>tenant-settings-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
-            <artifactId>file-catalog-dto</artifactId>
+            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+            <artifactId>file-access-dto</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
-            <artifactId>file-catalog-amqp</artifactId>
+            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+            <artifactId>file-access-amqp</artifactId>
         </dependency>
-        <!-- session handling -->
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
             <artifactId>session-agent-client</artifactId>
@@ -117,7 +103,17 @@
             <artifactId>session-agent-service</artifactId>
         </dependency>
 
-        <!-- Libraries -->
+        <!-- Module -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.storage</groupId>
+            <artifactId>storage-dao</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.storage</groupId>
+            <artifactId>storage-domain</artifactId>
+        </dependency>
+
+        <!-- External -->
         <dependency>
             <groupId>io.vavr</groupId>
             <artifactId>vavr</artifactId>
@@ -125,6 +121,12 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>
+                spring-cloud-starter-netflix-eureka-client
+            </artifactId>
         </dependency>
 
         <!-- TEST dependencies -->

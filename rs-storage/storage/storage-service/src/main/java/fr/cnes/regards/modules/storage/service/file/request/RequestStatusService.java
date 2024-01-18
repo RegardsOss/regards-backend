@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;

@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import org.springframework.util.MimeType;
 
 import javax.persistence.Column;

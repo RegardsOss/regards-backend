@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
 import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;

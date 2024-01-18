@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesCopyEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FilesCopyEvent;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import org.junit.Assert;

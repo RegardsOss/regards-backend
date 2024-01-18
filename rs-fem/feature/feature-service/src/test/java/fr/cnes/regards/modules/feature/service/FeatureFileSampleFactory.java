@@ -23,10 +23,10 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
-import fr.cnes.regards.modules.filecatalog.dto.FileLocationDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceMetaInfoDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileLocationDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import org.springframework.util.MimeType;
 
 import java.time.OffsetDateTime;
@@ -58,10 +58,10 @@ public class FeatureFileSampleFactory {
     }
 
     protected FeatureFile buildSampleFeatureFile(String filename,
-                                              Long fileSize,
-                                              String checksum,
-                                              String url,
-                                              String storage) {
+                                                 Long fileSize,
+                                                 String checksum,
+                                                 String url,
+                                                 String storage) {
         FeatureFileAttributes attributes = FeatureFileAttributes.build(DataType.RAWDATA,
                                                                        MimeType.valueOf("application/octet-stream"),
                                                                        filename,
@@ -79,17 +79,16 @@ public class FeatureFileSampleFactory {
 
     public RequestResultInfoDto buildStorageResult(FeatureEntity feature) {
         FileReferenceMetaInfoDto metaInfoDTO = new FileReferenceMetaInfoDto(checksum,
-                                                                              "MD5",
-                                                                              filename,
-                                                                              fileSize,
-                                                                              null,
-                                                                              null,
-                                                                              "application/octet-stream",
-                                                                              null);
+                                                                            "MD5",
+                                                                            filename,
+                                                                            fileSize,
+                                                                            null,
+                                                                            null,
+                                                                            "application/octet-stream",
+                                                                            null);
         FileLocationDto locationDTO = new FileLocationDto(storage, url);
         List<String> owners = Collections.singletonList(feature.getUrn().toString());
-        FileReferenceDto referenceDTO = new FileReferenceDto(OffsetDateTime.now(), metaInfoDTO, locationDTO,
-                                                                 owners);
+        FileReferenceDto referenceDTO = new FileReferenceDto(OffsetDateTime.now(), metaInfoDTO, locationDTO, owners);
         return RequestResultInfoDto.build("groupId", checksum, storage, url, owners, referenceDTO, null);
     }
 }

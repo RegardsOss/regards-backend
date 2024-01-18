@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;

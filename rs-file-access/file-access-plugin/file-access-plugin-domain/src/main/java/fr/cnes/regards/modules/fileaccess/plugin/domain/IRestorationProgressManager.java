@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.fileaccess.plugin.domain;
 
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
 
 import javax.annotation.Nullable;
 import java.net.URL;

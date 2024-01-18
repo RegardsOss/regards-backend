@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.search.dto.availability;
 
-import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
+import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Collection;

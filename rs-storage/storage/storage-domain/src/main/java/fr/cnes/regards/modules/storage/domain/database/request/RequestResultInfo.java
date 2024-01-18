@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.storage.domain.database.request;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestType;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;

@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.domain.exception.PluginInitException;
-import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.test.util.ReflectionTestUtils;

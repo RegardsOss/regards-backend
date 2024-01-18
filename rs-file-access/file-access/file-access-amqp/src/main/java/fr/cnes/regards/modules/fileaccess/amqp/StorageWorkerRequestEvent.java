@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.fileaccess.amqp;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.fileaccess.plugin.dto.output.StorageWorkerRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.AbstractStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.plugin.dto.output.StorageWorkerRequestDto;
 
 import java.nio.file.Path;
 

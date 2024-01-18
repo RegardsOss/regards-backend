@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.*;
 import fr.cnes.regards.modules.feature.service.dump.IFeatureMetadataService;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

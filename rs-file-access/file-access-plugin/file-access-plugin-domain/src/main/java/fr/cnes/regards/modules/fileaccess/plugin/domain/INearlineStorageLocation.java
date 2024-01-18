@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.fileaccess.plugin.domain;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
-import fr.cnes.regards.modules.filecatalog.dto.availability.NearlineFileStatusDto;
+import fr.cnes.regards.modules.fileaccess.dto.availability.NearlineFileStatusDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.InputStream;

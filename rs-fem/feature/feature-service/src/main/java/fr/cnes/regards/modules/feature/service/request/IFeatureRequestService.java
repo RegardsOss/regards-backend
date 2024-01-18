@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;

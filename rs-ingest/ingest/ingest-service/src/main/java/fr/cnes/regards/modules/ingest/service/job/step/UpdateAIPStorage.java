@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.service.job.step;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPRemoveStorageTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;

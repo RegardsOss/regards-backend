@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.access.services.rest.user;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.bind.annotation.RequestMethod;

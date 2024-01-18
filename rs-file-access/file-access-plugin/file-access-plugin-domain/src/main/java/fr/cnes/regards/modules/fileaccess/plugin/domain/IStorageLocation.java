@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.fileaccess.plugin.domain;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.AbstractStoragePluginConfigurationDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

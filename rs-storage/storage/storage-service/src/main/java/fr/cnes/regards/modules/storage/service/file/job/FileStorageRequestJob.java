@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;

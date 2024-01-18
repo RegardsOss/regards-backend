@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.modules.filecatalog.dto.availability.FilesAvailabilityRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.availability.FilesAvailabilityRequestDto;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;

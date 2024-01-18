@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;

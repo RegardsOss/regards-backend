@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.availability;
 
-import fr.cnes.regards.modules.filecatalog.dto.availability.FileAvailabilityStatusDto;
+import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 

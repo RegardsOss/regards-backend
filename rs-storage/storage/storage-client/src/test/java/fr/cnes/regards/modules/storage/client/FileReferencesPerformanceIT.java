@@ -23,7 +23,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;

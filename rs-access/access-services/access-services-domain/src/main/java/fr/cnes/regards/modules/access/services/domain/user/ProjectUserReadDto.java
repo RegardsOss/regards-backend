@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.access.services.domain.user;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;

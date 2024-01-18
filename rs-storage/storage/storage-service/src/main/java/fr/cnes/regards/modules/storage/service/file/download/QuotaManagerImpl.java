@@ -7,7 +7,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.filecatalog.amqp.input.QuotaUpdateEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.input.QuotaUpdateEvent;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
 import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;

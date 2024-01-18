@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.junit.Assert;

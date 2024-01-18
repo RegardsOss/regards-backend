@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;

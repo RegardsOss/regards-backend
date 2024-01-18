@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.filecatalog.client;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 
 import java.util.Collection;
 import java.util.UUID;

@@ -18,7 +18,7 @@ package fr.cnes.regards.modules.storage.service.file.handler;/*
  */
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;

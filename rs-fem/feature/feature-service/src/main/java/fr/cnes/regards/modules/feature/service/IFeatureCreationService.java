@@ -9,7 +9,7 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

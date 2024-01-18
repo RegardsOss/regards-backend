@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.dam.service.entities.exception.InvalidFileLocatio
 import fr.cnes.regards.modules.dam.service.entities.validation.AbstractEntityValidationService;
 import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;

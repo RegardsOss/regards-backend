@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.*;

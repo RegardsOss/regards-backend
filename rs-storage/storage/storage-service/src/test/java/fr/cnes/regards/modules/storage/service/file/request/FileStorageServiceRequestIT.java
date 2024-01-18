@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;

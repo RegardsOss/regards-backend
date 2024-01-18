@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.filecatalog.dto.StorageType;
+import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IStorageLocationConfigurationRepostory;

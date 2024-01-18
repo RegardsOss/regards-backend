@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.emailverificatio
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailWrapper;
-import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

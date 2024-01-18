@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.domain.job;
 
-import fr.cnes.regards.modules.filecatalog.dto.request.FileDeletionDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 
 import java.util.ArrayList;

@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.model.service.validation.AbstractFeatureValidationService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.validation.IValidationService;

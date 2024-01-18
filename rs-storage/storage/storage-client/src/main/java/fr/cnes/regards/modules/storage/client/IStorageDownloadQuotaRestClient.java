@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import fr.cnes.regards.modules.filecatalog.dto.quota.DownloadQuotaLimitsDto;
-import fr.cnes.regards.modules.filecatalog.dto.quota.UserCurrentQuotasDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

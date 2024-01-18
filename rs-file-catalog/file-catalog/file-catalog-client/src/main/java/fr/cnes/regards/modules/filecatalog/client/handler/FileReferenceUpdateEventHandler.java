@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.filecatalog.client.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceUpdateEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceUpdateEvent;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceUpdateDto;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceUpdateDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;

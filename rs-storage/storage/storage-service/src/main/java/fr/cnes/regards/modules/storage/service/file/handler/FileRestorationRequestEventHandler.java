@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FilesRestorationRequestEvent;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
-import fr.cnes.regards.modules.filecatalog.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.internal.util.collections.Sets;

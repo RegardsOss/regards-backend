@@ -19,12 +19,12 @@
 package fr.cnes.regards.modules.storage.service.nearline;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.fileaccess.dto.availability.NearlineFileStatusDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
-import fr.cnes.regards.modules.filecatalog.dto.FileReferenceWithoutOwnersDto;
-import fr.cnes.regards.modules.filecatalog.dto.availability.NearlineFileStatusDto;
-import fr.cnes.regards.modules.filecatalog.dto.request.FileStorageRequestAggregationDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

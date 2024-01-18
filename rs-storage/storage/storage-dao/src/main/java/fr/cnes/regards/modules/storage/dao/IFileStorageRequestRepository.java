@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.modules.filecatalog.dto.FileRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
