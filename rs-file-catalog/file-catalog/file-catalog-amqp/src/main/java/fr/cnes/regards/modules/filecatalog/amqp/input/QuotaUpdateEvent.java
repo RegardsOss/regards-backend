@@ -16,25 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.amqp.input;
+package fr.cnes.regards.modules.filecatalog.amqp.input;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.fileaccess.dto.request.CancelRequestDto;
 
-import java.util.Collection;
+import java.util.Map;
 
-/**
- * Event to submit a request to cancel all requests associated to given group ids
- *
- * @author Sébastien Binda
- **/
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class CancelRequestEvent extends CancelRequestDto implements ISubscribable {
+@Event(target = Target.ALL)
+public class QuotaUpdateEvent implements ISubscribable {
 
-    public CancelRequestEvent(Collection<String> groupsToCancel) {
-        super(groupsToCancel);
+    private Map<String, Long> currentQuotaByEmail;
+
+    public QuotaUpdateEvent() {
     }
+
+    public QuotaUpdateEvent(Map<String, Long> currentQuotaByEmail) {
+        this.currentQuotaByEmail = currentQuotaByEmail;
+    }
+
+    public Map<String, Long> getCurrentQuotaByEmail() {
+        return currentQuotaByEmail;
+    }
+
 }

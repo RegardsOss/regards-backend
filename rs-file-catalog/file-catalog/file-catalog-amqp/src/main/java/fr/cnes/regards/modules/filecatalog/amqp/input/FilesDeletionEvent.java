@@ -16,15 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.amqp.input;
+package fr.cnes.regards.modules.filecatalog.amqp.input;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEvent;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.fileaccess.dto.files.FilesStorageRequestDto;
-import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.files.FilesDeletionDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,34 +33,41 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Event to request a new file storage.<br/>
+ * Event to request file(s) reference deletion.<br/>
+ * A deletion request is always a success as the only action is to remove the requesting owner to the file(s)<br/>
+ * When a file does not belongs to any owner anymore, then a deletion request is made for stored files (ONLINE and NEARLINE).<br/>
+ * <br/>
  * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
  * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
  *
  * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class FilesStorageRequestEvent extends FilesStorageRequestDto implements ISubscribable {
+public class FilesDeletionEvent extends FilesDeletionDto implements ISubscribable {
 
     /**
      * Maximum number of Request per event
      */
-    public static final int MAX_REQUEST_PER_GROUP = 500;
+    public static final int MAX_REQUEST_PER_GROUP = 100;
 
-    public FilesStorageRequestEvent() {
+    /**
+     * Lock used to avoid running multiple deletion at the same time.
+     */
+    public static final String DELETION_LOCK = "deletion-lock";
+
+    public FilesDeletionEvent() {
         super();
     }
 
-    public FilesStorageRequestEvent(Set<FileStorageRequestDto> files, String groupId) {
+    public FilesDeletionEvent(Set<FileDeletionDto> files, String groupId) {
         super(groupId, files);
     }
 
-    public FilesStorageRequestEvent(Collection<FileStorageRequestDto> files, String groupId) {
+    public FilesDeletionEvent(Collection<FileDeletionDto> files, String groupId) {
         super(groupId, new HashSet<>(files));
     }
 
-    public FilesStorageRequestEvent(FileStorageRequestDto file, String groupId) {
+    public FilesDeletionEvent(FileDeletionDto file, String groupId) {
         super(groupId, Stream.of(file).collect(Collectors.toSet()));
     }
-
 }

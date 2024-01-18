@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.fileaccess.plugin.service.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesStorageRequestEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FilesStorageRequestReadyToProcessEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -33,24 +33,24 @@ import java.util.List;
  *
  * @author Thibaud Michaudel
  **/
-public class StoreRequestEventHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesStorageRequestEvent> {
+public class FilesStorageRequestReadyToProcessEventHandler
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesStorageRequestReadyToProcessEvent> {
 
     @Autowired
     private ISubscriber subscriber;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(FilesStorageRequestEvent.class, this);
+        subscriber.subscribeTo(FilesStorageRequestReadyToProcessEvent.class, this);
     }
 
     @Override
-    public Errors validate(FilesStorageRequestEvent message) {
+    public Errors validate(FilesStorageRequestReadyToProcessEvent message) {
         return null;
     }
 
     @Override
-    public void handleBatch(List<FilesStorageRequestEvent> messages) {
+    public void handleBatch(List<FilesStorageRequestReadyToProcessEvent> messages) {
         LOGGER.debug("[STORE REQUEST EVENT HANDLER] Handling {} FilesStorageRequestEvent...", messages.size());
         long start = System.currentTimeMillis();
 

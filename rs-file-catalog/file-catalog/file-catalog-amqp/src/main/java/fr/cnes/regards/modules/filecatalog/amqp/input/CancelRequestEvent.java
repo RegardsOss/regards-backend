@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.amqp.output;
+package fr.cnes.regards.modules.filecatalog.amqp.input;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
-import fr.cnes.regards.modules.fileaccess.dto.FileReferenceUpdateDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.CancelRequestDto;
+
+import java.util.Collection;
 
 /**
- * Bus message to inform that a FileReference has been updated.
+ * Event to submit a request to cancel all requests associated to given group ids
  *
  * @author Sébastien Binda
- */
+ **/
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class FileReferenceUpdateEvent extends FileReferenceUpdateDto implements ISubscribable {
+public class CancelRequestEvent extends CancelRequestDto implements ISubscribable {
 
-    public FileReferenceUpdateEvent(String checksum, String storage, FileReferenceDto fileUpdated) {
-        super(checksum, storage, fileUpdated);
+    public CancelRequestEvent(Collection<String> groupsToCancel) {
+        super(groupsToCancel);
     }
-
 }

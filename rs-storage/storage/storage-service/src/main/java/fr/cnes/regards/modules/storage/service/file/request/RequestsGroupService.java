@@ -20,10 +20,10 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileGroupRequestStatus;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.dao.*;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.*;

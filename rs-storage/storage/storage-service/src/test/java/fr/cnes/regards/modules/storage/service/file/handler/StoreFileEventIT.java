@@ -29,12 +29,12 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesRetryRequestEvent;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesStorageRequestEvent;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEvent;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEventType;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRetryRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;

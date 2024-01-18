@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.order.service.job;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceUpdateDto;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

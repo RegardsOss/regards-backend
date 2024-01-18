@@ -16,19 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.amqp.output;
+package fr.cnes.regards.modules.filecatalog.amqp.output;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesDeletionEvent;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesReferenceEvent;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileGroupRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileRequestGroupDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 
 import java.util.Collection;
 import java.util.HashSet;

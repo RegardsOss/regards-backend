@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.fileaccess.amqp.output;
+package fr.cnes.regards.modules.filecatalog.amqp.output;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;

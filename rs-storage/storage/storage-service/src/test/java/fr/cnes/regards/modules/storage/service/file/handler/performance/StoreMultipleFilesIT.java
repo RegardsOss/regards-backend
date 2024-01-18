@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRe
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;

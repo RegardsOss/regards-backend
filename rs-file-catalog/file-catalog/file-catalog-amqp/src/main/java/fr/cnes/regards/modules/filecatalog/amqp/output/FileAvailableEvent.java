@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.amqp.output;
+package fr.cnes.regards.modules.filecatalog.amqp.output;
 
 import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;

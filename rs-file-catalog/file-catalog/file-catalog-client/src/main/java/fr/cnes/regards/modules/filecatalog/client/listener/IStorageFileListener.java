@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.filecatalog.client.listener;
 
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesDeletionEvent;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesRestorationRequestEvent;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceUpdateDto;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 
 import java.util.List;
 

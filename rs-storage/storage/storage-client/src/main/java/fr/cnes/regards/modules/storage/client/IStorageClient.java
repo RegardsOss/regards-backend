@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import fr.cnes.regards.modules.fileaccess.amqp.input.*;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEvent;
-import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
-import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
-import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileCopyDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
+import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
 
 import java.util.Collection;
 

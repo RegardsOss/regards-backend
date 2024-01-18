@@ -22,7 +22,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -43,7 +43,7 @@ import java.util.List;
 @Component("clientFileRefEventHandler")
 public class FileReferenceEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceEvent> {
-    
+
     @Autowired(required = false)
     private IStorageFileListener listener;
 

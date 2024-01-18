@@ -21,10 +21,8 @@ package fr.cnes.regards.modules.fileaccess.amqp.input;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileReferenceEvent;
-import fr.cnes.regards.modules.fileaccess.amqp.output.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.fileaccess.dto.files.FilesDeletionDto;
-import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
+import fr.cnes.regards.modules.fileaccess.dto.files.FilesStorageRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,41 +31,33 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Event to request file(s) reference deletion.<br/>
- * A deletion request is always a success as the only action is to remove the requesting owner to the file(s)<br/>
- * When a file does not belongs to any owner anymore, then a deletion request is made for stored files (ONLINE and NEARLINE).<br/>
- * <br/>
- * See {@link FileRequestsGroupEvent} for asynchronous responses when request is finished.<br/>
- * See {@link FileReferenceEvent} for asynchronous responses when a file handled.<br/>
+ * Event to request a new file storage to the file access microservice.<br/>
+ * This request will be processed once this event is received without further filtering.
  *
- * @author Sébastien Binda
+ * @author Thibaud Michaudel
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class FilesDeletionEvent extends FilesDeletionDto implements ISubscribable {
+public class FilesStorageRequestReadyToProcessEvent extends FilesStorageRequestDto implements ISubscribable {
 
     /**
      * Maximum number of Request per event
      */
-    public static final int MAX_REQUEST_PER_GROUP = 100;
+    public static final int MAX_REQUEST_PER_GROUP = 500;
 
-    /**
-     * Lock used to avoid running multiple deletion at the same time.
-     */
-    public static final String DELETION_LOCK = "deletion-lock";
-
-    public FilesDeletionEvent() {
+    public FilesStorageRequestReadyToProcessEvent() {
         super();
     }
 
-    public FilesDeletionEvent(Set<FileDeletionDto> files, String groupId) {
+    public FilesStorageRequestReadyToProcessEvent(Set<FileStorageRequestDto> files, String groupId) {
         super(groupId, files);
     }
 
-    public FilesDeletionEvent(Collection<FileDeletionDto> files, String groupId) {
+    public FilesStorageRequestReadyToProcessEvent(Collection<FileStorageRequestDto> files, String groupId) {
         super(groupId, new HashSet<>(files));
     }
 
-    public FilesDeletionEvent(FileDeletionDto file, String groupId) {
+    public FilesStorageRequestReadyToProcessEvent(FileStorageRequestDto file, String groupId) {
         super(groupId, Stream.of(file).collect(Collectors.toSet()));
     }
+
 }

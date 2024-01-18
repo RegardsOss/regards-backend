@@ -91,8 +91,8 @@
             <artifactId>file-access-dto</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
-            <artifactId>file-access-amqp</artifactId>
+            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+            <artifactId>file-catalog-amqp</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>

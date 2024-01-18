@@ -16,28 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.amqp.input;
+package fr.cnes.regards.modules.filecatalog.amqp.output;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceUpdateDto;
 
-import java.util.Map;
+/**
+ * Bus message to inform that a FileReference has been updated.
+ *
+ * @author Sébastien Binda
+ */
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
+public class FileReferenceUpdateEvent extends FileReferenceUpdateDto implements ISubscribable {
 
-@Event(target = Target.ALL)
-public class QuotaUpdateEvent implements ISubscribable {
-
-    private Map<String, Long> currentQuotaByEmail;
-
-    public QuotaUpdateEvent() {
-    }
-
-    public QuotaUpdateEvent(Map<String, Long> currentQuotaByEmail) {
-        this.currentQuotaByEmail = currentQuotaByEmail;
-    }
-
-    public Map<String, Long> getCurrentQuotaByEmail() {
-        return currentQuotaByEmail;
+    public FileReferenceUpdateEvent(String checksum, String storage, FileReferenceDto fileUpdated) {
+        super(checksum, storage, fileUpdated);
     }
 
 }

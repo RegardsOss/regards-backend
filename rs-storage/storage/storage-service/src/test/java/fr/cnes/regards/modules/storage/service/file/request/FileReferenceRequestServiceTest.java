@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
