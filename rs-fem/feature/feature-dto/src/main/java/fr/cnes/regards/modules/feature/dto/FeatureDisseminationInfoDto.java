@@ -36,4 +36,16 @@ public class FeatureDisseminationInfoDto {
         this.requestDate = requestDate;
         this.ackDate = ackDate;
     }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public OffsetDateTime getRequestDate() {
+        return requestDate;
+    }
+
+    public OffsetDateTime getAckDate() {
+        return ackDate;
+    }
 }
