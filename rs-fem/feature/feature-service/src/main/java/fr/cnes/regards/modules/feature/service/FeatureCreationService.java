@@ -105,8 +105,6 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Autowired
     private IJobInfoService jobInfoService;
 
-
-
     @Autowired
     private IFeatureValidationService validationService;
 

@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -30,6 +27,10 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.session.agent.client.ISessionAgentClient;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
+import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.modules.feature.dao.FeatureUpdateRequestSpecificationBuilder;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
@@ -57,6 +58,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,6 +121,9 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Autowired
     private IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepository;
+
+    @Autowired
+    private ISessionAgentClient sessionNotificationClient;
 
     @Override
     public RequestInfo<FeatureUniformResourceName> registerRequests(List<FeatureUpdateRequestEvent> featureUpdateRequestEvts) {
@@ -364,15 +369,18 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
         Set<FeatureEntity> featureEntities = new HashSet<>();
         Set<FeatureUpdateRequest> successfulRequest = new HashSet<>();
+        Multimap<Triple<String, String, String>, FeatureUpdateRequest> ackRequestsPerRecipientSourceSession = MultimapBuilder.hashKeys()
+                                                                                                                             .hashSetValues()
+                                                                                                                             .build();
         Set<FeatureUpdateRequest> storagePendingRequests = new HashSet<>();
         List<FeatureUpdateRequest> errorRequests = new ArrayList<>();
 
-        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureEntityRepository.findCompleteByUrnIn(
-                                                                              requests.stream().map(FeatureUpdateRequest::getUrn).collect(Collectors.toList()))
-                                                                                                  .stream()
-                                                                                                  .collect(Collectors.toMap(
-                                                                                                      FeatureEntity::getUrn,
-                                                                                                      Function.identity()));
+        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = featureEntityRepository.findCompleteByUrnIn(
+                                                                                                 requests.stream().map(FeatureUpdateRequest::getUrn).collect(Collectors.toList()))
+                                                                                             .stream()
+                                                                                             .collect(Collectors.toMap(
+                                                                                                 FeatureEntity::getUrn,
+                                                                                                 Function.identity()));
         // Update feature update request
         for (FeatureUpdateRequest request : requests) {
             Feature patch = request.getFeature();
@@ -403,8 +411,6 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                                                                   request.getRequestOwner()));
                 }
 
-                handleAcknowledgedRecipient(request, featureEntity);
-
                 // Merge properties handling null property values to unset properties
                 IProperty.mergeProperties(featureEntity.getFeature().getProperties(),
                                           patch.getProperties(),
@@ -421,8 +427,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                                             request.getFeature().getUrn());
 
                 // Update source/session for request notification
-                request.setSessionToNotify(featureEntity.getSession());
                 request.setSourceToNotify(featureEntity.getSessionOwner());
+                request.setSessionToNotify(featureEntity.getSession());
 
                 // Check files update
                 try {
@@ -441,6 +447,14 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                         successfulRequest.add(request);
                     } else {
                         storagePendingRequests.add(request);
+                    }
+                    // Manage acknowledges
+                    Optional<String> acknowledgedRecipientOpt = handleAcknowledgedRecipient(request, featureEntity);
+                    if (acknowledgedRecipientOpt.isPresent()) {
+                        // Map useful to update session concerning dissemniation ack
+                        ackRequestsPerRecipientSourceSession.put(Triple.of(acknowledgedRecipientOpt.get(),
+                                                                           request.getSourceToNotify(),
+                                                                           request.getSessionToNotify()), request);
                     }
                     // Register
                     metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);
@@ -463,6 +477,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
         doOnError(errorRequests);
         doOnSuccess(successfulRequest);
+        doOnSuccessAckRequests(ackRequestsPerRecipientSourceSession);
 
         LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {}ms",
                      requests.size(),
@@ -472,7 +487,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         return featureEntities;
     }
 
-    private void handleAcknowledgedRecipient(FeatureUpdateRequest request, FeatureEntity featureEntity) {
+    private Optional<String> handleAcknowledgedRecipient(FeatureUpdateRequest request, FeatureEntity featureEntity) {
         boolean foundRecipient = false;
         String acknowledgedRecipient = request.getAcknowledgedRecipient();
         if (!StringUtils.isBlank(acknowledgedRecipient)) {
@@ -508,6 +523,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         }
 
         featureEntity.updateDisseminationPending();
+        return foundRecipient ? Optional.of(acknowledgedRecipient) : Optional.empty();
     }
 
     @Override
@@ -632,6 +648,45 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             doOnTerminated(requests);
             featureUpdateRequestRepository.deleteAllInBatch(requests);
         }
+    }
+
+    private void doOnSuccessAckRequests(Multimap<Triple<String, String, String>, FeatureUpdateRequest> ackRequestsPerRecipientSourceSession) {
+        // Handle dissemniation ack on session
+        ackRequestsPerRecipientSourceSession.asMap().forEach((recipientLabelSourceSession, ackRequests) -> {
+
+            // Increment number of successfull dissemination for recipient
+            StepProperty stepProperty = getStepProperty(recipientLabelSourceSession.getMiddle(),
+                                                        recipientLabelSourceSession.getRight(),
+                                                        FeatureSessionProperty.DISSEMINATED_PRODUCTS,
+                                                        recipientLabelSourceSession.getLeft(),
+                                                        ackRequests.size());
+            sessionNotificationClient.increment(stepProperty);
+
+            // Decrement number of pending dissemination for recipient
+            stepProperty = getStepProperty(recipientLabelSourceSession.getMiddle(),
+                                           recipientLabelSourceSession.getRight(),
+                                           FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS,
+                                           recipientLabelSourceSession.getLeft(),
+                                           ackRequests.size());
+            sessionNotificationClient.decrement(stepProperty);
+
+        });
+    }
+
+    private StepProperty getStepProperty(String source,
+                                         String session,
+                                         FeatureSessionProperty property,
+                                         String recipientLabel,
+                                         int nbProducts) {
+        return new StepProperty("fem_dissemination",
+                                source,
+                                session,
+                                new StepPropertyInfo(StepTypeEnum.DISSEMINATION,
+                                                     property.getState(),
+                                                     String.format(property.getName(), recipientLabel),
+                                                     String.valueOf(nbProducts),
+                                                     property.isInputRelated(),
+                                                     property.isOutputRelated()));
     }
 
     @Override

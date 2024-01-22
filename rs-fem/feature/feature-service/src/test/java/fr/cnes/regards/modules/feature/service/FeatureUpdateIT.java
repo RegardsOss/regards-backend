@@ -163,10 +163,27 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         FeatureDeletionRequest featureDeletionRequest = featureDeletionRequestRepo.findAll().get(0);
 
         assertNotNull(featureDeletionRequest);
-        // Check unblocked feature deletion request (unblocke case: LOCAL_DELAYED)
+        // Check unblocked feature deletion request (unblocked case: LOCAL_DELAYED)
         assertEquals(FeatureRequestStep.LOCAL_DELAYED, featureDeletionRequest.getStep());
 
         assertNotNull(featureDisseminationInfoRepository.findAll().get(0).getAckDate());
+
+        // Check Session step values
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            int nbStep = stepPropertyUpdateRequestRepository.findBySession(session).size();
+            LOGGER.info("{} steps", nbStep);
+            return nbStep == 5;
+        });
+        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
+        checkRequests(4, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(1, property("referencingRequests"), requests);
+        checkRequests(1, property("runningReferencingRequests"), requests);
+        checkRequests(1, property("referencedProducts"), requests);
+        checkRequests(1, property(acknowledgedRecipient + ".done"), requests);
+
+        checkRequests(1, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(1, property(acknowledgedRecipient + ".pending"), requests);
     }
 
     @Test
