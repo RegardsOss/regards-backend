@@ -39,6 +39,7 @@
         <module>authentication-plugins</module>
         <module>authentication-rest</module>
         <module>authentication-service</module>
+        <module>authentication-code-coverage</module>
     </modules>
 
 </project>
