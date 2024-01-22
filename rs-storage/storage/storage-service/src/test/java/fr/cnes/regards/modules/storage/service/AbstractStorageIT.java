@@ -111,7 +111,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected FileReferenceService fileRefService;
 
     @Autowired
-    protected FileDownloadService downloadService;
+    protected FileDownloadService fileDownloadService;
 
     @Autowired
     protected DownloadTokenService downloadTokenService;
@@ -219,7 +219,9 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL, true);
         initDataStorageOLPluginConfiguration(OFFLINE_CONF_LABEL);
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL_WITHOUT_DELETE, false);
+
         initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
+
         storagePlgConfHandler.refresh();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         simulateApplicationStartedEvent();
@@ -239,6 +241,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
         throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
+
             Files.createDirectories(Paths.get(getBaseStorageLocation().getPath()));
 
             Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
@@ -263,6 +266,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected StorageLocationConfiguration initDataStorageNLPluginConfiguration(String label) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
+
             Files.createDirectories(Paths.get(getBaseStorageLocation().getPath()));
             Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                                                                getBaseStorageLocation().getPath()),
@@ -315,19 +319,19 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
     protected FileReference generateRandomStoredNearlineFileReference()
         throws InterruptedException, ExecutionException {
-        return this.generateRandomStoredNearlineFileReference("file.test", Optional.empty());
+        return generateRandomStoredNearlineFileReference("file.test", Optional.empty());
     }
 
     protected FileReference generateRandomStoredNearlineFileReference(String fileName, Optional<String> subDir)
         throws InterruptedException, ExecutionException {
-        return this.generateStoredFileReference(UUID.randomUUID().toString(),
-                                                "someone",
-                                                fileName,
-                                                NEARLINE_CONF_LABEL,
-                                                subDir,
-                                                Optional.empty(),
-                                                "source1",
-                                                "session1");
+        return generateStoredFileReference(UUID.randomUUID().toString(),
+                                           "someone",
+                                           fileName,
+                                           NEARLINE_CONF_LABEL,
+                                           subDir,
+                                           Optional.empty(),
+                                           "source1",
+                                           "session1");
     }
 
     protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum,

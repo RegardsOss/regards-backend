@@ -86,6 +86,11 @@ public class FileReference {
     @Column(name = "referenced")
     private boolean referenced = false;
 
+    /**
+     * By default, nearlineConfirmed is set to False, we don't know if the file is stored in online mode (datalake Tier2) or in nearline mode
+     * (datalake Tier3).
+     * Otherwise, nearlineConfirmed set to True means that the file is stored in nearline mode (datalake Tier3).
+     */
     @Column(name = "nearline_confirmed")
     private boolean nearlineConfirmed = false;
 

@@ -24,10 +24,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
-import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import org.apache.commons.compress.utils.Lists;
@@ -37,8 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -279,5 +279,23 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     @Override
     public boolean hasPeriodicAction() {
         return true;
+    }
+
+    @Override
+    public InputStream download(FileReferenceWithoutOwnersDto fileReference)
+        throws NearlineFileNotAvailableException, NearlineDownloadException {
+        try (FileInputStream fileInputStream = new FileInputStream(fileReference.getLocation().getUrl())) {
+            return fileInputStream;
+        } catch (FileNotFoundException e) {
+            LOGGER.warn(e.getMessage(), e);
+            throw new NearlineFileNotAvailableException(String.format("File %s is not available.",
+                                                                      fileReference.getMetaInfo().getFileName()));
+
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new NearlineDownloadException(String.format("File %s cannot be download : %s",
+                                                              fileReference.getMetaInfo().getFileName(),
+                                                              e.getMessage()));
+        }
     }
 }
