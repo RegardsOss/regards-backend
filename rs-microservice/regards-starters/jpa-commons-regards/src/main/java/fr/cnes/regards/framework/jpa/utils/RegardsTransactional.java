@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.jpa.utils;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,5 +31,7 @@ public @interface RegardsTransactional {
     @AliasFor(annotation = Transactional.class) boolean readOnly() default false;
 
     @AliasFor(annotation = Transactional.class) Propagation propagation() default Propagation.REQUIRED;
+
+    @AliasFor(annotation = Transactional.class) Isolation isolation() default Isolation.DEFAULT;
 
 }

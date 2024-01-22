@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.jpa.multitenant.transactional;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +47,8 @@ public @interface MultitenantTransactional {
      * @see org.springframework.transaction.interceptor.TransactionAttribute#getPropagationBehavior()
      */
     @AliasFor(annotation = Transactional.class) Propagation propagation() default Propagation.REQUIRED;
+
+    @AliasFor(annotation = Transactional.class) Isolation isolation() default Isolation.DEFAULT;
 
     @AliasFor(annotation = Transactional.class) boolean readOnly() default false;
 
