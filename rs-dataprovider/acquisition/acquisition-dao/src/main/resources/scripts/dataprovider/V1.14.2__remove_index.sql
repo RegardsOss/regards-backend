@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS idx_acq_product_id;
