@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.beans.ConstructorProperties;
 import java.time.OffsetDateTime;
 import java.util.Objects;
@@ -45,7 +48,8 @@ public class DisseminationInfoDto {
     private OffsetDateTime ackDate;
 
     @ConstructorProperties({ "label", "date" })
-    public DisseminationInfoDto(String label, OffsetDateTime date) {
+    @JsonCreator
+    public DisseminationInfoDto(@JsonProperty("label") String label, @JsonProperty("date") OffsetDateTime date) {
         this.label = label;
         this.date = date;
     }
