@@ -114,7 +114,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     }
 
     @Test
-    public void test_block_and_unblock_deletion_request() throws InterruptedException {
+    public void test_block_and_unblock_deletion_request() {
         // Given : create feature
         String acknowledgedRecipient = "acknowledged recipient";
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(1, true, false);
@@ -173,13 +173,14 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             int nbStep = stepPropertyUpdateRequestRepository.findBySession(session).size();
             LOGGER.info("{} steps", nbStep);
-            return nbStep == 5;
+            return nbStep == 6;
         });
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(4, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(5, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(1, property("referencingRequests"), requests);
         checkRequests(1, property("runningReferencingRequests"), requests);
         checkRequests(1, property("referencedProducts"), requests);
+        checkRequests(1, property("updatedProducts"), requests);
         checkRequests(1, property(acknowledgedRecipient + ".done"), requests);
 
         checkRequests(1, type(StepPropertyEventTypeEnum.DEC), requests);

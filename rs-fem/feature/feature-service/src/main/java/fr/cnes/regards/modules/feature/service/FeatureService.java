@@ -38,10 +38,13 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
 import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 
 import java.util.List;
 import java.util.Set;
@@ -56,6 +59,8 @@ import java.util.stream.Collectors;
 @Service
 @MultitenantTransactional
 public class FeatureService implements IFeatureService {
+
+    protected static final Logger LOGGER = LoggerFactory.getLogger(FeatureService.class);
 
     private final IFeatureSimpleEntityRepository featureSimpleEntityRepository;
 
@@ -75,7 +80,24 @@ public class FeatureService implements IFeatureService {
         this.jobInfoService = jobInfoService;
     }
 
+    /**
+     * Method is annotated with transaction Isolation.REPEATABLE_READ to avoid changes of entities (due to
+     * concurrent updates) between the two select of the same entities in database.
+     * <p>
+     * Use Case :
+     * Thread 1 : select entities
+     * Thread 2 : Update same entities
+     * Thread 1 : select entities : with isolation REPEATABLE_READ, results are the same as the first select ( no
+     * effect of the updates).
+     * <p>
+     * Multiple select are mandatory to avoid in memory pagination.
+     * This choice is made due to SWOT issues during FEM datasource crawling.
+     * <p>
+     * All entities are requested by page with a criterion on lastUpdate. Without this if the last update is updated
+     * between the two select, this find return entities with lastUpdate which do not match the given filters.
+     */
     @Override
+    @MultitenantTransactional(isolation = Isolation.REPEATABLE_READ)
     public Page<FeatureEntityDto> findAll(SearchFeatureSimpleEntityParameters filters, Pageable pageable) {
         // Workaround to avoid in-memory pagination with specification
         // 1. use simple entities with specification + pagination to get 1 page
