@@ -294,7 +294,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
             Assert.assertNotNull(feature);
             Assert.assertEquals(updateNewFile ? 0 : 1, feature.getFeature().getFiles().size());
             if (!updateNewFile) {
-                Assert.assertEquals(1, feature.getFeature().getFiles().get(0).getLocations().size());
+                Assert.assertEquals(2, feature.getFeature().getFiles().get(0).getLocations().size());
             }
         });
         featureUpdateRequestRepo.findAll().stream().filter(r -> r.getState() == RequestState.SUCCESS).forEach(r -> {
