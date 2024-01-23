@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dto;
 
+import java.beans.ConstructorProperties;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
@@ -43,9 +44,14 @@ public class DisseminationInfoDto {
      */
     private OffsetDateTime ackDate;
 
-    public DisseminationInfoDto(String label, OffsetDateTime date, OffsetDateTime ackDate) {
+    @ConstructorProperties({ "label", "date" })
+    public DisseminationInfoDto(String label, OffsetDateTime date) {
         this.label = label;
         this.date = date;
+    }
+
+    public DisseminationInfoDto(String label, OffsetDateTime date, OffsetDateTime ackDate) {
+        this(label, date);
         this.ackDate = ackDate;
     }
 
