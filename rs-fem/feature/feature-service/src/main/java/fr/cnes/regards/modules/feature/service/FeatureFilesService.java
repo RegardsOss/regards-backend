@@ -206,7 +206,7 @@ public class FeatureFilesService {
                 } else {
                     // A new location not null means a reference request, so only check if the given storage is not
                     // already associated to the current file
-                    return location.getStorage().equals(newFileLocation.getStorage());
+                    return !location.getStorage().equals(newFileLocation.getStorage());
                 }
             });
             if (isNewLocation) {
