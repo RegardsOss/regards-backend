@@ -58,6 +58,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -238,7 +239,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         dataFile.setDownloadError(null);
         boolean downloadOk = false;
 
-        Optional<Response> responseOpt = downloadDataFile(dataFile, errorPrefix);
+        Optional<Response> responseOpt = downloadDataFile(dataFile, errorPrefix, null);
         if (responseOpt.isPresent()) {
             Response response = responseOpt.get();
             if (response.status() != HttpStatus.OK.value()) {
@@ -280,12 +281,13 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         return downloadOk;
     }
 
-    public Optional<Response> downloadDataFile(OrderDataFile dataFile, String errorPrefix) {
+    public Optional<Response> downloadDataFile(OrderDataFile dataFile, String errorPrefix, @Nullable String asUser) {
         Response response = null;
         try {
             // To download through storage client we must be authenticated as user in order to
             // impact the download quotas, but we upgrade the privileges so that the request passes.
-            FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+            FeignSecurityManager.asUser(asUser != null ? asUser : authResolver.getUser(),
+                                        DefaultRole.PROJECT_ADMIN.name());
             // To download file with accessrights checked, we should use catalogDownloadClient
             // but the accessRight have already been checked here.
             if (dataFile.urlIsFromDam()) {

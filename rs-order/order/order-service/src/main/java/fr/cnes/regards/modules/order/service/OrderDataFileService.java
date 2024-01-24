@@ -24,9 +24,7 @@ import feign.Response;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.ResponseStreamProxy;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
@@ -280,12 +278,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         if (Boolean.TRUE.equals(dataFile.isReference())) {
             response = downloadReferenceFile(dataFile);
         } else {
-            try {
-                FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
-                response = downloadStoredFile(dataFile);
-            } finally {
-                FeignSecurityManager.reset();
-            }
+            response = downloadStoredFile(dataFile, asUser.orElse(null));
         }
         self.save(dataFile);
         Order order = orderRepository.findSimpleById(dataFile.getOrderId());
@@ -351,12 +344,13 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
      *
      * @return {@link InputStreamResource} of the file
      */
-    private ResponseEntity<InputStreamResource> downloadStoredFile(OrderDataFile dataFile) {
+    private ResponseEntity<InputStreamResource> downloadStoredFile(OrderDataFile dataFile, @Nullable String asUser) {
         try {
             InputStreamResource isr = null;
             Optional<Response> responseOpt = orderDownloadService.downloadDataFile(dataFile,
                                                                                    "Error while downloading file "
-                                                                                   + dataFile.getFilename());
+                                                                                   + dataFile.getFilename(),
+                                                                                   asUser);
             if (responseOpt.isEmpty()) {
                 dataFile.setState(FileState.DOWNLOAD_ERROR);
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
