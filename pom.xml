@@ -53,7 +53,7 @@
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-deploy.skip>true</maven-deploy.skip>
-        <regards.version>1.14.2</regards.version>
+        <regards.version>1.14.3</regards.version>
         <revision>${regards.version}</revision>
 
         <!-- COTS -->
