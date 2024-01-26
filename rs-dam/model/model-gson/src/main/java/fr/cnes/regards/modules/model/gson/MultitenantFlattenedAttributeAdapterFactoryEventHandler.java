@@ -107,8 +107,8 @@ public class MultitenantFlattenedAttributeAdapterFactoryEventHandler
             runtimeTenantResolver.forceTenant(tenant);
             try {
                 // Register for tenant
-                final List<AttributeModel> atts = attributeHelper.getAllAttributes();
                 LOGGER.info("Registering already configured attributes and fragments");
+                final List<AttributeModel> atts = attributeHelper.getAllAttributes();
                 // Use factory algorithm
                 factory.registerAttributes(tenant, atts);
                 LOGGER.info("Registering attributes for tenant {} done", tenant);

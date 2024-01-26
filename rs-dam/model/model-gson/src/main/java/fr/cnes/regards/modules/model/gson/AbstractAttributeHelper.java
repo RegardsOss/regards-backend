@@ -132,6 +132,10 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
                                          boolean isIndexed,
                                          List<String> indexableFields,
                                          List<AttributeModel> jsonSchemaAttributes) {
+        if (node == null || node.get(JsonSchemaConstants.TYPE) == null) {
+            LOGGER.error("Invalid type for attribute {} (path={})", name, path);
+            return;
+        }
         String attributeType = node.get(JsonSchemaConstants.TYPE).textValue();
         switch (attributeType) {
             case JsonSchemaConstants.OBJECT_TYPE:
@@ -169,9 +173,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
                 createArrayAttributes(name, path, node, isIndexed, indexableFields, jsonSchemaAttributes);
                 break;
             default:
-                throw new IllegalArgumentException(String.format("Invalid type %s for attribute %s",
-                                                                 attributeType,
-                                                                 name));
+                LOGGER.error("Invalid type {} for attribute {} (path={})", attributeType, name, path);
         }
     }
 
