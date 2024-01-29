@@ -48,4 +48,9 @@ public interface IOrderJobService {
      * them if it is the case
      */
     void manageUserOrderStorageFilesJobInfos(String user);
+
+    /**
+     * Check if the given order is paused
+     */
+    boolean isOrderPaused(Long orderId);
 }

@@ -595,8 +595,8 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                                     subOrderDuration),
                                                                 new UserJobParameter(user),
                                                                 new UserRoleJobParameter(userRole),
-                                                                new ProcessJobInfoJobParameter(processExecJob.getId()))
-                                                            .toJavaSet(),
+                                                                new ProcessJobInfoJobParameter(processExecJob.getId()),
+                                                                new OrderIdJobParameter(order.getId())).toJavaSet(),
                                                      user,
                                                      StorageFilesJob.class.getName());
         storageFilesJobUnsaved.setExpirationDate(order.getExpirationDate());
@@ -629,7 +629,8 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                                         f.getId(),
                                                                         orderId,
                                                                         f.getProviderId(),
-                                                                        f.getVersion()))).distinct()
+                                                                        f.getVersion())))
+                       .distinct()
                        .map(orderDataFileRepository::save)
                        .map(OrderDataFile::getId)
                        .toJavaArray(Long[]::new);

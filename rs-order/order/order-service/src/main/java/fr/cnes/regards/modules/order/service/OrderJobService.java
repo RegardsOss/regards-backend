@@ -32,6 +32,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.service.request.CancelOrderJob;
@@ -71,6 +75,10 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
 
     private final IFilesTasksRepository filesTasksRepository;
 
+    private final IOrderDataFileRepository orderDataFileRepository;
+
+    private final IOrderRepository orderRepository;
+
     private final ISubscriber subscriber;
 
     private final IOrderJobService self;
@@ -81,12 +89,16 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
 
     public OrderJobService(IJobInfoRepository jobInfoRepository,
                            IFilesTasksRepository filesTasksRepository,
+                           IOrderDataFileRepository orderDataFileRepository,
+                           IOrderRepository orderRepository,
                            ISubscriber subscriber,
                            IOrderJobService orderJobService,
                            IRuntimeTenantResolver tenantResolver,
                            LockService lockService) {
         this.jobInfoRepository = jobInfoRepository;
         this.filesTasksRepository = filesTasksRepository;
+        this.orderDataFileRepository = orderDataFileRepository;
+        this.orderRepository = orderRepository;
         this.subscriber = subscriber;
         this.self = orderJobService;
         this.lockService = lockService;
@@ -168,7 +180,11 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
                                                                               count);
             if (!jobInfos.isEmpty()) {
                 for (JobInfo jobInfo : jobInfos) {
-                    jobInfo.updateStatus(JobStatus.QUEUED);
+                    Long[] filesId = jobInfo.getParametersAsMap().get("files").getValue();
+                    Long orderId = orderDataFileRepository.getById(filesId[0]).getOrderId();
+                    if (!isOrderPaused(orderId)) {
+                        jobInfo.updateStatus(JobStatus.QUEUED);
+                    }
                 }
                 jobInfoRepository.saveAll(jobInfos);
             }
@@ -193,6 +209,12 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
                                            e.getMessage()), e);
             }
         }
+    }
+
+    @Override
+    public boolean isOrderPaused(Long orderId) {
+        Order order = orderRepository.getById(orderId);
+        return order.getStatus().equals(OrderStatus.PAUSED);
     }
 
 }

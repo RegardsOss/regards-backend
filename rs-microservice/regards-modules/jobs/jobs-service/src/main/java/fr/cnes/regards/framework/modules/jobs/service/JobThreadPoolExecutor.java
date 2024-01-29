@@ -150,35 +150,34 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         }
 
         runtimeTenantResolver.forceTenant(jobInfo.getTenant());
-        // FutureTask (which is used by ThreadPoolExecutor) doesn't give a fuck of thrown exception so we must get it
-        // by hands
+        // FutureTask, employed by ThreadPoolExecutor, are unable to manage thrown exceptions.
+        // We must handle them explicitly.
         if ((t == null) && (r instanceof Future<?>)) {
             try {
                 ((Future<?>) r).get();
             } catch (CancellationException ce) {
-                // after execute being execute in the thread that is ending,
-                // to avoid issues with interruption at the wrong moment,
-                // we need to create a new thread to update the db
+                // Following the completion of the job, it is necessary to initiate a new thread
+                // for updating the database to prevent potential interruptions at inappropriate times.
                 t = ce;
-                singleThreadExecutor.execute(() -> {
-                    runtimeTenantResolver.forceTenant(jobInfo.getTenant());
-                    jobInfo.updateStatus(JobStatus.ABORTED);
-                    jobInfoService.save(jobInfo);
-                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
-                });
+                handleCancellation(jobInfo);
             } catch (ExecutionException ee) {
                 t = ee.getCause();
-                LOGGER.error("Job failed", t);
-                StringWriter sw = new StringWriter();
-                t.printStackTrace(new PrintWriter(sw));
-                singleThreadExecutor.execute(() -> {
-                    runtimeTenantResolver.forceTenant(jobInfo.getTenant());
-                    jobInfo.updateStatus(JobStatus.FAILED);
-                    jobInfo.getStatus().setStackTrace(sw.toString());
-                    jobInfoService.save(jobInfo);
+                if (t instanceof CancellationException) {
+                    LOGGER.debug("Cancellation triggered by the job");
+                    handleCancellation(jobInfo);
+                } else {
+                    LOGGER.error("Job failed", t);
+                    StringWriter sw = new StringWriter();
+                    t.printStackTrace(new PrintWriter(sw));
+                    singleThreadExecutor.execute(() -> {
+                        runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+                        jobInfo.updateStatus(JobStatus.FAILED);
+                        jobInfo.getStatus().setStackTrace(sw.toString());
+                        jobInfoService.save(jobInfo);
 
-                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED, jobInfo.getClassName()));
-                });
+                        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED, jobInfo.getClassName()));
+                    });
+                }
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt(); // ignore/reset
             }
@@ -198,6 +197,16 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         CorrelationIdUtils.clearCorrelationId();
         // Clean jobsMap
         jobsMap.remove(jobInfo);
+    }
+
+    private void handleCancellation(JobInfo jobInfo) {
+        singleThreadExecutor.execute(() -> {
+            runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+            LOGGER.debug("Job aborted");
+            jobInfo.updateStatus(JobStatus.ABORTED);
+            jobInfoService.save(jobInfo);
+            publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
+        });
     }
 
 }

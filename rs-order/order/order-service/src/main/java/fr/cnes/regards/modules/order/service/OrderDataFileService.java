@@ -459,6 +459,10 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             long totalSize = totalSizeMap.get(order.getId());
             long treatedSize = treatedSizeMap.getOrDefault(order.getId(), 0L);
             int previousPercentCompleted = order.getPercentCompleted();
+            LOGGER.debug("Updating computed value for order {} ; treated size : {} ; total size : {}",
+                         order.getId(),
+                         treatedSize,
+                         totalSize);
             if (totalSize > 0) {
                 order.setPercentCompleted((int) Math.floorDiv(100L * treatedSize, totalSize));
             } else {
@@ -493,6 +497,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
      */
     private void updateOrderIfFinished(Order order, long errorCount) {
         // Update order status if percent_complete has reached 100%
+        LOGGER.debug("Completion of order {} : {}%", order.getId(), order.getPercentCompleted());
         if (order.getPercentCompleted() == 100) {
             // update only once the order status
             if (!order.getStatus()
