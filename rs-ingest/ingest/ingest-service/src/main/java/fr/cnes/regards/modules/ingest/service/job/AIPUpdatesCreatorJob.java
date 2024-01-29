@@ -81,11 +81,11 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
         // Retrieve update request id
         Long requestId = getValue(parameters, REQUEST_ID);
         // Retrieve the request
-        Optional<AIPUpdatesCreatorRequest> oDeletionRequest = aipUpdatesCreatorRepository.findById(requestId);
-        if (!oDeletionRequest.isPresent()) {
+        Optional<AIPUpdatesCreatorRequest> oUpdatesCreatorRequest = aipUpdatesCreatorRepository.findById(requestId);
+        if (oUpdatesCreatorRequest.isEmpty()) {
             throw new JobRuntimeException(String.format("Unknown deletion request with id %d", requestId));
         }
-        request = oDeletionRequest.get();
+        request = oUpdatesCreatorRequest.get();
     }
 
     @Override
