@@ -32,7 +32,6 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.domain.RecipientsSearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
-import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -111,38 +110,13 @@ public class FeatureService implements IFeatureService {
                                                                                                                Collectors.toSet()),
                                                                                       featureSimpleEntities.getSort());
 
-        List<FeatureEntityDto> featureEntityDtos = featureEntities.stream()
-                                                                  .map(entity -> initDataObjectFeature(entity, true))
-                                                                  .toList();
+        List<FeatureEntityDto> featureEntityDtos = featureEntities.stream().map(entity -> entity.toDto(true)).toList();
         return new PageImpl<>(featureEntityDtos, pageable, featureSimpleEntities.getTotalElements());
     }
 
     @Override
     public FeatureEntityDto findOne(FeatureUniformResourceName urn) {
-        return initDataObjectFeature(featureWithDisseminationRepo.findByUrn(urn), true);
-    }
-
-    private FeatureEntityDto initDataObjectFeature(FeatureEntity entity, boolean addFeatureContent) {
-        FeatureEntityDto dto = new FeatureEntityDto();
-        dto.setSession(entity.getSession());
-        dto.setSource(entity.getSessionOwner());
-        dto.setProviderId(entity.getProviderId());
-        dto.setVersion(entity.getVersion());
-        dto.setLastUpdate(entity.getLastUpdate());
-        dto.setUrn(entity.getUrn());
-        dto.setId(entity.getId());
-        dto.setDisseminationPending(entity.isDisseminationPending());
-        dto.setDisseminationsInfo(entity.getDisseminationsInfo()
-                                        .stream()
-                                        .map(featureDisseminationInfo -> new FeatureDisseminationInfoDto(
-                                            featureDisseminationInfo.getLabel(),
-                                            featureDisseminationInfo.getRequestDate(),
-                                            featureDisseminationInfo.getAckDate()))
-                                        .collect(Collectors.toSet()));
-        if (addFeatureContent) {
-            dto.setFeature(entity.getFeature());
-        }
-        return dto;
+        return featureWithDisseminationRepo.findByUrn(urn).toDto(true);
     }
 
     @Override
