@@ -39,10 +39,7 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
-import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.*;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,7 +193,8 @@ public class OrderHelperService {
                                                                              .toArray(Long[]::new)),
                                          new SubOrderAvailabilityPeriodJobParameter(subOrderDuration),
                                          new UserJobParameter(owner),
-                                         new UserRoleJobParameter(role));
+                                         new UserRoleJobParameter(role),
+                                         new OrderIdJobParameter(orderId));
             storageJobInfo.setOwner(owner);
             storageJobInfo.setClassName(StorageFilesJob.class.getName());
             storageJobInfo.setPriority(priority);

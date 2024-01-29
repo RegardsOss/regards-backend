@@ -158,11 +158,12 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         // Wait order ends.
         waitForStatus(order.getId(), OrderStatus.RUNNING);
 
-        Thread.sleep(500);
+        Thread.sleep(50);
         orderService.pause(order.getId(), true);
         waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
 
+        Thread.sleep(50);
         storageClientMock.setWaitMode(false);
         orderService.resume(order.getId());
         waitForStatus(order.getId(), OrderStatus.DONE);

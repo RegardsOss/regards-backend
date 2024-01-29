@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -98,21 +99,25 @@ public class StorageFilesJob extends AbstractJob<Void> {
      */
     private String user;
 
+    private Long orderId;
+
     @Autowired
     private IOrderDataFileRepository orderDataFileRepository;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters) throws JobParameterInvalidException {
-        if ((parameters.size() < 4) || (parameters.size() > 5)) {
+        if ((parameters.size() < 5) || (parameters.size() > 6)) {
             throw new JobParameterInvalidException(
-                "Four or five parameters are expected : 'files', 'subOrderAvailabilityDurationHours', 'user' and 'userRole', and optionally 'processJobInfo'.");
+                "Five or six parameters are expected : 'files', 'subOrderAvailabilityDurationHours', 'user' "
+                + "'userRole' and 'orderId', and optionally 'processJobInfo'.");
         }
         for (JobParameter param : parameters.values()) {
             boolean paramIsIncompatible = Stream.<Function<JobParameter, Boolean>>of(FilesJobParameter::isCompatible,
                                                                                      SubOrderAvailabilityPeriodJobParameter::isCompatible,
                                                                                      UserJobParameter::isCompatible,
                                                                                      UserRoleJobParameter::isCompatible,
-                                                                                     ProcessJobInfoJobParameter::isCompatible)
+                                                                                     ProcessJobInfoJobParameter::isCompatible,
+                                                                                     OrderIdJobParameter::isCompatible)
                                                 .noneMatch(f -> f.apply(param));
             if (paramIsIncompatible) {
                 throw new JobParameterInvalidException(
@@ -132,6 +137,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
                 processJobInfoId = Option.some(param.getValue());
             } else if (UserJobParameter.isCompatible(param)) {
                 user = param.getValue();
+            } else if (OrderIdJobParameter.isCompatible(param)) {
+                orderId = param.getValue();
             }
         }
     }
@@ -143,6 +150,14 @@ public class StorageFilesJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        // Ensure the order is not paused before starting computation
+        if (orderJobService.isOrderPaused(orderId)) {
+            logger.info("The job {} will not be run now as the order {} is paused", this.jobInfoId, this.orderId);
+            Thread.currentThread().interrupt();
+            throw new CancellationException();
+        }
+
+        logger.debug("Start of StorageFilesJob {} run", this.jobInfoId);
         this.semaphore = new Semaphore(-dataFilesMultimap.keySet().size() + 1);
         subscriber.subscribe(this);
 
@@ -167,7 +182,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
             throw e;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            logger.info("Order job has been interrupted !");
+            logger.info("Order job {} has been interrupted ! ", this.jobInfoId);
         } finally {
             // All files have been treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);
@@ -187,6 +202,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
                 processingService.enqueuedProcessingJob(processJobInfoId.get(), dataFilesMultimap.values(), user);
             }
         }
+        logger.debug("End of StorageFilesJob {} run", this.jobInfoId);
     }
 
     public void notifyFilesAvailable(Collection<String> availableFilesChecksum) {
