@@ -147,6 +147,9 @@ public final class AttributeModelBuilder {
                                                + " for attribute type "
                                                + restriction.getType());
         }
+        if (!restriction.validate()) {
+            throw new IllegalArgumentException("Invalid restriction" + restriction.getType());
+        }
         this.restriction = restriction;
         return this;
     }

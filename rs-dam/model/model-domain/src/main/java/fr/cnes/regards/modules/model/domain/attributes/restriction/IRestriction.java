@@ -31,5 +31,15 @@ public interface IRestriction extends IXmlisable<Restriction> {
 
     RestrictionType getType();
 
+    /**
+     * Check if this restriction supports the given {@link PropertyType}
+     */
     Boolean supports(PropertyType pAttributeType);
+
+    /**
+     * Check if the current restriction is valid. If no specific implementation all Restriction are valid.
+     */
+    default Boolean validate() {
+        return Boolean.TRUE;
+    }
 }
