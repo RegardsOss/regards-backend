@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
@@ -59,7 +58,6 @@ import java.util.concurrent.TimeUnit;
  * @author Iliana Ghazali
  */
 @Component
-@MultitenantTransactional
 public class OrderRequestEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<OrderRequestDtoEvent> {
 
