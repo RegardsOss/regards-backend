@@ -172,7 +172,8 @@ public class IFeatureEntityClientIT extends AbstractRegardsWebIT {
                                         .map(featureDisseminationInfo -> new FeatureDisseminationInfoDto(
                                             featureDisseminationInfo.getLabel(),
                                             featureDisseminationInfo.getRequestDate(),
-                                            featureDisseminationInfo.getAckDate()))
+                                            featureDisseminationInfo.getAckDate(),
+                                            featureDisseminationInfo.isBlocking()))
                                         .collect(Collectors.toSet()));
         dto.setFeature(entity.getFeature());
         return dto;

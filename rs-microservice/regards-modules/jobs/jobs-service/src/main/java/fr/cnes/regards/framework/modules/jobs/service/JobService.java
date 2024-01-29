@@ -1,5 +1,7 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.*;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -58,7 +60,9 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
     /**
      * A set containing ids of Jobs asked to be stopped whereas they haven't still be launched
      */
-    private final Set<UUID> abortedBeforeStartedJobs = Collections.synchronizedSet(new HashSet<>());
+    private final Cache<UUID, UUID> abortedBeforeStartedJobs = Caffeine.newBuilder()
+                                                                       .expireAfterWrite(10, TimeUnit.MINUTES)
+                                                                       .build();
 
     private final IWorkspaceService workspaceService;
 
@@ -273,13 +277,14 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 return null;
             }
             // Case job aborted before its execution
-            if (abortedBeforeStartedJobs.contains(jobInfo.getId())) {
-                runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+            if (abortedBeforeStartedJobs.getIfPresent(jobInfo.getId()) != null) {
+                LOGGER.debug("Job {} was set to be ran but an abort event was received", jobInfo.getId());
                 jobInfo.updateStatus(JobStatus.ABORTED);
                 jobInfoService.save(jobInfo);
                 publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
                 return null;
             }
+
             // First, instantiate job
             @SuppressWarnings("rawtypes") IJob job = (IJob) Class.forName(jobInfo.getClassName())
                                                                  .getConstructor()
@@ -316,6 +321,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
             manageJobInstantiationError(jobInfo, e);
         } finally {
             runtimeTenantResolver.clearTenant();
+            abortedBeforeStartedJobs.invalidate(jobInfo.getId());
         }
         return future;
     }
@@ -366,6 +372,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
      * @param jobId job id
      */
     private void abort(UUID jobId) {
+        LOGGER.debug("Aborting job {}", jobId);
         JobInfo jobInfo = jobInfoService.retrieveJob(jobId);
         if (jobInfo != null) {
             // Check job is currently running
@@ -374,7 +381,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 case RUNNING -> {
                     // Check if current microservice is running this job
                     if (jobsMap.containsKey(jobInfo)) {
-                        LOGGER.info("Aborting running job {}", jobId);
+                        LOGGER.debug("Job {} is already running, attempting to cancel it", jobId);
                         RunnableFuture<Void> task = jobsMap.get(jobInfo);
                         task.cancel(true);
                     } else {
@@ -391,13 +398,47 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                     jobInfoService.save(jobInfo);
                     publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
                 }
-                case TO_BE_RUN ->
+                case TO_BE_RUN -> {
                     // Job not yet running
-                    abortedBeforeStartedJobs.add(jobInfo.getId());
+
+                    /** In this case, the job is going to be run, but the job status is not sufficient to know exactly
+                     in which part of the process it currently is because the next transition (TO_BE_RUN -> RUNNING)
+                     is done by the job task inside the thread pool and not by the job service. Both this present
+                     method {@link #abort} and the method {@link #execute} can be called at the same time due to the
+                     asynchronous nature of this process. The Job being in TO_BE_RUN state means that the execute
+                     method has been called or will be called shortly.
+
+                     We need to handle the two possibilities :
+                     - The method execute has been called for this job, and it has been scheduled in the thread pool
+                     (whereas the execute method call finished or not doesn't change anything here).
+                     - The method execute has not been called for this job
+
+                     We can ascertain which case we're in using the jobsMap which contain an association of the
+                     scheduled job and the actual task that will be run by the thread pool.
+
+                     - If the job is present in the job map, we can cancel the associated task.
+                     - If not, add the job id to the cache abortedBeforeStartedJobs in order for the execute method
+                     to not schedule the job.
+                     */
+
+                    if (jobsMap.containsKey(jobInfo)) {
+                        // Cancelling it if it is in the thread pool
+                        LOGGER.debug("Job {} is already running, attempting to cancel it", jobId);
+                        RunnableFuture<Void> task = jobsMap.get(jobInfo);
+                        task.cancel(true);
+                    } else {
+                        // Prevent it from being run if it has not been submitted to the thread pool yet.
+                        LOGGER.debug("Job {} is set to be run, attempting to prevent it from being run", jobId);
+                        abortedBeforeStartedJobs.put(jobInfo.getId(), jobInfo.getId());
+
+                    }
+                }
                 default -> {
                     // Nothing to do
                 }
             }
+        } else {
+            LOGGER.warn("Job to abort {} not found", jobId);
         }
     }
 

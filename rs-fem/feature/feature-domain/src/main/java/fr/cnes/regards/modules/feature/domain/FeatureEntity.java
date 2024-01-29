@@ -19,12 +19,15 @@
 package fr.cnes.regards.modules.feature.domain;
 
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "t_feature",
@@ -57,6 +60,30 @@ public class FeatureEntity extends AbstractFeatureEntity {
         featureEntity.setModel(model);
         featureEntity.setDisseminationPending(false);
         return featureEntity;
+    }
+
+    public FeatureEntityDto toDto(boolean addFeatureContent) {
+        FeatureEntityDto dto = new FeatureEntityDto();
+        dto.setSession(this.getSession());
+        dto.setSource(this.getSessionOwner());
+        dto.setProviderId(this.getProviderId());
+        dto.setVersion(this.getVersion());
+        dto.setLastUpdate(this.getLastUpdate());
+        dto.setUrn(this.getUrn());
+        dto.setId(this.getId());
+        dto.setDisseminationPending(this.isDisseminationPending());
+        dto.setDisseminationsInfo(this.getDisseminationsInfo()
+                                      .stream()
+                                      .map(featureDisseminationInfo -> new FeatureDisseminationInfoDto(
+                                          featureDisseminationInfo.getLabel(),
+                                          featureDisseminationInfo.getRequestDate(),
+                                          featureDisseminationInfo.getAckDate(),
+                                          featureDisseminationInfo.isBlocking()))
+                                      .collect(Collectors.toSet()));
+        if (addFeatureContent) {
+            dto.setFeature(this.getFeature());
+        }
+        return dto;
     }
 
     public Set<FeatureDisseminationInfo> getDisseminationsInfo() {

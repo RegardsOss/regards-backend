@@ -25,16 +25,22 @@ import java.time.OffsetDateTime;
  */
 public class FeatureDisseminationInfoDto {
 
-    private String label;
+    private final String label;
 
-    private OffsetDateTime requestDate;
+    private final OffsetDateTime requestDate;
 
-    private OffsetDateTime ackDate;
+    private final OffsetDateTime ackDate;
 
-    public FeatureDisseminationInfoDto(String label, OffsetDateTime requestDate, OffsetDateTime ackDate) {
+    private final boolean blocking;
+
+    public FeatureDisseminationInfoDto(String label,
+                                       OffsetDateTime requestDate,
+                                       OffsetDateTime ackDate,
+                                       boolean blocking) {
         this.label = label;
         this.requestDate = requestDate;
         this.ackDate = ackDate;
+        this.blocking = blocking;
     }
 
     public String getLabel() {
@@ -47,5 +53,9 @@ public class FeatureDisseminationInfoDto {
 
     public OffsetDateTime getAckDate() {
         return ackDate;
+    }
+
+    public boolean isBlocking() {
+        return blocking;
     }
 }

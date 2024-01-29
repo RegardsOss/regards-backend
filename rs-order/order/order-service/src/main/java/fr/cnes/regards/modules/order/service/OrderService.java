@@ -308,8 +308,10 @@ public class OrderService implements IOrderService {
                          jobInfoService.stopJob(jobInfo.getId());
                      }
                  });
+            LOGGER.info("Pausing order {}", order.getId());
             order.setStatus(OrderStatus.PAUSED);
             orderRepository.save(order);
+            LOGGER.info("Order paused {}", order.getId());
         } finally {
             CorrelationIdUtils.clearCorrelationId();
         }
@@ -324,6 +326,9 @@ public class OrderService implements IOrderService {
             // Set log correlation id
             CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
+            order.setStatus(OrderStatus.RUNNING);
+            orderRepository.save(order);
+            
             // Passes all ABORTED jobInfo to PENDING
             order.getDatasetTasks()
                  .stream()
@@ -332,12 +337,9 @@ public class OrderService implements IOrderService {
                  .filter(jobInfo -> jobInfo != null && jobInfo.getStatus().getStatus() == JobStatus.ABORTED)
                  .forEach(jobInfo -> {
                      // Set log correlation id
-                     CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
                      jobInfo.updateStatus(JobStatus.PENDING);
                      jobInfoService.save(jobInfo);
                  });
-            order.setStatus(OrderStatus.RUNNING);
-            orderRepository.save(order);
             // Don't forget to manage user order jobs again (PENDING -> QUEUED)
             orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
         } finally {
