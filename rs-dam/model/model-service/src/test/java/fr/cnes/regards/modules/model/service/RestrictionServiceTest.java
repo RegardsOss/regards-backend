@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.model.service;
 
+import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import org.junit.Assert;
@@ -92,6 +93,23 @@ public class RestrictionServiceTest {
     @Test
     public void getUrlRestriction() {
         testRestriction(PropertyType.URL, 0);
+    }
+
+    @Test
+    public void test_valid_json_schema_restriction() {
+        JsonSchemaRestriction restriction = new JsonSchemaRestriction();
+        restriction.setJsonSchema("{\"type\":\"object\"}");
+        Assert.assertTrue(restriction.validate());
+
+        restriction.setJsonSchema("{}");
+        Assert.assertTrue(restriction.validate());
+    }
+
+    @Test
+    public void test_invalid_json_schema_restriction() {
+        JsonSchemaRestriction restriction = new JsonSchemaRestriction();
+        restriction.setJsonSchema("{\"test\":\"toto\"}");
+        Assert.assertFalse(restriction.validate());
     }
 
 }

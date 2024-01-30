@@ -73,32 +73,33 @@ public abstract class AbstractAIPUpdateTask {
 
     public static List<AbstractAIPUpdateTask> build(AIPUpdateParametersDto updateTaskDto) {
         List<AbstractAIPUpdateTask> result = new ArrayList<>();
-        if (!updateTaskDto.getAddCategories().isEmpty()) {
+        if (updateTaskDto.getAddCategories() != null && !updateTaskDto.getAddCategories().isEmpty()) {
             result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.ADD_CATEGORY,
                                                    AIPUpdateState.READY,
                                                    updateTaskDto.getAddCategories()));
         }
-        if (!updateTaskDto.getRemoveCategories().isEmpty()) {
+        if (updateTaskDto.getRemoveCategories() != null && !updateTaskDto.getRemoveCategories().isEmpty()) {
             result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.REMOVE_CATEGORY,
                                                    AIPUpdateState.READY,
                                                    updateTaskDto.getRemoveCategories()));
         }
-        if (!updateTaskDto.getAddTags().isEmpty()) {
+        if (updateTaskDto.getAddTags() != null && !updateTaskDto.getAddTags().isEmpty()) {
             result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.ADD_TAG,
                                               AIPUpdateState.READY,
                                               updateTaskDto.getAddTags()));
         }
-        if (!updateTaskDto.getRemoveTags().isEmpty()) {
+        if (updateTaskDto.getRemoveTags() != null && !updateTaskDto.getRemoveTags().isEmpty()) {
             result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.REMOVE_TAG,
                                               AIPUpdateState.READY,
                                               updateTaskDto.getRemoveTags()));
         }
-        if (!updateTaskDto.getRemoveStorages().isEmpty()) {
+        if (updateTaskDto.getRemoveStorages() != null && !updateTaskDto.getRemoveStorages().isEmpty()) {
             result.add(AIPRemoveStorageTask.build(AIPUpdateTaskType.REMOVE_STORAGE,
                                                   AIPUpdateState.READY,
                                                   updateTaskDto.getRemoveStorages()));
         }
-        if (!updateTaskDto.getUpdateDisseminationInfo().isEmpty()) {
+        if (updateTaskDto.getUpdateDisseminationInfo() != null && !updateTaskDto.getUpdateDisseminationInfo()
+                                                                                .isEmpty()) {
             result.add(AIPUpdateDisseminationTask.build(AIPUpdateTaskType.UDPATE_DISSEMINATION,
                                                         AIPUpdateState.READY,
                                                         updateTaskDto.getUpdateDisseminationInfo()));

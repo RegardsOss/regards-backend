@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
@@ -57,6 +59,19 @@ public class JsonSchemaRestriction extends AbstractRestriction {
     @Override
     public Boolean supports(PropertyType pAttributeType) {
         return pAttributeType == PropertyType.JSON;
+    }
+
+    @Override
+    public Boolean validate() {
+        // Json schema must be empty "{}" or containing at least one valid validator.
+        if (getJsonSchema() != null && !getJsonSchema().trim().equals("{}")) {
+            return !JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)
+                                     .getSchema(getJsonSchema())
+                                     .getValidators()
+                                     .isEmpty();
+        } else {
+            return Boolean.TRUE;
+        }
     }
 
     @Override

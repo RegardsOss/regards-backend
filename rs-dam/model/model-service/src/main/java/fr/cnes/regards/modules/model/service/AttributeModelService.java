@@ -321,40 +321,46 @@ public class AttributeModelService implements IAttributeModelService {
     @Override
     public boolean isFragmentAttribute(Long attributeId) throws ModuleException {
         Optional<AttributeModel> attModelOpt = attModelRepository.findById(attributeId);
-        if (!attModelOpt.isPresent()) {
+        if (attModelOpt.isEmpty()) {
             throw new EntityNotFoundException(attributeId, AttributeModel.class);
         }
         return !attModelOpt.get().getFragment().isDefaultFragment();
     }
 
     @Override
-    public List<AttributeModel> findByFragmentId(Long pFragmentId) {
-        return attModelRepository.findByFragmentId(pFragmentId);
+    public List<AttributeModel> findByFragmentId(Long fragmentId) {
+        return attModelRepository.findByFragmentId(fragmentId);
     }
 
     @Override
-    public List<AttributeModel> findByFragmentName(String pFragmentName) {
-        return attModelRepository.findByFragmentName(pFragmentName);
+    public List<AttributeModel> findByFragmentName(String fragmentName) {
+        return attModelRepository.findByFragmentName(fragmentName);
     }
 
     @Override
-    public void checkRestrictionSupport(AttributeModel pAttributeModel) throws UnsupportedRestrictionException {
-        IRestriction restriction = pAttributeModel.getRestriction();
-        if ((restriction != null) && !restriction.supports(pAttributeModel.getType())) {
+    public void checkRestrictionSupport(AttributeModel attributeModel) throws UnsupportedRestrictionException {
+        IRestriction restriction = attributeModel.getRestriction();
+        if ((restriction != null) && !restriction.supports(attributeModel.getType())) {
             String message = String.format("Attribute of type %s does not support %s restriction",
-                                           pAttributeModel.getType(),
+                                           attributeModel.getType(),
                                            restriction.getType());
+            LOGGER.error(message);
+            throw new UnsupportedRestrictionException(message);
+        }
+        if ((restriction != null) && (!restriction.validate())) {
+            String message = String.format("Attribute of type %s contains an invalid restriction",
+                                           attributeModel.getType());
             LOGGER.error(message);
             throw new UnsupportedRestrictionException(message);
         }
     }
 
     @Override
-    public AttributeModel findByNameAndFragmentName(String pAttributeName, String pFragmentName) {
-        if (Strings.isNullOrEmpty(pFragmentName)) {
-            return attModelRepository.findByNameAndFragmentName(pAttributeName, Fragment.getDefaultName());
+    public AttributeModel findByNameAndFragmentName(String attributeName, String fragmentName) {
+        if (Strings.isNullOrEmpty(fragmentName)) {
+            return attModelRepository.findByNameAndFragmentName(attributeName, Fragment.getDefaultName());
         }
-        return attModelRepository.findByNameAndFragmentName(pAttributeName, pFragmentName);
+        return attModelRepository.findByNameAndFragmentName(attributeName, fragmentName);
     }
 
     @Override

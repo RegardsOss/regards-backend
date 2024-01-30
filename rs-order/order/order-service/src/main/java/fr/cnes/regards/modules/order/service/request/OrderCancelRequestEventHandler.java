@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.order.service.request;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -47,7 +46,6 @@ import java.util.*;
  * @author Stephane Cortine
  */
 @Component
-@MultitenantTransactional
 public class OrderCancelRequestEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<OrderCancelRequestDtoEvent> {
 
