@@ -93,7 +93,7 @@ public class LockService {
      * The process will wait for the lock to be free to run the task.
      */
     public <T> LockServiceResponse<T> runWithLock(String lockName, LockServiceTask process)
-            throws InterruptedException {
+        throws InterruptedException {
         return tryRunWithLock(lockName, process, lockTryTimeout, TimeUnit.SECONDS);
     }
 
@@ -103,7 +103,7 @@ public class LockService {
      * If the lock is still not free after the given time, stop trying and return false.
      *
      * @param timeToWait how long the service will try to get the lock
-     * @return true if the process was run, false otherwise
+     * @return A response with executed field set to true if the process was run, false otherwise
      */
     public <T> LockServiceResponse<T> tryRunWithLock(String lockName,
                                                      LockServiceTask<T> process,
@@ -117,6 +117,28 @@ public class LockService {
             LOGGER.warn("Unable to acquire lock {} for task {}", lockName, process.getClass().getSimpleName());
             return new LockServiceResponse<>(false);
         }
+        return runProcess(lockName, process, lock);
+    }
+
+    /**
+     * Try to run synchronously the given {@link LockServiceTask} with the given lock.
+     * The process will be ran only if the lock is available when this method is called.
+     * If the lock is still not free, immediately return a not executed response.
+     *
+     * @return true if the process was run, false otherwise
+     */
+    public <T> LockServiceResponse<T> tryRunWithLock(String lockName, LockServiceTask<T> process) {
+        JdbcLockRegistry lockRegistry = lockRegistryMap.get(runtimeTenantResolver.getTenant());
+        LOGGER.debug("Getting lock {} for task {}", lockName, process.getClass().getSimpleName());
+        Lock lock = lockRegistry.obtain(lockName);
+        boolean lockAcquired = lock.tryLock();
+        if (!lockAcquired) {
+            return new LockServiceResponse<>(false);
+        }
+        return runProcess(lockName, process, lock);
+    }
+
+    private static <T> LockServiceResponse<T> runProcess(String lockName, LockServiceTask<T> process, Lock lock) {
         LOGGER.debug("Acquired lock {} for task {}", lockName, process.getClass().getSimpleName());
         try {
             T response = process.run();

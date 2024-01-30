@@ -6,6 +6,8 @@ import com.google.common.collect.*;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockServiceTask;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -86,6 +88,8 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
 
     private ThreadPoolExecutor threadPool;
 
+    private LockService lockService;
+
     // Boolean permitting to determine if method manage() can pull jobs and executing them
     private boolean canManage = true;
 
@@ -95,7 +99,8 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                       IRuntimeTenantResolver runtimeTenantResolver,
                       ISubscriber subscriber,
                       IPublisher publisher,
-                      AutowireCapableBeanFactory beanFactory) {
+                      AutowireCapableBeanFactory beanFactory,
+                      LockService lockService) {
         this.workspaceService = workspaceService;
         this.jobInfoService = jobInfoService;
         this.tenantResolver = tenantResolver;
@@ -103,6 +108,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
         this.subscriber = subscriber;
         this.publisher = publisher;
         this.beanFactory = beanFactory;
+        this.lockService = lockService;
     }
 
     private static void printStackTrace(JobStatusInfo statusInfo, Exception e) {
@@ -394,9 +400,14 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                     // Update to ABORTED status (this avoids this job to be taken into account)
                     // even a PENDING Job must be set at ABORTED status to avoid a third party service to
                     // set it at QUEUED
-                    jobInfo.updateStatus(JobStatus.ABORTED);
-                    jobInfoService.save(jobInfo);
-                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
+                    // Use the lock service to ensure that this will be not be done by multiple instances of the
+                    // JobService at the same time
+                    lockService.tryRunWithLock("JOB_" + jobId, (LockServiceTask<Void>) () -> {
+                        jobInfo.updateStatus(JobStatus.ABORTED);
+                        jobInfoService.save(jobInfo);
+                        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
+                        return null;
+                    });
                 }
                 case TO_BE_RUN -> {
                     // Job not yet running
