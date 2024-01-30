@@ -29,19 +29,19 @@ import javax.validation.constraints.NotNull;
 public class IngestRequestError {
 
     @NotNull(message = "Storage type is required : STORED_FILE|REFERENCED_FILE")
-    private StorageType storageType;
+    private final StorageType storageType;
 
     /**
      * Checksum of the requested file
      */
     @NotBlank(message = "Request checksum is required for IngestRequestError")
-    private String requestFileChecksum;
+    private final String requestFileChecksum;
 
     /**
      * Storage of the requested file
      */
     @NotBlank(message = "Request storage is required for IngestRequestError")
-    private String requestStorage;
+    private final String requestStorage;
 
     public IngestRequestError(StorageType storageType, String requestChecksum, String requestStorage) {
         this.storageType = storageType;

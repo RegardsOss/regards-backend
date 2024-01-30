@@ -23,15 +23,16 @@ import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Information about a file for a store request.<br/>
  * Mandatory information are : <ul>
- * <li> Filename</li>
- * <li> Checksum</li>
- * <li> Checksum algorithm </li>
- * <li> mimeType </li>
+ * <li> metaInfo.Filename</li>
+ * <li> metaInfo.Checksum</li>
+ * <li> metaInfo.Checksum algorithm </li>
+ * <li> metaInfo.mimeType </li>
  * <li> Storage location where to delete the file</li>
  * <li> Owners referencing the file </li>
  * <li> originUrl where to access file to store. Must be locally accessible (file protocol for example) </li>
@@ -151,5 +152,112 @@ public class FileStorageRequestAggregationDto {
 
     public Set<String> getGroupIds() {
         return groupIds;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        FileStorageRequestAggregationDto that = (FileStorageRequestAggregationDto) o;
+
+        if (!Objects.equals(id, that.id)) {
+            return false;
+        }
+        if (owners != null ? !owners.equals(that.owners) : that.owners != null) {
+            return false;
+        }
+        if (!Objects.equals(originUrl, that.originUrl)) {
+            return false;
+        }
+        if (!Objects.equals(storage, that.storage)) {
+            return false;
+        }
+        if (!Objects.equals(metaInfo, that.metaInfo)) {
+            return false;
+        }
+        if (!Objects.equals(subDirectory, that.subDirectory)) {
+            return false;
+        }
+        if (!Objects.equals(sessionOwner, that.sessionOwner)) {
+            return false;
+        }
+        if (!Objects.equals(session, that.session)) {
+            return false;
+        }
+        if (!Objects.equals(jobId, that.jobId)) {
+            return false;
+        }
+        if (!Objects.equals(errorCause, that.errorCause)) {
+            return false;
+        }
+        if (status != that.status) {
+            return false;
+        }
+        if (!Objects.equals(creationDate, that.creationDate)) {
+            return false;
+        }
+        return groupIds != null ? groupIds.equals(that.groupIds) : that.groupIds == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (owners != null ? owners.hashCode() : 0);
+        result = 31 * result + (originUrl != null ? originUrl.hashCode() : 0);
+        result = 31 * result + (storage != null ? storage.hashCode() : 0);
+        result = 31 * result + (metaInfo != null ? metaInfo.hashCode() : 0);
+        result = 31 * result + (subDirectory != null ? subDirectory.hashCode() : 0);
+        result = 31 * result + (sessionOwner != null ? sessionOwner.hashCode() : 0);
+        result = 31 * result + (session != null ? session.hashCode() : 0);
+        result = 31 * result + (jobId != null ? jobId.hashCode() : 0);
+        result = 31 * result + (errorCause != null ? errorCause.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (creationDate != null ? creationDate.hashCode() : 0);
+        result = 31 * result + (groupIds != null ? groupIds.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "FileStorageRequestAggregationDto{"
+               + "id="
+               + id
+               + ", owners="
+               + owners
+               + ", originUrl='"
+               + originUrl
+               + '\''
+               + ", storage='"
+               + storage
+               + '\''
+               + ", metaInfo="
+               + metaInfo
+               + ", subDirectory='"
+               + subDirectory
+               + '\''
+               + ", sessionOwner='"
+               + sessionOwner
+               + '\''
+               + ", session='"
+               + session
+               + '\''
+               + ", jobId='"
+               + jobId
+               + '\''
+               + ", errorCause='"
+               + errorCause
+               + '\''
+               + ", status="
+               + status
+               + ", creationDate="
+               + creationDate
+               + ", groupIds="
+               + groupIds
+               + '}';
     }
 }

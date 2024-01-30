@@ -698,7 +698,7 @@ public class FileStorageRequestService {
             // Handle request not handled by the plugin preparation step.
             for (FileStorageRequestAggregationDto req : remainingRequests) {
                 this.handleStorageNotAvailable(FileStorageRequestAggregation.fromDto(req),
-                                               Optional.of("Request has " + "not been " + "handled by plugin."));
+                                               Optional.of("Request has not been handled by plugin."));
             }
         } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
