@@ -1,0 +1,14 @@
+<model>
+    <name>test_fa_sba</name>
+    <description>test_fa_sba</description>
+    <type>DATA</type>
+    <attribute alterable="true" optional="false" indexed="false">
+        <label>test_fa_sba</label>
+        <name>test_fa_sba</name>
+        <description>test_fa_sba</description>
+        <type unit="unitless">JSON</type>
+        <restriction>
+            <json_schema>{ "type":"object" }</json_schema>
+        </restriction>
+    </attribute>
+</model>

@@ -89,6 +89,20 @@ public class ImportModelIT extends AbstractRegardsTransactionalIT {
                                  "Should be able to import a model");
     }
 
+    @Test
+    public void testValidJsonSchema() {
+        importModel("model_json_schema_valid.xml");
+    }
+
+    @Test
+    public void testInvalidJsonSchema() {
+        Path filePath = Paths.get("src", "test", "resources", "model_json_schema_invalid.xml");
+        performDefaultFileUpload(ModelController.TYPE_MAPPING + "/import",
+                                 filePath,
+                                 customizer().expect(MockMvcResultMatchers.status().is5xxServerError()),
+                                 "Shouldn't be able to import a model with invalid json schema restriction");
+    }
+
     /**
      * Import model
      *
