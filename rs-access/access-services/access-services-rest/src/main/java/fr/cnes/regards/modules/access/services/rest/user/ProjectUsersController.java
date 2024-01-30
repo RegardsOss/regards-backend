@@ -70,6 +70,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import javax.validation.Valid;
 import java.util.Arrays;
@@ -343,14 +345,26 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     @DeleteMapping(USER_ID_RELATIVE_PATH)
     @ResourceAccess(description = "remove the project user", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long userId) throws ModuleException {
-        ResponseEntity<EntityModel<ProjectUser>> response = projectUsersClient.retrieveProjectUser(userId);
-        if (response != null && response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            ProjectUser projectUser = response.getBody().getContent();
-            searchHistoryService.deleteAccountSearchHistory(projectUser.getEmail());
-            return projectUsersClient.removeProjectUser(userId);
-        } else {
-            throw new ModuleException("User %s could no be retrieved from admin service");
+        String errorMessage = String.format("User %s could no be retrieved from admin service", userId);
+        try {
+            ResponseEntity<EntityModel<ProjectUser>> response = projectUsersClient.retrieveProjectUser(userId);
+            EntityModel<ProjectUser> responseBody = ResponseEntityUtils.extractBodyOrThrow(response, errorMessage);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                ProjectUser projectUser = responseBody.getContent();
+                if (projectUser != null) {
+                    searchHistoryService.deleteAccountSearchHistory(projectUser.getEmail());
+                    return projectUsersClient.removeProjectUser(userId);
+                } else {
+                    throw new ModuleException(errorMessage);
+                }
+            } else {
+                throw new ModuleException(errorMessage);
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new ModuleException(errorMessage);
         }
+
     }
 
     /**
