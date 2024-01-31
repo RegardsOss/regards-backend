@@ -418,17 +418,14 @@ public class RequestService implements IRequestService {
 
     @Override
     public void deleteRequest(AbstractRequest request) {
-        // Check if the request is linked to a job
-        if (isJobRequest(request)) {
-            // Unlock job to allow automatic deletion
-            if ((request.getJobInfo() != null) && request.getJobInfo().isLocked()) {
-                JobInfo jobInfoToUnlock = request.getJobInfo();
-                jobInfoToUnlock.setLocked(false);
-                jobInfoService.save(jobInfoToUnlock);
-            }
+        // Unlock job to allow automatic deletion
+        if ((request.getJobInfo() != null) && request.getJobInfo().isLocked()) {
+            JobInfo jobInfoToUnlock = request.getJobInfo();
+            jobInfoToUnlock.setLocked(false);
+            jobInfoService.save(jobInfoToUnlock);
         }
         sessionNotifier.requestDeleted(request);
-        abstractRequestRepository.delete(request);
+        abstractRequestRepository.deleteById(request.getId());
     }
 
     /**

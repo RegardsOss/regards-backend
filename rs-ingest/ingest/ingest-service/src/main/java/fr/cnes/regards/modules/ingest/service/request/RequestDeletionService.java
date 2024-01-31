@@ -29,6 +29,8 @@ import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPDeleteService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -44,6 +46,8 @@ import java.util.stream.Collectors;
 @Service
 @MultitenantTransactional
 public class RequestDeletionService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestDeletionService.class);
 
     private final IAIPDeleteService aipDeleteService;
 
@@ -72,6 +76,7 @@ public class RequestDeletionService {
     }
 
     public void deleteRequests(Collection<? extends AbstractRequest> requests) {
+        LOGGER.info("[REQUEST DELETION] Start deleting {} requests and associated AIPs/SIPs", requests.size());
         // Retrieve complete ingest requests before deletion
         List<IngestRequest> ingestRequests = ingestRequestService.findByIds(requests.stream()
                                                                                     .filter(r -> r.getDtype()
@@ -80,6 +85,7 @@ public class RequestDeletionService {
                                                                                     .map(AbstractRequest::getId)
                                                                                     .collect(Collectors.toSet()));
         // Delete requests
+        LOGGER.info("[REQUEST DELETION] Start deleting {} requests.", requests.size());
         requestService.deleteRequests(requests);
         // Handle specific ingest request deletion
         deleteAssociatedAipAndSipForIngestRequests(ingestRequests);
@@ -97,25 +103,35 @@ public class RequestDeletionService {
                                                  .filter(r -> r.getAips() != null && !r.getAips().isEmpty())
                                                  .flatMap(r -> r.getAips().stream())
                                                  .collect(Collectors.toSet());
+            if (!aipToDelete.isEmpty()) {
+                LOGGER.info("[REQUEST DELETION] Start deleting {} AIPs last flags.", requests.size());
+                aipToDelete.forEach(aipDeleteService::removeLastFlag);
+                Set<String> sipToDelete = aipToDelete.stream()
+                                                     .map(a -> a.getSip().getSipId())
+                                                     .collect(Collectors.toSet());
+                LOGGER.debug("[REQUEST DELETION] Sending storage deletion requests.");
+                aipDeleteService.sendLinkedFilesDeletionRequest(aipToDelete);
+                LOGGER.debug("[REQUEST DELETION] Cancel associated storage request.");
+                aipDeleteService.cancelStorageRequests(requests);
+                // Delete aip to delete associated sip
+                LOGGER.info("[REQUEST DELETION] Start deleting all associated AIPs.");
+                aipDeleteService.deleteAll(aipToDelete);
+                // Delete associated SIP if not associated to another aip
+                LOGGER.info("[REQUEST DELETION] Start deleting all associated SIPs");
+                List<String> sipIdsToDelete = sipToDelete.stream()
+                                                         .filter(sipId -> aipService.findBySipId(sipId).isEmpty())
+                                                         .toList();
+                sipService.processDeletions(sipIdsToDelete, true);
+                LOGGER.info("[REQUEST DELETION] Deletion of associated AIPs and SIPs done.");
 
-            aipToDelete.forEach(aipDeleteService::removeLastFlag);
-            Set<String> sipToDelete = aipToDelete.stream().map(a -> a.getSip().getSipId()).collect(Collectors.toSet());
-            aipDeleteService.sendLinkedFilesDeletionRequest(aipToDelete);
-            aipDeleteService.cancelStorageRequests(requests);
-            // Delete aip to delete associated sip
-            aipDeleteService.deleteAll(aipToDelete);
-            // Delete associated SIP if not associated to an other aip
-            sipToDelete.stream()
-                       .filter(sipId -> aipService.findBySipId(sipId).isEmpty())
-                       .forEach(sipId -> sipService.processDeletion(sipId, true));
-
-            // Publish request canceled
-            for (IngestRequest request : requests) {
-                publisher.publish(IngestRequestEvent.build(request.getCorrelationId(),
-                                                           request.getProviderId(),
-                                                           null,
-                                                           RequestState.DELETED,
-                                                           request.getErrors()));
+                // Publish request canceled
+                for (IngestRequest request : requests) {
+                    publisher.publish(IngestRequestEvent.build(request.getCorrelationId(),
+                                                               request.getProviderId(),
+                                                               null,
+                                                               RequestState.DELETED,
+                                                               request.getErrors()));
+                }
             }
         }
     }

@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.ingest.service.sip;
 
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ILastSIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,7 +86,7 @@ public class SIPService implements ISIPService {
 
     @Override
     public Optional<SIPEntity> getEntity(String sipId) {
-        return sipRepository.findOneBySipId(sipId.toString());
+        return sipRepository.findOneBySipId(sipId);
     }
 
     @Override
@@ -102,6 +103,17 @@ public class SIPService implements ISIPService {
             // Remove last flag entry
             removeLastFlag(sipEntity);
         }
+    }
+
+    @Override
+    public void processDeletions(Collection<String> sipIds, boolean deleteIrrevocably) {
+        List<Long> ids = sipRepository.findIdBySipIdIn(sipIds);
+        if (deleteIrrevocably) {
+            sipRepository.deleteAllBySipIdInBatch(ids);
+        } else {
+            sipRepository.updateStateByIdIn(ids, SIPState.DELETED);
+        }
+        removeLastFlags(ids);
     }
 
     @Override
@@ -142,6 +154,10 @@ public class SIPService implements ISIPService {
 
     private void removeLastFlag(SIPEntity sip) {
         lastSipRepository.deleteBySipId(sip.getId());
+    }
+
+    private void removeLastFlags(Collection<Long> sipIds) {
+        lastSipRepository.deleteAllBySipIdInBatch(sipIds);
     }
 
     @Override
