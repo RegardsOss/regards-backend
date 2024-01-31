@@ -129,6 +129,58 @@ public class NotificationRegistrationService {
         }
     }
 
+    /**
+     * Wrapper to handle job crash for a list of requests and a recipient id.
+     * Try with optimistic lock to clean associated NotificationRequests in handleJobCrashConcurrent
+     */
+    public void handleJobCrash(Set<Long> requestIds, String abortedRecipientId) {
+        try {
+            self.handleJobCrashConcurrent(requestIds, abortedRecipientId);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
+            // we retry until it succeed because if it does not succeed on first time it is most likely because of
+            // another scheduled method that would then most likely happen at next invocation because execution delays are fixed
+            handleJobCrash(requestIds, abortedRecipientId);
+        }
+    }
+
+    /**
+     * For each request check if request can be retried by setting its state to TO_SCHEDULE_BY_RECIPIENT
+     */
+    public void handleJobCrashConcurrent(Set<Long> requestIds, String abortedRecipientId) {
+        List<NotificationRequest> notificationRequests = notificationRequestRepository.findAllById(requestIds);
+        notificationRequests.forEach(notificationRequest -> {
+            if (notificationRequest.getState().isRunning()) {
+                LOGGER.error("Job crash detected for request {}. State is reset to be handled on next scheduled "
+                             + "task.", notificationRequest.getRequestId());
+                // Update request state to be scheduled
+                notificationRequest.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
+                // Update associated recipients to remove all scheduled recipients and add them to the list of
+                // recipients to schedule. Doing this reset the request in its initial state and set it ready for
+                // restart.
+                List<PluginConfiguration> notAbortedScheduledRecipients = new ArrayList<>();
+                List<PluginConfiguration> abortedRecipientsToSchedule = new ArrayList<>();
+                notificationRequest.getRecipientsScheduled().forEach(scheduledRecipient -> {
+                    if (scheduledRecipient.getBusinessId().equals(abortedRecipientId)) {
+                        abortedRecipientsToSchedule.add(scheduledRecipient);
+                    } else {
+                        notAbortedScheduledRecipients.add(scheduledRecipient);
+                    }
+                });
+                notificationRequest.getRecipientsScheduled().clear();
+                notificationRequest.getRecipientsScheduled().addAll(notAbortedScheduledRecipients);
+
+                notificationRequest.getRecipientsToSchedule().addAll(abortedRecipientsToSchedule);
+            } else {
+                // Nothing to do, request is already in a final state.
+                LOGGER.error("Job crash detected for request {}. Request is already on a final state {} so "
+                             + "nothing is done.", notificationRequest.getRequestId(), notificationRequest.getState());
+            }
+        });
+        // Update requests in database after modification
+        notificationRequestRepository.saveAll(notificationRequests);
+    }
+
     public Set<NotificationRequestEvent> handleRetryRequests(List<? extends NotificationRequestEvent> events) {
         try {
             return self.handleRetryRequestsConcurrent(events);

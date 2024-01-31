@@ -38,25 +38,39 @@ public enum NotificationState {
     /**
      * Denied and not registered.
      */
-    DENIED,
+    DENIED(false),
     /**
      * Accepted and registered. Rule matching has not yet been done.
      */
-    GRANTED,
+    GRANTED(true),
     /**
      * Rule matching has been done. Jobs for each recipient should be scheduled(and created)
      */
-    TO_SCHEDULE_BY_RECIPIENT,
+    TO_SCHEDULE_BY_RECIPIENT(false),
     /**
      * Jobs for each recipient has been scheduled.
      */
-    SCHEDULED,
+    SCHEDULED(true),
     /**
      * All recipients have been successfully handled.
      */
-    SUCCESS,
+    SUCCESS(false),
     /**
      * At least one recipient have not been successfully handled.
      */
-    ERROR;
+    ERROR(false);
+
+    private final boolean running;
+
+    /**
+     * Indicates if the request state is a running state or not.
+     * Not running state means the request is in a stable state and no jobs are associated to it.
+     */
+    NotificationState(boolean running) {
+        this.running = running;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
 }
