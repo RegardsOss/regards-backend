@@ -37,9 +37,9 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
@@ -230,9 +230,13 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
             RequestTypeEnum.AIP_UPDATES_CREATOR)));
         waitForRequestReach(5, 20_000, getDefaultTenant());
 
+        Assert.assertEquals(2L, aipRepository.count());
+        Assert.assertEquals(1L, sipRepository.count());
         requestService.scheduleRequestDeletionJob(new SearchRequestParameters().withSession(SESSION_0)
                                                                                .withSessionOwner(SESSION_OWNER_0));
         waitForRequestReach(1, 10_000, getDefaultTenant());
+        Assert.assertEquals("One AIP should have been deleted.", 1L, aipRepository.count());
+        Assert.assertEquals("One SIP should have been deleted.", 1L, sipRepository.count());
 
         requestService.scheduleRequestDeletionJob(new SearchRequestParameters());
         waitForRequestReach(0, 10_000, getDefaultTenant());

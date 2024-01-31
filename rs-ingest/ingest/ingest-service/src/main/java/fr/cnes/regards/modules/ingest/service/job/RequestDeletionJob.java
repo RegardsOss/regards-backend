@@ -64,7 +64,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
     /**
      * Limit number of requests to retrieve in one page.
      */
-    @Value("${regards.request.deletion.iteration-limit:1000}")
+    @Value("${regards.request.deletion.iteration-limit:100}")
     private Integer requestIterationLimit;
 
     private int totalPages = 0;

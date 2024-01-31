@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.SIPState;
@@ -31,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -60,6 +61,11 @@ public interface ISIPService {
      * Delete the SIPEntity using its {@link SIPEntity#getSipId()}.
      */
     void processDeletion(String sipId, boolean deleteIrrevocably);
+
+    /**
+     * Delete all {@link SIPEntity}s
+     */
+    void processDeletions(Collection<String> sipId, boolean deleteIrrevocably);
 
     /**
      * Update last flag for specified entity

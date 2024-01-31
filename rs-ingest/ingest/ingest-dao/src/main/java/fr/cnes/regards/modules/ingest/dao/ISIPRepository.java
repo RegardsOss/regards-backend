@@ -164,4 +164,15 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     }
 
     List<SIPEntity> findAllByOrderByLastUpdateAsc();
+
+    @Modifying
+    @Query(value = "UPDATE SIPEntity SET state = :sipState WHERE id IN (:ids) ")
+    void updateStateByIdIn(@Param("ids") Collection<Long> ids, @Param("sipState") SIPState sipState);
+
+    @Modifying
+    @Query(value = "DELETE FROM SIPEntity WHERE id IN (:ids)")
+    void deleteAllBySipIdInBatch(@Param("ids") Collection<Long> ids);
+
+    @Query(value = "select id from SIPEntity where sipId = :sipIds")
+    List<Long> findIdBySipIdIn(@Param("sipIds") Collection<String> sipIds);
 }

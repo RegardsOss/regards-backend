@@ -181,7 +181,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                 }
                 this.advanceCompletion();
             }
-            publisher.publish(new FilesCopyEvent(requests, groupId));
+            if (!requests.isEmpty()) {
+                publisher.publish(new FilesCopyEvent(requests, groupId));
+            }
             pageRequest = pageRequest.next();
         } while (pageResults.hasNext());
         String message = String.format("Copy process found %s files to copy from %s:%s to %s:%s.",
@@ -203,10 +205,10 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     public void run() {
         try {
             lockingTaskExecutors.executeWithLock(publishCopyFilesCopyEventTask,
-                                                 new LockConfiguration(FileCopyRequestService.COPY_PROCESS_LOCK,
+                                                 new LockConfiguration(FileCopyRequestService.COPY_REQUEST_CREATOR_LOCK,
                                                                        Instant.now().plusSeconds(300)));
         } catch (Throwable e) {
-            logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
+            logger.error("[COPY JOB] Error creating copy requests");
             logger.error(e.getMessage(), e);
         }
     }

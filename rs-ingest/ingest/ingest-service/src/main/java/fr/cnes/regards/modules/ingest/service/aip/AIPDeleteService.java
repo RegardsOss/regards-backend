@@ -25,8 +25,8 @@ import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
 import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
 import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
-import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ILastAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
@@ -100,8 +100,8 @@ public class AIPDeleteService implements IAIPDeleteService {
     }
 
     @Override
-    public void deleteAll(Set<AIPEntity> aipIds) {
-        aipRepository.deleteAll(aipIds);
+    public void deleteAll(Set<AIPEntity> aipEntities) {
+        aipRepository.deleteAllByIdInBatch(aipEntities.stream().map(AIPEntity::getId).toList());
     }
 
     @Override

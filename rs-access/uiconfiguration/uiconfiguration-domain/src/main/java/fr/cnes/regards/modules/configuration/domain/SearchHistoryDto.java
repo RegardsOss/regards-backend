@@ -75,6 +75,19 @@ public class SearchHistoryDto {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        SearchHistoryDto that = (SearchHistoryDto) o;
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(configuration,
+                                                                                                that.configuration);
+    }
+
+    @Override
     public String toString() {
         return "SearchHistoryDto{" + "id='" + id + ", name=" + name + ", configuration='" + configuration + '}';
     }

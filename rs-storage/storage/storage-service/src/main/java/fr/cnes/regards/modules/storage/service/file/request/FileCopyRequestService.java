@@ -75,6 +75,8 @@ public class FileCopyRequestService {
 
     public static final String COPY_PROCESS_LOCK = "copy-requests-lock";
 
+    public static final String COPY_REQUEST_CREATOR_LOCK = "copy-requests-creator-lock";
+
     @Autowired
     private IFileCopyRequestRepository copyRepository;
 

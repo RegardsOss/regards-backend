@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.fileaccess.dto;
 
 import org.springframework.util.MimeType;
 
+import java.util.Objects;
+
 /**
  * Dto represents meta information about a file referenced in storage catalog.
  *
@@ -32,7 +34,7 @@ public class FileReferenceMetaInfoDto {
      */
     private String checksum;
 
-    /*
+    /**
      * Checksum algorithm
      */
     private String algorithm;
@@ -142,8 +144,32 @@ public class FileReferenceMetaInfoDto {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        FileReferenceMetaInfoDto that = (FileReferenceMetaInfoDto) o;
+
+        if (!Objects.equals(checksum, that.checksum)) {
+            return false;
+        }
+        return Objects.equals(algorithm, that.algorithm);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = checksum != null ? checksum.hashCode() : 0;
+        result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
-        return "FileReferenceMetaInfoDTO{"
+        return "FileReferenceMetaInfoDto{"
                + "checksum='"
                + checksum
                + '\''

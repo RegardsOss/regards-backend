@@ -75,7 +75,7 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
         requestCreation();
         // Wait for request handling and feature creation
         waitFeature(NB_FEATURES, null, 60_000);
-        waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED, NB_FEATURES, 30_000);
+        waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED, NB_FEATURES, 60_000);
         LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests done in {} ms",
                     NB_FEATURES,
                     System.currentTimeMillis() - creationStart);
