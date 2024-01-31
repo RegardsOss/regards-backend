@@ -111,6 +111,9 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
     @Autowired
     private TestService testService;
 
+    @Autowired
+    private NotificationRegistrationService notificationRegistrationService;
+
     @SpyBean
     private IJobInfoService jobInfoService;
 
@@ -1795,6 +1798,45 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
             Assert.assertTrue("Requests scheduled while one recipient fails should have no more recipient to schedule",
                               scheduledWhileFailed.getRecipientsToSchedule().isEmpty());
         }
+    }
+
+    @Test
+    public void testAbortRequestsOnJobCrash() throws Exception {
+
+        // Given Two notification requests in scheduled state
+        JsonElement metadata = gson.toJsonTree(globalMetadata);
+        JsonObject payload = initElement("elementRule1.json");
+        NotificationRequest request1 = new NotificationRequest(payload,
+                                                               metadata.getAsJsonObject(),
+                                                               "id1",
+                                                               "owner",
+                                                               OffsetDateTime.now(),
+                                                               NotificationState.SCHEDULED);
+        Init2Rule3Recipient ruleRecipient = new Init2Rule3Recipient(true);
+        request1.getRecipientsScheduled().add(ruleRecipient.getRecipientR1_1());
+        request1.getRecipientsScheduled().add(ruleRecipient.getRecipientR1_2());
+        request1 = notificationRequestRepository.save(request1);
+
+        // When job associated to the request for first recipient crash
+        notificationRegistrationService.handleJobCrash(Set.of(request1.getId()),
+                                                       ruleRecipient.getRecipientR1_1().getBusinessId());
+
+        // Then the first recipient should be moved from scheduled to toSchedule list of recipients
+        List<NotificationRequest> requests = notificationRequestRepository.findAllById(Set.of(request1.getId()));
+        Assert.assertEquals(1, requests.size());
+        NotificationRequest request = requests.get(0);
+
+        // Recipient associated to not aborted job should still be in the scheduled list of the request
+        Assert.assertEquals(1L, request.getRecipientsToSchedule().size());
+        Assert.assertEquals(ruleRecipient.getRecipientR1_2().getBusinessId(),
+                            request.getRecipientsScheduled().stream().findFirst().get().getBusinessId());
+        // Recipient associated to the aborted job should be moved in the toSchedule list of the request
+        Assert.assertEquals(1L, request.getRecipientsScheduled().size());
+        Assert.assertEquals(ruleRecipient.getRecipientR1_1().getBusinessId(),
+                            request.getRecipientsToSchedule().stream().findFirst().get().getBusinessId());
+        // State of the request should be TO_SCHEDULE_BY_RECIPIENT
+        Assert.assertEquals(request.getState(), NotificationState.TO_SCHEDULE_BY_RECIPIENT);
+
     }
 
     @Test
