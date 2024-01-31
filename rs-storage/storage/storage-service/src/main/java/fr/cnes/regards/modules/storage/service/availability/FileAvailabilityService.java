@@ -24,10 +24,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FilesAvailabilityRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.availability.NearlineFileStatusDto;
-import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -201,7 +202,7 @@ public class FileAvailabilityService {
     }
 
     public List<FileAvailabilityStatusDto> manageAvailabilityStatusForOnlineFiles(List<FileReference> fileReferencesOnline) {
-        return fileReferencesOnline.stream().map(FileAvailabilityBuilder::buildAvailable).toList();
+        return fileReferencesOnline.stream().map(FileAvailabilityBuilder::buildAvailableWithoutExpiration).toList();
     }
 
     private List<String> getChecksumNotIncludeIn(Set<String> checksums,
@@ -211,13 +212,23 @@ public class FileAvailabilityService {
     }
 
     /**
-     * Build AvailabilityStatus for each file that is stored in cache. All cached files are available
+     * Build AvailabilityStatus for each file that is stored in cache. All cached files not expired are available.
+     * Cached files expired are deleted.
      *
      * @param allInputChecksums input file checksums
      */
     private List<FileAvailabilityStatusDto> buildAvailabilityStatusForCachedFiles(Set<String> allInputChecksums) {
         Set<CacheFile> cacheFiles = fileCacheService.getCacheFiles(allInputChecksums);
-        return cacheFiles.stream().map(FileAvailabilityBuilder::buildAvailable).toList();
+        List<FileAvailabilityStatusDto> results = new ArrayList<>();
+        for (CacheFile cacheFile : cacheFiles) {
+            if (cacheFile.getExpirationDate().isBefore(OffsetDateTime.now())) {
+                fileCacheService.delete(cacheFile);
+                results.add(FileAvailabilityBuilder.buildNotAvailable(cacheFile));
+            } else {
+                results.add(FileAvailabilityBuilder.buildAvailable(cacheFile));
+            }
+        }
+        return results;
     }
 
     /**
