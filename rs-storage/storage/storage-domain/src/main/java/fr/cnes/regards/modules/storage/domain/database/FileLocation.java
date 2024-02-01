@@ -150,11 +150,11 @@ public class FileLocation {
     }
 
     public FileLocationDto toDto() {
-        return new FileLocationDto(storage, url);
+        return new FileLocationDto(storage, url, pendingActionRemaining);
     }
 
     public static FileLocation buildFromDto(FileLocationDto dto) {
-        return new FileLocation(dto.getStorage(), dto.getUrl(), false);
+        return new FileLocation(dto.getStorage(), dto.getUrl(), dto.isPendingActionRemaining());
     }
 
 }

@@ -77,6 +77,7 @@ public class FileReferenceWithoutOwnersDto {
         }
 
         this.storageDate = storageDate;
+        this.checksum = metaInfo.getChecksum();
         this.metaInfo = metaInfo;
         this.location = location;
     }
@@ -88,6 +89,7 @@ public class FileReferenceWithoutOwnersDto {
                                          boolean referenced,
                                          boolean nearlineConfirmed) {
         this(storageDate, metaInfo, location);
+        this.checksum = metaInfo.getChecksum();
         this.id = id;
         this.referenced = referenced;
         this.nearlineConfirmed = nearlineConfirmed;
