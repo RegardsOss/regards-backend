@@ -19,10 +19,11 @@
 package fr.cnes.regards.framework.modules.tenant.settings.service;
 
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import org.springframework.validation.Errors;
 
 public interface IDynamicTenantSettingCustomizer {
 
-    boolean isValid(DynamicTenantSetting dynamicTenantSetting);
+    Errors isValid(DynamicTenantSetting dynamicTenantSetting);
 
     default boolean canBeModified(DynamicTenantSetting dynamicTenantSetting) {
         return true;

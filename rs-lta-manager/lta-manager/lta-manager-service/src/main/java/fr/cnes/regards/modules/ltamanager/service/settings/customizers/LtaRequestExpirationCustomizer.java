@@ -21,9 +21,11 @@ package fr.cnes.regards.modules.ltamanager.service.settings.customizers;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
 import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+
+import java.util.HashMap;
 
 /**
  * Customizer for {@link LtaSettings#SUCCESS_EXPIRATION_IN_HOURS_KEY}
@@ -33,21 +35,27 @@ import org.springframework.stereotype.Service;
 @Service
 public class LtaRequestExpirationCustomizer implements IDynamicTenantSettingCustomizer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LtaRequestExpirationCustomizer.class);
-
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        boolean isValid = (dynamicTenantSetting.getValue() instanceof Integer expiration) && (expiration >= 0);
-        if (!isValid) {
-            LOGGER.error("\"{}\" must be a valid integer superior or equals to 0.",
-                         LtaSettings.SUCCESS_EXPIRATION_IN_HOURS_KEY);
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
+        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
+        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
+            errors.reject("invalid.default.setting.value",
+                          "default setting value of parameter [request time to live] must be a valid positive number.");
         }
-        return isValid;
+        if (!isProperValue(dynamicTenantSetting.getValue())) {
+            errors.reject("invalid.setting.value",
+                          "setting value of parameter [request time to live] must be a valid positive number.");
+        }
+        return errors;
 
     }
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
         return LtaSettings.SUCCESS_EXPIRATION_IN_HOURS_KEY.equals(dynamicTenantSetting.getName());
+    }
+
+    private boolean isProperValue(Object value) {
+        return value instanceof Integer requestTtl && requestTtl >= 0;
     }
 }

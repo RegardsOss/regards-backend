@@ -21,9 +21,11 @@ package fr.cnes.regards.modules.delivery.service.settings.customizers;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
 import fr.cnes.regards.modules.delivery.domain.settings.DeliverySettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+
+import java.util.HashMap;
 
 /**
  * Customizer for {@link DeliverySettings#DELIVERY_ORDER_SIZE_LIMIT_BYTES}
@@ -33,19 +35,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderSizeLimitCustomizer implements IDynamicTenantSettingCustomizer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrderSizeLimitCustomizer.class);
-
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        boolean valid = (dynamicTenantSetting.getValue() instanceof Long orderSizeLimit) && orderSizeLimit >= 0;
-        if (!valid) {
-            LOGGER.error("'{}' must be a valid Long >= 0", DeliverySettings.DELIVERY_ORDER_SIZE_LIMIT_BYTES);
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
+        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
+        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
+            errors.reject("invalid.default.setting.value",
+                          "default setting value of parameter [order size limit] must be a valid positive number.");
         }
-        return valid;
+        if (!isProperValue(dynamicTenantSetting.getValue())) {
+            errors.reject("invalid.setting.value",
+                          "setting value of parameter [order size limit] must be a valid positive number.");
+        }
+        return errors;
     }
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
         return DeliverySettings.DELIVERY_ORDER_SIZE_LIMIT_BYTES.equals(dynamicTenantSetting.getName());
+    }
+
+    private boolean isProperValue(Object value) {
+        return value instanceof Long orderSizeLimit && orderSizeLimit >= 0;
     }
 }

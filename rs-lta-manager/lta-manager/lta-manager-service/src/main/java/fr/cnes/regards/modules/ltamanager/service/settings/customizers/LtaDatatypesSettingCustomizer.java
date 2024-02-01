@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.settings.customizers;
 
-import com.google.common.base.Joiner;
 import com.google.gson.JsonSyntaxException;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -74,7 +73,7 @@ public class LtaDatatypesSettingCustomizer implements IDynamicTenantSettingCusto
      * @return if all conditions are verified
      */
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
         Map<String, Object> datatypes = dynamicTenantSetting.getValue();
         // Bind errors to datatypes
         Errors errors = new MapBindingResult(new HashMap<>(), DatatypeParameter.class.getName());
@@ -88,7 +87,7 @@ public class LtaDatatypesSettingCustomizer implements IDynamicTenantSettingCusto
                 rejectMalformedDatatype(errors, datatype.getKey(), e);
             }
         }
-        return validateAllDatatypesSettings(errors);
+        return errors;
 
     }
 
@@ -135,19 +134,6 @@ public class LtaDatatypesSettingCustomizer implements IDynamicTenantSettingCusto
                                                                                  }
                                                                                }
                                                                                """, datatypeKey));
-    }
-
-    private boolean validateAllDatatypesSettings(Errors errors) {
-        // Invalidate setting update if there are any errors
-        boolean isValid = !errors.hasErrors();
-        if (!isValid) {
-            String errorMsg = Joiner.on("\n ---> ").join(errors.getAllErrors());
-            LOGGER.error("Invalid {} setting parameters. {} errors detected. Cause:\n ---> {}",
-                         LtaSettings.DATATYPES_KEY,
-                         errors.getErrorCount(),
-                         errorMsg);
-        }
-        return isValid;
     }
 
     @Override

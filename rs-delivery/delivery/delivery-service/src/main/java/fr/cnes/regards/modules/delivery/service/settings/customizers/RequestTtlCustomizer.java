@@ -21,9 +21,11 @@ package fr.cnes.regards.modules.delivery.service.settings.customizers;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
 import fr.cnes.regards.modules.delivery.domain.settings.DeliverySettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+
+import java.util.HashMap;
 
 /**
  * Customizer for {@link DeliverySettings#REQUEST_TTL_HOURS}.
@@ -33,22 +35,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class RequestTtlCustomizer implements IDynamicTenantSettingCustomizer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RequestTtlCustomizer.class);
-
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        boolean valid = (dynamicTenantSetting.getValue() instanceof Integer requestTtl)
-                        && requestTtl >= 0
-                        && requestTtl <= 24;
-        if (!valid) {
-            LOGGER.error("'{}' must be a valid integer representing an hour between 0 and 24h.",
-                         DeliverySettings.REQUEST_TTL_HOURS);
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
+        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
+        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
+            errors.reject("invalid.default.setting.value",
+                          "default setting value of parameter [request time to live] must be a valid positive number.");
         }
-        return valid;
+        if (!isProperValue(dynamicTenantSetting.getValue())) {
+            errors.reject("invalid.setting.value",
+                          "setting value of parameter [request time to live] must be a valid positive number.");
+        }
+        return errors;
     }
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
         return DeliverySettings.REQUEST_TTL_HOURS.equals(dynamicTenantSetting.getName());
+    }
+
+    private boolean isProperValue(Object value) {
+        return value instanceof Integer requestTtl && requestTtl >= 0;
     }
 }

@@ -98,10 +98,10 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
                                                                          datatypesParams);
         // WHEN
         // check datatypesSetting validity
-        boolean isValid = datatypeSettingService.isValid(datatypesSetting);
+        boolean hasErrors = datatypeSettingService.isValid(datatypesSetting).hasErrors();
 
         // THEN
-        Assertions.assertTrue(isValid, "datatypesSetting should be valid");
+        Assertions.assertFalse(hasErrors, "datatypesSetting should be valid");
 
     }
 
@@ -124,11 +124,11 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
                                                                          datatypesParams);
         // WHEN
         // check datatype validity
-        boolean isValid = datatypeSettingService.isValid(datatypesSetting);
+        boolean hasErrors = datatypeSettingService.isValid(datatypesSetting).hasErrors();
 
         // THEN
-        Assertions.assertFalse(isValid,
-                               "datatypeSetting should be invalid because the associated model does not " + "exists.");
+        Assertions.assertTrue(hasErrors,
+                              "datatypeSetting should be invalid because the associated model does not exists.");
     }
 
     @Test
@@ -150,12 +150,11 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
                                                                          datatypesParams);
         // WHEN
         // check datatypesSetting validity
-        boolean isValid = datatypeSettingService.isValid(datatypesSetting);
+        boolean hasErrors = datatypeSettingService.isValid(datatypesSetting).hasErrors();
 
         // THEN
-        Assertions.assertFalse(isValid,
-                               "datatypesSetting should be invalid because parameters do not respect "
-                               + "constraints.");
+        Assertions.assertTrue(hasErrors,
+                              "datatypesSetting should be invalid because parameters do not respect constraints.");
     }
 
     @Test
@@ -173,10 +172,10 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
                                                                          datatypesParams);
         // WHEN
         // check datatypesSetting validity
-        boolean isValid = datatypeSettingService.isValid(datatypesSetting);
+        boolean hasErrors = datatypeSettingService.isValid(datatypesSetting).hasErrors();
 
         // THEN
-        Assertions.assertFalse(isValid, "datatypesSetting should be invalid because it is malformed.");
+        Assertions.assertTrue(hasErrors, "datatypesSetting should be invalid because it is malformed.");
     }
 
     @Test
@@ -190,10 +189,10 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
 
         // WHEN
         // check tenant settings validity
-        boolean isValid = storageSettingService.isValid(storageSetting);
+        boolean hasErrors = storageSettingService.isValid(storageSetting).hasErrors();
 
         // THEN
-        Assertions.assertTrue(isValid, "storageSetting should be valid");
+        Assertions.assertFalse(hasErrors, "storageSetting should be valid");
     }
 
     @Test
@@ -207,10 +206,10 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
 
         // WHEN
         // check tenant settings validity
-        boolean isValid = storageSettingService.isValid(storageSetting);
+        boolean hasErrors = storageSettingService.isValid(storageSetting).hasErrors();
 
         // THEN
-        Assertions.assertFalse(isValid, "storageSetting should be invalid because it exceeds the limits authorized");
+        Assertions.assertTrue(hasErrors, "storageSetting should be invalid because it exceeds the limits authorized");
     }
 
     @Test
@@ -224,10 +223,10 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
 
         // WHEN
         // check tenant settings validity
-        boolean isValid = expirationSettingService.isValid(storageSetting);
+        boolean hasErrors = expirationSettingService.isValid(storageSetting).hasErrors();
 
         // THEN
-        Assertions.assertTrue(isValid, "expirationSetting should be valid");
+        Assertions.assertFalse(hasErrors, "expirationSetting should be valid");
     }
 
     @Test
@@ -241,10 +240,10 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
 
         // WHEN
         // check tenant settings validity
-        boolean isValid = expirationSettingService.isValid(storageSetting);
+        boolean hasErrors = expirationSettingService.isValid(storageSetting).hasErrors();
 
         // THEN
-        Assertions.assertFalse(isValid, "expirationSetting should be invalid because it is not an integer");
+        Assertions.assertTrue(hasErrors, "expirationSetting should be invalid because it is not an integer");
     }
 
     @Test
@@ -258,9 +257,9 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
 
         // WHEN
         // check tenant settings validity
-        boolean isValid = expirationSettingService.isValid(storageSetting);
+        boolean hasErrors = expirationSettingService.isValid(storageSetting).hasErrors();
 
         // THEN
-        Assertions.assertFalse(isValid, "expirationSetting should be invalid because it is inferior to 0");
+        Assertions.assertTrue(hasErrors, "expirationSetting should be invalid because it is inferior to 0");
     }
 }
