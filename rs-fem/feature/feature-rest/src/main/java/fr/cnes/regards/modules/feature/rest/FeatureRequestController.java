@@ -29,9 +29,11 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
+import fr.cnes.regards.modules.feature.service.abort.FeatureRequestAbortService;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,7 +41,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -52,6 +54,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 /**
  * REST Controller to manage feature requests
@@ -70,14 +74,26 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
 
     public static final String REQUEST_SEARCH_TYPE_PATH = "/search/{type}";
 
-    @Autowired
-    private IFeatureRequestService featureRequestService;
+    private final  IFeatureRequestService featureRequestService;
 
     /**
      * {@link IResourceService} instance
      */
-    @Autowired
-    private IResourceService resourceService;
+    private final IResourceService resourceService;
+
+    /**
+     * Minimum delay before aborting running request. Temporary workaround to be removed when abort functionality
+     * will be deleted.
+     */
+    private final int abortDelayInHours;
+
+    public FeatureRequestController(IFeatureRequestService featureRequestService,
+                                    IResourceService resourceService,
+                                    @Value("${regards.feature.abort.delay.hours:1}") int abortDelayInHours) {
+        this.featureRequestService = featureRequestService;
+        this.resourceService = resourceService;
+        this.abortDelayInHours = abortDelayInHours;
+    }
 
     @PostMapping(path = REQUEST_SEARCH_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get feature requests", description = "Return a page of feature requests according criterias")
@@ -124,7 +140,7 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
                                                               content = @Content(schema = @Schema(implementation = SearchFeatureRequestParameters.class)))
         @Parameter(description = "Requests selection") @Valid @RequestBody SearchFeatureRequestParameters selection) {
-        return new ResponseEntity<RequestHandledResponse>(featureRequestService.retry(type, selection), HttpStatus.OK);
+        return new ResponseEntity<>(featureRequestService.retry(type, selection), HttpStatus.OK);
     }
 
     /**
@@ -139,7 +155,8 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
                                                                                                        requestsPage.getTotalElements(),
                                                                                                        requestsPage.getTotalPages()),
                                                                                                    requestsPage.getInfo());
-        pagedResource.getContent().forEach(resource -> addLinks(resource));
+        OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC);
+        pagedResource.getContent().forEach(requestDto -> this.addLinks(requestDto, start));
 
         // Add global links for entire search selection
         if (pagedResource.getInfo().getNbErrors() > 0) {
@@ -160,36 +177,52 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
         return pagedResource;
     }
 
-    private void addLinks(EntityModel<FeatureRequestDTO> resource) {
+    private void addLinks(EntityModel<FeatureRequestDTO> resource, OffsetDateTime start) {
         FeatureRequestDTO featureRequest = resource.getContent();
         if (featureRequest == null) {
             return;
         }
+        FeatureRequestTypeEnum requestType = FeatureRequestTypeEnum.valueOf(featureRequest.getType());
         // Request are deletable only if not scheduled
         if (!featureRequest.isProcessing()) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "deleteRequests",
                                     LinkRels.DELETE,
-                                    MethodParamFactory.build(FeatureRequestTypeEnum.class,
-                                                             FeatureRequestTypeEnum.valueOf(featureRequest.getType())),
+                                    MethodParamFactory.build(FeatureRequestTypeEnum.class, requestType),
                                     MethodParamFactory.build(SearchFeatureRequestParameters.class));
             if (featureRequest.getStep() != FeatureRequestStep.LOCAL_DELAYED) {
                 resourceService.addLink(resource,
                                         this.getClass(),
                                         "retryRequests",
                                         LinkRelation.of("retry"),
-                                        MethodParamFactory.build(FeatureRequestTypeEnum.class,
-                                                                 FeatureRequestTypeEnum.valueOf(featureRequest.getType())),
+                                        MethodParamFactory.build(FeatureRequestTypeEnum.class, requestType),
                                         MethodParamFactory.build(SearchFeatureRequestParameters.class));
             }
+        }
+
+        // Add abort link only if request can be aborted, i.e., delay before aborting request is valid, request
+        // state, type and step are valid.
+        // This is a temporary option that will be removed later
+        if (featureRequest.getRegistrationDate().plusHours(abortDelayInHours).isBefore(start)
+            && featureRequest.getState() == RequestState.GRANTED
+            && FeatureRequestAbortService.STEPS_CORRELATION_TABLE.containsKey(requestType)
+            && FeatureRequestAbortService.STEPS_CORRELATION_TABLE.get(requestType)
+                                                                 .containsKey(featureRequest.getStep())) {
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "searchFeatureRequests",
+                                    LinkRelation.of("abort"),
+                                    MethodParamFactory.build(FeatureRequestTypeEnum.class, requestType),
+                                    MethodParamFactory.build(SearchFeatureRequestParameters.class),
+                                    MethodParamFactory.build(Pageable.class));
         }
     }
 
     @Override
     public EntityModel<FeatureRequestDTO> toResource(FeatureRequestDTO element, Object... extras) {
         EntityModel<FeatureRequestDTO> resource = resourceService.toResource(element);
-        addLinks(resource);
+        addLinks(resource, OffsetDateTime.now(ZoneOffset.UTC));
         return resource;
     }
 
