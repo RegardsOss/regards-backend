@@ -133,7 +133,7 @@ public class SearchHistoryController implements IResourceController<SearchHistor
                             @ApiResponse(responseCode = "403",
                                          description = "The endpoint is not accessible for the user.",
                                          content = { @Content(mediaType = "application/html") }) })
-    @PutMapping
+    @PutMapping("/{searchHistoryId}")
     @ResponseBody
     @ResourceAccess(description = "Update a search history element", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<Void>> updateSearchHistory(
