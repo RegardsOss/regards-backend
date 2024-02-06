@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.search.domain.download.Download;
 import fr.cnes.regards.modules.search.rest.download.CatalogDownloadResponse;
@@ -239,36 +238,33 @@ public class CatalogDownloadController {
 
         try {
             AbstractEntity<?> entity = searchService.get(UniformResourceName.fromString(aipId));
-            if (entity instanceof DataObject dataObject) {
-
-                // Check if file has public access or not
-                if (isPrivateFile(entity, checksum)) {
-                    // If not public access, check if logged-in user has access to this file
-                    if (!businessSearchService.isContentAccessGranted(dataObject)) {
-                        return CatalogDownloadResponse.unauthorizedAccess();
-                    }
-                    // Check if user has accepted associated license
-                    if (isLicenseUnaccepted()) {
-                        String linkToAcceptAndDownload = linkToDownloadWithLicense(aipId,
-                                                                                   checksum,
-                                                                                   isContentInline,
-                                                                                   response);
-                        return CatalogDownloadResponse.acceptLicenceBeforeDownload(linkToLicense(),
-                                                                                   linkToAcceptAndDownload);
-                    }
+            // Check if file has public access or not
+            if (isPrivateFile(entity, checksum)) {
+                // If not public access, check if logged-in user has access to this file
+                if (!businessSearchService.isContentAccessGranted(entity)) {
+                    return CatalogDownloadResponse.unauthorizedAccess();
                 }
-                Optional<String> fileName = entity.getFiles()
-                                                  .values()
-                                                  .stream()
-                                                  .filter(df -> df.getChecksum().equals(checksum))
-                                                  .map(DataFile::getFilename)
-                                                  .filter(Objects::nonNull)
-                                                  .findFirst();
-                // To download through storage client we must be authenticated as user in order to
-                // impact the download quotas, but we upgrade the privileges so that the request passes.
-                FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
-                return doDownloadFile(checksum, fileName.orElse(null), isContentInline, response);
+                // Check if user has accepted associated license
+                if (isLicenseUnaccepted()) {
+                    String linkToAcceptAndDownload = linkToDownloadWithLicense(aipId,
+                                                                               checksum,
+                                                                               isContentInline,
+                                                                               response);
+                    return CatalogDownloadResponse.acceptLicenceBeforeDownload(linkToLicense(),
+                                                                               linkToAcceptAndDownload);
+                }
             }
+            Optional<String> fileName = entity.getFiles()
+                                              .values()
+                                              .stream()
+                                              .filter(df -> df.getChecksum().equals(checksum))
+                                              .map(DataFile::getFilename)
+                                              .filter(Objects::nonNull)
+                                              .findFirst();
+            // To download through storage client we must be authenticated as user in order to
+            // impact the download quotas, but we upgrade the privileges so that the request passes.
+            FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+            return doDownloadFile(checksum, fileName.orElse(null), isContentInline, response);
         } catch (EntityOperationForbiddenException e) { // NOSONAR
             return CatalogDownloadResponse.unauthorizedAccess();
         } catch (HttpClientErrorException | HttpServerErrorException | ExecutionException e) {
@@ -276,7 +272,6 @@ public class CatalogDownloadController {
         } finally {
             FeignSecurityManager.reset();
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     /**
