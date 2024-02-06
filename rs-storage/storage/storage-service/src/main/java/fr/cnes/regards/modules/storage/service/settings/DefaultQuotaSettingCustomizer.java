@@ -7,7 +7,10 @@ import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
 
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -21,12 +24,16 @@ public class DefaultQuotaSettingCustomizer implements IDynamicTenantSettingCusto
     private IQuotaService<?> quotaService;
 
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        Object settingValue = dynamicTenantSetting.getValue();
-        Object defaultSettingValue = dynamicTenantSetting.getDefaultValue();
-        boolean valueIsValid = settingValue instanceof Long && (Long) settingValue > -2;
-        boolean defaultValueIsValid = defaultSettingValue instanceof Long && (Long) defaultSettingValue > -2;
-        return valueIsValid && defaultValueIsValid;
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
+        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
+        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
+            errors.reject("invalid.default.setting.value",
+                          "default setting value of parameter [quota] must be a valid number >= -1.");
+        }
+        if (!isProperValue(dynamicTenantSetting.getValue())) {
+            errors.reject("invalid.setting.value", "setting value of parameter [quota] must be a valid number >= -1.");
+        }
+        return errors;
     }
 
     @Override
@@ -37,5 +44,9 @@ public class DefaultQuotaSettingCustomizer implements IDynamicTenantSettingCusto
     @Override
     public void doRightNow(DynamicTenantSetting dynamicTenantSetting) {
         quotaService.changeDefaultQuotaLimits(dynamicTenantSetting.getValue());
+    }
+
+    private boolean isProperValue(Object settingValue) {
+        return settingValue instanceof Long quota && quota >= -1;
     }
 }

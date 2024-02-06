@@ -34,7 +34,7 @@ public final class FileAvailabilityBuilder {
     private FileAvailabilityBuilder() {
     }
 
-    public static FileAvailabilityStatusDto buildAvailable(FileReference fileReference) {
+    public static FileAvailabilityStatusDto buildAvailableWithoutExpiration(FileReference fileReference) {
         return new FileAvailabilityStatusDto(fileReference.getMetaInfo().getChecksum(), true, null);
     }
 
@@ -48,5 +48,9 @@ public final class FileAvailabilityBuilder {
 
     public static FileAvailabilityStatusDto buildAvailable(CacheFile file) {
         return new FileAvailabilityStatusDto(file.getChecksum(), true, file.getExpirationDate());
+    }
+
+    public static FileAvailabilityStatusDto buildNotAvailable(CacheFile file) {
+        return new FileAvailabilityStatusDto(file.getChecksum(), false, null);
     }
 }

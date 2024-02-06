@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.authentication.domain.data;
 import com.google.gson.annotations.SerializedName;
 
 import java.time.OffsetDateTime;
-import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -65,7 +64,7 @@ public class Authentication {
         this.sub = email;
         this.serviceProviderName = serviceProviderName;
         this.accessToken = token;
-        this.expiresIn = Date.from(expirationDate.toInstant()).getTime() / 1000;
+        this.expiresIn = expirationDate.toEpochSecond() - OffsetDateTime.now().toEpochSecond();
     }
 
     public String getProject() {

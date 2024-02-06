@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import org.slf4j.Logger;
@@ -51,16 +52,20 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
 
     private FileDeletionRequestService fileDeletionRequestService;
 
+    private FileCacheRequestService fileCacheRequestService;
+
     private IJobInfoService jobInfoService;
 
     public JobEventHandler(ISubscriber subscriber,
                            IJobInfoService jobInfoService,
                            FileStorageRequestService fileStorageRequestService,
-                           FileDeletionRequestService fileDeletionRequestService) {
+                           FileDeletionRequestService fileDeletionRequestService,
+                           FileCacheRequestService fileCacheRequestService) {
         this.subscriber = subscriber;
         this.jobInfoService = jobInfoService;
         this.fileStorageRequestService = fileStorageRequestService;
         this.fileDeletionRequestService = fileDeletionRequestService;
+        this.fileCacheRequestService = fileCacheRequestService;
     }
 
     @Override
@@ -86,7 +91,8 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                 // we receive here events when the job raises an exception on boot / end (issue with params, plugin init ...)
                 // so all requests are dead
                 boolean isHandled = fileStorageRequestService.handleJobCrash(jobInfo)
-                                    || fileDeletionRequestService.handleJobCrash(jobInfo);
+                                    || fileDeletionRequestService.handleJobCrash(jobInfo)
+                                    || fileCacheRequestService.handleJobCrash(jobInfo);
                 if (isHandled) {
                     nbJobError++;
                 }

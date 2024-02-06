@@ -4,8 +4,11 @@ import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSet
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -17,8 +20,16 @@ import java.util.Objects;
 public class SkipContentTypeSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return isProperValue(dynamicTenantSetting.getDefaultValue()) && isProperValue(dynamicTenantSetting.getValue());
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
+        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
+        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
+            errors.reject("invalid.default.setting.value",
+                          "default setting value of parameter [skip content type] must be a list.");
+        }
+        if (!isProperValue(dynamicTenantSetting.getValue())) {
+            errors.reject("invalid.setting.value", "setting value of parameter [skip content type] must be a list.");
+        }
+        return errors;
     }
 
     @Override

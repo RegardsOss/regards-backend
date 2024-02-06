@@ -9,10 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -28,12 +31,19 @@ public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomiz
     private CacheService cacheService;
 
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        Object settingValue = dynamicTenantSetting.getValue();
-        Object defaultSettingValue = dynamicTenantSetting.getDefaultValue();
-        boolean valueIsValid = isValidPath((Path) settingValue);
-        boolean defaultValueIsValid = isValidPath((Path) defaultSettingValue);
-        return valueIsValid && defaultValueIsValid;
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
+        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
+        if (!isValidPath(dynamicTenantSetting.getDefaultValue())) {
+            errors.reject("invalid.default.setting.value",
+                          "default setting value of parameter [cache path] must be a valid existing path with read and write "
+                          + "permissions.");
+        }
+        if (!isValidPath(dynamicTenantSetting.getValue())) {
+            errors.reject("invalid.setting.value",
+                          "setting value of parameter [cache path] must be a valid existing path with read and write "
+                          + "permissions.");
+        }
+        return errors;
     }
 
     private boolean isValidPath(Path path) {

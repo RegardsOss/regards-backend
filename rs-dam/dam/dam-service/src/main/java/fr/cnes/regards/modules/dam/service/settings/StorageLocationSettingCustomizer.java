@@ -7,11 +7,14 @@ import fr.cnes.regards.modules.dam.domain.settings.DamSettings;
 import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Component
@@ -24,9 +27,17 @@ public class StorageLocationSettingCustomizer implements IDynamicTenantSettingCu
     }
 
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return isProperValue(dynamicTenantSetting.getDefaultValue()) && (dynamicTenantSetting.getValue() == null
-                                                                         || isProperValue(dynamicTenantSetting.getValue()));
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
+        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
+        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
+            errors.reject("invalid.default.setting.value",
+                          "default setting value of parameter [storage location] must be a valid string or existing online location.");
+        }
+        if (dynamicTenantSetting.getValue() != null && !isProperValue(dynamicTenantSetting.getValue())) {
+            errors.reject("invalid.setting.value",
+                          "setting value of parameter [storage location] can be null or must be a valid string or existing online location.");
+        }
+        return errors;
     }
 
     @Override
@@ -35,7 +46,8 @@ public class StorageLocationSettingCustomizer implements IDynamicTenantSettingCu
     }
 
     private boolean isProperValue(Object value) {
-        return value instanceof String && (StringUtils.isEmpty(value) || isOnlineLocation((String) value));
+        return value instanceof String storageLocation && (StringUtils.isBlank(storageLocation) || isOnlineLocation(
+            storageLocation));
     }
 
     private boolean isOnlineLocation(String location) {

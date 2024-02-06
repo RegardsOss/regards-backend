@@ -178,7 +178,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     }
 
     /**
-     * Check into message headers if property x-first-death-exchange exists.
+     * Check into message headers if property x-first-death-queue exists.
      * Property exists means message come from DLQ, so check if origin exchange match with current IBatchHandler.
      * Return true if message cannot be handled by current handler.
      *
@@ -186,13 +186,15 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
      * @return boolean true if valid
      */
     private boolean handleInvalidMessageFromDLQ(BatchMessage message, String tenant, Channel channel) {
-        String originExchangeName = message.getOrigin().getMessageProperties().getHeader("x-first-death-exchange");
-        boolean isValid = originExchangeName == null || batchHandler.getType() == null || originExchangeName.endsWith(
+        String originQueueName = message.getOrigin().getMessageProperties().getHeader("x-first-death-queue");
+        boolean isValid = originQueueName == null || batchHandler.getType() == null || originQueueName.endsWith(
             batchHandler.getType().getName());
         if (!isValid) {
             String errorMessage = String.format(
-                "x-first-death-exchange found in message headers mismatch with current message %s",
-                message.getClass().getName());
+                "x-first-death-queue (%s) found in message headers mismatch with current message handler %s (type=%s)",
+                originQueueName,
+                batchHandler.getClass().getName(),
+                batchHandler.getType());
             handleInvalidMessage(tenant, message, channel, errorMessage);
         }
         return isValid;

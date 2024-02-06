@@ -86,7 +86,7 @@ public class JWTService implements InitializingBean {
     private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
 
     /**
-     * Validity delay expressed in minutes. Defaults to 120.
+     * Validity delay expressed in seconds. Defaults to 7200.
      */
     @Value("${access_token.validity_period:7200}")
     private final long validityDelay = 7200;
