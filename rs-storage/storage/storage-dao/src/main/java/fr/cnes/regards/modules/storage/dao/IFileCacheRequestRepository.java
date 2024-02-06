@@ -28,6 +28,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
 
@@ -76,6 +77,8 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     @Query("select coalesce(sum(fcr.fileSize),0) from FileCacheRequest fcr where fcr.status = 'PENDING'")
     Long getPendingFileSize();
+
+    void deleteByExpirationDateBefore(OffsetDateTime limitExpirationDate);
 
     void deleteByGroupIdAndStatusNotIn(String group, Set<FileRequestStatus> runningStatus);
 }

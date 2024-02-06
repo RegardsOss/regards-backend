@@ -22,9 +22,11 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
 
 import java.util.List;
 import java.util.Objects;
@@ -174,8 +176,11 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
 
     private void checkModelValidity(IDynamicTenantSettingCustomizer settingCustomizer,
                                     DynamicTenantSetting dynamicTenantSetting) throws EntityInvalidException {
-        if (!settingCustomizer.isValid(dynamicTenantSetting)) {
-            throw new EntityInvalidException(String.format("Invalid Tenant Setting: %s", dynamicTenantSetting));
+        Errors result = settingCustomizer.isValid(dynamicTenantSetting);
+        if (result.hasErrors()) {
+            throw new EntityInvalidException(String.format("Invalid Tenant Setting: %s. Cause: %s",
+                                                           dynamicTenantSetting,
+                                                           ErrorTranslator.getErrorsAsString(result)));
         }
     }
 }

@@ -21,9 +21,11 @@ package fr.cnes.regards.modules.ltamanager.service.settings.customizers;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
 import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+
+import java.util.HashMap;
 
 /**
  * Customizer for {@link LtaSettings#STORAGE_KEY}
@@ -33,22 +35,30 @@ import org.springframework.stereotype.Service;
 @Service
 public class LtaStorageSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LtaStorageSettingCustomizer.class);
-
     private static final int LIMIT_STORAGE_CHARACTERS = 255;
 
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        boolean isValid = (dynamicTenantSetting.getValue() instanceof String storage) && (storage.length()
-                                                                                          < LIMIT_STORAGE_CHARACTERS);
-        if (!isValid) {
-            LOGGER.error("\"{}\" must not exceed 255 characters.", LtaSettings.STORAGE_KEY);
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
+        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
+        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
+            errors.reject("invalid.default.setting.value",
+                          String.format("default setting value of parameter [lta storage] must be a "
+                                        + "valid string with length <=%d characters.", LIMIT_STORAGE_CHARACTERS));
         }
-        return isValid;
+        if (!isProperValue(dynamicTenantSetting.getValue())) {
+            errors.reject("invalid.setting.value",
+                          String.format("setting value of parameter [lta storage] must be a valid string with length "
+                                        + "<=%d characters.", LIMIT_STORAGE_CHARACTERS));
+        }
+        return errors;
     }
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
         return LtaSettings.STORAGE_KEY.equals(dynamicTenantSetting.getName());
+    }
+
+    private boolean isProperValue(Object value) {
+        return value instanceof String storage && storage.length() <= LIMIT_STORAGE_CHARACTERS;
     }
 }

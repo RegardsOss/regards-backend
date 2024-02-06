@@ -22,14 +22,33 @@ import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSet
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 @Component
 public class AccountValidationModeSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
     @Override
-    public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return isProperValue(dynamicTenantSetting.getDefaultValue()) && (dynamicTenantSetting.getValue() == null
-                                                                         || isProperValue(dynamicTenantSetting.getValue()));
+    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
+        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
+        List<AccountSettings.ValidationMode> authorizedValues = Arrays.asList(AccountSettings.ValidationMode.values());
+        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
+            errors.reject("invalid.default.setting.value",
+                          String.format("default setting value of parameter [account "
+                                        + "validation mode] must be a valid string in enum "
+                                        + "%s.", authorizedValues));
+        }
+        if (dynamicTenantSetting.getValue() != null && !isProperValue(dynamicTenantSetting.getValue())) {
+            errors.reject("invalid.setting.value",
+                          String.format(
+                              "setting value of parameter [account validation mode] can be null or must be a valid string in enum %s.",
+                              authorizedValues));
+        }
+        return errors;
     }
 
     @Override
@@ -38,7 +57,8 @@ public class AccountValidationModeSettingCustomizer implements IDynamicTenantSet
     }
 
     private boolean isProperValue(Object value) {
-        return value instanceof String && AccountSettings.ValidationMode.fromName((String) value) != null;
+        return value instanceof String validationMode
+               && AccountSettings.ValidationMode.fromName(validationMode) != null;
     }
 
 }
