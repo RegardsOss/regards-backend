@@ -782,11 +782,7 @@ public class FileCacheRequestService {
     public void delete(FileReference deletedFileRef) {
         fileCacheRequestRepository.deleteByfileReference(deletedFileRef);
     }
-
-    public void cleanExpiredCacheRequests() {
-        fileCacheRequestRepository.deleteByExpirationDateBefore(OffsetDateTime.now());
-    }
-
+    
     public boolean handleJobCrash(JobInfo jobInfo) {
         boolean isFileCacheRequestJob = FileCacheRequestJob.class.getName().equals(jobInfo.getClassName());
         if (isFileCacheRequestJob) {
