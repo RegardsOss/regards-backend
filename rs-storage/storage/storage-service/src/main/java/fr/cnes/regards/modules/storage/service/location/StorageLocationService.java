@@ -184,7 +184,7 @@ public class StorageLocationService {
     }
 
     /**
-     * Retrieve all known storage locations with there monitoring informations.
+     * Retrieve all known storage locations with theirs monitoring information.
      *
      * @return {@link StorageLocationDto}s
      */

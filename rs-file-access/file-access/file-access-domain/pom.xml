@@ -53,9 +53,23 @@
     </developers>
 
     <dependencies>
+        <!-- Module -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+            <artifactId>file-access-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.fileaccess.plugin</groupId>
+            <artifactId>file-access-plugin-domain</artifactId>
+        </dependency>
+        <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>jpa-commons-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+            <artifactId>plugins-domain</artifactId>
         </dependency>
         <!-- Test -->
         <dependency>

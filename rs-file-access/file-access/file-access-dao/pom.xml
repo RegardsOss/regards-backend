@@ -62,7 +62,6 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.fileaccess</groupId>
             <artifactId>file-access-domain</artifactId>
-            <version>${revision}</version>
         </dependency>
         <!-- Tests -->
         <dependency>
