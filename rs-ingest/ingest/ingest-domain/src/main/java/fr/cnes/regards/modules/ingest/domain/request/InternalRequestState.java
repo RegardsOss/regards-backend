@@ -31,7 +31,7 @@ public enum InternalRequestState {
      */
     CREATED,
     /**
-     * Request versioning mode is {@link VersioningMode#MANUAL},
+     * Request versioning mode is {@link fr.cnes.regards.modules.ingest.dto.VersioningMode#MANUAL},
      * so we need administrator decision to go further
      */
     WAITING_VERSIONING_MODE,
@@ -60,7 +60,7 @@ public enum InternalRequestState {
     ERROR, ABORTED, IGNORED;
 
     /**
-     * List of states for IngestRequest that can potentially be blocked by an other request.
+     * List of states for IngestRequest that can potentially be blocked by another request.
      */
     public static List<InternalRequestState> POTENTIALLY_BLOCKED_INGEST_REQUEST_STATES = List.of(InternalRequestState.TO_SCHEDULE,
                                                                                                  InternalRequestState.CREATED,
