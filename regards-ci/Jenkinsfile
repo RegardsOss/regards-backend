@@ -40,7 +40,6 @@ pipeline {
         MVN_IMAGE = "172.26.46.158/regards-maven-jdk"
         JAVA_IMAGE = "172.26.46.158/regards-java-alpine:17"
         BRANCH_NAME_VERSION = "${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}-SNAPSHOT"
-        IGNORE_HASH = ""
     }
     parameters {
         booleanParam(name: 'DOCKER_IMAGE_FAST_GENERATION', defaultValue: false, description: 'Enable fast docker images generation')
@@ -292,6 +291,7 @@ def runMavenDockerImg(label, mode, containerName, regardsMs, nbMaxCpu, isRequiri
     // become
     // regardsossbackendfeature2fimprovejenkinsstages31
     def dockerProject = PROJECT_NAME.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()
+    def ignoreHash = !params.INCREMENTAL_BUILD ? "true" : ""
     def dockerCommand = 'docker run --rm -i  --cpus=' + nbMaxCpu + '                                           \
                         --name ' + dockerProject + '_maven_' + containerName + '                               \
                         -v ${WORKSPACE}:/app_to_build                                                          \
@@ -301,9 +301,10 @@ def runMavenDockerImg(label, mode, containerName, regardsMs, nbMaxCpu, isRequiri
                         -e BRANCH_NAME="${BRANCH_NAME}"                                                        \
                         -e BRANCH_NAME_VERSION="${BRANCH_NAME_VERSION}"                                        \
                         -e WORKSPACE="${WORKSPACE}"                                                            \
-                        -e IGNORE_HASH="${IGNORE_HASH}"                                                        \
+                        -e IGNORE_HASH="' + ignoreHash + '"                                                    \
+                        -e COMPILE_MULTI_THREADS="yes"                                                         \
                         -e MODE="' + mode + '"                                                                 \
-                        -e REGARDS_HOME="${REGARDS_HOME}"                                                      \
+                        -e REGARDS_HOME=/app_to_build                                                          \
                         -e REGARDS_MS="' + regardsMs + '"                                                      '
     if (isRequiringCots) {
         def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
