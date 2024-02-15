@@ -645,22 +645,26 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         Set<FeatureCreationRequest> requests = featureCreationRequestRepo.findByGroupIdIn(errorByGroupId.keySet());
 
         if (!requests.isEmpty()) {
-            // publish error notification for all request id
-            requests.forEach(item -> publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION,
-                                                                                 item.getRequestId(),
-                                                                                 item.getRequestOwner(),
-                                                                                 item.getProviderId(),
-                                                                                 item.getUrn(),
-                                                                                 RequestState.ERROR,
-                                                                                 null)));
             // set FeatureCreationRequest to error state
             for (FeatureCreationRequest request : requests) {
                 String errorCause = Optional.ofNullable(errorByGroupId.get(request.getGroupId()))
                                             .orElse("unknown error.");
-                LOGGER.error("Error received from storage for request {}. Cause : {}",
-                             request.getProviderId(),
-                             errorCause);
+                String errorMessage = String.format("Error received from storage for request id %s and provider id %s. "
+                                                    + "Cause : %s",
+                                                    request.getRequestId(),
+                                                    request.getProviderId(),
+                                                    errorCause);
+                LOGGER.error(errorMessage);
                 addRemoteStorageError(request, errorCause);
+
+                // publish error notification
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION,
+                                                            request.getRequestId(),
+                                                            request.getRequestOwner(),
+                                                            request.getProviderId(),
+                                                            request.getUrn(),
+                                                            RequestState.ERROR,
+                                                            Sets.newHashSet(errorMessage)));
             }
             doOnError(requests);
             featureCreationRequestRepo.saveAll(requests);

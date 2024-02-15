@@ -572,7 +572,22 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             for (FeatureUpdateRequest request : requests) {
                 String errorCause = Optional.ofNullable(errorByGroupId.get(request.getGroupId()))
                                             .orElse("unknown error.");
+                String errorMessage = String.format("Error received from storage for request id %s and provider id %s. "
+                                                    + "Cause : %s",
+                                                    request.getRequestId(),
+                                                    request.getProviderId(),
+                                                    errorCause);
+                LOGGER.error(errorMessage);
                 addRemoteStorageError(request, errorCause);
+
+                // publish error notification for all request id
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
+                                                            request.getRequestId(),
+                                                            request.getRequestOwner(),
+                                                            request.getProviderId(),
+                                                            request.getUrn(),
+                                                            RequestState.ERROR,
+                                                            Sets.newHashSet(errorMessage)));
             }
             doOnError(requests);
             featureUpdateRequestRepository.saveAll(requests);
