@@ -156,4 +156,9 @@ public class FileReferenceEventHandler
         listener.onFileStoreError(storedError);
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
+    }
+
 }

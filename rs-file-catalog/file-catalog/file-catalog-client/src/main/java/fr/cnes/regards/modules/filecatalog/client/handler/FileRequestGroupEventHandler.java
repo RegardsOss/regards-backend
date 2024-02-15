@@ -215,4 +215,10 @@ public class FileRequestGroupEventHandler
     public Errors validate(FileRequestsGroupEvent message) {
         return null;
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
+    }
+
 }
