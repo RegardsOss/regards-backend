@@ -135,7 +135,7 @@ public class SearchHistoryService {
     }
 
     @RegardsTransactional
-    public void updateSearchHistory(Long id, String searchHistoryConf) throws EntityException {
+    public SearchHistoryDto updateSearchHistory(Long id, String searchHistoryConf) throws EntityException {
         if (id == null) {
             throw new EntityInvalidException("SearchHistory element id cannot be null");
         }
@@ -143,7 +143,8 @@ public class SearchHistoryService {
         if (searchHistoryOpt.isPresent()) {
             SearchHistory searchHistory = searchHistoryOpt.get();
             searchHistory.setConfiguration(searchHistoryConf);
-            searchHistoryRepository.save(searchHistory);
+            searchHistory = searchHistoryRepository.save(searchHistory);
+            return searchHistoryMapper.convertToSearchHistoryDto(searchHistory);
         } else {
             throw new EntityInvalidException("SearchHistory element not found");
         }
