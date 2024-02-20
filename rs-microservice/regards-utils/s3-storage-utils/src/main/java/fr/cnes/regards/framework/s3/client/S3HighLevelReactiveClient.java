@@ -205,10 +205,6 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         String bucket = config.getBucket();
         String entryKey = readCmd.getEntryKey();
         return getClient(config).readContentFlux(bucket, entryKey, true)
-                                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
-                                                .filter(t -> !(t instanceof NoSuchKeyException))
-                                                .doBeforeRetry(x -> LOGGER.info("Retrying read entry {}", entryKey))
-                                                .maxBackoff(Duration.ofSeconds(3)))
                                 .map(ras -> (ReadResult) new ReadingPipe(readCmd,
                                                                          Mono.just(getStorageEntry(config,
                                                                                                    entryKey,
@@ -222,14 +218,13 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         Long size = ras.getResponse().contentLength();
         String etag = ras.getResponse().eTag();
         LOGGER.debug("Reading entry={} size={} eTag={}", entryKey, size, etag);
-        StorageEntry storageEntry = StorageEntry.builder()
-                                                .config(config)
-                                                .fullPath(entryKey)
-                                                .checksum(Option.of(Tuple.of("eTag", etag)))
-                                                .size(Option.of(size))
-                                                .data(ras.getStream())
-                                                .build();
-        return storageEntry;
+        return StorageEntry.builder()
+                           .config(config)
+                           .fullPath(entryKey)
+                           .checksum(Option.of(Tuple.of("eTag", etag)))
+                           .size(Option.of(size))
+                           .data(ras.getStream())
+                           .build();
     }
 
     public Mono<WriteResult> writeMono(Write writeCmd) {
@@ -418,8 +413,10 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
 
             IS3ClientReactorWrapper client = getClient(config);
 
-            return deleteArchiveContent(deleteCmd, bucket, archivePath, client).transform(deleteErrorManagement(
-                deleteCmd));
+            return deleteArchiveContent(deleteCmd,
+                                        bucket,
+                                        archivePath,
+                                        client).onErrorResume(t -> Mono.just(new DeleteFailure(deleteCmd)));
         });
     }
 
@@ -431,15 +428,9 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
 
             IS3ClientReactorWrapper client = getClient(config);
 
-            return deleteContent(deleteCmd, bucket, key, client).transform(deleteErrorManagement(deleteCmd));
+            return deleteContent(deleteCmd, bucket, key, client).onErrorResume(t -> Mono.just(new DeleteFailure(
+                deleteCmd)));
         });
-    }
-
-    private Function<Mono<DeleteResult>, Publisher<DeleteResult>> deleteErrorManagement(Delete deleteCmd) {
-        return mdr -> mdr.retryWhen(Retry.backoff(5, Duration.ofSeconds(5))
-                                         .jitter(0.2d)
-                                         .maxBackoff(Duration.ofMinutes(5)))
-                         .onErrorResume(t -> Mono.just(new DeleteFailure(deleteCmd)));
     }
 
     private Mono<DeleteResult> deleteArchiveContent(Delete deleteCmd,

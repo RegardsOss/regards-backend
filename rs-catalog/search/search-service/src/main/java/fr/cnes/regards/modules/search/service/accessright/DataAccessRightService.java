@@ -96,29 +96,33 @@ public class DataAccessRightService {
      */
     private AccessStatus checkContentAccess(AbstractEntity<?> entity, Optional<String> fileChecksum)
         throws AccessRightFilterException, ExecutionException {
+
+        // First check if file is public or if license is not accepted by current user.
+        if (fileChecksum.isPresent()) {
+            if (!isPrivateFile(entity, fileChecksum.get())) {
+                // If file is public access is granted
+                return AccessStatus.GRANTED;
+            } else if (!licenseAccessorService.currentUserHasAcceptedLicense()) {
+                // If license is not accepted status is locked no matter what.
+                return AccessStatus.LOCKED;
+            }
+        }
+
+        // If file is private and license accepted check user groups for file access status
         final Set<String> userAccessGroups = accessRightFilter.getUserAccessGroups();
-        AccessStatus accessStatus;
         if (userAccessGroups != null) {
-            // access groups is null for admin users. Admin have always access
             if (entity instanceof Dataset dataset) {
-                accessStatus = getContentAccessOfDataset(dataset, userAccessGroups);
+                return getContentAccessOfDataset(dataset, userAccessGroups);
             } else if (entity instanceof DataObject dataObject) {
-                accessStatus = getContentAccessOfDataObject(dataObject, userAccessGroups);
+                return getContentAccessOfDataObject(dataObject, userAccessGroups);
             } else {
                 LOGGER.error("Not managed entity type " + entity.getClass());
                 return AccessStatus.ERROR;
             }
-            if (!accessStatus.isGranted()) {
-                return accessStatus;
-            }
+        } else {
+            // Access groups is null for admin users. Admin have always access
+            return AccessStatus.GRANTED;
         }
-        // if file access check, control if file is private, and check licence in this case
-        if (fileChecksum.isPresent()) {
-            if (isPrivateFile(entity, fileChecksum.get()) && !licenseAccessorService.currentUserHasAcceptedLicense()) {
-                return AccessStatus.LOCKED;
-            }
-        }
-        return AccessStatus.GRANTED;
     }
 
     /**

@@ -133,52 +133,63 @@ public class NotificationRegistrationService {
      * Wrapper to handle job crash for a list of requests and a recipient id.
      * Try with optimistic lock to clean associated NotificationRequests in handleJobCrashConcurrent
      */
-    public void handleJobCrash(Set<Long> requestIds, String abortedRecipientId) {
+    public void handleJobCrash(Set<Long> requestIds, String abortedRecipientBusinessId) {
         try {
-            self.handleJobCrashConcurrent(requestIds, abortedRecipientId);
+            self.handleJobCrashConcurrent(requestIds, abortedRecipientBusinessId);
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
             // we retry until it succeed because if it does not succeed on first time it is most likely because of
             // another scheduled method that would then most likely happen at next invocation because execution delays are fixed
-            handleJobCrash(requestIds, abortedRecipientId);
+            handleJobCrash(requestIds, abortedRecipientBusinessId);
         }
     }
 
     /**
-     * For each request check if request can be retried by setting its state to TO_SCHEDULE_BY_RECIPIENT
+     * For each request in an aborted job, transfer every recipientScheduled to recipientToSchedule that matches the
+     * abortedRecipientBusinessId of the job and then set the request state back to TO_SCHEDULE_BY_RECIPIENT
      */
-    public void handleJobCrashConcurrent(Set<Long> requestIds, String abortedRecipientId) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleJobCrashConcurrent(Set<Long> requestIds, String abortedRecipientBusinessId) {
         List<NotificationRequest> notificationRequests = notificationRequestRepository.findAllById(requestIds);
+        Set<Long> notificationRequestIdsToUpdate = new HashSet<>();
         notificationRequests.forEach(notificationRequest -> {
             if (notificationRequest.getState().isRunning()) {
                 LOGGER.error("Job crash detected for request {}. State is reset to be handled on next scheduled "
                              + "task.", notificationRequest.getRequestId());
-                // Update request state to be scheduled
-                notificationRequest.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
-                // Update associated recipients to remove all scheduled recipients and add them to the list of
-                // recipients to schedule. Doing this reset the request in its initial state and set it ready for
-                // restart.
-                List<PluginConfiguration> notAbortedScheduledRecipients = new ArrayList<>();
-                List<PluginConfiguration> abortedRecipientsToSchedule = new ArrayList<>();
-                notificationRequest.getRecipientsScheduled().forEach(scheduledRecipient -> {
-                    if (scheduledRecipient.getBusinessId().equals(abortedRecipientId)) {
-                        abortedRecipientsToSchedule.add(scheduledRecipient);
-                    } else {
-                        notAbortedScheduledRecipients.add(scheduledRecipient);
-                    }
-                });
-                notificationRequest.getRecipientsScheduled().clear();
-                notificationRequest.getRecipientsScheduled().addAll(notAbortedScheduledRecipients);
-
-                notificationRequest.getRecipientsToSchedule().addAll(abortedRecipientsToSchedule);
+                Optional<PluginConfiguration> requestStillHasRecipientScheduled = notificationRequest.getRecipientsScheduled()
+                                                                                                     .stream()
+                                                                                                     .filter(
+                                                                                                         scheduledRecipient -> scheduledRecipient.getBusinessId()
+                                                                                                                                                 .equals(
+                                                                                                                                                     abortedRecipientBusinessId))
+                                                                                                     .findAny();
+                if (requestStillHasRecipientScheduled.isPresent()) {
+                    Long abortedRecipientId = requestStillHasRecipientScheduled.get().getId();
+                    // Update associated recipients to remove all scheduled recipients and add them to the list of
+                    // recipients to schedule. Doing this reset the request in its initial state and set it ready for
+                    // restart.
+                    notificationRequestRepository.addRecipientToSchedule(notificationRequest.getId(),
+                                                                         abortedRecipientId);
+                    notificationRequestRepository.removeRecipientScheduled(notificationRequest.getId(),
+                                                                           abortedRecipientId);
+                    // Keep request ID to update its state
+                    notificationRequestIdsToUpdate.add(notificationRequest.getId());
+                } else {
+                    // should not happen
+                    LOGGER.warn("Job crash detected for request {} and recipient business id {}, but recipient no "
+                                 + "longer exists", notificationRequest.getRequestId(), abortedRecipientBusinessId);
+                }
             } else {
                 // Nothing to do, request is already in a final state.
                 LOGGER.error("Job crash detected for request {}. Request is already on a final state {} so "
                              + "nothing is done.", notificationRequest.getRequestId(), notificationRequest.getState());
             }
         });
-        // Update requests in database after modification
-        notificationRequestRepository.saveAll(notificationRequests);
+        // Update requests in database after modification, if not empty
+        if (!notificationRequestIdsToUpdate.isEmpty()) {
+            notificationRequestRepository.updateState(NotificationState.TO_SCHEDULE_BY_RECIPIENT,
+                                                      notificationRequestIdsToUpdate);
+        }
     }
 
     public Set<NotificationRequestEvent> handleRetryRequests(List<? extends NotificationRequestEvent> events) {
@@ -201,47 +212,66 @@ public class NotificationRegistrationService {
                                                                                        Function.identity()));
         Set<NotificationRequest> alreadyKnownRequests = notificationRequestRepository.findAllByRequestIdIn(
             eventsPerRequestId.keySet());
-        Set<NotificationRequest> updated = new HashSet<>();
-        Set<NotifierEvent> responseToSend = new HashSet<>();
+        Set<NotificationRequest> grantedRequests = new HashSet<>();
+        Set<NotificationRequest> toScheduleRequests = new HashSet<>();
+        int nbUpdatedRequests = 0;
+        List<NotifierEvent> responseToSend = new ArrayList<>();
 
         int nbRequestRetriedForRecipientError = 0;
         int nbRequestRetriedForRulesError = 0;
 
         for (NotificationRequest knownRequest : alreadyKnownRequests) {
-
+            boolean requestToUpdate = false;
             if (!knownRequest.getRecipientsInError().isEmpty()) {
+                Long knownRequestId = knownRequest.getId();
                 // This is a retry, let's prepare everything so that it can be retried properly
-                knownRequest.getRecipientsToSchedule().addAll(knownRequest.getRecipientsInError());
-                knownRequest.getRecipientsInError().clear();
-                knownRequest.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
-                updated.add(knownRequest);
-                responseToSend.add(new NotifierEvent(knownRequest.getRequestId(),
-                                                     knownRequest.getRequestOwner(),
-                                                     NotificationState.GRANTED));
-                // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
-                eventsPerRequestId.put(knownRequest.getRequestId(), null);
+                // transfer every recipientsInError to recipientToSchedule
+                knownRequest.getRecipientsInError()
+                            .forEach(r -> notificationRequestRepository.addRecipientToSchedule(knownRequestId,
+                                                                                               r.getId()));
+                notificationRequestRepository.removeRecipientErrors(knownRequestId,
+                                                                    knownRequest.getRecipientsInError()
+                                                                                .stream()
+                                                                                .map(PluginConfiguration::getId)
+                                                                                .collect(Collectors.toSet()));
+
+                toScheduleRequests.add(knownRequest);
                 nbRequestRetriedForRecipientError++;
+                requestToUpdate = true;
             }
             // This allows to retry if a rule failed to be matched to this notification.
             // THIS HAS TO BE DONE AFTER RECIPIENTS IN ERROR!!!! Otherwise, the rules won't be applied again
             if (!knownRequest.getRulesToMatch().isEmpty()) {
-                knownRequest.setState(NotificationState.GRANTED);
-                updated.add(knownRequest);
-                // This is a set so that we are not adding multiple time the same notifier event
+                grantedRequests.add(knownRequest);
+                toScheduleRequests.remove(knownRequest);
+                nbRequestRetriedForRulesError++;
+                requestToUpdate = true;
+            }
+            if (requestToUpdate) {
+                nbUpdatedRequests++;
                 responseToSend.add(new NotifierEvent(knownRequest.getRequestId(),
                                                      knownRequest.getRequestOwner(),
                                                      NotificationState.GRANTED));
                 // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
-                // in worst case this is done twice, not a problem
                 eventsPerRequestId.put(knownRequest.getRequestId(), null);
-                nbRequestRetriedForRulesError++;
             }
         }
-        publisher.publish(new ArrayList<>(responseToSend));
-        notificationRequestRepository.saveAll(updated);
+        if (!toScheduleRequests.isEmpty()) {
+            notificationRequestRepository.updateState(NotificationState.TO_SCHEDULE_BY_RECIPIENT,
+                                                      toScheduleRequests.stream()
+                                                                        .map(NotificationRequest::getId)
+                                                                        .collect(Collectors.toSet()));
+        }
+        if (!grantedRequests.isEmpty()) {
+            notificationRequestRepository.updateState(NotificationState.GRANTED,
+                                                      grantedRequests.stream()
+                                                                     .map(NotificationRequest::getId)
+                                                                     .collect(Collectors.toSet()));
+        }
+        publisher.publish(responseToSend);
         LOGGER.debug(
             "Out of {} request retried, {} have been handle for retry following recipient error, {} have been handle for retry following rule matching error",
-            updated.size(),
+            nbUpdatedRequests,
             nbRequestRetriedForRecipientError,
             nbRequestRetriedForRulesError);
         return eventsPerRequestId.values().stream().filter(Objects::nonNull).collect(Collectors.toSet());

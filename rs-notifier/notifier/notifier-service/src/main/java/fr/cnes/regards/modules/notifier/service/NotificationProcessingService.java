@@ -98,12 +98,15 @@ public class NotificationProcessingService {
                                                   PluginConfiguration recipient) {
         // If recipient is null, it means it has been removed from all notification requests - therefore there's nothing to do
         if (recipient != null) {
+            long startTime = System.currentTimeMillis();
             LOGGER.debug("Start processing for recipient {}", recipient.getLabel());
             Collection<NotificationRequest> notificationsInError = notifyRecipient(notificationRequests, recipient);
             Pair<Integer, Integer> result = self.handleRecipientResults(notificationRequests,
                                                                         recipient,
                                                                         notificationsInError);
-            LOGGER.debug("End processing for recipient {}", recipient.getLabel());
+            LOGGER.debug("End processing for recipient {} done in {}ms",
+                         recipient.getLabel(),
+                         System.currentTimeMillis() - startTime);
             return result;
         }
         return Pair.of(notificationRequests.size(), 0);
@@ -144,19 +147,19 @@ public class NotificationProcessingService {
     public Pair<Integer, Integer> handleRecipientResultsConcurrent(List<NotificationRequest> notificationRequests,
                                                                    PluginConfiguration recipient,
                                                                    Collection<NotificationRequest> notificationsInError) {
-
         notificationRequests.forEach(notificationRequest -> {
             if (notificationsInError.contains(notificationRequest)) {
-                notificationRequest.getRecipientsScheduled().remove(recipient);
-                notificationRequest.getRecipientsInError().add(recipient);
+                notificationRequestRepository.addRecipientInError(notificationRequest.getId(), recipient.getId());
             } else {
-                notificationRequest.getSuccessRecipients().add(recipient);
-                notificationRequest.getRecipientsScheduled().remove(recipient);
+                notificationRequestRepository.addRecipientInSuccess(notificationRequest.getId(), recipient.getId());
             }
         });
 
-        // Save all notifications (success removal will be done later)
-        notificationRequestRepository.saveAll(notificationRequests);
+        notificationRequestRepository.removeRecipientsScheduledForRequestIds(notificationRequests.stream()
+                                                                                                 .map(
+                                                                                                     NotificationRequest::getId)
+                                                                                                 .collect(Collectors.toSet()),
+                                                                             recipient.getId());
         return Pair.of(notificationRequests.size() - notificationsInError.size(), notificationsInError.size());
     }
 
@@ -200,38 +203,42 @@ public class NotificationProcessingService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Set<Long> scheduleJobForOneRecipientConcurrent(PluginConfiguration recipient,
                                                           List<NotificationRequest> requestsToSchedule) {
-        Set<Long> toScheduleId = new HashSet<>();
+        Set<Long> requestIdsToSchedule = new HashSet<>();
         if (!requestsToSchedule.isEmpty()) {
+            Set<Long> scheduledRequestIds = new HashSet<>();
             for (NotificationRequest request : requestsToSchedule) {
-                request.getRecipientsToSchedule().remove(recipient);
-                request.getRecipientsScheduled().add(recipient);
-                // Because of concurrency issues, we have to try to set this request state to SCHEDULED here.
-                // The first condition is self-explanatory.
-                // The second condition is a bit more complex : it represents the case when requests are retried during scheduling.
-                // 1. If rulesToMatch is empty it means the matching process succeeded.
-                // 2. If rulesToMatch is not empty :
-                //  - if we are in state GRANTED, it means it has just been retried.
-                //    In this case we should not change state, so that the matching process takes place.
-                //  - if we are not in state GRANTED, it means it has not yet been retried.
-                //    In this case we have nothing to do, since the retry will take place (or not) later.
-                if (request.getRecipientsToSchedule().isEmpty() && (request.getRulesToMatch().isEmpty()
-                                                                    || (request.getState()
-                                                                        != NotificationState.GRANTED))) {
-                    request.setState(NotificationState.SCHEDULED);
+                requestIdsToSchedule.add(request.getId());
+                notificationRequestRepository.addRecipientScheduled(request.getId(), recipient.getId());
+                // If recipient to remove is the last one we can change request status to fully scheduled.
+                // A request is in SCHEDULED status only when all rules have been checked (no more entries in rules to
+                // match)
+                // Nevertheless, if request state is back to GRANTED status that means than a retry of errors has
+                // been done for this request. So request should remains at GRANTED status to allow new rule matching
+                // process.
+                boolean isLastRecipient = request.getRecipientsToSchedule().size() == 1
+                                          && request.getRecipientsToSchedule().contains(recipient);
+                if (isLastRecipient && (request.getRulesToMatch().isEmpty() || (request.getState()
+                                                                                != NotificationState.GRANTED))) {
+                    scheduledRequestIds.add(request.getId());
                 }
-                toScheduleId.add(request.getId());
             }
+
+            notificationRequestRepository.removeRecipientToScheduleForRequestIds(requestIdsToSchedule,
+                                                                                 recipient.getId());
+            if (!scheduledRequestIds.isEmpty()) {
+                notificationRequestRepository.updateState(NotificationState.SCHEDULED, scheduledRequestIds);
+            }
+
             JobInfo notificationJobForRecipient = new JobInfo(false,
                                                               0,
                                                               Sets.newHashSet(new JobParameter(NotificationJob.NOTIFICATION_REQUEST_IDS,
-                                                                                               toScheduleId),
+                                                                                               requestIdsToSchedule),
                                                                               new JobParameter(NotificationJob.RECIPIENT_BUSINESS_ID,
                                                                                                recipient.getBusinessId())),
                                                               null,
                                                               NotificationJob.class.getName());
             jobInfoService.createAsQueued(notificationJobForRecipient);
-            notificationRequestRepository.saveAll(requestsToSchedule);
-            return toScheduleId;
+            return requestIdsToSchedule;
         }
         return new HashSet<>();
     }

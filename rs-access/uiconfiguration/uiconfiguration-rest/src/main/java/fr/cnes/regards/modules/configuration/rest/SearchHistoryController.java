@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.configuration.service.SearchHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -92,10 +93,10 @@ public class SearchHistoryController implements IResourceController<SearchHistor
         @RequestParam(value = "moduleId") final Long moduleId,
         @Parameter(hidden = true) final PagedResourcesAssembler<SearchHistoryDto> assembler,
         @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
-        final Page<SearchHistoryDto> searchHistoryPage = searchHistoryService.retrieveSearchHistory(accountEmail,
-                                                                                                    moduleId,
-                                                                                                    pageable);
-        return new ResponseEntity<>(toPagedResources(searchHistoryPage, assembler), HttpStatus.OK);
+        return new ResponseEntity<>(toPagedResources(searchHistoryService.retrieveSearchHistory(accountEmail,
+                                                                                                moduleId,
+                                                                                                pageable), assembler),
+                                    HttpStatus.OK);
     }
 
     /**
@@ -120,27 +121,30 @@ public class SearchHistoryController implements IResourceController<SearchHistor
         @Valid @RequestBody final SearchHistoryDto searchHistoryDto,
         @RequestParam(value = "accountEmail") final String accountEmail,
         @RequestParam(value = "moduleId") Long moduleId) throws EntityException {
-        final SearchHistoryDto searchHistory = searchHistoryService.addSearchHistory(searchHistoryDto,
+        return new ResponseEntity<>(toResource(searchHistoryService.addSearchHistory(searchHistoryDto,
                                                                                      accountEmail,
-                                                                                     moduleId);
-        return new ResponseEntity<>(toResource(searchHistory), HttpStatus.OK);
+                                                                                     moduleId)), HttpStatus.OK);
     }
 
     @Operation(summary = "Update a search history element.",
                description = "Update search history element using its id.")
     @ApiResponses(value = { @ApiResponse(responseCode = "201",
-                                         description = "The searh history element was successfully updated"),
+                                         description = "The searh history element was successfully updated. Returns "
+                                                       + "SearchHistoryDto."),
                             @ApiResponse(responseCode = "403",
                                          description = "The endpoint is not accessible for the user.",
                                          content = { @Content(mediaType = "application/html") }) })
     @PutMapping("/{searchHistoryId}")
     @ResponseBody
     @ResourceAccess(description = "Update a search history element", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<Void>> updateSearchHistory(
+    public ResponseEntity<EntityModel<SearchHistoryDto>> updateSearchHistory(
         @PathVariable("searchHistoryId") final Long searchHistoryId,
-        @Valid @RequestBody final String searchHistoryConfig) throws EntityException {
-        searchHistoryService.updateSearchHistory(searchHistoryId, searchHistoryConfig);
-        return new ResponseEntity<>(HttpStatus.OK);
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Search history config to be processed",
+                                                              content = @Content(schema = @Schema(implementation = String.class)))
+        @RequestBody final String searchHistoryConfig) throws EntityException {
+        return new ResponseEntity<>(toResource(searchHistoryService.updateSearchHistory(searchHistoryId,
+                                                                                        searchHistoryConfig)),
+                                    HttpStatus.OK);
     }
 
     @Operation(summary = "Delete a search history element.",

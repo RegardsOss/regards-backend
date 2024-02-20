@@ -129,7 +129,12 @@ public final class S3ServerUtils {
                                  StorageConfig.builder(s3Server.getEndpoint(),
                                                        s3Server.getRegion(),
                                                        s3Server.getKey(),
-                                                       s3Server.getSecret()).bucket(bucket).build());
+                                                       s3Server.getSecret())
+                                              .bucket(bucket)
+                                              .maxRetriesNumber(s3Server.getMaxRetriesNumber())
+                                              .retryBackOffMaxDuration(s3Server.getRetryBackOffMaxDuration())
+                                              .retryBackOffBaseDuration(s3Server.getRetryBackOffBaseDuration())
+                                              .build());
 
     }
 

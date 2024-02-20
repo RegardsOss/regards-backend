@@ -32,11 +32,9 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
-import fr.cnes.regards.framework.s3.domain.StorageCommand;
-import fr.cnes.regards.framework.s3.domain.StorageCommandID;
-import fr.cnes.regards.framework.s3.domain.StorageCommandResult;
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
+import fr.cnes.regards.framework.s3.domain.*;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
+import fr.cnes.regards.framework.s3.test.S3BucketTestUtils;
 import fr.cnes.regards.modules.delivery.amqp.output.DeliveryResponseDtoEvent;
 import fr.cnes.regards.modules.delivery.dao.IDeliveryAndJobRepository;
 import fr.cnes.regards.modules.delivery.dao.IDeliveryRequestRepository;
@@ -51,6 +49,7 @@ import fr.cnes.regards.modules.delivery.service.order.zip.env.config.TestDeliver
 import fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -64,8 +63,9 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -119,10 +119,19 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
     @Autowired
     private IJobInfoService jobInfoService;
 
+    private S3Server s3Server;
+
     @Before
     public void init() throws Exception {
         clean();
         initS3Settings(testS3);
+        s3Server = getS3Server();
+        S3BucketTestUtils.createBucket(s3Server);
+    }
+
+    @After
+    public void reset() {
+        S3BucketTestUtils.deleteBucket(s3Server);
     }
 
     @Test
@@ -199,20 +208,8 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
         Assertions.assertThat(responses.get(1).getJobEventType()).isEqualTo(finalJobStatus);
     }
 
-    public void checkZipDeliveryExistsOnS3() throws URISyntaxException {
-        StorageConfig storageConfig = StorageConfig.builder(new URI(testS3.getScheme(),
-                                                                    null,
-                                                                    testS3.getHost(),
-                                                                    testS3.getPort(),
-                                                                    null,
-                                                                    null,
-                                                                    null).toString(),
-                                                            testS3.getRegion(),
-                                                            testS3.getKey(),
-                                                            testS3.getSecret())
-                                                   .rootPath(DELIVERY_CORRELATION_ID)
-                                                   .bucket(testS3.getBucket())
-                                                   .build();
+    public void checkZipDeliveryExistsOnS3() throws MalformedURLException {
+        StorageConfig storageConfig = getStorageConfig();
 
         StorageCommandID cmdId = new StorageCommandID("test-exists-S3-delivery", UUID.randomUUID());
         String expectedZipPath = DELIVERY_CORRELATION_ID + "/" + String.format(MULTIPLE_FILES_ZIP_NAME_PATTERN,
@@ -227,6 +224,23 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
                                          throw new S3ClientException(unreachableStorage.getThrowable());
                                      });
 
+    }
+
+    private StorageConfig getStorageConfig() throws MalformedURLException {
+        // Actually, delivery gets its S3 config from {@link DeliverySettingService} and not from StorageConfig
+        return new StorageConfig.StorageConfigBuilder(getS3Server()).rootPath(DELIVERY_CORRELATION_ID).build();
+    }
+
+    private S3Server getS3Server() {
+        try {
+            return new S3Server(new URL(testS3.getScheme(), testS3.getHost(), testS3.getPort(), "").toString(),
+                                testS3.getRegion(),
+                                testS3.getKey(),
+                                testS3.getSecret(),
+                                testS3.getBucket());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private S3HighLevelReactiveClient getS3Client() {

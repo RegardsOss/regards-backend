@@ -81,4 +81,9 @@ public class FileReferenceUpdateEventHandler
         }
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
+    }
+
 }

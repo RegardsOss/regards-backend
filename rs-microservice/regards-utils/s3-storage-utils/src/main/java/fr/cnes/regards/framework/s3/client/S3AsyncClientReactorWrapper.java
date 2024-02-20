@@ -41,7 +41,6 @@ import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedAsyncClientOption;
 import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.core.retry.RetryPolicy;
 import software.amazon.awssdk.core.retry.backoff.BackoffStrategy;
 import software.amazon.awssdk.core.retry.backoff.EqualJitterBackoffStrategy;
 import software.amazon.awssdk.regions.Region;
@@ -113,17 +112,18 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         return Mono.fromFuture(futSupplier).onErrorMap(CompletionException.class, Throwable::getCause);
     }
 
+    /**
+     * Defines the AWS S3 SDK retry configuration based on the {@link StorageConfig} properties configuration
+     */
     private static ClientOverrideConfiguration createRetryConfiguration(StorageConfig config) {
         BackoffStrategy backoffStrategy = EqualJitterBackoffStrategy.builder()
                                                                     .baseDelay(Duration.ofSeconds(config.getRetryBackOffBaseDuration()))
                                                                     .maxBackoffTime(Duration.ofSeconds(config.getRetryBackOffMaxDuration()))
                                                                     .build();
         return ClientOverrideConfiguration.builder()
-                                          .retryPolicy(RetryPolicy.builder()
-                                                                  .backoffStrategy(backoffStrategy)
-                                                                  .throttlingBackoffStrategy(backoffStrategy)
-                                                                  .numRetries(config.getMaxRetriesNumber())
-                                                                  .build())
+                                          .retryPolicy(builder -> builder.backoffStrategy(backoffStrategy)
+                                                                         .throttlingBackoffStrategy(backoffStrategy)
+                                                                         .numRetries(config.getMaxRetriesNumber()))
                                           .build();
     }
 
