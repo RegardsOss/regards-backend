@@ -12,12 +12,12 @@ public interface StorageCommandResult {
         default <R> R matchCheckResult(Function1<? super CheckPresent, R> present,
                                        Function1<? super CheckAbsent, R> absent,
                                        Function1<? super UnreachableStorage, R> unreachable) {
-            if (this instanceof UnreachableStorage) {
-                return unreachable.apply((UnreachableStorage) this);
-            } else if (this instanceof CheckPresent) {
-                return present.apply((CheckPresent) this);
-            } else if (this instanceof CheckAbsent) {
-                return absent.apply((CheckAbsent) this);
+            if (this instanceof UnreachableStorage unreachableStorage) {
+                return unreachable.apply(unreachableStorage);
+            } else if (this instanceof CheckPresent checkPresent) {
+                return present.apply(checkPresent);
+            } else if (this instanceof CheckAbsent checkAbsent) {
+                return absent.apply(checkAbsent);
             } else {
                 throw new IllegalStateException("No matching function for this " + this);
             }
@@ -29,12 +29,12 @@ public interface StorageCommandResult {
         default <R> R matchReadResult(Function1<? super ReadingPipe, R> pipe,
                                       Function1<? super UnreachableStorage, R> unreachable,
                                       Function1<? super ReadNotFound, R> notFound) {
-            if (this instanceof UnreachableStorage) {
-                return unreachable.apply((UnreachableStorage) this);
-            } else if (this instanceof ReadingPipe) {
-                return pipe.apply((ReadingPipe) this);
-            } else if (this instanceof ReadNotFound) {
-                return notFound.apply((ReadNotFound) this);
+            if (this instanceof UnreachableStorage unreachableStorage) {
+                return unreachable.apply(unreachableStorage);
+            } else if (this instanceof ReadingPipe readingPipe) {
+                return pipe.apply(readingPipe);
+            } else if (this instanceof ReadNotFound readNotFound) {
+                return notFound.apply(readNotFound);
             } else {
                 throw new IllegalStateException("No matching function for this " + this);
             }
@@ -46,12 +46,12 @@ public interface StorageCommandResult {
         default <R> R matchWriteResult(Function1<? super WriteSuccess, R> success,
                                        Function1<? super UnreachableStorage, R> unreachable,
                                        Function1<? super WriteFailure, R> failure) {
-            if (this instanceof UnreachableStorage) {
-                return unreachable.apply((UnreachableStorage) this);
-            } else if (this instanceof WriteSuccess) {
-                return success.apply((WriteSuccess) this);
-            } else if (this instanceof WriteFailure) {
-                return failure.apply((WriteFailure) this);
+            if (this instanceof UnreachableStorage unreachableStorage) {
+                return unreachable.apply(unreachableStorage);
+            } else if (this instanceof WriteSuccess writeSuccess) {
+                return success.apply(writeSuccess);
+            } else if (this instanceof WriteFailure writeFailure) {
+                return failure.apply(writeFailure);
             } else {
                 throw new IllegalStateException("No matching function for this " + this);
             }
@@ -63,12 +63,12 @@ public interface StorageCommandResult {
         default <R> R matchDeleteResult(Function1<? super DeleteSuccess, R> success,
                                         Function1<? super UnreachableStorage, R> unreachable,
                                         Function1<? super DeleteFailure, R> failure) {
-            if (this instanceof UnreachableStorage) {
-                return unreachable.apply((UnreachableStorage) this);
-            } else if (this instanceof DeleteSuccess) {
-                return success.apply((DeleteSuccess) this);
-            } else if (this instanceof DeleteFailure) {
-                return failure.apply((DeleteFailure) this);
+            if (this instanceof UnreachableStorage unreachableStorage) {
+                return unreachable.apply(unreachableStorage);
+            } else if (this instanceof DeleteSuccess deleteSuccess) {
+                return success.apply(deleteSuccess);
+            } else if (this instanceof DeleteFailure deleteFailure) {
+                return failure.apply(deleteFailure);
             } else {
                 throw new IllegalStateException("No matching function for this " + this);
             }

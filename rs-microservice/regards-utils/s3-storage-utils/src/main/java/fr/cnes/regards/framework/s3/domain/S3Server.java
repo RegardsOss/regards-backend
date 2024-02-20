@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.s3.domain;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 
 /**
@@ -62,6 +63,29 @@ public class S3Server {
      * By default, the pattern is {@link S3Server#DEFAULT_PATTERN}
      */
     private String pattern = DEFAULT_PATTERN;
+
+    /**
+     * Configure the maximum number of times that a single request should be retried by the AWS S3 SDK, assuming it
+     * fails for a retryable error.
+     */
+    @Nullable
+    private Integer maxRetriesNumber;
+
+    /**
+     * Duration in seconds used to delay before trying another time when retryable error occurs
+     * Used by {@link software.amazon.awssdk.core.retry.backoff.EqualJitterBackoffStrategy}
+     * See examples here {@link software.amazon.awssdk.core.retry.backoff.BackoffStrategy#defaultThrottlingStrategy(software.amazon.awssdk.core.retry.RetryMode)}
+     */
+    @Nullable
+    private Integer retryBackOffBaseDuration;
+
+    /**
+     * Duration in seconds used to compute a random delay before trying another time when retryable error occurs
+     * Used by {@link software.amazon.awssdk.core.retry.backoff.EqualJitterBackoffStrategy}
+     * See examples here {@link software.amazon.awssdk.core.retry.backoff.BackoffStrategy#defaultThrottlingStrategy(software.amazon.awssdk.core.retry.RetryMode)}
+     */
+    @Nullable
+    private Integer retryBackOffMaxDuration;
 
     public S3Server() {
     }
@@ -131,6 +155,30 @@ public class S3Server {
     public S3Server setPattern(String pattern) {
         this.pattern = pattern;
         return this;
+    }
+
+    public Integer getMaxRetriesNumber() {
+        return maxRetriesNumber;
+    }
+
+    public void setMaxRetriesNumber(Integer maxRetriesNumber) {
+        this.maxRetriesNumber = maxRetriesNumber;
+    }
+
+    public Integer getRetryBackOffBaseDuration() {
+        return retryBackOffBaseDuration;
+    }
+
+    public void setRetryBackOffBaseDuration(Integer retryBackOffBaseDuration) {
+        this.retryBackOffBaseDuration = retryBackOffBaseDuration;
+    }
+
+    public Integer getRetryBackOffMaxDuration() {
+        return retryBackOffMaxDuration;
+    }
+
+    public void setRetryBackOffMaxDuration(Integer retryBackOffMaxDuration) {
+        this.retryBackOffMaxDuration = retryBackOffMaxDuration;
     }
 
     @Override
