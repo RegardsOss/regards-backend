@@ -84,10 +84,10 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                     Set<Long> requestIds = jobInfo.getParametersAsMap()
                                                   .get(NotificationJob.NOTIFICATION_REQUEST_IDS)
                                                   .getValue();
-                    String recipientId = jobInfo.getParametersAsMap()
+                    String recipientBusinessId = jobInfo.getParametersAsMap()
                                                 .get(NotificationJob.RECIPIENT_BUSINESS_ID)
                                                 .getValue();
-                    notificationRegistrationService.handleJobCrash(requestIds, recipientId);
+                    notificationRegistrationService.handleJobCrash(requestIds, recipientBusinessId);
                 }
             }
         }

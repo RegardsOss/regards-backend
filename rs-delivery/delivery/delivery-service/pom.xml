@@ -106,5 +106,10 @@
             <artifactId>regards-job-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-s3-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

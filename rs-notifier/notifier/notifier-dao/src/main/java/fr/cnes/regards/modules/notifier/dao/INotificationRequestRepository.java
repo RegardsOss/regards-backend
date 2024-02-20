@@ -32,6 +32,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -122,5 +123,59 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
     @Modifying
     @Query("DELETE FROM NotificationRequest nr WHERE nr.id IN (?1)")
     void deleteByRequestIdIn(List<Long> requestIds);
+
+    @Modifying
+    @Query(value =
+               "DELETE from ta_notif_request_rules_to_match where notification_request_id = :requestId and rule_id in "
+               + "(:ruleIds)", nativeQuery = true)
+    void removeRulesToMatch(@Param("requestId") Long requestId, @Param("ruleIds") List<Long> ruleIds);
+
+    @Modifying
+    @Query(value = "DELETE from ta_notif_request_rules_to_match where notification_request_id in (:requestIds)",
+           nativeQuery = true)
+    void removeRulesToMatch(@Param("requestIds") Collection<Long> requestIds);
+
+    @Modifying
+    @Query(value = "insert into ta_notif_request_recipients_toschedule (notification_request_id, recipient_id) values "
+                   + "(:requestId, :recipientId)", nativeQuery = true)
+    void addRecipientToSchedule(@Param("requestId") Long requestId, @Param("recipientId") Long recipientId);
+
+    @Modifying
+    @Query(value = "DELETE from ta_notif_request_recipients_toschedule where notification_request_id in (:requestIds)"
+                   + " and recipient_id = :recipientId", nativeQuery = true)
+    void removeRecipientToScheduleForRequestIds(@Param("requestIds") Set<Long> requestsIds,
+                                                @Param("recipientId") Long recipientId);
+
+    @Modifying
+    @Query(value = "insert into ta_notif_request_recipients_scheduled (notification_request_id, recipient_id) values "
+                   + "(:requestId, :recipientId)", nativeQuery = true)
+    void addRecipientScheduled(@Param("requestId") Long requestId, @Param("recipientId") Long recipientId);
+
+    @Modifying
+    @Query(value = "DELETE from ta_notif_request_recipients_scheduled where notification_request_id in (:requestIds)"
+                   + " and recipient_id = :recipientId", nativeQuery = true)
+    void removeRecipientsScheduledForRequestIds(@Param("requestIds") Set<Long> requestsIds,
+                                                @Param("recipientId") Long recipientId);
+
+    @Modifying
+    @Query(value = "DELETE from ta_notif_request_recipients_scheduled where notification_request_id = :requestId"
+                   + " and recipient_id = :recipientId", nativeQuery = true)
+    void removeRecipientScheduled(@Param("requestId") Long requestId, @Param("recipientId") Long recipientId);
+
+    @Modifying
+    @Query(value = "insert into ta_notif_request_recipients_success (notification_request_id, recipient_id) values "
+                   + "(:requestId, :recipientId)", nativeQuery = true)
+    void addRecipientInSuccess(@Param("requestId") Long requestId, @Param("recipientId") Long recipientId);
+
+    @Modifying
+    @Query(value = "insert into ta_notif_request_recipients_error (notification_request_id, recipient_id) values "
+                   + "(:requestId, :recipientId)", nativeQuery = true)
+    void addRecipientInError(@Param("requestId") Long requestId, @Param("recipientId") Long recipientId);
+
+    @Modifying
+    @Query(value = "DELETE from ta_notif_request_recipients_error where notification_request_id = :requestId and "
+                   + "recipient_id in (:recipientIds)", nativeQuery = true)
+    void removeRecipientErrors(@Param("requestId") Long requestId,
+                               @Param("recipientIds") Collection<Long> recipientIds);
 
 }

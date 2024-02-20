@@ -50,12 +50,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @MultitenantTransactional
@@ -124,8 +120,60 @@ public class NotificationMatchingService {
         }
     }
 
+    /**
+     * Retrieve a {@link IRuleMatcher} plugin from given map cache or from
+     * {@link fr.cnes.regards.framework.modules.plugins.service.PluginService} if not in cache.
+     */
+    private IRuleMatcher getPlugin(String pluginConfId, Map<String, IRuleMatcher> pluginCache)
+        throws ModuleException, NotAvailablePluginConfigurationException {
+        IRuleMatcher ruleMatcher = pluginCache.get(pluginConfId);
+        if (ruleMatcher == null) {
+            ruleMatcher = pluginService.getPlugin(pluginConfId);
+            pluginCache.put(pluginConfId, ruleMatcher);
+        }
+        return ruleMatcher;
+    }
+
+    private record RuleMatchingResult(boolean match,
+                                      boolean error) {
+
+    }
+
+    /**
+     * Check if the given request match the given rule for notification.
+     * Result object indicates if the rule match and if an error occurred during match process.
+     */
+    private RuleMatchingResult isRuleMatching(Rule rule,
+                                              NotificationRequest notificationRequest,
+                                              Map<String, IRuleMatcher> pluginCache) {
+        boolean ruleMatched = false;
+        boolean error = false;
+
+        try {
+            IRuleMatcher rulePlugin = getPlugin(rule.getRulePlugin().getBusinessId(), pluginCache);
+            // check if the  element match with the rule
+            ruleMatched = rulePlugin.match(notificationRequest.getMetadata(), notificationRequest.getPayload());
+        } catch (ModuleException | NotAvailablePluginConfigurationException | PluginMetadataNotFoundRuntimeException |
+                 PluginUtilsRuntimeException e) {
+            // exception from rule plugin instantiation
+            LOGGER.error(String.format("Error while get plugin with id %S", rule.getRulePlugin().getBusinessId()), e);
+            // we do not set notification request in error so that we can later handle recipients that could be matched
+            // moreover, we do not stop the matching process as we want to process recipients as soon as possible
+            // the only drawback is that it is possible to process one recipient twice in case multiple rules
+            // associate the same recipient to one request and at least one of those rules could not be instantiated
+            error = true;
+        } catch (Exception e) {
+            LOGGER.error("Rule could not be matched because of unexpected issue: " + e.getMessage(), e);
+            error = true;
+        }
+        return new RuleMatchingResult(ruleMatched, error);
+    }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Pair<Integer, Integer> matchRequestNRecipientConcurrent(List<NotificationRequest> toBeMatched) {
+
+        long firstStart = System.currentTimeMillis();
+        LOGGER.debug("[MATCHING] Start ...");
 
         Set<PluginConfiguration> recipientsActuallyMatched = new HashSet<>();
         Set<NotificationRequest> requestsActuallyMatched = new HashSet<>();
@@ -134,41 +182,62 @@ public class NotificationMatchingService {
         // (association of pattern strategy(rules) and command(notification requests know what to apply))
         Set<PluginConfiguration> cannotBeInstantiatedRules = new HashSet<>();
 
+        Map<String, IRuleMatcher> pluginCache = new HashMap<>();
+
+        Set<NotificationRequest> fullyHandledRequests = new HashSet<>();
+        Set<NotificationRequest> requestsToSchedule = new HashSet<>();
+
         for (NotificationRequest notificationRequest : toBeMatched) {
             Set<Rule> couldBeMatched = new HashSet<>();
+            boolean ruleMatchingError = false;
+            int nbRecipientsSchedule = 0;
+            Set<PluginConfiguration> matchedRecipients = new HashSet<>();
+
             for (Rule rule : notificationRequest.getRulesToMatch()) {
-                try {
-                    IRuleMatcher rulePlugin = pluginService.getPlugin(rule.getRulePlugin().getBusinessId());
-                    // check if the  element match with the rule
-                    if (rulePlugin.match(notificationRequest.getMetadata(), notificationRequest.getPayload())) {
-                        for (PluginConfiguration recipient : rule.getRecipients()) {
-                            notificationRequest.getRecipientsToSchedule().add(recipient);
-                            // this is done so that we can know how many recipients have been matched by at least one request
-                            recipientsActuallyMatched.add(recipient);
-                        }
-                        requestsActuallyMatched.add(notificationRequest);
+                RuleMatchingResult result = isRuleMatching(rule, notificationRequest, pluginCache);
+                if (result.match) {
+                    requestsActuallyMatched.add(notificationRequest);
+                    // If at least one rule match, add all recipients associated to the rule to the list of
+                    // recipients to schedule.
+                    if (!rule.getRecipients().isEmpty()) {
+                        matchedRecipients.addAll(rule.getRecipients());
+                        requestsToSchedule.add(notificationRequest);
                     }
-                    notificationRequest.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
-                    couldBeMatched.add(rule);
-                } catch (ModuleException | NotAvailablePluginConfigurationException |
-                         PluginMetadataNotFoundRuntimeException | PluginUtilsRuntimeException e) {
-                    // exception from rule plugin instantiation
-                    LOGGER.error(String.format("Error while get plugin with id %S",
-                                               rule.getRulePlugin().getBusinessId()), e);
-                    // we do not set notification request in error so that we can later handle recipients that could be matched
-                    // moreover, we do not stop the matching process as we want to process recipients as soon as possible
-                    // the only drawback is that it is possible to process one recipient twice in case multiple rules
-                    // associate the same recipient to one request and at least one of those rules could not be instantiated
+                }
+                // Check if an error occurs during rule matching
+                if (result.error) {
+                    requestsCouldNotBeMatched.add(notificationRequest);
                     cannotBeInstantiatedRules.add(rule.getRulePlugin());
-                    requestsCouldNotBeMatched.add(notificationRequest);
-                } catch (Exception e) {
-                    LOGGER.error("Rule could not be matched because of unexpected issue: " + e.getMessage(), e);
-                    requestsCouldNotBeMatched.add(notificationRequest);
+                    ruleMatchingError = true;
+                } else {
+                    couldBeMatched.add(rule);
+                    recipientsActuallyMatched.addAll(rule.getRecipients());
                 }
             }
-            // we remove all rules that could be matched now to avoid playing with iterators
-            notificationRequest.getRulesToMatch().removeAll(couldBeMatched);
+
+            // Add all recipients id to schedule for the current request.
+            matchedRecipients.forEach(recipient -> {
+                notificationRequestRepository.addRecipientToSchedule(notificationRequest.getId(), recipient.getId());
+            });
+            // If ruleMatchingError occurs, only delete rules matching succeed ones. Keep errors in rules to match for next launch.
+            if (ruleMatchingError) {
+                List<Long> ruleIdsToRemove = couldBeMatched.stream().map(Rule::getId).toList();
+                if (!ruleIdsToRemove.isEmpty()) {
+                    notificationRequestRepository.removeRulesToMatch(notificationRequest.getId(), ruleIdsToRemove);
+                }
+            } else {
+                // Else, only add request to the list of success ended request to perform delete in one request after.
+                fullyHandledRequests.add(notificationRequest);
+            }
+
+            // notificationRequest.getRulesToMatch().removeAll(couldBeMatched);
+            LOGGER.debug("[MATCHING] Notification {} is to send to {} recipients",
+                         notificationRequest.getRequestId(),
+                         nbRecipientsSchedule);
         }
+
+        LOGGER.debug("[MATCHING] Calculation done in {}ms", System.currentTimeMillis() - firstStart);
+        long start = System.currentTimeMillis();
         // None of the notification requests have been set in state error
         // But there is indeed an issue that can only be resolved later (thanks to human interaction) so we need to say
         // the request has been in error so callers can handle it and ask for retry later.
@@ -191,21 +260,33 @@ public class NotificationMatchingService {
                                       MediaType.TEXT_HTML,
                                       DefaultRole.ADMIN);
         }
-        // do not forget to handle all requests that were not matched by any rule and so should be considered successful
-        // right now (for simplicity issue lets set its state to SCHEDULED and wait for the check to be done)
-        Predicate<NotificationRequest> isSchedulable = r -> Stream.of(!requestsCouldNotBeMatched.contains(r),
-                                                                      !requestsActuallyMatched.contains(r),
-                                                                      // because of retry logic in case of previous error in the matching process,
-                                                                      // we have to check that nothing is to be done (already planned)
-                                                                      // This case can happen if the rule that could not be matched earlier does not match the request
-                                                                      r.getRecipientsToSchedule().isEmpty(),
-                                                                      r.getRecipientsInError().isEmpty(),
-                                                                      r.getRecipientsScheduled().isEmpty(),
-                                                                      r.getRulesToMatch().isEmpty()).allMatch(b -> b);
+        LOGGER.debug("[MATCHING] Notification done in {}ms", System.currentTimeMillis() - start);
 
-        toBeMatched.stream().filter(isSchedulable).forEach(request -> request.setState(NotificationState.SCHEDULED));
+        Set<Long> requestsIdsFullyHandled = fullyHandledRequests.stream()
+                                                                .map(NotificationRequest::getId)
+                                                                .collect(Collectors.toSet());
+        Set<Long> requestIdsToSchedule = requestsToSchedule.stream()
+                                                           .map(NotificationRequest::getId)
+                                                           .collect(Collectors.toSet());
+        if (!fullyHandledRequests.isEmpty()) {
+            // For each request to fully handled (no error), delete all rules to match associated. Match is done.
+            notificationRequestRepository.removeRulesToMatch(requestsIdsFullyHandled);
+            // Remove all to scheduled request to keep only finished and not to schedule requests.
+            requestsIdsFullyHandled.removeAll(requestIdsToSchedule);
+        }
 
-        notificationRequestRepository.saveAll(toBeMatched);
+        if (!requestsIdsFullyHandled.isEmpty()) {
+            // For each request handled but not to schedule set state to SCHEDULED. The request will be next processed
+            // by the check completed requests scheduler.
+            notificationRequestRepository.updateState(NotificationState.SCHEDULED, requestsIdsFullyHandled);
+        }
+
+        if (!requestIdsToSchedule.isEmpty()) {
+            // For each request to schedule, update state to TO_SCHEDULE_BY_RECIPIENT
+            notificationRequestRepository.updateState(NotificationState.TO_SCHEDULE_BY_RECIPIENT, requestIdsToSchedule);
+        }
+
+        LOGGER.debug("[MATCHING] done in {}ms", System.currentTimeMillis() - firstStart);
         return Pair.of(requestsActuallyMatched.size(), recipientsActuallyMatched.size());
     }
 

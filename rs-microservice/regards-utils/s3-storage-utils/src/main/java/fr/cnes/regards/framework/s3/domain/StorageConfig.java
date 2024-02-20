@@ -4,6 +4,7 @@ import io.vavr.control.Option;
 import io.vavr.control.Try;
 import software.amazon.awssdk.utils.StringUtils;
 
+import javax.annotation.Nullable;
 import java.net.URL;
 import java.util.Objects;
 import java.util.function.Function;
@@ -54,11 +55,25 @@ public class StorageConfig {
 
         private String rootPath;
 
-        private Integer maxRetriesNumber = 5;
+        /**
+         * Configure the maximum number of times that a single request should be retried by the AWS S3 SDK, assuming it
+         * fails for a retryable error.
+         */
+        private Integer maxRetriesNumber = 4;
 
-        private Integer retryBackOffBaseDuration = 5;
+        /**
+         * Duration in seconds used to delay before trying another time when retryable error occurs
+         * Used by {@link software.amazon.awssdk.core.retry.backoff.EqualJitterBackoffStrategy}
+         * See examples here {@link software.amazon.awssdk.core.retry.backoff.BackoffStrategy#defaultThrottlingStrategy(software.amazon.awssdk.core.retry.RetryMode)}
+         */
+        private Integer retryBackOffBaseDuration = 1;
 
-        private Integer retryBackOffMaxDuration = 15;
+        /**
+         * Duration in seconds used to compute a random delay before trying another time when retryable error occurs
+         * Used by {@link software.amazon.awssdk.core.retry.backoff.EqualJitterBackoffStrategy}
+         * See examples here {@link software.amazon.awssdk.core.retry.backoff.BackoffStrategy#defaultThrottlingStrategy(software.amazon.awssdk.core.retry.RetryMode)}
+         */
+        private Integer retryBackOffMaxDuration = 20;
 
         private StorageConfigBuilder(String endpoint, String region, String key, String secret) {
             this.endpoint = endpoint;
@@ -90,13 +105,34 @@ public class StorageConfig {
             return this;
         }
 
+        public StorageConfigBuilder maxRetriesNumber(@Nullable Integer maxRetriesNumber) {
+            if (maxRetriesNumber != null) {
+                this.maxRetriesNumber = maxRetriesNumber;
+            }
+            return this;
+        }
+
         public StorageConfigBuilder retryBackOffBaseDuration(int retryBackOffBaseDuration) {
             this.retryBackOffBaseDuration = retryBackOffBaseDuration;
             return this;
         }
 
+        public StorageConfigBuilder retryBackOffBaseDuration(@Nullable Integer retryBackOffMaxDuration) {
+            if (retryBackOffMaxDuration != null) {
+                this.retryBackOffMaxDuration = retryBackOffMaxDuration;
+            }
+            return this;
+        }
+
         public StorageConfigBuilder retryBackOffMaxDuration(int retryBackOffMaxDuration) {
             this.retryBackOffMaxDuration = retryBackOffMaxDuration;
+            return this;
+        }
+
+        public StorageConfigBuilder retryBackOffMaxDuration(@Nullable Integer retryBackOffBaseDuration) {
+            if (retryBackOffBaseDuration != null) {
+                this.retryBackOffBaseDuration = retryBackOffBaseDuration;
+            }
             return this;
         }
 

@@ -319,7 +319,7 @@ def runMavenDockerImg(label, mode, containerName, regardsMs, nbMaxCpu, isRequiri
                         -e IGNORE_HASH="' + ignoreHash + '"                                                    \
                         -e COMPILE_MULTI_THREADS="yes"                                                         \
                         -e MODE="' + mode + '"                                                                 \
-                        -e REGARDS_HOME="${REGARDS_HOME}"                                                      \
+                        -e REGARDS_HOME=/app_to_build                                                          \
                         -e REGARDS_MS="' + regardsMs + '"                                                      '
     if (isRequiringCots) {
         def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
