@@ -299,8 +299,12 @@ public class DownloadUtilsIT {
                                                                                          null,
                                                                                          Collections.singletonList(
                                                                                              testServer),
-                                                                                         1000 * 1000L,
-                                                                                         tmpDirPath);
+                                                                                         new DownloadTmpConfigDto(false,
+                                                                                                                  1000
+                                                                                                                  * 1000L,
+                                                                                                                  tmpDirPath.resolve(
+                                                                                                                      checksum),
+                                                                                                                  true));
 
         // Then
         Assert.assertEquals("There should be one and only one tmp file", 1, tmpDirPath.toFile().list().length);

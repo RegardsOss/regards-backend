@@ -1,8 +1,12 @@
 package fr.cnes.regards.framework.utils.file;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.imageio.IIOException;
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -58,6 +62,37 @@ public class CommonFileUtilsTests {
         // create new file in target for walk
         Path dirWithFile = Paths.get("target", "CommonFileUtilsTests", "testGetAvailableFileNameEndsWithDot");
         testGetAvailableFileName(dirWithFile, "toto.", "toto_1.");
+    }
+
+    @Test
+    public void testGetImageDimensionsWithPng() throws IOException {
+        // GIVEN
+        String imagePath = "src/test/resources/images/france.png";
+        // WHEN
+        Dimension dimensions = CommonFileUtils.getImageDimension(new File(imagePath));
+        // THEN
+        Assertions.assertThat((int) dimensions.getHeight()).isEqualTo(802);
+        Assertions.assertThat((int) dimensions.getWidth()).isEqualTo(1280);
+    }
+
+    @Test
+    public void testGetImageDimensionsWithTif() throws IOException {
+        // GIVEN
+        String imagePath = "src/test/resources/images/bali.tif";
+        // WHEN
+        Dimension dimensions = CommonFileUtils.getImageDimension(new File(imagePath));
+        // THEN
+        Assertions.assertThat((int) dimensions.getHeight()).isEqualTo(489);
+        Assertions.assertThat((int) dimensions.getWidth()).isEqualTo(725);
+    }
+
+    @Test
+    public void testErrorGetImageDimensionsWithTxt() {
+        // GIVEN
+        String imagePath = "src/test/resources/file1.txt";
+        // WHEN / THEN
+        Assertions.assertThatThrownBy(() -> CommonFileUtils.getImageDimension(new File(imagePath)))
+                  .isInstanceOf(IIOException.class);
     }
 
     private void testGetAvailableFileName(Path dirWithFile, String fileName, String expectedFileName)

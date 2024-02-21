@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
-import fr.cnes.regards.modules.fileaccess.dto.IStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.service.StoragePluginConfigurationService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -34,7 +34,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -89,10 +88,10 @@ public class FilesStorageRequestReadyToProcessEventHandler
 
         List<StorageWorkerRequestEvent> eventsToSend = new ArrayList<>();
         List<StorageResponseEvent> errorsToSend = new ArrayList<>();
-        Map<String, Optional<IStoragePluginConfigurationDto>> configurations = new HashMap<>();
+        Map<String, Optional<AbstractStoragePluginConfigurationDto>> configurations = new HashMap<>();
         for (FileStorageRequestReadyToProcessEvent message : messages) {
-            Optional<IStoragePluginConfigurationDto> oConfiguration = configurations.computeIfAbsent(message.getStorage(),
-                                                                                                     storagePluginConfigurationService::getByName);
+            Optional<AbstractStoragePluginConfigurationDto> oConfiguration = configurations.computeIfAbsent(message.getStorage(),
+                                                                                                            storagePluginConfigurationService::getByName);
             if (oConfiguration.isEmpty()) {
                 String errorMessage = String.format(
                     "Error while processing storage request for file %s. No configuration found for %s",
@@ -131,14 +130,16 @@ public class FilesStorageRequestReadyToProcessEventHandler
 
     private StorageWorkerRequestEvent createEventToSend(FileStorageRequestReadyToProcessEvent message,
                                                         boolean needToComputeImageSize,
-                                                        Optional<IStoragePluginConfigurationDto> oConfiguration) {
+                                                        Optional<AbstractStoragePluginConfigurationDto> oConfiguration) {
+        //FIXME: fix activateSmallFilePackaging value according to the request origin
         StorageWorkerRequestEvent eventToSend = new StorageWorkerRequestEvent(message.getChecksum(),
                                                                               message.getAlgorithm(),
                                                                               message.getOriginUrl(),
                                                                               message.getSubDirectory() != null ?
-                                                                                  Path.of(message.getSubDirectory()) :
+                                                                                  message.getSubDirectory() :
                                                                                   null,
                                                                               needToComputeImageSize,
+                                                                              true,
                                                                               oConfiguration.get());
         // Headers
         eventToSend.setHeader(StorageWorkerRequestEvent.CONTENT_TYPE_HEADER, "store-" + message.getStorage());

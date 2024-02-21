@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.s3.dto;
 
+import java.beans.ConstructorProperties;
 import java.util.Objects;
 
 /**
@@ -43,6 +44,15 @@ public class StorageConfigDto {
 
     private final Integer retryBackOffMaxDuration;
 
+    @ConstructorProperties({ "endpoint",
+                             "region",
+                             "key",
+                             "secret",
+                             "bucket",
+                             "rootPath",
+                             "maxRetriesNumber",
+                             "retryBackOffBaseDuration",
+                             "retryBackOffMaxDuration" })
     public StorageConfigDto(String endpoint,
                             String region,
                             String key,
@@ -131,5 +141,35 @@ public class StorageConfigDto {
                             maxRetriesNumber,
                             retryBackOffBaseDuration,
                             retryBackOffMaxDuration);
+    }
+
+    @Override
+    public String toString() {
+        return "StorageConfigDto{"
+               + "endpoint='"
+               + endpoint
+               + '\''
+               + ", region='"
+               + region
+               + '\''
+               + ", key='"
+               + key
+               + '\''
+               + ", secret='"
+               + "*******"
+               + '\''
+               + ", bucket='"
+               + bucket
+               + '\''
+               + ", rootPath='"
+               + rootPath
+               + '\''
+               + ", maxRetriesNumber="
+               + maxRetriesNumber
+               + ", retryBackOffBaseDuration="
+               + retryBackOffBaseDuration
+               + ", retryBackOffMaxDuration="
+               + retryBackOffMaxDuration
+               + '}';
     }
 }

@@ -18,11 +18,31 @@
  */
 package fr.cnes.regards.modules.fileaccess.dto;
 
+import fr.cnes.regards.modules.fileaccess.dto.output.worker.FileNamingStrategy;
+
 /**
- * Configuration dto interface to share from the storage plugin to the workers
+ * Configuration dto abstract to share from the storage plugin to the workers
  *
  * @author Thibaud Michaudel
  **/
-public interface IStoragePluginConfigurationDto {
+public abstract class AbstractStoragePluginConfigurationDto {
+
+    /**
+     * Strategy to name the file to store. If the file is an archive, the {@link FileNamingStrategy#FILENAME}
+     * strategy must be used.
+     */
+    protected FileNamingStrategy fileNamingStrategy;
+
+    protected AbstractStoragePluginConfigurationDto(FileNamingStrategy fileNamingStrategy) {
+        this.fileNamingStrategy = fileNamingStrategy;
+    }
+
+    protected AbstractStoragePluginConfigurationDto() {
+        this(FileNamingStrategy.CHECKSUM);
+    }
+
+    public FileNamingStrategy getFileNamingStrategy() {
+        return fileNamingStrategy;
+    }
 
 }

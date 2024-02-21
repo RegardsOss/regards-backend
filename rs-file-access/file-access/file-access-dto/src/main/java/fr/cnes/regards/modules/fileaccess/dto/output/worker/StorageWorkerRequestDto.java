@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.dto.output;
+package fr.cnes.regards.modules.fileaccess.dto.output.worker;
 
-import fr.cnes.regards.modules.fileaccess.dto.IStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 
-import java.nio.file.Path;
+import java.beans.ConstructorProperties;
 import java.util.Objects;
 
 /**
@@ -36,23 +36,34 @@ public class StorageWorkerRequestDto {
 
     private final String url;
 
-    private final Path destinationDirectory;
+    private final String destinationDirectory;
 
     private final boolean computeImageSize;
 
-    private final IStoragePluginConfigurationDto parameters;
+    private final boolean activateSmallFilePackaging;
 
+    private final AbstractStoragePluginConfigurationDto parameters;
+
+    @ConstructorProperties({ "checksum",
+                             "algorithm",
+                             "url",
+                             "destinationDirectory",
+                             "computeImageSize",
+                             "activateSmallFilePackaging",
+                             "parameters" })
     public StorageWorkerRequestDto(String checksum,
                                    String algorithm,
                                    String url,
-                                   Path destinationDirectory,
+                                   String destinationDirectory,
                                    boolean computeImageSize,
-                                   IStoragePluginConfigurationDto parameters) {
+                                   boolean activateSmallFilePackaging,
+                                   AbstractStoragePluginConfigurationDto parameters) {
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.url = url;
         this.destinationDirectory = destinationDirectory;
         this.computeImageSize = computeImageSize;
+        this.activateSmallFilePackaging = activateSmallFilePackaging;
         this.parameters = parameters;
     }
 
@@ -68,7 +79,7 @@ public class StorageWorkerRequestDto {
         return url;
     }
 
-    public Path getDestinationDirectory() {
+    public String getDestinationDirectory() {
         return destinationDirectory;
     }
 
@@ -76,8 +87,12 @@ public class StorageWorkerRequestDto {
         return computeImageSize;
     }
 
-    public IStoragePluginConfigurationDto getParameters() {
+    public AbstractStoragePluginConfigurationDto getParameters() {
         return parameters;
+    }
+
+    public boolean isActivateSmallFilePackaging() {
+        return activateSmallFilePackaging;
     }
 
     @Override
@@ -89,15 +104,24 @@ public class StorageWorkerRequestDto {
             return false;
         }
         StorageWorkerRequestDto that = (StorageWorkerRequestDto) o;
-        return Objects.equals(checksum, that.checksum) && Objects.equals(algorithm, that.algorithm) && Objects.equals(
-            url,
-            that.url) && Objects.equals(destinationDirectory, that.destinationDirectory) && Objects.equals(parameters,
-                                                                                                           that.parameters);
+        return computeImageSize == that.computeImageSize
+               && activateSmallFilePackaging == that.activateSmallFilePackaging
+               && Objects.equals(checksum, that.checksum)
+               && Objects.equals(algorithm, that.algorithm)
+               && Objects.equals(url, that.url)
+               && Objects.equals(destinationDirectory, that.destinationDirectory)
+               && Objects.equals(parameters, that.parameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(checksum, algorithm, url, destinationDirectory, parameters);
+        return Objects.hash(checksum,
+                            algorithm,
+                            url,
+                            destinationDirectory,
+                            computeImageSize,
+                            activateSmallFilePackaging,
+                            parameters);
     }
 
     @Override
@@ -112,8 +136,13 @@ public class StorageWorkerRequestDto {
                + ", url='"
                + url
                + '\''
-               + ", destinationDirectory="
+               + ", destinationDirectory='"
                + destinationDirectory
+               + '\''
+               + ", computeImageSize="
+               + computeImageSize
+               + ", activateSmallFilePackaging="
+               + activateSmallFilePackaging
                + ", parameters="
                + parameters
                + '}';

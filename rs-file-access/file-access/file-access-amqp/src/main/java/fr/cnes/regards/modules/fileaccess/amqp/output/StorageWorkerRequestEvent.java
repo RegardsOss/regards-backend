@@ -23,12 +23,12 @@ import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
-import fr.cnes.regards.modules.fileaccess.dto.IStoragePluginConfigurationDto;
-import fr.cnes.regards.modules.fileaccess.dto.output.StorageWorkerRequestDto;
+import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.output.worker.StorageWorkerRequestDto;
 import org.springframework.amqp.core.MessageProperties;
 
 import javax.validation.constraints.NotNull;
-import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * Event will be sent to the worker manager for the creation of a storage request.
@@ -56,10 +56,11 @@ public class StorageWorkerRequestEvent extends StorageWorkerRequestDto
     public StorageWorkerRequestEvent(String checksum,
                                      String algorithm,
                                      String url,
-                                     Path destination,
+                                     String destination,
                                      boolean computeImageSize,
-                                     IStoragePluginConfigurationDto parameters) {
-        super(checksum, algorithm, url, destination, computeImageSize, parameters);
+                                     boolean activateSmallFilePackaging,
+                                     AbstractStoragePluginConfigurationDto parameters) {
+        super(checksum, algorithm, url, destination, computeImageSize, activateSmallFilePackaging, parameters);
     }
 
     @Override
@@ -73,5 +74,30 @@ public class StorageWorkerRequestEvent extends StorageWorkerRequestDto
     @Override
     public void setMessageProperties(MessageProperties messageProperties) {
         this.messageProperties = messageProperties;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        StorageWorkerRequestEvent that = (StorageWorkerRequestEvent) o;
+        return Objects.equals(messageProperties, that.messageProperties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), messageProperties);
+    }
+
+    @Override
+    public String toString() {
+        return "StorageWorkerRequestEvent{" + "messageProperties=" + messageProperties + "} " + super.toString();
     }
 }

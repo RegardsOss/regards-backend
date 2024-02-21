@@ -60,11 +60,11 @@ import java.util.regex.Pattern;
  */
 public final class DownloadUtils {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadUtils.class);
-
     public static final int PIPE_SIZE = 1024 * 10;
 
     public static final int CLIENT_THREAD_CAP = 100;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadUtils.class);
 
     private static final String HTTP_VERB_HEAD = "HEAD";
 
@@ -179,25 +179,21 @@ public final class DownloadUtils {
 
     /**
      * Get an InputStream on a source URL with no proxy.
-     * The file will be downloaded locally and the returned InputStream bill be the one of the local file if the file is bigger than the size treshold.
      *
-     * @param source           the source URL
-     * @param knownS3Servers   the list of known s3 servers for s3 download, can be null
-     * @param maxContentLength Maximum content length of file to download to use true source to destination download.
-     *                         If the file size is bigger than this limit, a local temporary file will be created and the resulting InputStream will be from this temporary file.
-     * @param tmpWorkspacePath The workspace where the temporary file will be created and read
+     * @param source               the source URL
+     * @param knownS3Servers       the list of known s3 servers for s3 download, can be null
+     * @param downloadTmpConfigDto configuration to indicate if the file should be downloaded locally before
+     *                             being copied to its final destination.
      * @return an InputStream of the source or the local file
      */
     public static InputStream getInputStream(URL source,
                                              List<S3Server> knownS3Servers,
-                                             Long maxContentLength,
-                                             Path tmpWorkspacePath) throws IOException {
+                                             DownloadTmpConfigDto downloadTmpConfigDto) throws IOException {
         return getInputStreamThroughProxy(source,
                                           Proxy.NO_PROXY,
                                           Sets.newHashSet(),
                                           knownS3Servers,
-                                          maxContentLength,
-                                          tmpWorkspacePath);
+                                          downloadTmpConfigDto);
     }
 
     /**
@@ -338,22 +334,15 @@ public final class DownloadUtils {
                                                          Proxy proxy,
                                                          Collection<String> nonProxyHosts,
                                                          List<S3Server> knownS3Servers) throws IOException {
-        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, null, knownS3Servers, null, null);
+        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, null, knownS3Servers, null);
     }
 
     public static InputStream getInputStreamThroughProxy(URL source,
                                                          Proxy proxy,
                                                          Collection<String> nonProxyHosts,
                                                          List<S3Server> knownS3Servers,
-                                                         Long maxContentLength,
-                                                         Path tmpWorkspacePath) throws IOException {
-        return getInputStreamThroughProxy(source,
-                                          proxy,
-                                          nonProxyHosts,
-                                          null,
-                                          knownS3Servers,
-                                          maxContentLength,
-                                          tmpWorkspacePath);
+                                                         DownloadTmpConfigDto downloadTmpConfigDto) throws IOException {
+        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, null, knownS3Servers, downloadTmpConfigDto);
     }
 
     public static InputStream getInputStreamThroughProxy(URL source,
@@ -361,25 +350,21 @@ public final class DownloadUtils {
                                                          Collection<String> nonProxyHosts,
                                                          Integer timeoutInMS,
                                                          List<S3Server> knownS3Servers) throws IOException {
-        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, timeoutInMS, knownS3Servers, null, null);
+        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, timeoutInMS, knownS3Servers, null);
 
     }
 
     /**
-     * @param timeoutInMS      Sets a specified timeout value, in milliseconds, to be used when opening a
-     *                         communications link to the resource referenced by this URLConnection
-     * @param maxContentLength Maximum content length of file to decide if the file can be downloaded directly or must be saved first to a local temporary file.
-     *                         If the file size is lower than this limit, download will use the original source while downloading.
-     *                         If the file size is bigger than this limit, a local temporary file will be created and the resulting InputStream will be from this temporary file.
-     * @param tmpWorkspacePath The workspace where the temporary file will be created and read
+     * @param timeoutInMS Sets a specified timeout value, in milliseconds, to be used when opening a
+     *                    communications link to the resource referenced by this URLConnection
      */
     public static InputStream getInputStreamThroughProxy(URL source,
                                                          Proxy proxy,
                                                          Collection<String> nonProxyHosts,
                                                          Integer timeoutInMS,
                                                          List<S3Server> knownS3Servers,
-                                                         Long maxContentLength,
-                                                         Path tmpWorkspacePath) throws IOException {
+                                                         @Nullable DownloadTmpConfigDto downloadTmpConfigDto)
+        throws IOException {
         Optional<S3Server> s3Server = S3ServerUtils.isUrlFromS3Server(source, knownS3Servers);
         if (s3Server.isPresent()) {
             S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(source, s3Server.get());
@@ -389,8 +374,9 @@ public final class DownloadUtils {
             InputStream s3InputStream = getInputStreamFromS3Source(keyAndStorage.key(),
                                                                    keyAndStorage.storageConfig(),
                                                                    cmdId);
-            if (maxContentLength != null && maxContentLength < contentLength) {
-                return getInputStreamUsingTmpFile(tmpWorkspacePath, commandId, s3InputStream);
+            if (downloadTmpConfigDto != null && (downloadTmpConfigDto.forceTmpFile()
+                                                 || contentLength > downloadTmpConfigDto.maxContentLength())) {
+                return getInputStreamUsingTmpFile(downloadTmpConfigDto, s3InputStream);
             } else {
                 return s3InputStream;
             }
@@ -399,18 +385,18 @@ public final class DownloadUtils {
                                                                proxy,
                                                                nonProxyHosts,
                                                                timeoutInMS,
-                                                               maxContentLength,
-                                                               tmpWorkspacePath);
+                                                               downloadTmpConfigDto);
         }
 
     }
 
-    private static AutoDeletingInputStream getInputStreamUsingTmpFile(Path tmpWorkspacePath,
-                                                                      UUID commandId,
-                                                                      InputStream inputStream) throws IOException {
-        Path tmpPath = tmpWorkspacePath.resolve(commandId.toString());
-        FileUtils.copyInputStreamToFile(inputStream, tmpPath.toFile());
-        return new AutoDeletingInputStream(tmpPath.toFile());
+    private static InputStream getInputStreamUsingTmpFile(DownloadTmpConfigDto downloadTmpConfigDto,
+                                                          InputStream inputStream) throws IOException {
+        File tmpFile = downloadTmpConfigDto.tmpFilePath().toFile();
+        FileUtils.copyInputStreamToFile(inputStream, tmpFile);
+        return downloadTmpConfigDto.deleteTmpFile() ?
+            new AutoDeletingInputStream(tmpFile) :
+            new FileInputStream(tmpFile);
     }
 
     /**
@@ -480,12 +466,14 @@ public final class DownloadUtils {
             try {
                 outputStream.close();
             } catch (IOException ioe) {
+                LOGGER.error("An error occurred while closing file output stream", ioe);
             }
             return Flux.error(throwable);
         }).doOnComplete(() -> {
             try {
                 outputStream.close();
             } catch (IOException ioe) {
+                LOGGER.error("An error occurred while closing file output stream", ioe);
             }
         }).subscribe();
         return Mono.just(inputStream);
@@ -564,7 +552,7 @@ public final class DownloadUtils {
      */
     public static boolean needProxy(URL url, Collection<String> nonProxyHosts) {
         if (nonProxyHosts != null && !nonProxyHosts.isEmpty()) {
-            return !nonProxyHosts.stream().anyMatch(host -> Pattern.matches(host, url.getHost()));
+            return nonProxyHosts.stream().noneMatch(host -> Pattern.matches(host, url.getHost()));
         } else {
             return true;
         }
@@ -584,8 +572,8 @@ public final class DownloadUtils {
                                                                            Proxy proxy,
                                                                            Collection<String> nonProxyHosts,
                                                                            Integer timeoutInMS,
-                                                                           Long maxContentLength,
-                                                                           Path tmpWorkspacePath) throws IOException {
+                                                                           DownloadTmpConfigDto downloadTmpConfigDto)
+        throws IOException {
         URLConnection connection = getConnectionThroughProxy(source, proxy, nonProxyHosts, timeoutInMS);
         connection.connect();
 
@@ -598,11 +586,10 @@ public final class DownloadUtils {
                     source,
                     conn.getResponseCode()));
             }
-            if (maxContentLength != null
-                && getContentLengthThroughProxy(source, proxy, nonProxyHosts, timeoutInMS, new ArrayList<>())
-                   > maxContentLength) {
+            if (getContentLengthThroughProxy(source, proxy, nonProxyHosts, timeoutInMS, new ArrayList<>())
+                > downloadTmpConfigDto.maxContentLength()) {
                 InputStream httpInputStream = connection.getInputStream();
-                return getInputStreamUsingTmpFile(tmpWorkspacePath, UUID.randomUUID(), httpInputStream);
+                return getInputStreamUsingTmpFile(downloadTmpConfigDto, httpInputStream);
             }
         }
 

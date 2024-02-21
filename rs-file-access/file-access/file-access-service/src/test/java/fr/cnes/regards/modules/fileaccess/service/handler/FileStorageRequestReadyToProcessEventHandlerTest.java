@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
-import fr.cnes.regards.modules.fileaccess.dto.IStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.service.StoragePluginConfigurationService;
 import org.junit.jupiter.api.Assertions;
@@ -146,7 +146,7 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
 
     }
 
-    private class TestStoragePluginConfigurationDto implements IStoragePluginConfigurationDto {
+    private class TestStoragePluginConfigurationDto extends AbstractStoragePluginConfigurationDto {
 
         private final String value;
 

@@ -30,12 +30,12 @@ import java.util.Set;
         + " they just are tests of java")
 public class DownloadUtilsTests {
 
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     private String proxyHost;
 
     private int proxyPort;
-
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
     public void initProxy() throws IOException {
@@ -144,8 +144,10 @@ public class DownloadUtilsTests {
                                                                   proxy,
                                                                   null,
                                                                   Collections.emptyList(),
-                                                                  500L,
-                                                                  tmpDirPath);
+                                                                  new DownloadTmpConfigDto(false,
+                                                                                           500L,
+                                                                                           tmpDirPath.resolve(checksum),
+                                                                                           true));
 
         // Then
         Assert.assertEquals("There should be one and only one tmp file", 1, tmpDirPath.toFile().list().length);
