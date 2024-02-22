@@ -309,12 +309,6 @@ public class NotificationController implements IResourceController<Notification>
                                     "setNotificationRead",
                                     LinkRelation.of("read"),
                                     MethodParamFactory.build(Long.class, element.getId()));
-        } else {
-            resourceService.addLink(resource,
-                                    this.getClass(),
-                                    "setNotificationUnRead",
-                                    LinkRelation.of("unread"),
-                                    MethodParamFactory.build(Long.class, element.getId()));
         }
         return resource;
     }
@@ -336,12 +330,6 @@ public class NotificationController implements IResourceController<Notification>
                                     this.getClass(),
                                     "setNotificationRead",
                                     LinkRelation.of("read"),
-                                    MethodParamFactory.build(Long.class, element.getId()));
-        } else {
-            resourceService.addLink(resource,
-                                    this.getClass(),
-                                    "setNotificationUnRead",
-                                    LinkRelation.of("unread"),
                                     MethodParamFactory.build(Long.class, element.getId()));
         }
         return resource;
