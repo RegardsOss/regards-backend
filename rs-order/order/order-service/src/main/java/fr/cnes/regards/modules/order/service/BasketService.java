@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -31,12 +33,10 @@ import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.basket.*;
 import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
-import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
-import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
-import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
+import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.processing.OrderProcessingService;
+import fr.cnes.regards.modules.order.service.utils.BasketSelectionFromFileUtils;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
@@ -55,15 +55,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -79,6 +79,8 @@ public class BasketService implements IBasketService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasketService.class);
 
+    private static final String LEGACY_SEARCH_ENGINE_TYPE = "legacy";
+
     @Autowired
     private IBasketRepository repos;
 
@@ -93,6 +95,9 @@ public class BasketService implements IBasketService {
 
     @Autowired
     private IProcessingRestClient processingClient;
+
+    @Autowired
+    private BasketSelectionFromFileUtils basketSelectionUtils;
 
     @Override
     public Basket findOrCreate(String user) {
@@ -144,8 +149,9 @@ public class BasketService implements IBasketService {
             if (docFilesSummaryResponse != null && docFilesSummaryResponse.getStatusCode() != HttpStatus.OK) {
                 throw new CatalogSearchException();
             }
+
             DocFilesSummary summary = ResponseEntityUtils.extractBodyOrThrow(docFilesSummaryResponse,
-                                                                             () -> new CatalogSearchException());
+                                                                             CatalogSearchException::new);
             // If global summary contains no files => EmptySelection
             if (summary.getFilesCount() == 0L) {
                 throw new EmptySelectionException();
@@ -209,6 +215,37 @@ public class BasketService implements IBasketService {
             FeignSecurityManager.reset();
         }
         return repos.save(basket);
+    }
+
+    @Override
+    public Basket addSelectionFromFile(MultipartFile file)
+        throws TooManyItemsInFileException, CatalogSearchException, EmptySelectionException,
+        TooManyItemsSelectedInBasketException {
+        List<String> providerIds = basketSelectionUtils.extractLinesOfFile(file);
+        if (providerIds.isEmpty()) {
+            throw new EmptySelectionException();
+        }
+        Basket basket = findOrCreate(authResolver.getUser());
+        List<List<String>> providerIdPartitioned = Lists.partition(providerIds,
+                                                                   BasketSelectionFromFileUtils.UPLOAD_FILE_PRODUCT_ADDITION_BULK_SIZE);
+        for (List<String> providerIdsPart : providerIdPartitioned) {
+            BasketSelectionRequest basketSelectionRequest = createBasketSelectionRequest(Sets.newHashSet(providerIdsPart));
+            basket = addSelection(basket.getId(), basketSelectionRequest);
+        }
+        return basket;
+    }
+
+    /**
+     * Generate a request that ask the last version of the products with provider ids indicated
+     */
+    private BasketSelectionRequest createBasketSelectionRequest(Set<String> providerIds) {
+        BasketSelectionRequest selectionRequest = new BasketSelectionRequest();
+        selectionRequest.setEngineType(LEGACY_SEARCH_ENGINE_TYPE);
+        MultiValueMap<String, String> searchParameters = new LinkedMultiValueMap<>();
+        String query = "last=true AND providerId=(\"" + String.join("\" OR \"", providerIds) + "\")";
+        searchParameters.add("q", query);
+        selectionRequest.setSearchParameters(searchParameters);
+        return selectionRequest;
     }
 
     @Override

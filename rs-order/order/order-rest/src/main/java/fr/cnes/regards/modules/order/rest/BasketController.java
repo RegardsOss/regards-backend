@@ -29,18 +29,21 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.dto.BasketDto;
 import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
-import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
-import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
-import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
+import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.IBasketService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.net.URLDecoder;
@@ -72,6 +75,8 @@ public class BasketController implements IResourceController<BasketDto> {
 
     public static final String DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS = "/dataset/{datasetSelectionId}/updateFileFilters";
 
+    public static final String INSERT_PRODUCTS_ENDPOINT = "/upload";
+
     private final IResourceService resourceService;
 
     private final IBasketService basketService;
@@ -94,6 +99,15 @@ public class BasketController implements IResourceController<BasketDto> {
      */
     @ResourceAccess(description = "Add a selection to the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, value = SELECTION)
+    @Operation(summary = "Add a selection to the basket of current user")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Product correctly added"),
+                            @ApiResponse(responseCode = "204", description = "Zero product has been added"),
+                            @ApiResponse(responseCode = "422",
+                                         description = "Error while elastic searching",
+                                         content = { @Content(mediaType = "application/json") }),
+                            @ApiResponse(responseCode = "409",
+                                         description = "Number of selected products in the basket exceeds the maximum number allowed",
+                                         content = { @Content(mediaType = "application/json") }) })
     public ResponseEntity<EntityModel<BasketDto>> addSelection(@Valid @RequestBody
                                                                BasketSelectionRequest basketSelectionRequest)
         throws TooManyItemsSelectedInBasketException, EmptySelectionException, CatalogSearchException {
@@ -103,6 +117,34 @@ public class BasketController implements IResourceController<BasketDto> {
         basket = basketService.addSelection(basket.getId(), basketSelectionRequest);
 
         return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(basket)));
+    }
+
+    /**
+     * Add a selection to the basket
+     *
+     * @param file a file where each line is a providerId of an object to add.
+     * @return updated or created basket
+     */
+    @Operation(summary = "Add a selection to the basket of current user from a file",
+               description = "Add a selection to the basket of current user from a file,"
+                             + " which contains a product identifier per line.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Product correctly added"),
+                            @ApiResponse(responseCode = "204", description = "Zero product has been added"),
+                            @ApiResponse(responseCode = "422",
+                                         description = "Error while elastic searching",
+                                         content = { @Content(mediaType = "application/json") }),
+                            @ApiResponse(responseCode = "409",
+                                         description = "Number of selected products in the basket exceeds the maximum number allowed",
+                                         content = { @Content(mediaType = "application/json") }),
+                            @ApiResponse(responseCode = "413",
+                                         description = "Too many products in payload",
+                                         content = { @Content(mediaType = "application/json") }) })
+    @ResourceAccess(description = "Add a selection to the basket from a file", role = DefaultRole.REGISTERED_USER)
+    @PostMapping(value = SELECTION + INSERT_PRODUCTS_ENDPOINT, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EntityModel<BasketDto>> addSelectionFromFile(@RequestParam("file") MultipartFile file)
+        throws TooManyItemsInFileException, CatalogSearchException, EmptySelectionException,
+        TooManyItemsSelectedInBasketException {
+        return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(basketService.addSelectionFromFile(file))));
     }
 
     /**

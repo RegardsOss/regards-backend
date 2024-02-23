@@ -69,6 +69,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -77,6 +78,8 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
 /**
  * Order controller
@@ -339,6 +342,10 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
                     role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ZIP_DOWNLOAD_PATH)
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Download done",
+                                         content = { @Content(mediaType = APPLICATION_OCTET_STREAM_VALUE,
+                                                              schema = @Schema(implementation = MultipartFile.class)) }) })
     public ResponseEntity<Void> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
                                                           HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);

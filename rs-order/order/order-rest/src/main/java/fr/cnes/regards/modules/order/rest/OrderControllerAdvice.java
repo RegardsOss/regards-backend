@@ -88,4 +88,9 @@ public class OrderControllerAdvice {
     public ResponseEntity<ServerErrorResponse> handleIllegalStateException(IllegalStateException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(e.getMessage(), e));
     }
+
+    @ExceptionHandler(TooManyItemsInFileException.class)
+    public ResponseEntity<ServerErrorResponse> handleTooManyItemsInFileException(TooManyItemsInFileException e) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(new ServerErrorResponse(e.getMessage(), e));
+    }
 }

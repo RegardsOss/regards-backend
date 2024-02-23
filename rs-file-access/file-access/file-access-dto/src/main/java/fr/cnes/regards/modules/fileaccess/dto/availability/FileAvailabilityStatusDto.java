@@ -46,7 +46,7 @@ public class FileAvailabilityStatusDto {
 
     @SerializedName(value = "expiration_date")
     @Nullable
-    @Schema(name = "expirate_date", description = "Indicate date where the file will be not available anymore.")
+    @Schema(name = "expirate_date", description = "Indicate date when the file will be not available anymore.")
     protected final OffsetDateTime expirationDate;
 
     public FileAvailabilityStatusDto(String checksum, boolean available, @Nullable OffsetDateTime expirationDate) {

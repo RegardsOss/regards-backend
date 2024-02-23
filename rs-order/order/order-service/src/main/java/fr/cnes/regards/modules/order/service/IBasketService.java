@@ -21,12 +21,10 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
-import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
-import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
-import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
+import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import org.springframework.lang.Nullable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
 
@@ -92,6 +90,16 @@ public interface IBasketService {
      */
     Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest, String user, String role)
         throws EmptySelectionException, TooManyItemsSelectedInBasketException, CatalogSearchException;
+
+    /**
+     * Add a selection to the basket
+     *
+     * @param file a file where each line is a providerId of an object to add.
+     * @return updated or created basket
+     */
+    Basket addSelectionFromFile(MultipartFile file)
+        throws TooManyItemsInFileException, TooManyItemsSelectedInBasketException, CatalogSearchException,
+        EmptySelectionException;
 
     /**
      * Remove specified dataset selection from basket
