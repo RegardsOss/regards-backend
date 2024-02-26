@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
+import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
 import org.junit.Assert;
@@ -77,6 +78,9 @@ public class StoreFileEventIT extends AbstractStorageIT {
 
     @Autowired
     private RequestStatusService requestStatusService;
+
+    @Autowired
+    private FileStorageRequestService fileStorageRequestService;
 
     @Before
     public void initialize() throws ModuleException {
@@ -308,14 +312,11 @@ public class StoreFileEventIT extends AbstractStorageIT {
         Assert.assertTrue("New request should be in state " + FileRequestStatus.DELAYED,
                           fileStorageRequests.stream().allMatch(r -> r.getStatus() == FileRequestStatus.DELAYED));
 
-        // As no request is still running, the two requests should be merge in only one request and set in TO_DO status.
-        // If many requests are  DELAYED, the checkDelayedStorageRequests merge them in only one request
-        requestStatusService.checkDelayedStorageRequests();
+        // As no request is still running, the two requests will resume but the file they aim to store is now already
+        // stored. So no more request will be processed
+        requestStatusService.checkDelayedStorageRequests(fileStorageRequestService);
         fileStorageRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
-        Assert.assertEquals("There should be only one request", 1L, fileStorageRequests.size());
-        Assert.assertSame("Request should be in TODO status",
-                          fileStorageRequests.stream().findFirst().get().getStatus(),
-                          FileRequestStatus.TO_DO);
+        Assert.assertEquals("There should be no more requests", 0L, fileStorageRequests.size());
     }
 
     /**
@@ -380,12 +381,11 @@ public class StoreFileEventIT extends AbstractStorageIT {
         Assert.assertTrue("there should be on request in DELAYED status",
                           requests.stream().anyMatch(r -> r.getStatus() == FileRequestStatus.DELAYED));
 
-        /// simulate job for the the second storage request (that has been delayed)
-        reqStatusService.checkDelayedStorageRequests();
+        // simulate job for the second storage request, the request will not be processed as
+        // the file is now stored
+        reqStatusService.checkDelayedStorageRequests(fileStorageRequestService);
         requests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
-        Assert.assertEquals("there should be two store requests", 1, requests.size());
-        Assert.assertTrue("there should be on request in DELAYED status",
-                          requests.stream().anyMatch(r -> r.getStatus() == FileRequestStatus.TO_DO));
+        Assert.assertEquals("there should be no store request", 0, requests.size());
 
         jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
                                           Lists.newArrayList(ONLINE_CONF_LABEL),

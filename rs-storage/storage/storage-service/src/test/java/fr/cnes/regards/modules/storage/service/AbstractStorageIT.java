@@ -696,7 +696,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                  DataType.RAWDATA.name(),
                                  new URL("file", null, filePath),
                                  OffsetDateTime.now().plusDays(1),
-                                 UUID.randomUUID().toString(),
+                                 Set.of(UUID.randomUUID().toString()),
                                  null);
             // Create file on disk
             if (!Files.exists(Paths.get(filePath).getParent())) {

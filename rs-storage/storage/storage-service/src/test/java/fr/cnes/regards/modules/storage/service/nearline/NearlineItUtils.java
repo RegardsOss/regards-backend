@@ -135,7 +135,7 @@ public class NearlineItUtils {
                                                 MimeType.valueOf("application/json"),
                                                 null,
                                                 OffsetDateTime.now().plusHours(1),
-                                                "groupId",
+                                                Set.of("groupId"),
                                                 "type");
     }
 
@@ -147,7 +147,7 @@ public class NearlineItUtils {
                                                 MimeType.valueOf("application/json"),
                                                 null,
                                                 OffsetDateTime.now().plusHours(1),
-                                                "groupId",
+                                                Set.of("groupId"),
                                                 "type",
                                                 storageName);
     }

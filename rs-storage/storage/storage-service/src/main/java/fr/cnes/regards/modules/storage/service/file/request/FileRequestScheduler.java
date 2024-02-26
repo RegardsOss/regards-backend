@@ -106,7 +106,7 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     };
 
     public void handleFileStorageRequests() {
-        reqStatusService.checkDelayedStorageRequests();
+        reqStatusService.checkDelayedStorageRequests(fileStorageRequestService);
         fileStorageRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet(), Sets.newHashSet());
     }
 

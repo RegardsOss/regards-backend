@@ -110,7 +110,7 @@ public class CacheService {
                         String type,
                         URL location,
                         OffsetDateTime expirationDate,
-                        String groupId,
+                        Set<String> groupIds,
                         @Nullable String externalCachePlugin) {
         Optional<CacheFile> cacheFileOptional = findByChecksum(checksum);
         CacheFile cacheFile;
@@ -123,7 +123,7 @@ public class CacheService {
                                         type,
                                         location,
                                         expirationDate,
-                                        groupId,
+                                        groupIds,
                                         externalCachePlugin);
         } else {
             // To be updated in database
@@ -146,7 +146,7 @@ public class CacheService {
                                       String type,
                                       URL location,
                                       OffsetDateTime expirationDate,
-                                      String groupId,
+                                      Set<String> groupIds,
                                       @Nullable String externalCachePlugin) {
         if (StringUtils.isBlank(externalCachePlugin)) {
             // Internal cache
@@ -156,7 +156,7 @@ public class CacheService {
                                                     mimeType,
                                                     location,
                                                     expirationDate,
-                                                    groupId,
+                                                    groupIds,
                                                     type);
         } else {
             // External cache
@@ -166,7 +166,7 @@ public class CacheService {
                                                     mimeType,
                                                     location,
                                                     expirationDate,
-                                                    groupId,
+                                                    groupIds,
                                                     type,
                                                     externalCachePlugin);
         }

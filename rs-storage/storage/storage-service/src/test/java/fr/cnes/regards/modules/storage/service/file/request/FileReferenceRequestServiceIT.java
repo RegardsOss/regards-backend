@@ -126,7 +126,7 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
                             FileRequestStatus.PENDING,
                             ofdr.get().getStatus());
         // check that a new reference request is made to store again the file after deletion request is done
-        reqStatusService.checkDelayedStorageRequests();
+        reqStatusService.checkDelayedStorageRequests(null);
         Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
         Assert.assertEquals("A new file reference request should exists", 1, storageReqs.size());
         Assert.assertEquals("A new file reference request should exists with DELAYED status",
@@ -163,7 +163,7 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
         Assert.assertEquals("File storage request should still exists with DELAYED status",
                             FileRequestStatus.DELAYED,
                             storageReqs.stream().findFirst().get().getStatus());
-        reqStatusService.checkDelayedStorageRequests();
+        reqStatusService.checkDelayedStorageRequests(null);
         storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
         Assert.assertEquals("File storage request still exists", 1, storageReqs.size());
         Assert.assertEquals("File storage request should exists with TO_DO status",

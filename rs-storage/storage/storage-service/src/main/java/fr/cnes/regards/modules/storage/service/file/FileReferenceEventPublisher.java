@@ -40,6 +40,7 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Publisher to send AMQP message notification when there is any change on a File Reference.
@@ -238,7 +239,7 @@ public class FileReferenceEventPublisher {
                           URL url,
                           Collection<String> owners,
                           String message,
-                          String groupId,
+                          Set<String> groupIds,
                           @Nullable OffsetDateTime expirationDate) {
         LOGGER.trace("Publishing FileReferenceEvent AVAILABLE. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum,
@@ -248,7 +249,7 @@ public class FileReferenceEventPublisher {
                                                    message,
                                                    new FileLocation(availableStorage, url.toString(), false).toDto(),
                                                    null,
-                                                   Sets.newHashSet(groupId)));
+                                                   groupIds));
         publisher.broadcast(FileAvailableEvent.EXCHANGE_NAME,
                             Optional.empty(),
                             Optional.of(FileAvailableEvent.ROUTING_KEY_AVAILABILITY_STATUS),
@@ -256,6 +257,29 @@ public class FileReferenceEventPublisher {
                             AbstractPublisher.DEFAULT_PRIORITY,
                             FileAvailableEvent.build(checksum, true, expirationDate),
                             Maps.newHashMap());
+    }
+
+    /**
+     * Notify listeners for a file available for download.
+     * If there is no more {@link FileStorageRequestAggregation} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     */
+    public void available(String checksum,
+                          String availableStorage,
+                          String originStorage,
+                          URL url,
+                          Collection<String> owners,
+                          String message,
+                          String groupId,
+                          @Nullable OffsetDateTime expirationDate) {
+        available(checksum,
+                  availableStorage,
+                  originStorage,
+                  url,
+                  owners,
+                  message,
+                  Sets.newHashSet(groupId),
+                  expirationDate);
     }
 
     public void updated(String checksum, String storage, FileReference updatedFile) {
@@ -270,7 +294,7 @@ public class FileReferenceEventPublisher {
      * If there is no more {@link FileStorageRequestAggregation} associated to the Business request identifier, so a request notification
      * is sent too.<br/>
      */
-    public void notAvailable(String checksum, String originStorage, String message, String groupId) {
+    public void notAvailable(String checksum, String originStorage, String message, Set<String> groupIds) {
         LOGGER.trace("Publishing FileReferenceEvent AVAILABILITY_ERROR. {}", message);
         publisher.publish(FileReferenceEvent.build(checksum,
                                                    originStorage,
@@ -279,7 +303,16 @@ public class FileReferenceEventPublisher {
                                                    message,
                                                    null,
                                                    null,
-                                                   Sets.newHashSet(groupId)));
+                                                   groupIds));
+    }
+
+    /**
+     * Notify listeners for an restoring a file for download availability.
+     * If there is no more {@link FileStorageRequestAggregation} associated to the Business request identifier, so a request notification
+     * is sent too.<br/>
+     */
+    public void notAvailable(String checksum, String originStorage, String message, String groupId) {
+        notAvailable(checksum, originStorage, message, Sets.newHashSet(groupId));
     }
 
 }

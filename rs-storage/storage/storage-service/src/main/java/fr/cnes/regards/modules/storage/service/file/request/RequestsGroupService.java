@@ -242,7 +242,10 @@ public class RequestsGroupService {
         copyReqRepository.deleteAll(copyRequests);
 
         // Cancel cache requests
-        cacheReqRepository.deleteByGroupIdAndStatusNotIn(group, FileRequestStatus.RUNNING_STATUS);
+        cacheReqRepository.deleteByGroupIdsAndStatusNotIn(group,
+                                                          FileRequestStatus.RUNNING_STATUS.stream()
+                                                                                          .map(Enum::toString)
+                                                                                          .toList());
 
     }
 
@@ -302,7 +305,7 @@ public class RequestsGroupService {
         // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
         switch (reqGrp.getType()) {
             case AVAILABILITY:
-                cacheReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                cacheReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
                     cacheReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
                     eventPublisher.notAvailable(req.getChecksum(), null, errorCause, reqGrp.getId());
                 });

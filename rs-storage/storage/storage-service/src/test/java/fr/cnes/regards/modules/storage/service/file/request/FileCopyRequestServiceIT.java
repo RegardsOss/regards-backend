@@ -150,7 +150,9 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
 
         // There should be one availability request created
-        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum())
+                                                                      .stream()
+                                                                      .findFirst();
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertTrue("There should be a cache request created", oCacheReq.isPresent());
         Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
@@ -162,7 +164,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         runAndWaitJob(jobs);
 
         // Cache file should be restored
-        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).stream().findFirst();
         Optional<CacheFile> oCachedFile = cacheService.findByChecksum(fileRef.getMetaInfo().getChecksum());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a cache request anymore", oCacheReq.isPresent());
@@ -314,7 +316,9 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
 
         // There should be one availability request created
-        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum())
+                                                                      .stream()
+                                                                      .findFirst();
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertTrue("There should be a cache request created", oCacheReq.isPresent());
         Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
@@ -326,7 +330,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         runAndWaitJob(jobs);
 
         // Cache file should be restored
-        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).stream().findFirst();
         Optional<CacheFile> oCachedFile = cacheService.findByChecksum(fileRef.getMetaInfo().getChecksum());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a cache request anymore", oCacheReq.isPresent());
@@ -407,7 +411,9 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
 
         // There should be one availability request created
-        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum())
+                                                                      .stream()
+                                                                      .findFirst();
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storageCopyDest);
         Assert.assertTrue("There should be a cache request created", oCacheReq.isPresent());
         Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
@@ -418,7 +424,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
-        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).stream().findFirst();
         Assert.assertTrue("There should be a cache request in error state",
                           oCacheReq.get().getStatus() == FileRequestStatus.ERROR);
 

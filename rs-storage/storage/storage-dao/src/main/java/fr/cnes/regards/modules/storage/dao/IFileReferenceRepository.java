@@ -83,7 +83,8 @@ public interface IFileReferenceRepository
            nativeQuery = true)
     boolean isOwnedBy(@Param("id") Long id, @Param("owner") String owner);
 
-    Collection<String> findOwnersById(Long fileRefId);
+    @Query(value = "SELECT owner FROM ta_file_reference_owner WHERE file_ref_id=:id", nativeQuery = true)
+    Collection<String> findOwnersById(@Param("id") Long fileRefId);
 
     @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id)", nativeQuery = true)
     boolean hasOwner(@Param("id") Long id);

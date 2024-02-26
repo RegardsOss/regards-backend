@@ -110,7 +110,7 @@ public class CacheFile {
                         MimeType mimeType,
                         URL location,
                         OffsetDateTime expirationDate,
-                        String groupId,
+                        Set<String> groupIds,
                         String type,
                         boolean internalCache,
                         @Nullable String externalCachePlugin) {
@@ -118,7 +118,7 @@ public class CacheFile {
         this.fileSize = fileSize;
         this.location = location;
         this.expirationDate = expirationDate;
-        this.groupIds.add(groupId);
+        this.groupIds.addAll(groupIds);
         this.fileName = fileName;
         this.mimeType = mimeType;
         this.type = type;
@@ -256,7 +256,7 @@ public class CacheFile {
                                                    MimeType mimeType,
                                                    URL location,
                                                    OffsetDateTime expirationDate,
-                                                   String groupId,
+                                                   Set<String> groupIds,
                                                    String type) {
         return new CacheFile(checksum,
                              fileSize,
@@ -264,7 +264,7 @@ public class CacheFile {
                              mimeType,
                              location,
                              expirationDate,
-                             groupId,
+                             groupIds,
                              type,
                              true,
                              null);
@@ -280,7 +280,7 @@ public class CacheFile {
                                                    MimeType mimeType,
                                                    URL location,
                                                    OffsetDateTime expirationDate,
-                                                   String groupId,
+                                                   Set<String> groupIds,
                                                    String type,
                                                    String externalCachePlugin) {
         return new CacheFile(checksum,
@@ -289,7 +289,7 @@ public class CacheFile {
                              mimeType,
                              location,
                              expirationDate,
-                             groupId,
+                             groupIds,
                              type,
                              false,
                              externalCachePlugin);

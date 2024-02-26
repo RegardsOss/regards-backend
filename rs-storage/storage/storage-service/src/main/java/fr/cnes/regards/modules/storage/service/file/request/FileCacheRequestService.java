@@ -175,10 +175,10 @@ public class FileCacheRequestService {
     }
 
     /**
-     * Search for a {@link FileCacheRequest} on the file given checksum.
+     * Search for {@link FileCacheRequest}s on the file given checksum.
      */
     @Transactional(readOnly = true)
-    public Optional<FileCacheRequest> search(String checksum) {
+    public Set<FileCacheRequest> search(String checksum) {
         return fileCacheRequestRepository.findByChecksum(checksum);
     }
 
@@ -192,32 +192,75 @@ public class FileCacheRequestService {
      */
     public Optional<FileCacheRequest> create(FileReference fileRefToRestore, int availabilityHours, String groupId) {
         String checksum = fileRefToRestore.getMetaInfo().getChecksum();
-        Optional<FileCacheRequest> fileCacheRequestOptional = fileCacheRequestRepository.findByChecksum(checksum);
+        Set<FileCacheRequest> existingFileCacheRequests = fileCacheRequestRepository.findByChecksum(checksum);
 
         FileCacheRequest fileCacheRequest;
-        if (fileCacheRequestOptional.isEmpty()) {
-            fileCacheRequest = new FileCacheRequest(fileRefToRestore,
-                                                    cacheService.getCacheDirectoryPath(checksum),
-                                                    availabilityHours,
-                                                    groupId);
-            // Save in database
-            fileCacheRequest = fileCacheRequestRepository.save(fileCacheRequest);
-            LOGGER.trace("File {} (checksum {}) is requested for cache.",
-                         fileRefToRestore.getMetaInfo().getFileName(),
-                         fileRefToRestore.getMetaInfo().getChecksum());
+        if (existingFileCacheRequests.isEmpty()) {
+            fileCacheRequest = createAndSaveNewRequest(fileRefToRestore,
+                                                       availabilityHours,
+                                                       groupId,
+                                                       checksum,
+                                                       FileRequestStatus.TO_DO);
         } else {
-            fileCacheRequest = fileCacheRequestOptional.get();
-            fileCacheRequest.setAvailabilityHours(availabilityHours);
-            if (fileCacheRequest.getStatus() == FileRequestStatus.ERROR) {
-                fileCacheRequest.setStatus(FileRequestStatus.TO_DO);
+            // If a cache request already exists for this file and it will be eventually processed (TO_DO & DELAYED),
+            // just add the groupId of the new requester so it will be notified when the original request complete.
+            // If the request is PENDING, we need to create a new one because we can't know how far the process
+            // reached (It might already have notified completion).
+            // If the request is in ERROR state, create a new one that will be processed normally.
+            Optional<FileCacheRequest> oExistingFileCacheRequestInToDo = existingFileCacheRequests.stream()
+                                                                                                  .filter(request ->
+                                                                                                              request.getStatus()
+                                                                                                              == FileRequestStatus.TO_DO
+                                                                                                              || request.getStatus()
+                                                                                                                 == FileRequestStatus.DELAYED)
+                                                                                                  .findFirst();
+            if (oExistingFileCacheRequestInToDo.isPresent()) {
+                FileCacheRequest existingFileCacheRequest = oExistingFileCacheRequestInToDo.get();
+                existingFileCacheRequest.getGroupIds().add(groupId);
+                existingFileCacheRequest.setAvailabilityHours(Math.max(availabilityHours,
+                                                                       existingFileCacheRequest.getAvailabilityHours()));
+                // Update in database
+                fileCacheRequest = fileCacheRequestRepository.save(existingFileCacheRequest);
+                LOGGER.trace("A cache request already exists for file {} (checksum {}).",
+                             fileRefToRestore.getMetaInfo().getFileName(),
+                             fileRefToRestore.getMetaInfo().getChecksum());
+            } else if (existingFileCacheRequests.stream()
+                                                .anyMatch(request -> request.getStatus()
+                                                                     == FileRequestStatus.PENDING)) {
+                fileCacheRequest = createAndSaveNewRequest(fileRefToRestore,
+                                                           availabilityHours,
+                                                           groupId,
+                                                           checksum,
+                                                           FileRequestStatus.DELAYED);
+
+            } else {
+                fileCacheRequest = createAndSaveNewRequest(fileRefToRestore,
+                                                           availabilityHours,
+                                                           groupId,
+                                                           checksum,
+                                                           FileRequestStatus.TO_DO);
             }
-            // Update in database
-            fileCacheRequest = fileCacheRequestRepository.save(fileCacheRequest);
-            LOGGER.trace("File {} (checksum {}) is already requested for cache.",
-                         fileRefToRestore.getMetaInfo().getFileName(),
-                         fileRefToRestore.getMetaInfo().getChecksum());
         }
         return Optional.of(fileCacheRequest);
+    }
+
+    private FileCacheRequest createAndSaveNewRequest(FileReference fileRefToRestore,
+                                                     int availabilityHours,
+                                                     String groupId,
+                                                     String checksum,
+                                                     FileRequestStatus status) {
+        FileCacheRequest fileCacheRequest;
+        fileCacheRequest = new FileCacheRequest(fileRefToRestore,
+                                                cacheService.getCacheDirectoryPath(checksum),
+                                                availabilityHours,
+                                                groupId);
+        fileCacheRequest.setStatus(status);
+        // Save in database
+        fileCacheRequest = fileCacheRequestRepository.save(fileCacheRequest);
+        LOGGER.trace("Cache request created for file {} (checksum {}).",
+                     fileRefToRestore.getMetaInfo().getFileName(),
+                     fileRefToRestore.getMetaInfo().getChecksum());
+        return fileCacheRequest;
     }
 
     public void makeAvailable(Collection<FilesRestorationRequestEvent> filesRestorationRequestEvents) {
@@ -335,8 +378,8 @@ public class FileCacheRequestService {
      * @param groupId request business identifier to retry
      */
     public void retryRequest(String groupId) {
-        for (FileCacheRequest request : fileCacheRequestRepository.findByGroupIdAndStatus(groupId,
-                                                                                          FileRequestStatus.ERROR)) {
+        for (FileCacheRequest request : fileCacheRequestRepository.findByGroupIdsAndStatus(groupId,
+                                                                                           FileRequestStatus.ERROR)) {
             request.setStatus(FileRequestStatus.TO_DO);
             request.setErrorCause(null);
             fileCacheRequestRepository.save(request);
@@ -485,7 +528,7 @@ public class FileCacheRequestService {
                                  fileCacheRequestOptional.get().getFileReference().getMetaInfo().getType(),
                                  cacheLocation,
                                  expirationDate,
-                                 fileCacheRequest.getGroupId(),
+                                 fileCacheRequest.getGroupIds(),
                                  pluginBusinessId);
 
             delete(fileCacheRequestOptional.get());
@@ -502,10 +545,13 @@ public class FileCacheRequestService {
                             cacheLocation,
                             owners,
                             successMessage,
-                            fileCacheRequest.getGroupId(),
+                            fileCacheRequest.getGroupIds(),
                             expirationDate);
         // Inform group that a request is done
-        reqGrpService.availibilityRequestSuccess(fileCacheRequest.getGroupId(), fileCacheRequest.getChecksum(), owners);
+        fileCacheRequest.getGroupIds()
+                        .forEach(groupId -> reqGrpService.availibilityRequestSuccess(groupId,
+                                                                                     fileCacheRequest.getChecksum(),
+                                                                                     owners));
     }
 
     /**
@@ -525,14 +571,15 @@ public class FileCacheRequestService {
             request.setErrorCause(cause);
             fileCacheRequestRepository.save(request);
         }
-        publisher.notAvailable(fileReq.getChecksum(), fileReq.getStorage(), cause, fileReq.getGroupId());
-        reqGrpService.requestError(fileReq.getGroupId(),
-                                   FileRequestType.AVAILABILITY,
-                                   fileReq.getChecksum(),
-                                   fileReq.getStorage(),
-                                   null,
-                                   Lists.newArrayList(),
-                                   cause);
+        publisher.notAvailable(fileReq.getChecksum(), fileReq.getStorage(), cause, fileReq.getGroupIds());
+        fileReq.getGroupIds()
+               .forEach(groupId -> reqGrpService.requestError(groupId,
+                                                              FileRequestType.AVAILABILITY,
+                                                              fileReq.getChecksum(),
+                                                              fileReq.getStorage(),
+                                                              null,
+                                                              Lists.newArrayList(),
+                                                              cause));
     }
 
     /**
@@ -677,14 +724,15 @@ public class FileCacheRequestService {
         publisher.notAvailable(request.getChecksum(),
                                request.getStorage(),
                                request.getErrorCause(),
-                               request.getGroupId());
-        reqGrpService.requestError(request.getGroupId(),
-                                   FileRequestType.AVAILABILITY,
-                                   request.getChecksum(),
-                                   request.getStorage(),
-                                   null,
-                                   request.getFileReference().getLazzyOwners(),
-                                   message);
+                               request.getGroupIds());
+        request.getGroupIds()
+               .forEach(groupId -> reqGrpService.requestError(groupId,
+                                                              FileRequestType.AVAILABILITY,
+                                                              request.getChecksum(),
+                                                              request.getStorage(),
+                                                              null,
+                                                              request.getFileReference().getLazzyOwners(),
+                                                              message));
     }
 
     /**
@@ -782,7 +830,7 @@ public class FileCacheRequestService {
     public void delete(FileReference deletedFileRef) {
         fileCacheRequestRepository.deleteByfileReference(deletedFileRef);
     }
-    
+
     public boolean handleJobCrash(JobInfo jobInfo) {
         boolean isFileCacheRequestJob = FileCacheRequestJob.class.getName().equals(jobInfo.getClassName());
         if (isFileCacheRequestJob) {

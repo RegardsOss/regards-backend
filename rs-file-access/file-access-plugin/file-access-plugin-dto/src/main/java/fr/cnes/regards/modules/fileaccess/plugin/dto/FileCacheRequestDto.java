@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * Dto for file cache requests.
@@ -33,40 +34,40 @@ import java.time.OffsetDateTime;
 public class FileCacheRequestDto {
 
     @NotNull
-    private Long id;
+    private final Long id;
 
     @NotNull
-    private String groupId;
+    private final Set<String> groupIds;
 
     @NotNull
-    private FileReferenceWithoutOwnersDto fileReference;
+    private final FileReferenceWithoutOwnersDto fileReference;
 
     @NotNull
-    private String checksum;
+    private final String checksum;
 
     @NotNull
-    private String storage;
+    private final String storage;
 
     @NotNull
-    private Long fileSize;
+    private final Long fileSize;
 
     @NotNull
-    private String restorationDirectory;
+    private final String restorationDirectory;
 
     private final int availabilityHours;
 
     @NotNull
-    private FileRequestStatus status = FileRequestStatus.TO_DO;
+    private final FileRequestStatus status;
 
     @Size(max = 512)
-    private String errorCause;
+    private final String errorCause;
 
     private final OffsetDateTime creationDate;
 
-    private String jobId;
+    private final String jobId;
 
     public FileCacheRequestDto(Long id,
-                               String groupId,
+                               Set<String> groupIds,
                                FileReferenceWithoutOwnersDto fileReference,
                                String checksum,
                                String storage,
@@ -78,7 +79,7 @@ public class FileCacheRequestDto {
                                OffsetDateTime creationDate,
                                String jobId) {
         this.id = id;
-        this.groupId = groupId;
+        this.groupIds = groupIds;
         this.fileReference = fileReference;
         this.checksum = checksum;
         this.storage = storage;
@@ -127,8 +128,8 @@ public class FileCacheRequestDto {
         return creationDate;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public Set<String> getGroupIds() {
+        return groupIds;
     }
 
     public String getJobId() {
