@@ -33,18 +33,12 @@ import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParamet
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * {@link IInstanceNotificationService} implementation
@@ -54,7 +48,6 @@ import java.util.stream.Collectors;
  * @author Sylvain Vissiere-Guerinet
  */
 @Service
-@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class InstanceNotificationService implements IInstanceNotificationService {
 
     @SuppressWarnings("unused")
@@ -144,18 +137,6 @@ public class InstanceNotificationService implements IInstanceNotificationService
         Notification notification = notifOpt.get();
         notification.setStatus(pStatus);
         return notificationRepository.save(notification);
-    }
-
-    @Override
-    @RegardsTransactional(propagation = Propagation.REQUIRES_NEW)
-    public Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page) {
-        Page<INotificationWithoutMessage> results = this.retrieveNotifications(page, NotificationStatus.READ);
-        Set<Long> idsToDelete = results.getContent()
-                                       .stream()
-                                       .map(INotificationWithoutMessage::getId)
-                                       .collect(Collectors.toSet());
-        notificationRepository.deleteByIdIn(idsToDelete);
-        return results;
     }
 
     @Override
