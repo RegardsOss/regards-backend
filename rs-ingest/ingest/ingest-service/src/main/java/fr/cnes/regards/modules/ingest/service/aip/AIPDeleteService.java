@@ -132,37 +132,36 @@ public class AIPDeleteService implements IAIPDeleteService {
             // Retrieve all linked files
             for (ContentInformationDto ci : aipEntity.getAip().getProperties().getContentInformations()) {
                 OAISDataObjectDto dataObject = ci.getDataObject();
-                filesToDelete.addAll(getFileDeletionEvents(aipId,
-                                                           aipEntity.getSessionOwner(),
-                                                           aipEntity.getSession(),
-                                                           dataObject.getChecksum(),
-                                                           dataObject.getLocations()));
+                filesToDelete.addAll(buildFileDeletions(aipId,
+                                                        aipEntity.getSessionOwner(),
+                                                        aipEntity.getSession(),
+                                                        dataObject.getChecksum(),
+                                                        dataObject.getLocations()));
             }
         }
-
-        // Publish event to delete AIP files and AIPs itself
+        // Delete AIP files in storage by publishing events
         return storageClient.delete(filesToDelete);
     }
 
-    private List<FileDeletionDto> getFileDeletionEvents(String owner,
-                                                        String sessionOwner,
-                                                        String session,
-                                                        String fileChecksum,
-                                                        Set<OAISDataObjectLocationDto> locations) {
-        List<FileDeletionDto> events = new ArrayList<>();
+    private List<FileDeletionDto> buildFileDeletions(String owner,
+                                                     String sessionOwner,
+                                                     String session,
+                                                     String fileChecksum,
+                                                     Set<OAISDataObjectLocationDto> locations) {
+        List<FileDeletionDto> fileDeletions = new ArrayList<>();
         for (OAISDataObjectLocationDto location : locations) {
             // Ignore if the file is not yet stored
             if (location.getStorage() != null) {
                 // Create the storage delete event
-                events.add(FileDeletionDto.build(fileChecksum,
-                                                 location.getStorage(),
-                                                 owner,
-                                                 sessionOwner,
-                                                 session,
-                                                 false));
+                fileDeletions.add(FileDeletionDto.build(fileChecksum,
+                                                        location.getStorage(),
+                                                        owner,
+                                                        sessionOwner,
+                                                        session,
+                                                        false));
             }
         }
-        return events;
+        return fileDeletions;
     }
 
     @Override

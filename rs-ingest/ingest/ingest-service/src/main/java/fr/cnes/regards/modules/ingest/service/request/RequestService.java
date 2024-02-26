@@ -411,8 +411,16 @@ public class RequestService implements IRequestService {
 
     @Override
     public void deleteRequests(Collection<? extends AbstractRequest> requests) {
+        deleteRequests(requests, false);
+    }
+
+    @Override
+    public void deleteRequests(Collection<? extends AbstractRequest> requests, boolean isFlushed) {
         for (AbstractRequest request : requests) {
             deleteRequest(request);
+        }
+        if (isFlushed) {
+            abstractRequestRepository.flush();
         }
     }
 
@@ -425,6 +433,7 @@ public class RequestService implements IRequestService {
             jobInfoService.save(jobInfoToUnlock);
         }
         sessionNotifier.requestDeleted(request);
+
         abstractRequestRepository.deleteById(request.getId());
     }
 
