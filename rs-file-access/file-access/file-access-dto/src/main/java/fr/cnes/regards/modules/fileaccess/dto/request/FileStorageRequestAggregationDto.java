@@ -154,6 +154,11 @@ public class FileStorageRequestAggregationDto {
         return groupIds;
     }
 
+    /**
+     * Equals only on id for database mapping dto.
+     * A request is identical to another one if their ids are identical. Content of the request is not usefully to
+     * check equality.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
