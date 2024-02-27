@@ -185,7 +185,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <docker.registry.host>172.26.46.158</docker.registry.host>
         <docker.registry.baseImage>regards-java-alpine</docker.registry.baseImage>
-        <docker.registry.tagImage>17</docker.registry.tagImage>
+        <docker.registry.tagImage>17v2</docker.registry.tagImage>
         <sonar.language>java</sonar.language>
 
         <!-- Test properties -->
