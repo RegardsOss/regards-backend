@@ -93,6 +93,7 @@ public class RequestDeletionServiceIT extends AbstractMultitenantServiceIT {
 
     @Before
     public void setup() {
+        abstractRequestRepository.deleteAll();
         aipRepository.deleteAllInBatch();
         sipRepository.deleteAllInBatch();
     }
@@ -100,24 +101,26 @@ public class RequestDeletionServiceIT extends AbstractMultitenantServiceIT {
     @Test
     public void test_delete_requests() {
         //Given
-        IngestRequest ingestRequest = createIngestRequest();
+        IngestRequest ingestRequest = createIngestRequest("SIP_001");
+        IngestRequest ingestRequest2 = createIngestRequest("SIP_002");
 
         //When
-        requestDeletionService.deleteRequests(List.of(ingestRequest));
+        requestDeletionService.deleteRequests(List.of(ingestRequest, ingestRequest2));
 
         //Then
         Assert.assertEquals(0, abstractRequestRepository.findAll().size());
         Assert.assertEquals(0, aipRepository.findAll().size());
+        Assert.assertEquals(0, sipRepository.findAll().size());
     }
 
     // ---------------------
     // -- UTILITY METHODS --
     // ---------------------
 
-    public IngestRequest createIngestRequest() {
+    public IngestRequest createIngestRequest(String sipId) {
 
         SIPEntity sipEntity = new SIPEntity();
-        SIPDto sipDto = SIPDto.build(EntityType.DATA, "SIP_001")
+        SIPDto sipDto = SIPDto.build(EntityType.DATA, sipId)
                               .withDescriptiveInformation("version", "2")
 
                               .withDataObjectReference(DataType.AIP, "filename1", "url", "storage")
@@ -127,7 +130,7 @@ public class RequestDeletionServiceIT extends AbstractMultitenantServiceIT {
         OAISDataObjectDto oAISDataObjectDto = new OAISDataObjectDto();
         oAISDataObjectDto.setAlgorithm("MD5");
         oAISDataObjectDto.setFilename("filename.dat");
-        oAISDataObjectDto.setChecksum("123a123");
+        oAISDataObjectDto.setChecksum("123a123" + sipId);
         oAISDataObjectDto.setLocations(Set.of(OAISDataObjectLocationDto.build("file:///input/validation/filename.dat")));
         oAISDataObjectDto.setRegardsDataType(DataType.RAWDATA);
 
@@ -138,7 +141,7 @@ public class RequestDeletionServiceIT extends AbstractMultitenantServiceIT {
         sipEntity.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:"
                                                               + UUID.randomUUID()
                                                               + ":V1"));
-        sipEntity.setProviderId("SIP_001");
+        sipEntity.setProviderId(sipId);
         sipEntity.setCreationDate(OffsetDateTime.now().minusHours(6));
         sipEntity.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sipEntity.setSessionOwner("SESSION_OWNER");
@@ -146,7 +149,7 @@ public class RequestDeletionServiceIT extends AbstractMultitenantServiceIT {
         sipEntity.setCategories(org.assertj.core.util.Sets.newLinkedHashSet("CATEGORIES"));
         sipEntity.setState(SIPState.INGESTED);
         sipEntity.setVersion(1);
-        sipEntity.setChecksum("123456789032");
+        sipEntity.setChecksum("123456789032" + sipId);
 
         sipEntity = sipRepository.save(sipEntity);
 
