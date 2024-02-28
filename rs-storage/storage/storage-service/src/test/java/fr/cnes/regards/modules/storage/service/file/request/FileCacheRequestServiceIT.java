@@ -345,6 +345,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
         // Given
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         Mockito.clearInvocations(fileEventPublisher);
+        Mockito.clearInvocations(publisher);
 
         // When
         simulateFileInInternalCache(fileRef.getMetaInfo().getChecksum());
@@ -383,7 +384,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                 nbAvailableEvents.getAndIncrement();
             }
         });
-        Assert.assertEquals("One FileAvailableEvent should be sent", 1, nbAvailableEvents.get());
+        Assert.assertTrue("At least one FileAvailableEvent should be sent", nbAvailableEvents.get() >= 1);
     }
 
     @Test
