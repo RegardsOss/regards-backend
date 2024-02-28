@@ -679,9 +679,9 @@ public class FileCacheRequestService {
      */
     public void makeAvailable(Set<FileReference> fileReferences, int availabilityHours, String groupId) {
         // Check files already available in cache
-        Set<FileReference> availables = cacheService.getAndUpdateFileCacheIfExists(fileReferences, groupId);
+        Map<FileReference, CacheFile> availables = cacheService.getAndUpdateFileCacheIfExists(fileReferences, groupId);
         Set<FileReference> toRestore = fileReferences.stream()
-                                                     .filter(f -> !availables.contains(f))
+                                                     .filter(f -> !availables.containsKey(f))
                                                      .collect(Collectors.toSet());
         // Notify available
         notifyAlreadyAvailablesInCache(availables, groupId);
@@ -784,8 +784,10 @@ public class FileCacheRequestService {
     /**
      * Notify all files as AVAILABLE.
      */
-    private void notifyAlreadyAvailablesInCache(Set<FileReference> availables, String groupId) {
-        for (FileReference fileRef : availables) {
+    private void notifyAlreadyAvailablesInCache(Map<FileReference, CacheFile> availables, String groupId) {
+        for (Entry<FileReference, CacheFile> entry : availables.entrySet()) {
+            FileReference fileRef = entry.getKey();
+            CacheFile fileCache = entry.getValue();
             String checksum = fileRef.getMetaInfo().getChecksum();
             String storage = fileRef.getLocation().getStorage();
             String message = String.format("File %s (checksum %s) is available for download.",
@@ -801,7 +803,7 @@ public class FileCacheRequestService {
                                     fileRef.getLazzyOwners(),
                                     message,
                                     groupId,
-                                    null);
+                                    fileCache.getExpirationDate());
                 reqGrpService.requestSuccess(groupId,
                                              FileRequestType.AVAILABILITY,
                                              checksum,

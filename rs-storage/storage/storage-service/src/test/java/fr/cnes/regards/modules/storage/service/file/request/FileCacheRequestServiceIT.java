@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
@@ -27,6 +28,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileAvailableEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
@@ -54,6 +56,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -361,6 +364,26 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                           Mockito.any(),
                           Mockito.anyString(),
                           Mockito.any());
+
+        ArgumentCaptor<IEvent> events = ArgumentCaptor.forClass(IEvent.class);
+        Mockito.verify(publisher, Mockito.atLeastOnce())
+               .broadcast(Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.anyInt(),
+                          events.capture(),
+                          Mockito.any());
+        Assert.assertFalse(events.getAllValues().isEmpty());
+        AtomicInteger nbAvailableEvents = new AtomicInteger();
+        events.getAllValues().forEach(event -> {
+            if (event instanceof FileAvailableEvent fileAvailableEvent) {
+                Assert.assertNotNull(fileAvailableEvent.getChecksum());
+                Assert.assertNotNull(fileAvailableEvent.getExpirationDate());
+                nbAvailableEvents.getAndIncrement();
+            }
+        });
+        Assert.assertEquals("One FileAvailableEvent should be sent", 1, nbAvailableEvents.get());
     }
 
     @Test
