@@ -252,10 +252,10 @@ public class NotificationController implements IResourceController<Notification>
     public ResponseEntity<Void> deleteNotifications(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
                                                               content = @Content(schema = @Schema(implementation = SearchNotificationParameters.class)))
-        @Parameter(description = "Filter criterias of notifications") @RequestBody SearchNotificationParameters filters,
-        @PageableQueryParam @PageableDefault(sort = "date", direction = Sort.Direction.ASC) Pageable pageable) {
+        @Parameter(description = "Filter criterias of notifications") @RequestBody
+        SearchNotificationParameters filters) {
 
-        notificationService.deleteNotifications(filters, pageable);
+        notificationService.deleteNotifications(filters);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

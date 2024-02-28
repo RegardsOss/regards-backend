@@ -26,12 +26,10 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
-import fr.cnes.regards.modules.notification.dao.INotificationLightRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
+import fr.cnes.regards.modules.notification.dao.NotificationLightRepository;
 import fr.cnes.regards.modules.notification.domain.*;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationSpecificationBuilder;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,10 +67,7 @@ public class NotificationService implements INotificationService {
      */
     private final INotificationRepository notificationRepository;
 
-    /**
-     * CRUD repository managing light notifications
-     */
-    private final INotificationLightRepository notificationLightRepository;
+    private final NotificationLightRepository notificationLightRepository;
 
     private final IRoleService roleService;
 
@@ -88,30 +83,21 @@ public class NotificationService implements INotificationService {
 
     private final IAuthenticationResolver authenticationResolver;
 
-    private final DeleteNotificationService deleteNotificationService;
-
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
-     *
-     * @param notificationRepository Autowired by Spring. Must not be {@literal null}.
-     * @param roleService            Autowired by Spring. Must not be {@literal null}.
-     * @param projectUserClient      Autowired by Spring. Must not be {@literal null}.
      */
     public NotificationService(INotificationRepository notificationRepository,
                                IRoleService roleService,
-                               IProjectUserService projectUserClient,
                                ApplicationEventPublisher applicationEventPublisher,
                                IAuthenticationResolver authenticationResolver,
-                               @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode,
-                               DeleteNotificationService deleteNotificationService,
-                               INotificationLightRepository notificationLightRepository) {
+                               NotificationLightRepository notificationLightRepository,
+                               @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode) {
         super();
         this.notificationRepository = notificationRepository;
         this.roleService = roleService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.notificationMode = notificationMode;
         this.authenticationResolver = authenticationResolver;
-        this.deleteNotificationService = deleteNotificationService;
         this.notificationLightRepository = notificationLightRepository;
     }
 
@@ -141,18 +127,6 @@ public class NotificationService implements INotificationService {
         return notification;
     }
 
-    @Override
-    @MultitenantTransactional(readOnly = true)
-    public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page) {
-        if (notificationMode == NotificationMode.MULTITENANT) {
-            return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
-                                                                     authenticationResolver.getRole(),
-                                                                     page);
-        } else {
-            return notificationRepository.findAllNotificationsWithoutMessage(page);
-        }
-    }
-
     /**
      * Lets get all roles that should have the notification through the role hierarchy
      *
@@ -179,18 +153,18 @@ public class NotificationService implements INotificationService {
     @Override
     @MultitenantTransactional
     public Notification retrieveNotification(Long pId) throws EntityNotFoundException {
-        Optional<Notification> notifOpt = notificationRepository.findById(pId);
-        if (!notifOpt.isPresent()) {
+        Optional<Notification> notificationOpt = notificationRepository.findById(pId);
+        if (notificationOpt.isEmpty()) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
         }
-        return notifOpt.get();
+        return notificationOpt.get();
     }
 
     @Override
     @MultitenantTransactional
     public Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException {
         Optional<Notification> notifOpt = notificationRepository.findById(pId);
-        if (!notifOpt.isPresent()) {
+        if (notifOpt.isEmpty()) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
         }
         Notification notification = notifOpt.get();
@@ -238,23 +212,6 @@ public class NotificationService implements INotificationService {
         return roleUsers;
     }
 
-    @Override
-    @MultitenantTransactional(readOnly = true)
-    public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state) {
-        if (state != null) {
-            if (notificationMode == NotificationMode.MULTITENANT) {
-                return notificationRepository.findByStatusAndRecipientsContaining(state,
-                                                                                  authenticationResolver.getUser(),
-                                                                                  authenticationResolver.getRole(),
-                                                                                  page);
-            } else {
-                return notificationRepository.findAllNotificationsWithoutMessageByStatus(state, page);
-            }
-        } else {
-            return retrieveNotifications(page);
-        }
-    }
-
     /* (non-Javadoc)
      * @see fr.cnes.regards.modules.notification.service.INotificationService#countUnreadNotifications()
      */
@@ -293,28 +250,26 @@ public class NotificationService implements INotificationService {
      * @return a notification light page
      */
     @Override
-    @MultitenantTransactional(readOnly = true)
     public Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable) {
-        long start = System.currentTimeMillis();
-
-        Page<NotificationLight> response = notificationLightRepository.findAll(new NotificationSpecificationBuilder().withParameters(
-            filters).build(), pageable);
-
-        LOG.debug("{} NOTIFICATIONS found in {}ms", response.getSize(), System.currentTimeMillis() - start);
-        return response;
+        return notificationLightRepository.findAll(filters,
+                                                   authenticationResolver.getUser(),
+                                                   authenticationResolver.getRole(),
+                                                   pageable);
     }
 
     /**
      * Delete notifications matching filters
      *
-     * @param filters  search parameters
-     * @param pageable the paging information
+     * @param filters search parameters
      */
     @Override
-    public void deleteNotifications(SearchNotificationParameters filters, Pageable pageable) {
-        boolean hasNext = false;
-        do {
-            hasNext = deleteNotificationService.deleteNotificationWithFilter(filters, pageable);
-        } while (hasNext);
+    public void deleteNotifications(SearchNotificationParameters filters) {
+        // First add a limit date for deletion with current date to avoid remove incoming notifications.
+        if (filters.getDates() == null || filters.getDates().getBefore() == null) {
+            filters.withDateBefore(OffsetDateTime.now());
+        }
+        notificationLightRepository.deleteAll(filters,
+                                              authenticationResolver.getUser(),
+                                              authenticationResolver.getRole());
     }
 }

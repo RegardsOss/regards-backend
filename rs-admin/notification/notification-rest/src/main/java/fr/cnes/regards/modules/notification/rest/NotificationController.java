@@ -140,7 +140,6 @@ public class NotificationController implements IResourceController<Notification>
      * Define the endpoint for retrieving the list of notifications for the logged user
      *
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Retrieve the list of notifications for the logged user",
@@ -152,15 +151,14 @@ public class NotificationController implements IResourceController<Notification>
         @PageableQueryParam @PageableDefault(sort = "date", direction = Sort.Direction.DESC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<NotificationLight> assembler) {
 
-        return new ResponseEntity<>(notifWithoutMsgPagedResources(notificationService.findAll(filters, pageable),
-                                                                  assembler), HttpStatus.OK);
+        return new ResponseEntity<>(notificationLightPagedResources(notificationService.findAll(filters, pageable),
+                                                                    assembler), HttpStatus.OK);
     }
 
     /**
      * Define the endpoint for deleting the list of notifications for the logged user
      *
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Operation(summary = "Delete a selection of notifications.",
                description = "Find and delete notifications from criterias defined in request body.")
@@ -178,22 +176,22 @@ public class NotificationController implements IResourceController<Notification>
     public ResponseEntity<Void> deleteNotifications(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
                                                               content = @Content(schema = @Schema(implementation = SearchNotificationParameters.class)))
-        @Parameter(description = "Filter criterias of notifications") @RequestBody SearchNotificationParameters filters,
-        @PageableQueryParam @PageableDefault(sort = "date", direction = Sort.Direction.ASC) Pageable pageable) {
+        @Parameter(description = "Filter criteria of notifications") @RequestBody
+        SearchNotificationParameters filters) {
 
-        notificationService.deleteNotifications(filters, pageable);
+        notificationService.deleteNotifications(filters);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    private PagedModel<EntityModel<NotificationLight>> notifWithoutMsgPagedResources(Page<NotificationLight> notifications,
-                                                                                     PagedResourcesAssembler<NotificationLight> assembler) {
+    private PagedModel<EntityModel<NotificationLight>> notificationLightPagedResources(Page<NotificationLight> notifications,
+                                                                                       PagedResourcesAssembler<NotificationLight> assembler) {
         final PagedModel<EntityModel<NotificationLight>> pageResources = assembler.toModel(notifications);
-        pageResources.forEach(resource -> resource.add(notifWithoutMsgToResource(resource.getContent()).getLinks()));
+        pageResources.forEach(resource -> resource.add(notificationLightToResource(resource.getContent()).getLinks()));
         return pageResources;
     }
 
     /**
-     * Define the endpoint for creating a new notification in db for later sending by a scheluder.
+     * Define the endpoint for creating a new notification in db for later sending by a scheduler.
      *
      * @param dto A DTO for easy parsing of the response body. Mapping to true {@link Notification} is done in service.
      * @return The sent notification as {@link Notification} wrapped in a {@link ResponseEntity}
@@ -313,7 +311,7 @@ public class NotificationController implements IResourceController<Notification>
         return resource;
     }
 
-    public EntityModel<NotificationLight> notifWithoutMsgToResource(NotificationLight element, Object... extras) {
+    public EntityModel<NotificationLight> notificationLightToResource(NotificationLight element, Object... extras) {
         EntityModel<NotificationLight> resource = EntityModel.of(element);
         resourceService.addLink(resource,
                                 this.getClass(),

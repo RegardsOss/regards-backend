@@ -28,11 +28,9 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
-import fr.cnes.regards.modules.notification.dao.INotificationLightRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
+import fr.cnes.regards.modules.notification.dao.NotificationLightRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -46,7 +44,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.util.MimeType;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -63,64 +60,64 @@ public class NotificationServiceTest {
     /**
      * A sender
      */
-    private static String SENDER = "Sender";
+    private static final String SENDER = "Sender";
 
     /**
      * A role name
      */
-    private static String ROLE_NAME_0 = "Role0";
+    private static final String ROLE_NAME_0 = "Role0";
 
     /**
      * An other role name
      */
-    private static String ROLE_NAME_1 = "Role1";
+    private static final String ROLE_NAME_1 = "Role1";
 
     /**
      * A recipient
      */
-    private static String RECIPIENT_0 = "recipient0@email.com";
+    private static final String RECIPIENT_0 = "recipient0@email.com";
 
     /**
      * An other recipient
      */
-    private static String RECIPIENT_1 = "recipient1@email.com";
+    private static final String RECIPIENT_1 = "recipient1@email.com";
 
     /**
      * An other recipient
      */
-    private static String RECIPIENT_2 = "recipient2@email.com";
+    private static final String RECIPIENT_2 = "recipient2@email.com";
 
     /**
      * A message
      */
-    private static String MESSAGE = "Message";
+    private static final String MESSAGE = "Message";
 
     /**
      * A title
      */
-    private static String TITLE = "Title";
+    private static final String TITLE = "Title";
 
-    private static NotificationLevel TYPE = NotificationLevel.INFO;
+    private static final NotificationLevel TYPE = NotificationLevel.INFO;
 
     /**
      * A notification
      */
-    private static Notification notification = new Notification();
+    private static final Notification notification = new Notification();
 
     /**
      * A project user
      */
-    private static ProjectUser projectUser0 = new ProjectUser();
+    private static final ProjectUser projectUser0 = new ProjectUser();
 
     /**
      * An other project user
      */
-    private static ProjectUser projectUser1 = new ProjectUser();
+    private static final ProjectUser projectUser1 = new ProjectUser();
 
     /**
      * An other project user
      */
-    private static ProjectUser projectUser2 = new ProjectUser();
+    private static final ProjectUser projectUser2 = new ProjectUser();
 
     /**
      * A role
@@ -147,22 +144,12 @@ public class NotificationServiceTest {
      */
     private INotificationRepository notificationRepository;
 
-    /**
-     * CRUD repository managing light notifications.
-     */
-    private INotificationLightRepository notificationLightRepository;
+    private NotificationLightRepository notificationLightRepository;
 
     /**
      * CRUD repository managing roles. Autowired by Spring.
      */
     private IRoleService roleService;
-
-    /**
-     * Feign client for {@link ProjectUser}s. Autowired by Spring.
-     */
-    private IProjectUserService projectUserService;
-
-    private DeleteNotificationService deleteNotificationService;
 
     /**
      * Do some setup before each test
@@ -227,85 +214,14 @@ public class NotificationServiceTest {
         authenticationResolver = Mockito.mock(IAuthenticationResolver.class);
         notificationRepository = Mockito.mock(INotificationRepository.class);
         roleService = Mockito.mock(IRoleService.class);
-        projectUserService = Mockito.mock(IProjectUserService.class);
 
         // Instanciate the tested service
         notificationService = new NotificationService(notificationRepository,
                                                       roleService,
-                                                      projectUserService,
                                                       Mockito.mock(ApplicationEventPublisher.class),
                                                       authenticationResolver,
-                                                      NotificationMode.MULTITENANT,
-                                                      deleteNotificationService,
-                                                      notificationLightRepository);
-    }
-
-    /**
-     * Check that the system allows to retrieve all notifications.
-     */
-    @Test
-    @Requirement("REGARDS_DSL_DAM_SET_520")
-    @Requirement("REGARDS_DSL_DAM_SET_530")
-    @Requirement("REGARDS_DSL_DAM_SET_540")
-    @Purpose("Check that the system allows to retrieve all notifications.")
-    public void retrieveNotifications() throws EntityNotFoundException {
-        // Define expected
-        List<INotificationWithoutMessage> expected = new ArrayList<>();
-        expected.add(new INotificationWithoutMessage() {
-
-            @Override
-            public OffsetDateTime getDate() {
-                return null;
-            }
-
-            @Override
-            public Long getId() {
-                return null;
-            }
-
-            @Override
-            public String getSender() {
-                return null;
-            }
-
-            @Override
-            public NotificationStatus getStatus() {
-                return null;
-            }
-
-            @Override
-            public NotificationLevel getLevel() {
-                return null;
-            }
-
-            @Override
-            public String getTitle() {
-                return null;
-            }
-
-            @Override
-            public MimeType getMimeType() {
-                return null;
-            }
-        });
-
-        // Mock methods
-        Mockito.when(authenticationResolver.getUser()).thenReturn(RECIPIENT_0);
-        Mockito.when(authenticationResolver.getRole()).thenReturn(ROLE_NAME_0);
-        Mockito.when(notificationRepository.findByRecipientsContaining(RECIPIENT_0,
-                                                                       ROLE_NAME_0,
-                                                                       PageRequest.of(0, 100)))
-               .thenReturn(new PageImpl<>(expected));
-
-        // Call tested method
-        Page<INotificationWithoutMessage> actual = notificationService.retrieveNotifications(PageRequest.of(0, 100));
-
-        // Check that expected is equal to actual
-        Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(new PageImpl<>(expected))));
-
-        // Check that the repository's method was called with right arguments
-        Mockito.verify(notificationRepository)
-               .findByRecipientsContaining(RECIPIENT_0, ROLE_NAME_0, PageRequest.of(0, 100));
+                                                      notificationLightRepository,
+                                                      NotificationMode.MULTITENANT);
     }
 
     /**
