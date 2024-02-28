@@ -19,16 +19,17 @@
 package fr.cnes.regards.modules.notification.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.notification.dao.INotificationLightRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
-import fr.cnes.regards.modules.notification.domain.*;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationSpecificationBuilder;
+import fr.cnes.regards.modules.notification.dao.NotificationLightRepository;
+import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationLight;
+import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,31 +57,20 @@ public class InstanceNotificationService implements IInstanceNotificationService
     /**
      * CRUD repository managing notifications. Autowired by Spring.
      */
-    private INotificationRepository notificationRepository;
-
-    /**
-     * CRUD repository managing light notifications
-     */
-    private final INotificationLightRepository notificationLightRepository;
+    private final INotificationRepository notificationRepository;
 
     /**
      * Application event publisher
      */
-    private ApplicationEventPublisher applicationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    private IAuthenticationResolver authenticationResolver;
-
-    private InstanceDeleteNotificationService deleteNotificationService;
+    private final NotificationLightRepository notificationLightRepository;
 
     public InstanceNotificationService(INotificationRepository notificationRepository,
                                        ApplicationEventPublisher applicationEventPublisher,
-                                       IAuthenticationResolver authenticationResolver,
-                                       InstanceDeleteNotificationService deleteNotificationService,
-                                       INotificationLightRepository notificationLightRepository) {
+                                       NotificationLightRepository notificationLightRepository) {
         this.notificationRepository = notificationRepository;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.authenticationResolver = authenticationResolver;
-        this.deleteNotificationService = deleteNotificationService;
         this.notificationLightRepository = notificationLightRepository;
     }
 
@@ -109,12 +99,6 @@ public class InstanceNotificationService implements IInstanceNotificationService
         notification = notificationRepository.save(notification);
 
         return notification;
-    }
-
-    @Override
-    @RegardsTransactional(readOnly = true)
-    public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page) {
-        return notificationRepository.findAllNotificationsWithoutMessage(page);
     }
 
     @Override
@@ -149,44 +133,21 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
-    @RegardsTransactional(readOnly = true)
-    public Page<Notification> retrieveNotificationsToSend(Pageable page) {
-        return notificationRepository.findByStatus(NotificationStatus.UNREAD, page);
-    }
-
-    @Override
-    @RegardsTransactional(readOnly = true)
-    public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state) {
-        if (state != null) {
-            return notificationRepository.findAllNotificationsWithoutMessageByStatus(state, page);
-        } else {
-            return retrieveNotifications(page);
-        }
-    }
-
-    @Override
-    @RegardsTransactional(readOnly = true)
     public Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable) {
-        long start = System.currentTimeMillis();
-
-        Page<NotificationLight> response = notificationLightRepository.findAll(new NotificationSpecificationBuilder().withParameters(
-            filters).build(), pageable);
-
-        LOGGER.debug("{} NOTIFICATIONS instance found in {}ms", response.getSize(), System.currentTimeMillis() - start);
-        return response;
+        return notificationLightRepository.findAll(filters, null, null, pageable);
     }
 
     /**
      * Delete notifications matching filters
      *
-     * @param filters  search parameters
-     * @param pageable the paging information
+     * @param filters search parameters
      */
     @Override
-    public void deleteNotifications(SearchNotificationParameters filters, Pageable pageable) {
-        Page<NotificationLight> notificationLightPage;
-        do {
-            notificationLightPage = deleteNotificationService.deleteNotificationWithFilter(filters, pageable);
-        } while (notificationLightPage.hasNext());
+    public void deleteNotifications(SearchNotificationParameters filters) {
+        // First add a limit date for deletion with current date to avoid remove incoming notifications.
+        if (filters.getDates() == null || filters.getDates().getBefore() == null) {
+            filters.withDateBefore(OffsetDateTime.now());
+        }
+        notificationLightRepository.deleteAll(filters, null, null);
     }
 }

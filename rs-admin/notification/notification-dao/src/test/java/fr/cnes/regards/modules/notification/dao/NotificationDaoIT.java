@@ -22,14 +22,11 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -45,14 +42,6 @@ public class NotificationDaoIT extends AbstractDaoTransactionalIT {
 
     @Autowired
     private INotificationRepository notificationRepository;
-
-    @Test
-    public void getAllNotifications() {
-        notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD,
-                                                                   "null",
-                                                                   DefaultRole.PROJECT_ADMIN.toString(),
-                                                                   PageRequest.of(0, 10));
-    }
 
     @Test
     public void createNotification() {
@@ -115,33 +104,5 @@ public class NotificationDaoIT extends AbstractDaoTransactionalIT {
     public void testUpdateAll() {
         notificationRepository.updateAllNotificationStatusByRole(NotificationStatus.READ.toString(), "ADMIN");
         notificationRepository.updateAllNotificationStatusByUser(NotificationStatus.READ.toString(), "regards@c-s.fr");
-    }
-
-    @Test
-    public void testRetrievePage() {
-
-        // Given
-
-        //create 2 UNREAD notification
-        createNotification();
-        // create read notification
-        final Notification readNotif = getNotification("Hello READ!", "Rid", NotificationStatus.READ);
-        readNotif.setProjectUserRecipients(Sets.newHashSet("read-regards@c-s.fr"));
-        readNotif.setRoleRecipients(Sets.newHashSet(DefaultRole.PROJECT_ADMIN.name()));
-        notificationRepository.save(readNotif);
-
-        // When
-
-        // now lets retrieve them by status
-        Page<INotificationWithoutMessage> notifPage = notificationRepository.findByStatusAndRecipientsContaining(
-            NotificationStatus.UNREAD,
-            "jo-regards@c-s.fr",
-            DefaultRole.PUBLIC.toString(),
-            PageRequest.of(0, 20));
-
-        // Then
-        
-        Assert.assertTrue("There should be 2 notification: 2 notifications UNREAD for role PUBLIC",
-                          notifPage.getTotalElements() == 2);
     }
 }

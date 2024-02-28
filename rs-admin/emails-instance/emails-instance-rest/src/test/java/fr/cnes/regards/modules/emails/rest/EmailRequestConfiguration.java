@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.emails.rest;
 
 import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.notification.dao.INotificationLightRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -42,11 +41,6 @@ public class EmailRequestConfiguration {
         Mockito.when(mailSender.createMimeMessage()).thenReturn(Mockito.mock(MimeMessage.class));
 
         return mailSender;
-    }
-
-    @Bean
-    public INotificationLightRepository mockNotificationLightRepository() {
-        return Mockito.mock(INotificationLightRepository.class);
     }
 
     @Bean

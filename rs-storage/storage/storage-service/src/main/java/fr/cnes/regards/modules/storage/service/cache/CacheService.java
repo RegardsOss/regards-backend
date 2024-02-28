@@ -56,10 +56,8 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -227,21 +225,21 @@ public class CacheService {
      * @param groupId new availability request business identifier. This id is added to the already existing cache files.
      * @return {@link FileReference}s available
      */
-    public Set<FileReference> getAndUpdateFileCacheIfExists(Set<FileReference> fileReferences, String groupId) {
-        Set<FileReference> availables = Sets.newHashSet();
+    public Map<FileReference, CacheFile> getAndUpdateFileCacheIfExists(Set<FileReference> fileReferences,
+                                                                       String groupId) {
+        Map<FileReference, CacheFile> availables = new HashMap<>();
         Set<String> checksums = fileReferences.stream()
                                               .map(f -> f.getMetaInfo().getChecksum())
                                               .collect(Collectors.toSet());
         Set<CacheFile> cacheFiles = cacheFileRepository.findAllByChecksumIn(checksums);
-        Set<String> cacheFileChecksums = cacheFiles.stream().map(cf -> {
+        Map<String, CacheFile> cacheFilesByChecksum = cacheFiles.stream().peek(cf -> {
             // Add new request id to the cache file
             cf.addGroupId(groupId);
             cacheFileRepository.save(cf);
-            return cf.getChecksum();
-        }).collect(Collectors.toSet());
+        }).collect(Collectors.toMap(CacheFile::getChecksum, Function.identity()));
         for (FileReference f : fileReferences) {
-            if (cacheFileChecksums.contains(f.getMetaInfo().getChecksum())) {
-                availables.add(f);
+            if (cacheFilesByChecksum.containsKey(f.getMetaInfo().getChecksum())) {
+                availables.put(f, cacheFilesByChecksum.get(f.getMetaInfo().getChecksum()));
             }
         }
         return availables;

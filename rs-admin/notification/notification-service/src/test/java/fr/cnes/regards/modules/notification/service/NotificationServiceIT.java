@@ -34,24 +34,33 @@ import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationLight;
+import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * @author sbinda
  */
 @ActiveProfiles({ "test", "nomail" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notif_tests",
-                                   "regards.accounts.root.user.login:test@test.fr",
+                                   "regards.accounts.root.user.login=test@test.fr",
                                    "purge.cron.expression=0 0 5 * * ?" })
 public class NotificationServiceIT extends AbstractMultitenantServiceIT {
 
@@ -64,7 +73,7 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
+    @SpyBean
     private IAuthenticationResolver authResolver;
 
     @Autowired
@@ -97,6 +106,75 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
+    public void test_find_all() {
+        // Given
+        for (int i = 0; i < 50; i++) {
+            notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                              "title",
+                                                                              NotificationLevel.INFO,
+                                                                              "moi").toRolesAndUsers(Sets.newHashSet(
+                DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+        }
+
+        Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+
+        Page<NotificationLight> page = notificationService.findAll(new SearchNotificationParameters(),
+                                                                   Pageable.ofSize(10));
+        Assert.assertEquals(5, page.getTotalPages());
+        Assert.assertEquals(50, page.getTotalElements());
+        Assert.assertEquals(10, page.getSize());
+        Assert.assertEquals(10, page.getNumberOfElements());
+        Assert.assertEquals(0, page.getNumber());
+    }
+
+    @Test
+    public void test_find_all_as_instance() {
+        // Given
+        for (int i = 0; i < 50; i++) {
+            notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                              "title",
+                                                                              NotificationLevel.INFO,
+                                                                              "moi").toRolesAndUsers(Sets.newHashSet(
+                DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+        }
+
+        Mockito.doAnswer(answer -> null).when(authResolver).getUser();
+        Mockito.doAnswer(answer -> null).when(authResolver).getRole();
+
+        // When
+        Page<NotificationLight> page = notificationService.findAll(new SearchNotificationParameters(),
+                                                                   Pageable.ofSize(10));
+
+        // Then
+        Assert.assertEquals(5, page.getTotalPages());
+        Assert.assertEquals(50, page.getTotalElements());
+        Assert.assertEquals(10, page.getSize());
+        Assert.assertEquals(10, page.getNumberOfElements());
+        Assert.assertEquals(0, page.getNumber());
+    }
+
+    @Test
+    public void test_delete_all_as_instance() {
+        // Given
+        for (int i = 0; i < 50; i++) {
+            notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                              "title",
+                                                                              NotificationLevel.INFO,
+                                                                              "moi").toRolesAndUsers(Sets.newHashSet(
+                DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+        }
+
+        Mockito.doAnswer(answer -> null).when(authResolver).getUser();
+        Mockito.doAnswer(answer -> null).when(authResolver).getRole();
+
+        // When
+        notificationService.deleteNotifications(new SearchNotificationParameters());
+        // Then
+        Assert.assertEquals(0, notificationRepository.count());
+    }
+
+    @Test
     public void test_delete_notification() throws EntityNotFoundException {
         // Given
         notificationService.createNotification(new NotificationDtoBuilder("message",
@@ -117,33 +195,279 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
                                                                                                       "moi").toRoles(
             Sets.newHashSet(authResolver.getRole())));
 
-        Assert.assertTrue("notif should exists", notificationRepository.findAll().size() == 3);
+        Assert.assertEquals("notif should exists", 3, notificationRepository.findAll().size());
 
         // When
         notificationService.deleteNotification(notification.getId());
 
         // Then
-        Assert.assertTrue("notif should be deleted", notificationRepository.findAll().size() == 2);
+        Assert.assertEquals("notif should be deleted", 2, notificationRepository.findAll().size());
     }
 
     @Test
-    public void test_deletion_notification_with_filter() {
+    public void test_deletion_notification_with_level_filter() {
+        // Given
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title",
+                                                                          NotificationLevel.INFO,
+                                                                          "moi").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title2",
+                                                                          NotificationLevel.ERROR,
+                                                                          "lui").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title2",
+                                                                          NotificationLevel.FATAL,
+                                                                          "lui").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title2",
+                                                                          NotificationLevel.WARNING,
+                                                                          "lui").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+
+        // Given
+        Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+
+        SearchNotificationParameters filters = new SearchNotificationParameters();
+        filters.withLevelsIncluded(List.of(NotificationLevel.INFO));
+
+        // When
+        notificationService.deleteNotifications(filters);
+
+        // Then
+        Assert.assertEquals("Only INFO notification are deleted", 3, notificationRepository.findAll().size());
+
+        // Given
+        filters.withLevelsIncluded(List.of(NotificationLevel.ERROR,
+                                           NotificationLevel.FATAL,
+                                           NotificationLevel.WARNING));
+
+        // When
+        notificationService.deleteNotifications(filters);
+
+        // Then
+        Assert.assertEquals("All notifications are deleted", 0, notificationRepository.findAll().size());
+    }
+
+    @Test
+    public void test_deletion_notification_with_senders_filter() {
+        // Given
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title",
+                                                                          NotificationLevel.INFO,
+                                                                          "moi").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title2",
+                                                                          NotificationLevel.ERROR,
+                                                                          "lui").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+
+        // Given
+        Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+
+        SearchNotificationParameters filters = new SearchNotificationParameters();
+        filters.withSendersIncluded(List.of("moi"));
+
+        // When
+        notificationService.deleteNotifications(filters);
+
+        // Then
+        Assert.assertEquals("Only MOI notification are deleted", 1, notificationRepository.findAll().size());
+    }
+
+    @Test
+    public void test_deletion_notification_with_status_filter() throws EntityNotFoundException {
+        // Given
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title",
+                                                                          NotificationLevel.INFO,
+                                                                          "moi").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+
+        // Given
+        Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+
+        SearchNotificationParameters filters = new SearchNotificationParameters();
+        filters.withStatusIncluded(List.of(NotificationStatus.UNREAD));
+
+        // When
+        notificationService.deleteNotifications(filters);
+
+        // Then
+        Assert.assertEquals("Only UNREAD notification are deleted", 0, notificationRepository.findAll().size());
+
+        Notification notification = notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                                                      "title2",
+                                                                                                      NotificationLevel.ERROR,
+                                                                                                      "lui").toRolesAndUsers(
+            Sets.newHashSet(DefaultRole.PROJECT_ADMIN.toString()),
+            Sets.newHashSet("jeanclaude")));
+
+        // Given
+        Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+
+        notificationService.updateNotificationStatus(notification.getId(), NotificationStatus.READ);
+
+        filters = new SearchNotificationParameters();
+        filters.withStatusIncluded(List.of(NotificationStatus.READ));
+
+        // When
+        notificationService.deleteNotifications(filters);
+
+        // Then
+        Assert.assertEquals("Only READ notification are deleted", 0, notificationRepository.findAll().size());
+    }
+
+    @Test
+    public void test_deletion_notification_with_dates_filter() {
+        // Given
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title",
+                                                                          NotificationLevel.INFO,
+                                                                          "moi").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+
+        // Given
+        Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+
+        SearchNotificationParameters filters = new SearchNotificationParameters();
+        filters.withDateBefore(OffsetDateTime.now().plusDays(1));
+
+        // When
+        notificationService.deleteNotifications(filters);
+
+        // Then
+        Assert.assertEquals("Only Before tomorrow notification are deleted",
+                            0,
+                            notificationRepository.findAll().size());
+
+        // Given
+        notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                          "title",
+                                                                          NotificationLevel.INFO,
+                                                                          "moi").toRolesAndUsers(Sets.newHashSet(
+            DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+
+        // Given
+        Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+
+        filters = new SearchNotificationParameters();
+        filters.withDateAfter(OffsetDateTime.now().minusDays(1));
+
+        // When
+        notificationService.deleteNotifications(filters);
+
+        // Then
+        Assert.assertEquals("Only After yesterday notification are deleted",
+                            0,
+                            notificationRepository.findAll().size());
+    }
+
+    @Test
+    @Ignore("Ignoring performance test")
+    public void test_deletion_perf() {
+        for (int i = 0; i < 1_000; i++) {
+            notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                              "title",
+                                                                              NotificationLevel.INFO,
+                                                                              "moi").toRolesAndUsers(Sets.newHashSet(
+                DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+        }
+        for (int i = 0; i < 1_000; i++) {
+            notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                              "title",
+                                                                              NotificationLevel.ERROR,
+                                                                              "moi").toRolesAndUsers(Sets.newHashSet(
+                DefaultRole.ADMIN.toString()), Sets.newHashSet("michou")));
+        }
+        for (int i = 0; i < 1_000; i++) {
+            notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                              "title",
+                                                                              NotificationLevel.WARNING,
+                                                                              "moi").toRolesAndUsers(Sets.newHashSet(
+                DefaultRole.EXPLOIT.toString()), Sets.newHashSet("juliette")));
+        }
+
+        // Given
+        Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+
+        // Then
+        notificationService.deleteNotifications(new SearchNotificationParameters().withStatusIncluded(NotificationStatus.UNREAD)
+                                                                                  .withLevelsIncluded(List.of(
+                                                                                      NotificationLevel.ERROR)));
+    }
+
+    @Test
+    public void test_deletion_notification_by_user() {
         // Given
         Notification notification = notificationService.createNotification(new NotificationDtoBuilder("message",
                                                                                                       "title",
                                                                                                       NotificationLevel.INFO,
                                                                                                       "moi").toRolesAndUsers(
-            Sets.newHashSet(DefaultRole.ADMIN.toString()),
+            Sets.newHashSet(DefaultRole.PROJECT_ADMIN.toString()),
             Sets.newHashSet("jeanclaude")));
 
+        Notification notification2 = notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                                                       "title2",
+                                                                                                       NotificationLevel.INFO,
+                                                                                                       "lui").toRolesAndUsers(
+            Sets.newHashSet(DefaultRole.ADMIN.toString()),
+            Sets.newHashSet("michou")));
+
+        Notification notification3 = notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                                                       "title2",
+                                                                                                       NotificationLevel.INFO,
+                                                                                                       "lui").toRolesAndUsers(
+            Sets.newHashSet(DefaultRole.EXPLOIT.toString()),
+            Sets.newHashSet("juliette")));
+
         SearchNotificationParameters filters = new SearchNotificationParameters();
-        filters.withIdsIncluded(notification.getId());
+        filters.withIdsIncluded(notification.getId(), notification2.getId(), notification3.getId());
+
+        // Given
+        Mockito.doAnswer(answer -> "juliette").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "EXPLOIT").when(authResolver).getRole();
 
         // When
-        notificationService.deleteNotifications(filters, PageRequest.of(0, 10));
+        notificationService.deleteNotifications(filters);
 
         // Then
-        Assert.assertTrue("notif should be deleted", notificationRepository.findAll().size() == 0);
+        Assert.assertEquals("Only exploit notification are deleted", 2, notificationRepository.findAll().size());
+
+        // Given
+        Mockito.doAnswer(answer -> "michou").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "ADMIN").when(authResolver).getRole();
+
+        // When
+        notificationService.deleteNotifications(filters);
+
+        // Then
+        Assert.assertEquals("Only admin notification are deleted", 1, notificationRepository.findAll().size());
+
+        // Given
+        Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
+        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+
+        // When
+        notificationService.deleteNotifications(filters);
+
+        // Then
+        Assert.assertEquals("All notification are deleted", 0, notificationRepository.findAll().size());
     }
 
 }

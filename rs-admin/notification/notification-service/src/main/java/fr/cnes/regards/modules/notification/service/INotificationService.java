@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.notification.service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -28,7 +27,6 @@ import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParamet
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,14 +35,6 @@ import java.util.Set;
  * @author Xavier-Alexandre Brochard
  */
 public interface INotificationService {
-
-    /**
-     * Retrieve the list of notifications intended for the logged user, trough the project user or their role.
-     *
-     * @return A {@link List} of {@link Notification}
-     * @throws EntityNotFoundException thrown when no current user could be found
-     */
-    Page<INotificationWithoutMessage> retrieveNotifications(Pageable page) throws EntityNotFoundException;
 
     /**
      * Save a new notification in db for later sending by a scheluder.
@@ -63,13 +53,6 @@ public interface INotificationService {
      * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     Notification retrieveNotification(Long pId) throws EntityNotFoundException;
-
-    /**
-     * Retrieve notifications for the given status
-     *
-     * @param state {@link NotificationStatus}
-     */
-    Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state);
 
     /**
      * Update the {@link Notification}
@@ -92,10 +75,9 @@ public interface INotificationService {
     /**
      * Delete all notifications that match filters
      *
-     * @param filters  search parameters
-     * @param pageable the paging information
+     * @param filters search parameters
      */
-    void deleteNotifications(SearchNotificationParameters filters, Pageable pageable);
+    void deleteNotifications(SearchNotificationParameters filters);
 
     /**
      * Retrieve all notifications which should be sent
