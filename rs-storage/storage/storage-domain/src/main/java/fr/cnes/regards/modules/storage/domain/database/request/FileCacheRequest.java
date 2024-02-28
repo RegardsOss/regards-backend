@@ -27,6 +27,9 @@ import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Database definition of the table containing the requests for cache files.
@@ -35,12 +38,9 @@ import java.time.OffsetDateTime;
  */
 @Entity
 @Table(name = "t_file_cache_request",
-       indexes = { @Index(name = "idx_file_cache_request_grp", columnList = "group_id"),
-                   @Index(name = "idx_file_cache_request_cs", columnList = "checksum"),
+       indexes = { @Index(name = "idx_file_cache_request_cs", columnList = "checksum"),
                    @Index(name = "idx_file_cache_request_storage", columnList = "storage"),
-                   @Index(name = "idx_file_cache_file_ref", columnList = "file_ref_id") },
-       uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_cache_request_checksum",
-                                               columnNames = { "checksum" }) })
+                   @Index(name = "idx_file_cache_file_ref", columnList = "file_ref_id") })
 public class FileCacheRequest {
 
     @Id
@@ -51,8 +51,13 @@ public class FileCacheRequest {
     /**
      * Business identifier to regroup file requests.
      */
-    @Column(name = "group_id", nullable = false, length = 128)
-    private String groupId;
+    @Column(name = "group_id")
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "ta_file_cache_request_group_id",
+                     joinColumns = @JoinColumn(name = "file_cache_request_id",
+                                               foreignKey = @ForeignKey(name = "fk_ta_file_cache_request_group_id_file_cache_request_id")))
+
+    private final Set<String> groupIds = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "file_ref_id", nullable = false)
@@ -102,7 +107,7 @@ public class FileCacheRequest {
     public FileCacheRequest(FileReference fileReference,
                             String restorationDirectory,
                             int availabilityHours,
-                            String groupId) {
+                            Set<String> groupIds) {
         super();
         this.fileReference = fileReference;
         this.storage = fileReference.getLocation().getStorage();
@@ -110,8 +115,17 @@ public class FileCacheRequest {
         this.checksum = fileReference.getMetaInfo().getChecksum();
         this.restorationDirectory = restorationDirectory;
         this.availabilityHours = availabilityHours;
-        this.groupId = groupId;
+        if (groupIds != null) {
+            this.groupIds.addAll(groupIds);
+        }
         this.creationDate = OffsetDateTime.now();
+    }
+
+    public FileCacheRequest(FileReference fileReference,
+                            String restorationDirectory,
+                            int availabilityHours,
+                            String groupId) {
+        this(fileReference, restorationDirectory, availabilityHours, Set.of(groupId));
     }
 
     public FileCacheRequest() {
@@ -120,7 +134,7 @@ public class FileCacheRequest {
     }
 
     private FileCacheRequest(Long id,
-                             String groupId,
+                             Set<String> groupIds,
                              FileReference fileReference,
                              String checksum,
                              String storage,
@@ -132,7 +146,9 @@ public class FileCacheRequest {
                              OffsetDateTime creationDate,
                              String jobId) {
         this.id = id;
-        this.groupId = groupId;
+        if (groupIds != null) {
+            this.groupIds.addAll(groupIds);
+        }
         this.fileReference = fileReference;
         this.checksum = checksum;
         this.storage = storage;
@@ -201,8 +217,8 @@ public class FileCacheRequest {
         this.availabilityHours = availabilityHours;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public Set<String> getGroupIds() {
+        return groupIds;
     }
 
     public void setId(long id) {
@@ -225,20 +241,18 @@ public class FileCacheRequest {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
         FileCacheRequest that = (FileCacheRequest) o;
-
-        return checksum.equals(that.checksum);
+        return Objects.equals(groupIds, that.groupIds) && Objects.equals(checksum, that.checksum);
     }
 
     @Override
     public int hashCode() {
-        return checksum.hashCode();
+        return Objects.hash(groupIds, checksum);
     }
 
     public FileCacheRequestDto toDto() {
         return new FileCacheRequestDto(id,
-                                       groupId,
+                                       groupIds,
                                        fileReference.toDtoWithoutOwners(),
                                        checksum,
                                        storage,
@@ -253,7 +267,7 @@ public class FileCacheRequest {
 
     public static FileCacheRequest fromDto(FileCacheRequestDto dto) {
         return new FileCacheRequest(dto.getId(),
-                                    dto.getGroupId(),
+                                    dto.getGroupIds(),
                                     FileReference.fromDto(dto.getFileReference()),
                                     dto.getChecksum(),
                                     dto.getStorage(),

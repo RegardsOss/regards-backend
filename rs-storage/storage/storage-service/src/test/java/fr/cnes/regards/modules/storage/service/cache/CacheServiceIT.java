@@ -48,10 +48,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Test class for cache service.
@@ -103,7 +100,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                              DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/test.file.test"),
                              expirationDate,
-                             UUID.randomUUID().toString(),
+                             Set.of(UUID.randomUUID().toString()),
                              null);
         Optional<CacheFile> cacheFileOptional = cacheService.findByChecksum(checksum);
 
@@ -126,7 +123,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                              DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/test.file.test"),
                              newExpirationDate,
-                             UUID.randomUUID().toString(),
+                             Set.of(UUID.randomUUID().toString()),
                              null);
         cacheFileOptional = cacheService.findByChecksum(checksum);
 
@@ -152,7 +149,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                              DataType.RAWDATA.name(),
                              new URL("http", null, "/plop/test.file.test"),
                              expirationDate,
-                             UUID.randomUUID().toString(),
+                             Set.of(UUID.randomUUID().toString()),
                              "business_identifier_plugin");
         Optional<CacheFile> cacheFileOptional = cacheService.findByChecksum(checksum);
 
@@ -178,7 +175,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                                  DataType.RAWDATA.name(),
                                  new URL("file", null, "/plop/test.file.test"),
                                  expirationDate,
-                                 UUID.randomUUID().toString(),
+                                 Set.of(UUID.randomUUID().toString()),
                                  null);
         }
         // When, then
@@ -205,7 +202,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                                                                   MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
                                                                   new URL("file", null, pathFileTest.toString()),
                                                                   OffsetDateTime.now().plusDays(1),
-                                                                  UUID.randomUUID().toString(),
+                                                                  Set.of(UUID.randomUUID().toString()),
                                                                   DataType.RAWDATA.name()));
 
         // Then
@@ -372,7 +369,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                                                                       MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
                                                                       new URL("file:" + path.toAbsolutePath()),
                                                                       OffsetDateTime.now().plusDays(1),
-                                                                      UUID.randomUUID().toString(),
+                                                                      Set.of(UUID.randomUUID().toString()),
                                                                       DataType.RAWDATA.name()));
         } catch (MalformedURLException e) {
             Assert.fail(e.getMessage());
@@ -428,7 +425,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                                                 MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
                                                 new URL("file", null, "/plop" + "/test.file.internal" + index),
                                                 expirationDate,
-                                                UUID.randomUUID().toString(),
+                                                Set.of(UUID.randomUUID().toString()),
                                                 DataType.RAWDATA.name());
     }
 
@@ -440,7 +437,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
                                                 MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
                                                 new URL("file", null, "/plop/test.file.external" + index),
                                                 expirationDate,
-                                                UUID.randomUUID().toString(),
+                                                Set.of(UUID.randomUUID().toString()),
                                                 DataType.RAWDATA.name(),
                                                 "Businness identifier of plugin");
     }

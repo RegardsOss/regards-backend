@@ -159,7 +159,9 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
 
         // A cache request should be created
         Optional<FileCacheRequest> fileCacheRequestOpt = fileCacheRequestService.search(fileReference.getMetaInfo()
-                                                                                                     .getChecksum());
+                                                                                                     .getChecksum())
+                                                                                .stream()
+                                                                                .findFirst();
         Assert.assertTrue("FileCacheRequest should be created", fileCacheRequestOpt.isPresent());
         assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
                      NEARLINE_CONF_LABEL,

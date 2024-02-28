@@ -168,15 +168,25 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
         // as its available online.
         Assert.assertEquals("There should be 5 cache requests created",
                             5,
-                            fileCacheRequestRepository.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
+                            fileCacheRequestRepository.findByGroupIdsAndStatus(groupId, FileRequestStatus.TO_DO)
+                                                      .size());
         Assert.assertTrue("A cache request should be done for near line file 1",
-                          fileCacheRequestService.search(file1.getMetaInfo().getChecksum()).isPresent());
+                          fileCacheRequestService.search(file1.getMetaInfo().getChecksum())
+                                                 .stream()
+                                                 .findFirst()
+                                                 .isPresent());
         Assert.assertTrue("A cache request should be done for near line file 2",
-                          fileCacheRequestService.search(file2.getMetaInfo().getChecksum()).isPresent());
+                          fileCacheRequestService.search(file2.getMetaInfo().getChecksum())
+                                                 .stream()
+                                                 .findFirst()
+                                                 .isPresent());
         Assert.assertTrue("A cache request should be done for near line file 3",
-                          fileCacheRequestService.search(file3.getMetaInfo().getChecksum()).isPresent());
+                          fileCacheRequestService.search(file3.getMetaInfo().getChecksum())
+                                                 .stream()
+                                                 .findFirst()
+                                                 .isPresent());
         Assert.assertFalse("A cache request should not be done for near line file 4 as it is online too",
-                           fileCacheRequestService.search(checksum).isPresent());
+                           fileCacheRequestService.search(checksum).stream().findFirst().isPresent());
 
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
@@ -233,7 +243,7 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
                              DataType.RAWDATA.name(),
                              new URL("file", null, "target/cache/test/file.nearline.1.test"),
                              OffsetDateTime.now().plusDays(1),
-                             UUID.randomUUID().toString(),
+                             Set.of(UUID.randomUUID().toString()),
                              null);
         // Simulate availability request on this file
         Mockito.clearInvocations(publisher);
@@ -256,7 +266,10 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
                             file1.getMetaInfo().getChecksum(),
                             event.getChecksum());
         Assert.assertFalse("No cache request should be created as file is in cache",
-                           fileCacheRequestService.search(file1.getMetaInfo().getChecksum()).isPresent());
+                           fileCacheRequestService.search(file1.getMetaInfo().getChecksum())
+                                                  .stream()
+                                                  .findFirst()
+                                                  .isPresent());
     }
 
     @Test
@@ -285,7 +298,8 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
 
         Assert.assertEquals("There should be 4 cache requests created",
                             4,
-                            fileCacheRequestRepository.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
+                            fileCacheRequestRepository.findByGroupIdsAndStatus(groupId, FileRequestStatus.TO_DO)
+                                                      .size());
 
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
@@ -293,10 +307,12 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
         Assert.assertEquals("There should be 0 cache requests in TO_DO",
                             0,
-                            fileCacheRequestRepository.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
+                            fileCacheRequestRepository.findByGroupIdsAndStatus(groupId, FileRequestStatus.TO_DO)
+                                                      .size());
         Assert.assertEquals("There should be 3 cache requests in ERROR",
                             3,
-                            fileCacheRequestRepository.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR).size());
+                            fileCacheRequestRepository.findByGroupIdsAndStatus(groupId, FileRequestStatus.ERROR)
+                                                      .size());
         Assert.assertEquals("There should be 1 file cache requests",
                             1,
                             cacheFileRepository.findAllByChecksumIn(Sets.newHashSet(file4.getMetaInfo().getChecksum()))
@@ -325,10 +341,12 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
         Assert.assertEquals("There should be 3 cache requests in TODO",
                             3,
-                            fileCacheRequestRepository.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
+                            fileCacheRequestRepository.findByGroupIdsAndStatus(groupId, FileRequestStatus.TO_DO)
+                                                      .size());
         Assert.assertEquals("There should be 0 cache requests in ERROR",
                             0,
-                            fileCacheRequestRepository.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR).size());
+                            fileCacheRequestRepository.findByGroupIdsAndStatus(groupId, FileRequestStatus.ERROR)
+                                                      .size());
     }
 
 }

@@ -33,7 +33,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -156,16 +155,6 @@ public interface INotificationRepository
         //This is a native query so we need to pass status as string and not as Enum
     Long countByStatus(@Param("status") String status, @Param("user") String projectUser, @Param("role") String role);
 
-    @Modifying
-    @Query("delete from Notification n where (:role member of n.roleRecipients)  AND n.status = :status")
-    void deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIsNull(@Param("status") NotificationStatus status,
-                                                                         @Param("role") String role);
-
-    @Modifying
-    @Query("delete from Notification n where (:user member of n.projectUserRecipients)  AND n.status = :status")
-    void deleteByStatusAndProjectUserRecipientsIn(@Param("status") NotificationStatus status,
-                                                  @Param("user") String user);
-
     /**
      * Find all notifications with passed <code>status</code>
      *
@@ -226,6 +215,4 @@ public interface INotificationRepository
                    + "recipient WHERE t_notification.id = recipient.notification_id AND recipient.projectuser_email = ?2",
            nativeQuery = true)
     void updateAllNotificationStatusByUser(String status, String projectUser);
-
-    void deleteByIdIn(Collection<Long> idsToDelete);
 }

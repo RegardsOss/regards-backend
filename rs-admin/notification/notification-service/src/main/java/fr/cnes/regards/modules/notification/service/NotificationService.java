@@ -88,7 +88,7 @@ public class NotificationService implements INotificationService {
 
     private final IAuthenticationResolver authenticationResolver;
 
-    private DeleteNotificationService deleteNotificationService;
+    private final DeleteNotificationService deleteNotificationService;
 
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
@@ -158,7 +158,6 @@ public class NotificationService implements INotificationService {
      *
      * @return all recipient role names
      */
-    @MultitenantTransactional
     private Set<String> getAllRecipientRoles(Set<String> roleRecipients) {
         return roleRecipients.stream()
                              .map(roleName -> {
@@ -313,9 +312,9 @@ public class NotificationService implements INotificationService {
      */
     @Override
     public void deleteNotifications(SearchNotificationParameters filters, Pageable pageable) {
-        Page<NotificationLight> notificationLightPage;
+        boolean hasNext = false;
         do {
-            notificationLightPage = deleteNotificationService.deleteNotificationWithFilter(filters, pageable);
-        } while (notificationLightPage.hasNext());
+            hasNext = deleteNotificationService.deleteNotificationWithFilter(filters, pageable);
+        } while (hasNext);
     }
 }

@@ -20,19 +20,23 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
+import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
+import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 
 /**
@@ -45,6 +49,15 @@ public class RequestStatusServiceIT extends AbstractStorageIT {
 
     @Autowired
     RequestStatusService requestStatusService;
+
+    @Autowired
+    IFileReferenceRepository fileReferenceRepository;
+
+    @Autowired
+    FileReferenceService fileReferenceService;
+
+    @Autowired
+    FileStorageRequestService fileStorageRequestService;
 
     @Before
     public void init() throws ModuleException {
@@ -61,7 +74,7 @@ public class RequestStatusServiceIT extends AbstractStorageIT {
         fileStorageRequestRepo.saveAll(newRequests);
 
         // With try to un delayed possible requests
-        requestStatusService.checkDelayedStorageRequests();
+        requestStatusService.checkDelayedStorageRequests(null);
 
         // Then only one request should be un delayed
         Assert.assertEquals(0L,
@@ -76,5 +89,45 @@ public class RequestStatusServiceIT extends AbstractStorageIT {
         Assert.assertEquals(1L, requests.size());
         Assert.assertEquals(10, requests.get(0).getGroupIds().size());
         Assert.assertEquals(10, requests.get(0).getOwners().size());
+    }
+
+    @Test
+    public void test_delayed_success_requests() {
+        // Given
+        String id = UUID.randomUUID().toString();
+        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(id,
+                                                                   "MD5",
+                                                                   id,
+                                                                   1000L,
+                                                                   MediaType.valueOf("text/plain"));
+        String url = "file:///test/toto/" + id;
+
+        // Save existing file reference
+        Long existingFileId = fileReferenceRepository.save(new FileReference("oldOwner",
+                                                                             metaInfo,
+                                                                             new FileLocation(ONLINE_CONF_LABEL,
+                                                                                              url,
+                                                                                              false))).getId();
+
+        // Create delayed request
+        FileStorageRequestAggregation fr = new FileStorageRequestAggregation("newOwner",
+                                                                             metaInfo,
+                                                                             url,
+                                                                             ONLINE_CONF_LABEL,
+                                                                             Optional.empty(),
+                                                                             "groupId",
+                                                                             "sessionOwner",
+                                                                             "session");
+        fr.setStatus(FileRequestStatus.DELAYED);
+        fileStorageRequestRepo.save(fr);
+
+        // Resume delayed request
+        requestStatusService.checkDelayedStorageRequests(fileStorageRequestService);
+
+        // Then
+        // Check that the new owner has been added to the file reference
+        Collection<String> owners = fileReferenceService.getOwners(existingFileId);
+
+        Assert.assertEquals("There should be 2 owners", 2, owners.size());
     }
 }

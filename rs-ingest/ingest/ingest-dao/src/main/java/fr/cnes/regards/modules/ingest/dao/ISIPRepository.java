@@ -173,6 +173,6 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     @Query(value = "DELETE FROM SIPEntity WHERE id IN (:ids)")
     void deleteAllBySipIdInBatch(@Param("ids") Collection<Long> ids);
 
-    @Query(value = "select id from SIPEntity where sipId = :sipIds")
+    @Query(value = "select id from SIPEntity where sipId IN (:sipIds)")
     List<Long> findIdBySipIdIn(@Param("sipIds") Collection<String> sipIds);
 }

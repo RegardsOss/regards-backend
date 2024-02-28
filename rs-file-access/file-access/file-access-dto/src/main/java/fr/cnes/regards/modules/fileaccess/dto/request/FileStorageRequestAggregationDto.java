@@ -154,6 +154,11 @@ public class FileStorageRequestAggregationDto {
         return groupIds;
     }
 
+    /**
+     * Equals only on id for database mapping dto.
+     * A request is identical to another one if their ids are identical. Content of the request is not usefully to
+     * check equality.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -162,64 +167,13 @@ public class FileStorageRequestAggregationDto {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
         FileStorageRequestAggregationDto that = (FileStorageRequestAggregationDto) o;
-
-        if (!Objects.equals(id, that.id)) {
-            return false;
-        }
-        if (owners != null ? !owners.equals(that.owners) : that.owners != null) {
-            return false;
-        }
-        if (!Objects.equals(originUrl, that.originUrl)) {
-            return false;
-        }
-        if (!Objects.equals(storage, that.storage)) {
-            return false;
-        }
-        if (!Objects.equals(metaInfo, that.metaInfo)) {
-            return false;
-        }
-        if (!Objects.equals(subDirectory, that.subDirectory)) {
-            return false;
-        }
-        if (!Objects.equals(sessionOwner, that.sessionOwner)) {
-            return false;
-        }
-        if (!Objects.equals(session, that.session)) {
-            return false;
-        }
-        if (!Objects.equals(jobId, that.jobId)) {
-            return false;
-        }
-        if (!Objects.equals(errorCause, that.errorCause)) {
-            return false;
-        }
-        if (status != that.status) {
-            return false;
-        }
-        if (!Objects.equals(creationDate, that.creationDate)) {
-            return false;
-        }
-        return groupIds != null ? groupIds.equals(that.groupIds) : that.groupIds == null;
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (owners != null ? owners.hashCode() : 0);
-        result = 31 * result + (originUrl != null ? originUrl.hashCode() : 0);
-        result = 31 * result + (storage != null ? storage.hashCode() : 0);
-        result = 31 * result + (metaInfo != null ? metaInfo.hashCode() : 0);
-        result = 31 * result + (subDirectory != null ? subDirectory.hashCode() : 0);
-        result = 31 * result + (sessionOwner != null ? sessionOwner.hashCode() : 0);
-        result = 31 * result + (session != null ? session.hashCode() : 0);
-        result = 31 * result + (jobId != null ? jobId.hashCode() : 0);
-        result = 31 * result + (errorCause != null ? errorCause.hashCode() : 0);
-        result = 31 * result + (status != null ? status.hashCode() : 0);
-        result = 31 * result + (creationDate != null ? creationDate.hashCode() : 0);
-        result = 31 * result + (groupIds != null ? groupIds.hashCode() : 0);
-        return result;
+        return Objects.hash(id);
     }
 
     @Override

@@ -22,10 +22,9 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
-import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
-import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
-import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
-import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestResultDto;
+import fr.cnes.regards.modules.storage.dao.*;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
@@ -86,6 +85,9 @@ public class RequestStatusService {
 
     @Autowired
     private IJobInfoService jobService;
+
+    @Autowired
+    private IFileReferenceRepository fileReferenceRepository;
 
     /**
      * Compute {@link FileRequestStatus} for new {@link FileStorageRequestAggregation}
@@ -156,10 +158,23 @@ public class RequestStatusService {
         return status;
     }
 
+    public FileRequestStatus getNewStatus(FileCacheRequest request, Optional<FileRequestStatus> oDefault) {
+        FileRequestStatus status = oDefault.orElse(FileRequestStatus.TO_DO);
+        String checksum = request.getChecksum();
+        // Delayed storage request if a deletion requests already exists
+        if (cacheReqRepo.existsByChecksumAndStatusIn(checksum, FileRequestStatus.RUNNING_STATUS)) {
+            status = FileRequestStatus.DELAYED;
+        }
+        return status;
+    }
+
     /**
      * Update delayed {@link FileStorageRequestAggregation}s that can be handled.
+     *
+     * @param fileStorageRequestService service that will handle the storage success for redundant request (whose file
+     *                                  is already stored).
      */
-    public void checkDelayedStorageRequests() {
+    public void checkDelayedStorageRequests(FileStorageRequestService fileStorageRequestService) {
         int nbUpdated = 0;
         List<FileStorageRequestAggregation> undelayedRequests = new ArrayList<>();
         for (FileStorageRequestAggregation delayedRequest : storageReqRepo.findByStatus(FileRequestStatus.DELAYED,
@@ -175,9 +190,26 @@ public class RequestStatusService {
                                                                                    .findFirst();
             if (sameRequest.isEmpty()) {
                 // Check new status for the delayed request
-                if (getNewStatus(delayedRequest, Optional.empty()) == FileRequestStatus.TO_DO) {
-                    undelayedRequests.add(delayedRequest);
-                    delayedRequest.setStatus(FileRequestStatus.TO_DO);
+                FileRequestStatus newStatus = getNewStatus(delayedRequest, Optional.empty());
+                if (newStatus == FileRequestStatus.TO_DO) {
+                    Optional<FileReference> oStoredFile = fileReferenceRepository.findByLocationStorageAndMetaInfoChecksum(
+                        delayedRequest.getStorage(),
+                        delayedRequest.getMetaInfo().getChecksum());
+                    if (oStoredFile.isEmpty()) {
+                        undelayedRequests.add(delayedRequest);
+                        delayedRequest.setStatus(FileRequestStatus.TO_DO);
+                    } else {
+                        FileReference storedFile = oStoredFile.get();
+                        FileStorageRequestResultDto result = FileStorageRequestResultDto.build(delayedRequest.toDto(),
+                                                                                               storedFile.getLocation()
+                                                                                                         .getUrl(),
+                                                                                               storedFile.getMetaInfo()
+                                                                                                         .getFileSize(),
+                                                                                               storedFile.getLocation()
+                                                                                                         .isPendingActionRemaining(),
+                                                                                               false);
+                        fileStorageRequestService.handleSuccess(List.of(result));
+                    }
                     nbUpdated++;
                 }
             } else {
@@ -192,7 +224,7 @@ public class RequestStatusService {
             }
         }
         if (nbUpdated > 0) {
-            LOGGER.debug("[STORAGE REQUEST] {} delayed requests can be handle now.", nbUpdated);
+            LOGGER.debug("[STORAGE REQUEST] {} delayed requests can now be handled.", nbUpdated);
         }
     }
 
@@ -236,7 +268,18 @@ public class RequestStatusService {
      * Update delayed {@link FileCacheRequest}s that can be handled.
      */
     public void checkDelayedCacheRequests() {
-        // Nothing to do. No cache requests can be delayed.
+        int nbUpdated = 0;
+        for (FileCacheRequest delayedCacheRequest : cacheReqRepo.findByStatus(FileRequestStatus.DELAYED,
+                                                                              PageRequest.of(0, 100))) {
+            // Check new status for the delayed request
+            if (getNewStatus(delayedCacheRequest, Optional.empty()) == FileRequestStatus.TO_DO) {
+                delayedCacheRequest.setStatus(FileRequestStatus.TO_DO);
+                nbUpdated++;
+            }
+        }
+        if (nbUpdated > 0) {
+            LOGGER.debug("[COPY REQUEST] {} delayed requests can be hanle now.", nbUpdated);
+        }
     }
 
     public void stopStorageRequests() {

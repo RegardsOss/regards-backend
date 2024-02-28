@@ -150,7 +150,23 @@ public interface IRequestService {
 
     void switchRequestState(AbstractRequest request);
 
+    /**
+     * Delete the list of provided {@link AbstractRequest}, ensure related jobs are unlocked
+     * (call {@link #deleteRequest(AbstractRequest request)} for each request of list)
+     *
+     * @param requests the request to delete
+     */
     void deleteRequests(Collection<? extends AbstractRequest> requests);
+
+    /**
+     * Delete the list of provided {@link AbstractRequest}, ensure related jobs are unlocked.
+     * (call {@link #deleteRequest(AbstractRequest request)} for each request of list)
+     *
+     * @param requests  the request to delete
+     * @param isFlushed true to delete all requests  directly to the database; otherwise false to delete in the commit
+     *                  of transaction.
+     */
+    void deleteRequests(Collection<? extends AbstractRequest> requests, boolean isFlushed);
 
     /**
      * Delete the provided {@link AbstractRequest}, ensure related jobs are unlocked

@@ -28,7 +28,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -43,7 +43,7 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
     @Query("select storage from FileCacheRequest where status = :status")
     Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
 
-    Optional<FileCacheRequest> findByChecksum(String checksum);
+    Set<FileCacheRequest> findByChecksum(String checksum);
 
     Page<FileCacheRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
@@ -52,9 +52,9 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
                                                                      Long maxId,
                                                                      Pageable page);
 
-    Set<FileCacheRequest> findByGroupId(String groupId);
+    Set<FileCacheRequest> findByGroupIds(String groupId);
 
-    Set<FileCacheRequest> findByGroupIdAndStatus(String groupId, FileRequestStatus status);
+    Set<FileCacheRequest> findByGroupIdsAndStatus(String groupId, FileRequestStatus status);
 
     void deleteByStorage(String storageLocationId);
 
@@ -76,6 +76,12 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     @Query("select coalesce(sum(fcr.fileSize),0) from FileCacheRequest fcr where fcr.status = 'PENDING'")
     Long getPendingFileSize();
-    
-    void deleteByGroupIdAndStatusNotIn(String group, Set<FileRequestStatus> runningStatus);
+
+    @Modifying
+    @Query(value = "DELETE FROM t_file_cache_request cac WHERE cac.status NOT IN :runningStatuses AND cac.id IN (SELECT grp.file_cache_request_id FROM ta_file_cache_request_group_id grp WHERE grp.group_id = :groupId )",
+           nativeQuery = true)
+    void deleteByGroupIdsAndStatusNotIn(@Param("groupId") String groupId,
+                                        @Param("runningStatuses") List<String> runningStatus);
+
+    boolean existsByChecksumAndStatusIn(String checksum, Set<FileRequestStatus> statuses);
 }

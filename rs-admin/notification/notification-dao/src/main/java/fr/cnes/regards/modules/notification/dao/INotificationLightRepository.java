@@ -27,8 +27,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-
 /**
  * JPA Repository to access {@link NotificationLight}
  *
@@ -48,11 +46,4 @@ public interface INotificationLightRepository
     @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" },
                  type = EntityGraph.EntityGraphType.LOAD)
     Page<NotificationLight> findAll(Specification<NotificationLight> spec, Pageable pageable);
-
-    /**
-     * Delete notifications using their ids
-     *
-     * @param notificationIds ids to delete
-     */
-    void deleteByIdIn(Collection<Long> notificationIds);
 }

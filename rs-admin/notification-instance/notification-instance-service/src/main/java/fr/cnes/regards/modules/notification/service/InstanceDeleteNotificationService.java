@@ -21,14 +21,14 @@ package fr.cnes.regards.modules.notification.service;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.modules.notification.dao.INotificationLightRepository;
 import fr.cnes.regards.modules.notification.domain.NotificationLight;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationSpecificationBuilder;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -37,19 +37,14 @@ import java.util.stream.Collectors;
  * @author Théo Lasserre
  */
 @Service
-@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class InstanceDeleteNotificationService {
-
-    private final IInstanceNotificationService notificationService;
 
     /**
      * CRUD repository managing light notifications
      */
     private final INotificationLightRepository notificationLightRepository;
 
-    public InstanceDeleteNotificationService(IInstanceNotificationService notificationService,
-                                             INotificationLightRepository notificationLightRepository) {
-        this.notificationService = notificationService;
+    public InstanceDeleteNotificationService(INotificationLightRepository notificationLightRepository) {
         this.notificationLightRepository = notificationLightRepository;
     }
 
@@ -63,10 +58,12 @@ public class InstanceDeleteNotificationService {
     @RegardsTransactional(propagation = Propagation.REQUIRES_NEW)
     public Page<NotificationLight> deleteNotificationWithFilter(SearchNotificationParameters filters,
                                                                 Pageable pageable) {
-        Page<NotificationLight> notificationLightPage = notificationService.findAll(filters, pageable);
-        notificationLightRepository.deleteByIdIn(notificationLightPage.stream()
-                                                                      .map(NotificationLight::getId)
-                                                                      .collect(Collectors.toList()));
+        Page<NotificationLight> notificationLightPage = notificationLightRepository.findAll(new NotificationSpecificationBuilder().withParameters(
+            filters).build(), pageable);
+        List<Long> notificationIds = notificationLightPage.stream()
+                                                          .map(NotificationLight::getId)
+                                                          .collect(Collectors.toList());
+        notificationLightRepository.deleteAllByIdInBatch(notificationIds);
         return notificationLightPage;
     }
 }

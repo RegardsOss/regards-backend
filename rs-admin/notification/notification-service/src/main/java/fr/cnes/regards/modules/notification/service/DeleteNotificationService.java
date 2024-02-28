@@ -28,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -52,17 +53,16 @@ public class DeleteNotificationService {
      *
      * @param filters  search parameters
      * @param pageable the paging information
-     * @return a notification light page
+     * @return true if there is more notification to delete after the current page deletion.
      */
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
-    public Page<NotificationLight> deleteNotificationWithFilter(SearchNotificationParameters filters,
-                                                                Pageable pageable) {
+    public boolean deleteNotificationWithFilter(SearchNotificationParameters filters, Pageable pageable) {
         Page<NotificationLight> notificationLightPage = notificationLightRepository.findAll(new NotificationSpecificationBuilder().withParameters(
             filters).build(), pageable);
-        notificationLightRepository.deleteByIdIn(notificationLightPage.stream()
-                                                                      .map(NotificationLight::getId)
-                                                                      .collect(Collectors.toList()));
-
-        return notificationLightPage;
+        List<Long> notificationIds = notificationLightPage.stream()
+                                                          .map(NotificationLight::getId)
+                                                          .collect(Collectors.toList());
+        notificationLightRepository.deleteAllByIdInBatch(notificationIds);
+        return notificationLightPage.hasNext();
     }
 }
