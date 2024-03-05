@@ -188,15 +188,16 @@ public class IngestRequestService implements IIngestRequestService {
                 Type type = new TypeToken<Set<Long>>() {
 
                 }.getType();
-                Set<Long> ids;
-                ids = IJob.getValue(jobInfo.getParametersAsMap(), IngestProcessingJob.IDS_PARAMETER, type);
-                List<IngestRequest> requests = findByIds(ids);
+                Set<Long> requestIds = IJob.getValue(jobInfo.getParametersAsMap(),
+                                                     IngestProcessingJob.IDS_PARAMETER,
+                                                     type);
+                List<IngestRequest> requests = findByIds(requestIds);
                 requests.forEach(r -> {
                     r.setErrorType(IngestErrorType.GENERATION);
                     handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace());
                 });
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
-                String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
+                String message = String.format("IngestProcessingJob request job with id \"%s\" fails with status \"%s\"",
                                                jobInfo.getId(),
                                                jobInfo.getStatus().getStatus());
                 LOGGER.error(message, e);
