@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionsRequestsInfo;
 import org.assertj.core.api.Assertions;
@@ -83,6 +84,13 @@ public class RequestServiceTest {
 
     @Mock
     private WorkerCacheService workerCacheService;
+
+    /**
+     * Add a mock for the worker config cache service but do not use it in the tests.
+     * It allows to call handleRequests without real configs.
+     */
+    @Mock
+    private WorkerConfigCacheService workerConfigCacheService;
 
     @Mock
     private WorkflowService workflowService;

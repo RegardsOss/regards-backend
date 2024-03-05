@@ -243,6 +243,10 @@ public class RequestService {
         Multimap<String, Request> toDispatchRequests = ArrayListMultimap.create();
         // Check and update request depending on whether they can be dispatched (using Worker cache)
         for (Request request : requests) {
+            // In case of restart after configuration change, we need to init the step worker type
+            if (request.getStepWorkerType() == null) {
+                initRequestsStepWorkerType(List.of(request));
+            }
             // request can be associated to a worker configuration or a workflowConfig of workers
             if (!addRequestFromWorker(request, toDispatchRequests) && !addRequestFromWorkflow(toDispatchRequests,
                                                                                               request)) {
