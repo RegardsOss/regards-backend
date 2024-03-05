@@ -87,7 +87,7 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                 // If failed job is a NotificationJob so handle crash for associated requests
                 if (NotificationJob.class.getName().equals(jobInfo.getClassName())) {
                     try {
-                        Type type = new TypeToken<List<Long>>() {
+                        Type type = new TypeToken<Set<Long>>() {
 
                         }.getType();
                         Set<Long> requestIds = IJob.getValue(jobInfo.getParametersAsMap(),
