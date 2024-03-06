@@ -90,4 +90,9 @@ public class WorkerResponseHandler
                     info.getRequests(RequestStatus.ERROR).size(),
                     System.currentTimeMillis() - start);
     }
+
+    @Override
+    public boolean isRetryEnabled() {
+        return true;
+    }
 }

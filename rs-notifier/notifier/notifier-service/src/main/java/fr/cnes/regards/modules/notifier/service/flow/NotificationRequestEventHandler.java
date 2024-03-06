@@ -67,4 +67,9 @@ public class NotificationRequestEventHandler
         notificationRegistrationService.registerNotificationRequests(messages);
     }
 
+    @Override
+    public boolean isRetryEnabled() {
+        return true;
+    }
+
 }

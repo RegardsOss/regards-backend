@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.RetryBatchMessageHandler;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
@@ -69,9 +70,12 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.jupiter.api.Assertions;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -857,5 +861,34 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
                         """, source, session, stepId, creationDateBegin, creationDateEnd, stepProperties);
         return stepProperties;
 
+    }
+
+    /**
+     * Check if expected retry headers are present in AMQP messages retried after an unexpected failure.
+     *
+     * @param nbEvents          number of expected AMQP messages
+     * @param nbExpectedRetries total number of retries
+     * @param targetQueueName   name of the queue on which messages are published successfully after 'nbExpectedRetries retries
+     */
+    protected void verifyRetryHeaderAfterXFailures(int nbEvents,
+                                                   int nbExpectedRetries,
+                                                   String targetQueueName,
+                                                   String retryExchangeName) {
+        // messages has to re-published 'nbExpectedRetries' times
+        ArgumentCaptor<Message> eventCaptor = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(publisher, Mockito.timeout(30_000L * nbExpectedRetries).times(nbEvents * nbExpectedRetries))
+               .basicPublish(ArgumentMatchers.eq(getDefaultTenant()),
+                             ArgumentMatchers.eq(retryExchangeName),
+                             ArgumentMatchers.eq(targetQueueName),
+                             eventCaptor.capture());
+        // Retry header has to be updated
+        org.assertj.core.api.Assertions.assertThat(eventCaptor.getAllValues()
+                                                              .stream()
+                                                              .filter(message -> (int) message.getMessageProperties()
+                                                                                              .getHeader(
+                                                                                                  RetryBatchMessageHandler.X_RETRY_HEADER)
+                                                                                 == nbExpectedRetries))
+                                       .as("Request retry header should be present and updated with the number of retries.")
+                                       .hasSize(nbEvents);
     }
 }

@@ -18,20 +18,14 @@
  */
 package fr.cnes.regards.modules.workermanager.dto.requests;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
-
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@NoArgsConstructor
-@Getter
-public class RequestsInfo {
+public record RequestsInfo(Map<RequestStatus, Set<RequestDTO>> requests) {
 
-    Map<RequestStatus, Set<RequestDTO>> requests = new HashMap<>();
+    public RequestsInfo() {
+        this(new EnumMap<>(RequestStatus.class));
+    }
 
 }

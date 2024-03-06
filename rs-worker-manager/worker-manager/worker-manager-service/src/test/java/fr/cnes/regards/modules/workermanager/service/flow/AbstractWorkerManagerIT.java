@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.workermanager.service.flow;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.batch.RetryBatchMessageHandler;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -46,9 +47,14 @@ import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
@@ -72,7 +78,7 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
 
     public final static String DEFAULT_CONTENT_TYPE = RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0;
 
-    @Autowired
+    @SpyBean
     protected IPublisher publisher;
 
     @Autowired
@@ -280,5 +286,34 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
                                0,
                                messages,
                                new HashMap<>());
+    }
+
+    /**
+     * Check if expected retry headers are present in AMQP messages retried after an unexpected failure.
+     *
+     * @param nbEvents          number of expected AMQP messages
+     * @param nbExpectedRetries total number of retries
+     * @param targetQueueName   name of the queue on which messages are published successfully after 'nbExpectedRetries retries
+     */
+    protected void verifyRetryHeaderAfterXFailures(int nbEvents,
+                                                   int nbExpectedRetries,
+                                                   String targetQueueName,
+                                                   String retryExchangeName) {
+        // messages has to re-published 'nbExpectedRetries' times
+        ArgumentCaptor<Message> eventCaptor = ArgumentCaptor.forClass(Message.class);
+        Mockito.verify(publisher, Mockito.timeout(30_000L * nbExpectedRetries).times(nbEvents * nbExpectedRetries))
+               .basicPublish(ArgumentMatchers.eq(getDefaultTenant()),
+                             ArgumentMatchers.eq(retryExchangeName),
+                             ArgumentMatchers.eq(targetQueueName),
+                             eventCaptor.capture());
+        // Retry header has to be updated
+        org.assertj.core.api.Assertions.assertThat(eventCaptor.getAllValues()
+                                                              .stream()
+                                                              .filter(message -> (int) message.getMessageProperties()
+                                                                                              .getHeader(
+                                                                                                  RetryBatchMessageHandler.X_RETRY_HEADER)
+                                                                                 == nbExpectedRetries))
+                                       .as("Request retry header should be present and updated with the number of retries.")
+                                       .hasSize(nbEvents);
     }
 }

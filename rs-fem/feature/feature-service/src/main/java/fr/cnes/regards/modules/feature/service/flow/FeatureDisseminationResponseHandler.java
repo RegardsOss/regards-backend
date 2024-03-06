@@ -79,4 +79,9 @@ public class FeatureDisseminationResponseHandler
                      System.currentTimeMillis() - start);
     }
 
+    @Override
+    public boolean isRetryEnabled() {
+        return true;
+    }
+
 }

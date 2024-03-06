@@ -65,7 +65,7 @@ public class SessionsRequestsInfo {
                                                                                          (sessionKey, ri) -> ri
                                                                                                              == null ?
                                                                                              new RequestsInfo() :
-                                                                                             ri).getRequests();
+                                                                                             ri).requests();
         Set<RequestDTO> statusRequests = requestsByStatuses.compute(request.getStatus(),
                                                                     (status, requests) -> requests == null ?
                                                                         Sets.newHashSet() :
@@ -81,7 +81,7 @@ public class SessionsRequestsInfo {
     public Collection<RequestDTO> getRequests(RequestStatus status) {
         return infosPerSession.values()
                               .stream()
-                              .flatMap(r -> r.getRequests()
+                              .flatMap(r -> r.requests()
                                              .compute(status,
                                                       (key, requests) -> requests == null ?
                                                           Sets.newHashSet() :
@@ -90,4 +90,13 @@ public class SessionsRequestsInfo {
                               .collect(Collectors.toList());
     }
 
+    @Override
+    public String toString() {
+        return "SessionsRequestsInfo{"
+               + "infosPerSession="
+               + infosPerSession
+               + ", skippedEvents="
+               + skippedEvents
+               + '}';
+    }
 }

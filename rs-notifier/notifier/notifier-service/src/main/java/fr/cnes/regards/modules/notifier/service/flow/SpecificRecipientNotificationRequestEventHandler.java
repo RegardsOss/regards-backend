@@ -70,4 +70,9 @@ public class SpecificRecipientNotificationRequestEventHandler
         notificationRegistrationService.registerNotificationRequests(messages);
     }
 
+    @Override
+    public boolean isRetryEnabled() {
+        return true;
+    }
+
 }

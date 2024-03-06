@@ -38,6 +38,7 @@
 
 	<logger name="fr.cnes.regards" level="INFO" />
 	<logger name="fr.cnes.regards.modules.workermanager" level="TRACE" />
+	<logger name="fr.cnes.regards.framework.amqp.batch" level="DEBUG" />
 
 	<root level="info">
 		<appender-ref ref="STDOUT" />

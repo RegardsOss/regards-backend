@@ -68,7 +68,7 @@ public class SessionService {
                                 WorkerStepPropertyEnum.TOTAL_REQUESTS.getPropertyPath(),
                                 WorkerStepPropertyEnum.TOTAL_REQUESTS,
                                 propertySteps,
-                                sessionInfo.getRequests().values().stream().mapToInt(Collection::size).sum());
+                                sessionInfo.requests().values().stream().mapToInt(Collection::size).sum());
             sendSteps(propertySteps);
         });
     }
@@ -83,7 +83,7 @@ public class SessionService {
                 Map<String, StepProperty> propertySteps = new HashMap<>();
                 preparePropertyStepsForSession(source, session, sessionInfo, propertySteps, false);
 
-                List<RequestDTO> requests = sessionInfo.getRequests()
+                List<RequestDTO> requests = sessionInfo.requests()
                                                        .values()
                                                        .stream()
                                                        .flatMap(Collection::stream)
@@ -108,7 +108,7 @@ public class SessionService {
                                 WorkerStepPropertyEnum.TOTAL_REQUESTS.getPropertyPath(),
                                 WorkerStepPropertyEnum.TOTAL_REQUESTS,
                                 propertySteps,
-                                -sessionInfo.getRequests().values().stream().mapToInt(Collection::size).sum());
+                                -sessionInfo.requests().values().stream().mapToInt(Collection::size).sum());
             sendSteps(propertySteps);
         });
     }
@@ -138,7 +138,7 @@ public class SessionService {
             WorkerStepPropertyEnum.parse(status).ifPresent(stepProperty -> {
                 preparePropertyStepForRequests(source,
                                                session,
-                                               sessionInfo.getRequests().get(status),
+                                               sessionInfo.requests().get(status),
                                                stepProperty,
                                                propertySteps,
                                                inc);

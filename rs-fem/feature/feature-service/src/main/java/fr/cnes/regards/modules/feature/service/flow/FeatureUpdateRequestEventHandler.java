@@ -81,6 +81,11 @@ public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEven
     }
 
     @Override
+    public boolean isRetryEnabled() {
+        return true;
+    }
+
+    @Override
     public int getBatchSize() {
         return confProperties.getBatchSize();
     }
