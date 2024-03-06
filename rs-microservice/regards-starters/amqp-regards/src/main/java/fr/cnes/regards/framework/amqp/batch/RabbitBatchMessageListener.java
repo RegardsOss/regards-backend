@@ -23,86 +23,69 @@ import com.google.common.collect.Multimap;
 import com.rabbitmq.client.Channel;
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.batch.dto.BatchErrorResponse;
+import fr.cnes.regards.framework.amqp.batch.dto.BatchMessage;
+import fr.cnes.regards.framework.amqp.batch.dto.BatchMessageErrorType;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RetryProperties;
 import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
-import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
+import fr.cnes.regards.framework.amqp.exception.InvalidMessageException;
+import fr.cnes.regards.framework.amqp.exception.MissingTenantException;
+import fr.cnes.regards.framework.amqp.exception.UnprocessableBatchException;
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.api.ChannelAwareBatchMessageListener;
-import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.amqp.support.converter.MessageConversionException;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.lang.NonNull;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.MethodInvoker;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.MapBindingResult;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * Batch listener
- *
- * @author Marc SORDI
+ * Batch listener to handle AMQP messages received from multiple tenants.
  */
 public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitBatchMessageListener.class);
 
+    // CONSTANTS
+
+    // method names for reflection
+
     private static final String VALIDATE_SINGLE_METHOD_NAME = "validate";
 
     private static final String HANDLE_METHOD_NAME = "handleBatchAndLog";
 
-    private static final String BATCH_PROCESSING_FAILURE_TITLE = "Batch processing failure";
-
-    private static final String INVALID_MESSAGE_TITLE = "Invalid message";
-
-    private static final String TENANT_NOT_FOUND = "Tenant cannot be found in header or message wrapper";
-
-    private static final String CONVERSION_FAILURE_TITLE = "Conversion failure";
-
-    // Validation error code
-
-    private static final String INVALID_TENANT_CODE = "invalid.tenant.code";
-
-    private static final String INVALID_MESSAGE_CODE = "invalid.message.code";
-
-    private static final String INVALID_MESSAGE_EXCEPTION_CODE = "invalid.message.exception.code";
-
-    // Additional headers when republishing to DLQ instead of "nacking" message to inject information
-
-    private static final String X_EXCEPTION_MESSAGE_HEADER = "x-exception-message";
-
-    private static final String X_EXCEPTION_STACKTRACE_HEADER = "x-exception-stacktrace";
+    // SERVICES
 
     private final MessageConverter messageConverter;
 
     private final IBatchHandler<?> batchHandler;
 
-    private final IInstancePublisher instancePublisher;
-
-    private final IPublisher publisher;
-
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private final ITenantResolver tenantResolver;
 
-    private final String microserviceName;
+    private final BatchMessageErrorHandler batchMessageErrorHandler;
 
-    private final IAmqpAdmin amqpAdmin;
+    private final RetryBatchMessageHandler retryBatchMessageHandler;
+
+    private final TransactionTemplate transactionTemplate;
 
     public RabbitBatchMessageListener(IAmqpAdmin amqpAdmin,
                                       String microserviceName,
@@ -111,212 +94,260 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                                       IRuntimeTenantResolver runtimeTenantResolver,
                                       ITenantResolver tenantResolver,
                                       MessageConverter messageConverter,
-                                      IBatchHandler<?> batchHandler) {
-        this.amqpAdmin = amqpAdmin;
-        this.microserviceName = microserviceName;
-        this.instancePublisher = instancePublisher;
-        this.publisher = publisher;
+                                      IBatchHandler<?> batchHandler,
+                                      RabbitTemplate rabbitTemplate,
+                                      TransactionTemplate transactionTemplate,
+                                      RetryProperties retryProperties) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.tenantResolver = tenantResolver;
         this.messageConverter = messageConverter;
         this.batchHandler = batchHandler;
-    }
-
-    /**
-     * Build a set of error string from a not empty {@link Errors} object.
-     */
-    private static Set<String> getErrors(Errors errors) {
-        if (errors.hasErrors()) {
-            Set<String> err = new HashSet<>();
-            errors.getAllErrors().forEach(error -> {
-                if (error instanceof FieldError fieldError) {
-                    err.add(String.format("%s at %s: rejected value [%s].",
-                                          fieldError.getDefaultMessage(),
-                                          fieldError.getField(),
-                                          ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
-                } else {
-                    err.add(error.getDefaultMessage());
-                }
-            });
-            return err;
-        } else {
-            throw new IllegalArgumentException("This method must be called only if at least one error exists");
-        }
-    }
-
-    /**
-     * Build and join a set of error string from a not empty {@link Errors} object
-     */
-    private static String getErrorsAsString(Errors errors) {
-        Set<String> errs = getErrors(errors);
-        StringJoiner joiner = new StringJoiner(", ");
-        errs.forEach(err -> joiner.add(err));
-        return joiner.toString();
+        this.transactionTemplate = transactionTemplate;
+        this.batchMessageErrorHandler = new BatchMessageErrorHandler(amqpAdmin,
+                                                                     rabbitTemplate,
+                                                                     runtimeTenantResolver,
+                                                                     instancePublisher,
+                                                                     publisher,
+                                                                     batchHandler,
+                                                                     microserviceName);
+        this.retryBatchMessageHandler = new RetryBatchMessageHandler(publisher,
+                                                                     amqpAdmin,
+                                                                     batchMessageErrorHandler,
+                                                                     retryProperties,
+                                                                     microserviceName);
     }
 
     @Override
     public void onMessageBatch(List<Message> messages, Channel channel) {
-
-        // Convert messages
-        Multimap<String, BatchMessage> convertedMessages = convertMessagesByTenant(messages, channel);
-
         // Handle messages by tenant
-        for (String tenant : convertedMessages.keySet()) {
-            List<BatchMessage> validMessages = getValidMessages(convertedMessages.get(tenant), tenant, channel);
-            if (!validMessages.isEmpty()) {
-                try {
-                    // Launch valid message processing
-                    invokeBatchHandler(tenant, validMessages);
-                    // Acknowledge all valid messages
-                    handleValidMessage(tenant, validMessages, channel);
-                } catch (Exception ex) { // NOSONAR
-                    // Re-queue all valid messages
-                    handleBatchException(tenant, validMessages, channel, ex);
+        try {
+            Multimap<String, Message> messagesByTenant = mapMessagesByTenant(messages);
+            for (String tenant : messagesByTenant.keySet()) {
+                Collection<Message> mappedMessages = messagesByTenant.get(tenant);
+                // Check if tenant is active
+                if (tenantResolver.getAllActiveTenants().contains(tenant)) {
+                    // Convert messages to java objects
+                    List<BatchMessage> convertedMessages = convertToBatchMessages(mappedMessages, tenant);
+                    if (!convertedMessages.isEmpty()) {
+                        // Verify that messages are valid
+                        List<BatchMessage> validMessages = getValidMessages(convertedMessages, tenant);
+                        if (!validMessages.isEmpty()) {
+                            processValidMessages(channel, tenant, validMessages);
+                        }
+                    }
+                } else {
+                    batchMessageErrorHandler.handleInactiveTenant(messages, tenant);
                 }
             }
+        } finally {
+            // in any cases, acknowledge incoming messages from rabbitmq listener as acknowledge mode is manual
+            acknowledgeMessages(messages, channel);
         }
     }
 
     /**
-     * Check into message headers if property x-first-death-queue exists.
-     * Property exists means message come from DLQ, so check if origin exchange match with current IBatchHandler.
-     * Return true if message cannot be handled by current handler.
+     * Map {@link Message}s received by tenant.
      *
-     * @param message Message to check
-     * @return boolean true if valid
+     * @param messages raw AMQP messages received from multiple tenants.
+     * @return Map of messages grouped by tenant.
      */
-    private boolean handleInvalidMessageFromDLQ(BatchMessage message, String tenant, Channel channel) {
-        String originQueueName = message.getOrigin().getMessageProperties().getHeader("x-first-death-queue");
-        boolean isValid = originQueueName == null || batchHandler.getType() == null || originQueueName.endsWith(
-            batchHandler.getType().getName());
-        if (!isValid) {
-            String errorMessage = String.format(
-                "x-first-death-queue (%s) found in message headers mismatch with current message handler %s (type=%s)",
-                originQueueName,
-                batchHandler.getClass().getName(),
-                batchHandler.getType());
-            handleInvalidMessage(tenant, message, channel, errorMessage);
-        }
-        return isValid;
-    }
-
-    /**
-     * Validate message with handler delegated function
-     *
-     * @return true if valid
-     */
-    private boolean validateMessage(BatchMessage message, String tenant, Channel channel) {
-        Errors errors = invokeValidationMethod(tenant, message.getConverted());
-        if (errors != null && errors.hasErrors()) {
-            handleInvalidMessage(tenant, message, channel, errors);
-        }
-        return errors == null || !errors.hasErrors();
-    }
-
-    /**
-     * Concert {@link Message}s to {@link BatchMessage}s
-     */
-    private Multimap<String, BatchMessage> convertMessagesByTenant(List<Message> messages, Channel channel) {
+    private Multimap<String, Message> mapMessagesByTenant(List<Message> messages) {
         // Map of messages by tenant
-        Multimap<String, BatchMessage> convertedMessages = ArrayListMultimap.create();
-        // Convert messages
+        Multimap<String, Message> messagesByTenant = ArrayListMultimap.create();
+        BatchErrorResponse batchErrorResponse = new BatchErrorResponse();
+        for (Message message : messages) {
+            setDefaultHeaders(message);
+            String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+            // Check tenant
+            if (tenant == null || tenant.isEmpty()) {
+                batchMessageErrorHandler.handleDeniedMessage(BatchMessage.buildNotConvertedBatchMessage(message),
+                                                             batchErrorResponse,
+                                                             new MissingTenantException(
+                                                                 "Tenant is not present on batch message properties, message "
+                                                                 + "cannot be further processed!"),
+                                                             BatchMessageErrorType.MISSING_TENANT);
+            } else {
+                messagesByTenant.put(tenant, message);
+            }
+        }
+        if (batchErrorResponse.hasErrors()) {
+            batchMessageErrorHandler.sendBatchErrors(batchErrorResponse, null);
+        }
+        return messagesByTenant;
+    }
+
+    /**
+     * Convert {@link Message}s to {@link BatchMessage}s. Not converted messages will be discarded and may lead to the publishing of
+     * response messages on a queue configured by the
+     * {@link IBatchHandler#buildDeniedResponseForNotConvertedMessage(Message, String) (BatchMessage, String)} method.
+     *
+     * @param messages raw AMQP messages to convert to java objects. The converter used depends on the parameters
+     *                 provided by the AMQP message properties.
+     * @param tenant   project at the origin of the messages.
+     * @return wrapper that contains the original raw message and the corresponding converted object.
+     */
+    private List<BatchMessage> convertToBatchMessages(Collection<Message> messages, String tenant) {
+        // Map of messages by tenant
+        List<BatchMessage> convertedMessages = new ArrayList<>(messages.size());
+        BatchErrorResponse batchErrorResponse = new BatchErrorResponse();
         for (Message message : messages) {
             try {
-                setDefaultHeaders(message);
-                Object converted = messageConverter.fromMessage(message);
-                String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
-                if (tenant != null && !tenant.isEmpty()) {
-                    convertedMessages.put(tenant, buildBatchMessage(message, converted));
-                } else {
-                    handleMissingTenantError(message, channel);
-                }
+                // Convert message
+                BatchMessage batchMessage = BatchMessage.buildConvertedBatchMessage(message,
+                                                                                    messageConverter.fromMessage(message));
+                convertedMessages.add(batchMessage);
             } catch (MessageConversionException mce) {
-                handleConversionError(message, channel, mce);
+                batchMessageErrorHandler.handleDeniedMessage(BatchMessage.buildNotConvertedBatchMessage(message),
+
+                                                             batchErrorResponse,
+                                                             mce,
+                                                             BatchMessageErrorType.NOT_CONVERTED_MESSAGE);
             }
         }
+        if (batchErrorResponse.hasErrors()) {
+            executeInTransaction(() -> batchMessageErrorHandler.sendBatchErrors(batchErrorResponse, tenant), tenant);
+        }
+
         return convertedMessages;
     }
 
     /**
-     * Return valid messages from given ones.
-     * Messages are validated by :
-     * - associated to an active tenant
-     * - If message from DLQ, origin exchange is the same as the current handler
-     * - Valide message with current handler delegated function
+     * Return valid messages from given ones. Invalid messages will be discarded and may lead to the publishing of
+     * response messages on a queue configured by the
+     * {@link IBatchHandler#buildDeniedResponseForInvalidMessage(BatchMessage, String)} method.
      *
-     * @param convertedMessages %essages to validate
-     * @param tenant            Message tenant
-     * @param channel           Amq channel
+     * @param convertedMessages messages to validate.
+     * @param tenant            project at the origin of the messages.
+     * @return only valid {@link BatchMessage}s.
      */
-    private List<BatchMessage> getValidMessages(Collection<BatchMessage> convertedMessages,
-                                                String tenant,
-                                                Channel channel) {
+    private List<BatchMessage> getValidMessages(Collection<BatchMessage> convertedMessages, String tenant) {
         List<BatchMessage> validMessages = new ArrayList<>();
-        if (!tenantResolver.getAllActiveTenants().contains(tenant)) {
-            LOGGER.info("[AMQP MESSAGE - INVALID TENANT] Current microservice is not configured for tenant {}. {} "
-                        + "messages ignored", tenant, convertedMessages.size());
-            // Do not send to DLQ, it is possible that a service is not available for a given tenant. In this case,
-            // just ignore messages.
-            // Only ack message from rabbitmq listener
-            convertedMessages.forEach(message -> ackMessage(channel, message.getOrigin()));
-        } else {
-            for (BatchMessage message : convertedMessages) {
+        BatchErrorResponse batchErrorResponse = new BatchErrorResponse();
+        for (BatchMessage convertedMessage : convertedMessages) {
+            // check if message can be processed by the current handler
+            String error = handleInvalidMessageFromDLQ(convertedMessage);
+            if (error != null) {
+                batchMessageErrorHandler.handleDeniedMessage(convertedMessage,
+                                                             batchErrorResponse,
+                                                             new InvalidMessageException(error),
+                                                             BatchMessageErrorType.MESSAGE_ORIGIN_MISMATCH);
+            } else {
                 try {
-                    boolean isValid = handleInvalidMessageFromDLQ(message, tenant, channel);
-                    isValid &= validateMessage(message, tenant, channel);
-                    if (isValid) {
-                        validMessages.add(message);
+                    // validate message
+                    Errors errors = invokeValidationMethod(tenant, convertedMessage.getConverted());
+                    if (errors != null && errors.hasErrors()) {
+                        batchMessageErrorHandler.handleDeniedMessage(convertedMessage,
+                                                                     batchErrorResponse,
+                                                                     new InvalidMessageException(ErrorTranslator.getErrorsAsString(
+                                                                         errors)),
+                                                                     BatchMessageErrorType.INVALID_MESSAGE);
                     }
-                } catch (Throwable e) {
-                    LOGGER.error(e.getMessage(), e);
-                    handleInvalidMessage(tenant, message, channel, e.getMessage());
+                    validMessages.add(convertedMessage);
+                } catch (InvocationTargetException | UnprocessableBatchException e) {
+                    batchMessageErrorHandler.handleDeniedMessage(convertedMessage,
+                                                                 batchErrorResponse,
+                                                                 e,
+                                                                 BatchMessageErrorType.UNEXPECTED_VALIDATION_FAILURE);
                 }
             }
+        }
+        if (batchErrorResponse.hasErrors()) {
+            executeInTransaction(() -> batchMessageErrorHandler.sendBatchErrors(batchErrorResponse, tenant), tenant);
         }
         return validMessages;
     }
 
     /**
-     * Ack the given rabbitMQ message
+     * Check into message headers if property x-death-queue exists.
+     * Property exists means message comes from DLQ, so check if origin queue match with current IBatchHandler.
+     * Return error if message cannot be handled by current handler.
+     *
+     * @param convertedMessage message to check
+     * @return error message if invalid
      */
-    protected void ackMessage(Channel channel, Message message) {
+    private String handleInvalidMessageFromDLQ(BatchMessage convertedMessage) {
+        String error = null;
+        String originQueueName = convertedMessage.getOrigin()
+                                                 .getMessageProperties()
+                                                 .getHeader(RepublishErrorBatchMessageRecover.X_DEATH_QUEUE_HEADER);
+        boolean isValid = originQueueName == null || batchHandler.getType() == null || originQueueName.endsWith(
+            batchHandler.getType().getName());
+        if (!isValid) {
+            error = String.format("%s (%s) found in message headers mismatch with current message handler %s (type=%s)",
+                                  RepublishErrorBatchMessageRecover.X_DEATH_QUEUE_HEADER,
+                                  originQueueName,
+                                  batchHandler.getClass().getName(),
+                                  batchHandler.getType());
+        }
+        return error;
+    }
+
+    /**
+     * Invokes the main {@link IBatchHandler} method to process a batch of messages that are grouped by tenant.
+     * If an unexpected error is triggered during the process, all messages of the batch will be discarded.
+     *
+     * @param channel       channel configuration for exchange/queue/binding.
+     * @param tenant        project at the origin of the messages.
+     * @param validMessages {@link BatchMessage}s that have been validated beforehand.
+     */
+    private void processValidMessages(Channel channel, String tenant, List<BatchMessage> validMessages) {
         try {
-            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
-        } catch (IOException e) {
-            LOGGER.error("Error trying to ack a rabbitmq message.", e);
+            // Launch valid message processing
+            invokeBatchHandler(tenant, validMessages);
+        } catch (Exception exception) { // NOSONAR
+            // Re-queue all valid messages if retry is activated
+            if (this.batchHandler.isRetryEnabled() && !(exception instanceof UnprocessableBatchException)) {
+                executeInTransaction(() -> retryBatchMessageHandler.handleBatchMessageRetry(tenant,
+                                                                                            validMessages,
+                                                                                            channel,
+                                                                                            exception), tenant);
+            } else {
+                executeInTransaction(() -> batchMessageErrorHandler.discardBatch(tenant, validMessages, exception),
+                                     tenant);
+            }
         }
     }
 
-    protected Errors invokeValidationMethod(String tenant, Object message) {
+    /**
+     * Invoke by reflection the {@link IBatchHandler#validate(Object)} method.
+     *
+     * @param tenant  project at the origin of the messages
+     * @param message message that needs to be validated.
+     * @return validation errors. Is empty if the message is valid.
+     * @throws InvocationTargetException   if an unexpected error has occurred during the validation process.
+     * @throws UnprocessableBatchException if a reflexion error is involved. The message will be denied because it
+     *                                     cannot be processed.
+     */
+    protected Errors invokeValidationMethod(String tenant, Object message)
+        throws InvocationTargetException, UnprocessableBatchException {
         // Prepare arguments
         Object[] arguments = new Object[] { message };
         // Invoke validation method
         try {
             runtimeTenantResolver.forceTenant(tenant);
-
             MethodInvoker methodInvoker = new MethodInvoker();
             methodInvoker.setTargetObject(batchHandler);
             methodInvoker.setTargetMethod(VALIDATE_SINGLE_METHOD_NAME);
             methodInvoker.setArguments(arguments);
             methodInvoker.prepare();
             return (Errors) methodInvoker.invoke();
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
-                 ClassNotFoundException ex) {
-            String errorMessage = "Some AMQP message has been refused as its validation failed. The message will be "
-                                  + "rerouted to DLQ";
-            LOGGER.error(errorMessage, ex);
-            // Propagate errors
-            Errors errors = new MapBindingResult(new HashMap<>(), message.getClass().getName());
-            errors.reject(INVALID_MESSAGE_CODE, errorMessage);
-            errors.reject(INVALID_MESSAGE_EXCEPTION_CODE, ex.getMessage());
-            return errors;
+        } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException exception) {
+            throw new UnprocessableBatchException(VALIDATE_SINGLE_METHOD_NAME, arguments, exception);
         } finally {
             runtimeTenantResolver.clearTenant();
         }
     }
 
+    /**
+     * Invoke by reflection the {@link IBatchHandler#handleBatchAndLog(List, List) (Object)} method.
+     *
+     * @param tenant        project at the origin of the messages
+     * @param validMessages message that needs to be handled.
+     * @throws InvocationTargetException   if an unexpected error has occurred during the main process.
+     * @throws UnprocessableBatchException if a reflexion error is involved. The batch will no longer be processed.
+     */
     protected void invokeBatchHandler(String tenant, List<BatchMessage> validMessages)
-        throws InvocationTargetException {
+        throws InvocationTargetException, UnprocessableBatchException {
 
         List<Message> originalMessages = new ArrayList<>();
         List<Object> convertedMessages = new ArrayList<>();
@@ -327,275 +358,48 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
         // Invoke main method
         Object[] arguments = new Object[] { convertedMessages, originalMessages };
-
         try {
             runtimeTenantResolver.forceTenant(tenant);
-
             MethodInvoker methodInvoker = new MethodInvoker();
             methodInvoker.setTargetObject(batchHandler);
             methodInvoker.setTargetMethod(HANDLE_METHOD_NAME);
             methodInvoker.setArguments(arguments);
             methodInvoker.prepare();
             methodInvoker.invoke();
-        } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException ex) {
-            LOGGER.error(String.format("Fail to invoke handler %s#%s with following raw exception. Cause : %s",
-                                       batchHandler.getClass().getName(),
-                                       HANDLE_METHOD_NAME,
-                                       ex.getMessage()), ex);
-            ArrayList<String> arrayClass = new ArrayList<>();
-            if (arguments != null) {
-                for (Object argument : arguments) {
-                    arrayClass.add(argument.getClass().toString());
-                }
-            }
-            throw new ListenerExecutionFailedException("Fail to invoke target method '"
-                                                       + HANDLE_METHOD_NAME
-                                                       + "' with argument type = ["
-                                                       + StringUtils.collectionToCommaDelimitedString(arrayClass)
-                                                       + "], value = ["
-                                                       + ObjectUtils.nullSafeToString(arguments)
-                                                       + "]",
-                                                       ex,
-                                                       originalMessages.toArray(new Message[originalMessages.size()]));
+        } catch (NoSuchMethodException | IllegalAccessException | ClassNotFoundException exception) {
+            throw new UnprocessableBatchException(HANDLE_METHOD_NAME, arguments, exception);
         } finally {
             runtimeTenantResolver.clearTenant();
         }
     }
 
-    private void handleValidMessage(String tenant, List<BatchMessage> validMessages, Channel channel) {
-        for (BatchMessage message : validMessages) {
+    private void acknowledgeMessages(List<Message> messages, Channel channel) {
+        messages.forEach(message -> {
             try {
-                channel.basicAck(message.getOrigin().getMessageProperties().getDeliveryTag(), false);
+                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
             } catch (IOException e) {
-                LOGGER.error("Fail to ack valid processed message", e);
+                LOGGER.error("Fail to acknowledge processed message", e);
             }
-        }
-    }
-
-    private void handleBatchException(String tenant, List<BatchMessage> validMessages, Channel channel, Exception ex) {
-
-        // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String.format("[%s] All messages are routed to DLQ for handler %s : %s",
-                                            BATCH_PROCESSING_FAILURE_TITLE,
-                                            batchHandler.getClass().getName(),
-                                            ex.getMessage());
-        LOGGER.error(errorMessage, ex);
-
-        // Send notification
-        sendNotification(tenant, BATCH_PROCESSING_FAILURE_TITLE, errorMessage);
-
-        for (BatchMessage message : validMessages) {
-
-            // Reject message
-            rejectMessage(tenant, message.getOrigin(), channel, BATCH_PROCESSING_FAILURE_TITLE, ex);
-        }
-    }
-
-    private void handleInvalidMessage(String tenant, BatchMessage invalidMessage, Channel channel, Errors errors) {
-        handleInvalidMessage(tenant, invalidMessage, channel, getErrorsAsString(errors));
-    }
-
-    private void handleInvalidMessage(String tenant,
-                                      BatchMessage invalidMessage,
-                                      Channel channel,
-                                      String errorMessage) {
-        String logMsg = String.format("[%s] For handler %s [%s] : %s",
-                                      INVALID_MESSAGE_TITLE,
-                                      batchHandler.getClass().getName(),
-                                      errorMessage,
-                                      invalidMessage.toString());
-
-        LOGGER.error(logMsg);
-
-        // Send notification
-        sendNotification(tenant, INVALID_MESSAGE_TITLE, errorMessage);
-
-        // Reject message
-        rejectMessage(tenant,
-                      invalidMessage.getOrigin(),
-                      channel,
-                      String.format("%s : %s", INVALID_MESSAGE_TITLE, errorMessage),
-                      null);
-    }
-
-    private void handleMissingTenantError(Message message, Channel channel) {
-        // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String.format("[%s] While preparing message for handler %s : %s",
-                                            TENANT_NOT_FOUND,
-                                            batchHandler.getClass().getName(),
-                                            message.toString());
-        LOGGER.error(errorMessage);
-
-        // Send notification
-        sendNotification(null, TENANT_NOT_FOUND, errorMessage);
-
-        // Reject message
-        rejectMessage(null, message, channel, TENANT_NOT_FOUND, null);
-    }
-
-    private void handleConversionError(Message message, Channel channel, MessageConversionException ex) {
-        // Message cannot be converted
-        String errorMessage = String.format("[%s] While preparing message for handler %s : %s (%s)",
-                                            CONVERSION_FAILURE_TITLE,
-                                            batchHandler.getClass().getName(),
-                                            message.toString(),
-                                            ex.getMessage());
-        LOGGER.error(errorMessage, ex);
-
-        // Send notification
-        String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
-        if (tenant != null && !tenant.isEmpty()) {
-            try {
-                runtimeTenantResolver.forceTenant(tenant);
-                if (!batchHandler.handleConversionError(message, errorMessage)) {
-                    sendNotification(tenant, CONVERSION_FAILURE_TITLE, errorMessage);
-                }
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-            // Reject message
-            rejectMessage(tenant, message, channel, CONVERSION_FAILURE_TITLE, ex);
-        } else {
-            sendNotification(null, CONVERSION_FAILURE_TITLE, errorMessage);
-            // Reject message
-            rejectMessage(null, message, channel, CONVERSION_FAILURE_TITLE, ex);
-        }
-    }
-
-    /**
-     * Reject the current message.
-     *
-     * @param tenant  active tenant
-     * @param message {@link Message} to route to DLQ
-     * @param channel {@link Channel} to use
-     * @param reason  rejection reason
-     * @param ex      exception thrown if any or <code>null</code>
-     */
-    private void rejectMessage(String tenant, Message message, Channel channel, String reason, Exception ex) {
-
-        // If tenant is specified and for handler having dedicated DLQ,
-        // trying to republish with more details overriding default behavior.
-        if ((tenant != null) && batchHandler.isDedicatedDLQEnabled()) {
-            // Retrieve consumer queue name
-            String consumerQueueName = message.getMessageProperties().getConsumerQueue();
-            // Inject header
-            message.getMessageProperties().setHeader(X_EXCEPTION_MESSAGE_HEADER, reason);
-            if (ex != null) {
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                ex.printStackTrace(pw);
-                message.getMessageProperties().setHeader(X_EXCEPTION_STACKTRACE_HEADER, sw.toString());
-            }
-
-            boolean republished = false;
-            try {
-                // Publish to DLQ
-                publisher.basicPublish(tenant,
-                                       amqpAdmin.getDefaultDLXName(),
-                                       amqpAdmin.getDedicatedDLRKFromQueueName(consumerQueueName),
-                                       message);
-                republished = true;
-            } catch (Exception e) {
-                LOGGER.error("Fail to republish error message into dedicated DLQ", e);
-            }
-
-            // Acknowledge existing message
-            try {
-                if (republished) {
-                    channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
-                } else {
-                    channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
-                }
-            } catch (IOException e) {
-                LOGGER.error("Fail to ack message", e);
-            }
-
-        } else {
-
-            // Route message to its DLQ without republishing
-            try {
-                channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
-            } catch (IOException e) {
-                LOGGER.error("Fail to nack message", e);
-            }
-        }
-    }
-
-    /**
-     * Notify project administrators on error or for unknown tenant instance user.
-     *
-     * @param tenant       current tenant or <code>null</code>
-     * @param title        required title
-     * @param errorMessage required error message
-     */
-    private void sendNotification(String tenant, String title, String errorMessage) {
-
-        // Prepare notification
-        NotificationDtoBuilder builder = new NotificationDtoBuilder(errorMessage,
-                                                                    title,
-                                                                    NotificationLevel.ERROR,
-                                                                    microserviceName);
-        Set<String> roles = new HashSet<>(Collections.singletonList(DefaultRole.EXPLOIT.toString()));
-        NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
-
-        if (tenant != null) {
-            // Notify project
-            try {
-                // Route notification to the right tenant
-                runtimeTenantResolver.forceTenant(tenant);
-                publisher.publish(event);
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        } else {
-            // Notify instance
-            instancePublisher.publish(event);
-        }
-
+        });
     }
 
     private void setDefaultHeaders(Message message) {
         Gson2JsonMessageConverter.setDefaultHeaders(message, batchHandler);
     }
 
-    private BatchMessage buildBatchMessage(Message origin, Object converted) {
+    private void executeInTransaction(Runnable transactionalFunction, String tenant) {
+        try {
+            runtimeTenantResolver.forceTenant(tenant);
+            transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 
-        // Propagate message properties if required
-        if (IMessagePropertiesAware.class.isAssignableFrom(converted.getClass())) {
-            ((IMessagePropertiesAware) converted).setMessageProperties(origin.getMessageProperties());
-        }
-
-        BatchMessage message = new BatchMessage();
-        message.setOrigin(origin);
-        message.setConverted(converted);
-        return message;
-    }
-
-    /**
-     * Keep track of origin message
-     *
-     * @author Marc SORDI
-     */
-    private static class BatchMessage {
-
-        private Message origin;
-
-        private Object converted;
-
-        public Message getOrigin() {
-            return origin;
-        }
-
-        public void setOrigin(Message origin) {
-            this.origin = origin;
-        }
-
-        public Object getConverted() {
-            return converted;
-        }
-
-        public void setConverted(Object converted) {
-            this.converted = converted;
+                @Override
+                public void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
+                    transactionalFunction.run();
+                }
+            });
+        } finally {
+            runtimeTenantResolver.clearTenant();
         }
     }
+
 }

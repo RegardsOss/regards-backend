@@ -33,6 +33,8 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -57,6 +59,8 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
 
     protected static final int MAX_ENTITY_PER_PAGE = 2000;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeatureService.class);
+
     @Autowired
     protected IPublisher publisher;
 
@@ -80,25 +84,25 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     }
 
     @Override
-    public boolean denyMessage(Message message, String errorMessage) {
-
+    public Optional<FeatureRequestEvent> buildNotConvertedDeniedResponse(Message message, String errorMessage) {
         String requestId = AbstractRequestEvent.getRequestId(message.getMessageProperties());
         if (requestId == null) {
-            return false;
+            LOGGER.error("AMQP Message with tag {} cannot be processed because its requestId is null",
+                         message.getMessageProperties().getDeliveryTag());
+            return Optional.empty();
         }
 
         String requestOwner = AbstractRequestEvent.getRequestOwner(message.getMessageProperties());
         // Monitoring log
         logRequestDenied(requestOwner, requestId, Sets.newHashSet(errorMessage));
-        // Publish DENIED request
-        publisher.publish(FeatureRequestEvent.build(getRequestType(),
-                                                    requestId,
-                                                    requestOwner,
-                                                    null,
-                                                    null,
-                                                    RequestState.DENIED,
-                                                    Sets.newHashSet(errorMessage)));
-        return true;
+        // Build DENIED request
+        return Optional.of(FeatureRequestEvent.build(getRequestType(),
+                                                     requestId,
+                                                     requestOwner,
+                                                     null,
+                                                     null,
+                                                     RequestState.DENIED,
+                                                     Sets.newHashSet(errorMessage)));
     }
 
     @Override

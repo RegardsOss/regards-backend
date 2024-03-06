@@ -23,8 +23,6 @@ import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.InitializingBean;
@@ -57,21 +55,21 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
      */
     public static final Integer MAX_PRIORITY = 255;
 
+    public static final String REGARDS_PREFIX = "regards";
+
     public static final String DLX_SUFFIX = ".DLX";
 
     public static final String DLQ_SUFFIX = ".DLQ";
 
-    public static final String REGARDS_DLX = "regards" + DLX_SUFFIX;
+    public static final String RETRY_SUFFIX = ".retry";
 
-    public static final String REGARDS_DLQ = "regards" + DLQ_SUFFIX;
+    public static final String REGARDS_DLX = REGARDS_PREFIX + DLX_SUFFIX;
+
+    public static final String REGARDS_DLQ = REGARDS_PREFIX + DLQ_SUFFIX;
+
+    public static final String REGARDS_RETRY_EXCHANGE = REGARDS_PREFIX + RETRY_SUFFIX;
 
     private static final String DOT = ".";
-
-    /**
-     * Class logger
-     */
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdmin.class);
 
     /*
      * Namespace used in queue and exchange naming
@@ -195,8 +193,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
 
     private Exchange declareDeadLetterDefaultExchange() {
         // Create DLX (Dead Letter eXchange)
-        // DLX is a fanout so it doesn't require any binding and message in error can be recovered by multiple
-        // consumers at same time if needed
         Exchange dlx = ExchangeBuilder.topicExchange(REGARDS_DLX).durable(true).build();
         rabbitAdmin.declareExchange(dlx);
         return dlx;
@@ -213,6 +209,16 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
     }
 
     @Override
+    public void declareRetryExchange() {
+        rabbitAdmin.declareExchange(getRetryExchange());
+    }
+
+    private DirectExchange getRetryExchange() {
+        return ExchangeBuilder.directExchange(REGARDS_RETRY_EXCHANGE).delayed().build();
+
+    }
+
+    @Override
     public Queue declareQueue(String tenant, AmqpChannel channel) {
 
         // Default DLQ values
@@ -221,7 +227,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
 
         QueueBuilder builder;
         switch (channel.getWorkerMode()) {
-            case UNICAST:
+            case UNICAST -> {
                 // Useful for publishing unicast event and subscribe to a unicast exchange
                 builder = QueueBuilder.durable(channel.getQueueName()
                                                       .orElse(getUnicastQueueName(tenant,
@@ -230,8 +236,8 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
                 if (channel.isDeclareDlq()) {
                     builder = builder.deadLetterExchange(dlx).deadLetterRoutingKey(dlrk).maxPriority(MAX_PRIORITY);
                 }
-                break;
-            case BROADCAST:
+            }
+            case BROADCAST -> {
                 // Allows to subscribe to a broadcast exchange
                 if (channel.getHandlerType().isPresent()) {
 
@@ -260,15 +266,21 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
                 } else {
                     throw new IllegalArgumentException("Missing event handler for broadcasted event");
                 }
-                break;
-            default:
-                throw new EnumConstantNotPresentException(WorkerMode.class, channel.getWorkerMode().name());
+            }
+            default -> throw new EnumConstantNotPresentException(WorkerMode.class, channel.getWorkerMode().name());
         }
         if (channel.isAutoDeleteQueue()) {
             builder = builder.autoDelete();
         }
+
         Queue queue = builder.build();
         rabbitAdmin.declareQueue(queue);
+
+        // bind the retry exchange to the queue if the option is activated.
+        if (channel.isRetryEnabled()) {
+            rabbitAdmin.declareBinding(BindingBuilder.bind(queue).to(getRetryExchange()).withQueueName());
+        }
+
         return queue;
     }
 
@@ -438,5 +450,10 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
 
     public String getDefaultDLQName() {
         return REGARDS_DLQ;
+    }
+
+    @Override
+    public String getRetryExchangeName() {
+        return REGARDS_RETRY_EXCHANGE;
     }
 }

@@ -40,14 +40,14 @@ public interface IHandler<M> {
     @Deprecated
     default void handleAndLog(TenantWrapper<M> wrapper) {
         LOGGER.debug("Received {}, From {}", wrapper.getContent().getClass().getSimpleName(), wrapper.getTenant());
-        LOGGER.trace("Event received: {}", wrapper.getContent().toString());
+        LOGGER.trace("Event received: {}", wrapper.getContent());
         handle(wrapper);
     }
 
     default void handleAndLog(String tenant, M message) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("Received {}, From {}", message.getClass().getSimpleName(), tenant);
-            LOGGER.trace("Event received: {}", message.toString());
+            LOGGER.trace("Event received: {}", message);
         }
         handle(tenant, message);
     }
@@ -69,5 +69,23 @@ public interface IHandler<M> {
     @SuppressWarnings("unchecked")
     default Class<? extends IHandler<M>> getType() {
         return (Class<? extends IHandler<M>>) this.getClass();
+    }
+
+    /**
+     * <p>Option to enable retry of failed AMQP messages. If an unexpected exception is triggerred in the main handler
+     * method ({@link #handleAndLog(String, Object)}, the messages will be published to a 'x-delayed-type' exchange
+     * and re-routed to their original queues after a configurable amount of time.</p>
+     * <p><b>Read the following warnings before activating the option:</b>
+     * <ul>
+     *    <li>Make sure only <b>one transaction</b> is used when the retry option is enabled. Actually, all the
+     *    messages of the batch will be retried as it is not possible to know which message has failed. Multiple transactions may
+     *    lead to unpredictable behaviours because the same message can be processed several times in case of retry.
+     *    </li>
+     * </ul>
+     * </p>
+     *
+     */
+    default boolean isRetryEnabled() {
+        return false;
     }
 }

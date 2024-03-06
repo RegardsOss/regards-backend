@@ -18,17 +18,26 @@
  */
 package fr.cnes.regards.framework.amqp.event;
 
+import fr.cnes.regards.framework.amqp.batch.dto.BatchMessage;
 import org.springframework.amqp.core.Message;
 
+import java.util.Optional;
+
 /**
- * Denied request that cannot be converted
+ * Build an optional AMQP response for an invalid message, i.e. if the batch handler rejected the input message, an
+ * output message containing the error cause will be sent to a dedicated response handler.
  *
  * @author Marc SORDI
  */
 public interface IRequestDeniedService {
 
-    /**
-     * @return <code>true</code> if message can be denied.
-     */
-    boolean denyMessage(Message message, String errorMessage);
+    default <R extends ISubscribable> Optional<R> buildNotConvertedDeniedResponse(Message message,
+                                                                                  String errorMessage) {
+        return Optional.empty();
+    }
+
+    default <R extends ISubscribable> Optional<R> buildInvalidDeniedResponse(BatchMessage message,
+                                                                             String errorMessage) {
+        return Optional.empty();
+    }
 }

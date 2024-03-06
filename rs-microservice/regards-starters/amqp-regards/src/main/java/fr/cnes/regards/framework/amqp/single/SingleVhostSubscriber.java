@@ -22,18 +22,17 @@ import fr.cnes.regards.framework.amqp.AbstractSubscriber;
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
+import fr.cnes.regards.framework.amqp.configuration.*;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +48,7 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
     private final ITenantResolver tenantResolver;
 
     public SingleVhostSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin,
+                                 RabbitTemplate rabbitTemplate,
                                  IAmqpAdmin amqpAdmin,
                                  MessageConverter jsonMessageConverters,
                                  ITenantResolver tenantResolver,
@@ -59,7 +59,9 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
                                  IRuntimeTenantResolver runtimeTenantResolver,
                                  ApplicationEventPublisher applicationEventPublisher,
                                  int declarationRetries,
-                                 long failedDeclarationRetryInterval) {
+                                 long failedDeclarationRetryInterval,
+                                 RetryProperties retryProperties,
+                                 TransactionTemplate transactionTemplate) {
         super(virtualHostAdmin,
               amqpAdmin,
               jsonMessageConverters,
@@ -69,9 +71,12 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
               publisher,
               runtimeTenantResolver,
               tenantResolver,
+              rabbitTemplate,
+              transactionTemplate,
               applicationEventPublisher,
               declarationRetries,
-              failedDeclarationRetryInterval);
+              failedDeclarationRetryInterval,
+              retryProperties);
         this.tenantResolver = tenantResolver;
     }
 

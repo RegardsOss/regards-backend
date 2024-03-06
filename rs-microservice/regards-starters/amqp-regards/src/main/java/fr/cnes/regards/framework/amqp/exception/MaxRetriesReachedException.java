@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.batch;
-
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+package fr.cnes.regards.framework.amqp.exception;
 
 /**
- * Copy of {@link BatchHandler} for testing message routing to DLQ
- */
-public class BatchHandlerBis extends BatchHandler {
+ * Exception to indicate that the maximum number of AMQP messages retries has been reached.
+ *
+ * @author Iliana Ghazali
+ **/
+public class MaxRetriesReachedException extends Exception {
 
-    public BatchHandlerBis(IRuntimeTenantResolver tenantResolver) {
-        super(tenantResolver);
+    public MaxRetriesReachedException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

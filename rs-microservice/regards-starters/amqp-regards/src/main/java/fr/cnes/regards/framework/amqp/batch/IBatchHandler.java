@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.framework.amqp.batch;
 
+import fr.cnes.regards.framework.amqp.batch.dto.BatchMessage;
+import fr.cnes.regards.framework.amqp.batch.dto.ResponseMessage;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -46,7 +49,7 @@ public interface IBatchHandler<M> extends IHandler<M> {
         if (LOGGER.isTraceEnabled()) {
             for (M message : messages) {
                 LOGGER.trace("Received {}", message.getClass().getSimpleName());
-                LOGGER.trace("Event received: {}", message.toString());
+                LOGGER.trace("Event received: {}", message);
             }
         }
         handleBatchWithRaw(messages, rawMessages);
@@ -60,18 +63,31 @@ public interface IBatchHandler<M> extends IHandler<M> {
     }
 
     /**
-     * This method is called for each message that cannot be converted
-     * by the selected JSON converter before message gets routed to DLQ.<br/>
-     * So system may manage business behavior programmatically.
-     * <p>
-     * If not, return <code>false</code> so the default behavior will be applied (e.g. project or instance notification).
+     * This method is called for each message that could not be deserialized from an AMQP message to an Object.
+     * Each handler has the ability to return optionally an AMQP error message, which will be automatically
+     * republished to the specified exchange.
      *
-     * @param message      the message
-     * @param errorMessage the message conversion error
-     * @return <code>true</code> or <code>false</code> to respectively enable or disable the sending of default notifications.
+     * @param message      raw AMQP message
+     * @param errorMessage conversion error
+     * @return optional AMQP response message, empty by default.
      */
-    default boolean handleConversionError(Message message, String errorMessage) {
-        return false;
+    default ResponseMessage<? extends ISubscribable> buildDeniedResponseForNotConvertedMessage(Message message,
+                                                                                               String errorMessage) {
+        return ResponseMessage.buildEmptyResponse();
+    }
+
+    /**
+     * This method is called for each message that has been invalidated by {@link this#validate(Object)}.
+     * Each handler has the ability to return optionally an AMQP error message, which will be automatically
+     * republished to the specified exchange.
+     *
+     * @param batchMessage the invalid batch message
+     * @param errorMessage description of the error
+     * @return optional AMQP response message, empty by default.
+     */
+    default ResponseMessage<? extends ISubscribable> buildDeniedResponseForInvalidMessage(BatchMessage batchMessage,
+                                                                                          String errorMessage) {
+        return ResponseMessage.buildEmptyResponse();
     }
 
     /**

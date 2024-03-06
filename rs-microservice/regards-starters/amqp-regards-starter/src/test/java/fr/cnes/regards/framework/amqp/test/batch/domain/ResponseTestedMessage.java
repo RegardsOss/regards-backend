@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,36 +16,40 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.batch;
+package fr.cnes.regards.framework.amqp.test.batch.domain;
 
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import org.springframework.amqp.core.MessageProperties;
 
 /**
- * @author Marc SORDI
- */
+ * @author Iliana Ghazali
+ **/
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class BatchedMessage implements ISubscribable, IMessagePropertiesAware {
+public class ResponseTestedMessage implements ISubscribable, IMessagePropertiesAware {
 
-    private String message;
+    private final String message;
 
     // Prevent GSON converter from serializing this field
     @GsonIgnore
-    protected MessageProperties messageProperties;
+    private MessageProperties messageProperties;
 
-    public static BatchedMessage build(String message) {
-        BatchedMessage m = new BatchedMessage();
-        m.setMessage(message);
-        return m;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
+    private ResponseTestedMessage(String message) {
         this.message = message;
+    }
+
+    public static ResponseTestedMessage buildResponseMessage(String message, String requestId) {
+        ResponseTestedMessage responseMessage = new ResponseTestedMessage(message);
+        MessageProperties properties = new MessageProperties();
+        properties.setHeader(AmqpConstants.REGARDS_REQUEST_ID_HEADER, requestId);
+        responseMessage.setMessageProperties(properties);
+        return responseMessage;
+    }
+
+    @Override
+    public MessageProperties getMessageProperties() {
+        return messageProperties;
     }
 
     @Override
@@ -53,8 +57,7 @@ public class BatchedMessage implements ISubscribable, IMessagePropertiesAware {
         this.messageProperties = messageProperties;
     }
 
-    @Override
-    public MessageProperties getMessageProperties() {
-        return messageProperties;
+    public String getMessage() {
+        return message;
     }
 }

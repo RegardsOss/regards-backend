@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,27 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.batch;
+package fr.cnes.regards.framework.amqp.exception;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+/**
+ * Exception to indicate that the tenant is missing from AMQP message headers.
+ *
+ * @author Iliana Ghazali
+ **/
+public class MissingTenantException extends Exception {
 
-public class BatchHandlerTers extends BatchHandler {
-
-    protected static final Logger LOGGER = LoggerFactory.getLogger(BatchHandlerTers.class);
-
-    public BatchHandlerTers(IRuntimeTenantResolver tenantResolver) {
-        super(tenantResolver);
+    public MissingTenantException(String message) {
+        super(message);
     }
-
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return false;
-    }
-
-    protected Logger getLogger() {
-        return LOGGER;
-    }
-
 }

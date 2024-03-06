@@ -1,12 +1,12 @@
 version: '2'
 services:
   rs-rabbitmq-first:
-    image: 172.26.46.158/regards-messaging:latest
+    image: 172.26.46.158/regards-messaging:3.11
     networks:
       - regards_IT_network
 
   rs-rabbitmq-second:
-    image: 172.26.46.158/regards-messaging:latest
+    image: 172.26.46.158/regards-messaging:3.11
     networks:
       - regards_IT_network
 

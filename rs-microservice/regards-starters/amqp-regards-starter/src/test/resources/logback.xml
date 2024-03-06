@@ -18,20 +18,14 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <configuration>
-
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder
-            by default -->
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+    <property name="APP_NAME" value="rs-amqp-starter-test"/>
+    <include resource="fr/cnes/regards/framework/logbackappender/console_appender.xml"/>
 
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.springframework.amqp" level="INFO"/>
-    <logger name="org.springframework.transaction" level="INFO"/>
+    <logger name="fr.cnes.regards.framework.amqp" level="DEBUG"/>
 
-    <root level="debug">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

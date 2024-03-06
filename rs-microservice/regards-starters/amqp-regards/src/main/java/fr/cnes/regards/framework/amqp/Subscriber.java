@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
+import fr.cnes.regards.framework.amqp.configuration.*;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
 import java.util.Set;
@@ -55,6 +54,7 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
     private final ITenantResolver tenantResolver;
 
     public Subscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin,
+                      RabbitTemplate rabbitTemplate,
                       IAmqpAdmin amqpAdmin,
                       MessageConverter jsonMessageConverters,
                       ITenantResolver pTenantResolver,
@@ -65,7 +65,9 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
                       IRuntimeTenantResolver runtimeTenantResolver,
                       ApplicationEventPublisher applicationEventPublisher,
                       int declarationRetries,
-                      long failedDeclarationRetryInterval) {
+                      long failedDeclarationRetryInterval,
+                      RetryProperties retryProperties,
+                      TransactionTemplate transactionTemplate) {
         super(pVirtualHostAdmin,
               amqpAdmin,
               jsonMessageConverters,
@@ -75,9 +77,12 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
               publisher,
               runtimeTenantResolver,
               pTenantResolver,
+              rabbitTemplate,
+              transactionTemplate,
               applicationEventPublisher,
               declarationRetries,
-              failedDeclarationRetryInterval);
+              failedDeclarationRetryInterval,
+              retryProperties);
         tenantResolver = pTenantResolver;
     }
 

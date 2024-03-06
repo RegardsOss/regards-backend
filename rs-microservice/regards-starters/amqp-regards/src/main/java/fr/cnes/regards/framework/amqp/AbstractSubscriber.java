@@ -22,10 +22,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.batch.RabbitBatchMessageListener;
-import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
+import fr.cnes.regards.framework.amqp.configuration.*;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.RabbitMessageListenerAdapter;
 import fr.cnes.regards.framework.amqp.event.*;
@@ -40,10 +37,12 @@ import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -115,6 +114,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     private final ITenantResolver tenantResolver;
 
+    private final RabbitTemplate rabbitTemplate;
+
+    private final TransactionTemplate transactionTemplate;
+
     private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
@@ -127,6 +130,11 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      */
     private final int declarationRetries;
 
+    /**
+     * Configuration to retry failed messages
+     */
+    private final RetryProperties retryProperties;
+
     protected AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin,
                                  IAmqpAdmin amqpAdmin,
                                  MessageConverter jsonMessageConverters,
@@ -136,12 +144,18 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                                  IPublisher publisher,
                                  IRuntimeTenantResolver runtimeTenantResolver,
                                  ITenantResolver tenantResolver,
+                                 RabbitTemplate rabbitTemplate,
+                                 TransactionTemplate transactionTemplate,
                                  ApplicationEventPublisher applicationEventPublisher,
                                  int declarationRetries,
-                                 long failedDeclarationRetryInterval) {
+                                 long failedDeclarationRetryInterval,
+                                 RetryProperties retryProperties) {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
         this.jsonMessageConverters = jsonMessageConverters;
+        this.rabbitTemplate = rabbitTemplate;
+        this.transactionTemplate = transactionTemplate;
+        this.retryProperties = retryProperties;
         this.listeners = new ConcurrentHashMap<>();
         this.handledEvents = new ConcurrentHashMap<>();
         this.handlerInstances = new ConcurrentHashMap<>();
@@ -386,6 +400,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         try {
             virtualHostAdmin.bind(virtualHost);
             amqpAdmin.declareDeadLetter();
+            amqpAdmin.declareRetryExchange();
+
             queue = amqpAdmin.declareQueue(tenant, channel);
             if (purgeQueue) {
                 amqpAdmin.purgeQueue(queue.getName(), false);
@@ -468,7 +484,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                                                                             runtimeTenantResolver,
                                                                             tenantResolver,
                                                                             messageConverter,
-                                                                            batchHandler));
+                                                                            batchHandler,
+                                                                            rabbitTemplate,
+                                                                            transactionTemplate,
+                                                                            retryProperties));
             } else {
                 container.setChannelTransacted(true);
                 container.setDefaultRequeueRejected(false);

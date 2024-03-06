@@ -19,11 +19,16 @@
 package fr.cnes.regards.modules.feature.service.flow;
 
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.batch.dto.ResponseMessage;
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import org.springframework.amqp.core.Message;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
+import java.util.Optional;
 
 /**
  * @author Marc SORDI
@@ -45,8 +50,12 @@ public abstract class AbstractFeatureRequestEventHandler<M> implements IBatchHan
     }
 
     @Override
-    public boolean handleConversionError(Message message, String errorMessage) {
-        return getFeatureService().denyMessage(message, errorMessage);
+    public ResponseMessage<? extends ISubscribable> buildDeniedResponseForNotConvertedMessage(Message message,
+                                                                                              String errorMessage) {
+        Optional<FeatureRequestEvent> denyResponse = getFeatureService().buildNotConvertedDeniedResponse(message,
+                                                                                                         errorMessage);
+        return denyResponse.map(ResponseMessage::buildResponse).orElseGet(ResponseMessage::buildEmptyResponse);
+
     }
 
     @Override

@@ -453,6 +453,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     private ExchangeAndRoutingKey createExchangeAndRoutingKey(String tenant, AmqpChannel channel, boolean purgeQueue) {
         amqpAdmin.declareDeadLetter();
+        amqpAdmin.declareRetryExchange();
 
         // Declare exchange
         Exchange exchange = amqpAdmin.declareExchange(channel);

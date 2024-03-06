@@ -68,6 +68,11 @@ public interface IAmqpAdmin {
     void declareDeadLetter();
 
     /**
+     * Declare a global 'x-delayed-type' exchange to retry AMQP messages in case of failure.
+     */
+    void declareRetryExchange();
+
+    /**
      * Declare a queue that can handle priority with custom Dead Letter Exchange and custom Dead Letter Routing Key
      * If queueName is provided the declared queue is named with it or else the queue name is computed with :
      * <ul>
@@ -170,4 +175,9 @@ public interface IAmqpAdmin {
      * @return default dead letter queue name
      */
     String getDefaultDLQName();
+
+    /**
+     * @return retry exchange name, which is a delayed exchange.
+     */
+    String getRetryExchangeName();
 }

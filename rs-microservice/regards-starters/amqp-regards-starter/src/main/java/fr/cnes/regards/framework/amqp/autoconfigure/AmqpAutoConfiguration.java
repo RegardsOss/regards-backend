@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.amqp.single.SingleVhostSubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantBootstrapProperties;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -55,6 +56,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
@@ -68,7 +70,8 @@ import org.springframework.web.client.RestTemplate;
 @EnableConfigurationProperties({ RabbitProperties.class,
                                  AmqpManagementProperties.class,
                                  AmqpMicroserviceProperties.class,
-                                 NotifierEventsProperties.class })
+                                 NotifierEventsProperties.class,
+                                 RetryProperties.class })
 @AutoConfigureAfter(name = { "fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration" })
 @EnableTransactionManagement
 public class AmqpAutoConfiguration {
@@ -96,6 +99,12 @@ public class AmqpAutoConfiguration {
     @Autowired
     private AmqpMicroserviceProperties amqpMicroserviceProperties;
 
+    /**
+     * bean providing properties from the retry configuration
+     */
+    @Autowired
+    private RetryProperties retryProperties;
+
     @Autowired
     private ApplicationContext context;
 
@@ -119,6 +128,12 @@ public class AmqpAutoConfiguration {
      */
     @Value("${regards.rabbitmq.interval.retries.failed.queue:5000}")
     private long failedDeclarationRetryInterval;
+
+    /**
+     * Maximum body length to print Message body as String, see {@link Message#setMaxBodyLength(int)}
+     */
+    @Value("${regards.rabbitmq.max.body.length.render:1000}")
+    private int maxBodyLengthStringRender;
 
     /**
      * List of events which will also be sent to rs-notifier after publishing the original event
@@ -199,6 +214,10 @@ public class AmqpAutoConfiguration {
             Gson2JsonMessageConverter gsonConverter = new Gson2JsonMessageConverter(gson);
             converters.registerConverter(JsonMessageConverter.GSON, gsonConverter);
         }
+
+        // Configure toString render
+        Message.setMaxBodyLength(maxBodyLengthStringRender);
+
         return converters;
     }
 
@@ -238,9 +257,12 @@ public class AmqpAutoConfiguration {
                                   IRuntimeTenantResolver runtimeTenantResolver,
                                   IInstancePublisher instancePublisher,
                                   IPublisher publisher,
-                                  ApplicationEventPublisher applicationEventPublisher) {
+                                  ApplicationEventPublisher applicationEventPublisher,
+                                  RabbitTemplate rabbitTemplate,
+                                  TransactionTemplate transactionTemplate) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
             return new Subscriber(rabbitVirtualHostAdmin,
+                                  rabbitTemplate,
                                   amqpAdmin,
                                   jsonMessageConverters,
                                   tenantResolver,
@@ -251,9 +273,12 @@ public class AmqpAutoConfiguration {
                                   runtimeTenantResolver,
                                   applicationEventPublisher,
                                   declarationRetries,
-                                  failedDeclarationRetryInterval);
+                                  failedDeclarationRetryInterval,
+                                  retryProperties,
+                                  transactionTemplate);
         } else {
             return new SingleVhostSubscriber(rabbitVirtualHostAdmin,
+                                             rabbitTemplate,
                                              amqpAdmin,
                                              jsonMessageConverters,
                                              tenantResolver,
@@ -264,7 +289,9 @@ public class AmqpAutoConfiguration {
                                              runtimeTenantResolver,
                                              applicationEventPublisher,
                                              declarationRetries,
-                                             failedDeclarationRetryInterval);
+                                             failedDeclarationRetryInterval,
+                                             retryProperties,
+                                             transactionTemplate);
         }
     }
 
@@ -302,8 +329,12 @@ public class AmqpAutoConfiguration {
                                                   IRuntimeTenantResolver runtimeTenantResolver,
                                                   IInstancePublisher instancePublisher,
                                                   IPublisher publisher,
-                                                  ApplicationEventPublisher applicationEventPublisher) {
+                                                  ApplicationEventPublisher applicationEventPublisher,
+                                                  RabbitTemplate rabbitTemplate,
+                                                  TransactionTemplate transactionTemplate) {
         return new InstanceSubscriber(rabbitVirtualHostAdmin,
+                                      rabbitTemplate,
+                                      transactionTemplate,
                                       amqpAdmin,
                                       jsonMessageConverters,
                                       errorHandler,
@@ -313,7 +344,8 @@ public class AmqpAutoConfiguration {
                                       runtimeTenantResolver,
                                       applicationEventPublisher,
                                       declarationRetries,
-                                      failedDeclarationRetryInterval);
+                                      failedDeclarationRetryInterval,
+                                      retryProperties);
     }
 
     @Bean
@@ -343,6 +375,11 @@ public class AmqpAutoConfiguration {
                                                        simpleRoutingConnectionFactory(),
                                                        threadTenantResolver,
                                                        rabbitVirtualHostAdmin);
+    }
+
+    @Bean
+    public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
+        return new TransactionTemplate(transactionManager);
     }
 
     @Bean

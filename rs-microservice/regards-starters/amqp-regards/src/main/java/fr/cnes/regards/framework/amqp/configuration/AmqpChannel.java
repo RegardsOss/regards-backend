@@ -103,6 +103,11 @@ public class AmqpChannel {
     private boolean autoDeleteQueue = false;
 
     /**
+     * If true, enables retry of AMQP messages in case of failure.
+     */
+    private boolean retryEnabled = false;
+
+    /**
      * Build AmqpChannel without reading {@link WorkerMode}, {@link Target} and routingKey
      * from {@link fr.cnes.regards.framework.amqp.event.Event} on eventType
      */
@@ -168,6 +173,7 @@ public class AmqpChannel {
         if (handler instanceof IBatchHandler) {
             this.isDedicatedDLQEnabled = ((IBatchHandler<?>) handler).isDedicatedDLQEnabled();
             this.deadLetterQueueRoutingKey = (((IBatchHandler<?>) handler).getDLQRoutingKey());
+            this.retryEnabled = ((IBatchHandler<?>) handler).isRetryEnabled();
         }
         return this;
     }
@@ -264,5 +270,9 @@ public class AmqpChannel {
 
     public boolean isDeclareDlq() {
         return declareDlq;
+    }
+
+    public boolean isRetryEnabled() {
+        return retryEnabled;
     }
 }

@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
+import fr.cnes.regards.framework.amqp.configuration.*;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,6 +36,8 @@ import java.util.Set;
 public class InstanceSubscriber extends AbstractSubscriber implements IInstanceSubscriber {
 
     public InstanceSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin,
+                              RabbitTemplate rabbitTemplate,
+                              TransactionTemplate transactionTemplate,
                               IAmqpAdmin amqpAdmin,
                               MessageConverter jsonMessageConverters,
                               RegardsErrorHandler errorHandler,
@@ -46,7 +47,8 @@ public class InstanceSubscriber extends AbstractSubscriber implements IInstanceS
                               IRuntimeTenantResolver runtimeTenantResolver,
                               ApplicationEventPublisher applicationEventPublisher,
                               int declarationRetries,
-                              long failedDeclarationRetryInterval) {
+                              long failedDeclarationRetryInterval,
+                              RetryProperties retryProperties) {
         super(pVirtualHostAdmin,
               amqpAdmin,
               jsonMessageConverters,
@@ -56,9 +58,12 @@ public class InstanceSubscriber extends AbstractSubscriber implements IInstanceS
               publisher,
               runtimeTenantResolver,
               null,
+              rabbitTemplate,
+              transactionTemplate,
               applicationEventPublisher,
               declarationRetries,
-              failedDeclarationRetryInterval);
+              failedDeclarationRetryInterval,
+              retryProperties);
     }
 
     @Override
