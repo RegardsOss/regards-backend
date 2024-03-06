@@ -44,4 +44,9 @@ public class WorkerRequestDlqMockHandler extends AbstractEventMockHandler<Worker
         return null;
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
+
 }

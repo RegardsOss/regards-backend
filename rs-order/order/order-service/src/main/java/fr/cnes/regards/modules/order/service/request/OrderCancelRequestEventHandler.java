@@ -155,9 +155,4 @@ public class OrderCancelRequestEventHandler
         return errors;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
-
 }

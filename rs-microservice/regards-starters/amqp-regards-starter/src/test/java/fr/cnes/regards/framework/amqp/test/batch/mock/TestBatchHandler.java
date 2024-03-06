@@ -132,8 +132,4 @@ public class TestBatchHandler implements IBatchHandler<TestedMessage> {
         return LOGGER;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

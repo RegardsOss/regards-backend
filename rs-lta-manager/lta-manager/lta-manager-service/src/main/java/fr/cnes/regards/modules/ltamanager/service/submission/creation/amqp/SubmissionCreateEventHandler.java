@@ -105,8 +105,4 @@ public class SubmissionCreateEventHandler
         return errors;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

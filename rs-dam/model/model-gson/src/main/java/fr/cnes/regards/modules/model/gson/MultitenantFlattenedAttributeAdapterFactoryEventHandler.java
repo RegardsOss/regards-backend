@@ -208,6 +208,11 @@ public class MultitenantFlattenedAttributeAdapterFactoryEventHandler
                                NotificationLevel.INFO,
                                DefaultRole.ADMIN);
         }
+
+        @Override
+        public boolean isDedicatedDLQEnabled() {
+            return false;
+        }
     }
 
 }

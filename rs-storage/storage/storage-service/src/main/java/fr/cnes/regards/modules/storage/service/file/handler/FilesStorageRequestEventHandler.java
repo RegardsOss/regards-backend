@@ -86,8 +86,4 @@ public class FilesStorageRequestEventHandler
         return BULK_SIZE;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

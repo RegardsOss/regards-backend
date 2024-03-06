@@ -125,8 +125,4 @@ public class IngestRequestEventHandler
         return this.BULK_SIZE;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

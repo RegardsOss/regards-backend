@@ -173,8 +173,4 @@ public class DeliveryRequestEventHandler
         return errorType;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

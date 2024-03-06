@@ -63,6 +63,11 @@ public class NotifierClearCacheHandler
     }
 
     @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
+
+    @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(NotifierClearCacheEvent.class, this);
     }

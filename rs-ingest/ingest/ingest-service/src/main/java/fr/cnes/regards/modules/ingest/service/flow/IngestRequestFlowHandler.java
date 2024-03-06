@@ -73,11 +73,6 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
     }
 
     @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
-
-    @Override
     public Class<IngestRequestFlowItem> getMType() {
         return IngestRequestFlowItem.class;
     }

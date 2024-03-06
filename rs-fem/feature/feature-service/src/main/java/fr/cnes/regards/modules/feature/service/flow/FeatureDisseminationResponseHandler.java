@@ -79,8 +79,4 @@ public class FeatureDisseminationResponseHandler
                      System.currentTimeMillis() - start);
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

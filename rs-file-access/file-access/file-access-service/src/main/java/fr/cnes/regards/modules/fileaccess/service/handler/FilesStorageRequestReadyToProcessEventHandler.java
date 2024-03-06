@@ -63,8 +63,4 @@ public class FilesStorageRequestReadyToProcessEventHandler
                      System.currentTimeMillis() - start);
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

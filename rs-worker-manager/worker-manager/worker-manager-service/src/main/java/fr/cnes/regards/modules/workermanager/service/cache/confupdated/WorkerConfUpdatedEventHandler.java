@@ -68,6 +68,11 @@ public class WorkerConfUpdatedEventHandler
     }
 
     @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
+
+    @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(WorkerConfUpdatedEvent.class, this);
     }

@@ -83,8 +83,4 @@ public class TestResponseBatchHandler implements IBatchHandler<ResponseTestedMes
         this.responseTestedMessages = responseTestedMessages;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

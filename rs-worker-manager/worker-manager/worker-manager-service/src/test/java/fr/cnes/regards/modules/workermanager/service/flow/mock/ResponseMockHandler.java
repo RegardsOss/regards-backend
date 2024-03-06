@@ -29,4 +29,9 @@ public class ResponseMockHandler extends AbstractEventMockHandler<ResponseEvent>
     protected ResponseMockHandler() {
         super(ResponseEvent.class, Optional.empty(), Optional.empty());
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

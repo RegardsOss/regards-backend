@@ -127,11 +127,6 @@ public class TestBatchHandlerWithRetry implements IBatchHandler<TestedMessage> {
     }
 
     @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
-
-    @Override
     public boolean isRetryEnabled() {
         return true;
     }

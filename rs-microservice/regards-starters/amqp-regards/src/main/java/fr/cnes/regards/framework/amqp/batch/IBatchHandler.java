@@ -132,11 +132,11 @@ public interface IBatchHandler<M> extends IHandler<M> {
     }
 
     /**
-     * @return <code>true</code> to enable a dedicated DLQ for this handler. In this case, error messages will be routed to this DLQ.
-     * By default, message are routed to global system DLQ.
+     * @return <code>true</code> by default to enable a dedicated DLQ for this handler. In this case, error messages
+     * will be routed to this DLQ. If false, message are routed to global system DLQ.
      */
     default boolean isDedicatedDLQEnabled() {
-        return false;
+        return true;
     }
 
     /**

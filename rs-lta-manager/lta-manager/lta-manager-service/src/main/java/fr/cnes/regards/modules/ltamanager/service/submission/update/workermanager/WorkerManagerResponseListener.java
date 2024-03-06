@@ -102,6 +102,11 @@ public class WorkerManagerResponseListener
                      System.currentTimeMillis() - start);
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
+
     /**
      * Find {@link SubmissionRequest} associated to given {@link ResponseEvent}
      */

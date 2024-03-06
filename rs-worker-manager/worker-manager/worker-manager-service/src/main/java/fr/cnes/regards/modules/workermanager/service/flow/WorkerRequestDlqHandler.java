@@ -70,6 +70,11 @@ public class WorkerRequestDlqHandler
     }
 
     @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
+
+    @Override
     public Class<WorkerRequestDlqEvent> getMType() {
         return WorkerRequestDlqEvent.class;
     }

@@ -53,6 +53,11 @@ public class NotificationEventHandler
                      System.currentTimeMillis() - start);
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
+
     private void handle(List<NotifierEvent> events) {
         List<NotifierEvent> denied = new ArrayList<>();
         List<NotifierEvent> granted = new ArrayList<>();

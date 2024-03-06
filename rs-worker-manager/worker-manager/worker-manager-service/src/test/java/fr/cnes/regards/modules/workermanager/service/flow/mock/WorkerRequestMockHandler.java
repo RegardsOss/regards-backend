@@ -46,6 +46,11 @@ public class WorkerRequestMockHandler extends AbstractEventMockHandler<WorkerReq
     }
 
     @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
+
+    @Override
     public Optional<String> getDLQRoutingKey() {
         return Optional.of(WorkerRequestEvent.DLQ_ROOTING_KEY);
     }

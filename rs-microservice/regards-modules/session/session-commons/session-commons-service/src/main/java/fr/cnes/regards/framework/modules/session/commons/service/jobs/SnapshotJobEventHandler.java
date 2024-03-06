@@ -61,4 +61,9 @@ public class SnapshotJobEventHandler implements ApplicationListener<ApplicationR
                      messages.size(),
                      System.currentTimeMillis() - start);
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

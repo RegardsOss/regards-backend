@@ -54,6 +54,11 @@ public class WorkerHeartBeatEventHandler
     }
 
     @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
+
+    @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // Use a random uuid to create a unique queue for this instance of the microservice.
         // Heartbeat needs to be listened by each instance of microservice so a queue is bind to the exchange for each instance.

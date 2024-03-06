@@ -193,9 +193,4 @@ public class OrderRequestEventHandler
         return validEvents;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
-
 }

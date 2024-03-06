@@ -95,8 +95,4 @@ public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEv
         return featureService;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }

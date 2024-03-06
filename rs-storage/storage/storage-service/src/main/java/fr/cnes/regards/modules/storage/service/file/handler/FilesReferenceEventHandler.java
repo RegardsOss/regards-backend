@@ -83,8 +83,4 @@ public class FilesReferenceEventHandler
         return BULK_SIZE;
     }
 
-    @Override
-    public boolean isDedicatedDLQEnabled() {
-        return true;
-    }
 }
