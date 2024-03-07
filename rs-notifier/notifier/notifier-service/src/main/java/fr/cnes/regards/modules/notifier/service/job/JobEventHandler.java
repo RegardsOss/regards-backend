@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.notifier.service.job;
 
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.notifier.service.NotificationRegistrationService;
 import org.slf4j.Logger;
@@ -33,6 +37,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 
@@ -81,17 +86,28 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                 JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
                 // If failed job is a NotificationJob so handle crash for associated requests
                 if (NotificationJob.class.getName().equals(jobInfo.getClassName())) {
-                    Set<Long> requestIds = jobInfo.getParametersAsMap()
-                                                  .get(NotificationJob.NOTIFICATION_REQUEST_IDS)
-                                                  .getValue();
-                    String recipientBusinessId = jobInfo.getParametersAsMap()
-                                                .get(NotificationJob.RECIPIENT_BUSINESS_ID)
-                                                .getValue();
-                    notificationRegistrationService.handleJobCrash(requestIds, recipientBusinessId);
+                    try {
+                        Type type = new TypeToken<Set<Long>>() {
+
+                        }.getType();
+                        Set<Long> requestIds = IJob.getValue(jobInfo.getParametersAsMap(),
+                                                             NotificationJob.NOTIFICATION_REQUEST_IDS,
+                                                             type);
+
+                        String recipientBusinessId = jobInfo.getParametersAsMap()
+                                                            .get(NotificationJob.RECIPIENT_BUSINESS_ID)
+                                                            .getValue();
+
+                        notificationRegistrationService.handleJobCrash(requestIds, recipientBusinessId);
+                    } catch (JobParameterMissingException | JobParameterInvalidException e) {
+                        LOGGER.error(String.format("NotificationJob request job with id \"%s\" fails with status \"%s\"",
+                                                   jobInfo.getId(),
+                                                   jobInfo.getStatus().getStatus()), e);
+                    }
                 }
             }
         }
-        LOGGER.debug("[NOTIFIER JOB EVENT HANDLER] {} JobEvents in error handled in {} ms",
+        LOGGER.debug("[NOTIFIER JOB EVENT HANDLER] {} JobEvents in error handled in {}ms",
                      nbJobError,
                      System.currentTimeMillis() - start);
     }
