@@ -109,11 +109,7 @@ public interface INotificationService {
     Long countReadNotifications();
 
     /**
-     * Retrieve a notification light page matching filter
-     *
-     * @param filters  search parameters
-     * @param pageable the paging information
-     * @return a notification light page
+     * Retrieve a {@link NotificationLight} page matching filter and ordered by date
      */
-    Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable);
+    Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters, int page, int pageSize);
 }

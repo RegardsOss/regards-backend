@@ -42,11 +42,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
@@ -67,6 +67,11 @@ import java.util.List;
 @RestController
 @RequestMapping(NotificationController.NOTIFICATION_PATH)
 public class NotificationController implements IResourceController<Notification> {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationController.class);
 
     /**
      * Controller base path
@@ -142,16 +147,21 @@ public class NotificationController implements IResourceController<Notification>
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Retrieve the list of notifications for the logged user",
-                    role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Retrieve the list of notifications sorted by date descending for the logged user "
+                                  + "and the given criteria filters", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<PagedModel<EntityModel<NotificationLight>>> retrieveNotifications(
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
                                                               content = @Content(schema = @Schema(implementation = SearchNotificationParameters.class)))
-        @Parameter(description = "Filter criterias of notifications") @RequestBody SearchNotificationParameters filters,
-        @PageableQueryParam @PageableDefault(sort = "date", direction = Sort.Direction.DESC) Pageable pageable,
+        @Parameter(description = "Filter criteria of notifications") @RequestBody SearchNotificationParameters filters,
+        @PageableQueryParam Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<NotificationLight> assembler) {
-
-        return new ResponseEntity<>(notificationLightPagedResources(notificationService.findAll(filters, pageable),
+        if (!pageable.getSort().isEmpty()) {
+            LOGGER.warn("Request to retrieve notifications contains a sort option, nevertheless custom sorting is "
+                        + "not implemented yet. This endpoint always returns notification sort by date descending.");
+        }
+        return new ResponseEntity<>(notificationLightPagedResources(notificationService.findAllOrderByDateDesc(filters,
+                                                                                                               pageable.getPageNumber(),
+                                                                                                               pageable.getPageSize()),
                                                                     assembler), HttpStatus.OK);
     }
 
@@ -161,7 +171,7 @@ public class NotificationController implements IResourceController<Notification>
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
      */
     @Operation(summary = "Delete a selection of notifications.",
-               description = "Find and delete notifications from criterias defined in request body.")
+               description = "Find and delete notifications from criteria defined in request body.")
     @ApiResponses(value = { @ApiResponse(responseCode = "204",
                                          description = "The notification deletion has been taken into account."),
                             @ApiResponse(responseCode = "403",
@@ -174,7 +184,7 @@ public class NotificationController implements IResourceController<Notification>
     @ResourceAccess(description = "Delete the list of notifications for the logged user",
                     role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Void> deleteNotifications(
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
                                                               content = @Content(schema = @Schema(implementation = SearchNotificationParameters.class)))
         @Parameter(description = "Filter criteria of notifications") @RequestBody
         SearchNotificationParameters filters) {

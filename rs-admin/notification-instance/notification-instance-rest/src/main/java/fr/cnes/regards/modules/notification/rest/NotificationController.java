@@ -38,11 +38,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
@@ -63,6 +63,11 @@ import java.util.List;
 @RestController
 @RequestMapping(NotificationController.NOTIFICATION_PATH)
 public class NotificationController implements IResourceController<Notification> {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationController.class);
 
     /**
      * Controller base path
@@ -134,10 +139,15 @@ public class NotificationController implements IResourceController<Notification>
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
                                                               content = @Content(schema = @Schema(implementation = SearchNotificationParameters.class)))
         @Parameter(description = "Filter criterias of notifications") @RequestBody SearchNotificationParameters filters,
-        @PageableQueryParam @PageableDefault(sort = "date", direction = Sort.Direction.ASC) Pageable pageable,
+        @PageableQueryParam Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<NotificationLight> assembler) {
-
-        return new ResponseEntity<>(notifWithoutMsgPagedResources(notificationService.findAll(filters, pageable),
+        if (!pageable.getSort().isEmpty()) {
+            LOGGER.warn("Request to retrieve notifications contains a sort option, nevertheless custom sorting is "
+                        + "not implemented yet. This endpoint always returns notification sort by date descending.");
+        }
+        return new ResponseEntity<>(notifWithoutMsgPagedResources(notificationService.findAllOrderByDateDesc(filters,
+                                                                                                             pageable.getPageNumber(),
+                                                                                                             pageable.getPageSize()),
                                                                   assembler), HttpStatus.OK);
     }
 
