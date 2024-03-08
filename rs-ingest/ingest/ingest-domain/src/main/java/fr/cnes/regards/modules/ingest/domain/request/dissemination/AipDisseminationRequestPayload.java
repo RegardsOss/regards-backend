@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.dissemination;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Payload of an {@link AipDisseminationRequest}
  *
  * @param correlationId The correlationId of the request, used to follow the request process through amqp messages
- * @param recipients    Dissemination destinations
+ * @param recipients    Set of dissemination destinations
  * @author tguillou
  */
 public record AipDisseminationRequestPayload(String correlationId,
-                                             List<String> recipients) {
+                                             Set<String> recipients) {
 
 }

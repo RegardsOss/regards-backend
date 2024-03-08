@@ -52,9 +52,9 @@ public class AipDisseminationCreatorRequest extends AbstractRequest {
         AipDisseminationCreatorRequest creator = new AipDisseminationCreatorRequest();
         creator.setRequest(disseminationRequestDto);
         creator.setDtype(RequestTypeConstant.AIP_DISSEMINATION_CREATOR_VALUE);
-
         creator.setCreationDate(OffsetDateTime.now());
         creator.setState(InternalRequestState.TO_SCHEDULE);
+        
         return creator;
     }
 

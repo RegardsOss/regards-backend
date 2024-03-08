@@ -42,8 +42,8 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dissemination.AipDisseminationRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -148,7 +148,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         PageRequest pageable = PageRequest.of(0, 100);
 
         AIPDisseminationRequestDto disseminationDto = new AIPDisseminationRequestDto(new SearchAIPsParameters().withSession(
-            SESSION_NAME), List.of("recipient1", "recipient2"));
+            SESSION_NAME), Set.of("recipient1", "recipient2"));
         // WHEN Schedule the dissemination creator
         scheduleDisseminationCreatorJob(disseminationDto);
         // THEN 50 Dissemination request (one by AIP) are created
@@ -176,7 +176,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         PageRequest pageable = PageRequest.of(0, 1000);
 
         AIPDisseminationRequestDto disseminationDto = new AIPDisseminationRequestDto(new SearchAIPsParameters().withSession(
-            SESSION_NAME), List.of("recipient1", "recipient2"));
+            SESSION_NAME), Set.of("recipient1", "recipient2"));
         // WHEN Schedule the dissemination creator
         scheduleDisseminationCreatorJob(disseminationDto);
         // THEN 201 Dissemination request (one by AIP) are created
@@ -335,7 +335,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         createAIPs(5);
         PageRequest pageable = PageRequest.of(0, 100);
         AIPDisseminationRequestDto disseminationDto = new AIPDisseminationRequestDto(new SearchAIPsParameters().withSession(
-            SESSION_NAME), List.of("recipient1", "recipient2"));
+            SESSION_NAME), Set.of("recipient1", "recipient2"));
 
         scheduleDisseminationCreatorJob(disseminationDto);
 

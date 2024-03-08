@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.dto.request.dissemination;
 
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * A Dto which contains aip description to disseminate, and list of dissemination destination.
@@ -33,8 +33,8 @@ public record AIPDisseminationRequestDto(
      */
     SearchAIPsParameters filters,
     /**
-     * List of dissemination destination
+     * Set of dissemination destinations
      */
-    List<String> recipients) {
+    Set<String> recipients) {
 
 }

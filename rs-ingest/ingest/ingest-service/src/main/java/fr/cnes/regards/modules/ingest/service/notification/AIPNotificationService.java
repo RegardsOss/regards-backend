@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
+import fr.cnes.regards.modules.notifier.dto.in.SpecificRecipientNotificationRequestEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -167,19 +168,28 @@ public class AIPNotificationService implements IAIPNotificationService {
             }
             // DISSEMINATION REQUESTS
             else if (abstractRequest instanceof AipDisseminationRequest disseminationRequest) {
-                JsonObject payload = gson.toJsonTree(new AipDisseminationNotificationRequestPayload(disseminationRequest.getAip(),
-                                                                                                    disseminationRequest.getRecipients()))
-                                         .getAsJsonObject();
+                JsonObject payload = gson.toJsonTree(disseminationRequest.getAip()).getAsJsonObject();
                 JsonObject metadata = gson.toJsonTree(new AipNotificationRequestMetadata(RequestTypeConstant.AIP_DISSEMINATION_VALUE,
                                                                                          disseminationRequest.getSession(),
                                                                                          disseminationRequest.getSessionOwner()))
                                           .getAsJsonObject();
-                NotificationRequestEvent notificationRequestEvent = new NotificationRequestEvent(payload,
-                                                                                                 metadata,
-                                                                                                 disseminationRequest.getCorrelationId(),
-                                                                                                 disseminationRequest.getAip()
-                                                                                                                     .getSessionOwner());
-                eventToSend.add(notificationRequestEvent);
+
+                Set<String> recipients = disseminationRequest.getRecipients();
+                if (recipients.isEmpty()) {
+                    // Notify with rules
+                    eventToSend.add(new NotificationRequestEvent(payload,
+                                                                 metadata,
+                                                                 disseminationRequest.getCorrelationId(),
+                                                                 disseminationRequest.getAip().getSessionOwner()));
+                } else {
+                    // Notify without rules, because notify directly only to selected recipients
+                    eventToSend.add(new SpecificRecipientNotificationRequestEvent(payload,
+                                                                                  metadata,
+                                                                                  disseminationRequest.getCorrelationId(),
+                                                                                  disseminationRequest.getAip()
+                                                                                                      .getSessionOwner(),
+                                                                                  recipients));
+                }
             }
         }
         return eventToSend;
