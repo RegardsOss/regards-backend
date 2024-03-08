@@ -22,7 +22,9 @@ package fr.cnes.regards.modules.ingest.service.notification;
 
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.notifier.client.NotifierClient;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -43,9 +45,9 @@ public interface IAIPNotificationService {
     /**
      * Handle requests notified successfully
      *
-     * @param successRequests abstract requests in success
+     * @param successRequests abstract requests in success with their coresponding event
      */
-    void handleNotificationSuccess(Set<AbstractRequest> successRequests);
+    void handleNotificationSuccess(Map<AbstractRequest, NotifierEvent> successRequests);
 
     /**
      * Handle requests with notification errors

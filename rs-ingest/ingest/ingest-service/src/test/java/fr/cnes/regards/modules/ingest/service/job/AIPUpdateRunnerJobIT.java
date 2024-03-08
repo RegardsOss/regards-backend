@@ -27,11 +27,12 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
-import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
@@ -39,6 +40,7 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -58,6 +60,8 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Test {@link AIPUpdateRunnerJob}
@@ -179,7 +183,17 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
             // Wait STORE_META request over
             ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000, getDefaultTenant());
         } else {
-            notificationService.handleNotificationSuccess(Sets.newHashSet(ingestRequestRepository.findAll()));
+            Map<AbstractRequest, NotifierEvent> mapRequestEvents = ingestRequestRepository.findAll()
+                                                                                          .stream()
+                                                                                          .collect(Collectors.toMap(
+                                                                                              Function.identity(),
+                                                                                              r -> new NotifierEvent(
+                                                                                                  null,
+                                                                                                  null,
+                                                                                                  null,
+                                                                                                  null)));
+
+            notificationService.handleNotificationSuccess(mapRequestEvents);
         }
 
         // Check init datas contains the storage to remove in this test

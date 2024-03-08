@@ -34,8 +34,8 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestSte
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.settings.IngestSettingsService;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
@@ -56,11 +57,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static fr.cnes.regards.modules.ingest.service.TestData.*;
 
@@ -225,7 +225,16 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
 
                 // simulate notifications are in success
                 if (!abstractRequests.isEmpty()) {
-                    notificationService.handleNotificationSuccess(Sets.newHashSet(abstractRequests));
+                    Map<AbstractRequest, NotifierEvent> mapRequestEvents = abstractRequests.stream()
+                                                                                           .collect(Collectors.toMap(
+                                                                                               Function.identity(),
+                                                                                               r -> new NotifierEvent(
+                                                                                                   null,
+                                                                                                   null,
+                                                                                                   null,
+                                                                                                   null)));
+
+                    notificationService.handleNotificationSuccess(mapRequestEvents);
                 }
                 long count = abstractRequestRepository.count();
                 if (count != 0) {

@@ -29,8 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -67,16 +66,28 @@ public class AIPNotifierListener implements INotifierRequestListener {
     @Override
     public void onRequestSuccess(List<NotifierEvent> successEvents) {
         // Retrieve requests ids from events
-        List<String> requestIds = successEvents.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
+        List<String> requestIds = successEvents.stream().map(NotifierEvent::getRequestId).toList();
 
         // Handle notification successes
         if (!requestIds.isEmpty()) {
             int nbRequests = requestIds.size();
             // Find corresponding requests and handle them
             Set<AbstractRequest> successRequests = abstractRequestRepo.findAllByCorrelationIdIn(requestIds);
+
+            //Build a map with the request and its corresponding event
+            Map<AbstractRequest, NotifierEvent> mapRequestEvent = new HashMap<>();
+            for (AbstractRequest successRequest : successRequests) {
+
+                Optional<NotifierEvent> opEvent = successEvents.stream()
+                                                               .filter(s -> s.getRequestId()
+                                                                             .equals(successRequest.getCorrelationId()))
+                                                               .findFirst();
+                opEvent.ifPresent(notifierEvent -> mapRequestEvent.put(successRequest, notifierEvent));
+            }
+
             if (!successRequests.isEmpty()) {
                 AIPNotificationLogger.notificationEventSuccess(nbRequests);
-                notificationService.handleNotificationSuccess(successRequests);
+                notificationService.handleNotificationSuccess(mapRequestEvent);
                 AIPNotificationLogger.notificationEventSuccessHandled(successEvents.size());
             }
         }

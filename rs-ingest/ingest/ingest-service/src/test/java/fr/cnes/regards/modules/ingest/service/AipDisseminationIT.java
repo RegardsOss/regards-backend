@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dissemination.AipDisseminationRequest;
@@ -52,6 +53,10 @@ import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestSche
 import fr.cnes.regards.modules.ingest.service.job.AipDisseminationCreatorJob;
 import fr.cnes.regards.modules.ingest.service.job.AipDisseminationJob;
 import fr.cnes.regards.modules.notifier.client.NotifierClient;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
+import fr.cnes.regards.modules.notifier.dto.out.Recipient;
+import fr.cnes.regards.modules.notifier.dto.out.RecipientStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -72,6 +77,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -226,8 +232,19 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         // GIVEN 201 AipDisseminationRequest, and notification sent to notifier
         testDisseminationJobSendToNotifier();
         Page<AipDisseminationRequest> allRequests = aipDisseminationService.findAll(PageRequest.of(0, 1000));
+
+        Map<AbstractRequest, NotifierEvent> mapRequestEvents = new HashMap<>();
+        for (AipDisseminationRequest request : allRequests) {
+            Set<Recipient> recipients = request.getRecipients()
+                                               .stream()
+                                               .map(r -> new Recipient(r, RecipientStatus.SUCCESS, false, false))
+                                               .collect(Collectors.toCollection(HashSet::new));
+            mapRequestEvents.put(request, new NotifierEvent(null, null, NotificationState.SUCCESS, recipients));
+        }
+
         // WHEN simulate notifier success response received
-        notificationService.handleNotificationSuccess(new HashSet<>(allRequests.getContent()));
+
+        notificationService.handleNotificationSuccess(mapRequestEvents);
         // first schedule : first 100 requests
         JobInfo updateJobInfo = aipUpdateRequestScheduler.scheduleJob();
         jobService.runJob(updateJobInfo, getDefaultTenant()).get();
@@ -250,12 +267,12 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
                                      .allMatch(aip -> aip.getDisseminationInfos()
                                                          .get(0)
                                                          .getLabel()
-                                                         .equals("recipient1")));
+                                                         .equals("recipient2")));
         Assertions.assertTrue(allAips.stream()
                                      .allMatch(aip -> aip.getDisseminationInfos()
                                                          .get(1)
                                                          .getLabel()
-                                                         .equals("recipient2")));
+                                                         .equals("recipient1")));
     }
 
     @Test
