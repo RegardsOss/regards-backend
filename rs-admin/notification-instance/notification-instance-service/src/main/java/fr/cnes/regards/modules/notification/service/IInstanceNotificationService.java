@@ -25,7 +25,6 @@ import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -74,12 +73,8 @@ public interface IInstanceNotificationService {
 
     /**
      * Retrieve the pages {@link List} of all (@link {@link NotificationLight}s filtered by given properties
-     *
-     * @param filters  search parameters
-     * @param pageable the paging information
-     * @return The list of notifications
      */
-    Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable);
+    Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters, int page, int pageSize);
 
     /**
      * Delete all notifications that match filters

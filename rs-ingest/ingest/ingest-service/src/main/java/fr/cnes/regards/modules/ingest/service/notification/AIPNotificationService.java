@@ -50,15 +50,14 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
+import fr.cnes.regards.modules.notifier.dto.in.SpecificRecipientNotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -167,19 +166,28 @@ public class AIPNotificationService implements IAIPNotificationService {
             }
             // DISSEMINATION REQUESTS
             else if (abstractRequest instanceof AipDisseminationRequest disseminationRequest) {
-                JsonObject payload = gson.toJsonTree(new AipDisseminationNotificationRequestPayload(disseminationRequest.getAip(),
-                                                                                                    disseminationRequest.getRecipients()))
-                                         .getAsJsonObject();
+                JsonObject payload = gson.toJsonTree(disseminationRequest.getAip()).getAsJsonObject();
                 JsonObject metadata = gson.toJsonTree(new AipNotificationRequestMetadata(RequestTypeConstant.AIP_DISSEMINATION_VALUE,
                                                                                          disseminationRequest.getSession(),
                                                                                          disseminationRequest.getSessionOwner()))
                                           .getAsJsonObject();
-                NotificationRequestEvent notificationRequestEvent = new NotificationRequestEvent(payload,
-                                                                                                 metadata,
-                                                                                                 disseminationRequest.getCorrelationId(),
-                                                                                                 disseminationRequest.getAip()
-                                                                                                                     .getSessionOwner());
-                eventToSend.add(notificationRequestEvent);
+
+                Set<String> recipients = disseminationRequest.getRecipients();
+                if (recipients.isEmpty()) {
+                    // Notify with rules
+                    eventToSend.add(new NotificationRequestEvent(payload,
+                                                                 metadata,
+                                                                 disseminationRequest.getCorrelationId(),
+                                                                 disseminationRequest.getAip().getSessionOwner()));
+                } else {
+                    // Notify without rules, because notify directly only to selected recipients
+                    eventToSend.add(new SpecificRecipientNotificationRequestEvent(payload,
+                                                                                  metadata,
+                                                                                  disseminationRequest.getCorrelationId(),
+                                                                                  disseminationRequest.getAip()
+                                                                                                      .getSessionOwner(),
+                                                                                  recipients));
+                }
             }
         }
         return eventToSend;
@@ -190,24 +198,25 @@ public class AIPNotificationService implements IAIPNotificationService {
     // ------------------------------
 
     @Override
-    public void handleNotificationSuccess(Set<AbstractRequest> successRequests) {
+    public void handleNotificationSuccess(Map<AbstractRequest, NotifierEvent> successRequestsEvents) {
         // Handle Ingest success
         // Sort requests by type
         Set<IngestRequest> ingestRequests = new HashSet<>();
-        Set<AipDisseminationRequest> disseminationRequests = new HashSet<>();
+        Map<AipDisseminationRequest, NotifierEvent> disseminationRequestsEvents = new HashMap<>();
         Set<AbstractRequest> allOtherRequests = new HashSet<>();
-        for (AbstractRequest successRequest : successRequests) {
+        for (AbstractRequest successRequest : successRequestsEvents.keySet()) {
             if (successRequest instanceof IngestRequest ingestRequest) {
                 ingestRequests.add(ingestRequest);
             } else if (successRequest instanceof AipDisseminationRequest aipDisseminationRequest) {
-                disseminationRequests.add(aipDisseminationRequest);
+                disseminationRequestsEvents.put(aipDisseminationRequest,
+                                                successRequestsEvents.get(aipDisseminationRequest));
             } else {
                 allOtherRequests.add(successRequest);
             }
         }
 
-        if (!disseminationRequests.isEmpty()) {
-            handleDisseminationNotificationSuccess(disseminationRequests);
+        if (!disseminationRequestsEvents.isEmpty()) {
+            handleDisseminationNotificationSuccess(disseminationRequestsEvents);
         }
 
         if (!ingestRequests.isEmpty()) {
@@ -220,21 +229,22 @@ public class AIPNotificationService implements IAIPNotificationService {
             allOtherRequests.forEach((request) -> AIPNotificationLogger.notificationSuccess(request.getId(),
                                                                                             request.getProviderId()));
             // Delete successful requests
-            requestService.deleteRequests(successRequests);
+            requestService.deleteRequests(successRequestsEvents.keySet());
         }
     }
 
-    private void handleDisseminationNotificationSuccess(Set<AipDisseminationRequest> disseminationRequests) {
+    private void handleDisseminationNotificationSuccess(Map<AipDisseminationRequest, NotifierEvent> disseminationRequestsEvents) {
         OffsetDateTime now = OffsetDateTime.now();
         Multimap<AIPEntity, AbstractAIPUpdateTask> updateTasksByAIP = ArrayListMultimap.create();
-        for (AipDisseminationRequest disseminationRequest : disseminationRequests) {
-            List<DisseminationInfo> disseminationInfos = disseminationRequest.getRecipients()
-                                                                             .stream()
-                                                                             .map(recipient -> new DisseminationInfo(
-                                                                                 recipient,
-                                                                                 now,
-                                                                                 null))
-                                                                             .toList();
+        for (AipDisseminationRequest disseminationRequest : disseminationRequestsEvents.keySet()) {
+            List<DisseminationInfo> disseminationInfos = disseminationRequestsEvents.get(disseminationRequest)
+                                                                                    .getRecipients()
+                                                                                    .stream()
+                                                                                    .map(recipient -> new DisseminationInfo(
+                                                                                        recipient.getLabel(),
+                                                                                        now,
+                                                                                        null))
+                                                                                    .toList();
             AIPUpdateParametersDto aipUpdateDto = AIPUpdateParametersDto.build();
             aipUpdateDto.setUpdateDisseminationInfo(disseminationInfos);
 
@@ -245,7 +255,7 @@ public class AIPNotificationService implements IAIPNotificationService {
         }
         aipUpdateRequestService.create(updateTasksByAIP);
         // delete dissemination requests
-        requestService.deleteRequests(Sets.newHashSet(disseminationRequests));
+        requestService.deleteRequests(Sets.newHashSet(disseminationRequestsEvents.keySet()));
     }
 
     private void handleIngestNotificationSuccess(Set<IngestRequest> successIngestRequests) {

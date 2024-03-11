@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
-import fr.cnes.regards.modules.notification.dao.NotificationLightRepository;
+import fr.cnes.regards.modules.notification.dao.NotificationLightCustomNativeQueryRepository;
 import fr.cnes.regards.modules.notification.domain.*;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.slf4j.Logger;
@@ -67,7 +67,7 @@ public class NotificationService implements INotificationService {
      */
     private final INotificationRepository notificationRepository;
 
-    private final NotificationLightRepository notificationLightRepository;
+    private final NotificationLightCustomNativeQueryRepository notificationLightCustomNativeQueryRepository;
 
     private final IRoleService roleService;
 
@@ -90,7 +90,7 @@ public class NotificationService implements INotificationService {
                                IRoleService roleService,
                                ApplicationEventPublisher applicationEventPublisher,
                                IAuthenticationResolver authenticationResolver,
-                               NotificationLightRepository notificationLightRepository,
+                               NotificationLightCustomNativeQueryRepository notificationLightCustomNativeQueryRepository,
                                @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode) {
         super();
         this.notificationRepository = notificationRepository;
@@ -98,7 +98,7 @@ public class NotificationService implements INotificationService {
         this.applicationEventPublisher = applicationEventPublisher;
         this.notificationMode = notificationMode;
         this.authenticationResolver = authenticationResolver;
-        this.notificationLightRepository = notificationLightRepository;
+        this.notificationLightCustomNativeQueryRepository = notificationLightCustomNativeQueryRepository;
     }
 
     @Override
@@ -243,18 +243,17 @@ public class NotificationService implements INotificationService {
     }
 
     /**
-     * Retrieve a notification light page matching filter
-     *
-     * @param filters  search parameters
-     * @param pageable the paging information
-     * @return a notification light page
+     * Retrieve a notification light page matching filter and ordered by date
      */
     @Override
-    public Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable) {
-        return notificationLightRepository.findAll(filters,
-                                                   authenticationResolver.getUser(),
-                                                   authenticationResolver.getRole(),
-                                                   pageable);
+    public Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters,
+                                                          int page,
+                                                          int pageSize) {
+        return notificationLightCustomNativeQueryRepository.findAll(filters,
+                                                                    authenticationResolver.getUser(),
+                                                                    authenticationResolver.getRole(),
+                                                                    page,
+                                                                    pageSize);
     }
 
     /**
@@ -268,8 +267,8 @@ public class NotificationService implements INotificationService {
         if (filters.getDates() == null || filters.getDates().getBefore() == null) {
             filters.withDateBefore(OffsetDateTime.now());
         }
-        notificationLightRepository.deleteAll(filters,
-                                              authenticationResolver.getUser(),
-                                              authenticationResolver.getRole());
+        notificationLightCustomNativeQueryRepository.deleteAll(filters,
+                                                               authenticationResolver.getUser(),
+                                                               authenticationResolver.getRole());
     }
 }

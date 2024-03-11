@@ -177,7 +177,7 @@ public class NotificationRegistrationService {
                 } else {
                     // should not happen
                     LOGGER.warn("Job crash detected for request {} and recipient business id {}, but recipient no "
-                                 + "longer exists", notificationRequest.getRequestId(), abortedRecipientBusinessId);
+                                + "longer exists", notificationRequest.getRequestId(), abortedRecipientBusinessId);
                 }
             } else {
                 // Nothing to do, request is already in a final state.
@@ -278,7 +278,7 @@ public class NotificationRegistrationService {
     }
 
     /**
-     * Check if a notification request event is valid and create a request otherwise publish an error
+     * Check if a notification request event is valid and create a notification request otherwise publish an error
      *
      * @return a implemented {@link NotificationRequest} or empty value if invalid
      */
@@ -297,7 +297,9 @@ public class NotificationRegistrationService {
             validator.validate(event, errors);
             pluginConfigurations = validateRecipients(specificRecipientNotificationRequestEvent.getRecipients(),
                                                       errors);
-        } else {
+        }
+        // Request event with rules
+        else {
             notificationState = NotificationState.GRANTED;
 
             errors = new MapBindingResult(new HashMap<>(), NotificationRequestEvent.class.getName());

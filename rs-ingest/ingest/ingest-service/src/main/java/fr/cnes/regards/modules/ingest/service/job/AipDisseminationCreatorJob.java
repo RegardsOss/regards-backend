@@ -43,6 +43,7 @@ import org.springframework.data.domain.Sort;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -114,7 +115,7 @@ public class AipDisseminationCreatorJob extends AbstractJob<Void> {
     }
 
     private void createDisseminationRequestForAipsMatching(SearchAIPsParameters filters,
-                                                           List<String> recipients,
+                                                           Set<String> recipients,
                                                            Integer numberOfAipMaxPerPage) {
         Pageable pageRequest = PageRequest.of(0, numberOfAipMaxPerPage, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage = aipService.findByFilters(filters, pageRequest);
@@ -128,7 +129,7 @@ public class AipDisseminationCreatorJob extends AbstractJob<Void> {
         }
     }
 
-    private void createAndScheduleDisseminationRequestFor(List<AIPEntity> aips, List<String> recipients) {
+    private void createAndScheduleDisseminationRequestFor(List<AIPEntity> aips, Set<String> recipients) {
         logger.debug("Scheduling dissemination of {} aips", aips.size());
         List<AbstractRequest> disseminationRequests = aips.stream()
                                                           .map(aip -> AipDisseminationRequest.build(aip, recipients))

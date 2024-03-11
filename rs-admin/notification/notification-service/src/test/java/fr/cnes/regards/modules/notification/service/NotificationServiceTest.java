@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
-import fr.cnes.regards.modules.notification.dao.NotificationLightRepository;
+import fr.cnes.regards.modules.notification.dao.NotificationLightCustomNativeQueryRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -144,7 +144,10 @@ public class NotificationServiceTest {
      */
     private INotificationRepository notificationRepository;
 
-    private NotificationLightRepository notificationLightRepository;
+    /**
+     * Native query repository to manage notification
+     */
+    private NotificationLightCustomNativeQueryRepository notificationLightCustomNativeQueryRepository;
 
     /**
      * CRUD repository managing roles. Autowired by Spring.
@@ -220,7 +223,7 @@ public class NotificationServiceTest {
                                                       roleService,
                                                       Mockito.mock(ApplicationEventPublisher.class),
                                                       authenticationResolver,
-                                                      notificationLightRepository,
+                                                      notificationLightCustomNativeQueryRepository,
                                                       NotificationMode.MULTITENANT);
     }
 

@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
-import fr.cnes.regards.modules.notification.dao.NotificationLightRepository;
+import fr.cnes.regards.modules.notification.dao.NotificationLightCustomNativeQueryRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -64,14 +63,14 @@ public class InstanceNotificationService implements IInstanceNotificationService
      */
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    private final NotificationLightRepository notificationLightRepository;
+    private final NotificationLightCustomNativeQueryRepository notificationLightCustomNativeQueryRepository;
 
     public InstanceNotificationService(INotificationRepository notificationRepository,
                                        ApplicationEventPublisher applicationEventPublisher,
-                                       NotificationLightRepository notificationLightRepository) {
+                                       NotificationLightCustomNativeQueryRepository notificationLightCustomNativeQueryRepository) {
         this.notificationRepository = notificationRepository;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.notificationLightRepository = notificationLightRepository;
+        this.notificationLightCustomNativeQueryRepository = notificationLightCustomNativeQueryRepository;
     }
 
     @Override
@@ -133,8 +132,10 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
-    public Page<NotificationLight> findAll(SearchNotificationParameters filters, Pageable pageable) {
-        return notificationLightRepository.findAll(filters, null, null, pageable);
+    public Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters,
+                                                          int page,
+                                                          int pageSize) {
+        return notificationLightCustomNativeQueryRepository.findAll(filters, null, null, page, pageSize);
     }
 
     /**
@@ -148,6 +149,6 @@ public class InstanceNotificationService implements IInstanceNotificationService
         if (filters.getDates() == null || filters.getDates().getBefore() == null) {
             filters.withDateBefore(OffsetDateTime.now());
         }
-        notificationLightRepository.deleteAll(filters, null, null);
+        notificationLightCustomNativeQueryRepository.deleteAll(filters, null, null);
     }
 }

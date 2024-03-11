@@ -25,14 +25,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.math.BigInteger;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Custom Repository to search and delete notification without in memory pagination.
@@ -41,17 +43,21 @@ import java.util.List;
  * @author Sébastien Binda
  **/
 @Service
-public class NotificationLightRepository {
+public class NotificationLightCustomNativeQueryRepository {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationLightRepository.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationLightCustomNativeQueryRepository.class);
 
     private final EntityManager entityManager;
 
-    public NotificationLightRepository(EntityManager entityManager) {
+    private final INotificationLightRepository notificationLightRepository;
+
+    public NotificationLightCustomNativeQueryRepository(EntityManager entityManager,
+                                                        INotificationLightRepository notificationLightRepository) {
         this.entityManager = entityManager;
+        this.notificationLightRepository = notificationLightRepository;
     }
 
     /**
@@ -144,36 +150,49 @@ public class NotificationLightRepository {
     public Page<NotificationLight> findAll(SearchNotificationParameters filters,
                                            @Nullable String user,
                                            @Nullable String role,
-                                           Pageable pageable) {
+                                           int page,
+                                           int pageSize) {
         long start = System.currentTimeMillis();
 
-        String selectQuery = "id, date, sender, status, title, type, mime_type";
-        String selectCountQuery = "count(1)";
+        String selectQuery = "notif.id";
+        String selectCountQuery = "count(distinct notif.id)";
         String fromQuery = "t_notification notif ";
         if (user != null && role != null) {
-            selectQuery += ", role_name, projectuser_email";
             fromQuery += "left join ta_notification_projectuser_email pu on notif.id=pu.notification_id "
                          + "left join ta_notification_role_name role on notif.id=role.notification_id ";
         }
 
         String whereQuery = buildWhereQuery(filters, user, "notif");
-        String queryString = String.format("select %s from %s %s", selectQuery, fromQuery, whereQuery);
+        String queryString = String.format("select %s from %s %s group by notif.id order by max(date) DESC",
+                                           selectQuery,
+                                           fromQuery,
+                                           whereQuery);
         String countQueryString = String.format("select %s from %s %s", selectCountQuery, fromQuery, whereQuery);
 
-        Query query = entityManager.createNativeQuery(queryString, NotificationLight.class);
+        // First query, search distinct ids of notification matching search parameters.
+        // Native query is built directly for performance improvement.
+        // We tried previously tu use Specification by results to in memory pagination due to foreign keys associations.
+        Query query = entityManager.createNativeQuery(queryString);
         updateQueryParameters(filters, user, role, query);
-        query.setMaxResults(pageable.getPageSize());
-        query.setFirstResult(pageable.getPageSize() * pageable.getPageNumber());
-        // Execute query and get results
-        List<NotificationLight> results = query.getResultList();
+        query.setMaxResults(pageSize);
+        query.setFirstResult(pageSize * page);
+        List<BigInteger> resultIds = query.getResultList();
 
+        // Once ids are found we use JPA repository to find complete entities with associated table values.
+        // Here search is optimized because we search only by ids.
+        List<NotificationLight> results = notificationLightRepository.findAllByIdInOrderByDateDesc(resultIds.stream()
+                                                                                                            .map(
+                                                                                                                BigInteger::longValue)
+                                                                                                            .collect(
+                                                                                                                Collectors.toSet()));
+
+        // We need a third request to handle pagination and calculate the total number of results with a count query.
         Query queryCount = entityManager.createNativeQuery(countQueryString);
         updateQueryParameters(filters, user, role, queryCount);
-        // Execute query and get results
         int total = ((Number) queryCount.getSingleResult()).intValue();
 
         LOGGER.debug("{} NOTIFICATIONS found in {}ms", results.size(), System.currentTimeMillis() - start);
-        return new PageImpl<>(results, pageable, total);
+        return new PageImpl<>(results, PageRequest.of(page, pageSize), total);
     }
 
     /**

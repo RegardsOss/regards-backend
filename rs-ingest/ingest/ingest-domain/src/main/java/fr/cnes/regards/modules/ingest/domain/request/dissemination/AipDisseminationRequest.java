@@ -30,8 +30,8 @@ import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -68,8 +68,9 @@ public class AipDisseminationRequest extends AbstractRequest {
     protected AipDisseminationRequest() {
     }
 
-    public static AipDisseminationRequest build(AIPEntity aip, List<String> recipients) {
+    public static AipDisseminationRequest build(AIPEntity aip, Set<String> recipients) {
         String correlationId = UUID.randomUUID().toString();
+
         AipDisseminationRequest disseminationRequest = new AipDisseminationRequest(correlationId);
         disseminationRequest.aip = aip;
         disseminationRequest.payload = new AipDisseminationRequestPayload(correlationId, recipients);
@@ -79,6 +80,7 @@ public class AipDisseminationRequest extends AbstractRequest {
         disseminationRequest.setProviderId(aip.getProviderId());
         disseminationRequest.setDtype(RequestTypeConstant.AIP_DISSEMINATION_VALUE);
         disseminationRequest.setState(InternalRequestState.TO_SCHEDULE);
+
         return disseminationRequest;
     }
 
@@ -90,7 +92,7 @@ public class AipDisseminationRequest extends AbstractRequest {
         this.aip = aip;
     }
 
-    public List<String> getRecipients() {
+    public Set<String> getRecipients() {
         return payload.recipients();
     }
 

@@ -48,11 +48,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
@@ -106,26 +106,60 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
-    public void test_find_all() {
+    public void test_find_all() throws InterruptedException {
         // Given
+        OffsetDateTime lastNotificationDate = null;
         for (int i = 0; i < 50; i++) {
+            Notification notif = notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                                                   "title",
+                                                                                                   NotificationLevel.INFO,
+                                                                                                   "moi").toRolesAndUsers(
+                Sets.newHashSet(DefaultRole.EXPLOIT.toString()),
+                Sets.newHashSet("jeanclaude")));
+            // Add a sleep thread to have creation date different for each notification to check for sort function
+            Thread.sleep(10);
+            lastNotificationDate = notif.getDate();
+        }
+        // Add non matching notifications
+        for (int i = 0; i < 5; i++) {
             notificationService.createNotification(new NotificationDtoBuilder("message",
                                                                               "title",
                                                                               NotificationLevel.INFO,
                                                                               "moi").toRolesAndUsers(Sets.newHashSet(
-                DefaultRole.PROJECT_ADMIN.toString()), Sets.newHashSet("jeanclaude")));
+                DefaultRole.ADMIN.toString()), Sets.newHashSet("nathalie")));
+            // Add a sleep thread to have creation date different for each notification to check for sort function
+            Thread.sleep(10);
         }
 
         Mockito.doAnswer(answer -> "jeanclaude").when(authResolver).getUser();
-        Mockito.doAnswer(answer -> "PROJECT_ADMIN").when(authResolver).getRole();
+        Mockito.doAnswer(answer -> DefaultRole.EXPLOIT.toString()).when(authResolver).getRole();
 
-        Page<NotificationLight> page = notificationService.findAll(new SearchNotificationParameters(),
-                                                                   Pageable.ofSize(10));
+        Page<NotificationLight> page = notificationService.findAllOrderByDateDesc(new SearchNotificationParameters(),
+                                                                                  0,
+                                                                                  10);
         Assert.assertEquals(5, page.getTotalPages());
         Assert.assertEquals(50, page.getTotalElements());
         Assert.assertEquals(10, page.getSize());
         Assert.assertEquals(10, page.getNumberOfElements());
         Assert.assertEquals(0, page.getNumber());
+        // Validate that we can access role name associated to a notification.
+        Assert.assertTrue(page.getContent()
+                              .stream()
+                              .allMatch(notification -> notification.getRoleRecipients()
+                                                                    .contains(DefaultRole.EXPLOIT.toString())));
+        // Validate that we can access user name associated to a notification.
+        Assert.assertTrue(page.getContent()
+                              .stream()
+                              .allMatch(notification -> notification.getProjectUserRecipients()
+                                                                    .contains("jeanclaude")));
+        // Check sort function by date
+        Assert.assertEquals("First element of the page should be the last notification by date",
+                            lastNotificationDate.truncatedTo(ChronoUnit.MILLIS).toEpochSecond(),
+                            page.getContent().get(0).getDate().truncatedTo(ChronoUnit.MILLIS).toEpochSecond());
+        for (int i = 0; i < page.getNumberOfElements() - 1; i++) {
+            Assert.assertTrue("Page should be ordered by date",
+                              page.getContent().get(i).getDate().isAfter(page.getContent().get(i + 1).getDate()));
+        }
     }
 
     @Test
@@ -143,8 +177,9 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
         Mockito.doAnswer(answer -> null).when(authResolver).getRole();
 
         // When
-        Page<NotificationLight> page = notificationService.findAll(new SearchNotificationParameters(),
-                                                                   Pageable.ofSize(10));
+        Page<NotificationLight> page = notificationService.findAllOrderByDateDesc(new SearchNotificationParameters(),
+                                                                                  0,
+                                                                                  10);
 
         // Then
         Assert.assertEquals(5, page.getTotalPages());

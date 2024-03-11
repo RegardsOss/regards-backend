@@ -41,8 +41,8 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
@@ -54,6 +54,7 @@ import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationServi
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.test.IngestServiceIT;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
@@ -70,6 +71,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static fr.cnes.regards.modules.ingest.service.TestData.*;
@@ -325,7 +327,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                                       versioningMode,
                                                       null,
                                                       storagesMeta);
-        
+
         ingestServiceTest.sendIngestRequestEvent(sips, mtd);
     }
 
@@ -359,6 +361,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     // simulation notification success when required
     public void mockNotificationSuccess(String type) {
         List<? extends AbstractRequest> requests;
+        Map<AbstractRequest, NotifierEvent> mapRequestEvents;
         switch (type) {
             case RequestTypeConstant.INGEST_VALUE:
                 requests = ingestRequestRepository.findAll();
@@ -368,7 +371,11 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                     Assert.assertEquals(IngestRequestStep.LOCAL_TO_BE_NOTIFIED, ingestRequest.getStep());
                     Assert.assertEquals(InternalRequestState.RUNNING, ingestRequest.getState());
                 }
-                notificationService.handleNotificationSuccess(Sets.newHashSet(requests));
+
+                mapRequestEvents = requests.stream()
+                                           .collect(Collectors.toMap(Function.identity(),
+                                                                     r -> new NotifierEvent(null, null, null, null)));
+                notificationService.handleNotificationSuccess(mapRequestEvents);
                 Assert.assertEquals("Ingest requests were not deleted as expected",
                                     0L,
                                     ingestRequestRepository.count());
@@ -382,7 +389,11 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                     Assert.assertEquals(DeletionRequestStep.LOCAL_TO_BE_NOTIFIED, deletionRequest.getStep());
                     Assert.assertEquals(InternalRequestState.RUNNING, deletionRequest.getState());
                 }
-                notificationService.handleNotificationSuccess(Sets.newHashSet(requests));
+                mapRequestEvents = requests.stream()
+                                           .collect(Collectors.toMap(Function.identity(),
+                                                                     r -> new NotifierEvent(null, null, null, null)));
+
+                notificationService.handleNotificationSuccess(mapRequestEvents);
                 Assert.assertEquals("Deletion requests were not deleted as expected",
                                     0L,
                                     oaisDeletionRequestRepository.count());
@@ -395,7 +406,11 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                     Assert.assertEquals(AIPUpdateRequestStep.LOCAL_TO_BE_NOTIFIED, updateRequest.getStep());
                     Assert.assertEquals(InternalRequestState.RUNNING, updateRequest.getState());
                 }
-                notificationService.handleNotificationSuccess(Sets.newHashSet(requests));
+                mapRequestEvents = requests.stream()
+                                           .collect(Collectors.toMap(Function.identity(),
+                                                                     r -> new NotifierEvent(null, null, null, null)));
+
+                notificationService.handleNotificationSuccess(mapRequestEvents);
                 Assert.assertEquals("Update requests were not deleted as expected",
                                     0L,
                                     aipUpdateRequestRepository.count());
