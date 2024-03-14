@@ -111,4 +111,9 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                      nbJobError,
                      System.currentTimeMillis() - start);
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

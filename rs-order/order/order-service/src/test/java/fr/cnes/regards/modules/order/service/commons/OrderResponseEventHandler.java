@@ -76,4 +76,8 @@ public class OrderResponseEventHandler
         return null;
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

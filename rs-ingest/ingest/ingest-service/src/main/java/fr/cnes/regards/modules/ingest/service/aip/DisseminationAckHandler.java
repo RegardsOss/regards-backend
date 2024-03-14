@@ -100,4 +100,9 @@ public class DisseminationAckHandler
         }
         aipUpdateRequestService.create(updateTasksByAIP);
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

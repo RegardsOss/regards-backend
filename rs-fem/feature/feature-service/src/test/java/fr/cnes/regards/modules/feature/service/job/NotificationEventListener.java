@@ -61,4 +61,9 @@ public class NotificationEventListener implements IBatchHandler<FeatureNotificat
         return messages;
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
+
 }

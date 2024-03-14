@@ -70,4 +70,9 @@ public class FeatureEventHandler implements IBatchHandler<FeatureEvent> {
                                     .collect(Collectors.toUnmodifiableSet());
         entityIndexerService.deleteDataObjectsAndUpdate(runtimeTenantResolver.getTenant(), ipIds);
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

@@ -75,4 +75,8 @@ public class FileRestorationRequestEventHandler
         return BULK_SIZE;
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

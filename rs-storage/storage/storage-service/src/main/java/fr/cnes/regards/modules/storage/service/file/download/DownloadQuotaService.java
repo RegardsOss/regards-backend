@@ -486,4 +486,9 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
             }
         }
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

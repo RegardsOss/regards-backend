@@ -83,4 +83,9 @@ public class CancelRequestGroupsEventHandler
                 .flatMap(message -> message.getGroupsToCancel().stream())
                 .forEach(requestsGroupService::cancelRequestGroup);
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

@@ -93,4 +93,9 @@ public class FileRequestsGroupEventHandler
                                       DefaultRole.PROJECT_ADMIN);
         }
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

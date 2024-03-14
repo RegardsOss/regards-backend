@@ -115,4 +115,9 @@ public abstract class AbstractCacheableModelFinder
             cleanTenantCache(tenant, model);
         });
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

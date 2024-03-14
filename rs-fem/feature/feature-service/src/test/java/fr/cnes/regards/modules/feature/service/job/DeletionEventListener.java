@@ -54,4 +54,8 @@ public class DeletionEventListener implements IBatchHandler<FeatureDeletionReque
         numberOfRequests = 0;
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }

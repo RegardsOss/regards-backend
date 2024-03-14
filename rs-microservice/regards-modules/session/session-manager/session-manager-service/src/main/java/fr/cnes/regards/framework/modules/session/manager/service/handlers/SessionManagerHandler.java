@@ -61,4 +61,9 @@ public class SessionManagerHandler
                      messages.size(),
                      System.currentTimeMillis() - start);
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return false;
+    }
 }
