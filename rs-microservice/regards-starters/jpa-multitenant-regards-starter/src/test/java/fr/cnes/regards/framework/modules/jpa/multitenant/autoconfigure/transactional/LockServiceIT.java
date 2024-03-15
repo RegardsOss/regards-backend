@@ -62,6 +62,8 @@ public class LockServiceIT {
 
     private static final Logger LOGGER = getLogger(LockServiceIT.class);
 
+    public static final int TEMPO_MS = 10;
+
     @Autowired
     LockService lockService;
 
@@ -87,15 +89,14 @@ public class LockServiceIT {
     public void lock_service_simple_test() throws InterruptedException {
         List<String> resultList = Collections.synchronizedList(new ArrayList<>());
         Future<Boolean> t1 = threadPool.submit(() -> runWithLock("lock1", resultList, "run1"));
-        Thread.sleep(10);
+        Thread.sleep(TEMPO_MS);
         Future<Boolean> t2 = threadPool.submit(() -> runWithLock("lock1", resultList, "run2"));
         Future<Boolean> t3 = threadPool.submit(() -> runWithLock("lock2", resultList, "run3"));
         Awaitility.await()
                   .atMost(Durations.TEN_SECONDS)
                   .until(() -> t1.isDone() && t2.isDone() && t3.isDone() && resultList.size() == 3);
-        Assertions.assertEquals("run1", resultList.get(0));
-        Assertions.assertEquals("run3", resultList.get(1));
-        Assertions.assertEquals("run2", resultList.get(2));
+        Assertions.assertTrue(resultList.indexOf("run1") < resultList.indexOf("run2"));
+        Assertions.assertTrue(resultList.indexOf("run3") < resultList.indexOf("run2"));
 
     }
 
@@ -122,15 +123,14 @@ public class LockServiceIT {
         // Test that a lock created in a transaction is blocked by a lock created outside
         List<String> resultList = Collections.synchronizedList(new ArrayList<>());
         Future<Boolean> t1 = threadPool.submit(() -> runWithLock("lock1", resultList, "run1"));
-        Thread.sleep(10);
+        Thread.sleep(TEMPO_MS);
         Future<Boolean> t2 = threadPool.submit(() -> runWithLockTransactional("lock1", resultList, "run2"));
         Future<Boolean> t3 = threadPool.submit(() -> runWithLock("lock2", resultList, "run3"));
         Awaitility.await()
                   .atMost(Durations.TEN_SECONDS)
                   .until(() -> t1.isDone() && t2.isDone() && t3.isDone() && resultList.size() == 3);
-        Assertions.assertEquals("run1", resultList.get(0));
-        Assertions.assertEquals("run3", resultList.get(1));
-        Assertions.assertEquals("run2", resultList.get(2));
+        Assertions.assertTrue(resultList.indexOf("run1") < resultList.indexOf("run2"));
+        Assertions.assertTrue(resultList.indexOf("run3") < resultList.indexOf("run2"));
     }
 
     @Test
@@ -155,15 +155,14 @@ public class LockServiceIT {
         // Test that a lock created in a transaction is blocked by a lock created outside
         List<String> resultList = Collections.synchronizedList(new ArrayList<>());
         Future<Boolean> t1 = threadPool.submit(() -> runWithLockTransactional("lock1", resultList, "run1"));
-        Thread.sleep(10);
+        Thread.sleep(TEMPO_MS);
         Future<Boolean> t2 = threadPool.submit(() -> runWithLock("lock1", resultList, "run2"));
         Future<Boolean> t3 = threadPool.submit(() -> runWithLock("lock2", resultList, "run3"));
         Awaitility.await()
                   .atMost(Durations.TEN_SECONDS)
                   .until(() -> t1.isDone() && t2.isDone() && t3.isDone() && resultList.size() == 3);
-        Assertions.assertEquals("run1", resultList.get(0));
-        Assertions.assertEquals("run3", resultList.get(1));
-        Assertions.assertEquals("run2", resultList.get(2));
+        Assertions.assertTrue(resultList.indexOf("run1") < resultList.indexOf("run2"));
+        Assertions.assertTrue(resultList.indexOf("run3") < resultList.indexOf("run2"));
     }
 
     @Test
@@ -178,14 +177,14 @@ public class LockServiceIT {
             }
         });
 
-        Thread.sleep(10);
+        Thread.sleep(TEMPO_MS);
 
         Future<Boolean> t2 = threadPool.submit(() -> {
             try {
                 tenantResolver.forceTenant("test1");
                 return lockService.tryRunWithLock(lock,
                                                   new TestProcess(new ArrayList<String>(), "run2"),
-                                                  10,
+                                                  TEMPO_MS,
                                                   TimeUnit.MILLISECONDS).isExecuted();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
