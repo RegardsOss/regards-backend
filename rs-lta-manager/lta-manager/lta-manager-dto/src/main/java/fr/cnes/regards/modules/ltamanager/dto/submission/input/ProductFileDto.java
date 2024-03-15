@@ -37,23 +37,26 @@ import java.util.Objects;
 public final class ProductFileDto {
 
     @NotNull(message = "type is required")
-    @Schema(description = "Type of the file among RAWDATA, QUICKLOOK(_SD|_MD_|_HD), THUMBNAIL.")
+    @Schema(description = "Type of the file among RAWDATA, QUICKLOOK(_SD|_MD_|_HD), THUMBNAIL.", example = "THUMBNAIL")
     private final LtaDataType type;
 
+    @NotNull(message = "url is required.")
     @URL(regexp = "^(http|file).*", message = "The url must be valid and declare http(s) or file protocol")
-    @Schema(description = "Location of the file. Only http(s) or file protocols are accepted.")
+    @Schema(description = "Location of the file. Only http(s) or file protocols are accepted.",
+            example = "file:/input/file-lta-100.png")
     private final String url;
 
     @NotNull(message = "filename is required.")
-    @Schema(description = "Name of the file.")
+    @Schema(description = "Name of the file.", example = "thumbnail.png")
     private final String filename;
 
+    @NotNull(message = "checksum is required.")
     @Pattern(regexp = "^[a-fA-F0-9]{32}$", message = "checksum must be in a valid md5 format")
-    @Schema(description = "Checksum of the file in md5 format.")
+    @Schema(description = "Checksum of the file in md5 format.", example = "d326ed75d1e9c1109a9dbabf114f6b61")
     private final String checksumMd5;
 
     @NotNull(message = "mimetype is required")
-    @Schema(description = "Mimetype of the file.")
+    @Schema(description = "Mimetype of the file.", example = "image/png")
     private final MimeType mimeType;
 
     @ConstructorProperties({ "type", "url", "filename", "checksumMd5", "mimeType" })

@@ -41,37 +41,39 @@ public class SubmissionResponseDto {
     private static final Logger LOGGER = LoggerFactory.getLogger(SubmissionResponseDto.class);
 
     @NotBlank(message = "correlationId is required")
-    @Schema(description = "Identifier to track the request through the workflow.")
+    @Schema(description = "Identifier to track the request through the workflow.", example = "lta-product-100-000001")
     private final String correlationId;
 
     @NotNull(message = "responseStatus is required")
-    @Schema(description = "Acceptance status of the submitted product.")
+    @Schema(description = "Acceptance status of the submitted product.", example = "GRANTED")
     private SubmissionResponseStatus responseStatus;
 
     @Nullable
-    @Schema(description = "Identifier of the submitted product.")
+    @Schema(description = "Identifier of the submitted product.", example = "lta-product-100")
     private final String productId;
 
     @Nullable
-    @Schema(description = "Expiration date of the created request.", nullable = true)
+    @Schema(description = "Expiration date of the created request.", nullable = true, example = "2025-05-01T00:00:00Z")
     private OffsetDateTime expires;
 
     @Nullable
-    @Schema(description = "Session to monitor the created submission request.", nullable = true)
+    @Schema(description = "Session to monitor the created submission request.",
+            nullable = true,
+            example = "LTA-session")
     private String session;
 
     @Nullable
-    @Schema(description = "Possible error message.", nullable = true)
+    @Schema(description = "Possible error message.", nullable = true, example = "An error occurred while ...")
     private String message;
 
     @Nullable
     @GsonIgnore
-    @Schema(description = "Request application identifier.", nullable = true)
+    @Schema(description = "Request application identifier.", nullable = true, hidden = true)
     private String requestAppId;
 
     @Nullable
     @GsonIgnore
-    @Schema(description = "Request priority.", nullable = true)
+    @Schema(description = "Request priority.", nullable = true, hidden = true)
     private Integer requestPriority;
 
     public SubmissionResponseDto(String correlationId,

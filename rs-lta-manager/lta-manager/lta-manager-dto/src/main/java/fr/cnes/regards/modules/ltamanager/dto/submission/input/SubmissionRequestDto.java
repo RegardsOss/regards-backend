@@ -47,21 +47,28 @@ public class SubmissionRequestDto {
     @NotBlank(message = "correlationId is required to track this request.")
     @Size(max = 255, message = "correlationId length is limited to 255 characters.")
     @Schema(description = "Identifier to track this request during the entire workflow. It must be unique.",
-            maxLength = 255)
+            maxLength = 255,
+            example = "lta-product-100-000001")
     private final String correlationId;
 
     @NotBlank(message = "productId is required.")
     @Size(max = 255, message = "productId length is limited to 255 characters.")
-    @Schema(description = "Provider id of the OAIS product to generate.", maxLength = 255)
+    @Schema(description = "Provider id of the OAIS product to generate.", maxLength = 255, example = "lta-product-100")
     private final String productId;
 
     @NotBlank(message = "datatype is required.")
     @Size(max = 255, message = "datatype length is limited to 255 characters.")
-    @Schema(description = "Product datatype. Must be present in the lta-manager configuration.", maxLength = 255)
+    @Schema(description = "Product datatype. Must be present in the lta-manager configuration.",
+            maxLength = 255,
+            example = "configured-datatype")
     private final String datatype;
 
     @Valid
-    @Schema(description = "Product geometry in GeoJSON RFC 7946 Format.", nullable = true)
+    @Schema(description = "Product geometry in GeoJSON RFC 7946 Format.",
+            nullable = true,
+            example = "{\"type\":\"Polygon\",\"coordinates\":[[[51.57951867046327,24.245497137951105],"
+                      + "[51.757440626844186,24.29407298430547],[51.79438927593287,24.019826158132506],"
+                      + "[52.57708051942561,24.177439276622707],[53.404006788960146,24.15131684009917]]]}")
     private IGeometry geometry;
 
     @NotEmpty(message = "At least one file in a valid format is required.")
@@ -70,45 +77,52 @@ public class SubmissionRequestDto {
     private final List<ProductFileDto> files;
 
     @Nullable
-    @Schema(description = "List of string tags.", nullable = true)
+    @Schema(description = "List of string tags.", nullable = true, example = "[\"lta\",\"amqp\"]")
     private List<String> tags;
 
     @Nullable
     @Size(max = 255, message = "origin urn is limited to 255 characters.")
-    @Schema(description = "Id of the product in the original catalog.", nullable = true)
+    @Schema(description = "Id of the product in the original catalog.",
+            nullable = true,
+            example = "origin-lta-product-id")
     private String originUrn;
 
     @Nullable
-    @Schema(description = "Map of key/value properties.", nullable = true)
+    @Schema(description = "Map of key/value properties.",
+            nullable = true,
+            example = "{\"creation_date\":\"2023-05-01T00:00:00Z\","
+                      + "\"name\":\"lta-product-100\","
+                      + "\"geolocalized\":\"invalidValueType\"}")
     private Map<String, Object> properties;
 
     @Nullable
     @Size(max = 255, message = "storePath length is limited to 255 characters.")
     @Pattern(regexp = "^[\\w\\/\\-_:]*$",
              message = "storePath must only contain alphanumeric characters and the following characters [/-_:].")
-    @Schema(description = "Path to store the product. If null, the storePath will be built from the lta-manager "
-                          + "configuration.", nullable = true)
+    @Schema(description = "Path to manually define the destination location for files on archival system. If null, the storePath will be built from the lta-manager "
+                          + "configuration.", nullable = true, example = "/2024/1/15/lta-product-100")
     private String storePath;
 
     @Nullable
     @Size(max = 128, message = "session length is limited to 128 characters.")
     @Schema(description = "Session to monitor the generation of the product. If not provided, a default session will "
-                          + "be used.", nullable = true)
+                          + "be used.", nullable = true, example = "lta-session-name")
     private String session;
 
-    @Schema(description = "If true, overrides the product if it already exists.", defaultValue = "false")
+    // This attribute is not exposed on REST controller because it's overridden by the method used (replace endpoint or no replacement)
+    @Schema(description = "If true, overrides the product if it already exists.", defaultValue = "false", hidden = true)
     private boolean replaceMode;
 
-    @Schema(description = "Owner of submission request")
+    @Schema(description = "Owner of submission request", hidden = true, example = "Airbus")
     // owner is set after the construction of the request
     private String owner;
 
     @GsonIgnore
-    @Schema(description = "Origin request app_id in amqp message (header property of amqp message)")
+    @Schema(description = "Origin request app_id in amqp message (header property of amqp message)", hidden = true)
     private String originRequestAppId;
 
     @GsonIgnore
-    @Schema(description = "Origin request priority in amqp message (header property of amqp message")
+    @Schema(description = "Origin request priority in amqp message (header property of amqp message", hidden = true)
     private Integer originRequestPriority;
 
     @ConstructorProperties({ "correlationId",
