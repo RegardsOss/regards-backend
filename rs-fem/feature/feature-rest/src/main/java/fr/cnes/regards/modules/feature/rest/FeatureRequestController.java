@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.rest;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -74,7 +75,9 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
 
     public static final String REQUEST_SEARCH_TYPE_PATH = "/search/{type}";
 
-    private final  IFeatureRequestService featureRequestService;
+    private final IFeatureRequestService featureRequestService;
+
+    private final IAuthenticationResolver authResolver;
 
     /**
      * {@link IResourceService} instance
@@ -88,9 +91,11 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
     private final int abortDelayInHours;
 
     public FeatureRequestController(IFeatureRequestService featureRequestService,
+                                    IAuthenticationResolver authResolver,
                                     IResourceService resourceService,
                                     @Value("${regards.feature.abort.delay.hours:1}") int abortDelayInHours) {
         this.featureRequestService = featureRequestService;
+        this.authResolver = authResolver;
         this.resourceService = resourceService;
         this.abortDelayInHours = abortDelayInHours;
     }
@@ -204,7 +209,11 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
         // Add abort link only if request can be aborted, i.e., delay before aborting request is valid, request
         // state, type and step are valid.
         // This is a temporary option that will be removed later
-        if (featureRequest.getRegistrationDate().plusHours(abortDelayInHours).isBefore(start)
+        String currentUserRole = authResolver.getRole();
+        boolean authorizedUser = currentUserRole.equals(DefaultRole.ADMIN.name())
+                                 || currentUserRole.equals(DefaultRole.PROJECT_ADMIN.name());
+        if (authorizedUser
+            && featureRequest.getRegistrationDate().plusHours(abortDelayInHours).isBefore(start)
             && featureRequest.getState() == RequestState.GRANTED
             && FeatureRequestAbortService.STEPS_CORRELATION_TABLE.containsKey(requestType)
             && FeatureRequestAbortService.STEPS_CORRELATION_TABLE.get(requestType)
