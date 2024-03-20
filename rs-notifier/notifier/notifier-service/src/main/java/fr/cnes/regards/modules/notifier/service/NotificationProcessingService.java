@@ -264,7 +264,6 @@ public class NotificationProcessingService {
             List<NotificationRequest> errorRequests = requestsByIsSuccessful.get(false);
 
             // Publish all completed requests as events
-            start = System.currentTimeMillis();
             Map<String, RecipientPluginConf> recipientsInfoCache = new HashMap<>();
             List<NotifierEvent> events = completedRequests.stream()
                                                           .map(request -> this.mapRequestToEvent(request,
