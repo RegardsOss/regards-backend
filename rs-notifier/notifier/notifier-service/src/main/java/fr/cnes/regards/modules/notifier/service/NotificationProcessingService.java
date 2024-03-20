@@ -253,7 +253,8 @@ public class NotificationProcessingService {
     public Pair<Integer, Integer> checkCompletedRequests() {
         Pair<Integer, Integer> result = Pair.of(0, 0);
         try {
-            Page<NotificationRequest> completedRequests = findCompletedRequests();
+
+            List<NotificationRequest> completedRequests = findCompletedRequests();
 
             Map<Boolean, List<NotificationRequest>> requestsByIsSuccessful = completedRequests.stream()
                                                                                               .collect(Collectors.partitioningBy(
@@ -263,19 +264,14 @@ public class NotificationProcessingService {
             List<NotificationRequest> errorRequests = requestsByIsSuccessful.get(false);
 
             // Publish all completed requests as events
-            long start = System.currentTimeMillis();
+            start = System.currentTimeMillis();
             Map<String, RecipientPluginConf> recipientsInfoCache = new HashMap<>();
-
-            List<NotifierEvent> notifierEvents = completedRequests.getContent()
-                                                                  .stream()
-                                                                  .map(request -> mapRequestToEvent(request,
-                                                                                                    recipientsInfoCache))
-                                                                  .toList();
-            LOGGER.info("{} messages calculated in {}ms", notifierEvents.size(), System.currentTimeMillis() - start);
-            if (!notifierEvents.isEmpty()) {
-                start = System.currentTimeMillis();
-                publisher.publish(notifierEvents);
-                LOGGER.info("{} messages sent in {}ms", notifierEvents.size(), System.currentTimeMillis() - start);
+            List<NotifierEvent> events = completedRequests.stream()
+                                                          .map(request -> this.mapRequestToEvent(request,
+                                                                                                 recipientsInfoCache))
+                                                          .toList();
+            if (!events.isEmpty()) {
+                publisher.publish(events);
             }
 
             // Delete all successful requests
@@ -299,11 +295,8 @@ public class NotificationProcessingService {
         return result;
     }
 
-    private Page<NotificationRequest> findCompletedRequests() {
-        return notificationRequestRepository.findCompletedRequests(RUNNING_STATES,
-                                                                   PageRequest.of(0,
-                                                                                  properties.getMaxBulkSize(),
-                                                                                  Sort.by(Order.asc(NotificationRequest.REQUEST_DATE_JPQL_NAME))));
+    private List<NotificationRequest> findCompletedRequests() {
+        return notificationRequestRepository.findCompletedRequests(properties.getMaxBulkSize());
     }
 
     private NotifierEvent mapRequestToEvent(NotificationRequest notificationRequest,
