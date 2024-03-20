@@ -107,12 +107,26 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
      * @param pageable pagination information
      * @return completed requests
      */
-    @Query("select nr from NotificationRequest nr "
-           + "where nr.state in :state "
-           + "and nr.recipientsScheduled is empty "
-           + "and nr.recipientsToSchedule is empty "
-           + "and nr.rulesToMatch is empty")
-    Page<NotificationRequest> findCompletedRequests(@Param("state") NotificationState[] state, Pageable pageable);
+    @Query(value = "select notification_.*"
+                   + " from t_notification_request notification_ "
+                   + " where "
+                   + "    (notification_.state = 'SCHEDULED')"
+                   + "    and  not ("
+                   + "    exists (select notification_.id"
+                   + "        from ta_notif_request_recipients_scheduled scheduled"
+                   + "        where notification_.id=scheduled.notification_request_id)"
+                   + "    )"
+                   + "    and  not ("
+                   + "    exists (select notification_.id"
+                   + "        from ta_notif_request_recipients_toschedule toschedule"
+                   + "        where notification_.id=toschedule.notification_request_id)"
+                   + "    )"
+                   + "    and  not ("
+                   + "    exists (select notification_.id"
+                   + "            from ta_notif_request_rules_to_match rules"
+                   + "            where notification_.id=rules.notification_request_id)"
+                   + "        ) limit :max_results", nativeQuery = true)
+    List<NotificationRequest> findCompletedRequests(@Param("max_results") int maxResults);
 
     @EntityGraph(attributePaths = { "recipientsScheduled",
                                     "recipientsInError",
