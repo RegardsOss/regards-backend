@@ -21,10 +21,12 @@ package fr.cnes.regards.framework.utils.plugins.basic;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.PluginOverridenParamType;
 import fr.cnes.regards.framework.utils.cycle.detection.SomeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -81,6 +83,64 @@ public class SamplePlugin implements ISamplePlugin {
                      label = "An enumerated inside a list",
                      optional = true)
     private Set<SomeEnum> someEnums;
+
+    /**
+     * Map of primitive parameter
+     */
+    @PluginParameter(keylabel = "mapKey",
+                     description = "a list of enumerated values",
+                     label = "An enumerated inside a list",
+                     optional = true)
+    private HashMap<String, Boolean> mapParam;
+
+    /**
+     * A Model parameter
+     */
+    @PluginParameter(description = "model parameter",
+                     label = "model",
+                     type = PluginOverridenParamType.REGARDS_ENTITY_MODEL,
+                     optional = true)
+    private String model;
+
+    /**
+     * A Model collection parameter
+     */
+    @PluginParameter(description = "model collection parameter",
+                     label = "models",
+                     type = PluginOverridenParamType.REGARDS_ENTITY_MODEL,
+                     optional = true)
+    private Set<String> models;
+
+    /**
+     * A Model Map parameter
+     */
+    @PluginParameter(keylabel = "modelsMapKey",
+                     description = "model map parameter",
+                     label = "Map Models",
+                     type = PluginOverridenParamType.REGARDS_ENTITY_MODEL,
+                     optional = true)
+    private HashMap<Integer, String> mapModels;
+
+    /**
+     * A Plugin parameter
+     */
+    @PluginParameter(description = "plugin parameter", label = "Plugin", optional = true)
+    private ISamplePlugin plugin;
+
+    /**
+     * A plugin collection parameter
+     */
+    @PluginParameter(description = "plugin collection parameter", label = "Set Plugins", optional = true)
+    private Set<ISamplePlugin> plugins;
+
+    /**
+     * A plugin map parameter
+     */
+    @PluginParameter(keylabel = "pluginsMapKey",
+                     description = "plugin map parameter",
+                     label = "Map Plugins",
+                     optional = true)
+    private HashMap<String, ISamplePlugin> mapPlugins;
 
     @Override
     public String echo(final String pMessage) {

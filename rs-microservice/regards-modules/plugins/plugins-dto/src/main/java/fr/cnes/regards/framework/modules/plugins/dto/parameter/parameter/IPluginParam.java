@@ -102,8 +102,10 @@ public interface IPluginParam {
     }
 
     default void value(String value) {
-        if (PluginParamType.STRING.equals(getType())) {
+        if (PluginParamType.STRING == getType()) {
             ((StringPluginParam) this).setValue(value);
+        } else if (PluginParamType.REGARDS_ENTITY_MODEL == getType()) {
+            ((ModelPluginParam) this).setValue(value);
         } else {
             illegalValueForParameter();
         }
@@ -247,5 +249,9 @@ public interface IPluginParam {
             }
         }
         return set;
+    }
+
+    static ModelPluginParam model(String name, String identifier) {
+        return new ModelPluginParam().with(name, identifier);
     }
 }

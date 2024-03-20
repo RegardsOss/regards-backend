@@ -330,15 +330,74 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     }
 
     @Test
-    public void testPluginMetaDataOnEnumCollection() {
+    public void testPluginMetaDataTypes() {
         PluginMetaData mtd = PluginUtils.createPluginMetaData(SamplePlugin.class);
-        PluginParamDescriptor pluginParamDesc = mtd.getParameters()
-                                                   .stream()
-                                                   .filter(param -> param.getName().equals("someEnums"))
-                                                   .findFirst()
-                                                   .get();
-        Assert.assertEquals(PluginParamType.COLLECTION, pluginParamDesc.getType());
-        Assert.assertEquals(PluginParamType.STRING, pluginParamDesc.getParameterizedSubTypes()[0]);
+        PluginParamDescriptor pluginParamDescCoef = mtd.getParameters()
+                                                       .stream()
+                                                       .filter(param -> param.getName().equals("coef"))
+                                                       .findFirst()
+                                                       .get();
+        PluginParamDescriptor pluginParamDescEnums = mtd.getParameters()
+                                                        .stream()
+                                                        .filter(param -> param.getName().equals("someEnums"))
+                                                        .findFirst()
+                                                        .get();
+        PluginParamDescriptor pluginParamDescMap = mtd.getParameters()
+                                                      .stream()
+                                                      .filter(param -> param.getName().equals("mapParam"))
+                                                      .findFirst()
+                                                      .get();
+        PluginParamDescriptor pluginParamDescModel = mtd.getParameters()
+                                                        .stream()
+                                                        .filter(param -> param.getName().equals("model"))
+                                                        .findFirst()
+                                                        .get();
+        PluginParamDescriptor pluginParamDescModelCollection = mtd.getParameters()
+                                                                  .stream()
+                                                                  .filter(param -> param.getName().equals("models"))
+                                                                  .findFirst()
+                                                                  .get();
+        PluginParamDescriptor pluginParamDescModelMap = mtd.getParameters()
+                                                           .stream()
+                                                           .filter(param -> param.getName().equals("mapModels"))
+                                                           .findFirst()
+                                                           .get();
+        PluginParamDescriptor pluginParamDescPlugin = mtd.getParameters()
+                                                         .stream()
+                                                         .filter(param -> param.getName().equals("plugin"))
+                                                         .findFirst()
+                                                         .get();
+        PluginParamDescriptor pluginParamDescPlugins = mtd.getParameters()
+                                                          .stream()
+                                                          .filter(param -> param.getName().equals("plugins"))
+                                                          .findFirst()
+                                                          .get();
+        PluginParamDescriptor pluginParamDescPluginMap = mtd.getParameters()
+                                                            .stream()
+                                                            .filter(param -> param.getName().equals("mapPlugins"))
+                                                            .findFirst()
+                                                            .get();
+
+        Assert.assertEquals(PluginParamType.INTEGER, pluginParamDescCoef.getType());
+        Assert.assertEquals(PluginParamType.MAP, pluginParamDescMap.getType());
+        Assert.assertEquals(PluginParamType.STRING, pluginParamDescMap.getParameterizedSubTypes()[0]);
+        Assert.assertEquals(PluginParamType.BOOLEAN, pluginParamDescMap.getParameterizedSubTypes()[1]);
+        Assert.assertEquals(PluginParamType.REGARDS_ENTITY_MODEL, pluginParamDescModel.getType());
+        Assert.assertEquals(PluginParamType.COLLECTION, pluginParamDescModelCollection.getType());
+        Assert.assertEquals(PluginParamType.REGARDS_ENTITY_MODEL,
+                            pluginParamDescModelCollection.getParameterizedSubTypes()[0]);
+        Assert.assertEquals(PluginParamType.MAP, pluginParamDescModelMap.getType());
+        Assert.assertEquals(PluginParamType.INTEGER, pluginParamDescModelMap.getParameterizedSubTypes()[0]);
+        Assert.assertEquals(PluginParamType.REGARDS_ENTITY_MODEL,
+                            pluginParamDescModelMap.getParameterizedSubTypes()[1]);
+        Assert.assertEquals(PluginParamType.COLLECTION, pluginParamDescEnums.getType());
+        Assert.assertEquals(PluginParamType.STRING, pluginParamDescEnums.getParameterizedSubTypes()[0]);
+        Assert.assertEquals(PluginParamType.PLUGIN, pluginParamDescPlugin.getType());
+        Assert.assertEquals(PluginParamType.COLLECTION, pluginParamDescPlugins.getType());
+        Assert.assertEquals(PluginParamType.PLUGIN, pluginParamDescPlugins.getParameterizedSubTypes()[0]);
+        Assert.assertEquals(PluginParamType.MAP, pluginParamDescPluginMap.getType());
+        Assert.assertEquals(PluginParamType.STRING, pluginParamDescPluginMap.getParameterizedSubTypes()[0]);
+        Assert.assertEquals(PluginParamType.PLUGIN, pluginParamDescPluginMap.getParameterizedSubTypes()[1]);
     }
 
 }

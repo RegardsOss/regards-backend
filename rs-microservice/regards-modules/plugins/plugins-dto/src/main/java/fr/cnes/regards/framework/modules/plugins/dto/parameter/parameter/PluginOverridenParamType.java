@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -14,20 +14,25 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
+
 package fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter;
 
 /**
- * Supported plugin parameter types
+ * Values that can override the type of a parameter plugin
  *
- * @author Marc SORDI
+ * @author mnguyen0
  */
-public enum PluginParamType {
+public enum PluginOverridenParamType {
 
-    STRING, BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN, MAP, COLLECTION, POJO, PLUGIN,
     /**
-     * Following type are not standard types, they exist only for REGARDS context
+     * REGARDS model is used as a plugin type
      */
-    REGARDS_ENTITY_MODEL
+    REGARDS_ENTITY_MODEL,
+
+    /**
+     * Plugin type will be computed automaticaly using Java type introspection
+     */
+    TO_BE_COMPUTED
 }

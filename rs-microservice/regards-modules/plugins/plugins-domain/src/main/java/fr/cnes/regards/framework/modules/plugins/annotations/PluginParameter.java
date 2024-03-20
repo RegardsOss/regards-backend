@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.modules.plugins.annotations;
 
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.PluginOverridenParamType;
+
 import java.lang.annotation.*;
 import java.util.Map;
 
@@ -118,4 +120,12 @@ public @interface PluginParameter {
      * @return true if the plugin parameter is not configurable by users
      */
     boolean unconfigurable() default false;
+
+    /**
+     * Optional attribute overriding the type of the parameter
+     * If equals to TO_BE_COMPUTED, the type of the parameter will be computed automatically
+     *
+     * @return the type of the parameter
+     */
+    PluginOverridenParamType type() default PluginOverridenParamType.TO_BE_COMPUTED;
 }
