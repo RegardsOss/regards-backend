@@ -130,13 +130,10 @@ public class NotificationConfigurationService {
 
     private void createOrUpdate(Map<String, PluginConfiguration> existing, PluginConfiguration conf)
         throws ModuleException {
-        PluginConfiguration existingOne = existing.get(conf.getBusinessId());
-        if (existingOne != null) {
+        boolean pluginConfigurationExists = existing.containsKey(conf.getBusinessId());
+        if (pluginConfigurationExists) {
             LOGGER.info("Updating existing plugin configuration {}", conf.getBusinessId());
-            existingOne.setLabel(conf.getLabel());
-            existingOne.setParameters(conf.getParameters());
-            existingOne.setIsActive(conf.isActive());
-            pluginService.updatePluginConfiguration(existingOne);
+            pluginService.updatePluginConfiguration(conf);
         } else {
             // Add new configuration to existing ones
             existing.put(conf.getBusinessId(), pluginService.savePluginConfiguration(conf));
