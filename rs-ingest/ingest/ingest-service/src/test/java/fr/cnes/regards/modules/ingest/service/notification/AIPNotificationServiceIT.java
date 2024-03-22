@@ -294,7 +294,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
             ingest_step = IngestRequestStep.LOCAL_TO_BE_NOTIFIED;
             deletion_step = DeletionRequestStep.LOCAL_TO_BE_NOTIFIED;
             // update step
-            state = InternalRequestState.RUNNING;
+            state = InternalRequestState.WAITING_NOTIFIER_RESPONSE;
         } else if (step.equals("notify_error")) {
             ingest_step = IngestRequestStep.REMOTE_NOTIFICATION_ERROR;
             deletion_step = DeletionRequestStep.REMOTE_NOTIFICATION_ERROR;

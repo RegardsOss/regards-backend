@@ -104,10 +104,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
     private ISIPRepository sipRepository;
 
     @Autowired
-    private IAipDisseminationCreatorRepository disseminationCreatorRepository;
-
-    @Autowired
-    private IAipDisseminationRequestRepository disseminationRequestRepository;
+    private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
     private IJobService jobService;
@@ -117,9 +114,6 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
 
     @Autowired
     private AIPUpdateRequestScheduler aipUpdateRequestScheduler;
-
-    @Autowired
-    private IAIPUpdateRequestRepository iaipUpdateRequestRepository;
 
     @SpyBean
     private NotifierClient notifierClient;
@@ -142,9 +136,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
     protected void doInit() throws Exception {
         aipRepository.deleteAllInBatch();
         sipRepository.deleteAllInBatch();
-        disseminationCreatorRepository.deleteAllInBatch();
-        disseminationRequestRepository.deleteAllInBatch();
-        iaipUpdateRequestRepository.deleteAllInBatch();
+        abstractRequestRepository.deleteAllInBatch();
     }
 
     @Test
@@ -215,9 +207,9 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         // THEN
         Page<AipDisseminationRequest> allRequests = aipDisseminationService.findAll(PageRequest.of(0, 1000));
         Assertions.assertEquals(201, allRequests.getTotalElements());
-        // All dissemination is in state Waiting notifier dissemination response
+        // All dissemination is in state Waiting notifier response
         Assertions.assertTrue(allRequests.stream()
-                                         .allMatch(req -> InternalRequestState.WAITING_NOTIFIER_DISSEMINATION_RESPONSE.equals(
+                                         .allMatch(req -> InternalRequestState.WAITING_NOTIFIER_RESPONSE.equals(
                                              req.getState())),
                               "Dissemination requests are supposed to be in "
                               + "WAITING_NOTIFIER state after scheduling");
