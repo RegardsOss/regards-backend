@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSe
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import fr.cnes.regards.framework.s3.test.S3BucketTestUtils;
 import fr.cnes.regards.modules.delivery.amqp.output.DeliveryResponseDtoEvent;
@@ -209,7 +210,7 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
     }
 
     public void checkZipDeliveryExistsOnS3() throws MalformedURLException {
-        StorageConfig storageConfig = getStorageConfig();
+        StorageConfigDto storageConfig = getStorageConfig();
 
         StorageCommandID cmdId = new StorageCommandID("test-exists-S3-delivery", UUID.randomUUID());
         String expectedZipPath = DELIVERY_CORRELATION_ID + "/" + String.format(MULTIPLE_FILES_ZIP_NAME_PATTERN,
@@ -226,9 +227,9 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
 
     }
 
-    private StorageConfig getStorageConfig() throws MalformedURLException {
+    private StorageConfigDto getStorageConfig() throws MalformedURLException {
         // Actually, delivery gets its S3 config from {@link DeliverySettingService} and not from StorageConfig
-        return new StorageConfig.StorageConfigBuilder(getS3Server()).rootPath(DELIVERY_CORRELATION_ID).build();
+        return new StorageConfigBuilder(getS3Server()).rootPath(DELIVERY_CORRELATION_ID).build();
     }
 
     private S3Server getS3Server() {

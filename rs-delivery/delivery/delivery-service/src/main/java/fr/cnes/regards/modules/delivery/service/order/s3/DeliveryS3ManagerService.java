@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.delivery.service.order.s3;
 
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.settings.DeliverySettings;
 import fr.cnes.regards.modules.delivery.domain.settings.S3DeliveryServer;
@@ -62,27 +63,29 @@ public class DeliveryS3ManagerService {
     }
 
     /**
-     * Build a S3 {@link StorageConfig} from the delivery settings.
+     * Build a S3 {@link StorageConfigDto} from the delivery settings.
      *
      * @param deliveryRoot unique identifier to build the parent delivery location
-     * @return {@link StorageConfig}
+     * @return {@link StorageConfigDto}
      * @throws DeliveryOrderException if S3 access uri cannot be built
      */
-    public StorageConfig buildDeliveryStorageConfig(String deliveryRoot) throws DeliveryOrderException {
+    public StorageConfigDto buildDeliveryStorageConfig(String deliveryRoot) throws DeliveryOrderException {
         S3DeliveryServer s3Config = settingService.getValue(DeliverySettings.S3_SERVER);
         String s3DeliveryBucket = settingService.getValue(DeliverySettings.DELIVERY_BUCKET);
 
         try {
-            return StorageConfig.builder(new URI(s3Config.getScheme(),
-                                                 null,
-                                                 s3Config.getHost(),
-                                                 s3Config.getPort(),
-                                                 null,
-                                                 null,
-                                                 null).toString(), s3Config.getRegion(), s3Config.getKey(), s3Config.getSecret())
-                                .rootPath(deliveryRoot)
-                                .bucket(s3DeliveryBucket)
-                                .build();
+            return new StorageConfigBuilder(new URI(s3Config.getScheme(),
+                                                    null,
+                                                    s3Config.getHost(),
+                                                    s3Config.getPort(),
+                                                    null,
+                                                    null,
+                                                    null).toString(),
+                                            s3Config.getRegion(),
+                                            s3Config.getKey(),
+                                            s3Config.getSecret()).rootPath(deliveryRoot)
+                                                                 .bucket(s3DeliveryBucket)
+                                                                 .build();
         } catch (URISyntaxException e) {
             throw new DeliveryOrderException("Could not get S3 endpoint from configuration, check if "
                                              + "the delivery settings were properly set.", e);
@@ -100,7 +103,7 @@ public class DeliveryS3ManagerService {
      * @return {@link StorageCommandResult} indicating the status of the upload
      */
     public StorageCommandResult uploadFileToDeliveryS3(String correlationId,
-                                                       StorageConfig storageConfig,
+                                                       StorageConfigDto storageConfig,
                                                        StorageEntry storageEntry,
                                                        String fileChecksum) {
         // Define command to upload file

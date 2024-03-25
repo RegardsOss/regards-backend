@@ -5,8 +5,10 @@ import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import fr.cnes.regards.framework.s3.domain.StorageCommand;
 import fr.cnes.regards.framework.s3.domain.StorageCommandID;
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
+import fr.cnes.regards.framework.s3.domain.StorageConfigBuilder;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
+import fr.cnes.regards.framework.s3.utils.StorageConfigUtils;
 import io.vavr.Tuple;
 import io.vavr.control.Option;
 import org.apache.http.HttpHeaders;
@@ -62,7 +64,7 @@ public class S3HighLevelReactiveClientTest {
     @Rule
     public WireMockClassRule rule = classRule;
 
-    private StorageConfig config;
+    private StorageConfigDto config;
 
     private S3HighLevelReactiveClient client;
 
@@ -126,13 +128,12 @@ public class S3HighLevelReactiveClientTest {
 
     @Before
     public void init() {
-        config = StorageConfig.builder(s3Host, region, key, secret)
-                              .bucket(bucket)
-                              .rootPath(rootPath)
-                              .maxRetriesNumber(3)
-                              .retryBackOffBaseDuration(1)
-                              .retryBackOffMaxDuration(2)
-                              .build();
+        config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
+                                                                      .rootPath(rootPath)
+                                                                      .maxRetriesNumber(3)
+                                                                      .retryBackOffBaseDuration(1)
+                                                                      .retryBackOffMaxDuration(2)
+                                                                      .build();
         client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
     }
 
@@ -195,7 +196,7 @@ public class S3HighLevelReactiveClientTest {
     private StorageCommand.Write getStorageCommand(long size) {
         Flux<ByteBuffer> buffers = Flux.just(ByteBuffer.wrap(new byte[(int) size]));
         StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
-        String entryKey = config.entryKey("big.txt");
+        String entryKey = StorageConfigUtils.entryKey(config, "big.txt");
         StorageEntry entry = StorageEntry.builder()
                                          .checksum(Option.of(Tuple.of("MD5", "706126bf6d8553708227dba90694e81c")))
                                          .config(config)

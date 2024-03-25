@@ -21,6 +21,8 @@ package fr.cnes.regards.framework.s3.test;
 
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
+import fr.cnes.regards.framework.s3.utils.StorageConfigUtils;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import io.vavr.Tuple;
@@ -81,9 +83,8 @@ public final class S3FileTestUtils {
                                                                        MULTIPART_THRESHOLD_MB * 1024 * 1024)
                                                       .map(DataBuffer::asByteBuffer);
 
-            StorageConfig storageConfig = StorageConfig.builder(s3Server)
-                                                       .rootPath(request.getStorageSubDirectory())
-                                                       .build();
+            StorageConfigDto storageConfig = new StorageConfigBuilder(s3Server).rootPath(request.getStorageSubDirectory())
+                                                                               .build();
 
             StorageCommandID cmdId = new StorageCommandID(request.getJobId(), UUID.randomUUID());
 
@@ -93,7 +94,9 @@ public final class S3FileTestUtils {
                     entryKey = request.getMetaInfo().getChecksum();
                     break;
                 case FILENAME:
-                    entryKey = Paths.get(storageConfig.entryKey(request.getOriginUrl())).getFileName().toString();
+                    entryKey = Paths.get(StorageConfigUtils.entryKey(storageConfig, request.getOriginUrl()))
+                                    .getFileName()
+                                    .toString();
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown file identification");
@@ -137,7 +140,7 @@ public final class S3FileTestUtils {
         }));
     }
 
-    public static void deleteAllFilesFromRoot(StorageConfig s3Server, String rootPath) {
+    public static void deleteAllFilesFromRoot(StorageConfigDto s3Server, String rootPath) {
         try (S3HighLevelReactiveClient client = getS3HighLevelReactiveClient()) {
             client.deleteWithPrefix(StorageCommand.delete(s3Server,
                                                           new StorageCommandID("", UUID.randomUUID()),

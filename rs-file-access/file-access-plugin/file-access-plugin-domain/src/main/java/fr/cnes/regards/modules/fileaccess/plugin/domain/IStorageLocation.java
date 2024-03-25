@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.fileaccess.plugin.domain;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
+import fr.cnes.regards.modules.fileaccess.dto.IStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
-import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +118,7 @@ public interface IStorageLocation {
      *
      * @return the configuration
      */
-    default AbstractStoragePluginConfigurationDto createWorkerStoreConfiguration() throws NotSupportedException {
+    default IStoragePluginConfigurationDto createWorkerStoreConfiguration() throws NotSupportedException {
         throw new NotSupportedException(String.format("Worker configuration creation is not supported for %s",
                                                       this.getClass().getName()));
     }

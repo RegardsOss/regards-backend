@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.fileaccess.dao.IStorageLocationConfigurationRepository;
-import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.IStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +55,8 @@ public class StoragePluginConfigurationService {
         this.storageLocationConfigurationRepository = storageLocationConfigurationRepository;
     }
 
-    public List<AbstractStoragePluginConfigurationDto> getAllConfigurations() {
-        List<AbstractStoragePluginConfigurationDto> configurations = new ArrayList<>();
+    public List<IStoragePluginConfigurationDto> getAllConfigurations() {
+        List<IStoragePluginConfigurationDto> configurations = new ArrayList<>();
         List<String> existingBusinessIds = storageLocationConfigurationRepository.findAll()
                                                                                  .stream()
                                                                                  .map(configuration -> configuration.getPluginConfiguration()
@@ -76,7 +76,7 @@ public class StoragePluginConfigurationService {
         return configurations;
     }
 
-    public Optional<AbstractStoragePluginConfigurationDto> getByName(String storageName) {
+    public Optional<IStoragePluginConfigurationDto> getByName(String storageName) {
         try {
             IStorageLocation plugin = pluginService.getPlugin(storageName);
             return Optional.of(plugin.createWorkerStoreConfiguration());

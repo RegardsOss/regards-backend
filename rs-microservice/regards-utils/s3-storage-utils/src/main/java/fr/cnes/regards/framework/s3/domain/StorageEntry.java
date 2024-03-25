@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.s3.domain;
 
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import io.vavr.Tuple2;
 import io.vavr.control.Option;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.nio.ByteBuffer;
 @Builder
 public class StorageEntry {
 
-    StorageConfig config;
+    StorageConfigDto config;
 
     /**
      * The full path corresponds to config root path + "suffix"

@@ -19,8 +19,9 @@
 package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 
 import fr.cnes.regards.framework.s3.domain.StorageCommandResult;
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
+import fr.cnes.regards.framework.s3.utils.StorageConfigUtils;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
@@ -77,7 +78,7 @@ public class DeliveryZipUploadService {
         LOGGER.debug("Starting uploading local delivery zip to remote S3 location (local zip info : '{}').",
                      localZipInfo);
 
-        StorageConfig storageConfig = s3ManagerService.buildDeliveryStorageConfig(correlationId);
+        StorageConfigDto storageConfig = s3ManagerService.buildDeliveryStorageConfig(correlationId);
         ZipDeliveryInfo zipUploadedInfo = uploadZip(correlationId, storageConfig, localZipInfo);
         LOGGER.debug("Successfully uploaded zip on S3 delivery server (uploaded zip info '{}').", zipUploadedInfo);
         return zipUploadedInfo;
@@ -93,8 +94,9 @@ public class DeliveryZipUploadService {
      * @return metadata about the uploaded zip
      * @throws DeliveryOrderException if the zip was not uploaded successfully.
      */
-    private ZipDeliveryInfo uploadZip(String correlationId, StorageConfig storageConfig, ZipDeliveryInfo localZipInfo)
-        throws DeliveryOrderException {
+    private ZipDeliveryInfo uploadZip(String correlationId,
+                                      StorageConfigDto storageConfig,
+                                      ZipDeliveryInfo localZipInfo) throws DeliveryOrderException {
 
         StorageEntry storageEntry = buildZipStorageEntry(storageConfig, localZipInfo);
         StorageCommandResult uploadedResult = s3ManagerService.uploadFileToDeliveryS3(correlationId,
@@ -123,14 +125,14 @@ public class DeliveryZipUploadService {
      * @param localZipInfo  zip to upload
      * @return {@link StorageEntry}
      */
-    private StorageEntry buildZipStorageEntry(StorageConfig storageConfig, ZipDeliveryInfo localZipInfo) {
+    private StorageEntry buildZipStorageEntry(StorageConfigDto storageConfig, ZipDeliveryInfo localZipInfo) {
         Flux<ByteBuffer> buffers = DataBufferUtils.readInputStream(() -> DownloadUtils.getInputStreamThroughProxy(new URL(
                                                                        localZipInfo.uri()), Proxy.NO_PROXY, List.of(), LOCAL_TIMEOUT_MS, null),
                                                                    new DefaultDataBufferFactory(),
                                                                    DeliveryS3ManagerService.MULTIPART_THRESHOLD_BYTES)
                                                   .map(DataBuffer::asByteBuffer);
 
-        String entryKey = storageConfig.entryKey(localZipInfo.name());
+        String entryKey = StorageConfigUtils.entryKey(storageConfig, localZipInfo.name());
 
         return StorageEntry.builder()
                            .config(storageConfig)

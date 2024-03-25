@@ -3,10 +3,12 @@ package fr.cnes.regards.framework.s3.client;
 import fr.cnes.regards.framework.s3.S3Rule;
 import fr.cnes.regards.framework.s3.domain.StorageCommand;
 import fr.cnes.regards.framework.s3.domain.StorageCommandID;
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
+import fr.cnes.regards.framework.s3.domain.StorageConfigBuilder;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.ChecksumDoesntMatchException;
 import fr.cnes.regards.framework.s3.utils.BytesConverterUtils;
+import fr.cnes.regards.framework.s3.utils.StorageConfigUtils;
 import fr.cnes.regards.framework.test.integration.RegardsActiveProfileResolver;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import io.vavr.Tuple;
@@ -75,10 +77,9 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteReadDeleteSmall() {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
-                                            .bucket(bucket)
-                                            .rootPath(rootPath)
-                                            .build();
+        StorageConfigDto config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
+                                                                                       .rootPath(rootPath)
+                                                                                       .build();
 
         try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10)) {
             Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
@@ -88,7 +89,7 @@ public class S3HighLevelReactiveClientIT {
 
             String checksum = "706126bf6d8553708227dba90694e81c";
 
-            String entryKey = config.entryKey("small.txt");
+            String entryKey = StorageConfigUtils.entryKey(config, "small.txt");
             long size = 427L;
             StorageEntry entry = StorageEntry.builder()
                                              .checksum(Option.of(Tuple.of("MD5", checksum)))
@@ -200,10 +201,9 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteSmallWrongChecksum() {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
-                                            .bucket(bucket)
-                                            .rootPath(rootPath)
-                                            .build();
+        StorageConfigDto config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
+                                                                                       .rootPath(rootPath)
+                                                                                       .build();
 
         S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10);
 
@@ -214,7 +214,7 @@ public class S3HighLevelReactiveClientIT {
 
         String checksum = "abcd1234abcd1234";
 
-        String entryKey = config.entryKey("small.txt");
+        String entryKey = StorageConfigUtils.entryKey(config, "small.txt");
         long size = 427L;
         StorageEntry entry = StorageEntry.builder()
                                          .checksum(Option.of(Tuple.of("MD5", checksum)))
@@ -250,10 +250,9 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteSmallNoChecksum() {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
-                                            .bucket(bucket)
-                                            .rootPath(rootPath)
-                                            .build();
+        StorageConfigDto config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
+                                                                                       .rootPath(rootPath)
+                                                                                       .build();
 
         S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10);
 
@@ -262,7 +261,7 @@ public class S3HighLevelReactiveClientIT {
                                                         1024).map(DataBuffer::asByteBuffer);
         StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
 
-        String entryKey = config.entryKey("small.txt");
+        String entryKey = StorageConfigUtils.entryKey(config, "small.txt");
         long size = 427L;
         StorageEntry entry = StorageEntry.builder()
                                          .config(config)
@@ -294,10 +293,9 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteReadDeleteBig() throws IOException, NoSuchAlgorithmException {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
-                                            .bucket(bucket)
-                                            .rootPath(rootPath)
-                                            .build();
+        StorageConfigDto config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
+                                                                                       .rootPath(rootPath)
+                                                                                       .build();
 
         S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
 
@@ -316,7 +314,7 @@ public class S3HighLevelReactiveClientIT {
 
         StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
 
-        String entryKey = config.entryKey("big.txt");
+        String entryKey = StorageConfigUtils.entryKey(config, "big.txt");
 
         StorageEntry entry = StorageEntry.builder()
                                          .checksum(Option.of(Tuple.of("MD5", checksum)))
@@ -397,10 +395,9 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteBigWrongChecksum() throws IOException, NoSuchAlgorithmException {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
-                                            .bucket(bucket)
-                                            .rootPath(rootPath)
-                                            .build();
+        StorageConfigDto config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
+                                                                                       .rootPath(rootPath)
+                                                                                       .build();
 
         S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
 
@@ -417,7 +414,7 @@ public class S3HighLevelReactiveClientIT {
 
         StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
 
-        String entryKey = config.entryKey("big.txt");
+        String entryKey = StorageConfigUtils.entryKey(config, "big.txt");
 
         StorageEntry entry = StorageEntry.builder()
                                          .checksum(Option.of(Tuple.of("MD5", checksum)))
@@ -446,10 +443,9 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteBigNoChecksum() throws IOException, NoSuchAlgorithmException {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
-                                            .bucket(bucket)
-                                            .rootPath(rootPath)
-                                            .build();
+        StorageConfigDto config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
+                                                                                       .rootPath(rootPath)
+                                                                                       .build();
 
         S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
 
@@ -465,7 +461,7 @@ public class S3HighLevelReactiveClientIT {
 
         StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
 
-        String entryKey = config.entryKey("big.txt");
+        String entryKey = StorageConfigUtils.entryKey(config, "big.txt");
 
         StorageEntry entry = StorageEntry.builder()
                                          .config(config)

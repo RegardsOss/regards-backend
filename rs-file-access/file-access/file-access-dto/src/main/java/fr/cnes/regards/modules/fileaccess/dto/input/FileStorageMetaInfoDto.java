@@ -16,25 +16,43 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.dto.plugin.dto.input;
-
-import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
+package fr.cnes.regards.modules.fileaccess.dto.input;
 
 /**
- * Information about a file for a store request meant for the file-catalog microservice. <p/>
- * For now, this dto is the same as the one in the storage microservice, but it might evolve as development progress.
+ * Information about a file metadata for storage purpose
  *
  * @author Thibaud Michaudel
  **/
-public class StorageRequestDto {
+public class FileStorageMetaInfoDto {
 
-    private final FileStorageRequestDto fileStorageRequestDto;
+    private final String mimeType;
 
-    public StorageRequestDto(FileStorageRequestDto fileStorageRequestDto) {
-        this.fileStorageRequestDto = fileStorageRequestDto;
+    private final String type;
+
+    private final int height;
+
+    private final int width;
+
+    public FileStorageMetaInfoDto(String mimeType, String type, int height, int width) {
+        this.mimeType = mimeType;
+        this.type = type;
+        this.height = height;
+        this.width = width;
     }
 
-    public FileStorageRequestDto getFileStorageRequestDto() {
-        return fileStorageRequestDto;
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getWidth() {
+        return width;
     }
 }

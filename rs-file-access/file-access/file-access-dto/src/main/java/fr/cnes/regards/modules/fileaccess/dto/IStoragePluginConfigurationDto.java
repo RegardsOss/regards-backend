@@ -19,22 +19,10 @@
 package fr.cnes.regards.modules.fileaccess.dto;
 
 /**
- * Configuration dto to share from the storage plugin to the workers
+ * Configuration dto interface to share from the storage plugin to the workers
  *
  * @author Thibaud Michaudel
  **/
-public abstract class AbstractStoragePluginConfigurationDto {
+public interface IStoragePluginConfigurationDto {
 
-    /**
-     * If deletion is allowed, files are physically deleted else files are only removed from references
-     */
-    protected final boolean allowPhysicalDeletion;
-
-    public AbstractStoragePluginConfigurationDto(boolean allowPhysicalDeletion) {
-        this.allowPhysicalDeletion = allowPhysicalDeletion;
-    }
-
-    public Boolean getAllowPhysicalDeletion() {
-        return allowPhysicalDeletion;
-    }
 }

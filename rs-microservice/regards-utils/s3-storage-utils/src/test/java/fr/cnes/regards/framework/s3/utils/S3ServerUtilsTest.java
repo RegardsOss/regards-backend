@@ -19,7 +19,8 @@
 package fr.cnes.regards.framework.s3.utils;
 
 import fr.cnes.regards.framework.s3.domain.S3Server;
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
+import fr.cnes.regards.framework.s3.domain.StorageConfigBuilder;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.PatternSyntaxS3Exception;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +46,7 @@ public class S3ServerUtilsTest {
         // When
         S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
         // Then
-        verify(keyAndStorage, s3Key, StorageConfig.builder(s3Server).bucket(bucket).build());
+        verify(keyAndStorage, s3Key, new StorageConfigBuilder(s3Server).bucket(bucket).build());
     }
 
     @Test
@@ -64,7 +65,7 @@ public class S3ServerUtilsTest {
         // When
         S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
         // Then
-        verify(keyAndStorage, s3Key, StorageConfig.builder(s3Server).bucket(bucket).build());
+        verify(keyAndStorage, s3Key, new StorageConfigBuilder(s3Server).bucket(bucket).build());
     }
 
     @Test
@@ -83,7 +84,7 @@ public class S3ServerUtilsTest {
         // When
         S3ServerUtils.KeyAndStorage keyAndStorage = S3ServerUtils.getKeyAndStorage(url, s3Server);
         // Then
-        verify(keyAndStorage, s3Key, StorageConfig.builder(s3Server).bucket(bucket).build());
+        verify(keyAndStorage, s3Key, new StorageConfigBuilder(s3Server).bucket(bucket).build());
     }
 
     @Test
@@ -100,7 +101,7 @@ public class S3ServerUtilsTest {
         });
     }
 
-    private void verify(S3ServerUtils.KeyAndStorage keyAndStorage, String pathFile, StorageConfig storageConfig) {
+    private void verify(S3ServerUtils.KeyAndStorage keyAndStorage, String pathFile, StorageConfigDto storageConfig) {
         assertNotNull(keyAndStorage);
 
         assertEquals(keyAndStorage.key(), pathFile);

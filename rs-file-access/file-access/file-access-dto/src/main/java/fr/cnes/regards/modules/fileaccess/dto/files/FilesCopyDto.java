@@ -21,9 +21,12 @@ package fr.cnes.regards.modules.fileaccess.dto.files;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileCopyDto;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Information about a list of files going to be copied
+ *
  * @author Thibaud Michaudel
  **/
 public class FilesCopyDto {
@@ -59,6 +62,23 @@ public class FilesCopyDto {
 
     public Set<FileCopyDto> getFiles() {
         return files;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FilesCopyDto that = (FilesCopyDto) o;
+        return Objects.equals(files, that.files) && Objects.equals(groupId, that.groupId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(files, groupId);
     }
 
     @Override

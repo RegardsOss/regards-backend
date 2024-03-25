@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 
 import fr.cnes.regards.framework.s3.domain.*;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.ChecksumDoesntMatchException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
@@ -123,7 +124,7 @@ public class DeliveryZipUploadServiceTest {
         mockStorageConfig();
         // simulate upload
         Mockito.when(s3ManagerService.uploadFileToDeliveryS3(any(), any(), any(), any())).thenAnswer(ans -> {
-            StorageConfig storageConfig = ans.getArgument(1);
+            StorageConfigDto storageConfig = ans.getArgument(1);
             StorageEntry storageEntry = ans.getArgument(2);
             String checksum = ans.getArgument(3);
             StorageCommand.Write cmd = new StorageCommand.Write.Impl(storageConfig,
@@ -147,7 +148,7 @@ public class DeliveryZipUploadServiceTest {
         mockStorageConfig();
         // simulate upload
         Mockito.when(s3ManagerService.uploadFileToDeliveryS3(any(), any(), any(), any())).thenAnswer(ans -> {
-            StorageConfig storageConfig = ans.getArgument(1);
+            StorageConfigDto storageConfig = ans.getArgument(1);
             StorageEntry storageEntry = ans.getArgument(2);
             String checksum = ans.getArgument(3);
             StorageCommand.Write cmd = new StorageCommand.Write.Impl(storageConfig,
@@ -182,10 +183,12 @@ public class DeliveryZipUploadServiceTest {
     private void mockStorageConfig() {
         try {
             Mockito.when(s3ManagerService.buildDeliveryStorageConfig(DELIVERY_CORRELATION_ID))
-                   .thenReturn(StorageConfig.builder("http://localhost:5232", "fr-regards-1", "key", "super secret")
-                                            .rootPath(DELIVERY_CORRELATION_ID)
-                                            .bucket("delivery-test-bucket")
-                                            .build());
+                   .thenReturn(new StorageConfigBuilder("http://localhost:5232",
+                                                        "fr-regards-1",
+                                                        "key",
+                                                        "super secret").rootPath(DELIVERY_CORRELATION_ID)
+                                                                       .bucket("delivery-test-bucket")
+                                                                       .build());
         } catch (DeliveryOrderException e) {
             throw new RuntimeException(e);
         }

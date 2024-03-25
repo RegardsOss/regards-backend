@@ -21,9 +21,12 @@ package fr.cnes.regards.modules.fileaccess.dto.files;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Information about a list of files going to be deleted
+ *
  * @author Thibaud Michaudel
  **/
 public class FilesDeletionDto {
@@ -63,6 +66,23 @@ public class FilesDeletionDto {
 
     public String getGroupId() {
         return groupId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FilesDeletionDto that = (FilesDeletionDto) o;
+        return Objects.equals(files, that.files) && Objects.equals(groupId, that.groupId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(files, groupId);
     }
 
     @Override

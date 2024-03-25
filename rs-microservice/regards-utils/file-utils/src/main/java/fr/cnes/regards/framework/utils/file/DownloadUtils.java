@@ -22,7 +22,11 @@ package fr.cnes.regards.framework.utils.file;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
-import fr.cnes.regards.framework.s3.domain.*;
+import fr.cnes.regards.framework.s3.domain.S3Server;
+import fr.cnes.regards.framework.s3.domain.StorageCommand;
+import fr.cnes.regards.framework.s3.domain.StorageCommandID;
+import fr.cnes.regards.framework.s3.domain.StorageCommandResult;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import fr.cnes.regards.framework.s3.utils.S3ServerUtils;
 import org.apache.commons.io.FileUtils;
@@ -136,7 +140,7 @@ public final class DownloadUtils {
      * @param storageConfig the StorageConfig of the server
      * @return true if the file exists
      */
-    public static boolean existsS3(String key, StorageConfig storageConfig) {
+    public static boolean existsS3(String key, StorageConfigDto storageConfig) {
         S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
         StorageCommandID cmdId = new StorageCommandID(key, UUID.randomUUID());
         StorageCommand.Check check = StorageCommand.check(storageConfig, cmdId, key);
@@ -153,7 +157,7 @@ public final class DownloadUtils {
      * @param storageConfig the StorageConfig of the server
      * @return file content length
      */
-    private static Long getContentLengthS3(String key, StorageConfig storageConfig) throws FileNotFoundException {
+    private static Long getContentLengthS3(String key, StorageConfigDto storageConfig) throws FileNotFoundException {
         S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
         StorageCommandID cmdId = new StorageCommandID(key, UUID.randomUUID());
         StorageCommand.Check check = StorageCommand.check(storageConfig, cmdId, key);
@@ -177,7 +181,7 @@ public final class DownloadUtils {
      * The file will be downloaded locally and the returned InputStream bill be the one of the local file if the file is bigger than the size treshold.
      *
      * @param source           the source URL
-     * @param knownS3Server    the list of known s3 servers for s3 download, can be null
+     * @param knownS3Servers   the list of known s3 servers for s3 download, can be null
      * @param maxContentLength Maximum content length of file to download to use true source to destination download.
      *                         If the file size is bigger than this limit, a local temporary file will be created and the resulting InputStream will be from this temporary file.
      * @param tmpWorkspacePath The workspace where the temporary file will be created and read
@@ -416,7 +420,7 @@ public final class DownloadUtils {
      * @return an InputStream of the file
      */
     public static InputStream getInputStreamFromS3Source(String entryKey,
-                                                         StorageConfig storageConfig,
+                                                         StorageConfigDto storageConfig,
                                                          StorageCommandID cmdId) throws FileNotFoundException {
         try {
             S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();

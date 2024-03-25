@@ -21,11 +21,11 @@ package fr.cnes.regards.framework.s3.client;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import fr.cnes.regards.framework.s3.domain.GlacierFileStatus;
 import fr.cnes.regards.framework.s3.domain.RestorationStatus;
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
 import fr.cnes.regards.framework.s3.domain.multipart.GetResponseAndStream;
 import fr.cnes.regards.framework.s3.domain.multipart.ResponseAndStream;
 import fr.cnes.regards.framework.s3.domain.multipart.UploadedPart;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import io.vavr.collection.List;
 import org.apache.commons.codec.binary.Base64;
@@ -104,7 +104,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
 
     static final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
 
-    public S3AsyncClientReactorWrapper(StorageConfig config) {
+    public S3AsyncClientReactorWrapper(StorageConfigDto config) {
         super(3, config, S3AsyncClientReactorWrapper::createS3Client);
     }
 
@@ -113,9 +113,9 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
     }
 
     /**
-     * Defines the AWS S3 SDK retry configuration based on the {@link StorageConfig} properties configuration
+     * Defines the AWS S3 SDK retry configuration based on the {@link StorageConfigDto} properties configuration
      */
-    private static ClientOverrideConfiguration createRetryConfiguration(StorageConfig config) {
+    private static ClientOverrideConfiguration createRetryConfiguration(StorageConfigDto config) {
         BackoffStrategy backoffStrategy = EqualJitterBackoffStrategy.builder()
                                                                     .baseDelay(Duration.ofSeconds(config.getRetryBackOffBaseDuration()))
                                                                     .maxBackoffTime(Duration.ofSeconds(config.getRetryBackOffMaxDuration()))
@@ -127,7 +127,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                           .build();
     }
 
-    private static S3AsyncClient createS3Client(StorageConfig config) {
+    private static S3AsyncClient createS3Client(StorageConfigDto config) {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(config.getKey(), config.getSecret());
 
         return S3AsyncClient.builder()
@@ -448,7 +448,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
      * when the upload is complete.
      * <p>
      * This only work if the upload is done sequentially (the parts are sent in order), ie if parallel upload is not
-     * used. @see{{@link S3HighLevelReactiveClient#uploadThenCompleteMultipartEntry(StorageEntry, StorageConfig, String, String, String)}}
+     * used. @see{{@link S3HighLevelReactiveClient#uploadThenCompleteMultipartEntry(StorageEntry, StorageConfigDto, String, String, String)}}
      *
      * @param bucket    the bucket the file is uploaded to
      * @param path      the path in the bucket

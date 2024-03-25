@@ -28,11 +28,11 @@ import fr.cnes.regards.framework.s3.domain.StorageCommand.Read;
 import fr.cnes.regards.framework.s3.domain.StorageCommand.Write;
 import fr.cnes.regards.framework.s3.domain.StorageCommandResult;
 import fr.cnes.regards.framework.s3.domain.StorageCommandResult.*;
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
 import fr.cnes.regards.framework.s3.domain.multipart.MultipartReport;
 import fr.cnes.regards.framework.s3.domain.multipart.ResponseAndStream;
 import fr.cnes.regards.framework.s3.domain.multipart.UploadedPart;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.ChecksumDoesntMatchException;
 import fr.cnes.regards.framework.s3.exception.MultipartException;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
@@ -48,7 +48,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Scheduler;
 import reactor.util.function.Tuple2;
-import reactor.util.retry.Retry;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.RestoreObjectResponse;
 
@@ -80,12 +79,12 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
      */
     private final int reactorPreFetch;
 
-    private final Cache<StorageConfig, S3AsyncClientReactorWrapper> configManagers = Caffeine.newBuilder()
-                                                                                             .expireAfterWrite(Duration.ofMinutes(
-                                                                                                 5))
-                                                                                             .evictionListener(
-                                                                                                 S3HighLevelReactiveClient::onClientCacheEviction)
-                                                                                             .build();
+    private final Cache<StorageConfigDto, S3AsyncClientReactorWrapper> configManagers = Caffeine.newBuilder()
+                                                                                                .expireAfterWrite(
+                                                                                                    Duration.ofMinutes(5))
+                                                                                                .evictionListener(
+                                                                                                    S3HighLevelReactiveClient::onClientCacheEviction)
+                                                                                                .build();
 
     public S3HighLevelReactiveClient(Scheduler scheduler, int maxBytesPerPart, int reactorPreFetch) {
         this.scheduler = scheduler;
@@ -93,13 +92,13 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         this.reactorPreFetch = reactorPreFetch;
     }
 
-    private static void onClientCacheEviction(StorageConfig config,
+    private static void onClientCacheEviction(StorageConfigDto config,
                                               S3AsyncClientReactorWrapper client,
                                               RemovalCause cause) {
         client.close();
     }
 
-    protected S3AsyncClientReactorWrapper getClient(StorageConfig config) {
+    protected S3AsyncClientReactorWrapper getClient(StorageConfigDto config) {
         return configManagers.get(config, S3AsyncClientReactorWrapper::new);
     }
 
@@ -122,7 +121,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
      * @param config configuration of the s3 storage
      * @param key    s3 key of the file to restore
      */
-    public Mono<RestoreObjectResponse> restore(StorageConfig config, String key) {
+    public Mono<RestoreObjectResponse> restore(StorageConfigDto config, String key) {
         return restore(config, key, 1);
     }
 
@@ -134,7 +133,9 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
      * @param key                s3 key of the file to restore
      * @param fileLifetimeInDays lifetime of file in days
      */
-    public Mono<RestoreObjectResponse> restore(StorageConfig config, String key, @Nullable Integer fileLifetimeInDays) {
+    public Mono<RestoreObjectResponse> restore(StorageConfigDto config,
+                                               String key,
+                                               @Nullable Integer fileLifetimeInDays) {
         if (fileLifetimeInDays == null || fileLifetimeInDays <= 0) {
             fileLifetimeInDays = 1;
         }
@@ -169,7 +170,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
     }
 
     public Mono<CheckResult> check(Check checkCmd) {
-        StorageConfig config = checkCmd.getConfig();
+        StorageConfigDto config = checkCmd.getConfig();
         String archivePath = checkCmd.getEntryKey();
         String bucket = config.getBucket();
         return getClient(config).exists(bucket, archivePath)
@@ -180,28 +181,28 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
                                                                                                           t)));
     }
 
-    public Mono<GlacierFileStatus> isFileAvailable(StorageConfig config,
+    public Mono<GlacierFileStatus> isFileAvailable(StorageConfigDto config,
                                                    String key,
                                                    @Nullable String standardStorageClass) {
         return getClient(config).isFileAvailable(config.getBucket(), key, standardStorageClass);
     }
 
     public Mono<Optional<String>> eTag(Check checkCmd) {
-        StorageConfig config = checkCmd.getConfig();
+        StorageConfigDto config = checkCmd.getConfig();
         String archivePath = checkCmd.getEntryKey();
         String bucket = config.getBucket();
         return getClient(config).eTag(bucket, archivePath).onErrorMap(S3ClientException::new);
     }
 
     public Mono<Optional<Long>> contentLength(Check checkCmd) {
-        StorageConfig config = checkCmd.getConfig();
+        StorageConfigDto config = checkCmd.getConfig();
         String archivePath = checkCmd.getEntryKey();
         String bucket = config.getBucket();
         return getClient(config).contentLength(bucket, archivePath).onErrorMap(S3ClientException::new);
     }
 
     private Mono<ReadResult> readingCallableMono(Read readCmd) {
-        StorageConfig config = readCmd.getConfig();
+        StorageConfigDto config = readCmd.getConfig();
         String bucket = config.getBucket();
         String entryKey = readCmd.getEntryKey();
         return getClient(config).readContentFlux(bucket, entryKey, true)
@@ -214,7 +215,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
                                     Mono.just(new UnreachableStorage(readCmd, t)));
     }
 
-    private static StorageEntry getStorageEntry(StorageConfig config, String entryKey, ResponseAndStream ras) {
+    private static StorageEntry getStorageEntry(StorageConfigDto config, String entryKey, ResponseAndStream ras) {
         Long size = ras.getResponse().contentLength();
         String etag = ras.getResponse().eTag();
         LOGGER.debug("Reading entry={} size={} eTag={}", entryKey, size, etag);
@@ -262,7 +263,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
     }
 
     protected Mono<SizeAndChecksum> storeMultipartEntry(Write writeCmd) {
-        StorageConfig config = writeCmd.getConfig();
+        StorageConfigDto config = writeCmd.getConfig();
         String bucket = config.getBucket();
         StorageEntry entry = writeCmd.getEntry();
         String key = entry.getFullPath();
@@ -278,7 +279,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
     }
 
     protected Mono<SizeAndChecksum> uploadThenCompleteMultipartEntry(StorageEntry entry,
-                                                                     StorageConfig config,
+                                                                     StorageConfigDto config,
                                                                      String bucket,
                                                                      String key,
                                                                      String uploadId,
@@ -322,7 +323,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         }
     }
 
-    private Mono<SizeAndChecksum> completeMultipartEntry(StorageConfig config,
+    private Mono<SizeAndChecksum> completeMultipartEntry(StorageConfigDto config,
                                                          String bucket,
                                                          String key,
                                                          String uploadId,
@@ -332,7 +333,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
                                 .map(any -> new SizeAndChecksum(report.getAccumulatedSize(), checksum));
     }
 
-    private Publisher<? extends UploadedPart> uploadPart(StorageConfig config,
+    private Publisher<? extends UploadedPart> uploadPart(StorageConfigDto config,
                                                          String bucket,
                                                          String key,
                                                          String uploadId,
@@ -342,7 +343,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         return getClient(config).uploadMultipartFilePart(bucket, key, uploadId, partNum, partData);
     }
 
-    private Publisher<? extends UploadedPart> uploadPartAndUpdateDigest(StorageConfig config,
+    private Publisher<? extends UploadedPart> uploadPartAndUpdateDigest(StorageConfigDto config,
                                                                         String bucket,
                                                                         String key,
                                                                         String uploadId,
@@ -354,7 +355,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
     }
 
     protected Mono<SizeAndChecksum> storeSmallEntry(Write writeCmd) {
-        StorageConfig config = writeCmd.getConfig();
+        StorageConfigDto config = writeCmd.getConfig();
         String bucket = config.getBucket();
         StorageEntry entry = writeCmd.getEntry();
         String key = entry.getFullPath();
@@ -407,7 +408,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
 
     protected Mono<DeleteResult> deleteMonoWithPrefix(Delete deleteCmd) {
         return Mono.defer(() -> {
-            StorageConfig config = deleteCmd.getConfig();
+            StorageConfigDto config = deleteCmd.getConfig();
             String archivePath = deleteCmd.getEntryKey();
             String bucket = config.getBucket();
 
@@ -422,7 +423,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
 
     protected Mono<DeleteResult> deleteMono(Delete deleteCmd) {
         return Mono.defer(() -> {
-            StorageConfig config = deleteCmd.getConfig();
+            StorageConfigDto config = deleteCmd.getConfig();
             String key = deleteCmd.getEntryKey();
             String bucket = config.getBucket();
 

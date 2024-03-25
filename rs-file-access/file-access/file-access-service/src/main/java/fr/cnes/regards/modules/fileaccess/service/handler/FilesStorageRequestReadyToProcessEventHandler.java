@@ -18,49 +18,135 @@
  */
 package fr.cnes.regards.modules.fileaccess.service.handler;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.fileaccess.amqp.input.FilesStorageRequestReadyToProcessEvent;
-import org.springframework.beans.factory.annotation.Autowired;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
+import fr.cnes.regards.modules.fileaccess.dto.IStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.service.StoragePluginConfigurationService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
-import java.util.List;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
- * Event Handler for Storage Requests
+ * Event Handler for Storage Requests received from the file catalog.
+ * For each valid received request, a {@link StorageWorkerRequestEvent} will be sent to the worker manager.
  *
  * @author Thibaud Michaudel
  **/
+@Component
 public class FilesStorageRequestReadyToProcessEventHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesStorageRequestReadyToProcessEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileStorageRequestReadyToProcessEvent> {
 
-    @Autowired
-    private ISubscriber subscriber;
+    public static final String UNKNOWN_STORAGE_LOCATION = "UNKNOWN_STORAGE_LOCATION";
 
-    @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(FilesStorageRequestReadyToProcessEvent.class, this);
+    private final ISubscriber subscriber;
+
+    private final IPublisher publisher;
+
+    private final StoragePluginConfigurationService storagePluginConfigurationService;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    private final List<DataType> imageType = List.of(DataType.QUICKLOOK_SD,
+                                                     DataType.QUICKLOOK_MD,
+                                                     DataType.QUICKLOOK_HD,
+                                                     DataType.THUMBNAIL);
+
+    public FilesStorageRequestReadyToProcessEventHandler(ISubscriber subscriber,
+                                                         StoragePluginConfigurationService storagePluginConfigurationService,
+                                                         IPublisher publisher,
+                                                         IRuntimeTenantResolver runtimeTenantResolver) {
+        this.subscriber = subscriber;
+        this.storagePluginConfigurationService = storagePluginConfigurationService;
+        this.publisher = publisher;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
-    public Errors validate(FilesStorageRequestReadyToProcessEvent message) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        subscriber.subscribeTo(FileStorageRequestReadyToProcessEvent.class, this);
+    }
+
+    @Override
+    public Errors validate(FileStorageRequestReadyToProcessEvent message) {
         return null;
     }
 
     @Override
-    public void handleBatch(List<FilesStorageRequestReadyToProcessEvent> messages) {
+    public void handleBatch(List<FileStorageRequestReadyToProcessEvent> messages) {
         LOGGER.debug("[STORE REQUEST EVENT HANDLER] Handling {} FilesStorageRequestEvent...", messages.size());
         long start = System.currentTimeMillis();
 
-        // Placeholder log, the handlebatch do nothing for now as the actual process is still the responsability of
-        // the old storage microservice
+        List<StorageWorkerRequestEvent> eventsToSend = new ArrayList<>();
+        List<StorageResponseEvent> errorsToSend = new ArrayList<>();
+        Map<String, Optional<IStoragePluginConfigurationDto>> configurations = new HashMap<>();
+        for (FileStorageRequestReadyToProcessEvent message : messages) {
+            Optional<IStoragePluginConfigurationDto> oConfiguration = configurations.computeIfAbsent(message.getStorage(),
+                                                                                                     storagePluginConfigurationService::getByName);
+            if (oConfiguration.isEmpty()) {
+                String errorMessage = String.format(
+                    "Error while processing storage request for file %s. No configuration found for %s",
+                    message.getChecksum(),
+                    message.getStorage());
+                LOGGER.error(errorMessage);
+                errorsToSend.add(StorageResponseEvent.createErrorResponse(message.getRequestId(),
+                                                                          message.getOriginUrl(),
+                                                                          message.getChecksum(),
+                                                                          UNKNOWN_STORAGE_LOCATION,
+                                                                          errorMessage));
+
+            } else {
+                // Body
+                boolean needToComputeImageSize = MediaType.parseMediaType(message.getMetadata().getMimeType())
+                                                          .getType()
+                                                          .equals("image") && imageType.contains(DataType.valueOf(
+                    message.getMetadata().getType())) && (message.getMetadata().getHeight() == 0
+                                                          || message.getMetadata().getWidth() == 0);
+
+                StorageWorkerRequestEvent eventToSend = createEventToSend(message,
+                                                                          needToComputeImageSize,
+                                                                          oConfiguration);
+
+                eventsToSend.add(eventToSend);
+            }
+        }
+        publisher.publish(eventsToSend);
+        publisher.publish(errorsToSend);
         LOGGER.info("[STORE REQUEST EVENT HANDLER] {} File Storage Request received", messages.size());
 
         LOGGER.debug("[STORAGE REQUEST EVENT HANDLER] {} FileReferenceEvent handled in {} ms",
                      messages.size(),
                      System.currentTimeMillis() - start);
+    }
+
+    private StorageWorkerRequestEvent createEventToSend(FileStorageRequestReadyToProcessEvent message,
+                                                        boolean needToComputeImageSize,
+                                                        Optional<IStoragePluginConfigurationDto> oConfiguration) {
+        StorageWorkerRequestEvent eventToSend = new StorageWorkerRequestEvent(message.getChecksum(),
+                                                                              message.getAlgorithm(),
+                                                                              message.getOriginUrl(),
+                                                                              message.getSubDirectory() != null ?
+                                                                                  Path.of(message.getSubDirectory()) :
+                                                                                  null,
+                                                                              needToComputeImageSize,
+                                                                              oConfiguration.get());
+        // Headers
+        eventToSend.setHeader(StorageWorkerRequestEvent.CONTENT_TYPE_HEADER, "store-" + message.getStorage());
+        eventToSend.setHeader(StorageWorkerRequestEvent.REQUEST_ID_HEADER, message.getRequestId());
+        eventToSend.setHeader(StorageWorkerRequestEvent.TENANT_HEADER, runtimeTenantResolver.getTenant());
+        eventToSend.setHeader(StorageWorkerRequestEvent.OWNER_HEADER, message.getOwner());
+        eventToSend.setHeader(StorageWorkerRequestEvent.SESSION_HEADER, message.getSession());
+        return eventToSend;
     }
 
 }

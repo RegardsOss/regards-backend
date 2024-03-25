@@ -21,8 +21,10 @@ package fr.cnes.regards.framework.s3.client;
 import fr.cnes.regards.framework.s3.S3Rule;
 import fr.cnes.regards.framework.s3.domain.StorageCommand;
 import fr.cnes.regards.framework.s3.domain.StorageCommandID;
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
+import fr.cnes.regards.framework.s3.domain.StorageConfigBuilder;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
+import fr.cnes.regards.framework.s3.utils.StorageConfigUtils;
 import fr.cnes.regards.framework.test.integration.RegardsActiveProfileResolver;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import io.vavr.Tuple;
@@ -92,11 +94,10 @@ public class S3ThreadTerminationTest {
         Scheduler scheduler = Schedulers.newParallel("s3-reactive-client-" + i, 10);
         int maxBytesPerPart = 5 * 1024 * 1024;
         S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
-        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
-                                            .bucket(bucket)
-                                            .rootPath("root_" + i)
-                                            .build();
-        String entryKey = config.entryKey("file");
+        StorageConfigDto config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
+                                                                                       .rootPath("root_" + i)
+                                                                                       .build();
+        String entryKey = StorageConfigUtils.entryKey(config, "file");
         Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
                                                         new DefaultDataBufferFactory(),
                                                         1024).map(DataBuffer::asByteBuffer);

@@ -19,8 +19,6 @@
 package fr.cnes.regards.modules.fileaccess.dto.request;
 
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.util.Optional;
@@ -32,7 +30,7 @@ import java.util.Optional;
  * <li> Checksum</li>
  * <li> Checksum algorithm </li>
  * <li> mimeType </li>
- * <li> Storage location where to delete the file</li>
+ * <li> Storage location where to store the file</li>
  * <li> Owner of the file who ask for storage </li>
  * <li> originUrl where to access file to store. Must be locally accessible (file protocol for example) </li>
  * </ul>
@@ -41,8 +39,6 @@ import java.util.Optional;
  * @author Sébastien Binda
  */
 public class FileStorageRequestDto {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageRequestDto.class);
 
     private String fileName;
 

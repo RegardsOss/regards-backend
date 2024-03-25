@@ -19,7 +19,8 @@
 package fr.cnes.regards.framework.s3.utils;
 
 import fr.cnes.regards.framework.s3.domain.S3Server;
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
+import fr.cnes.regards.framework.s3.domain.StorageConfigBuilder;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.PatternSyntaxS3Exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,15 +127,14 @@ public final class S3ServerUtils {
                                                           pattern));
         }
         return new KeyAndStorage(filePath,
-                                 StorageConfig.builder(s3Server.getEndpoint(),
-                                                       s3Server.getRegion(),
-                                                       s3Server.getKey(),
-                                                       s3Server.getSecret())
-                                              .bucket(bucket)
-                                              .maxRetriesNumber(s3Server.getMaxRetriesNumber())
-                                              .retryBackOffMaxDuration(s3Server.getRetryBackOffMaxDuration())
-                                              .retryBackOffBaseDuration(s3Server.getRetryBackOffBaseDuration())
-                                              .build());
+                                 new StorageConfigBuilder(s3Server.getEndpoint(),
+                                                          s3Server.getRegion(),
+                                                          s3Server.getKey(),
+                                                          s3Server.getSecret()).bucket(bucket)
+                                                                               .maxRetriesNumber(s3Server.getMaxRetriesNumber())
+                                                                               .retryBackOffMaxDuration(s3Server.getRetryBackOffMaxDuration())
+                                                                               .retryBackOffBaseDuration(s3Server.getRetryBackOffBaseDuration())
+                                                                               .build());
 
     }
 
@@ -145,7 +145,7 @@ public final class S3ServerUtils {
      * @param storageConfig an s3 storage configuration
      */
     public record KeyAndStorage(String key,
-                                StorageConfig storageConfig) {
+                                StorageConfigDto storageConfig) {
         //NOSONAR
     }
 

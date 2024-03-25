@@ -19,9 +19,12 @@
 package fr.cnes.regards.modules.fileaccess.dto.files;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Information about a list of files going to be restored (made available)
+ *
  * @author Thibaud Michaudel
  **/
 public class FilesRestorationRequestDto {
@@ -67,5 +70,37 @@ public class FilesRestorationRequestDto {
 
     public String getGroupId() {
         return groupId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FilesRestorationRequestDto that = (FilesRestorationRequestDto) o;
+        return availabilityHours == that.availabilityHours
+               && Objects.equals(checksums, that.checksums)
+               && Objects.equals(groupId, that.groupId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(checksums, availabilityHours, groupId);
+    }
+
+    @Override
+    public String toString() {
+        return "FilesRestorationRequestDto{"
+               + "checksums="
+               + checksums
+               + ", availabilityHours="
+               + availabilityHours
+               + ", groupId='"
+               + groupId
+               + '\''
+               + '}';
     }
 }

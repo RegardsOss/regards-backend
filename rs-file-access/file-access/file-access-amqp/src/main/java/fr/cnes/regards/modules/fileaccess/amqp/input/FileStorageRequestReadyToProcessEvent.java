@@ -21,14 +21,8 @@ package fr.cnes.regards.modules.fileaccess.amqp.input;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.fileaccess.dto.files.FilesStorageRequestDto;
-import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageRequestReadyToProcessDto;
 
 /**
  * Event to request a new file storage to the file access microservice.<br/>
@@ -37,27 +31,18 @@ import java.util.stream.Stream;
  * @author Thibaud Michaudel
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class FilesStorageRequestReadyToProcessEvent extends FilesStorageRequestDto implements ISubscribable {
+public class FileStorageRequestReadyToProcessEvent extends FileStorageRequestReadyToProcessDto
+    implements ISubscribable {
 
-    /**
-     * Maximum number of Request per event
-     */
-    public static final int MAX_REQUEST_PER_GROUP = 500;
-
-    public FilesStorageRequestReadyToProcessEvent() {
-        super();
+    public FileStorageRequestReadyToProcessEvent(Long requestId,
+                                                 String checksum,
+                                                 String algorithm,
+                                                 String originUrl,
+                                                 String storage,
+                                                 String subDirectory,
+                                                 String owner,
+                                                 String session,
+                                                 FileStorageMetaInfoDto metadata) {
+        super(requestId, checksum, algorithm, originUrl, storage, subDirectory, owner, session, metadata);
     }
-
-    public FilesStorageRequestReadyToProcessEvent(Set<FileStorageRequestDto> files, String groupId) {
-        super(groupId, files);
-    }
-
-    public FilesStorageRequestReadyToProcessEvent(Collection<FileStorageRequestDto> files, String groupId) {
-        super(groupId, new HashSet<>(files));
-    }
-
-    public FilesStorageRequestReadyToProcessEvent(FileStorageRequestDto file, String groupId) {
-        super(groupId, Stream.of(file).collect(Collectors.toSet()));
-    }
-
 }

@@ -52,6 +52,12 @@
     </developers>
 
     <dependencies>
+        <!-- Regards -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>s3-storage-utils-dto</artifactId>
+        </dependency>
+
         <!-- External -->
         <dependency>
             <groupId>com.google.guava</groupId>

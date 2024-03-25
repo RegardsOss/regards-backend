@@ -1,28 +1,34 @@
 package fr.cnes.regards.framework.s3.domain;
 
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
+
 public interface StorageCommand {
 
-    static Check check(StorageConfig config, StorageCommandID cmdId, String path) {
+    static Check check(StorageConfigDto config, StorageCommandID cmdId, String path) {
         return new Check.Impl(config, cmdId, path);
     }
 
-    static Read read(StorageConfig config, StorageCommandID cmdId, String path) {
+    static Read read(StorageConfigDto config, StorageCommandID cmdId, String path) {
         return new Read.Impl(config, cmdId, path);
     }
 
-    static Write write(StorageConfig config, StorageCommandID cmdId, String path, StorageEntry entry) {
+    static Write write(StorageConfigDto config, StorageCommandID cmdId, String path, StorageEntry entry) {
         return new Write.Impl(config, cmdId, path, entry);
     }
 
-    static Write write(StorageConfig config, StorageCommandID cmdId, String path, StorageEntry entry, String checksum) {
+    static Write write(StorageConfigDto config,
+                       StorageCommandID cmdId,
+                       String path,
+                       StorageEntry entry,
+                       String checksum) {
         return new Write.Impl(config, cmdId, path, entry, checksum);
     }
 
-    static Delete delete(StorageConfig config, StorageCommandID cmdId, String path) {
+    static Delete delete(StorageConfigDto config, StorageCommandID cmdId, String path) {
         return new Delete.Impl(config, cmdId, path);
     }
 
-    StorageConfig getConfig();
+    StorageConfigDto getConfig();
 
     String getEntryKey();
 
@@ -32,7 +38,7 @@ public interface StorageCommand {
 
         class Impl extends Base implements Check {
 
-            public Impl(StorageConfig config, StorageCommandID cmdId, String path) {
+            public Impl(StorageConfigDto config, StorageCommandID cmdId, String path) {
                 super(config, cmdId, path);
             }
         }
@@ -42,7 +48,7 @@ public interface StorageCommand {
 
         class Impl extends Base implements Read {
 
-            public Impl(StorageConfig config, StorageCommandID cmdId, String path) {
+            public Impl(StorageConfigDto config, StorageCommandID cmdId, String path) {
                 super(config, cmdId, path);
             }
         }
@@ -60,13 +66,13 @@ public interface StorageCommand {
 
             private final String checksum;
 
-            public Impl(StorageConfig config, StorageCommandID cmdId, String path, StorageEntry entry) {
+            public Impl(StorageConfigDto config, StorageCommandID cmdId, String path, StorageEntry entry) {
                 super(config, cmdId, path);
                 this.entry = entry;
                 this.checksum = null;
             }
 
-            public Impl(StorageConfig config,
+            public Impl(StorageConfigDto config,
                         StorageCommandID cmdId,
                         String path,
                         StorageEntry entry,
@@ -95,7 +101,7 @@ public interface StorageCommand {
 
         class Impl extends Base implements Delete {
 
-            public Impl(StorageConfig config, StorageCommandID cmdId, String path) {
+            public Impl(StorageConfigDto config, StorageCommandID cmdId, String path) {
                 super(config, cmdId, path);
             }
         }
@@ -107,9 +113,9 @@ public interface StorageCommand {
 
         private final String entryKey;
 
-        private final StorageConfig config;
+        private final StorageConfigDto config;
 
-        private Base(StorageConfig config, StorageCommandID cmdId, String entryKey) {
+        private Base(StorageConfigDto config, StorageCommandID cmdId, String entryKey) {
             this.cmdId = cmdId;
             this.entryKey = entryKey;
             this.config = config;
@@ -126,7 +132,7 @@ public interface StorageCommand {
         }
 
         @Override
-        public StorageConfig getConfig() {
+        public StorageConfigDto getConfig() {
             return config;
         }
     }

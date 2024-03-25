@@ -20,7 +20,9 @@ package fr.cnes.regards.framework.s3.test;
 
 import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
 import fr.cnes.regards.framework.s3.domain.*;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
+import fr.cnes.regards.framework.s3.utils.StorageConfigUtils;
 import io.vavr.Tuple;
 import io.vavr.control.Option;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -131,9 +133,9 @@ public final class S3BucketTestUtils {
                                                                    MULTIPART_THRESHOLD_MB * 1024 * 1024)
                                                   .map(DataBuffer::asByteBuffer);
 
-        StorageConfig storageConfig = buildStorageConfiguration(rootPath, s3Server);
+        StorageConfigDto storageConfig = buildStorageConfiguration(rootPath, s3Server);
         StorageCommandID cmdId = new StorageCommandID("test_id", UUID.randomUUID());
-        String entryKey = storageConfig.entryKey(sourceFilePath.getFileName().toString());
+        String entryKey = StorageConfigUtils.entryKey(storageConfig, sourceFilePath.getFileName().toString());
 
         StorageEntry entry = StorageEntry.builder()
                                          .checksum(Option.of(Tuple.of(ALGORITHM_MD5, checksum)))
@@ -177,9 +179,9 @@ public final class S3BucketTestUtils {
     public static boolean isPresent(String sourceFile, String rootPath, S3Server s3Server) {
         Path sourceFilePath = Path.of(sourceFile);
 
-        StorageConfig storageConfig = buildStorageConfiguration(rootPath, s3Server);
+        StorageConfigDto storageConfig = buildStorageConfiguration(rootPath, s3Server);
         StorageCommandID cmdId = new StorageCommandID("test_id", UUID.randomUUID());
-        String entryKey = storageConfig.entryKey(sourceFilePath.getFileName().toString());
+        String entryKey = StorageConfigUtils.entryKey(storageConfig, sourceFilePath.getFileName().toString());
 
         Scheduler scheduler = Schedulers.newParallel(THREAD_PREFIX, 10);
         int maxBytesPerPart = MULTIPART_THRESHOLD_MB * 1024 * 1024;
@@ -201,9 +203,9 @@ public final class S3BucketTestUtils {
                                                       s3Server.getEndpoint()));
         });
     }
-    
-    private static StorageConfig buildStorageConfiguration(String rootPath, S3Server s3Server) {
-        return StorageConfig.builder(s3Server).rootPath(rootPath).build();
+
+    private static StorageConfigDto buildStorageConfiguration(String rootPath, S3Server s3Server) {
+        return new StorageConfigBuilder(s3Server).rootPath(rootPath).build();
     }
 
 }

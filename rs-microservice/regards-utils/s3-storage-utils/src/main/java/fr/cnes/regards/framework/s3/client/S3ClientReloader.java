@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.s3.client;
 
-import fr.cnes.regards.framework.s3.domain.StorageConfig;
+import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import io.vavr.CheckedFunction1;
 import io.vavr.control.Try;
@@ -45,9 +45,9 @@ public class S3ClientReloader<S extends SdkClient> implements AutoCloseable {
 
     private final int maxConsecutiveErrors;
 
-    private final StorageConfig config;
+    private final StorageConfigDto config;
 
-    private final CheckedFunction1<StorageConfig, S> newClient;
+    private final CheckedFunction1<StorageConfigDto, S> newClient;
 
     /* All uses of s3 must be in a synchronized method */
     private S s3;
@@ -56,8 +56,8 @@ public class S3ClientReloader<S extends SdkClient> implements AutoCloseable {
     private short consecutiveSdkErrors;
 
     public S3ClientReloader(int maxConsecutiveErrors,
-                            StorageConfig config,
-                            CheckedFunction1<StorageConfig, S> newClient) {
+                            StorageConfigDto config,
+                            CheckedFunction1<StorageConfigDto, S> newClient) {
         this.maxConsecutiveErrors = maxConsecutiveErrors;
         this.config = config;
         this.newClient = newClient;
