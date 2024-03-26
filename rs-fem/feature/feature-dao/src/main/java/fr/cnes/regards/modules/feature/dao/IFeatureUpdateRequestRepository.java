@@ -64,7 +64,7 @@ public interface IFeatureUpdateRequestRepository extends IAbstractFeatureRequest
            + " request.requestId as requestId from FeatureUpdateRequest request where request.urn not in ("
            + " select scheduledRequest.urn from FeatureUpdateRequest scheduledRequest"
            + " where scheduledRequest.step in ('LOCAL_SCHEDULED','REMOTE_STORAGE_REQUESTED','REMOTE_NOTIFICATION_REQUESTED') ) "
-           + " and request.urn not in (select urn from FeatureCreationRequest)"
+           + " and request.urn not in (select urn from FeatureCreationRequest where urn is not null)"
            + " and request.step = :step and request.registrationDate <= :delay and request.requestDate <= :now order by request.priority, request.requestDate ")
     Page<ILightFeatureUpdateRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
                                                             @Param("now") OffsetDateTime now,
