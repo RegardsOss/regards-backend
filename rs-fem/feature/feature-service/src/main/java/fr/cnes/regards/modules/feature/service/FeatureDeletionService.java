@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.feature.dao.FeatureDeletionRequestSpecificationBu
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
+import fr.cnes.regards.modules.feature.domain.AbstractFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
@@ -434,10 +435,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             }
         }
         // Filter feature to delete (not WAITING_BLOCKING_DISSEMINATION)
-        List<FeatureEntity> featureEntitiesToDelete = associatedFeatureEntities.stream()
-                                                                               .filter(featureEntity -> !featureEntitiesNotToDelete.contains(
-                                                                                   featureEntity.getId()))
-                                                                               .toList();
+        Set<FeatureEntity> featureEntitiesToDelete = associatedFeatureEntities.stream()
+                                                                              .filter(featureEntity -> !featureEntitiesNotToDelete.contains(
+                                                                                  featureEntity.getId()))
+                                                                              .collect(Collectors.toSet());
         // Propagate feature to delete to RS-CATALOG
         featureEntitiesToDelete.forEach(featureEntity -> publisher.publish(FeatureEvent.buildFeatureDeleted(
             featureEntity.getUrn().toString())));
@@ -459,7 +460,13 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         }
         // Delete features, related requests will be deleted once we know notifier has successfully sent the notification about it
         featureCreationRequestRepository.deleteByFeatureEntityIn(associatedFeatureEntities);
-        featureEntityRepository.deleteAllInBatch(featureEntitiesToDelete);
+
+        LOGGER.info("Deleting {} features in database ...", featureEntitiesToDelete.size());
+        long registrationStart = System.currentTimeMillis();
+        featureEntityRepository.deleteByIdIn(featureEntitiesToDelete.stream()
+                                                                    .map(AbstractFeatureEntity::getId)
+                                                                    .toList());
+        LOGGER.info("Deletion done in {}ms", System.currentTimeMillis() - registrationStart);
     }
 
     private boolean haveFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {

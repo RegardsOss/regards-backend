@@ -448,7 +448,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                     // Manage acknowledges
                     Optional<String> acknowledgedRecipientOpt = handleAcknowledgedRecipient(request, featureEntity);
                     if (acknowledgedRecipientOpt.isPresent()) {
-                        // Map useful to update session concerning dissemniation ack
+                        // Map useful to update session concerning dissemination ack
                         ackRequestsPerRecipientSourceSession.put(Triple.of(acknowledgedRecipientOpt.get(),
                                                                            request.getSourceToNotify(),
                                                                            request.getSessionToNotify()), request);
