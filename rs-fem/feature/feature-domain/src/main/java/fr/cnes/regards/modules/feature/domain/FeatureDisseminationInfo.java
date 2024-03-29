@@ -67,6 +67,9 @@ public class FeatureDisseminationInfo {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime ackDate;
 
+    @Column(name = "feature_id")
+    private Long featureId;
+
     @Column(name = "blocking")
     private boolean blocking;
 
@@ -155,6 +158,10 @@ public class FeatureDisseminationInfo {
         this.blocking = blocking;
     }
 
+    public boolean isAckPending() {
+        return getAckDate() == null;
+    }
+
     @Override
     public String toString() {
         return "FeatureDisseminationInfo{"
@@ -170,5 +177,9 @@ public class FeatureDisseminationInfo {
                + ", blocking="
                + blocking
                + '}';
+    }
+
+    public Long getFeatureId() {
+        return featureId;
     }
 }

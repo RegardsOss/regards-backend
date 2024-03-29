@@ -27,7 +27,14 @@ import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
 import fr.cnes.regards.modules.storage.client.IStorageRequestListener;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -41,7 +48,10 @@ import java.util.stream.Collectors;
  * @author Sébastien Binda
  */
 @Component
+@EnableRetry
 public class FeatureStorageListener implements IStorageRequestListener {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureStorageListener.class);
 
     @Autowired
     private IFeatureRequestService featureRequestService;
@@ -51,7 +61,7 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Override
     public void onRequestGranted(Set<RequestInfo> requests) {
-        // FIXME
+        // Nothing to do
     }
 
     @Override
@@ -104,6 +114,7 @@ public class FeatureStorageListener implements IStorageRequestListener {
     }
 
     @Override
+    @Retryable(value = { OptimisticLockingFailureException.class }, maxAttempts = 10, backoff = @Backoff(delay = 1000))
     public void onDeletionSuccess(Set<RequestInfo> requests) {
         this.featureRequestService.handleDeletionSuccess(requests.stream()
                                                                  .map(RequestInfo::getGroupId)
@@ -119,6 +130,7 @@ public class FeatureStorageListener implements IStorageRequestListener {
     }
 
     @Override
+    @Retryable(value = { OptimisticLockingFailureException.class }, maxAttempts = 10, backoff = @Backoff(delay = 1000))
     public void onReferenceSuccess(Set<RequestInfo> requests) {
         this.featureRequestService.handleStorageSuccess(requests.stream()
                                                                 .flatMap(r -> r.getSuccessRequests().stream())
@@ -133,6 +145,7 @@ public class FeatureStorageListener implements IStorageRequestListener {
     }
 
     @Override
+    @Retryable(value = { OptimisticLockingFailureException.class }, maxAttempts = 10, backoff = @Backoff(delay = 1000))
     public void onStoreSuccess(Set<RequestInfo> requests) {
         this.featureRequestService.handleStorageSuccess(requests.stream()
                                                                 .flatMap(r -> r.getSuccessRequests().stream())
@@ -144,6 +157,11 @@ public class FeatureStorageListener implements IStorageRequestListener {
         this.featureRequestService.handleStorageError(requests.stream()
                                                               .flatMap(r -> r.getErrorRequests().stream())
                                                               .collect(Collectors.toSet()));
+    }
+
+    @Recover
+    public void recoverOptimisticRetries(Exception e, Set<RequestInfo> requests) {
+        LOGGER.error("Too many retries for optimistic lock. Optimistic lock is maybe not the right solution here", e);
     }
 
 }

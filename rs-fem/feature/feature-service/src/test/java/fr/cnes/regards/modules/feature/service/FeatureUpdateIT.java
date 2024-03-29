@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -111,6 +112,142 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     public void doInit() {
         // initialize notification
         this.isToNotify = initDefaultNotificationSettings();
+    }
+
+    @Test
+    @Purpose(value = "Test if features are properly patched when update dissemination info are received - "
+                     + "with dissemination pending. ")
+    public void test_many_dissemination_request_dissemination_pending() {
+        // ---------------
+        // ---- GIVEN ----
+        // ---------------
+        int nbFeatures = 20;
+        // STEP 1 : create nbFeatures
+        String acknowledgedRecipientWithAck = "acknowledged recipient awaiting ack";
+        String acknowledgedRecipientWithAckNoReceive = "acknowledged recipient awaiting ack but won't receive ACK "
+                                                     + "during this test";
+        String acknowledgedRecipientNoAck = "acknowledged recipient not awaiting ack";
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true, false);
+        featureCreationService.registerRequests(events);
+        featureCreationService.scheduleRequests();
+        Awaitility.await().atMost(2 * nbFeatures, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == nbFeatures;
+        });
+        // STEP 2 : mock feedback from notifier to simulate dissemination info (with and without ack)
+        List<FeatureEntity> featureEntities = featureWithDisseminationRepository.findAll();
+        featureEntities.forEach(featureEntity -> {
+            featureEntity.setDisseminationsInfo(Sets.newHashSet(new FeatureDisseminationInfo(acknowledgedRecipientWithAck,
+                                                                                             true),
+                                                                new FeatureDisseminationInfo(acknowledgedRecipientWithAckNoReceive,
+                                                                                             true),
+                                                                new FeatureDisseminationInfo(acknowledgedRecipientNoAck, false)));
+            featureEntity.updateDisseminationPending();
+            }
+        );
+        featureWithDisseminationRepository.saveAll(featureEntities);
+
+        // STEP 3 : create update request to simulate response for dissemination with ack required
+        List<FeatureUpdateRequest> featureUpdateRequests = featureEntities.stream().map(featureEntity -> {
+            FeatureUpdateRequest featureUpdateRequest = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
+                                                                                   owner,
+                                                                                   OffsetDateTime.now(),
+                                                                                   RequestState.GRANTED,
+                                                                                   null,
+                                                                                   featureEntity.getFeature(),
+                                                                                   PriorityLevel.NORMAL,
+                                                                                   FeatureRequestStep.LOCAL_DELAYED);
+            featureUpdateRequest.setAcknowledgedRecipient(acknowledgedRecipientWithAck);
+            return featureUpdateRequest;
+        }).toList();
+        featureUpdateRequestRepo.saveAll(featureUpdateRequests);
+
+        // --------------
+        // ---- WHEN ----
+        // --------------
+        // process update requests
+        featureUpdateService.processRequests(featureUpdateRequests, null);
+
+        // --------------
+        // ---- THEN ----
+        // --------------
+        List<FeatureEntity> featureEntitiesUpdated = featureWithDisseminationRepository.findAll();
+        featureEntitiesUpdated.forEach(featureEntity -> {
+            assertTrue("Features should not have pending dissemination.", featureEntity.isDisseminationPending());
+            assertNotNull("acknowledgedRecipientWithAck should have received ack and ACK date present",
+                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
+                              (acknowledgedRecipientWithAck)).findFirst().get().getAckDate());
+            assertNull("acknowledgedRecipientWithAckNoReceive should not be updated",
+                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
+                              (acknowledgedRecipientWithAckNoReceive)).findFirst().get().getAckDate());
+            assertNotNull("acknowledgedRecipientNoAck is not awaiting any ack",
+                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
+                              (acknowledgedRecipientNoAck)).findFirst().get().getAckDate());
+        });
+    }
+    @Test
+    @Purpose(value = "Test if features are properly patched when update dissemination info are received - "
+                     + "with dissemination not pending.")
+    public void test_many_dissemination_request_dissemination_not_pending() {
+        // ---------------
+        // ---- GIVEN ----
+        // ---------------
+        int nbFeatures = 20;
+        // STEP 1 : create nbFeatures
+        String acknowledgedRecipientWithAck = "acknowledged recipient awaiting ack";
+        String acknowledgedRecipientNoAck = "acknowledged recipient not awaiting ack";
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true, false);
+        featureCreationService.registerRequests(events);
+        featureCreationService.scheduleRequests();
+        Awaitility.await().atMost(2 * nbFeatures, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == nbFeatures;
+        });
+        // STEP 2 : mock feedback from notifier to simulate dissemination info (with and without ack)
+        List<FeatureEntity> featureEntities = featureWithDisseminationRepository.findAll();
+        featureEntities.forEach(featureEntity -> {
+                                    featureEntity.setDisseminationsInfo(Sets.newHashSet(new FeatureDisseminationInfo(acknowledgedRecipientWithAck,
+                                                                                                                     true),
+                                                                                        new FeatureDisseminationInfo(acknowledgedRecipientNoAck, false)));
+                                    featureEntity.updateDisseminationPending();
+                                }
+        );
+        featureWithDisseminationRepository.saveAll(featureEntities);
+
+        // STEP 3 : create update request to simulate response for dissemination with ack required
+        List<FeatureUpdateRequest> featureUpdateRequests = featureEntities.stream().map(featureEntity -> {
+            FeatureUpdateRequest featureUpdateRequest = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
+                                                                                   owner,
+                                                                                   OffsetDateTime.now(),
+                                                                                   RequestState.GRANTED,
+                                                                                   null,
+                                                                                   featureEntity.getFeature(),
+                                                                                   PriorityLevel.NORMAL,
+                                                                                   FeatureRequestStep.LOCAL_DELAYED);
+            featureUpdateRequest.setAcknowledgedRecipient(acknowledgedRecipientWithAck);
+            return featureUpdateRequest;
+        }).toList();
+        featureUpdateRequestRepo.saveAll(featureUpdateRequests);
+
+        // --------------
+        // ---- WHEN ----
+        // --------------
+        // process update requests
+        featureUpdateService.processRequests(featureUpdateRequests, null);
+
+        // --------------
+        // ---- THEN ----
+        // --------------
+        List<FeatureEntity> featureEntitiesUpdated = featureWithDisseminationRepository.findAll();
+        featureEntitiesUpdated.forEach(featureEntity -> {
+            assertFalse("Features should not have pending dissemination.", featureEntity.isDisseminationPending());
+            assertNotNull("acknowledgedRecipientWithAck should have received ack and ACK date present",
+                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
+                              (acknowledgedRecipientWithAck)).findFirst().get().getAckDate());
+            assertNotNull("acknowledgedRecipientNoAck is not awaiting any ack",
+                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
+                              (acknowledgedRecipientNoAck)).findFirst().get().getAckDate());
+        });
     }
 
     @Test

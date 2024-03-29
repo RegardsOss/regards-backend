@@ -31,10 +31,8 @@ import fr.cnes.regards.framework.modules.session.agent.client.ISessionAgentClien
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.modules.feature.dao.FeatureUpdateRequestSpecificationBuilder;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
+import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.domain.AbstractFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
@@ -103,6 +101,9 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Autowired
     private IFeatureDeletionRequestRepository featureDeletionRequestRepository;
+
+    @Autowired
+    private IFeatureDisseminationInfoRepository featureDisseminationInfoRepository;
 
     @Autowired
     private FeatureMetrics metrics;
@@ -378,6 +379,9 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                                                                                              .collect(Collectors.toMap(
                                                                                                  FeatureEntity::getUrn,
                                                                                                  Function.identity()));
+        Map<FeatureEntity, Set<FeatureDisseminationInfo>> disseminationInfosByFeature = computeDisseminationInfoIfNeeded(
+            featureByUrn,
+            requests);
         // Update feature update request
         for (FeatureUpdateRequest request : requests) {
             Feature patch = request.getFeature();
@@ -446,7 +450,12 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                         storagePendingRequests.add(request);
                     }
                     // Manage acknowledges
-                    Optional<String> acknowledgedRecipientOpt = handleAcknowledgedRecipient(request, featureEntity);
+                    Set<FeatureDisseminationInfo> disseminationInfos = disseminationInfosByFeature.getOrDefault(
+                        featureEntity,
+                        Sets.newHashSet());
+                    Optional<String> acknowledgedRecipientOpt = handleAcknowledgedRecipient(request,
+                                                                                            featureEntity,
+                                                                                            disseminationInfos);
                     if (acknowledgedRecipientOpt.isPresent()) {
                         // Map useful to update session concerning dissemination ack
                         ackRequestsPerRecipientSourceSession.put(Triple.of(acknowledgedRecipientOpt.get(),
@@ -480,21 +489,44 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                      requests.size(),
                      featureEntities.size(),
                      System.currentTimeMillis() - processStart);
-
         return featureEntities;
     }
 
-    private Optional<String> handleAcknowledgedRecipient(FeatureUpdateRequest request, FeatureEntity featureEntity) {
+    private Map<FeatureEntity, Set<FeatureDisseminationInfo>> computeDisseminationInfoIfNeeded(Map<FeatureUniformResourceName, FeatureEntity> featureByUrn,
+                                                                                               List<FeatureUpdateRequest> requests) {
+        List<FeatureEntity> requestNeedingDisseminationInfo = requests.stream()
+                                                                      .filter(request -> StringUtils.isNotBlank(request.getAcknowledgedRecipient()))
+                                                                      .map(request -> featureByUrn.get(request.getUrn()))
+                                                                      .toList();
+
+        Map<Long, FeatureEntity> idToFeature = requestNeedingDisseminationInfo.stream()
+                                                                              .collect(Collectors.toMap(
+                                                                                  AbstractFeatureEntity::getId,
+                                                                                  Function.identity()));
+        if (!requestNeedingDisseminationInfo.isEmpty()) {
+            Set<FeatureDisseminationInfo> featureDisseminationInfos = featureDisseminationInfoRepository.findByFeatureIdIn(
+                requestNeedingDisseminationInfo.stream().map(AbstractFeatureEntity::getId).toList());
+            return featureDisseminationInfos.stream()
+                                            .collect(Collectors.groupingBy(d -> idToFeature.get(d.getFeatureId()),
+                                                                           Collectors.toSet()));
+        }
+        return new HashMap<>();
+    }
+
+    private Optional<String> handleAcknowledgedRecipient(FeatureUpdateRequest request,
+                                                         FeatureEntity featureEntity,
+                                                         Set<FeatureDisseminationInfo> disseminationInfoCache) {
         boolean foundRecipient = false;
         String acknowledgedRecipient = request.getAcknowledgedRecipient();
         if (!StringUtils.isBlank(acknowledgedRecipient)) {
             LOGGER.debug("acknowledged recipient: {}", acknowledgedRecipient);
 
-            for (FeatureDisseminationInfo featureDisseminationInfo : featureEntity.getDisseminationsInfo()) {
+            for (FeatureDisseminationInfo featureDisseminationInfo : disseminationInfoCache) {
                 LOGGER.debug("Dissemination information for feature : {}", featureDisseminationInfo);
                 if (featureDisseminationInfo.getLabel().equals(acknowledgedRecipient)) {
                     foundRecipient = true;
                     featureDisseminationInfo.setAckDate(OffsetDateTime.now());
+                    featureDisseminationInfoRepository.save(featureDisseminationInfo);
 
                     List<AbstractFeatureRequest> featureRequests = abstractFeatureRequestRepository.findAllByUrnAndStep(
                         featureEntity.getUrn(),
@@ -519,7 +551,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             }
         }
 
-        featureEntity.updateDisseminationPending();
+        featureEntity.setDisseminationPending(disseminationInfoCache.stream()
+                                                                    .anyMatch(FeatureDisseminationInfo::isAckPending));
         return foundRecipient ? Optional.of(acknowledgedRecipient) : Optional.empty();
     }
 

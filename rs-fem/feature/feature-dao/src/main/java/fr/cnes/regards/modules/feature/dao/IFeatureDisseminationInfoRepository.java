@@ -20,6 +20,11 @@ package fr.cnes.regards.modules.feature.dao;
 
 import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link FeatureDisseminationInfo} entities.
@@ -27,5 +32,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author Léo Mieulet
  */
 public interface IFeatureDisseminationInfoRepository extends JpaRepository<FeatureDisseminationInfo, Long> {
+
+    @Query(value = "SELECT * FROM t_feature_dissemination_info WHERE feature_id IN (:featureIds)", nativeQuery = true)
+    Set<FeatureDisseminationInfo> findByFeatureIdIn(@Param("featureIds") List<Long> featureIds);
 
 }
