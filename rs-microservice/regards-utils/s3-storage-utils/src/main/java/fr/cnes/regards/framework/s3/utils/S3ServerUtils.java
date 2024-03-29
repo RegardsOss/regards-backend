@@ -40,6 +40,8 @@ import java.util.regex.PatternSyntaxException;
  */
 public final class S3ServerUtils {
 
+    public static final String S3_PATTERN_EXCEPTION_MSG_FORMAT = "S3 server pattern syntax is not valid - provided pattern [%s]";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(S3ServerUtils.class);
 
     /**
@@ -49,15 +51,52 @@ public final class S3ServerUtils {
      * @param s3Servers the list of S3 servers to check
      * @return the S3 server hosting the file at the url if it's present.
      */
-    public static Optional<S3Server> isUrlFromS3Server(URL url, @Nullable List<S3Server> s3Servers) {
-        Optional<S3Server> s3server = s3Servers == null ?
-            Optional.empty() :
-            s3Servers.stream()
-                     .filter(s3Server -> isTheSameEndPoint(s3Server.getEndpoint(), url.getHost(), url.getPort()))
-                     .findFirst();
-        if (s3server.isPresent()) {
-            LOGGER.info("Accessing url {} from configured S3 server {}", url, s3server.get().getEndpoint());
+    public static Optional<S3Server> isUrlFromS3Server(URL url, @Nullable List<S3Server> s3Servers)
+        throws PatternSyntaxS3Exception {
+        return s3Servers == null ? Optional.empty() : getS3Server(url, s3Servers);
+    }
+
+    /**
+     * Check if a {@link S3Server} configuration matches with the source url. By default, the comparison is based on
+     * the host and port of the url. If multiple configurations are found, the bucket will be the discriminating
+     * criterion.
+     *
+     * @param url       origin url that could be a s3 url.
+     * @param s3Servers list of s3 servers currently configured.
+     * @return a s3 server if a match is found.
+     * @throws PatternSyntaxS3Exception if the url is invalid according to the configured S3 server pattern.
+     */
+    private static Optional<S3Server> getS3Server(URL url, List<S3Server> s3Servers) throws PatternSyntaxS3Exception {
+        List<S3Server> matchingS3Servers = s3Servers.stream()
+                                                    .filter(s3Server -> isTheSameEndPoint(s3Server.getEndpoint(),
+                                                                                          url.getHost(),
+                                                                                          url.getPort()))
+                                                    .toList();
+        Optional<S3Server> s3server;
+        if (!matchingS3Servers.isEmpty()) {
+            int serverSize = matchingS3Servers.size();
+            if (serverSize == 1) {
+                s3server = Optional.of(matchingS3Servers.get(0));
+                LOGGER.info("Accessing url {} from configured S3 server {}", url, s3server.get().getEndpoint());
+            } else {
+                // get the expected server with the bucket name, which is unique among the servers
+                try {
+                    s3server = matchingS3Servers.stream()
+                                                .filter(s3Server -> extractRegexpGroupFromUrl(url,
+                                                                                              s3Server,
+                                                                                              compileS3ServerPattern(
+                                                                                                  s3Server.getPattern(),
+                                                                                                  url.toString()),
+                                                                                              S3Server.REGEX_GROUP_BUCKET).equals(
+                                                    s3Server.getBucket()))
+                                                .findFirst();
+                } catch (PatternSyntaxException e) {
+                    throw new PatternSyntaxS3Exception(String.format(S3_PATTERN_EXCEPTION_MSG_FORMAT, e.getPattern()),
+                                                       e);
+                }
+            }
         } else {
+            s3server = Optional.empty();
             LOGGER.info("Accessing url {} from HTTP server (not found in configured S3 server).", url);
         }
         return s3server;
@@ -66,7 +105,6 @@ public final class S3ServerUtils {
     private static boolean isTheSameEndPoint(String endPoint, String hostUrl, int portUrl) {
         try {
             URL url = new URL(endPoint);
-
             return url.getHost().equals(hostUrl) && url.getPort() == portUrl;
         } catch (MalformedURLException e) {
             LOGGER.error("This url {} is invalid", endPoint, e);
@@ -83,22 +121,14 @@ public final class S3ServerUtils {
      * @param s3Server the S3 server configuration
      * @return a record with the s3 key for the file and the storage
      */
-    public static KeyAndStorage getKeyAndStorage(URL source, S3Server s3Server)
-        throws MalformedURLException, PatternSyntaxS3Exception {
-        String pattern = s3Server.getPattern();
-        if (StringUtils.isBlank(pattern)) {
-            throw new PatternSyntaxS3Exception(
-                "Input pattern of regex is empty from the configuration file from S3 server");
-        }
+    public static KeyAndStorage getKeyAndStorage(URL source, S3Server s3Server) throws PatternSyntaxS3Exception {
         LOGGER.trace("Available S3 server {}", s3Server);
+        String pattern = s3Server.getPattern();
         Matcher matcher;
         try {
-            matcher = Pattern.compile(pattern).matcher(source.toString());
-            matcher.find();
+            matcher = compileS3ServerPattern(pattern, source.toString());
         } catch (PatternSyntaxException e) {
-            throw new PatternSyntaxS3Exception(String.format(
-                "Input pattern syntax of regex is not correct from the configuration file from S3 server - pattern [%s]",
-                pattern), e);
+            throw new PatternSyntaxS3Exception(String.format(S3_PATTERN_EXCEPTION_MSG_FORMAT, pattern), e);
         }
 
         // Retrieve bucket of S3 server
@@ -106,26 +136,21 @@ public final class S3ServerUtils {
         LOGGER.debug("Bucket [{}] from the configuration file from S3 server ", bucket);
         if (StringUtils.isBlank(bucket)) {
             try {
-                bucket = matcher.group(S3Server.REGEX_GROUP_BUCKET);
-                LOGGER.debug("Bucket [{}] from the url [{}] for S3 server", bucket, source);
-            } catch (IllegalStateException | IndexOutOfBoundsException e) {//NOSONAR
-                throw new MalformedURLException(String.format("Could not retrieve bucket from url %s using pattern [%s]",
-                                                              source,
-                                                              pattern));
+                bucket = extractRegexpGroupFromUrl(source, s3Server, matcher, S3Server.REGEX_GROUP_BUCKET);
+                s3Server.setBucket(bucket);
+            } catch (PatternSyntaxException e) {
+                throw new PatternSyntaxS3Exception(String.format(S3_PATTERN_EXCEPTION_MSG_FORMAT, pattern), e);
             }
-
         }
 
         // Retrieve the path with filename
         String filePath;
         try {
-            filePath = matcher.group(S3Server.REGEX_GROUP_PATHFILENAME);
-            LOGGER.debug("File path [{}] from the url [{}] for S3 server.", filePath, source);
-        } catch (IllegalStateException | IndexOutOfBoundsException e) {//NOSONAR
-            throw new MalformedURLException(String.format("Could not retrieve filename from url %s using pattern [%s]",
-                                                          source,
-                                                          pattern));
+            filePath = extractRegexpGroupFromUrl(source, s3Server, matcher, S3Server.REGEX_GROUP_PATHFILENAME);
+        } catch (PatternSyntaxException e) {
+            throw new PatternSyntaxS3Exception(String.format(S3_PATTERN_EXCEPTION_MSG_FORMAT, pattern), e);
         }
+
         return new KeyAndStorage(filePath,
                                  new StorageConfigBuilder(s3Server.getEndpoint(),
                                                           s3Server.getRegion(),
@@ -136,6 +161,41 @@ public final class S3ServerUtils {
                                                                                .retryBackOffBaseDuration(s3Server.getRetryBackOffBaseDuration())
                                                                                .build());
 
+    }
+
+    /**
+     * Get the corresponding {@link Matcher} from the provided url with the regexp pattern
+     */
+    private static Matcher compileS3ServerPattern(String pattern, String sourceUrl) {
+        if (StringUtils.isBlank(pattern)) {
+            throw new PatternSyntaxException(
+                "Input pattern of regex is empty from the configuration file from S3 server",
+                pattern,
+                0);
+        }
+        Matcher matcher = Pattern.compile(pattern).matcher(sourceUrl);
+        if (!matcher.find()) {
+            throw new PatternSyntaxException(String.format(
+                "No match found for url %s from the S3Server pattern configuration.",
+                sourceUrl), pattern, 0);
+        }
+        return matcher;
+    }
+
+    /**
+     * Generic method to extract a group from the provided url with the corresponding matcher.
+     */
+    private static String extractRegexpGroupFromUrl(URL source,
+                                                    S3Server s3Server,
+                                                    Matcher matcher,
+                                                    String requiredGroup) {
+        String value = matcher.group(requiredGroup);
+        if (StringUtils.isBlank(value)) {
+            throw new PatternSyntaxException(String.format("Could not retrieve %s from url %s", requiredGroup, source),
+                                             s3Server.getPattern(),
+                                             0);
+        }
+        return value;
     }
 
     /**
