@@ -283,27 +283,31 @@ public class NotificationRegistrationService {
      * @return a implemented {@link NotificationRequest} or empty value if invalid
      */
     private Optional<NotificationRequest> initNotificationRequest(NotificationRequestEvent event, Set<Rule> rules) {
-
-        Errors errors = null;
-        Set<PluginConfiguration> pluginConfigurations = new HashSet<>();
+        Errors errors;
         NotificationState notificationState;
+        Set<PluginConfiguration> recipientsToSchedule;
+        Set<Rule> rulesForNotificationRequest;
 
-        // Request event containing the list of recipients for a direct notification without rules.
+        // Check if request will to be notified to specific recipient or need to be checked against rules
         if (event instanceof SpecificRecipientNotificationRequestEvent specificRecipientNotificationRequestEvent) {
-            rules.clear();
+            // Request event containing the list of recipients for a direct notification without rules check.
             notificationState = NotificationState.TO_SCHEDULE_BY_RECIPIENT;
-
             errors = new MapBindingResult(new HashMap<>(), SpecificRecipientNotificationRequestEvent.class.getName());
             validator.validate(event, errors);
-            pluginConfigurations = validateRecipients(specificRecipientNotificationRequestEvent.getRecipients(),
-                                                      errors);
-        } else {
-            notificationState = NotificationState.GRANTED;
 
+            recipientsToSchedule = validateRecipients(specificRecipientNotificationRequestEvent.getRecipients(),
+                                                      errors);
+            rulesForNotificationRequest = new HashSet<>();
+        } else {
+            // Request event need to be checked against rules
+            notificationState = NotificationState.GRANTED;
             errors = new MapBindingResult(new HashMap<>(), NotificationRequestEvent.class.getName());
             validator.validate(event, errors);
+
+            recipientsToSchedule = new HashSet<>();
+            rulesForNotificationRequest = rules;
         }
-        // Check if errors exist, return the new created notification request
+        // When no error, create notification request
         if (!errors.hasErrors()) {
             publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), notificationState));
             // Create the notification request
@@ -313,11 +317,13 @@ public class NotificationRegistrationService {
                                                                               event.getRequestOwner(),
                                                                               event.getRequestDate(),
                                                                               notificationState);
-            notificationRequest.getRulesToMatch().addAll(rules);
-            notificationRequest.getRecipientsToSchedule().addAll(pluginConfigurations);
+            notificationRequest.getRulesToMatch().addAll(rulesForNotificationRequest);
+            notificationRequest.getRecipientsToSchedule().addAll(recipientsToSchedule);
 
             return Optional.of(notificationRequest);
         }
+        // Handle error
+        // Publish denied event and notification to admin
         notificationClient.notify(errors.toString(),
                                   "A NotificationRequestEvent received is invalid",
                                   NotificationLevel.ERROR,
@@ -328,6 +334,7 @@ public class NotificationRegistrationService {
     }
 
     private Set<PluginConfiguration> validateRecipients(Set<String> recipientIds, Errors errors) {
+        String fieldInError = "businessId";
         Set<PluginConfiguration> pluginConfigurations = new HashSet<>();
         for (String businessId : recipientIds) {
             try {
@@ -336,7 +343,7 @@ public class NotificationRegistrationService {
                 IRecipientNotifier recipientNotifierPlugin = pluginService.getPlugin(pluginConfiguration);
                 // Check if the plugin can enable the direct notification
                 if (!recipientNotifierPlugin.isDirectNotificationEnabled()) {
-                    errors.rejectValue("businessId",
+                    errors.rejectValue(fieldInError,
                                        "specificRecipientNotificationRequestEvent.recipients.not.enable"
                                        + ".directnotification"
                                        + ".error.message",
@@ -344,12 +351,12 @@ public class NotificationRegistrationService {
                                                      businessId));
                 }
             } catch (EntityNotFoundException | NotAvailablePluginConfigurationException e) {
-                errors.rejectValue("businessId",
+                errors.rejectValue(fieldInError,
                                    "specificRecipientNotificationRequestEvent.recipients.not.available"
                                    + ".error.message",
                                    String.format("This plugin[id:%s] does not available.", businessId));
             } catch (ModuleException e) {
-                errors.rejectValue("businessId",
+                errors.rejectValue(fieldInError,
                                    "specificRecipientNotificationRequestEvent.recipients.error.message",
                                    String.format("An error occurs during the instantiating of plugin[id:%s].",
                                                  businessId));
