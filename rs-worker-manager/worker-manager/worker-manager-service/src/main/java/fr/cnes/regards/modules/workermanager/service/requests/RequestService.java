@@ -363,6 +363,7 @@ public class RequestService {
                                                                                               request.getSource(),
                                                                                               request.getSession(),
                                                                                               request.getRequestId(),
+                                                                                              request.getAdditionalHeaders(),
                                                                                               request.getContent()))
                                                       .collect(Collectors.toList());
 
@@ -492,6 +493,7 @@ public class RequestService {
                            byte[] content = event.getContent();
                            // dispatch to next workflow step only if content response is valid
                            if (content != null) {
+                               request.setAdditionalHeaders(event.getAdditionalHeaders());
                                request.setContent(event.getContent());
                                request.setStatus(RequestStatus.TO_DISPATCH);
                                request.setDispatchedWorkerType(null);

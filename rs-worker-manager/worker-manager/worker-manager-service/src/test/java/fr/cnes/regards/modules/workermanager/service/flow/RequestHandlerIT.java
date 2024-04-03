@@ -94,6 +94,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                                                  null,
                                                  null,
                                                  null,
+                                                 null,
                                                  BODY_CONTENT.getBytes(StandardCharsets.UTF_8)), Optional.empty());
         Thread.sleep(1_000);
         Assert.assertEquals("There should be no requests created", 0L, requestRepository.count());
@@ -125,6 +126,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                                                null,
                                                null,
                                                UUID.randomUUID().toString(),
+                                               null,
                                                BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
         broadcastMessage(event, Optional.empty());
         Assert.assertTrue("Timeout while waiting for events", waitForResponses(1, 5, TimeUnit.SECONDS));
@@ -319,6 +321,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         request.setStatus(RequestStatus.NO_WORKER_AVAILABLE);
         request.setRequestId(requestId);
         request.setContent("toto".getBytes(StandardCharsets.UTF_8));
+        request.setOriginalContent(request.getContent());
         request.setCreationDate(OffsetDateTime.now());
         request.setContentType(DEFAULT_CONTENT_TYPE);
         request.setSession("session");

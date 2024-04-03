@@ -94,6 +94,7 @@ public class RequestControllerIT extends AbstractRegardsIT {
             request.setSession(session);
             request.setStatus(status);
             request.setContent(content);
+            request.setOriginalContent(content);
             request.setError(error);
             requests.add(request);
         }

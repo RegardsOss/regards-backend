@@ -212,6 +212,7 @@ public class RequestServiceTest {
         request.setSession(session);
         request.setStatus(RequestStatus.TO_DISPATCH);
         request.setContent(content);
+        request.setOriginalContent(content);
         request.setStepNumber(INIT_STEP);
         return request;
     }

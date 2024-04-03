@@ -102,6 +102,7 @@ public abstract class AbstractRequestJobIT extends AbstractMultitenantServiceWit
             request.setSession("session1");
             request.setStatus(RequestStatus.NO_WORKER_AVAILABLE);
             request.setContent("blbl".getBytes());
+            request.setOriginalContent(request.getContent());
             request.setError("error");
             request.setStepWorkerType(RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE_1);
             requests.add(request);

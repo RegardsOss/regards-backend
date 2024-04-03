@@ -205,6 +205,7 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
             request.setSession(session);
             request.setStatus(status);
             request.setContent(content);
+            request.setOriginalContent(content);
             request.setError(error);
             requests.add(request);
         }

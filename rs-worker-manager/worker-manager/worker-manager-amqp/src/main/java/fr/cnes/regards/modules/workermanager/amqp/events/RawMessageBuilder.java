@@ -24,6 +24,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * Helper to build a {@link Message} raw to send by broadcast to workers.
@@ -40,6 +41,7 @@ public final class RawMessageBuilder {
      * @param source      Request owner name
      * @param session     Request session name
      * @param requestId   Request unique identifier
+     * @param additionalHeaders Additional headers to add to the message (nullable)
      * @param payload     Request body
      * @return Message
      */
@@ -48,6 +50,7 @@ public final class RawMessageBuilder {
                                         String source,
                                         String session,
                                         String requestId,
+                                        Map<String, String> additionalHeaders,
                                         byte[] payload) {
         MessageProperties properties = new MessageProperties();
         properties.setHeader(EventHeadersHelper.TENANT_HEADER, tenant);
@@ -55,6 +58,9 @@ public final class RawMessageBuilder {
         properties.setHeader(EventHeadersHelper.OWNER_HEADER, source);
         properties.setHeader(EventHeadersHelper.SESSION_HEADER, session);
         properties.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+        if (additionalHeaders != null) {
+            additionalHeaders.forEach(properties::setHeader);
+        }
         properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         return new RawMessageEvent(payload, properties);
     }
@@ -67,6 +73,7 @@ public final class RawMessageBuilder {
      * @param source      Request owner name
      * @param session     Request session name
      * @param requestId   Request unique identifier
+     * @param additionalHeaders Additional headers to add to the message (nullable)
      * @param payload     Request body as object
      * @param gson        gson builder to serialize object
      * @return Message
@@ -76,6 +83,7 @@ public final class RawMessageBuilder {
                                 String source,
                                 String session,
                                 String requestId,
+                                Map<String, String> additionalHeaders,
                                 Object payload,
                                 Gson gson) {
         return RawMessageBuilder.build(tenant,
@@ -83,6 +91,7 @@ public final class RawMessageBuilder {
                                        source,
                                        session,
                                        requestId,
+                                       additionalHeaders,
                                        gson.toJson(payload).getBytes(StandardCharsets.UTF_8));
     }
 

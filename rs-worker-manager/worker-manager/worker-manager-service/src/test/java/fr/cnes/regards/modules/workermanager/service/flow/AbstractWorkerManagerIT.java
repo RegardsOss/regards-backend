@@ -138,6 +138,7 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
         request.setRequestId(requestId);
         request.setStatus(status);
         request.setContent(BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
+        request.setOriginalContent(request.getContent());
         request.setContentType(contentType);
         request.setSession(DEFAULT_SESSION);
         request.setSource(DEFAULT_SOURCE);
@@ -190,6 +191,7 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
                                        DEFAULT_SOURCE,
                                        DEFAULT_SESSION,
                                        UUID.randomUUID().toString(),
+                                       null,
                                        BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
     }
 

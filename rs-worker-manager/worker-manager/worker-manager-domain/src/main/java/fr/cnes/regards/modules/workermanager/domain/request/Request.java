@@ -19,15 +19,19 @@
 package fr.cnes.regards.modules.workermanager.domain.request;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.springframework.amqp.core.Message;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -41,6 +45,7 @@ import java.util.Objects;
                    @Index(name = "idx_worker_request_content_type", columnList = "content_type") },
        uniqueConstraints = { @UniqueConstraint(name = "uk_t_workermanager_request_requestid",
                                                columnNames = { "request_id" }) })
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Request {
 
     @Id
@@ -71,6 +76,25 @@ public class Request {
     @Column(name = "dispatched_worker_type")
     private String dispatchedWorkerType;
 
+    @Column(name = "headers", columnDefinition = "jsonb")
+    @Type(type = "jsonb",
+          parameters = { @org.hibernate.annotations.Parameter(name = JsonTypeDescriptor.KEY_ARG_TYPE,
+                                                              value = "java.lang.String"),
+                         @org.hibernate.annotations.Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+                                                              value = "java.lang.String") })
+    private Map<String, String> additionalHeaders;
+
+    /**
+     * In workflow context, keep track of the original content to be able to debug the workflow because
+     * content below is mutated by the different steps of the workflow. In the future, we could consider allowing to
+     * restart a workflow from scratch with this original content.
+     * In single worker context, this property is set but can be ignored.
+     */
+    @Column(name = "original_content", nullable = false)
+    @Type(type = "org.hibernate.type.BinaryType")
+    @Lob
+    private byte[] originalContent;
+
     @Column(name = "content", nullable = false)
     @Type(type = "org.hibernate.type.BinaryType")
     @Lob
@@ -96,6 +120,7 @@ public class Request {
         this.source = EventHeadersHelper.getOwnerHeader(message).get();
         this.session = EventHeadersHelper.getSessionHeader(message).get();
         this.status = status;
+        this.originalContent = message.getBody();
         this.content = message.getBody();
     }
 
@@ -179,6 +204,22 @@ public class Request {
         this.dispatchedWorkerType = dispatchedWorkerType;
     }
 
+    public Map<String, String> getAdditionalHeaders() {
+        return additionalHeaders;
+    }
+
+    public void setAdditionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
+    }
+
+    public byte[] getOriginalContent() {
+        return originalContent;
+    }
+
+    public void setOriginalContent(byte[] originalContent) {
+        this.originalContent = originalContent;
+    }
+
     public byte[] getContent() {
         return content;
     }
@@ -249,6 +290,10 @@ public class Request {
                + ", dispatchedWorkerType='"
                + dispatchedWorkerType
                + '\''
+               + ", headers="
+               + additionalHeaders
+               + ", originalContent="
+               + Arrays.toString(originalContent)
                + ", content="
                + Arrays.toString(content)
                + ", error='"

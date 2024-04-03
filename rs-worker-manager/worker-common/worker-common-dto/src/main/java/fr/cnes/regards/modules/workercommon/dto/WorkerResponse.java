@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.workercommon.dto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Response sent by workers to the manager with request status.
@@ -31,6 +32,11 @@ public class WorkerResponse {
     private WorkerResponseStatus status;
 
     private List<String> messages = new ArrayList<>();
+
+    /**
+     * Additional headers to be propagated to the next worker.
+     */
+    private Map<String, String> additionalHeaders;
 
     private byte[] content;
 
@@ -48,6 +54,14 @@ public class WorkerResponse {
 
     public void setMessages(List<String> messages) {
         this.messages = messages;
+    }
+
+    public Map<String, String> getAdditionalHeaders() {
+        return additionalHeaders;
+    }
+
+    public void setAdditionalHeaders(Map<String, String> additionalHeaders) {
+        this.additionalHeaders = additionalHeaders;
     }
 
     public byte[] getContent() {
