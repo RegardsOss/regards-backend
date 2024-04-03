@@ -171,6 +171,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
         return execute.map((row, metadata) -> converter.read(ExecutionEntity.class, row, metadata))
                       .all()
+                      .map(ExecutionEntity::persisted)
                       .map(mapper::toDomain)
                       .doOnNext(exec -> cache.put(exec.getId(), exec));
     }
