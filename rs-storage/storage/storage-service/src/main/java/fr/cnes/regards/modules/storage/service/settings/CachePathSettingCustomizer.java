@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.storage.service.settings;
 
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSimpleDynamicSettingCustomizer;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import org.slf4j.Logger;
@@ -9,20 +9,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Objects;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomizer {
+public class CachePathSettingCustomizer extends AbstractSimpleDynamicSettingCustomizer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CachePathSettingCustomizer.class);
 
@@ -30,20 +26,17 @@ public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomiz
     @Lazy
     private CacheService cacheService;
 
+    public CachePathSettingCustomizer() {
+        super(StorageSetting.CACHE_PATH_NAME,
+              "parameter [cache path] must be a valid existing path with read and write permissions.");
+    }
+
     @Override
-    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
-        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
-        if (!isValidPath(dynamicTenantSetting.getDefaultValue())) {
-            errors.reject("invalid.default.setting.value",
-                          "default setting value of parameter [cache path] must be a valid existing path with read and write "
-                          + "permissions.");
+    protected boolean isProperValue(Object settingValue) {
+        if (settingValue instanceof Path path) {
+            return isValidPath(path);
         }
-        if (!isValidPath(dynamicTenantSetting.getValue())) {
-            errors.reject("invalid.setting.value",
-                          "setting value of parameter [cache path] must be a valid existing path with read and write "
-                          + "permissions.");
-        }
-        return errors;
+        return false;
     }
 
     private boolean isValidPath(Path path) {
@@ -71,10 +64,5 @@ public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomiz
     public boolean canBeModified(DynamicTenantSetting dynamicTenantSetting) {
         //Tenant cache path can only be modified if there is no CacheFile referenced at the moment in internal cache.
         return cacheService.isCacheEmpty();
-    }
-
-    @Override
-    public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return Objects.equals(dynamicTenantSetting.getName(), StorageSetting.CACHE_PATH_NAME);
     }
 }

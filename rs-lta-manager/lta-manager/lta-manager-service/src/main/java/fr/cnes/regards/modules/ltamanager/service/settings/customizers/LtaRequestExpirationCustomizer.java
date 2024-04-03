@@ -18,14 +18,9 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.settings.customizers;
 
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSimpleDynamicSettingCustomizer;
 import fr.cnes.regards.modules.ltamanager.domain.settings.LtaSettings;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-
-import java.util.HashMap;
 
 /**
  * Customizer for {@link LtaSettings#SUCCESS_EXPIRATION_IN_HOURS_KEY}
@@ -33,29 +28,15 @@ import java.util.HashMap;
  * @author Iliana Ghazali
  **/
 @Service
-public class LtaRequestExpirationCustomizer implements IDynamicTenantSettingCustomizer {
+public class LtaRequestExpirationCustomizer extends AbstractSimpleDynamicSettingCustomizer {
 
-    @Override
-    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
-        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
-        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
-            errors.reject("invalid.default.setting.value",
-                          "default setting value of parameter [request time to live] must be a valid positive number.");
-        }
-        if (!isProperValue(dynamicTenantSetting.getValue())) {
-            errors.reject("invalid.setting.value",
-                          "setting value of parameter [request time to live] must be a valid positive number.");
-        }
-        return errors;
-
+    public LtaRequestExpirationCustomizer() {
+        super(LtaSettings.SUCCESS_EXPIRATION_IN_HOURS_KEY,
+              "parameter [request time to live] must be a valid positive number");
     }
 
     @Override
-    public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return LtaSettings.SUCCESS_EXPIRATION_IN_HOURS_KEY.equals(dynamicTenantSetting.getName());
-    }
-
-    private boolean isProperValue(Object value) {
+    protected boolean isProperValue(Object value) {
         return value instanceof Integer requestTtl && requestTtl >= 0;
     }
 }

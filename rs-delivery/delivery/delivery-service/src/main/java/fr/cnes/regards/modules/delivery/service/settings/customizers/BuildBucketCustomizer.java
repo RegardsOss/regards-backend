@@ -18,15 +18,10 @@
  */
 package fr.cnes.regards.modules.delivery.service.settings.customizers;
 
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSimpleDynamicSettingCustomizer;
 import fr.cnes.regards.modules.delivery.domain.settings.DeliverySettings;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-
-import java.util.HashMap;
 
 /**
  * Customizer for {@link DeliverySettings#BUILD_BUCKET}.
@@ -34,27 +29,13 @@ import java.util.HashMap;
  * @author Iliana Ghazali
  **/
 @Service
-public class BuildBucketCustomizer implements IDynamicTenantSettingCustomizer {
+public class BuildBucketCustomizer extends AbstractSimpleDynamicSettingCustomizer {
 
-    @Override
-    public Errors isValid(DynamicTenantSetting dynamicTenantSetting) {
-        Errors errors = new MapBindingResult(new HashMap<>(), DynamicTenantSetting.class.getName());
-        if (!isProperValue(dynamicTenantSetting.getDefaultValue())) {
-            errors.reject("invalid.default.setting.value",
-                          "default setting value of parameter [build bucket] must be a valid string.");
-        }
-        if (!isProperValue(dynamicTenantSetting.getValue())) {
-            errors.reject("invalid.setting.value", "setting value of parameter [build bucket] must be a valid string.");
-        }
-        return errors;
+    public BuildBucketCustomizer() {
+        super(DeliverySettings.BUILD_BUCKET, "parameter [build bucket] must be a valid string");
     }
 
-    @Override
-    public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return DeliverySettings.BUILD_BUCKET.equals(dynamicTenantSetting.getName());
-    }
-
-    private boolean isProperValue(Object value) {
+    protected boolean isProperValue(Object value) {
         return value instanceof String strValue && StringUtils.isNotBlank(strValue);
     }
 
