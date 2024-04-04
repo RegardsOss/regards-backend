@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 @EnableAutoConfiguration
 @ContextConfiguration(classes = { DefaultTestConfiguration.class })
 @ActiveProfiles("test")
+@SuppressWarnings("java:S1192") // String literals should not be duplicated
 public class LogbackAppenderIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogbackAppenderIT.class);

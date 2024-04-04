@@ -116,6 +116,7 @@ public class AutoOrderResponseHandler
                 case SUBORDER_DONE -> listener.onSubOrderDone(orderResponses);
                 case DONE -> listener.onOrderDone(orderResponses);
                 case FAILED -> listener.onOrderFailed(orderResponses);
+                default -> throw new IllegalStateException("Unexpected order status: " + status);
             }
         });
 

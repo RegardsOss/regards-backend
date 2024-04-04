@@ -36,6 +36,7 @@ import java.util.UUID;
  * @author gandrieu
  */
 @Table("t_execution")
+@SuppressWarnings("java:S1192") // Duplicated strings, but create constants make no sense here.
 public class ExecutionEntity implements Persistable<UUID> {
 
     @Id

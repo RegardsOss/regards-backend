@@ -35,6 +35,7 @@ import java.io.IOException;
 public class CorrelationIdFilter extends OncePerRequestFilter {
 
     public CorrelationIdFilter() {
+        // Do nothing
     }
 
     @Override

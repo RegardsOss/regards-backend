@@ -208,7 +208,7 @@ public class AccountService implements IAccountService, InitializingBean {
             try {
                 account.setProjects(new HashSet<>(Collections.singletonList(projectService.retrieveProject(project))));
             } catch (ModuleException e) {
-                throw new EntityInvalidException("Invalid project name : " + project);
+                throw new EntityInvalidException("Invalid project name : " + project); // NOSONAR Duplicated strings
             }
         }
         if (StringUtils.isEmpty(account.getOrigin())) {
@@ -376,7 +376,7 @@ public class AccountService implements IAccountService, InitializingBean {
         try {
             account.getProjects().add(projectService.retrieveProject(project));
         } catch (ModuleException e) {
-            throw new EntityInvalidException("Invalid project name : " + project);
+            throw new EntityInvalidException("Invalid project name : " + project); // NOSONAR Duplicated string
         }
 
     }
@@ -387,7 +387,7 @@ public class AccountService implements IAccountService, InitializingBean {
         try {
             account.getProjects().remove(projectService.retrieveProject(project));
         } catch (ModuleException e) {
-            throw new EntityInvalidException("Invalid project name : " + project);
+            throw new EntityInvalidException("Invalid project name : " + project); // NOSONAR Duplicated strings
         }
     }
 

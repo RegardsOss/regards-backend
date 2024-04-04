@@ -68,6 +68,7 @@ public class SIPEntityDto {
     private EntityType ipType;
 
     public SIPEntityDto() {
+        // Do nothing
     }
 
     public String getSipId() {

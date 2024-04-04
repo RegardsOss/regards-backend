@@ -146,6 +146,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         return writeMono(writeCmd);
     }
 
+    @SuppressWarnings("java:S1192") // Duplicated String "storage.s3.delete"
     public Mono<DeleteResult> delete(Delete deleteCmd) {
         return deleteMono(deleteCmd).subscribeOn(scheduler)
                                     .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(deleteCmd,
@@ -157,6 +158,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
                                          SignalType.ON_ERROR);
     }
 
+    @SuppressWarnings("java:S1192") // Duplicated String "storage.s3.delete"
     public Mono<DeleteResult> deleteWithPrefix(Delete deleteCmd) {
         return deleteMonoWithPrefix(deleteCmd).subscribeOn(scheduler)
                                               .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(
@@ -434,6 +436,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         });
     }
 
+    @SuppressWarnings("java:S1192") // Duplicated String "storage.s3.delete"
     private Mono<DeleteResult> deleteArchiveContent(Delete deleteCmd,
                                                     String bucket,
                                                     String key,
@@ -444,6 +447,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
                      .switchIfEmpty(Mono.<DeleteResult>just(new DeleteSuccess(deleteCmd)));
     }
 
+    @SuppressWarnings("java:S1192") // Duplicated String "storage.s3.delete"
     private Mono<DeleteResult> deleteContent(Delete deleteCmd,
                                              String bucket,
                                              String key,
@@ -462,13 +466,15 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         return arr;
     }
 
-    private record SizeAndChecksum(Long size,
-                                   String checksum) {
+    private record SizeAndChecksum //NOSONAR bug with sonar and record -> it's considered as empty method.
+        (Long size,
+         String checksum) {
 
     }
 
-    private record BytesAndChecksum(byte[] bytes,
-                                    String checksum) {
+    private record BytesAndChecksum //NOSONAR bug with sonar and record -> it's considered as empty method.
+        (byte[] bytes,
+         String checksum) {
 
     }
 

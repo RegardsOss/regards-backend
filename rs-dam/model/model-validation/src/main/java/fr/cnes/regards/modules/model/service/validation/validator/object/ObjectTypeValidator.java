@@ -47,6 +47,7 @@ public class ObjectTypeValidator extends AbstractObjectValidator {
     }
 
     @Override
+    @SuppressWarnings("java:S1541") // cyclomatic complexity to high
     public void validate(Object target, Errors errors) {
         boolean error = false;
         switch (propertyType) {
@@ -90,25 +91,41 @@ public class ObjectTypeValidator extends AbstractObjectValidator {
                 error = !isIntegerIntervalValid(target, RangeMapping.RANGE_LOWER_BOUND, RangeMapping.RANGE_UPPER_BOUND);
                 break;
             case DOUBLE_RANGE:
-                error = !isIntervalValid(target, Double.class, RangeMapping.RANGE_LOWER_BOUND, RangeMapping.RANGE_UPPER_BOUND);
+                error = !isIntervalValid(target,
+                                         Double.class,
+                                         RangeMapping.RANGE_LOWER_BOUND,
+                                         RangeMapping.RANGE_UPPER_BOUND);
                 break;
             case LONG_RANGE:
-                error = !isIntervalValid(target, Long.class, RangeMapping.RANGE_LOWER_BOUND, RangeMapping.RANGE_UPPER_BOUND);
+                error = !isIntervalValid(target,
+                                         Long.class,
+                                         RangeMapping.RANGE_LOWER_BOUND,
+                                         RangeMapping.RANGE_UPPER_BOUND);
                 break;
             case DATE_RANGE:
                 error = !isDateIntervalValid(target, RangeMapping.RANGE_LOWER_BOUND, RangeMapping.RANGE_UPPER_BOUND);
                 break;
             case INTEGER_INTERVAL:
-                error = !isIntegerIntervalValid(target, IntervalMapping.RANGE_LOWER_BOUND, IntervalMapping.RANGE_UPPER_BOUND);
+                error = !isIntegerIntervalValid(target,
+                                                IntervalMapping.RANGE_LOWER_BOUND,
+                                                IntervalMapping.RANGE_UPPER_BOUND);
                 break;
             case DOUBLE_INTERVAL:
-                error = !isIntervalValid(target, Double.class, IntervalMapping.RANGE_LOWER_BOUND, IntervalMapping.RANGE_UPPER_BOUND);
+                error = !isIntervalValid(target,
+                                         Double.class,
+                                         IntervalMapping.RANGE_LOWER_BOUND,
+                                         IntervalMapping.RANGE_UPPER_BOUND);
                 break;
             case LONG_INTERVAL:
-                error = !isIntervalValid(target, Long.class, IntervalMapping.RANGE_LOWER_BOUND, IntervalMapping.RANGE_UPPER_BOUND);
+                error = !isIntervalValid(target,
+                                         Long.class,
+                                         IntervalMapping.RANGE_LOWER_BOUND,
+                                         IntervalMapping.RANGE_UPPER_BOUND);
                 break;
             case DATE_INTERVAL:
-                error = !isDateIntervalValid(target, IntervalMapping.RANGE_LOWER_BOUND, IntervalMapping.RANGE_UPPER_BOUND);
+                error = !isDateIntervalValid(target,
+                                             IntervalMapping.RANGE_LOWER_BOUND,
+                                             IntervalMapping.RANGE_UPPER_BOUND);
                 break;
             case JSON:
                 error = !isJson(target);

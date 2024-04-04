@@ -62,6 +62,8 @@ public class NotificationRegistrationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRegistrationService.class);
 
+    public static final String BUSINESS_ID_FIELD = "businessId";
+
     private final Validator validator;
 
     private final INotificationClient notificationClient;
@@ -338,7 +340,7 @@ public class NotificationRegistrationService {
                 IRecipientNotifier recipientNotifierPlugin = pluginService.getPlugin(pluginConfiguration);
                 // Check if the plugin can enable the direct notification
                 if (!recipientNotifierPlugin.isDirectNotificationEnabled()) {
-                    errors.rejectValue("businessId",
+                    errors.rejectValue(BUSINESS_ID_FIELD,
                                        "specificRecipientNotificationRequestEvent.recipients.not.enable"
                                        + ".directnotification"
                                        + ".error.message",
@@ -346,12 +348,12 @@ public class NotificationRegistrationService {
                                                      businessId));
                 }
             } catch (EntityNotFoundException | NotAvailablePluginConfigurationException e) {
-                errors.rejectValue("businessId",
+                errors.rejectValue(BUSINESS_ID_FIELD,
                                    "specificRecipientNotificationRequestEvent.recipients.not.available"
                                    + ".error.message",
                                    String.format("This plugin[id:%s] does not available.", businessId));
             } catch (ModuleException e) {
-                errors.rejectValue("businessId",
+                errors.rejectValue(BUSINESS_ID_FIELD,
                                    "specificRecipientNotificationRequestEvent.recipients.error.message",
                                    String.format("An error occurs during the instantiating of plugin[id:%s].",
                                                  businessId));

@@ -51,6 +51,12 @@ import java.util.Set;
 @NamedEntityGraph(name = "graph.filereference.owners", attributeNodes = { @NamedAttributeNode(value = "owners") })
 public class FileReference {
 
+    private static final String NEEDS_STORAGE_LOCATION_TO_BE_CREATED = "File reference needs a storage location to be created";
+
+    private static final String NEEDS_META_INFORMATION_TO_BE_CREATED = "File reference needs meta information to be created";
+
+    private static final String NEEDS_AT_LEAST_ONE_OWNER_TO_BE_CREATED = "File reference needs at least one owner to be created";
+
     /**
      * Internal database unique identifier
      */
@@ -104,14 +110,12 @@ public class FileReference {
 
     public FileReference(Collection<String> owners, FileReferenceMetaInfo metaInfo, FileLocation location) {
         super();
-        Assert.notNull(owners, "File reference needs at least one owner to be created");
-        Assert.isTrue(!owners.isEmpty(), "File reference needs at least one owner to be created");
-        Assert.notNull(metaInfo, "File reference needs meta informations to be created");
-        Assert.notNull(location, "File reference needs a storage location to be created");
+        Assert.notNull(owners, NEEDS_AT_LEAST_ONE_OWNER_TO_BE_CREATED);
+        Assert.isTrue(!owners.isEmpty(), NEEDS_AT_LEAST_ONE_OWNER_TO_BE_CREATED);
+        Assert.notNull(metaInfo, NEEDS_META_INFORMATION_TO_BE_CREATED);
+        Assert.notNull(location, NEEDS_STORAGE_LOCATION_TO_BE_CREATED);
 
-        if (owners != null) {
-            this.owners.addAll(owners);
-        }
+        this.owners.addAll(owners);
         this.metaInfo = metaInfo;
         this.location = location;
         this.storageDate = OffsetDateTime.now();
@@ -266,9 +270,9 @@ public class FileReference {
 
     public static FileReference fromDto(FileReferenceDto dto) {
         FileReferenceMetaInfoDto metaInfo = dto.getMetaInfo();
-        Assert.notNull(metaInfo, "File reference needs meta informations to be created");
+        Assert.notNull(metaInfo, NEEDS_META_INFORMATION_TO_BE_CREATED);
         FileLocationDto location = dto.getLocation();
-        Assert.notNull(location, "File reference needs a storage location to be created");
+        Assert.notNull(location, NEEDS_STORAGE_LOCATION_TO_BE_CREATED);
         return new FileReference(dto.getId(),
                                  dto.getStorageDate(),
                                  FileReferenceMetaInfo.buildFromDto(metaInfo),
@@ -280,9 +284,9 @@ public class FileReference {
 
     public static FileReference fromDto(FileReferenceWithoutOwnersDto dto) {
         FileReferenceMetaInfoDto metaInfo = dto.getMetaInfo();
-        Assert.notNull(metaInfo, "File reference needs meta informations to be created");
+        Assert.notNull(metaInfo, NEEDS_META_INFORMATION_TO_BE_CREATED);
         FileLocationDto location = dto.getLocation();
-        Assert.notNull(location, "File reference needs a storage location to be created");
+        Assert.notNull(location, NEEDS_STORAGE_LOCATION_TO_BE_CREATED);
         return new FileReference(dto.getId(),
                                  dto.getStorageDate(),
                                  FileReferenceMetaInfo.buildFromDto(dto.getMetaInfo()),

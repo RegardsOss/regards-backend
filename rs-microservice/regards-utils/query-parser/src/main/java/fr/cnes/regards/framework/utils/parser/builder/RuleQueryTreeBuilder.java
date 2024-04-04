@@ -34,17 +34,17 @@ public class RuleQueryTreeBuilder extends QueryTreeBuilder implements IRuleBuild
     public RuleQueryTreeBuilder() {
 
         // Register builder
-        setBuilder(AndQueryNode.class, new AndQueryNodeBuilder());
-        setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
-        setBuilder(QuotedFieldQueryNode.class, new QuotedFieldQueryNodeBuilder());
-        setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder());
-        setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());
+        super.setBuilder(AndQueryNode.class, new AndQueryNodeBuilder());
+        super.setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
+        super.setBuilder(QuotedFieldQueryNode.class, new QuotedFieldQueryNodeBuilder());
+        super.setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder());
+        super.setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());
         // setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder(finder));
         // setBuilder(WildcardQueryNode.class, new WildcardQueryNodeBuilder(finder));
-        setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
+        super.setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
         // setBuilder(FuzzyQueryNode.class, new UnsupportedQueryNodeBuilder());
-        setBuilder(BooleanQueryNode.class, new BooleanNodeQueryBuilder());
-        setBuilder(RegexpQueryNode.class, new RegexpQueryNodeBuilder());
+        super.setBuilder(BooleanQueryNode.class, new BooleanNodeQueryBuilder());
+        super.setBuilder(RegexpQueryNode.class, new RegexpQueryNodeBuilder());
     }
 
     @Override

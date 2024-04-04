@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.ingest.dto.request.DisseminationAck;
 public class DisseminationAckEvent extends DisseminationAck implements ISubscribable {
 
     public DisseminationAckEvent(String urn, String recipientLabel) {
-        this.setUrn(urn);
-        this.setRecipientLabel(recipientLabel);
+        super.setUrn(urn);
+        super.setRecipientLabel(recipientLabel);
     }
 }

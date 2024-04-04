@@ -88,6 +88,7 @@ public final class DownloadUtils {
      * @throws IOException                   when there is an error during the connection
      * @throws UnsupportedOperationException when the source protocol is not http or file
      */
+    @SuppressWarnings("java:S1192") // String literals should not be duplicated
     public static boolean exists(URL source,
                                  Proxy proxy,
                                  List<S3Server> knownS3Servers,
@@ -508,6 +509,7 @@ public final class DownloadUtils {
      * @param knownS3Servers the list of known S3 hosts, the process will use the specific s3 download algorithm if the downloaded file belong to one of these hosts
      * @return the size of the file located in given source
      */
+    @SuppressWarnings("java:S1192") // String literals should not be duplicated
     public static Long getContentLengthThroughProxy(URL source,
                                                     Proxy proxy,
                                                     Collection<String> nonProxyHosts,

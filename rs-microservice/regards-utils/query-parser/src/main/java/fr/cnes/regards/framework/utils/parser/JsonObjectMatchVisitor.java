@@ -25,7 +25,7 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
 
     @Override
     public Boolean visitAnd(AndRule rule) {
-        LOGGER.debug("Visiting {}", rule.getClass().getName());
+        logVisit(rule.getClass());
         Boolean result = Boolean.TRUE;
         for (IRule child : rule.getRules()) {
             result = result && child.accept(this);
@@ -35,7 +35,7 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
 
     @Override
     public Boolean visitOr(OrRule rule) {
-        LOGGER.debug("Visiting {}", rule.getClass().getName());
+        logVisit(rule.getClass());
         Boolean result = Boolean.FALSE;
         for (IRule child : rule.getRules()) {
             result = result || child.accept(this);
@@ -45,13 +45,13 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
 
     @Override
     public Boolean visitNot(NotRule rule) {
-        LOGGER.debug("Visiting {}", rule.getClass().getName());
+        logVisit(rule.getClass());
         return !rule.getRule().accept(this);
     }
 
     @Override
     public Boolean visitProperty(PropertyRule rule) {
-        LOGGER.debug("Visiting {}", rule.getClass().getName());
+        logVisit(rule.getClass());
         // Find property to test
         JsonElement el = findPropertyByPath(rule.getProperty(), this.object);
 
@@ -74,7 +74,7 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
 
     @Override
     public Boolean visitRegex(RegexpPropertyRule rule) {
-        LOGGER.debug("Visiting {}", rule.getClass().getName());
+        logVisit(rule.getClass());
         // Find property to test
         JsonElement el = findPropertyByPath(rule.getProperty(), this.object);
 
@@ -111,5 +111,9 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
             }
         }
         return el;
+    }
+
+    private static void logVisit(Class<? extends IRule> ruleClass) {
+        LOGGER.debug("Visiting {}", ruleClass.getName());
     }
 }

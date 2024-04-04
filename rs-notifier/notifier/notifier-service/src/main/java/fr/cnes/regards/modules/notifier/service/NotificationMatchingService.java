@@ -134,8 +134,9 @@ public class NotificationMatchingService {
         return ruleMatcher;
     }
 
-    private record RuleMatchingResult(boolean match,
-                                      boolean error) {
+    private record RuleMatchingResult //NOSONAR bug with sonar and record -> it's considered as empty method.
+        (boolean match,
+         boolean error) {
 
     }
 

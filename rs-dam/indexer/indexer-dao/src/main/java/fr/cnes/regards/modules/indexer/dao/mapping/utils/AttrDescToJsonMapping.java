@@ -71,7 +71,7 @@ public class AttrDescToJsonMapping {
     public static JsonObject stringMapping(boolean indexed) {
         return object(kv(TYPE_KEY, "text"),
                       kv(FIELDDATA_KEY, true),
-                      kv(FIELDS_KEY, object(KEYWORD_KEY, object(kv(TYPE_KEY, "keyword"), kv(INDEX_KEY, indexed)))));
+                      kv(FIELDS_KEY, object(KEYWORD_KEY, object(kv(TYPE_KEY, KEYWORD_KEY), kv(INDEX_KEY, indexed)))));
     }
 
     public JsonObject toJsonMapping(AttributeDescription attrDescOrNull) {
@@ -85,54 +85,32 @@ public class AttrDescToJsonMapping {
                                       .getOrElse(() -> dispatch(attrDesc)));
     }
 
+    @SuppressWarnings("java:S1541") // cyclomatic complexity to high
     private JsonObject dispatch(AttributeDescription a) {
         // If mapping is fixed by configuration return it
         if (a.getFixedMapping() != null) {
             return new JsonParser().parse(a.getFixedMapping()).getAsJsonObject();
         }
         // Else generate auto mapping
-        switch (a.getType()) {
-            case BOOLEAN:
-                return toBooleanJsonMapping(a);
-            case URL:
-                return toURLJsonMapping(a);
-            case STRING:
-            case STRING_ARRAY:
-                return toStringJsonMapping(a);
-            case INTEGER:
-            case INTEGER_ARRAY:
-                return toIntegerJsonMapping(a);
-            case INTEGER_RANGE:
-                return toIntegerRangeJsonMapping(a);
-            case INTEGER_INTERVAL:
-                return toIntegerIntervalJsonMapping(a);
-            case LONG:
-            case LONG_ARRAY:
-                return toLongJsonMapping(a);
-            case LONG_RANGE:
-                return toLongRangeJsonMapping(a);
-            case LONG_INTERVAL:
-                return toLongIntervalJsonMapping(a);
-            case DOUBLE:
-            case DOUBLE_ARRAY:
-                return toDoubleJsonMapping(a);
-            case DOUBLE_RANGE:
-                return toDoubleRangeJsonMapping(a);
-            case DOUBLE_INTERVAL:
-                return toDoubleIntervalJsonMapping(a);
-            case DATE_ISO8601:
-            case DATE_ARRAY:
-                return toDateJsonMapping(a);
-            case DATE_RANGE:
-                return toDateRangeJsonMapping(a);
-            case DATE_INTERVAL:
-                return toDateIntervalJsonMapping(a);
-            case OBJECT:
-            case JSON:
-                return toObjectJsonMapping(a);
-            default:
-                throw new NotImplementedException("No mapping definition for property type " + a.getType());
-        }
+        return switch (a.getType()) {
+            case BOOLEAN -> toBooleanJsonMapping(a);
+            case URL -> toURLJsonMapping(a);
+            case STRING, STRING_ARRAY -> toStringJsonMapping(a);
+            case INTEGER, INTEGER_ARRAY -> toIntegerJsonMapping(a);
+            case INTEGER_RANGE -> toIntegerRangeJsonMapping(a);
+            case INTEGER_INTERVAL -> toIntegerIntervalJsonMapping(a);
+            case LONG, LONG_ARRAY -> toLongJsonMapping(a);
+            case LONG_RANGE -> toLongRangeJsonMapping(a);
+            case LONG_INTERVAL -> toLongIntervalJsonMapping(a);
+            case DOUBLE, DOUBLE_ARRAY -> toDoubleJsonMapping(a);
+            case DOUBLE_RANGE -> toDoubleRangeJsonMapping(a);
+            case DOUBLE_INTERVAL -> toDoubleIntervalJsonMapping(a);
+            case DATE_ISO8601, DATE_ARRAY -> toDateJsonMapping(a);
+            case DATE_RANGE -> toDateRangeJsonMapping(a);
+            case DATE_INTERVAL -> toDateIntervalJsonMapping(a);
+            case OBJECT, JSON -> toObjectJsonMapping(a);
+            default -> throw new NotImplementedException("No mapping definition for property type " + a.getType());
+        };
     }
 
     private JsonObject reuseExistingMappingProperty(AttributeDescription attrDesc, String mapping) {

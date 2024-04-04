@@ -76,6 +76,7 @@ public final class LinkRels {
     /**
      * Delete
      */
+    @SuppressWarnings("java:S1845") // Method and field names should be different
     public static final LinkRelation NOTIFY = LinkRelation.of("notify");
 
     private LinkRels() {

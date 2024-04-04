@@ -53,11 +53,11 @@ public class PluginConfigurationDto extends PluginConfiguration {
               pluginConfiguration.getParameters(),
               pluginConfiguration.getPriorityOrder(),
               pluginConfiguration.getPluginId());
-        setIsActive(pluginConfiguration.isActive());
-        setPluginId(pluginConfiguration.getPluginId());
-        setVersion(pluginConfiguration.getVersion());
-        setIconUrl(pluginConfiguration.getIconUrl());
-        setBusinessId(pluginConfiguration.getBusinessId());
+        super.setIsActive(pluginConfiguration.isActive());
+        super.setPluginId(pluginConfiguration.getPluginId());
+        super.setVersion(pluginConfiguration.getVersion());
+        super.setIconUrl(pluginConfiguration.getIconUrl());
+        super.setBusinessId(pluginConfiguration.getBusinessId());
         applicationModes = Sets.newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pluginConfiguration)
                                                                                 .applicationModes());
         entityTypes = Sets.newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pluginConfiguration).entityTypes());

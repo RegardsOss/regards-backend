@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+@SuppressWarnings("java:S1192") // String literals should not be duplicated
 public class HttpUtilsTest {
 
     @Test

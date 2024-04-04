@@ -91,6 +91,7 @@ public class AIPEntityDto {
     private EntityType ipType;
 
     public AIPEntityDto() {
+        // Do nothing
     }
 
     public SIPEntityDto getSip() {

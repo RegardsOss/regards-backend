@@ -62,80 +62,51 @@ public interface EntityFeatureDecoder extends SmartDecoder {
         result.setCrs(stringOrNull(feature, "crs"));
     }
 
+    @SuppressWarnings("java:S1541") // Cyclomatic complexity
     default Option<IProperty<?>> readProperty(String name, Any value, PropertyType type) {
         try {
-            switch (type) {
-                case BOOLEAN:
-                    return Option.of(IProperty.buildBoolean(name, value.toBoolean()));
-
-                case STRING:
-                    return Option.of(IProperty.buildString(name, value.toString()));
-                case STRING_ARRAY:
-                    return Option.of(IProperty.buildStringArray(name, value.as(String[].class)));
-                case URL:
-                    return Option.of(IProperty.buildUrl(name, value.toString()));
-
-                case INTEGER:
-                    return Option.of(IProperty.buildInteger(name, value.toInt()));
-                case INTEGER_ARRAY:
-                    return Option.of(IProperty.buildIntegerArray(name, value.as(Integer[].class)));
-                case INTEGER_RANGE:
-                    return Option.of(IProperty.buildIntegerRange(name,
-                                                                 value.toInt(RangeMapping.RANGE_LOWER_BOUND),
-                                                                 value.toInt(RangeMapping.RANGE_UPPER_BOUND)));
-                case INTEGER_INTERVAL:
-                    return Option.of(IProperty.buildIntegerInterval(name,
-                                                                    value.toInt(RANGE_LOWER_BOUND),
-                                                                    value.toInt(RANGE_UPPER_BOUND)));
-
-                case LONG:
-                    return Option.of(IProperty.buildLong(name, value.toLong()));
-                case LONG_ARRAY:
-                    return Option.of(IProperty.buildLongArray(name, value.as(Long[].class)));
-                case LONG_RANGE:
-                    return Option.of(IProperty.buildLongRange(name,
-                                                              value.toLong(RangeMapping.RANGE_LOWER_BOUND),
-                                                              value.toLong(RangeMapping.RANGE_UPPER_BOUND)));
-                case LONG_INTERVAL:
-                    return Option.of(IProperty.buildLongInterval(name,
-                                                                 value.toLong(RANGE_LOWER_BOUND),
-                                                                 value.toLong(RANGE_UPPER_BOUND)));
-
-                case DOUBLE:
-                    return Option.of(IProperty.buildDouble(name, value.toDouble()));
-                case DOUBLE_ARRAY:
-                    return Option.of(IProperty.buildDoubleArray(name, value.as(Double[].class)));
-                case DOUBLE_RANGE:
-                    return Option.of(IProperty.buildDoubleRange(name,
-                                                                value.toDouble(RangeMapping.RANGE_LOWER_BOUND),
-                                                                value.toDouble(RangeMapping.RANGE_UPPER_BOUND)));
-                case DOUBLE_INTERVAL:
-                    return Option.of(IProperty.buildDoubleInterval(name,
-                                                                   value.toDouble(RANGE_LOWER_BOUND),
-                                                                   value.toDouble(RANGE_UPPER_BOUND)));
-
-                case DATE_ISO8601:
-                    return Option.of(IProperty.buildDate(name, parseDate(value.toString())));
-                case DATE_ARRAY:
-                    return Option.of(IProperty.buildDateArray(name, toDateTimes(value.as(String[].class))));
-                case DATE_RANGE:
-                    return Option.of(IProperty.buildDateRange(name,
-                                                              parseDate(value.toString(RangeMapping.RANGE_LOWER_BOUND)),
-                                                              parseDate(value.toString(RangeMapping.RANGE_UPPER_BOUND))));
-                case DATE_INTERVAL:
-                    return Option.of(IProperty.buildDateInterval(name,
-                                                                 toDateRange(value.toString(RANGE_LOWER_BOUND),
-                                                                             value.toString(RANGE_UPPER_BOUND))));
-
-                case OBJECT:
-                    return Option.of(IProperty.buildObject(name, toSubProperties(value)));
-                case JSON:
-                    return Option.of(IProperty.buildJson(name,
-                                                         getGson().fromJson(value.toString(), JsonElement.class)));
-
-                default:
-                    return Option.none();
-            }
+            return switch (type) {
+                case BOOLEAN -> Option.of(IProperty.buildBoolean(name, value.toBoolean()));
+                case STRING -> Option.of(IProperty.buildString(name, value.toString()));
+                case STRING_ARRAY -> Option.of(IProperty.buildStringArray(name, value.as(String[].class)));
+                case URL -> Option.of(IProperty.buildUrl(name, value.toString()));
+                case INTEGER -> Option.of(IProperty.buildInteger(name, value.toInt()));
+                case INTEGER_ARRAY -> Option.of(IProperty.buildIntegerArray(name, value.as(Integer[].class)));
+                case INTEGER_RANGE -> Option.of(IProperty.buildIntegerRange(name,
+                                                                            value.toInt(RangeMapping.RANGE_LOWER_BOUND),
+                                                                            value.toInt(RangeMapping.RANGE_UPPER_BOUND)));
+                case INTEGER_INTERVAL -> Option.of(IProperty.buildIntegerInterval(name,
+                                                                                  value.toInt(RANGE_LOWER_BOUND),
+                                                                                  value.toInt(RANGE_UPPER_BOUND)));
+                case LONG -> Option.of(IProperty.buildLong(name, value.toLong()));
+                case LONG_ARRAY -> Option.of(IProperty.buildLongArray(name, value.as(Long[].class)));
+                case LONG_RANGE -> Option.of(IProperty.buildLongRange(name,
+                                                                      value.toLong(RangeMapping.RANGE_LOWER_BOUND),
+                                                                      value.toLong(RangeMapping.RANGE_UPPER_BOUND)));
+                case LONG_INTERVAL -> Option.of(IProperty.buildLongInterval(name,
+                                                                            value.toLong(RANGE_LOWER_BOUND),
+                                                                            value.toLong(RANGE_UPPER_BOUND)));
+                case DOUBLE -> Option.of(IProperty.buildDouble(name, value.toDouble()));
+                case DOUBLE_ARRAY -> Option.of(IProperty.buildDoubleArray(name, value.as(Double[].class)));
+                case DOUBLE_RANGE -> Option.of(IProperty.buildDoubleRange(name,
+                                                                          value.toDouble(RangeMapping.RANGE_LOWER_BOUND),
+                                                                          value.toDouble(RangeMapping.RANGE_UPPER_BOUND)));
+                case DOUBLE_INTERVAL -> Option.of(IProperty.buildDoubleInterval(name,
+                                                                                value.toDouble(RANGE_LOWER_BOUND),
+                                                                                value.toDouble(RANGE_UPPER_BOUND)));
+                case DATE_ISO8601 -> Option.of(IProperty.buildDate(name, parseDate(value.toString())));
+                case DATE_ARRAY -> Option.of(IProperty.buildDateArray(name, toDateTimes(value.as(String[].class))));
+                case DATE_RANGE -> Option.of(IProperty.buildDateRange(name,
+                                                                      parseDate(value.toString(RangeMapping.RANGE_LOWER_BOUND)),
+                                                                      parseDate(value.toString(RangeMapping.RANGE_UPPER_BOUND))));
+                case DATE_INTERVAL -> Option.of(IProperty.buildDateInterval(name,
+                                                                            toDateRange(value.toString(RANGE_LOWER_BOUND),
+                                                                                        value.toString(RANGE_UPPER_BOUND))));
+                case OBJECT -> Option.of(IProperty.buildObject(name, toSubProperties(value)));
+                case JSON ->
+                    Option.of(IProperty.buildJson(name, getGson().fromJson(value.toString(), JsonElement.class)));
+                default -> Option.none();
+            };
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             return Option.none();

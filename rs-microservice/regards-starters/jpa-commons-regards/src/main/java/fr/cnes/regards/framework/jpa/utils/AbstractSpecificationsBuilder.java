@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.persistence.criteria.*;
+import javax.validation.constraints.NotNull;
 import java.security.InvalidParameterException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -209,7 +210,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         if (values == null) {
             return null;
         } else {
-            Assert.notEmpty(values, "Values must not be empty");
+            assertNotEmpty(values);
             return (root, query, criteriaBuilder) -> root.joinSet(pathToField).in(values);
         }
     }
@@ -238,7 +239,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         if (valuesRestriction == null) {
             return null;
         }
-        Assert.notEmpty(valuesRestriction.getValues(), "Values must not be empty");
+        assertNotEmpty(valuesRestriction.getValues());
 
         return (root, query, cb) -> {
             Collection<Predicate> predicates = valuesRestriction.getValues()
@@ -364,14 +365,14 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     protected Specification<T> isIncludedJoined(String join, String pathToField, Collection<?> values) {
-        Assert.notNull(values, "Values must not be null");
-        Assert.notEmpty(values, "Values must not be empty");
+        assertNotNull(values);
+        assertNotEmpty(values);
 
         return (root, query, criteriaBuilder) -> root.join(join).get(pathToField).in(values);
     }
 
     protected Specification<T> isExcludedJoined(String join, String pathToField, Collection<?> values) {
-        Assert.notNull(values, "Values must not be null");
+        assertNotNull(values);
         // The list can empty when the user ticks select all in the front
         return (root, query, criteriaBuilder) -> root.join(join).get(pathToField).in(values).not();
     }
@@ -389,14 +390,14 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     protected Specification<T> isIncludedJoinSet(String pathToField, Collection<?> values) {
-        Assert.notNull(values, "Values must not be null");
-        Assert.notEmpty(values, "Values must not be empty");
+        assertNotNull(values);
+        assertNotEmpty(values);
 
         return (root, query, criteriaBuilder) -> root.joinSet(pathToField).in(values);
     }
 
     protected Specification<T> isExcludedJoinSet(String pathToField, Collection<?> values) {
-        Assert.notNull(values, "Values must not be null");
+        assertNotNull(values);
         // The list can empty when the user ticks select all in the front
         return (root, query, criteriaBuilder) -> root.joinSet(pathToField).in(values).not();
     }
@@ -456,4 +457,11 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         return value.replace("_", "\\_");
     }
 
+    private static void assertNotEmpty(@NotNull Collection<?> values) {
+        Assert.notEmpty(values, "Values must not be empty");
+    }
+
+    private static void assertNotNull(Collection<?> values) {
+        Assert.notNull(values, "Values must not be null");
+    }
 }

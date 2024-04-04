@@ -490,6 +490,7 @@ public class DescriptionBuilder {
      * @param pAttrs {@link AttributeModel}s to handle in query
      * @return {@link String} example query
      */
+    @SuppressWarnings("java:S1541") // Cyclomatic complexity too high
     private String getSearchTermExample(Collection<AttributeModel> pAttrs) {
         StringJoiner sj = new StringJoiner(" AND ");
         for (AttributeModel attr : pAttrs) {

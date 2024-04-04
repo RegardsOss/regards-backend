@@ -399,6 +399,8 @@ public class FileStorageRequestService {
                         existingReq.getId(),
                         request.getFileName());
                     break;
+                default:
+                    throw new IllegalStateException("Unknown request state " + existingReq.getStatus());
             }
             return RequestResult.build(existingReq);
         } else {

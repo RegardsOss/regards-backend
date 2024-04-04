@@ -31,10 +31,10 @@ public class GeometryDeserializerModule extends SimpleModule {
 
     public GeometryDeserializerModule() {
         // use IGeometry Jackson Deserialization
-        this.addDeserializer(IGeometry.class, new DeserializerIGeometry());
+        super.addDeserializer(IGeometry.class, new DeserializerIGeometry());
         // need to use also AbstractGeometry Deserializer because of class GeometryCollection:
         // GeometryCollection implements IGeometry but contains a list of AbstractCollection,
         // and not a list of IGeometry.
-        this.addDeserializer(AbstractGeometry.class, new GenericGeometryDeserializer<>());
+        super.addDeserializer(AbstractGeometry.class, new GenericGeometryDeserializer<>());
     }
 }

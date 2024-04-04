@@ -32,17 +32,16 @@ public class DataSourceDTO extends PluginConfiguration {
     public DataSourceDTO(Long associatedDatasets, PluginConfiguration dataSourceConf) {
         super();
         this.associatedDatasets = associatedDatasets;
-
-        this.setId(dataSourceConf.getId());
-        this.setBusinessId(dataSourceConf.getBusinessId());
-        this.setPluginId(dataSourceConf.getPluginId());
-        this.setLabel(dataSourceConf.getLabel());
-        this.setVersion(dataSourceConf.getVersion());
-        this.setPriorityOrder(dataSourceConf.getPriorityOrder());
-        this.setIsActive(dataSourceConf.isActive());
-        this.setMetaDataAndPluginId(dataSourceConf.getMetaData());
-        this.setParameters(dataSourceConf.getParameters());
-        this.setIconUrl(dataSourceConf.getIconUrl());
+        super.setId(dataSourceConf.getId());
+        super.setBusinessId(dataSourceConf.getBusinessId());
+        super.setPluginId(dataSourceConf.getPluginId());
+        super.setLabel(dataSourceConf.getLabel());
+        super.setVersion(dataSourceConf.getVersion());
+        super.setPriorityOrder(dataSourceConf.getPriorityOrder());
+        super.setIsActive(dataSourceConf.isActive());
+        super.setMetaDataAndPluginId(dataSourceConf.getMetaData());
+        super.setParameters(dataSourceConf.getParameters());
+        super.setIconUrl(dataSourceConf.getIconUrl());
     }
 
     /**

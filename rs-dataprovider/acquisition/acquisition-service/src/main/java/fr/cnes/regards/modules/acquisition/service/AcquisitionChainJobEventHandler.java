@@ -133,6 +133,9 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                             productService.handleSIPGenerationAborted(jobInfo);
                         }
                     }
+                    default -> {
+                        // Do nothing for other cases
+                    }
                 }
             }
         }

@@ -57,7 +57,7 @@ public class SpecificRecipientNotificationRequestEvent extends NotificationReque
         return recipients;
     }
 
-    public void setRecipients(Set<String> recipients) {
+    public final void setRecipients(Set<String> recipients) {
         this.recipients = recipients;
     }
 

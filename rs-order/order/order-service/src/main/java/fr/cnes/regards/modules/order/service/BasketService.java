@@ -138,7 +138,9 @@ public class BasketService implements IBasketService {
         throws EmptySelectionException, TooManyItemsSelectedInBasketException, CatalogSearchException {
         Basket basket = repos.findOneById(basketId);
         if (basket == null) {
-            throw new EntityNotFoundException("Basket with id " + basketId + " doesn't exist");
+            throw new EntityNotFoundException("Basket with id "
+                                              + basketId
+                                              + " doesn't exist"); // NOSONAR Duplicated strings
         }
 
         try {
@@ -299,7 +301,9 @@ public class BasketService implements IBasketService {
                                                        .filter(ds -> ds.getId().equals(datasetId))
                                                        .findFirst()
                                                        .orElseThrow(() -> new EntityNotFoundException(
-                                                           "Basket selection with id " + datasetId + " doesn't exist"));
+                                                           "Basket selection with id "
+                                                           + datasetId
+                                                           + " doesn't exist")); // NOSONAR Duplicated strings
         // check the number of items in the basket only if a process is associated to the dataset
         if (desc != null) {
             checkLimitElementsInOrder(desc.getProcessBusinessId().toString(), basketSelection);
@@ -405,7 +409,9 @@ public class BasketService implements IBasketService {
                                                        .filter(ds -> ds.getId().equals(datasetId))
                                                        .findFirst()
                                                        .orElseThrow(() -> new EntityNotFoundException(
-                                                           "Basket selection with id " + datasetId + " doesn't exist"));
+                                                           "Basket selection with id "
+                                                           + datasetId
+                                                           + " doesn't exist")); // NOSONAR Duplicated strings
 
         if (fileSelectionDescriptionDTO != null) {
             FileSelectionDescription fileSelectionDescription = new FileSelectionDescription(fileSelectionDescriptionDTO.getFileTypes(),

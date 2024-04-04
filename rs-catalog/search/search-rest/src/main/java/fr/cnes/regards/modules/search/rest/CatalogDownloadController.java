@@ -176,6 +176,9 @@ public class CatalogDownloadController {
             switch (dataAccessRightService.checkFileAccess(entity, fileChecksum)) {
                 case FORBIDDEN -> status = HttpStatus.FORBIDDEN;
                 case LOCKED -> status = HttpStatus.LOCKED;
+                default -> {
+                    // do nothing
+                }
             }
         } catch (EntityOperationForbiddenException e) { // NOSONAR
             status = HttpStatus.FORBIDDEN;
@@ -242,6 +245,9 @@ public class CatalogDownloadController {
                                                                                response);
                     return CatalogDownloadResponse.acceptLicenceBeforeDownload(linkToLicense(),
                                                                                linkToAcceptAndDownload);
+                }
+                default -> {
+                    // do nothing
                 }
             }
             Optional<String> fileName = entity.getFiles()

@@ -121,7 +121,7 @@ public class EmailVerificationToken {
     /**
      * Generate a new random token
      */
-    public void renew() {
+    public final void renew() {
         token = UUID.randomUUID().toString();
         expiryDate = LocalDateTime.now().plusDays(EXPIRATION);
     }

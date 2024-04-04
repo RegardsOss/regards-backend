@@ -39,7 +39,7 @@ public class LockingTaskExecutorsMock extends LockingTaskExecutors {
 
         @Override
         public void unlock() {
-
+            // Do nothing
         }
     }
 

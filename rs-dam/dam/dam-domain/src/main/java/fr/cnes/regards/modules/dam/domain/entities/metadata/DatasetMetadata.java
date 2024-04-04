@@ -26,6 +26,7 @@ public class DatasetMetadata {
     private final ConcurrentHashMap<String, DataObjectGroup> dataObjectsGroups = new ConcurrentHashMap<>();
 
     public DatasetMetadata() {
+        // Do nothing
     }
 
     public void addDataObjectGroup(@Nullable DataObjectGroup dataObjectGroup) {

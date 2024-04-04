@@ -290,56 +290,36 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         return buildProperty(attributeType, name, value);
     }
 
+    @SuppressWarnings("java:S1541") // cyclomatic complexity to high
     private static IProperty<?> buildProperty(PropertyType attributeType, String name, Object value) {
-        switch (attributeType) {
-            case BOOLEAN:
-                return buildBoolean(name, toBooleanValue(value));
-            case DATE_ARRAY:
-                return buildDateArray(name, toArrayValue(value, IProperty::toDateValue, OffsetDateTime.class));
-            case DATE_RANGE:
-                return buildDateRange(name, (AbstractRangeProperty.RangePropertyValue<OffsetDateTime>) value);
-            case DATE_INTERVAL:
-                return buildDateInterval(name, (Range<OffsetDateTime>) value);
-            case DATE_ISO8601:
-                return buildDate(name, toDateValue(value));
-            case DOUBLE:
-                return buildDouble(name, toDoubleValue(value));
-            case DOUBLE_ARRAY:
-                return buildDoubleArray(name, toArrayValue(value, IProperty::toDoubleValue, Double.class));
-            case DOUBLE_RANGE:
-                return buildDoubleRange(name, (AbstractRangeProperty.RangePropertyValue<Double>) value);
-            case DOUBLE_INTERVAL:
-                return buildDoubleInterval(name, (Range<Double>) value);
-            case INTEGER:
-                return buildInteger(name, toIntegerValue(value));
-            case INTEGER_ARRAY:
-                return buildIntegerArray(name, toArrayValue(value, IProperty::toIntegerValue, Integer.class));
-            case INTEGER_RANGE:
-                return buildIntegerRange(name, (AbstractRangeProperty.RangePropertyValue<Integer>) value);
-            case INTEGER_INTERVAL:
-                return buildIntegerInterval(name, (Range<Integer>) value);
-            case LONG:
-                return buildLong(name, toLongValue(value));
-            case LONG_ARRAY:
-                return buildLongArray(name, toArrayValue(value, IProperty::toLongValue, Long.class));
-            case LONG_RANGE:
-                return buildLongRange(name, (AbstractRangeProperty.RangePropertyValue<Long>) value);
-            case LONG_INTERVAL:
-                return buildLongInterval(name, (Range<Long>) value);
-            case STRING:
-            case JSON:
-                return buildString(name, toStringValue(value));
-            case STRING_ARRAY:
-                return buildStringArray(name, toArrayValue(value, IProperty::toStringValue, String.class));
-            case URL:
-                return buildUrl(name, toURLValue(value));
-            default:
-                throw new IllegalArgumentException(attributeType
-                                                   + ILLEGAL_ARG_EXCEPTION_MSG
-                                                   + PropertyType.class.getName()
-                                                   + " in "
-                                                   + IProperty.class.getName());
-        }
+        return switch (attributeType) {
+            case BOOLEAN -> buildBoolean(name, toBooleanValue(value));
+            case DATE_ARRAY -> buildDateArray(name, toArrayValue(value, IProperty::toDateValue, OffsetDateTime.class));
+            case DATE_RANGE -> buildDateRange(name, (AbstractRangeProperty.RangePropertyValue<OffsetDateTime>) value);
+            case DATE_INTERVAL -> buildDateInterval(name, (Range<OffsetDateTime>) value);
+            case DATE_ISO8601 -> buildDate(name, toDateValue(value));
+            case DOUBLE -> buildDouble(name, toDoubleValue(value));
+            case DOUBLE_ARRAY -> buildDoubleArray(name, toArrayValue(value, IProperty::toDoubleValue, Double.class));
+            case DOUBLE_RANGE -> buildDoubleRange(name, (AbstractRangeProperty.RangePropertyValue<Double>) value);
+            case DOUBLE_INTERVAL -> buildDoubleInterval(name, (Range<Double>) value);
+            case INTEGER -> buildInteger(name, toIntegerValue(value));
+            case INTEGER_ARRAY ->
+                buildIntegerArray(name, toArrayValue(value, IProperty::toIntegerValue, Integer.class));
+            case INTEGER_RANGE -> buildIntegerRange(name, (AbstractRangeProperty.RangePropertyValue<Integer>) value);
+            case INTEGER_INTERVAL -> buildIntegerInterval(name, (Range<Integer>) value);
+            case LONG -> buildLong(name, toLongValue(value));
+            case LONG_ARRAY -> buildLongArray(name, toArrayValue(value, IProperty::toLongValue, Long.class));
+            case LONG_RANGE -> buildLongRange(name, (AbstractRangeProperty.RangePropertyValue<Long>) value);
+            case LONG_INTERVAL -> buildLongInterval(name, (Range<Long>) value);
+            case STRING, JSON -> buildString(name, toStringValue(value));
+            case STRING_ARRAY -> buildStringArray(name, toArrayValue(value, IProperty::toStringValue, String.class));
+            case URL -> buildUrl(name, toURLValue(value));
+            default -> throw new IllegalArgumentException(attributeType
+                                                          + ILLEGAL_ARG_EXCEPTION_MSG
+                                                          + PropertyType.class.getName()
+                                                          + " in "
+                                                          + IProperty.class.getName());
+        };
     }
 
     /**
@@ -358,7 +338,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
      * @param upperBound    value of the attribute to be created
      * @return a newly created AbstractAttribute according the given AttributeType, name and value
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "java:S1541" }) // java:S1541: cyclomatic complexity
     public static <U, T extends IProperty<U>> T forType(PropertyType attributeType,
                                                         String name,
                                                         U lowerBound,
@@ -422,7 +402,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "java:S1541" }) // java:S1541 : cyclomatic complexity
     public static IProperty<?> updatePropertyValue(IProperty<?> property, Object value)
         throws IllegalArgumentException {
         if (value == null) {
@@ -528,56 +508,35 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "java:S1541" }) // java:S1541 : cyclomatic complexity
     public static <U, T extends IProperty<?>> T forTypeWithNullValue(PropertyType attributeType, String name) {
-        switch (attributeType) {
-            case INTEGER:
-                return (T) buildInteger(name, null);
-            case BOOLEAN:
-                return (T) buildBoolean(name, null);
-            case DATE_ARRAY:
-                return (T) buildDateArray(name);
-            case DATE_RANGE:
-                return (T) buildDateRange(name, null);
-            case DATE_INTERVAL:
-                return (T) buildDateInterval(name, null);
-            case DATE_ISO8601:
-                return (T) buildDate(name, null);
-            case DOUBLE:
-                return (T) buildDouble(name, null);
-            case DOUBLE_ARRAY:
-                return (T) buildDoubleArray(name);
-            case DOUBLE_RANGE:
-                return (T) buildDoubleRange(name, null);
-            case DOUBLE_INTERVAL:
-                return (T) buildDoubleInterval(name, null);
-            case INTEGER_ARRAY:
-                return (T) buildIntegerArray(name);
-            case INTEGER_RANGE:
-                return (T) buildIntegerRange(name, null);
-            case INTEGER_INTERVAL:
-                return (T) buildIntegerInterval(name, null);
-            case LONG:
-                return (T) buildLong(name, null);
-            case LONG_ARRAY:
-                return (T) buildLongArray(name);
-            case LONG_RANGE:
-                return (T) buildLongRange(name, null);
-            case LONG_INTERVAL:
-                return (T) buildLongInterval(name, null);
-            case STRING:
-                return (T) buildString(name, null);
-            case STRING_ARRAY:
-                return (T) buildStringArray(name);
-            case URL:
-                return (T) buildUrl(name);
-            default:
-                throw new IllegalArgumentException(attributeType
-                                                   + ILLEGAL_ARG_EXCEPTION_MSG
-                                                   + PropertyType.class.getName()
-                                                   + " in "
-                                                   + IProperty.class.getName());
-        }
+        return switch (attributeType) {
+            case INTEGER -> (T) buildInteger(name, null);
+            case BOOLEAN -> (T) buildBoolean(name, null);
+            case DATE_ARRAY -> (T) buildDateArray(name);
+            case DATE_RANGE -> (T) buildDateRange(name, null);
+            case DATE_INTERVAL -> (T) buildDateInterval(name, null);
+            case DATE_ISO8601 -> (T) buildDate(name, null);
+            case DOUBLE -> (T) buildDouble(name, null);
+            case DOUBLE_ARRAY -> (T) buildDoubleArray(name);
+            case DOUBLE_RANGE -> (T) buildDoubleRange(name, null);
+            case DOUBLE_INTERVAL -> (T) buildDoubleInterval(name, null);
+            case INTEGER_ARRAY -> (T) buildIntegerArray(name);
+            case INTEGER_RANGE -> (T) buildIntegerRange(name, null);
+            case INTEGER_INTERVAL -> (T) buildIntegerInterval(name, null);
+            case LONG -> (T) buildLong(name, null);
+            case LONG_ARRAY -> (T) buildLongArray(name);
+            case LONG_RANGE -> (T) buildLongRange(name, null);
+            case LONG_INTERVAL -> (T) buildLongInterval(name, null);
+            case STRING -> (T) buildString(name, null);
+            case STRING_ARRAY -> (T) buildStringArray(name);
+            case URL -> (T) buildUrl(name);
+            default -> throw new IllegalArgumentException(attributeType
+                                                          + ILLEGAL_ARG_EXCEPTION_MSG
+                                                          + PropertyType.class.getName()
+                                                          + " in "
+                                                          + IProperty.class.getName());
+        };
     }
 
     static LongRangeProperty buildLongRange(String name, Long lowerBound, Long upperBound) {
@@ -602,7 +561,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         return buildIntegerRange(name, new AbstractRangeProperty.RangePropertyValue<>(lowerBound, upperBound));
     }
 
-    static IntegerRangeProperty buildIntegerRange(String name, AbstractRangeProperty.RangePropertyValue<Integer> range) {
+    static IntegerRangeProperty buildIntegerRange(String name,
+                                                  AbstractRangeProperty.RangePropertyValue<Integer> range) {
         IntegerRangeProperty att = new IntegerRangeProperty();
         att.setName(name);
         att.setValue(range);
@@ -638,7 +598,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         return IProperty.buildDateRange(name, new AbstractRangeProperty.RangePropertyValue<>(lowerBound, upperBound));
     }
 
-    static DateRangeProperty buildDateRange(String name, AbstractRangeProperty.RangePropertyValue<OffsetDateTime> range) {
+    static DateRangeProperty buildDateRange(String name,
+                                            AbstractRangeProperty.RangePropertyValue<OffsetDateTime> range) {
         DateRangeProperty att = new DateRangeProperty();
         att.setName(name);
         att.setValue(range);

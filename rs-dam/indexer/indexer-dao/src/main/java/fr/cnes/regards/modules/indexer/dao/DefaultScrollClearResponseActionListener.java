@@ -39,4 +39,4 @@ public class DefaultScrollClearResponseActionListener implements ActionListener<
     public void onFailure(Exception e) {
         LOGGER.error(String.format("Elasticsearch scroll request clear error. Cause : %s", e.getMessage()), e);
     }
-};
+}
