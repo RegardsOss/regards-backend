@@ -47,6 +47,12 @@ public class ResponseEvent implements ISubscribable, IMessagePropertiesAware {
     private String requestId;
 
     /**
+     * Response content based on the same principle as RequestEvent content. The content is a generic payload to
+     * transmit optionally data to services that listen to this event.
+     */
+    private byte[] content;
+
+    /**
      * FIXME : Remove type and requestOwner when SDS is updated.
      * To avoid modifying interface with SDS by replacing featureFactory wit workerManager for extraction requests
      * we add the type parameter to EXTRACTION as it was in previous version of regards.
@@ -74,6 +80,11 @@ public class ResponseEvent implements ISubscribable, IMessagePropertiesAware {
         return this;
     }
 
+    public ResponseEvent withContent(byte[] content) {
+        this.content = content;
+        return this;
+    }
+
     @Override
     public MessageProperties getMessageProperties() {
         if (messageProperties == null) {
@@ -97,5 +108,9 @@ public class ResponseEvent implements ISubscribable, IMessagePropertiesAware {
 
     public String getRequestId() {
         return requestId;
+    }
+
+    public byte[] getContent() {
+        return content;
     }
 }

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerResponseEvent;
+import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -88,11 +90,13 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
         Assert.assertTrue("Timeout while waiting for events", waitForResponses(1, 5, TimeUnit.SECONDS));
 
         Optional<RequestDTO> dto = requestService.get(request.getRequestId());
-        Assert.assertFalse("Request should noy exists anymore", dto.isPresent());
+        Assert.assertFalse("Request should not exists anymore", dto.isPresent());
         Assert.assertEquals("Invalid number of response event sent", 1L, responseMock.getEvents().size());
-        Assert.assertEquals("Invalid response event status",
-                            ResponseStatus.SUCCESS,
-                            responseMock.getEvents().stream().findFirst().get().getState());
+        ResponseEvent responseEvent = responseMock.getEvents().stream().findFirst().get();
+        Assert.assertEquals("Invalid response event status", ResponseStatus.SUCCESS, responseEvent.getState());
+        Assert.assertEquals("Invalid response content",
+                            ResponseStatus.SUCCESS.toString(),
+                            new String(responseEvent.getContent(), StandardCharsets.UTF_8));
 
         sessionHelper.checkSession(2500,
                                    TimeUnit.MILLISECONDS,

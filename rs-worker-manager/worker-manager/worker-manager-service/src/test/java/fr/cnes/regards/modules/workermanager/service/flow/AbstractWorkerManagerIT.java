@@ -163,6 +163,7 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
         WorkerResponseEvent event = new WorkerResponseEvent();
         event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
         event.setStatus(status);
+        event.setContent(status.toString().getBytes(StandardCharsets.UTF_8));
         return event;
     }
 

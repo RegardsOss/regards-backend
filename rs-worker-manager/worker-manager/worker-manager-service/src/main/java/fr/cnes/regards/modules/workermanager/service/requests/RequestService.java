@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.workermanager.service.requests;
 
 import com.google.common.collect.*;
+import com.google.gson.JsonObject;
 import com.rabbitmq.client.LongString;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.IEvent;
@@ -482,8 +483,10 @@ public class RequestService {
     private void handleRequestSuccess(Request request, WorkerResponseEvent e) {
         // check if request is linked to a workflowConfig,
         workflowService.findWorkflowByType(request.getContentType())
-                       .ifPresentOrElse(workflowConfig -> updateRequestWithNextStep(request, e, workflowConfig),
-                                        () -> request.setStatus(RequestStatus.SUCCESS));
+                       .ifPresentOrElse(workflowConfig -> updateRequestWithNextStep(request, e, workflowConfig), () -> {
+                           request.setStatus(RequestStatus.SUCCESS);
+                           request.setContent(getSuccessContent(e.getContent()));
+                       });
     }
 
     /**
@@ -514,7 +517,20 @@ public class RequestService {
                                                               workflowConfig.getWorkflowType(),
                                                               event.getRequestIdHeader()));
                            }
-                       }, () -> request.setStatus(RequestStatus.SUCCESS));
+                       }, () -> {
+                           request.setStatus(RequestStatus.SUCCESS);
+                           request.setContent(getSuccessContent(event.getContent()));
+                       });
+    }
+
+    /**
+     * Get the last response content from the worker. If no response is provided, an empty json is returned as the
+     * request content cannot be null.
+     *
+     * @param content nullable byte content from the worker
+     */
+    private byte[] getSuccessContent(byte[] content) {
+        return content != null ? content : (new JsonObject()).toString().getBytes();
     }
 
     /**
@@ -729,7 +745,8 @@ public class RequestService {
                                             request.getRequestId(),
                                             getRequestTypeForSds(),
                                             request.getSource())
-                                     .withMessage(String.format(SUCCESS_MESSAGE, request.getDispatchedWorkerType()));
+                                     .withMessage(String.format(SUCCESS_MESSAGE, request.getDispatchedWorkerType()))
+                                     .withContent(request.getContent());
                 break;
             case ERROR:
                 event = ResponseEvent.build(ResponseStatus.ERROR,
