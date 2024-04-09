@@ -30,7 +30,10 @@ import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ILastAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AbstractAIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.LastAIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -183,13 +186,40 @@ public class AIPDeleteService implements IAIPDeleteService {
                 // Mark the AIP as deleted
                 aipRepository.saveAll(aipsRelatedToSip);
             }
-            // Remove last flag entry
-            aipsRelatedToSip.forEach(this::removeLastFlag);
+            manageLastFlag(aipsRelatedToSip);
             // Send notification to data mangement for feature deleted
             aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));
         }
     }
 
+    /**
+     * Manage the last flag of deleted AIPs.
+     * This method gets the previous version of these AIPs (if exists), then:
+     * <li>set their last flag to true</li>
+     * <li>modify the lastAipEntity table to update entry with the new last aip (or not if not exists)</li>
+     */
+    private void manageLastFlag(Set<AIPEntity> deletedAips) {
+        // Remove last aip entries
+        lastAipRepository.deleteAllByAipIdIn(deletedAips.stream()
+                                                        .map(AbstractAIPEntity::getId)
+                                                        .collect(Collectors.toSet()));
+        // find last version of deleted provider_id
+        Set<String> providerIds = deletedAips.stream()
+                                             .map(AbstractOAISEntity::getProviderId)
+                                             .collect(Collectors.toSet());
+        Set<AIPEntity> lastVersionOfSameProviderIds = aipRepository.findAllByProviderIdWithVersionMax(providerIds);
+        for (AIPEntity lastVersionOfSameProviderId : lastVersionOfSameProviderIds) {
+            if (!lastVersionOfSameProviderId.isLast()) {
+                // mark last version as last
+                aipRepository.updateLast(lastVersionOfSameProviderId.getId(), true);
+                // create last aip entry
+                lastAipRepository.save(new LastAIPEntity(lastVersionOfSameProviderId.getId(),
+                                                         lastVersionOfSameProviderId.getProviderId()));
+            }
+        }
+    }
+
+    @Override
     public void removeLastFlag(AIPEntity aip) {
         lastAipRepository.deleteByAipId(aip.getId());
     }

@@ -88,4 +88,14 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     Page<AIPEntity> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now, Pageable pageable);
 
     Page<AIPEntity> findByLastUpdateLessThan(OffsetDateTime now, Pageable pageable);
+
+    /**
+     * Returns the AIPs with the last version of all provider ids indicated
+     */
+    @Query(value = """
+        SELECT * FROM t_aip WHERE (provider_id, version) IN (
+            SELECT aip.provider_id, max(aip.version) AS max_version FROM t_aip aip
+            WHERE aip.provider_id IN :providerIds GROUP BY aip.provider_id
+        )""", nativeQuery = true)
+    Set<AIPEntity> findAllByProviderIdWithVersionMax(@Param("providerIds") Set<String> providerIds);
 }

@@ -2,23 +2,31 @@ package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.dao.ILastAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AbstractAIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.LastAIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.job.ChooseVersioningJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
+import fr.cnes.regards.modules.ingest.service.request.RequestDeletionService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -28,6 +36,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -79,6 +88,15 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
 
     @Autowired
     private IRequestService requestService;
+
+    @Autowired
+    private OAISDeletionService oaisDeletionService;
+
+    @Autowired
+    private ILastAIPRepository lastAIPRepository;
+
+    @Autowired
+    private RequestDeletionService requestDeletionService;
 
     @Override
     public void doInit() {
@@ -760,5 +778,45 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
         Mockito.verify(sessionNotifier, Mockito.times(1)).incrementProductIgnored(Mockito.any(IngestRequest.class));
         Mockito.verify(sessionNotifier, Mockito.times(3))
                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+    }
+
+    @Test
+    public void test_inc_version_with_deleting_second_version() {
+        storageClient.setBehavior(true, true);
+        Assertions.assertEquals(0, lastAIPRepository.count());
+
+        // lets submit the first SIP V1
+        publishSIPEvent(create(PROVIDER_ID, TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
+        Assertions.assertEquals(1, lastAIPRepository.count());
+
+        // lets submit a V2 with different TAGS so it is accepted by system
+        publishSIPEvent(create(PROVIDER_ID, TAG_1), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED, getDefaultTenant());
+        Assertions.assertEquals(1, lastAIPRepository.count());
+
+        // check that there is well 2 aip entities, and V2 is the only last aip.
+        Collection<AIPEntity> aipEntities = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID);
+        Assertions.assertEquals(2, aipEntities.size());
+        // get the last version of these aips (V2)
+        Optional<AIPEntity> lastVersionAip = aipEntities.stream().filter(AbstractAIPEntity::isLast).findFirst();
+        Assertions.assertTrue(lastVersionAip.isPresent());
+        // delete the last version (V2)
+        OAISDeletionPayloadDto deletionRequest = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY);
+        deletionRequest.withAipIdsIncluded(List.of(lastVersionAip.get().getAipId()));
+        oaisDeletionService.registerOAISDeletionCreator(deletionRequest);
+        ingestServiceTest.waitForAIP(1, 300000, null, getDefaultTenant());
+
+        // THEN make sure that last aip is correctly reset to V1
+        aipEntities = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID);
+        Assertions.assertEquals(1, aipEntities.size());
+        AIPEntity aipEntity = aipEntities.iterator().next();
+        Assertions.assertTrue(aipEntity.isLast());
+
+        // THEN make sure that last aip is set in lastAip table
+        List<LastAIPEntity> lastAipEntities = lastAIPRepository.findAll();
+        Assertions.assertEquals(lastAipEntities.size(), lastAIPRepository.count());
+        LastAIPEntity lastAIPEntity = lastAipEntities.get(0);
+        Assertions.assertEquals(aipEntity.getId(), lastAIPEntity.getAipId());
     }
 }

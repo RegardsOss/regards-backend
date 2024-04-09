@@ -9,7 +9,7 @@ public class SipBodyTimeToLiveSettingCustomizer extends AbstractSimpleDynamicSet
 
     public SipBodyTimeToLiveSettingCustomizer() {
         super(IngestSettings.SIP_BODY_TIME_TO_LIVE,
-              "parameter [sib body time to live] can be null or must be a valid positive");
+              "parameter [sip body time to live] can be null or must be a valid positive");
     }
 
     @Override

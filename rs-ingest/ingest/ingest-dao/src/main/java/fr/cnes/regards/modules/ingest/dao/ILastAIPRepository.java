@@ -20,10 +20,19 @@ package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.aip.LastAIPEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
 
 @Repository
 public interface ILastAIPRepository extends JpaRepository<LastAIPEntity, Long> {
 
     void deleteByAipId(Long aipId);
+
+    @Modifying
+    @Query(value = "DELETE FROM LastAIPEntity WHERE aipId IN (:aipIds)")
+    void deleteAllByAipIdIn(@Param("aipIds") Collection<Long> aipIds);
 }
