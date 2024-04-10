@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,7 +59,8 @@ public class FeaturePerformanceITConfig {
                     notifierRequestListener.onRequestSuccess(notification.stream()
                                                                          .map(notifEvent -> new NotifierEvent(notifEvent.getRequestId(),
                                                                                                               notifEvent.getRequestOwner(),
-                                                                                                              NotificationState.SUCCESS))
+                                                                                                              NotificationState.SUCCESS,
+                                                                                                              OffsetDateTime.now()))
                                                                          .collect(Collectors.toList()));
                 });
             }

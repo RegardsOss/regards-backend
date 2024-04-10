@@ -50,7 +50,6 @@ import fr.cnes.regards.modules.notifier.dto.out.RecipientStatus;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -71,7 +70,9 @@ import static org.junit.Assert.*;
                                    "regards.amqp.enabled=true",
                                    "regards.feature.delay.before.processing=1",
                                    "spring.task.scheduling.pool.size=2",
-                                   "regards.feature.metrics.enabled=true" },
+                                   "regards.feature.metrics.enabled=true",
+                                   "regards.feature.max.bulk.size=50",
+                                   "regards.feature.delay.before.processing=1" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
                                   "classpath:metrics.properties" })
@@ -204,7 +205,8 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         List<NotifierEvent> notifierEvents = Lists.newArrayList(new NotifierEvent(requestId,
                                                                                   requestOwner,
                                                                                   NotificationState.SUCCESS,
-                                                                                  recipients));
+                                                                                  recipients,
+                                                                                  OffsetDateTime.now()));
         featureNotifierListener.onRequestSuccess(notifierEvents);
 
         // the FeatureCreationRequest must be deleted
@@ -260,8 +262,6 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
     }
 
     @Test
-    @Ignore(
-        "testing both feature update (properties) and feature update dissemination with lot of entities is not mandatory")
     public void testFeatureUpdateAndReceivingAndProcessingAckSimultaneously()
         throws InterruptedException, EntityException {
         notificationSettingsService.setActiveNotification(false);
@@ -420,7 +420,8 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         List<NotifierEvent> notifierEvents = Lists.newArrayList(new NotifierEvent(requestId,
                                                                                   requestOwner,
                                                                                   NotificationState.SUCCESS,
-                                                                                  recipients));
+                                                                                  recipients,
+                                                                                  OffsetDateTime.now()));
         featureNotifierListener.onRequestSuccess(notifierEvents);
 
         // the FeatureCreationRequest must be deleted

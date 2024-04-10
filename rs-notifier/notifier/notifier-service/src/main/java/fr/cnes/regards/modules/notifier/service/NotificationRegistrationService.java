@@ -48,6 +48,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -123,7 +124,8 @@ public class NotificationRegistrationService {
                 publisher.publish(notRetryEvents.stream()
                                                 .map(event -> new NotifierEvent(event.getRequestId(),
                                                                                 event.getRequestOwner(),
-                                                                                NotificationState.DENIED))
+                                                                                NotificationState.DENIED,
+                                                                                OffsetDateTime.now()))
                                                 .collect(Collectors.toList()));
             }
         }
@@ -177,7 +179,7 @@ public class NotificationRegistrationService {
                 } else {
                     // should not happen
                     LOGGER.warn("Job crash detected for request {} and recipient business id {}, but recipient no "
-                                 + "longer exists", notificationRequest.getRequestId(), abortedRecipientBusinessId);
+                                + "longer exists", notificationRequest.getRequestId(), abortedRecipientBusinessId);
                 }
             } else {
                 // Nothing to do, request is already in a final state.
@@ -251,7 +253,8 @@ public class NotificationRegistrationService {
                 nbUpdatedRequests++;
                 responseToSend.add(new NotifierEvent(knownRequest.getRequestId(),
                                                      knownRequest.getRequestOwner(),
-                                                     NotificationState.GRANTED));
+                                                     NotificationState.GRANTED,
+                                                     knownRequest.getRequestDate()));
                 // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
                 eventsPerRequestId.put(knownRequest.getRequestId(), null);
             }
@@ -309,7 +312,10 @@ public class NotificationRegistrationService {
         }
         // When no error, create notification request
         if (!errors.hasErrors()) {
-            publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), notificationState));
+            publisher.publish(new NotifierEvent(event.getRequestId(),
+                                                event.getRequestOwner(),
+                                                notificationState,
+                                                OffsetDateTime.now()));
             // Create the notification request
             NotificationRequest notificationRequest = new NotificationRequest(event.getPayload(),
                                                                               event.getMetadata(),
@@ -328,7 +334,10 @@ public class NotificationRegistrationService {
                                   "A NotificationRequestEvent received is invalid",
                                   NotificationLevel.ERROR,
                                   DefaultRole.ADMIN);
-        publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), NotificationState.DENIED));
+        publisher.publish(new NotifierEvent(event.getRequestId(),
+                                            event.getRequestOwner(),
+                                            NotificationState.DENIED,
+                                            OffsetDateTime.now()));
 
         return Optional.empty();
     }

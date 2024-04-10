@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -44,18 +45,31 @@ public class NotifierEvent implements ISubscribable {
 
     private final Set<Recipient> recipients;
 
-    public NotifierEvent(String requestId, String requestOwner, NotificationState state) {
-        this.requestId = requestId;
-        this.requestOwner = requestOwner;
-        this.state = state;
-        this.recipients = new HashSet<>();
+    /**
+     * Date when notification request has been handled by notifier service.
+     * NOTE : As the request can lead to many notifications (one per recipient), this date is not the real
+     * notification sent date but the request creation date. For listeners, it is important that this date is at least
+     * before the effective sent date for synchronization.
+     */
+    private final OffsetDateTime notificationDate;
+
+    public NotifierEvent(String requestId,
+                         String requestOwner,
+                         NotificationState state,
+                         OffsetDateTime notificationDate) {
+        this(requestId, requestOwner, state, new HashSet<>(), notificationDate);
     }
 
-    public NotifierEvent(String requestId, String requestOwner, NotificationState state, Set<Recipient> recipients) {
+    public NotifierEvent(String requestId,
+                         String requestOwner,
+                         NotificationState state,
+                         Set<Recipient> recipients,
+                         OffsetDateTime notificationDate) {
         this.requestId = requestId;
         this.requestOwner = requestOwner;
         this.state = state;
         this.recipients = recipients;
+        this.notificationDate = notificationDate;
     }
 
     public String getRequestId() {
@@ -72,6 +86,10 @@ public class NotifierEvent implements ISubscribable {
 
     public Set<Recipient> getRecipients() {
         return recipients;
+    }
+
+    public OffsetDateTime getNotificationDate() {
+        return notificationDate;
     }
 
     @Override
