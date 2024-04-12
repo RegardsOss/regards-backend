@@ -47,7 +47,13 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
+import fr.cnes.regards.modules.feature.service.request.FeatureUpdateDisseminationService;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
+import fr.cnes.regards.modules.notifier.dto.out.Recipient;
+import fr.cnes.regards.modules.notifier.dto.out.RecipientStatus;
 import org.assertj.core.util.Lists;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
@@ -68,6 +74,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -96,6 +103,9 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     private IFeatureEntityWithDisseminationRepository featureWithDisseminationRepository;
+
+    @Autowired
+    private FeatureUpdateDisseminationService featureUpdateDisseminationService;
 
     @Autowired
     private Gson gson;
@@ -137,14 +147,15 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // STEP 2 : mock feedback from notifier to simulate dissemination info (with and without ack)
         List<FeatureEntity> featureEntities = featureWithDisseminationRepository.findAll();
         featureEntities.forEach(featureEntity -> {
-            featureEntity.setDisseminationsInfo(Sets.newHashSet(new FeatureDisseminationInfo(
-                                                                    acknowledgedRecipientWithAck,
-                                                                    true),
-                                                                new FeatureDisseminationInfo(
-                                                                    acknowledgedRecipientWithAckNoReceive,
-                                                                    true),
-                                                                new FeatureDisseminationInfo(acknowledgedRecipientNoAck,
-                                                                                             false)));
+            featureEntity.setDisseminationsInfo(Sets.newHashSet(createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                               acknowledgedRecipientWithAck,
+                                                                                               true),
+                                                                createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                               acknowledgedRecipientWithAckNoReceive,
+                                                                                               true),
+                                                                createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                               acknowledgedRecipientNoAck,
+                                                                                               false)));
             featureEntity.updateDisseminationPending();
         });
         featureWithDisseminationRepository.saveAll(featureEntities);
@@ -169,6 +180,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // --------------
         // process update requests
         featureUpdateService.processRequests(featureUpdateRequests, null);
+        mockNotificationSuccess();
+        featureUpdateDisseminationService.handleRequests();
 
         // --------------
         // ---- THEN ----
@@ -221,9 +234,12 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // STEP 2 : mock feedback from notifier to simulate dissemination info (with and without ack)
         List<FeatureEntity> featureEntities = featureWithDisseminationRepository.findAll();
         featureEntities.forEach(featureEntity -> {
-            featureEntity.setDisseminationsInfo(Sets.newHashSet(new FeatureDisseminationInfo(
-                acknowledgedRecipientWithAck,
-                true), new FeatureDisseminationInfo(acknowledgedRecipientNoAck, false)));
+            featureEntity.setDisseminationsInfo(Sets.newHashSet(createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                               acknowledgedRecipientWithAck,
+                                                                                               true),
+                                                                createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                               acknowledgedRecipientNoAck,
+                                                                                               false)));
             featureEntity.updateDisseminationPending();
         });
         featureWithDisseminationRepository.saveAll(featureEntities);
@@ -248,6 +264,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // --------------
         // process update requests
         featureUpdateService.processRequests(featureUpdateRequests, null);
+        mockNotificationSuccess();
+        featureUpdateDisseminationService.handleRequests();
 
         // --------------
         // ---- THEN ----
@@ -272,6 +290,79 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         });
     }
 
+    /**
+     * This test is made to verify that dissemination info are well handled in case of synchronization issues during
+     * dissemination request processing.
+     * In some case, an ACK can for a dissemination recipient can be handled before the dissemination recipient has
+     * been initialized.
+     */
+    @Test
+    public void test_dissemination_ack_received_before_dissemination_init() {
+
+        // Given : create feature
+        String acknowledgedRecipient = "acknowledged recipient";
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(1, true, false);
+        featureCreationService.registerRequests(events);
+
+        featureCreationService.scheduleRequests();
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == 1;
+        });
+        // Initiate the real date of simulated dissemination to acknowledgedRecipient
+        OffsetDateTime disseminationInitDate = OffsetDateTime.now().minusSeconds(10);
+        OffsetDateTime disseminationAckDate = OffsetDateTime.now();
+        FeatureEntity featureEntity = featureRepo.findAll().get(0);
+
+        // Init update with ack request before response of notifier that init the dissemination info associated to
+        // the feature after creation. Simulated here, no notification is really sent.
+        FeatureUpdateRequest featureUpdateRequest = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
+                                                                               owner,
+                                                                               disseminationAckDate,
+                                                                               RequestState.GRANTED,
+                                                                               null,
+                                                                               featureEntity.getFeature(),
+                                                                               PriorityLevel.NORMAL,
+                                                                               FeatureRequestStep.LOCAL_DELAYED);
+        featureUpdateRequest.setAcknowledgedRecipient(acknowledgedRecipient);
+        featureUpdateRequestRepo.save(featureUpdateRequest);
+
+        // When
+        featureUpdateService.processRequests(singletonList(featureUpdateRequest), null);
+        mockNotificationSuccess();
+        featureUpdateDisseminationService.handleRequests();
+
+        // Then
+        // Check dissemination is not pending for product
+        Assert.assertFalse(featureRepo.findByUrn(featureEntity.getUrn()).isDisseminationPending());
+        FeatureEntity feature = featureWithDisseminationRepository.findByUrn(featureEntity.getUrn());
+        Assert.assertEquals(1L, feature.getDisseminationsInfo().size());
+        FeatureDisseminationInfo disseminationInfo = feature.getDisseminationsInfo().stream().findFirst().get();
+        Assert.assertTrue(disseminationInfo.getAckDate().isEqual(disseminationInfo.getRequestDate()));
+
+        // When
+        // Now handle the dissemination info initialization after ack
+        FeatureCreationRequest featureCreationRequest = featureCreationRequestRepo.findAll().get(0);
+        NotifierEvent disseminationEventFromNotifier = new NotifierEvent(featureCreationRequest.getRequestId(),
+                                                                         "owner",
+                                                                         NotificationState.SUCCESS,
+                                                                         Set.of(new Recipient(acknowledgedRecipient,
+                                                                                              RecipientStatus.SUCCESS,
+                                                                                              true,
+                                                                                              false)),
+                                                                         disseminationInitDate);
+        featureUpdateDisseminationService.savePutRequests(List.of(disseminationEventFromNotifier),
+                                                          Set.of(featureCreationRequest));
+        featureUpdateDisseminationService.handleRequests();
+        // Then
+        // Check dissemination is still not pending for product
+        Assert.assertFalse(featureRepo.findByUrn(featureEntity.getUrn()).isDisseminationPending());
+        feature = featureWithDisseminationRepository.findByUrn(featureEntity.getUrn());
+        Assert.assertEquals(1L, feature.getDisseminationsInfo().size());
+        disseminationInfo = feature.getDisseminationsInfo().stream().findFirst().get();
+        Assert.assertTrue(disseminationInfo.isAcknowledged());
+    }
+
     @Test
     public void test_block_and_unblock_deletion_request() {
         // Given : create feature
@@ -288,7 +379,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
         // Create case in order to block the feature deletion request
         FeatureEntity featureEntityWithDissemination = featureWithDisseminationRepository.findByUrn(featureEntity.getUrn());
-        FeatureDisseminationInfo featureDisseminationInfo = new FeatureDisseminationInfo(acknowledgedRecipient, true);
+
+        FeatureDisseminationInfo featureDisseminationInfo = createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                           acknowledgedRecipient,
+                                                                                           true);
         featureDisseminationInfo.setBlocking(true);
 
         featureEntityWithDissemination.getDisseminationsInfo().add(featureDisseminationInfo);
@@ -317,6 +411,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
         // When
         featureUpdateService.processRequests(singletonList(featureUpdateRequest), null);
+        mockNotificationSuccess();
+        featureUpdateDisseminationService.handleRequests();
 
         // Then
         FeatureDeletionRequest featureDeletionRequest = featureDeletionRequestRepo.findAll().get(0);
@@ -332,18 +428,25 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             int nbStep = stepPropertyUpdateRequestRepository.findBySession(session).size();
             LOGGER.info("{} steps", nbStep);
-            return nbStep == 6;
+            return nbStep == 7;
         });
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
         checkRequests(5, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(1, property("referencingRequests"), requests);
-        checkRequests(1, property("runningReferencingRequests"), requests);
-        checkRequests(1, property("referencedProducts"), requests);
-        checkRequests(1, property("updatedProducts"), requests);
-        checkRequests(1, property(acknowledgedRecipient + ".done"), requests);
+        checkRequests(1, property(FeatureSessionProperty.REFERENCING_REQUESTS.getName()), requests);
+        checkRequests(1, property(FeatureSessionProperty.RUNNING_REFERENCING_REQUESTS.getName()), requests);
+        checkRequests(1, property(FeatureSessionProperty.REFERENCED_PRODUCTS.getName()), requests);
+        checkRequests(1, property(FeatureSessionProperty.UPDATED_PRODUCTS.getName()), requests);
+        checkRequests(1, property(FeatureSessionProperty.RUNNING_UPDATE_REQUESTS.getName()), requests);
+        checkRequests(1,
+                      property(featureUpdateDisseminationService.getSessionPropertyName(FeatureSessionProperty.DISSEMINATED_PRODUCTS,
+                                                                                        acknowledgedRecipient)),
+                      requests);
 
-        checkRequests(1, type(StepPropertyEventTypeEnum.DEC), requests);
-        checkRequests(1, property(acknowledgedRecipient + ".pending"), requests);
+        checkRequests(2, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(1,
+                      property(featureUpdateDisseminationService.getSessionPropertyName(FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS,
+                                                                                        acknowledgedRecipient)),
+                      requests);
     }
 
     @Test

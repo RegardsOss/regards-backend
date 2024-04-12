@@ -275,7 +275,8 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         List<FeatureEntity> allFeatureEntities = featureWithDisseminationRepo.findAll();
         String recipientLabel = "recipientLabel";
         for (FeatureEntity featureEntity : allFeatureEntities) {
-            featureEntity.getDisseminationsInfo().add(new FeatureDisseminationInfo(recipientLabel, true));
+            featureEntity.getDisseminationsInfo()
+                         .add(createFeatureDisseminationInfo(featureEntity.getUrn(), recipientLabel, true));
         }
         featureWithDisseminationRepo.saveAll(allFeatureEntities);
 
@@ -337,7 +338,7 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         assertEquals(0, scheduled.size());
 
         featureWithDisseminationRepo.findAll().forEach(feature -> {
-            assertNotNull(feature.getDisseminationsInfo().stream().findFirst().get().getAckDate());
+            assertTrue(feature.getDisseminationsInfo().stream().allMatch(di -> di.isAcknowledged()));
             ObjectProperty file_characterization = (ObjectProperty) feature.getFeature()
                                                                            .getProperties()
                                                                            .stream()

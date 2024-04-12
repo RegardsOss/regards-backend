@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
 
 import javax.persistence.*;
@@ -88,34 +89,91 @@ public class FeatureDisseminationInfo {
      * <li>When false, we won't receive a acknowledgement, so not blocking</li>
      * </ul>
      *
-     * @param label       the name of the broadcast recipient
-     * @param ackRequired when false, no acknowledge message will be received
+     * @param FeatureUpdateDisseminationRequest the request origin of the new Dissemination info object
      */
-    public FeatureDisseminationInfo(String label, boolean ackRequired) {
-        this.requestDate = OffsetDateTime.now();
-        this.label = label;
-
-        if (ackRequired) {
+    public FeatureDisseminationInfo(FeatureUpdateDisseminationRequest disseminationRequest) {
+        this.requestDate = disseminationRequest.getCreationDate();
+        this.label = disseminationRequest.getRecipientLabel();
+        if (disseminationRequest.getUpdateType() == FeatureUpdateDisseminationInfoType.PUT
+            && disseminationRequest.getAckRequired()) {
             this.ackDate = null;
         } else {
             this.ackDate = this.requestDate;
         }
+        this.blocking = disseminationRequest.isBlockingRequired();
     }
 
     /**
-     * Set the date of acknowledge after a new request of dissimination.
-     * <p>
-     * The date of acknowledge is reset if the new dissemination request has been created after the previous dissemination request date of acknowledge. This date verification allow to handle the case where the event of notification sent is handled after the ack event. In this case we don't want to reset ack date cause the ack has been handled before.
-     * the feature is re-disseminated and we need to put dissemination in pending.
+     * Updates dissemination info object for response of PUT request.
+     * Logic is complex cause of possible async issue in put and ack response order.
+     * Main issue is encountered when ack response is handled before put response
      */
-    public void setAckDateForNewDissiminationRequest(FeatureUpdateDisseminationRequest request) {
-        if (request.getAckRequired()) {
-            if (this.ackDate != null && request.getCreationDate().isAfter(this.ackDate)) {
-                this.ackDate = null;
-            }
-        } else {
-            this.ackDate = this.requestDate;
+    public void updateRequestDate(OffsetDateTime disseminationDate, boolean ackRequired) {
+        // Nominal case, both dissemination init and ack dates are null
+        if (isNew()) {
+            this.requestDate = disseminationDate;
+            this.ackDate = ackRequired ? null : disseminationDate;
+            return;
         }
+        // Nominal case of re-notification, dissemination init date is set and ack date is null
+        if (isWaitingAck() && this.requestDate.isBefore(disseminationDate)) {
+            // Update init date, only if new init date is after the current init date
+            this.requestDate = disseminationDate;
+            this.ackDate = ackRequired ? null : disseminationDate;
+            return;
+        }
+        // Nominal case of re-notification after acknowledged
+        if (isAcknowledged() && this.requestDate.isBefore(disseminationDate)) {
+            // Update init date, only if new init date is after the current init date
+            this.requestDate = disseminationDate;
+            this.ackDate = ackRequired ? null : disseminationDate;
+        }
+    }
+
+    /**
+     * Updates dissemination info object for response of ACK request.
+     * Logic is complex cause of possible async issue in PUT and ack response order.
+     * Main issue is encountered when ACK response is handled before PUT response
+     */
+    public void updateAckDate(OffsetDateTime ackDate) {
+        // Async issue case, ack arrive before init date
+        if (isNew()) {
+            this.requestDate = ackDate;
+            this.ackDate = ackDate;
+            return;
+        }
+        // Nominal case, ack after init date
+        if (isWaitingAck() && ackDate.isAfter(this.requestDate)) {
+            this.ackDate = ackDate;
+        }
+        // Async issue re-notification case, new ack date arrives before new init date.
+        if (isAcknowledged() && ackDate.isAfter(this.ackDate)) {
+            this.requestDate = ackDate;
+            this.ackDate = ackDate;
+        }
+    }
+
+    /**
+     * Check if current dissemination information is new. Both request and ack dates are null
+     */
+    public boolean isNew() {
+        return this.ackDate == null && this.requestDate == null;
+    }
+
+    /**
+     * Check if current dissemination information is waiting for acknowledge
+     */
+    public boolean isWaitingAck() {
+        return this.requestDate != null && this.ackDate == null;
+    }
+
+    /**
+     * Check if current dissemination information is completed. Request and acknowledged dates are set and ack is
+     * after request date.
+     */
+    public boolean isAcknowledged() {
+        return this.requestDate != null && this.ackDate != null && (this.ackDate.isEqual(this.requestDate)
+                                                                    || this.ackDate.isAfter(this.requestDate));
     }
 
     public Long getId() {

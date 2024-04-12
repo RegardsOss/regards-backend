@@ -563,7 +563,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
         // Create case in order to block the feature deletion request
         FeatureEntity featureEntity = featureWithDisseminationRepository.findAll().get(0);
-        FeatureDisseminationInfo featureDisseminationInfo = new FeatureDisseminationInfo("RecipientLabel", true);
+        FeatureDisseminationInfo featureDisseminationInfo = createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                           "RecipientLabel",
+                                                                                           true);
         featureDisseminationInfo.setBlocking(true);
 
         featureEntity.getDisseminationsInfo().add(featureDisseminationInfo);
@@ -590,7 +592,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
         // Create case in order to block the feature deletion request
         FeatureEntity featureEntity = featureWithDisseminationRepository.findAll().get(0);
-        FeatureDisseminationInfo featureDisseminationInfo = new FeatureDisseminationInfo("RecipientLabel", true);
+        FeatureDisseminationInfo featureDisseminationInfo = createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                           "RecipientLabel",
+                                                                                           true);
         featureDisseminationInfo.setBlocking(true);
 
         featureEntity.getDisseminationsInfo().add(featureDisseminationInfo);

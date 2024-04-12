@@ -25,6 +25,9 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
@@ -139,6 +142,18 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
         }
         featureService.scheduleRequests();
         waitFeature(nbFeatures, start, 10000, getDefaultTenant());
+    }
+
+    protected FeatureDisseminationInfo createFeatureDisseminationInfo(FeatureUniformResourceName productUrn,
+                                                                      String recipientLabel,
+                                                                      boolean ackRequired) {
+        return new FeatureDisseminationInfo(new FeatureUpdateDisseminationRequest(productUrn,
+                                                                                  recipientLabel,
+                                                                                  FeatureUpdateDisseminationInfoType.PUT,
+                                                                                  OffsetDateTime.now(),
+                                                                                  ackRequired,
+                                                                                  false));
+
     }
 
     /**

@@ -53,6 +53,9 @@ public class FeatureUpdateDisseminationRequest {
     @Column(name = "recipient_label", length = 128, nullable = false)
     private String recipientLabel;
 
+    /**
+     * Real Dissemination date of the product to current recipient
+     */
     @Column(name = "creation_date", nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     @NotNull
@@ -76,19 +79,21 @@ public class FeatureUpdateDisseminationRequest {
 
     public FeatureUpdateDisseminationRequest(FeatureUniformResourceName urn,
                                              String recipientLabel,
-                                             FeatureUpdateDisseminationInfoType updateType) {
+                                             FeatureUpdateDisseminationInfoType updateType,
+                                             OffsetDateTime disseminationDate) {
         this.urn = urn;
         this.recipientLabel = recipientLabel;
         this.updateType = updateType;
-        this.creationDate = OffsetDateTime.now();
+        this.creationDate = disseminationDate;
     }
 
     public FeatureUpdateDisseminationRequest(FeatureUniformResourceName urn,
                                              String recipientLabel,
                                              FeatureUpdateDisseminationInfoType updateType,
+                                             OffsetDateTime disseminationDate,
                                              boolean ackRequired,
                                              boolean blockingRequired) {
-        this(urn, recipientLabel, updateType);
+        this(urn, recipientLabel, updateType, disseminationDate);
 
         this.ackRequired = ackRequired;
         this.blockingRequired = blockingRequired;
