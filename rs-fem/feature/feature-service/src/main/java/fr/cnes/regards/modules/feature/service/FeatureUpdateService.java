@@ -61,7 +61,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -279,10 +278,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     public int scheduleRequests() {
         long scheduleStart = System.currentTimeMillis();
         List<ILightFeatureUpdateRequest> requestsToSchedule = this.featureUpdateRequestRepository.findRequestsToSchedule(
-            FeatureRequestStep.LOCAL_DELAYED,
-            OffsetDateTime.now(),
-            PageRequest.of(0, this.properties.getMaxBulkSize()),
-            OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing())).getContent();
+            this.properties.getDelayBeforeProcessing(),
+            this.properties.getMaxBulkSize());
 
         if (!requestsToSchedule.isEmpty()) {
 

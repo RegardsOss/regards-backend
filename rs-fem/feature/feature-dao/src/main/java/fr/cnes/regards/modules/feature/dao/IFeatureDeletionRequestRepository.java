@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.feature.dao;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -46,12 +46,32 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
     Set<FeatureDeletionRequest> findByStepIn(@Param("steps") Collection<FeatureRequestStep> steps,
                                              @Param("now") OffsetDateTime offsetDateTime);
 
-    @Query("select fdr from FeatureDeletionRequest fdr  "
-           + "where fdr.step = :step "
-           + "and fdr.requestDate <= :now "
-           + "and fdr.urn not in (select urn from FeatureCreationRequest)")
-    Page<FeatureDeletionRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
-                                                        @Param("now") OffsetDateTime now,
-                                                        Pageable page);
+    /**
+     * Get a limited number of {@link FeatureDeletionRequest} ready to be scheduled ordered by priority and date.
+     *
+     * @param size           maximum number of request to return
+     * @param delayInSeconds delay in seconds from now of returned requests
+     */
+    default List<FeatureDeletionRequest> findRequestsToSchedule(int delayInSeconds, int size) {
+        OffsetDateTime now = OffsetDateTime.now();
+        return doFindRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED,
+                                        now,
+                                        now.minusSeconds(delayInSeconds),
+                                        Pageable.ofSize(size));
+    }
+
+    @Query("""
+        SELECT request FROM FeatureDeletionRequest request
+        WHERE request.step = :step
+        AND request.requestDate <= :now
+        AND NOT EXISTS (SELECT fcr.urn FROM FeatureCreationRequest fcr WHERE fcr.urn = request.urn)
+        AND request.registrationDate <= :delay
+        AND request.requestDate <= :now
+        ORDER BY request.priority, request.requestDate
+        """)
+    List<FeatureDeletionRequest> doFindRequestsToSchedule(@Param("step") FeatureRequestStep step,
+                                                          @Param("now") OffsetDateTime now,
+                                                          @Param("delay") OffsetDateTime delay,
+                                                          Pageable page);
 
 }

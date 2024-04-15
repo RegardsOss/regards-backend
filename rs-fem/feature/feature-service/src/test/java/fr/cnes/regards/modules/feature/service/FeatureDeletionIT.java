@@ -522,9 +522,10 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         featureDeletionService.registerRequests(Collections.singletonList(featureDeletionRequestEvent));
 
         // When
-        featureDeletionService.scheduleRequests();
+        int nbScheduledRequests = featureDeletionService.scheduleRequests();
 
         // Then
+        Assert.assertEquals(0, nbScheduledRequests);
         Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(
             FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
         assertEquals(1, notScheduled.size());

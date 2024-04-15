@@ -56,10 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -67,7 +64,6 @@ import org.springframework.validation.Validator;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -213,20 +209,17 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         Set<Long> requestIds = new HashSet<>();
         List<FeatureDeletionRequest> requestsToSchedule = new ArrayList<>();
 
-        Page<FeatureDeletionRequest> dbRequests = featureDeletionRequestRepository.findRequestsToSchedule(
-            FeatureRequestStep.LOCAL_DELAYED,
-            OffsetDateTime.now(),
-            PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
+        List<FeatureDeletionRequest> dbRequests = featureDeletionRequestRepository.findRequestsToSchedule(0,
+                                                                                                          properties.getMaxBulkSize());
 
         if (!dbRequests.isEmpty()) {
-
             Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(dbRequests.stream()
                                                                                                                   .map(
                                                                                                                       FeatureDeletionRequest::getUrn)
                                                                                                                   .collect(
                                                                                                                       Collectors.toSet()));
 
-            for (FeatureDeletionRequest request : dbRequests.getContent()) {
+            for (FeatureDeletionRequest request : dbRequests) {
                 requestsToSchedule.add(request);
                 requestIds.add(request.getId());
                 // Update session properties

@@ -52,6 +52,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -546,6 +547,37 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureCreationRequestRepo.count());
         assertEquals(properties.getMaxBulkSize().intValue(), infos.getGranted().size());
         assertEquals(0, infos.getDenied().size());
+    }
+
+    @Test
+    @Purpose("Only one creation request can be scheduled at a time for a given provider id to avoid versioning issues")
+    public void test_schedule_multiples_creation_requests_with_same_provider_id() {
+
+        // Given 3 requests with same provider id
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(3, true, false);
+        events.forEach(e -> e.getFeature().setId("same_id"));
+        this.featureCreationService.registerRequests(events);
+
+        // When
+        this.featureCreationService.scheduleRequests();
+
+        // Then only one request is scheduled
+        Assert.assertEquals(3, this.featureCreationRequestRepo.count());
+        Assert.assertEquals(1,
+                            this.featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED,
+                                                                       Pageable.ofSize(10)).getTotalElements());
+
+        // Retry schedule
+        
+        // When
+        this.featureCreationService.scheduleRequests();
+
+        // Then only one request is scheduled
+        Assert.assertEquals(3, this.featureCreationRequestRepo.count());
+        Assert.assertEquals(1,
+                            this.featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED,
+                                                                       Pageable.ofSize(10)).getTotalElements());
+
     }
 
     @Test

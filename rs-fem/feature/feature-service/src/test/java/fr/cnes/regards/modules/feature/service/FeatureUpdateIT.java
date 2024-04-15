@@ -125,7 +125,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // STEP 1 : create nbFeatures
         String acknowledgedRecipientWithAck = "acknowledged recipient awaiting ack";
         String acknowledgedRecipientWithAckNoReceive = "acknowledged recipient awaiting ack but won't receive ACK "
-                                                     + "during this test";
+                                                       + "during this test";
         String acknowledgedRecipientNoAck = "acknowledged recipient not awaiting ack";
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true, false);
         featureCreationService.registerRequests(events);
@@ -137,14 +137,16 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // STEP 2 : mock feedback from notifier to simulate dissemination info (with and without ack)
         List<FeatureEntity> featureEntities = featureWithDisseminationRepository.findAll();
         featureEntities.forEach(featureEntity -> {
-            featureEntity.setDisseminationsInfo(Sets.newHashSet(new FeatureDisseminationInfo(acknowledgedRecipientWithAck,
-                                                                                             true),
-                                                                new FeatureDisseminationInfo(acknowledgedRecipientWithAckNoReceive,
-                                                                                             true),
-                                                                new FeatureDisseminationInfo(acknowledgedRecipientNoAck, false)));
+            featureEntity.setDisseminationsInfo(Sets.newHashSet(new FeatureDisseminationInfo(
+                                                                    acknowledgedRecipientWithAck,
+                                                                    true),
+                                                                new FeatureDisseminationInfo(
+                                                                    acknowledgedRecipientWithAckNoReceive,
+                                                                    true),
+                                                                new FeatureDisseminationInfo(acknowledgedRecipientNoAck,
+                                                                                             false)));
             featureEntity.updateDisseminationPending();
-            }
-        );
+        });
         featureWithDisseminationRepository.saveAll(featureEntities);
 
         // STEP 3 : create update request to simulate response for dissemination with ack required
@@ -175,16 +177,29 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         featureEntitiesUpdated.forEach(featureEntity -> {
             assertTrue("Features should not have pending dissemination.", featureEntity.isDisseminationPending());
             assertNotNull("acknowledgedRecipientWithAck should have received ack and ACK date present",
-                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
-                              (acknowledgedRecipientWithAck)).findFirst().get().getAckDate());
+                          featureEntity.getDisseminationsInfo()
+                                       .stream()
+                                       .filter(info -> info.getLabel().equals(acknowledgedRecipientWithAck))
+                                       .findFirst()
+                                       .get()
+                                       .getAckDate());
             assertNull("acknowledgedRecipientWithAckNoReceive should not be updated",
-                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
-                              (acknowledgedRecipientWithAckNoReceive)).findFirst().get().getAckDate());
+                       featureEntity.getDisseminationsInfo()
+                                    .stream()
+                                    .filter(info -> info.getLabel().equals(acknowledgedRecipientWithAckNoReceive))
+                                    .findFirst()
+                                    .get()
+                                    .getAckDate());
             assertNotNull("acknowledgedRecipientNoAck is not awaiting any ack",
-                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
-                              (acknowledgedRecipientNoAck)).findFirst().get().getAckDate());
+                          featureEntity.getDisseminationsInfo()
+                                       .stream()
+                                       .filter(info -> info.getLabel().equals(acknowledgedRecipientNoAck))
+                                       .findFirst()
+                                       .get()
+                                       .getAckDate());
         });
     }
+
     @Test
     @Purpose(value = "Test if features are properly patched when update dissemination info are received - "
                      + "with dissemination not pending.")
@@ -206,12 +221,11 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // STEP 2 : mock feedback from notifier to simulate dissemination info (with and without ack)
         List<FeatureEntity> featureEntities = featureWithDisseminationRepository.findAll();
         featureEntities.forEach(featureEntity -> {
-                                    featureEntity.setDisseminationsInfo(Sets.newHashSet(new FeatureDisseminationInfo(acknowledgedRecipientWithAck,
-                                                                                                                     true),
-                                                                                        new FeatureDisseminationInfo(acknowledgedRecipientNoAck, false)));
-                                    featureEntity.updateDisseminationPending();
-                                }
-        );
+            featureEntity.setDisseminationsInfo(Sets.newHashSet(new FeatureDisseminationInfo(
+                acknowledgedRecipientWithAck,
+                true), new FeatureDisseminationInfo(acknowledgedRecipientNoAck, false)));
+            featureEntity.updateDisseminationPending();
+        });
         featureWithDisseminationRepository.saveAll(featureEntities);
 
         // STEP 3 : create update request to simulate response for dissemination with ack required
@@ -242,11 +256,19 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         featureEntitiesUpdated.forEach(featureEntity -> {
             assertFalse("Features should not have pending dissemination.", featureEntity.isDisseminationPending());
             assertNotNull("acknowledgedRecipientWithAck should have received ack and ACK date present",
-                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
-                              (acknowledgedRecipientWithAck)).findFirst().get().getAckDate());
+                          featureEntity.getDisseminationsInfo()
+                                       .stream()
+                                       .filter(info -> info.getLabel().equals(acknowledgedRecipientWithAck))
+                                       .findFirst()
+                                       .get()
+                                       .getAckDate());
             assertNotNull("acknowledgedRecipientNoAck is not awaiting any ack",
-                          featureEntity.getDisseminationsInfo().stream().filter(info -> info.getLabel().equals
-                              (acknowledgedRecipientNoAck)).findFirst().get().getAckDate());
+                          featureEntity.getDisseminationsInfo()
+                                       .stream()
+                                       .filter(info -> info.getLabel().equals(acknowledgedRecipientNoAck))
+                                       .findFirst()
+                                       .get()
+                                       .getAckDate());
         });
     }
 
@@ -322,6 +344,67 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
         checkRequests(1, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property(acknowledgedRecipient + ".pending"), requests);
+    }
+
+    @Test
+    public void test_update_request_not_scheduled_if_creation_request_exists_on_same_urn() {
+        // Given : init creation request with given urn
+        FeatureUniformResourceName urn = FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
+                                                                                    EntityType.DATA,
+                                                                                    this.getDefaultTenant(),
+                                                                                    1);
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(1, true, false);
+        events.forEach(e -> e.getFeature().setUrn(urn));
+        featureCreationService.registerRequests(events);
+
+        // When : init update request with same urn
+        featureUpdateService.registerRequests(prepareUpdateRequests(Lists.newArrayList(events.get(0)
+                                                                                             .getFeature()
+                                                                                             .getUrn())));
+        int scheduledRequests = featureUpdateService.scheduleRequests();
+
+        // Then Update request is not scheduled
+        Assert.assertEquals(0, scheduledRequests);
+    }
+
+    @Test
+    public void test_update_request_not_scheduled_if_update_request_is_running_on_same_urn()
+        throws EntityException, InterruptedException {
+        // Given : init creation request with given urn
+        FeatureUniformResourceName urn = FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
+                                                                                    EntityType.DATA,
+                                                                                    this.getDefaultTenant(),
+                                                                                    1);
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(1, true, false);
+        events.forEach(e -> e.getFeature().setUrn(urn));
+        featureCreationService.registerRequests(events);
+        featureCreationService.scheduleRequests();
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == 1;
+        });
+        mockStorageHelper.mockStorageResponses(featureCreationRequestRepo, 1, 0);
+        mockNotificationSuccess();
+
+        // When init update request
+        featureUpdateService.registerRequests(prepareUpdateRequests(Lists.newArrayList(events.get(0)
+                                                                                             .getFeature()
+                                                                                             .getUrn())));
+        Thread.sleep(100 + (properties.getDelayBeforeProcessing() * 1000L));
+        int scheduledRequests = featureUpdateService.scheduleRequests();
+
+        // Then Update request is scheduled
+        Assert.assertEquals(1, scheduledRequests);
+
+        // When init a new update request on same entity
+        featureUpdateService.registerRequests(prepareUpdateRequests(Lists.newArrayList(events.get(0)
+                                                                                             .getFeature()
+                                                                                             .getUrn())));
+        Thread.sleep(100 + (properties.getDelayBeforeProcessing() * 1000L));
+        scheduledRequests = featureUpdateService.scheduleRequests();
+        // Then new request is not scheduled
+        Assert.assertEquals(0, scheduledRequests);
+
     }
 
     @Test
@@ -643,12 +726,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
             mockNotificationSuccess();
         }
 
-        List<ILightFeatureUpdateRequest> scheduled = featureUpdateRequestRepo.findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED,
-                                                                                                     OffsetDateTime.now(),
-                                                                                                     PageRequest.of(0,
-                                                                                                                    properties.getMaxBulkSize()),
-                                                                                                     OffsetDateTime.now())
-                                                                             .getContent();
+        List<ILightFeatureUpdateRequest> scheduled = featureUpdateRequestRepo.findRequestsToSchedule(0,
+                                                                                                     properties.getMaxBulkSize());
         // half of scheduled should be with priority HIGH
         assertEquals(nbMinimalExpectedRequests, scheduled.size());
         // check that remaining FeatureUpdateRequests doesn't have high priority

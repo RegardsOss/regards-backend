@@ -32,7 +32,6 @@ import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -52,7 +51,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -334,11 +332,8 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
             return nbFeatureUpdateDisseminationRequestRemaining == 0;
         });
 
-        List<ILightFeatureUpdateRequest> scheduled = this.featureUpdateRequestRepository.findRequestsToSchedule(
-            FeatureRequestStep.LOCAL_DELAYED,
-            OffsetDateTime.now(),
-            PageRequest.of(0, properties.getMaxBulkSize()),
-            OffsetDateTime.now()).getContent();
+        List<ILightFeatureUpdateRequest> scheduled = this.featureUpdateRequestRepository.findRequestsToSchedule(0,
+                                                                                                                properties.getMaxBulkSize());
         assertEquals(0, scheduled.size());
 
         featureWithDisseminationRepo.findAll().forEach(feature -> {

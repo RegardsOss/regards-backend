@@ -61,10 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -367,11 +364,8 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         Set<Long> requestIds = new HashSet<>();
         List<ILightFeatureCreationRequest> requestsToSchedule = new ArrayList<>();
 
-        List<ILightFeatureCreationRequest> dbRequests = this.featureCreationRequestRepo.findRequestsToSchedule(
-                                                                FeatureRequestStep.LOCAL_DELAYED,
-                                                                OffsetDateTime.now(),
-                                                                PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
-                                                                                       .getContent();
+        List<ILightFeatureCreationRequest> dbRequests = featureCreationRequestRepo.findRequestsToSchedule(0,
+                                                                                                               properties.getMaxBulkSize());
 
         if (!dbRequests.isEmpty()) {
             for (ILightFeatureCreationRequest request : dbRequests) {
