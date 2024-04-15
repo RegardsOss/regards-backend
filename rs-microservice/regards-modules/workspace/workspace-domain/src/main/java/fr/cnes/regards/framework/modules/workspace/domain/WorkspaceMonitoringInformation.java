@@ -51,9 +51,9 @@ public class WorkspaceMonitoringInformation {
     private String freeSpace;
 
     /**
-     * Workspace occupation ratio
+     * Workspace occupation ratio in decimal
      */
-    private Double occupationRatio;
+    private Double occupationRatioInDecimal;
 
     /**
      * Workspace path
@@ -72,7 +72,7 @@ public class WorkspaceMonitoringInformation {
         this.totalSpace = totalSpace + BYTES_UNIT;
         this.usedSpace = usedSpace + BYTES_UNIT;
         this.freeSpace = freeSpace + BYTES_UNIT;
-        this.occupationRatio = Double.valueOf(usedSpace) / totalSpace;
+        this.occupationRatioInDecimal = Double.valueOf(usedSpace) / totalSpace;
         this.path = path;
     }
 
@@ -135,15 +135,15 @@ public class WorkspaceMonitoringInformation {
     /**
      * @return the occupation ratio
      */
-    public Double getOccupationRatio() {
-        return occupationRatio;
+    public Double getOccupationRatioInDecimal() {
+        return occupationRatioInDecimal;
     }
 
     /**
      * Set the occupation ratio
      */
-    public void setOccupationRatio(Double occupationRatio) {
-        this.occupationRatio = occupationRatio;
+    public void setOccupationRatioInDecimal(Double occupationRatioInDecimal) {
+        this.occupationRatioInDecimal = occupationRatioInDecimal;
     }
 
     /**
