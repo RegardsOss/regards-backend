@@ -18,15 +18,20 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.encryption.IEncryptionService;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
+import fr.cnes.regards.modules.notifier.domain.plugin.PluginWithSensitiveParam;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender5;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationManager;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
@@ -58,6 +63,9 @@ public class ImportConfigurationIT extends AbstractNotificationMultitenantServic
     private PluginConfiguration secondRecipient;
 
     private PluginConfiguration firstRule;
+
+    @Autowired
+    private IEncryptionService encryptionService;
 
     @Before
     public void initializeData() throws Exception {
@@ -123,4 +131,59 @@ public class ImportConfigurationIT extends AbstractNotificationMultitenantServic
         assertThat(actualRule).isPresent();
         assertThat(actualRule.get().getRecipientsBusinessIds()).containsExactly(RECIPIENT_2);
     }
+
+    @Test
+    public void test_sensitive_information_well_encrypted() throws ModuleException {
+        // GIVEN a plugin with a sensitive param
+        String pluginLabel = "myLabel";
+        String sensitiveValue = "password";
+        PluginConfiguration sensitivePlugin = new PluginConfiguration();
+        sensitivePlugin.setLabel(pluginLabel);
+        sensitivePlugin.setPluginId(PluginWithSensitiveParam.PLUGIN_ID);
+        sensitivePlugin.getParameters()
+                       .add(IPluginParam.build(PluginWithSensitiveParam.SENSITIVE_PARAM_NAME, sensitiveValue));
+
+        // WHEN creating this plugin
+        pluginService.createOrUpdatePluginConfiguration(sensitivePlugin);
+        // THEN retrieve the plugin conf
+        Optional<PluginConfiguration> pluginConfGetByServiceOpt = pluginService.findPluginConfigurationByLabel(
+            pluginLabel);
+        Assertions.assertTrue(pluginConfGetByServiceOpt.isPresent());
+        // THEN the sensitive param is well encrypted
+        PluginConfiguration pluginConfigurationAfterSave = pluginConfGetByServiceOpt.get();
+        Assertions.assertEquals(sensitiveValue,
+                                encryptionService.decrypt(pluginConfigurationAfterSave.getParameter(
+                                    PluginWithSensitiveParam.SENSITIVE_PARAM_NAME).getValue().toString()));
+
+        // GIVEN modified sensitive param
+        String sensitiveValueChanged = sensitiveValue + "_modified";
+        // GIVEN moduleConfiguration modified with new sensitive param
+        ModuleConfiguration moduleConfiguration = manager.exportConfiguration();
+        moduleConfiguration.setResetBeforeImport(false); // don't reset, keep existing
+        PluginConfiguration pluginConfiguration = (PluginConfiguration) moduleConfiguration.getConfiguration()
+                                                                                           .get(0)
+                                                                                           .getValue();
+        pluginConfiguration.getParameters().clear();
+        pluginConfiguration.getParameters()
+                           .add(IPluginParam.build(PluginWithSensitiveParam.SENSITIVE_PARAM_NAME,
+                                                   sensitiveValueChanged));
+
+        // WHEN importing module configuration
+        manager.importConfigurationAndLog(moduleConfiguration);
+        // THEN retrieve the plugin conf
+        pluginConfGetByServiceOpt = pluginService.findPluginConfigurationByLabel(pluginLabel);
+        Assertions.assertTrue(pluginConfGetByServiceOpt.isPresent());
+        // THEN The sensitive param is well encrypted and is different than before
+        PluginConfiguration pluginConfigurationAfterUpdate = pluginConfGetByServiceOpt.get();
+        String newPasswordStored = pluginConfigurationAfterUpdate.getParameter(PluginWithSensitiveParam.SENSITIVE_PARAM_NAME)
+                                                                 .getValue()
+                                                                 .toString();
+        try {
+            encryptionService.decrypt(newPasswordStored);
+        } catch (EncryptionException e) {
+            Assertions.fail("Decrypt operation should be possible");
+        }
+        Assertions.assertEquals(sensitiveValueChanged, encryptionService.decrypt(newPasswordStored));
+    }
+
 }

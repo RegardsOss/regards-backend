@@ -78,6 +78,8 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     private final IOrderSettingsService orderSettingsService;
 
+    private final IOrderJobService orderJobService;
+
     public OrderMaintenanceService(IOrderService orderService,
                                    IOrderRepository orderRepository,
                                    IOrderDataFileService orderDataFileService,
@@ -87,7 +89,8 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
                                    TemplateService templateService,
                                    IEmailClient emailClient,
                                    IOrderSettingsService orderSettingsService,
-                                   IOrderMaintenanceService orderMaintenanceService) {
+                                   IOrderMaintenanceService orderMaintenanceService,
+                                   IOrderJobService orderJobService) {
         this.orderService = orderService;
         this.orderRepository = orderRepository;
         this.orderDataFileService = orderDataFileService;
@@ -98,6 +101,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         this.emailClient = emailClient;
         this.orderSettingsService = orderSettingsService;
         this.self = orderMaintenanceService;
+        this.orderJobService = orderJobService;
     }
 
     @Override
@@ -191,8 +195,10 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void cleanExpiredOrdersForTenant() {
         Optional<Order> optional = orderRepository.findFirstExpiredOrder();
+
         while (optional.isPresent()) {
             handleExpiredOrder(optional.get());
+
             optional = orderRepository.findFirstExpiredOrder();
         }
     }
@@ -236,10 +242,10 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         // Deactivate waitingForUser tag
         order.setWaitingForUser(false);
         order.setAvailableFilesCount(0);
-        // Set status to expired
         order.setStatus(OrderStatus.EXPIRED);
-        // Order is already at EXPIRED state so let it be
         orderRepository.save(order);
+        // Don't forget to manage user order jobs (maybe order is in waitingForUser state - PENDING -> QUEUED)
+        orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
     }
 
 }

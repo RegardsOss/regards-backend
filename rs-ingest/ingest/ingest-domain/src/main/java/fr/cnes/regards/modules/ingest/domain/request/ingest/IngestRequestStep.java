@@ -63,13 +63,13 @@ public enum IngestRequestStep {
     LOCAL_FINAL,
 
     /**
-     * Notification
+     * Notification with NOTIFIER service
      */
     LOCAL_TO_BE_NOTIFIED,
     REMOTE_NOTIFICATION_ERROR,
 
     /**
-     * Remote and asynchronous storage steps
+     * Remote and asynchronous storage steps with STORAGE service
      * <p>
      * |
      * {@link #REMOTE_STORAGE_REQUESTED}

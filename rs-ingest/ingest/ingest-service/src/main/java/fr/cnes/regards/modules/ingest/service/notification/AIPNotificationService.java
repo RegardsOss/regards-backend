@@ -104,16 +104,16 @@ public class AIPNotificationService implements IAIPNotificationService {
             // first update step and states of requests
             for (AbstractRequest abstractRequest : requestsToSend) {
                 if (abstractRequest instanceof IngestRequest ingestRequest) {
-                    ingestRequest.setState(InternalRequestState.RUNNING);
+                    ingestRequest.setState(InternalRequestState.WAITING_NOTIFIER_RESPONSE);
                     ingestRequest.setStep(IngestRequestStep.LOCAL_TO_BE_NOTIFIED);
                 } else if (abstractRequest instanceof OAISDeletionRequest oaisDeletionRequest) {
-                    oaisDeletionRequest.setState(InternalRequestState.RUNNING);
+                    oaisDeletionRequest.setState(InternalRequestState.WAITING_NOTIFIER_RESPONSE);
                     oaisDeletionRequest.setStep(DeletionRequestStep.LOCAL_TO_BE_NOTIFIED);
                 } else if (abstractRequest instanceof AIPUpdateRequest aipUpdateRequest) {
-                    aipUpdateRequest.setState(InternalRequestState.RUNNING);
+                    aipUpdateRequest.setState(InternalRequestState.WAITING_NOTIFIER_RESPONSE);
                     aipUpdateRequest.setStep(AIPUpdateRequestStep.LOCAL_TO_BE_NOTIFIED);
                 } else if (abstractRequest instanceof AipDisseminationRequest disseminationRequest) {
-                    disseminationRequest.setState(InternalRequestState.WAITING_NOTIFIER_DISSEMINATION_RESPONSE);
+                    disseminationRequest.setState(InternalRequestState.WAITING_NOTIFIER_RESPONSE);
                 }
             }
             abstractRequestRepo.saveAll(requestsToSend);
@@ -253,9 +253,10 @@ public class AIPNotificationService implements IAIPNotificationService {
                 updateTasksByAIP.put(disseminationRequest.getAip(), updateDisseminationTask);
             }
         }
-        aipUpdateRequestService.create(updateTasksByAIP);
-        // delete dissemination requests
+        // delete dissemination requests first
         requestService.deleteRequests(Sets.newHashSet(disseminationRequestsEvents.keySet()));
+        // then create following requests to update AIPs
+        aipUpdateRequestService.create(updateTasksByAIP);
     }
 
     private void handleIngestNotificationSuccess(Set<IngestRequest> successIngestRequests) {

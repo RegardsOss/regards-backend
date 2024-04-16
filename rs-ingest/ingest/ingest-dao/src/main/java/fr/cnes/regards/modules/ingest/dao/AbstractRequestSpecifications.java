@@ -303,7 +303,9 @@ public final class AbstractRequestSpecifications {
     public static Predicate getRunningRequestFilter(Root<AbstractRequest> root, CriteriaBuilder cb) {
         Set<Predicate> statePredicates = Sets.newHashSet();
         ArrayList<InternalRequestState> runningStates = Lists.newArrayList(InternalRequestState.CREATED,
-                                                                           InternalRequestState.RUNNING);
+                                                                           InternalRequestState.RUNNING,
+                                                                           InternalRequestState.WAITING_NOTIFIER_RESPONSE,
+                                                                           InternalRequestState.WAITING_REMOTE_STORAGE);
         for (InternalRequestState state : runningStates) {
             statePredicates.add(cb.equal(root.get(STATE_ATTRIBUTE), state));
         }

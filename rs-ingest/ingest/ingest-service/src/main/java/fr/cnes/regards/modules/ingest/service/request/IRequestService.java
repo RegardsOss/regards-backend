@@ -41,7 +41,8 @@ public interface IRequestService {
 
     /**
      * Check for the given list of {@link IngestRequest} if they should be blocked.
-     * Each requests taht should be blocked is updated (status=BLOCKED).     *
+     * An {@link IngestRequest} should be blocked if another {@link IngestRequest} is created or running
+     * Each requests that should be blocked is updated (status=BLOCKED).
      *
      * @param ingestsRequests requests to check
      * @return requests that can be scheduled.

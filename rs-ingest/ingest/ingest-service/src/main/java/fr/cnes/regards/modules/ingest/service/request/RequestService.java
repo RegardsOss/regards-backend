@@ -360,6 +360,7 @@ public class RequestService implements IRequestService {
 
     /**
      * Check that there is no older request dealing with the same providerId being processed
+     * See {@link InternalRequestState#POTENTIALLY_BLOCKED_INGEST_REQUEST_STATES}
      */
     private boolean canProceedWithRequest(IngestRequest requestToCheck, List<IngestRequest> requests) {
         List<IngestRequest> requestsWithSameProviderId = requests.stream()

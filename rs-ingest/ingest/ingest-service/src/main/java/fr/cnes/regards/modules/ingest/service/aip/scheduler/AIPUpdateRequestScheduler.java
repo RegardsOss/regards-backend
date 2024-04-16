@@ -105,7 +105,7 @@ public class AIPUpdateRequestScheduler {
             // Change request state
             abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
 
-            // Schedule deletion job
+            // Schedule AIP update job
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(AIPUpdateRunnerJob.UPDATE_REQUEST_IDS, requestIds));
             jobInfo = new JobInfo(false,

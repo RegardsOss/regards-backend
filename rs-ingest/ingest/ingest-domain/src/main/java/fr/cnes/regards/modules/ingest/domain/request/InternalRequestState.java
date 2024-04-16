@@ -42,9 +42,9 @@ public enum InternalRequestState {
     WAITING_REMOTE_STORAGE,
 
     /**
-     * The request is waiting for a notifier response, about an aip dissemination
+     * The request is waiting an event from notifier response to proceed
      */
-    WAITING_NOTIFIER_DISSEMINATION_RESPONSE,
+    WAITING_NOTIFIER_RESPONSE,
 
     /**
      * When the request cannot be processed for now
@@ -60,9 +60,13 @@ public enum InternalRequestState {
     ERROR, ABORTED, IGNORED;
 
     /**
-     * List of states for IngestRequest that can potentially be blocked by another request.
+     * List of states for IngestRequest that can potentially block another IngestRequest request.
+     * IngestRequest can be processed as soon as others ones have finished to create the AIP (due to versionning and
+     * replacement issues)
+     * It also retrieves TO_SCHEDULE requests to ensure the current request is the oldest request Ingest received
      */
-    public static List<InternalRequestState> POTENTIALLY_BLOCKED_INGEST_REQUEST_STATES = List.of(InternalRequestState.TO_SCHEDULE,
-                                                                                                 InternalRequestState.CREATED,
-                                                                                                 InternalRequestState.RUNNING);
+    public final static List<InternalRequestState> POTENTIALLY_BLOCKED_INGEST_REQUEST_STATES = List.of(
+        InternalRequestState.TO_SCHEDULE,
+        InternalRequestState.CREATED,
+        InternalRequestState.RUNNING);
 }
