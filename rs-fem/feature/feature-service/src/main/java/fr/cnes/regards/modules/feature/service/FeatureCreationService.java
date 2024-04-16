@@ -410,7 +410,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Override
     public Set<FeatureEntity> processRequests(Set<Long> requestIds, FeatureCreationJob featureCreationJob) {
 
-        Map<Boolean, List<FeatureCreationRequest>> requestByHasError = featureCreationRequestRepo.findAllByIdIn(
+        Map<Boolean, List<FeatureCreationRequest>> requestByHasError = featureCreationRequestRepo.findAllById(
                                                                                                      requestIds)
                                                                                                  .stream()
                                                                                                  .collect(Collectors.partitioningBy(

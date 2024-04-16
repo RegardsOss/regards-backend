@@ -96,11 +96,6 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
                                                                 @Param("delay") OffsetDateTime delay,
                                                                 Pageable pageLimit);
 
-    List<FeatureCreationRequest> findAllByIdIn(Iterable<Long> ids);
-
-    @Override
-    List<FeatureCreationRequest> findAllById(Iterable<Long> longs);
-
     @Modifying
     @Query(value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)), last_update = :now  WHERE urn IN :urns",
            nativeQuery = true)
