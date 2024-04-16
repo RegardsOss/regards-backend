@@ -36,10 +36,13 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureFileUpdateMode;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
@@ -512,6 +515,18 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
             timeout = 5000;
         }
         waitFeature(nbFeatures, null, timeout);
+    }
+
+    protected FeatureDisseminationInfo createFeatureDisseminationInfo(FeatureUniformResourceName productUrn,
+                                                                      String recipientLabel,
+                                                                      boolean ackRequired) {
+        return new FeatureDisseminationInfo(new FeatureUpdateDisseminationRequest(productUrn,
+                                                                                  recipientLabel,
+                                                                                  FeatureUpdateDisseminationInfoType.PUT,
+                                                                                  OffsetDateTime.now(),
+                                                                                  ackRequired,
+                                                                                  false));
+
     }
 
     public boolean initDefaultNotificationSettings() {

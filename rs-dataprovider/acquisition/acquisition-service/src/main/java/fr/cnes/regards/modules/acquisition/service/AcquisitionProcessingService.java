@@ -775,7 +775,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     return extension;
                 }
             } catch (NotAvailablePluginConfigurationException | ModuleException e) {
-                LOGGER.warn("Unable to get postprocess plugin : "+e.getMessage(), e);
+                LOGGER.warn("Unable to get postprocess plugin : " + e.getMessage(), e);
             }
         }
         return null;
@@ -1110,6 +1110,14 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
+    public void handleProductAcquisitionAborted(JobInfo jobInfo) {
+        Long chainId = jobInfo.getParametersAsMap().get(ProductAcquisitionJob.CHAIN_PARAMETER_ID).getValue();
+        acqChainRepository.findById(chainId).ifPresent(chain -> {
+            unlockChain(chainId);
+        });
+    }
+
+    @Override
     public void handleProductAcquisitionError(JobInfo jobInfo) {
         Long chainId = jobInfo.getParametersAsMap().get(ProductAcquisitionJob.CHAIN_PARAMETER_ID).getValue();
         Optional<AcquisitionProcessingChain> acqChain = acqChainRepository.findById(chainId);
@@ -1124,6 +1132,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     // Nothing to do
                 }
             }
+            unlockChain(acqChain.get().getId());
         } else {
             LOGGER.warn("Cannot handle product acquisition error because acquisition chain {} does not exist", chainId);
         }

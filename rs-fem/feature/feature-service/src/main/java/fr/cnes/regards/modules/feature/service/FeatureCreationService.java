@@ -61,10 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -370,11 +367,14 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         Set<Long> requestIds = new HashSet<>();
         List<ILightFeatureCreationRequest> requestsToSchedule = new ArrayList<>();
 
-        List<ILightFeatureCreationRequest> dbRequests = this.featureCreationRequestRepo.findRequestsToSchedule(
-                                                                FeatureRequestStep.LOCAL_DELAYED,
-                                                                OffsetDateTime.now(),
-                                                                PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
-                                                                                       .getContent();
+        List<ILightFeatureCreationRequest> dbRequests = featureCreationRequestRepo.findRequestsToSchedule(0,
+                                                                                                               properties.getMaxBulkSize());
+        Optional<PriorityLevel> highestPriorityLevel = dbRequests.stream()
+                                                                 .max((p1, p2) -> Math.max(p1.getPriority()
+                                                                                             .getPriorityLevel(),
+                                                                                           p2.getPriority()
+                                                                                             .getPriorityLevel()))
+                                                                 .map(IAbstractRequest::getPriority);
 
         if (!dbRequests.isEmpty()) {
             for (ILightFeatureCreationRequest request : dbRequests) {
@@ -392,9 +392,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
             jobParameters.add(new JobParameter(FeatureCreationJob.IDS_PARAMETER, requestIds));
 
-            // the job priority will be set according the priority of the first request to schedule
+            // the job priority will be set according the priority of the highest request priority request
             JobInfo jobInfo = new JobInfo(false,
-                                          requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                                          highestPriorityLevel.orElse(PriorityLevel.NORMAL).getPriorityLevel(),
                                           jobParameters,
                                           authResolver.getUser(),
                                           FeatureCreationJob.class.getName());
@@ -413,7 +413,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Override
     public Set<FeatureEntity> processRequests(Set<Long> requestIds, FeatureCreationJob featureCreationJob) {
 
-        Map<Boolean, List<FeatureCreationRequest>> requestByHasError = featureCreationRequestRepo.findAllByIdIn(
+        Map<Boolean, List<FeatureCreationRequest>> requestByHasError = featureCreationRequestRepo.findAllById(
                                                                                                      requestIds)
                                                                                                  .stream()
                                                                                                  .collect(Collectors.partitioningBy(

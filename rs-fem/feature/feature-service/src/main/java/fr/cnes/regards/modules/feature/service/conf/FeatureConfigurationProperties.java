@@ -53,12 +53,6 @@ public class FeatureConfigurationProperties {
     @Value("${regards.feature.delay.before.processing:5}")
     private Integer delayBeforeProcessing;
 
-    /*
-     * In minute.
-     */
-    @Value("${regards.feature.remote.request.timeout:5}")
-    private Long remoteRequestTimeout;
-
     @Value("${regards.feature.metrics.enabled:false}")
     private Boolean metricsEnabled;
 
@@ -84,14 +78,6 @@ public class FeatureConfigurationProperties {
 
     public void setBatchSize(Integer batchSize) {
         this.batchSize = batchSize;
-    }
-
-    public Long getRemoteRequestTimeout() {
-        return remoteRequestTimeout;
-    }
-
-    public void setRemoteRequestTimeout(Long remoteRequestTimeout) {
-        this.remoteRequestTimeout = remoteRequestTimeout;
     }
 
     public Integer getDelayBeforeProcessing() {

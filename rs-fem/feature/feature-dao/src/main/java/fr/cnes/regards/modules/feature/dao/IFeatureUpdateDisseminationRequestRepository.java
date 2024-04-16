@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.dao;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,10 +42,23 @@ public interface IFeatureUpdateDisseminationRequestRepository
      * @return a page of {@link FeatureUpdateDisseminationRequest} that updates {@link FeatureEntity} that
      * are not concerned by an existing {@link FeatureUpdateRequest} request (except request in error)
      */
-    @Query(value = "select fud from FeatureUpdateDisseminationRequest fud where fud.urn not in ("
-                   + "select distinct ur.urn from FeatureUpdateRequest ur where not (ur.state = 'ERROR')) and fud.creationDate <= :now order by fud.creationDate",
-           countQuery = "select count(fud.id) from FeatureUpdateDisseminationRequest fud where fud.urn not in ("
-                        + "select distinct ur.urn from FeatureUpdateRequest ur where not (ur.state = 'ERROR')) and fud.creationDate <= :now")
+    @Query(value = """
+        SELECT fud FROM FeatureUpdateDisseminationRequest fud
+         WHERE fud.updateType = :type
+         AND fud.urn NOT IN
+            (SELECT DISTINCT ur.urn
+             FROM FeatureUpdateRequest ur
+             WHERE ur.state != 'ERROR')
+         AND fud.creationDate <= :now
+         ORDER BY fud.creationDate""", countQuery = """
+        SELECT count(fud.id) FROM FeatureUpdateDisseminationRequest fud
+         WHERE fud.updateType = :type
+         AND fud.urn NOT IN
+            (SELECT DISTINCT ur.urn
+             FROM FeatureUpdateRequest ur
+             WHERE NOT ur.state != 'ERROR')
+         AND fud.creationDate <= :now
+         ORDER BY fud.creationDate""")
     Page<FeatureUpdateDisseminationRequest> getFeatureUpdateDisseminationRequestsProcessable(
-        @Param("now") OffsetDateTime now, Pageable pageable);
+        @Param("now") OffsetDateTime now, @Param("type") FeatureUpdateDisseminationInfoType type, Pageable pageable);
 }

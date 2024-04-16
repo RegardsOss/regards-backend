@@ -32,7 +32,6 @@ import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -50,10 +49,8 @@ import fr.cnes.regards.modules.notifier.dto.out.RecipientStatus;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -71,7 +68,9 @@ import static org.junit.Assert.*;
                                    "regards.amqp.enabled=true",
                                    "regards.feature.delay.before.processing=1",
                                    "spring.task.scheduling.pool.size=2",
-                                   "regards.feature.metrics.enabled=true" },
+                                   "regards.feature.metrics.enabled=true",
+                                   "regards.feature.max.bulk.size=50",
+                                   "regards.feature.delay.before.processing=1" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
                                   "classpath:metrics.properties" })
@@ -204,7 +203,8 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         List<NotifierEvent> notifierEvents = Lists.newArrayList(new NotifierEvent(requestId,
                                                                                   requestOwner,
                                                                                   NotificationState.SUCCESS,
-                                                                                  recipients));
+                                                                                  recipients,
+                                                                                  OffsetDateTime.now()));
         featureNotifierListener.onRequestSuccess(notifierEvents);
 
         // the FeatureCreationRequest must be deleted
@@ -260,8 +260,6 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
     }
 
     @Test
-    @Ignore(
-        "testing both feature update (properties) and feature update dissemination with lot of entities is not mandatory")
     public void testFeatureUpdateAndReceivingAndProcessingAckSimultaneously()
         throws InterruptedException, EntityException {
         notificationSettingsService.setActiveNotification(false);
@@ -277,7 +275,8 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         List<FeatureEntity> allFeatureEntities = featureWithDisseminationRepo.findAll();
         String recipientLabel = "recipientLabel";
         for (FeatureEntity featureEntity : allFeatureEntities) {
-            featureEntity.getDisseminationsInfo().add(new FeatureDisseminationInfo(recipientLabel, true));
+            featureEntity.getDisseminationsInfo()
+                         .add(createFeatureDisseminationInfo(featureEntity.getUrn(), recipientLabel, true));
         }
         featureWithDisseminationRepo.saveAll(allFeatureEntities);
 
@@ -334,15 +333,12 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
             return nbFeatureUpdateDisseminationRequestRemaining == 0;
         });
 
-        List<ILightFeatureUpdateRequest> scheduled = this.featureUpdateRequestRepository.findRequestsToSchedule(
-            FeatureRequestStep.LOCAL_DELAYED,
-            OffsetDateTime.now(),
-            PageRequest.of(0, properties.getMaxBulkSize()),
-            OffsetDateTime.now()).getContent();
+        List<ILightFeatureUpdateRequest> scheduled = this.featureUpdateRequestRepository.findRequestsToSchedule(0,
+                                                                                                                properties.getMaxBulkSize());
         assertEquals(0, scheduled.size());
 
         featureWithDisseminationRepo.findAll().forEach(feature -> {
-            assertNotNull(feature.getDisseminationsInfo().stream().findFirst().get().getAckDate());
+            assertTrue(feature.getDisseminationsInfo().stream().allMatch(di -> di.isAcknowledged()));
             ObjectProperty file_characterization = (ObjectProperty) feature.getFeature()
                                                                            .getProperties()
                                                                            .stream()
@@ -420,7 +416,8 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         List<NotifierEvent> notifierEvents = Lists.newArrayList(new NotifierEvent(requestId,
                                                                                   requestOwner,
                                                                                   NotificationState.SUCCESS,
-                                                                                  recipients));
+                                                                                  recipients,
+                                                                                  OffsetDateTime.now()));
         featureNotifierListener.onRequestSuccess(notifierEvents);
 
         // the FeatureCreationRequest must be deleted

@@ -44,6 +44,10 @@ import java.util.List;
 public interface IFeatureEntityRepository
     extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
 
+    @Modifying
+    @Query(value = "delete from t_feature where id in (:ids)", nativeQuery = true)
+    void deleteByIdIn(@Param("ids") List<Long> ids);
+
     FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
 
     FeatureEntity findByUrn(FeatureUniformResourceName urn);

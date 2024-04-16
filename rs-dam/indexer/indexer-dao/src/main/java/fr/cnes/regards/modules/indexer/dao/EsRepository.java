@@ -720,11 +720,12 @@ public class EsRepository implements IEsRepository {
 
     @Override
     public long deleteByQuery(String index, ICriterion criterion) {
-        try (NStringEntity entity = new NStringEntity("{ \"query\":"
-                                                      + criterion.accept(CRITERION_VISITOR).toString()
-                                                      + "}", ContentType.APPLICATION_JSON)) {
+        String query = criterion.accept(CRITERION_VISITOR).toString();
+        LOGGER.info("Delete by query in Elasticsearch index [{}] with query: {}", index, query);
+        try (NStringEntity entity = new NStringEntity("{ \"query\":" + query + "}", ContentType.APPLICATION_JSON)) {
             Request request = new Request("POST", "/" + index.toLowerCase() + "/_delete_by_query");
             request.setEntity(entity);
+
             Response response = client.getLowLevelClient().performRequest(request);
             try (InputStream is = response.getEntity().getContent()) {
                 Map<String, Object> map = XContentHelper.convertToMap(XContentType.JSON.xContent(), is, true);
@@ -1396,7 +1397,9 @@ public class EsRepository implements IEsRepository {
                 sortValues = response.getHits().getAt(response.getHits().getHits().length - 1).getSortValues();
                 offset += MAX_RESULT_WINDOW;
             }
-            OffsetDateTime expirationDate = OffsetDateTime.now().plus(KEEP_ALIVE_SCROLLING_TIME_MN, ChronoUnit.MINUTES);
+            // hack: -1min because a conflict problem with scheduler in the method saveReminder(..)
+            OffsetDateTime expirationDate = OffsetDateTime.now()
+                                                          .plus(KEEP_ALIVE_SCROLLING_TIME_MN - 1, ChronoUnit.MINUTES);
 
             int nextToLastOffset = (int) (pageRequest.getOffset() - (pageRequest.getOffset() % MAX_RESULT_WINDOW));
             // Execute as many request with search after as necessary to advance to next to last page of
@@ -1433,10 +1436,13 @@ public class EsRepository implements IEsRepository {
             // Create a task to be executed after KEEP_ALIVE_SCROLLING_TIME_MN that delete all reminders whom
             // expiration date has been reached
             // No need to add type restriction, reminder is useless since ES6
+            // hack: -1min because a conflict problem due to delete_by_query with scheduler in the method
+            // saveReminder(..)
             reminderCleanExecutor.schedule(() -> deleteByQuery(REMINDER_IDX,
                                                                ICriterion.le("expirationDate", OffsetDateTime.now())),
-                                           KEEP_ALIVE_SCROLLING_TIME_MN,
+                                           KEEP_ALIVE_SCROLLING_TIME_MN - 1,
                                            TimeUnit.MINUTES);
+
             return sortValues;
         } catch (IOException e) {
             throw new RsRuntimeException(e);
@@ -1548,8 +1554,7 @@ public class EsRepository implements IEsRepository {
             throw new RsRuntimeException(e);
         }
     }
-
-
+    
     @Override
     public <T extends IIndexable> Aggregations getAggregationsFor(AggregationSearchContext<T> searchRequest) {
         return getAggregationsFor(searchRequest.searchKey(),

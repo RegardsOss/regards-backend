@@ -52,6 +52,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -67,7 +68,8 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
-                                   "regards.amqp.enabled=true" },
+                                   "regards.amqp.enabled=true",
+                                   "regards.feature.max.bulk.size=50" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
                                   "classpath:metrics.properties" })
@@ -549,6 +551,37 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     }
 
     @Test
+    @Purpose("Only one creation request can be scheduled at a time for a given provider id to avoid versioning issues")
+    public void test_schedule_multiples_creation_requests_with_same_provider_id() {
+
+        // Given 3 requests with same provider id
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(3, true, false);
+        events.forEach(e -> e.getFeature().setId("same_id"));
+        this.featureCreationService.registerRequests(events);
+
+        // When
+        this.featureCreationService.scheduleRequests();
+
+        // Then only one request is scheduled
+        Assert.assertEquals(3, this.featureCreationRequestRepo.count());
+        Assert.assertEquals(1,
+                            this.featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED,
+                                                                       Pageable.ofSize(10)).getTotalElements());
+
+        // Retry schedule
+
+        // When
+        this.featureCreationService.scheduleRequests();
+
+        // Then only one request is scheduled
+        Assert.assertEquals(3, this.featureCreationRequestRepo.count());
+        Assert.assertEquals(1,
+                            this.featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED,
+                                                                       Pageable.ofSize(10)).getTotalElements());
+
+    }
+
+    @Test
     public void testRegisterScheduleProcessWithErrors() {
         List<Feature> features = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
@@ -584,23 +617,20 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testFeaturePriority() {
 
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(properties.getMaxBulkSize() + (
-            properties.getMaxBulkSize()
-            / 2), true, false);
-
-        // we will set all priority to normal except for the (properties.getMaxBulkSize() / 2) last events
-        for (int i = properties.getMaxBulkSize(); i < (properties.getMaxBulkSize() + (properties.getMaxBulkSize()
-                                                                                      / 2)); i++) {
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(properties.getMaxBulkSize() * 2,
+                                                                                   true,
+                                                                                   false);
+        // we will set all priority to normal except for the first bulk events
+        for (int i = 0; i < properties.getMaxBulkSize(); i++) {
             events.get(i).getMetadata().setPriority(PriorityLevel.HIGH);
         }
 
         this.featureCreationService.registerRequests(events);
 
-        assertEquals(properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2),
-                     this.featureCreationRequestRepo.count());
+        assertEquals(properties.getMaxBulkSize() * 2, this.featureCreationRequestRepo.count());
 
         this.featureCreationService.scheduleRequests();
-        // Retrieved scheduled requests and verify that the 500 High priority have been scheduled first.
+        // Retrieved scheduled requests and verify that High priority have been scheduled first.
         List<FeatureCreationRequest> scheduled = featureCreationRequestRepo.findAll()
                                                                            .stream()
                                                                            .filter(r -> r.getStep()
@@ -619,10 +649,13 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         }
 
         // half of scheduled should be with priority HIGH
-        assertEquals(properties.getMaxBulkSize().intValue(), highPriorityNumber + otherPriorityNumber);
-        assertEquals(highPriorityNumber, otherPriorityNumber);
+        assertEquals(properties.getMaxBulkSize().intValue(), highPriorityNumber);
+        assertEquals(0, otherPriorityNumber);
 
-        waitForFeatures(properties.getMaxBulkSize());
+        // Now schedule second bulk
+        this.featureCreationService.scheduleRequests();
+
+        waitForFeatures(properties.getMaxBulkSize() * 2);
     }
 
     @Test

@@ -244,7 +244,8 @@ public class NotificationMatchingService {
         publisher.publish(requestsCouldNotBeMatched.stream()
                                                    .map(request -> new NotifierEvent(request.getRequestId(),
                                                                                      request.getRequestOwner(),
-                                                                                     NotificationState.ERROR))
+                                                                                     NotificationState.ERROR,
+                                                                                     request.getRequestDate()))
                                                    .collect(Collectors.toList()));
         if (!cannotBeInstantiatedRules.isEmpty()) {
             String message = cannotBeInstantiatedRules.stream()
