@@ -298,4 +298,5 @@ public interface IAcquisitionProcessingService {
 
     boolean canBeStarted(AcquisitionProcessingChain chain);
 
+    void handleProductAcquisitionAborted(JobInfo jobInfo);
 }

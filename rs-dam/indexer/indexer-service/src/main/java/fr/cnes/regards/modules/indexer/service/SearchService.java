@@ -96,6 +96,7 @@ public class SearchService implements ISearchService {
                                                       ICriterion criterion,
                                                       Map<String, FacetType> facetsMap) {
         addProjectInfos(searchKey);
+
         return repository.search(searchKey, pageRequest, criterion, facetsMap);
     }
 

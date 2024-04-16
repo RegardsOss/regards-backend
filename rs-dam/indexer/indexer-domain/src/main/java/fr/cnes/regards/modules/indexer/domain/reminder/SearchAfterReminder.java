@@ -58,32 +58,7 @@ public class SearchAfterReminder extends AbstractReminder {
 
     public SearchAfterReminder(ICriterion crit, SearchKey<?, ?> searchKey, Sort sort, Pageable nextPage) {
         super();
-        // Generate a unique String with concatenation of gson objects and join keys
-        String unique = GsonUtil.toString(crit)
-                        + "__"
-                        + GsonUtil.toString(nextPage)
-                        + "__"
-                        + GsonUtil.toString(searchKey.getSearchIndex())
-                        + "__"
-                        + GsonUtil.toString(searchKey.getSearchTypes())
-                        + "__"
-                        + GsonUtil.toString(sort);
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("SHA1");
-        } catch (NoSuchAlgorithmException e) { // Does not occur
-            throw new RsRuntimeException(e);
-        }
-        md.reset();
-        byte[] buffer = unique.getBytes();
-        md.update(buffer);
-        byte[] digest = md.digest();
-
-        // docId is equivalent to a unique hashcode
-        this.docId = "";
-        for (int i = 0; i < digest.length; i++) {
-            this.docId += Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1);
-        }
+        generateUniqueDocId(crit, searchKey, sort, nextPage);
         this.nextOffset = nextPage.getOffset();
         this.nextPageSize = nextPage.getPageSize();
     }
@@ -104,5 +79,35 @@ public class SearchAfterReminder extends AbstractReminder {
     @Override
     public String getLabel() {
         return "N/A";
+    }
+
+    private void generateUniqueDocId(ICriterion crit, SearchKey<?, ?> searchKey, Sort sort, Pageable nextPage) {
+        // Generate a unique String with concatenation of gson objects and join keys
+        String unique = GsonUtil.toString(crit)
+                        + "__"
+                        + GsonUtil.toString(nextPage)
+                        + "__"
+                        + GsonUtil.toString(searchKey.getSearchIndex())
+                        + "__"
+                        + GsonUtil.toString(searchKey.getSearchTypes())
+                        + "__"
+                        + GsonUtil.toString(sort);
+
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("SHA1");
+        } catch (NoSuchAlgorithmException e) { // Does not occur
+            throw new RsRuntimeException(e);
+        }
+        md.reset();
+        byte[] buffer = unique.getBytes();
+        md.update(buffer);
+        byte[] digest = md.digest();
+
+        // docId is equivalent to a unique hashcode
+        this.docId = "";
+        for (int i = 0; i < digest.length; i++) {
+            this.docId += Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1);
+        }
     }
 }

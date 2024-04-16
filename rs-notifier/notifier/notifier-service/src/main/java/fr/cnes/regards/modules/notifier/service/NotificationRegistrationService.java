@@ -48,6 +48,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -125,7 +126,8 @@ public class NotificationRegistrationService {
                 publisher.publish(notRetryEvents.stream()
                                                 .map(event -> new NotifierEvent(event.getRequestId(),
                                                                                 event.getRequestOwner(),
-                                                                                NotificationState.DENIED))
+                                                                                NotificationState.DENIED,
+                                                                                OffsetDateTime.now()))
                                                 .collect(Collectors.toList()));
             }
         }
@@ -253,7 +255,8 @@ public class NotificationRegistrationService {
                 nbUpdatedRequests++;
                 responseToSend.add(new NotifierEvent(knownRequest.getRequestId(),
                                                      knownRequest.getRequestOwner(),
-                                                     NotificationState.GRANTED));
+                                                     NotificationState.GRANTED,
+                                                     knownRequest.getRequestDate()));
                 // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
                 eventsPerRequestId.put(knownRequest.getRequestId(), null);
             }
@@ -285,31 +288,36 @@ public class NotificationRegistrationService {
      * @return a implemented {@link NotificationRequest} or empty value if invalid
      */
     private Optional<NotificationRequest> initNotificationRequest(NotificationRequestEvent event, Set<Rule> rules) {
-
-        Errors errors = null;
-        Set<PluginConfiguration> pluginConfigurations = new HashSet<>();
+        Errors errors;
         NotificationState notificationState;
+        Set<PluginConfiguration> recipientsToSchedule;
+        Set<Rule> rulesForNotificationRequest;
 
-        // Request event containing the list of recipients for a direct notification without rules.
+        // Check if request will to be notified to specific recipient or need to be checked against rules
         if (event instanceof SpecificRecipientNotificationRequestEvent specificRecipientNotificationRequestEvent) {
-            rules.clear();
+            // Request event containing the list of recipients for a direct notification without rules check.
             notificationState = NotificationState.TO_SCHEDULE_BY_RECIPIENT;
-
             errors = new MapBindingResult(new HashMap<>(), SpecificRecipientNotificationRequestEvent.class.getName());
             validator.validate(event, errors);
-            pluginConfigurations = validateRecipients(specificRecipientNotificationRequestEvent.getRecipients(),
-                                                      errors);
-        }
-        // Request event with rules
-        else {
-            notificationState = NotificationState.GRANTED;
 
+            recipientsToSchedule = validateRecipients(specificRecipientNotificationRequestEvent.getRecipients(),
+                                                      errors);
+            rulesForNotificationRequest = new HashSet<>();
+        } else {
+            // Request event need to be checked against rules
+            notificationState = NotificationState.GRANTED;
             errors = new MapBindingResult(new HashMap<>(), NotificationRequestEvent.class.getName());
             validator.validate(event, errors);
+
+            recipientsToSchedule = new HashSet<>();
+            rulesForNotificationRequest = rules;
         }
-        // Check if errors exist, return the new created notification request
+        // When no error, create notification request
         if (!errors.hasErrors()) {
-            publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), notificationState));
+            publisher.publish(new NotifierEvent(event.getRequestId(),
+                                                event.getRequestOwner(),
+                                                notificationState,
+                                                OffsetDateTime.now()));
             // Create the notification request
             NotificationRequest notificationRequest = new NotificationRequest(event.getPayload(),
                                                                               event.getMetadata(),
@@ -317,21 +325,27 @@ public class NotificationRegistrationService {
                                                                               event.getRequestOwner(),
                                                                               event.getRequestDate(),
                                                                               notificationState);
-            notificationRequest.getRulesToMatch().addAll(rules);
-            notificationRequest.getRecipientsToSchedule().addAll(pluginConfigurations);
+            notificationRequest.getRulesToMatch().addAll(rulesForNotificationRequest);
+            notificationRequest.getRecipientsToSchedule().addAll(recipientsToSchedule);
 
             return Optional.of(notificationRequest);
         }
+        // Handle error
+        // Publish denied event and notification to admin
         notificationClient.notify(errors.toString(),
                                   "A NotificationRequestEvent received is invalid",
                                   NotificationLevel.ERROR,
                                   DefaultRole.ADMIN);
-        publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), NotificationState.DENIED));
+        publisher.publish(new NotifierEvent(event.getRequestId(),
+                                            event.getRequestOwner(),
+                                            NotificationState.DENIED,
+                                            OffsetDateTime.now()));
 
         return Optional.empty();
     }
 
     private Set<PluginConfiguration> validateRecipients(Set<String> recipientIds, Errors errors) {
+        String fieldInError = "businessId";
         Set<PluginConfiguration> pluginConfigurations = new HashSet<>();
         for (String businessId : recipientIds) {
             try {

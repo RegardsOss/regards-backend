@@ -32,8 +32,10 @@ import fr.cnes.regards.modules.feature.dao.FeatureDeletionRequestSpecificationBu
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
+import fr.cnes.regards.modules.feature.domain.AbstractFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
@@ -55,10 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -66,7 +65,6 @@ import org.springframework.validation.Validator;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -212,20 +210,24 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         Set<Long> requestIds = new HashSet<>();
         List<FeatureDeletionRequest> requestsToSchedule = new ArrayList<>();
 
-        Page<FeatureDeletionRequest> dbRequests = featureDeletionRequestRepository.findRequestsToSchedule(
-            FeatureRequestStep.LOCAL_DELAYED,
-            OffsetDateTime.now(),
-            PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
+        List<FeatureDeletionRequest> dbRequests = featureDeletionRequestRepository.findRequestsToSchedule(0,
+                                                                                                          properties.getMaxBulkSize());
 
         if (!dbRequests.isEmpty()) {
-
             Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(dbRequests.stream()
                                                                                                                   .map(
                                                                                                                       FeatureDeletionRequest::getUrn)
                                                                                                                   .collect(
                                                                                                                       Collectors.toSet()));
 
-            for (FeatureDeletionRequest request : dbRequests.getContent()) {
+            Optional<PriorityLevel> highestPriorityLevel = dbRequests.stream()
+                                                                     .max((p1, p2) -> Math.max(p1.getPriority()
+                                                                                                 .getPriorityLevel(),
+                                                                                               p2.getPriority()
+                                                                                                 .getPriorityLevel()))
+                                                                     .map(AbstractRequest::getPriority);
+
+            for (FeatureDeletionRequest request : dbRequests) {
                 requestsToSchedule.add(request);
                 requestIds.add(request.getId());
                 // Update session properties
@@ -236,9 +238,9 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
             jobParameters.add(new JobParameter(FeatureDeletionJob.IDS_PARAMETER, requestIds));
 
-            // the job priority will be set according the priority of the first request to schedule
+            // the job priority will be set according the highest priority of the requests to schedule
             JobInfo jobInfo = new JobInfo(false,
-                                          requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                                          highestPriorityLevel.orElse(PriorityLevel.NORMAL).getPriorityLevel(),
                                           jobParameters,
                                           authResolver.getUser(),
                                           FeatureDeletionJob.class.getName());
@@ -434,10 +436,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             }
         }
         // Filter feature to delete (not WAITING_BLOCKING_DISSEMINATION)
-        List<FeatureEntity> featureEntitiesToDelete = associatedFeatureEntities.stream()
-                                                                               .filter(featureEntity -> !featureEntitiesNotToDelete.contains(
-                                                                                   featureEntity.getId()))
-                                                                               .toList();
+        Set<FeatureEntity> featureEntitiesToDelete = associatedFeatureEntities.stream()
+                                                                              .filter(featureEntity -> !featureEntitiesNotToDelete.contains(
+                                                                                  featureEntity.getId()))
+                                                                              .collect(Collectors.toSet());
         // Propagate feature to delete to RS-CATALOG
         featureEntitiesToDelete.forEach(featureEntity -> publisher.publish(FeatureEvent.buildFeatureDeleted(
             featureEntity.getUrn().toString())));
@@ -459,7 +461,13 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         }
         // Delete features, related requests will be deleted once we know notifier has successfully sent the notification about it
         featureCreationRequestRepository.deleteByFeatureEntityIn(associatedFeatureEntities);
-        featureEntityRepository.deleteAllInBatch(featureEntitiesToDelete);
+
+        LOGGER.info("Deleting {} features in database ...", featureEntitiesToDelete.size());
+        long registrationStart = System.currentTimeMillis();
+        featureEntityRepository.deleteByIdIn(featureEntitiesToDelete.stream()
+                                                                    .map(AbstractFeatureEntity::getId)
+                                                                    .toList());
+        LOGGER.info("Deletion done in {}ms", System.currentTimeMillis() - registrationStart);
     }
 
     private boolean haveFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {

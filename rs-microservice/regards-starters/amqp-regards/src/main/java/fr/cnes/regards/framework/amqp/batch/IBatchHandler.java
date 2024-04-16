@@ -109,12 +109,19 @@ public interface IBatchHandler<M> extends IHandler<M> {
      * Indeed, a batch is composed of the n first messages in the queue without consideration of the tenant.
      * So the batch listener dispatches them by tenant under the hood to make a contextual call per tenant.
      *
+     * <b>CAUTION</b> : This method is not transactional. If you need a transaction, create it in your method
+     * implementation.
+     *
      * @param messages messages to manage
      */
     default void handleBatchWithRaw(List<M> messages, List<Message> rawMessages) {
         handleBatch(messages);
     }
 
+    /**
+     * <b>CAUTION</b> : This method is not transactional. If you need a transaction, create it in your method
+     * * implementation.
+     */
     void handleBatch(List<M> messages);
 
     /**

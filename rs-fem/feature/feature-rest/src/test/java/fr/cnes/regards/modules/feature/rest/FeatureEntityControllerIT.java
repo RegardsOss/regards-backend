@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
-import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -79,9 +78,12 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         List<FeatureEntity> allFeaturesEntity = this.featureEntityWithDisseminationRepository.findAll();
         for (FeatureEntity featureEntity : allFeaturesEntity) {
             featureEntity.setDisseminationPending(true);
-            featureEntity.setDisseminationsInfo(Sets.newLinkedHashSet(new FeatureDisseminationInfo("SomeRemote", true),
-                                                                      new FeatureDisseminationInfo("AnotherRemote",
-                                                                                                   false)));
+            featureEntity.setDisseminationsInfo(Sets.newLinkedHashSet(createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                                     "SomeRemote",
+                                                                                                     true),
+                                                                      createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                                     "AnotherRemote",
+                                                                                                     false)));
         }
         this.featureEntityWithDisseminationRepository.saveAll(allFeaturesEntity);
 

@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationReque
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -47,27 +48,53 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
     Set<FeatureUniformResourceName> findUrnByUrnIn(@Param("urnList") Collection<FeatureUniformResourceName> urnList);
 
     /**
-     * Get a page of {@link ILightFeatureCreationRequest} with specified step.
+     * Get a limited number of {@link ILightFeatureCreationRequest} ready to be handled by a job  ordered by priority
+     * and date.
      * A creation request cannot be scheduled if one is already scheduled with same provider id.
      *
-     * @param now current date we not schedule future request
-     * @return a list of {@link ILightFeatureCreationRequest}
+     * @param size           maximum number of request to return
+     * @param delayInSeconds delay in seconds from now of returned requests
      */
-    @Query("select request.requestOwner as requestOwner, request.state as state, request.priority as priority,"
-           + " request.step as step, request.registrationDate as registrationDate, request.requestDate as requestDate,"
-           + " request.requestId as requestId, request.providerId as providerId, request.metadata as metadata,"
-           + " request.id as id, request.errors as errors, request.groupId as groupId"
-           + " from FeatureCreationRequest request where request.providerId not in ("
-           + " select scheduledRequest.providerId from FeatureCreationRequest scheduledRequest"
-           + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= :now")
-    Page<ILightFeatureCreationRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
-                                                              @Param("now") OffsetDateTime now,
-                                                              Pageable page);
+    default List<ILightFeatureCreationRequest> findRequestsToSchedule(int delayInSeconds, int size) {
+        OffsetDateTime now = OffsetDateTime.now();
+        return doFindRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED,
+                                        now,
+                                        now.minusSeconds(delayInSeconds),
+                                        PageRequest.ofSize(size));
 
-    List<FeatureCreationRequest> findAllByIdIn(Iterable<Long> ids);
+    }
 
-    @Override
-    List<FeatureCreationRequest> findAllById(Iterable<Long> longs);
+    @Query("""
+        SELECT
+         request.providerId as providerId,
+         request.urn as urn,
+         request.id as id,
+         request.groupId as groupId,
+         request.errors as errors,
+         request.requestOwner as requestOwner,
+         request.state as state,
+         request.priority as priority,
+         request.step as step,
+         request.registrationDate as registrationDate,
+         request.requestDate as requestDate,
+         request.requestId as requestId,
+         request.metadata as metadata
+        FROM FeatureCreationRequest request
+        WHERE NOT EXISTS (
+            SELECT scheduledRequest.providerId 
+            FROM FeatureCreationRequest scheduledRequest
+            WHERE scheduledRequest.step = 'LOCAL_SCHEDULED'
+            AND scheduledRequest.providerId = request.providerId
+        )
+        AND request.step = :step
+        AND request.registrationDate <= :delay
+        AND request.requestDate <= :now
+        ORDER BY request.priority desc, request.requestDate
+        """)
+    List<ILightFeatureCreationRequest> doFindRequestsToSchedule(@Param("step") FeatureRequestStep step,
+                                                                @Param("now") OffsetDateTime now,
+                                                                @Param("delay") OffsetDateTime delay,
+                                                                Pageable pageLimit);
 
     @Modifying
     @Query(value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)), last_update = :now  WHERE urn IN :urns",

@@ -222,7 +222,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         List<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
                                                                                     FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
                                                                                     OffsetDateTime.now(),
-                                                                                    PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
+                                                                                    PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.desc("priority"), Order.asc("requestDate"))))
                                                                                 .getContent();
         Set<AbstractFeatureRequest> visitorErrorRequests = new HashSet<>();
         CreateNotificationRequestEventVisitor createNotificationRequestEventVisitor = new CreateNotificationRequestEventVisitor(

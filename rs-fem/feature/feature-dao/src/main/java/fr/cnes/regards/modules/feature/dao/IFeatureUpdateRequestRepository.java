@@ -19,11 +19,8 @@
 package fr.cnes.regards.modules.feature.dao;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -52,22 +49,64 @@ public interface IFeatureUpdateRequestRepository extends IAbstractFeatureRequest
      * Get {@link ILightFeatureUpdateRequest} with a {@link Feature} urn not assigned to an other {@link ILightFeatureUpdateRequest}
      * or to an existing {@link ILightFeatureCreationRequest} and with it step set to LOCAL_SCHEDULED an ordered
      * by registration date and before a delay
-     *
-     * @param now   current date we will not schedule future requests
-     * @param page  contain the number of {@link ILightFeatureUpdateRequest} to return
-     * @param delay we want {@link ILightFeatureUpdateRequest} with registration date before this delay
-     * @return list of {@link ILightFeatureUpdateRequest}
      */
-    @Query("select request.providerId as providerId, request.urn as urn, request.id as id, request.groupId as groupId,"
-           + " request.errors as errors, request.requestOwner as requestOwner, request.state as state, request.priority as priority,"
-           + " request.step as step, request.registrationDate as registrationDate, request.requestDate as requestDate,"
-           + " request.requestId as requestId from FeatureUpdateRequest request where request.urn not in ("
-           + " select scheduledRequest.urn from FeatureUpdateRequest scheduledRequest"
-           + " where scheduledRequest.step in ('LOCAL_SCHEDULED','REMOTE_STORAGE_REQUESTED','REMOTE_NOTIFICATION_REQUESTED') ) "
-           + " and request.urn not in (select urn from FeatureCreationRequest)"
-           + " and request.step = :step and request.registrationDate <= :delay and request.requestDate <= :now order by request.priority, request.requestDate ")
-    Page<ILightFeatureUpdateRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
-                                                            @Param("now") OffsetDateTime now,
-                                                            Pageable page,
-                                                            @Param("delay") OffsetDateTime delay);
+
+    /**
+     * Get a limited number of {@link ILightFeatureUpdateRequest} ready to be scheduled ordered by priority and date.
+     * {@link ILightFeatureUpdateRequest} with a {@link Feature} urn not assigned to an other {@link ILightFeatureUpdateRequest}
+     * or to an existing {@link ILightFeatureCreationRequest} and with it step set to LOCAL_SCHEDULED an ordered by
+     * priority and date.
+     *
+     * @param size           maximum number of request to return
+     * @param delayInSeconds delay in seconds from now of returned requests
+     */
+    default List<ILightFeatureUpdateRequest> findRequestsToSchedule(int delayInSeconds, int size) {
+        OffsetDateTime now = OffsetDateTime.now();
+        return doFindRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED,
+                                        now,
+                                        List.of(FeatureRequestStep.LOCAL_SCHEDULED,
+                                                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                                                FeatureRequestStep.REMOTE_STORAGE_REQUESTED,
+                                                FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED),
+                                        now.minusSeconds(delayInSeconds),
+                                        Pageable.ofSize(size));
+    }
+
+    @Query("""
+        SELECT
+          request.providerId as providerId,
+          request.urn as urn,
+          request.id as id,
+          request.groupId as groupId,
+          request.errors as errors,
+          request.requestOwner as requestOwner,
+          request.state as state,
+          request.priority as priority,
+          request.step as step,
+          request.registrationDate as registrationDate,
+          request.requestDate as requestDate,
+          request.requestId as requestId
+        FROM FeatureUpdateRequest request
+        WHERE NOT EXISTS (
+            SELECT scheduledRequest.urn
+            FROM FeatureUpdateRequest scheduledRequest
+            WHERE scheduledRequest.step in (:blocking_steps)
+            AND scheduledRequest.urn = request.urn
+        )
+        AND NOT EXISTS (
+            SELECT urn
+            FROM FeatureCreationRequest
+            WHERE urn = request.urn
+        )
+        AND request.step = :step
+        AND request.registrationDate <= :delay
+        AND request.requestDate <= :now
+        ORDER BY request.priority desc, request.requestDate
+        """)
+    List<ILightFeatureUpdateRequest> doFindRequestsToSchedule(@Param("step") FeatureRequestStep step,
+                                                              @Param("now") OffsetDateTime now,
+                                                              @Param("blocking_steps")
+                                                              List<FeatureRequestStep> blockingSteps,
+                                                              @Param("delay") OffsetDateTime delay,
+                                                              Pageable pageLimit);
 }

@@ -306,7 +306,8 @@ public class NotificationProcessingService {
             NotificationState.ERROR;
         NotifierEvent notifierEvent = new NotifierEvent(notificationRequest.getRequestId(),
                                                         notificationRequest.getRequestOwner(),
-                                                        notificationState);
+                                                        notificationState,
+                                                        notificationRequest.getRequestDate());
 
         Set<Recipient> successRecipients = notificationRequest.getSuccessRecipients()
                                                               .stream()

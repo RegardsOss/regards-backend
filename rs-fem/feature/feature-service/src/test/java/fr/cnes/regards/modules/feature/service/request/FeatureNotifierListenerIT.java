@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -100,7 +101,8 @@ public class FeatureNotifierListenerIT extends AbstractFeatureMultitenantService
         List<NotifierEvent> notifierEvents = Lists.newArrayList(new NotifierEvent(requestId,
                                                                                   requestOwner,
                                                                                   NotificationState.SUCCESS,
-                                                                                  recipients));
+                                                                                  recipients,
+                                                                                  OffsetDateTime.now()));
         // When
         featureNotifierListener.onRequestSuccess(notifierEvents);
 

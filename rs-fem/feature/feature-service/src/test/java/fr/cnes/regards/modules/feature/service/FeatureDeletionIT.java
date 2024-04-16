@@ -522,9 +522,10 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         featureDeletionService.registerRequests(Collections.singletonList(featureDeletionRequestEvent));
 
         // When
-        featureDeletionService.scheduleRequests();
+        int nbScheduledRequests = featureDeletionService.scheduleRequests();
 
         // Then
+        Assert.assertEquals(0, nbScheduledRequests);
         Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(
             FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
         assertEquals(1, notScheduled.size());
@@ -562,7 +563,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
         // Create case in order to block the feature deletion request
         FeatureEntity featureEntity = featureWithDisseminationRepository.findAll().get(0);
-        FeatureDisseminationInfo featureDisseminationInfo = new FeatureDisseminationInfo("RecipientLabel", true);
+        FeatureDisseminationInfo featureDisseminationInfo = createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                           "RecipientLabel",
+                                                                                           true);
         featureDisseminationInfo.setBlocking(true);
 
         featureEntity.getDisseminationsInfo().add(featureDisseminationInfo);
@@ -589,7 +592,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
         // Create case in order to block the feature deletion request
         FeatureEntity featureEntity = featureWithDisseminationRepository.findAll().get(0);
-        FeatureDisseminationInfo featureDisseminationInfo = new FeatureDisseminationInfo("RecipientLabel", true);
+        FeatureDisseminationInfo featureDisseminationInfo = createFeatureDisseminationInfo(featureEntity.getUrn(),
+                                                                                           "RecipientLabel",
+                                                                                           true);
         featureDisseminationInfo.setBlocking(true);
 
         featureEntity.getDisseminationsInfo().add(featureDisseminationInfo);
