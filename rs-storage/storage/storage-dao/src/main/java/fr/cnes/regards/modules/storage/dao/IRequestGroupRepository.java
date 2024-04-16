@@ -48,20 +48,34 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
      * @param limit Maximum number of terminated groups to return
      * @return List of terminated {@link RequestGroup}s
      */
-    @Query(value = "SELECT * from t_request_group groups "
-                   + " WHERE NOT EXISTS (SELECT * "
-                   + "        FROM (select g.id as groupId, a.file_storage_request_id as requestId FROM"
-                   + "              t_request_group g LEFT OUTER JOIN ta_storage_request_group_ids a ON g.id = a.group_id) AS result "
-                   + "        LEFT OUTER JOIN t_file_storage_request r ON result.requestId = r.id "
-                   + "        LEFT OUTER JOIN t_file_deletion_request d ON result.groupId = d.group_id "
-                   + "        LEFT OUTER JOIN t_file_cache_request cache ON result.groupId in (select group_id from ta_file_cache_request_group_id) "
-                   + "        LEFT OUTER JOIN t_file_copy_request copy ON result.groupId = copy.group_id "
-                   + "        WHERE (r.status != 'ERROR' OR"
-                   + "               d.status != 'ERROR' OR "
-                   + "               copy.status != 'ERROR' OR "
-                   + "               cache.status != 'ERROR') "
-                   + "               AND groups.id = groupId)"
-                   + " LIMIT :limit", nativeQuery = true)
+    @Query(value = """
+        select * from t_request_group groups 
+        WHERE NOT EXISTS (
+            SELECT * FROM ta_storage_request_group_ids ta_storage_request
+            INNER JOIN t_file_storage_request storage_request
+                ON storage_request.id = ta_storage_request.file_storage_request_id
+            WHERE groups.id = ta_storage_request.group_id
+            AND storage_request.status != 'ERROR'
+        )
+        AND NOT EXISTS (
+            SELECT * FROM ta_file_cache_request_group_id ta_file_cache_request
+            INNER JOIN t_file_cache_request cache_requests
+                ON cache_requests.id = ta_file_cache_request.file_cache_request_id
+            WHERE groups.id = ta_file_cache_request.group_id
+            AND cache_requests.status != 'ERROR'
+        )
+        AND NOT EXISTS (
+            SELECT * FROM t_file_deletion_request del_requests
+            WHERE groups.id = del_requests.group_id 
+            AND del_requests.status != 'ERROR'
+        )
+        AND NOT EXISTS (
+            SELECT * FROM t_file_copy_request copy_requests
+            WHERE groups.id = copy_requests.group_id 
+            AND copy_requests.status != 'ERROR'
+        )
+        LIMIT :limit
+        """, nativeQuery = true)
     List<RequestGroup> findGroupDones(@Param("limit") Integer limit);
 
     Page<RequestGroup> findByExpirationDateLessThanEqual(OffsetDateTime expirationDate, Pageable page);
