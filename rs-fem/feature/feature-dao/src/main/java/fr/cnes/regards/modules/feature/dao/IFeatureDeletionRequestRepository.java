@@ -67,11 +67,11 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
         AND NOT EXISTS (SELECT fcr.urn FROM FeatureCreationRequest fcr WHERE fcr.urn = request.urn)
         AND request.registrationDate <= :delay
         AND request.requestDate <= :now
-        ORDER BY request.priority, request.requestDate
+        ORDER BY request.priority desc, request.requestDate
         """)
     List<FeatureDeletionRequest> doFindRequestsToSchedule(@Param("step") FeatureRequestStep step,
                                                           @Param("now") OffsetDateTime now,
                                                           @Param("delay") OffsetDateTime delay,
-                                                          Pageable page);
+                                                          Pageable pageLimit);
 
 }

@@ -366,6 +366,12 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         List<ILightFeatureCreationRequest> dbRequests = featureCreationRequestRepo.findRequestsToSchedule(0,
                                                                                                                properties.getMaxBulkSize());
+        Optional<PriorityLevel> highestPriorityLevel = dbRequests.stream()
+                                                                 .max((p1, p2) -> Math.max(p1.getPriority()
+                                                                                             .getPriorityLevel(),
+                                                                                           p2.getPriority()
+                                                                                             .getPriorityLevel()))
+                                                                 .map(IAbstractRequest::getPriority);
 
         if (!dbRequests.isEmpty()) {
             for (ILightFeatureCreationRequest request : dbRequests) {
@@ -383,9 +389,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
             jobParameters.add(new JobParameter(FeatureCreationJob.IDS_PARAMETER, requestIds));
 
-            // the job priority will be set according the priority of the first request to schedule
+            // the job priority will be set according the priority of the highest request priority request
             JobInfo jobInfo = new JobInfo(false,
-                                          requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                                          highestPriorityLevel.orElse(PriorityLevel.NORMAL).getPriorityLevel(),
                                           jobParameters,
                                           authResolver.getUser(),
                                           FeatureCreationJob.class.getName());

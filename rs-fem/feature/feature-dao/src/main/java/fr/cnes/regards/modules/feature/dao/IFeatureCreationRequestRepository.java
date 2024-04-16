@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationReque
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -59,12 +60,12 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
         return doFindRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED,
                                         now,
                                         now.minusSeconds(delayInSeconds),
-                                        Pageable.ofSize(size));
+                                        PageRequest.ofSize(size));
 
     }
 
     @Query("""
-        SELECT 
+        SELECT
          request.providerId as providerId,
          request.urn as urn,
          request.id as id,
@@ -88,7 +89,7 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
         AND request.step = :step
         AND request.registrationDate <= :delay
         AND request.requestDate <= :now
-        ORDER BY request.priority, request.requestDate
+        ORDER BY request.priority desc, request.requestDate
         """)
     List<ILightFeatureCreationRequest> doFindRequestsToSchedule(@Param("step") FeatureRequestStep step,
                                                                 @Param("now") OffsetDateTime now,

@@ -101,7 +101,7 @@ public interface IFeatureUpdateRequestRepository extends IAbstractFeatureRequest
         AND request.step = :step
         AND request.registrationDate <= :delay
         AND request.requestDate <= :now
-        ORDER BY request.priority, request.requestDate
+        ORDER BY request.priority desc, request.requestDate
         """)
     List<ILightFeatureUpdateRequest> doFindRequestsToSchedule(@Param("step") FeatureRequestStep step,
                                                               @Param("now") OffsetDateTime now,

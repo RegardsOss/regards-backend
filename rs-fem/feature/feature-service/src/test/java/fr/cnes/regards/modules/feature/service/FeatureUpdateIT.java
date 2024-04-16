@@ -89,7 +89,8 @@ import static org.junit.Assert.*;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_update",
                                    "regards.amqp.enabled=true",
-                                   "regards.feature.delay.before.processing=1",
+                                   "regards.feature.max.bulk.size=50",
+                                   "regards.feature.delay.before.processing=0",
                                    "regards.feature.metrics.enabled=true" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
@@ -493,7 +494,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         featureUpdateService.registerRequests(prepareUpdateRequests(Lists.newArrayList(events.get(0)
                                                                                              .getFeature()
                                                                                              .getUrn())));
-        Thread.sleep(100 + (properties.getDelayBeforeProcessing() * 1000L));
+        waitForRequestsScheduleDelay();
         int scheduledRequests = featureUpdateService.scheduleRequests();
 
         // Then Update request is scheduled
@@ -503,7 +504,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         featureUpdateService.registerRequests(prepareUpdateRequests(Lists.newArrayList(events.get(0)
                                                                                              .getFeature()
                                                                                              .getUrn())));
-        Thread.sleep(100 + (properties.getDelayBeforeProcessing() * 1000L));
+        waitForRequestsScheduleDelay();
         scheduledRequests = featureUpdateService.scheduleRequests();
         // Then new request is not scheduled
         Assert.assertEquals(0, scheduledRequests);
@@ -602,7 +603,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         RequestInfo<FeatureUniformResourceName> info = featureUpdateService.registerRequests(updates);
         Assert.assertEquals(nbFeatures, info.getGranted().size());
         Assert.assertEquals(0L, info.getDenied().size());
-        Thread.sleep((properties.getDelayBeforeProcessing() + 1) * 1000L);
+        waitForRequestsScheduleDelay();
         Assert.assertEquals(nbFeatures, featureUpdateService.scheduleRequests());
 
         // As files needs to be updated, the step of the request remains REMOTE STORAGE REQUESTS still response from
@@ -739,7 +740,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         featureDeletionRequestRepo.save(dr);
 
         // Wait minimum processing time for request to be scheduled after being delayed
-        Thread.sleep(properties.getDelayBeforeProcessing() * 1100);
+        waitForRequestsScheduleDelay();
         // fur1 should be scheduled. fur4 cannot be scheduled as the deletion request is processing.
         assertEquals("There should be 2 update requests scheduled", 1, this.featureUpdateService.scheduleRequests());
 
@@ -807,7 +808,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         this.featureUpdateService.registerRequests(updateEvents);
 
         // we wait for delay before schedule
-        Thread.sleep((this.properties.getDelayBeforeProcessing() * 1000) + 100);
+        waitForRequestsScheduleDelay();
         this.featureUpdateService.scheduleRequests();
 
         int nbMinimalExpectedRequests = properties.getMaxBulkSize() / 2;
@@ -1020,7 +1021,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                                          .findAny()
                                                                          .get());
         featureUpdateService.registerRequests(prepareUpdateRequests(urns));
-        TimeUnit.SECONDS.sleep(5);
+        waitForRequestsScheduleDelay();
         featureUpdateService.scheduleRequests();
         waitForStep(featureUpdateRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10_000);
         mockNotificationSuccess();
@@ -1048,7 +1049,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                                          .findAny()
                                                                          .get());
         featureUpdateService.registerRequests(prepareUpdateRequests(urns));
-        TimeUnit.SECONDS.sleep(5);
+        waitForRequestsScheduleDelay();
         featureUpdateService.scheduleRequests();
         waitUpdateRequestDeletion(0, 20000);
 
@@ -1211,7 +1212,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                                          .findAny()
                                                                          .get());
         featureUpdateService.registerRequests(prepareUpdateRequests(urns));
-        TimeUnit.SECONDS.sleep(5);
+        waitForRequestsScheduleDelay();
         featureUpdateService.scheduleRequests();
         waitForStep(featureUpdateRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10_000);
         mockNotificationError();
@@ -1249,6 +1250,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         checkKey(1, "updatedProducts", sessionStepProperties);
         checkKey(0, "runningUpdateRequests", sessionStepProperties);
         checkKey(1, "inErrorUpdateRequests", sessionStepProperties);
+    }
+
+    private void waitForRequestsScheduleDelay() throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep((properties.getDelayBeforeProcessing() * 1_000) + 100);
     }
 
 }

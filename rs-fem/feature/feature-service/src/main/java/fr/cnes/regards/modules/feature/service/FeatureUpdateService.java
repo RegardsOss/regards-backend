@@ -290,6 +290,13 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
         if (!requestsToSchedule.isEmpty()) {
 
+            Optional<PriorityLevel> highestPriorityLevel = requestsToSchedule.stream()
+                                                                             .max((p1, p2) -> Math.max(p1.getPriority()
+                                                                                                         .getPriorityLevel(),
+                                                                                                       p2.getPriority()
+                                                                                                         .getPriorityLevel()))
+                                                                             .map(IAbstractRequest::getPriority);
+
             requestsToSchedule = filterUrnInDeletion(requestsToSchedule);
             if (!requestsToSchedule.isEmpty()) {
 
@@ -315,7 +322,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
                 // the job priority will be set according the priority of the first request to schedule
                 JobInfo jobInfo = new JobInfo(false,
-                                              requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                                              highestPriorityLevel.orElse(PriorityLevel.NORMAL).getPriorityLevel(),
                                               jobParameters,
                                               authResolver.getUser(),
                                               FeatureUpdateJob.class.getName());

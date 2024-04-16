@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.domain.AbstractFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
@@ -219,6 +220,13 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                                                                                                                   .collect(
                                                                                                                       Collectors.toSet()));
 
+            Optional<PriorityLevel> highestPriorityLevel = dbRequests.stream()
+                                                                     .max((p1, p2) -> Math.max(p1.getPriority()
+                                                                                                 .getPriorityLevel(),
+                                                                                               p2.getPriority()
+                                                                                                 .getPriorityLevel()))
+                                                                     .map(AbstractRequest::getPriority);
+
             for (FeatureDeletionRequest request : dbRequests) {
                 requestsToSchedule.add(request);
                 requestIds.add(request.getId());
@@ -230,9 +238,9 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
             jobParameters.add(new JobParameter(FeatureDeletionJob.IDS_PARAMETER, requestIds));
 
-            // the job priority will be set according the priority of the first request to schedule
+            // the job priority will be set according the highest priority of the requests to schedule
             JobInfo jobInfo = new JobInfo(false,
-                                          requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                                          highestPriorityLevel.orElse(PriorityLevel.NORMAL).getPriorityLevel(),
                                           jobParameters,
                                           authResolver.getUser(),
                                           FeatureDeletionJob.class.getName());

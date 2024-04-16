@@ -68,7 +68,8 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
-                                   "regards.amqp.enabled=true" },
+                                   "regards.amqp.enabled=true",
+                                   "regards.feature.max.bulk.size=50" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
                                   "classpath:metrics.properties" })
@@ -568,7 +569,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                        Pageable.ofSize(10)).getTotalElements());
 
         // Retry schedule
-        
+
         // When
         this.featureCreationService.scheduleRequests();
 
@@ -616,23 +617,20 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testFeaturePriority() {
 
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(properties.getMaxBulkSize() + (
-            properties.getMaxBulkSize()
-            / 2), true, false);
-
-        // we will set all priority to normal except for the (properties.getMaxBulkSize() / 2) last events
-        for (int i = properties.getMaxBulkSize(); i < (properties.getMaxBulkSize() + (properties.getMaxBulkSize()
-                                                                                      / 2)); i++) {
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(properties.getMaxBulkSize() * 2,
+                                                                                   true,
+                                                                                   false);
+        // we will set all priority to normal except for the first bulk events
+        for (int i = 0; i < properties.getMaxBulkSize(); i++) {
             events.get(i).getMetadata().setPriority(PriorityLevel.HIGH);
         }
 
         this.featureCreationService.registerRequests(events);
 
-        assertEquals(properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2),
-                     this.featureCreationRequestRepo.count());
+        assertEquals(properties.getMaxBulkSize() * 2, this.featureCreationRequestRepo.count());
 
         this.featureCreationService.scheduleRequests();
-        // Retrieved scheduled requests and verify that the 500 High priority have been scheduled first.
+        // Retrieved scheduled requests and verify that High priority have been scheduled first.
         List<FeatureCreationRequest> scheduled = featureCreationRequestRepo.findAll()
                                                                            .stream()
                                                                            .filter(r -> r.getStep()
@@ -651,10 +649,13 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         }
 
         // half of scheduled should be with priority HIGH
-        assertEquals(properties.getMaxBulkSize().intValue(), highPriorityNumber + otherPriorityNumber);
-        assertEquals(highPriorityNumber, otherPriorityNumber);
+        assertEquals(properties.getMaxBulkSize().intValue(), highPriorityNumber);
+        assertEquals(0, otherPriorityNumber);
 
-        waitForFeatures(properties.getMaxBulkSize());
+        // Now schedule second bulk
+        this.featureCreationService.scheduleRequests();
+
+        waitForFeatures(properties.getMaxBulkSize() * 2);
     }
 
     @Test

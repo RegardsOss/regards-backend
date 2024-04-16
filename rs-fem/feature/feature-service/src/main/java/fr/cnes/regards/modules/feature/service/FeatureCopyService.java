@@ -154,7 +154,7 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
         List<FeatureCopyRequest> requestsToSchedule = this.featureCopyRequestRepo.findByStepAndRequestDateLessThanEqual(
                                                               FeatureRequestStep.LOCAL_DELAYED,
                                                               OffsetDateTime.now(),
-                                                              PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
+                                                              PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.desc("priority"), Order.asc("requestDate"))))
                                                                                  .getContent();
         Set<Long> requestIds = requestsToSchedule.stream()
                                                  .map(AbstractFeatureRequest::getId)
