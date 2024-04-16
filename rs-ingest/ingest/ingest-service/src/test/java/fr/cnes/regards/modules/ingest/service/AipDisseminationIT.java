@@ -34,7 +34,10 @@ import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.*;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IAipDisseminationRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
@@ -209,8 +212,7 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
         Assertions.assertEquals(201, allRequests.getTotalElements());
         // All dissemination is in state Waiting notifier response
         Assertions.assertTrue(allRequests.stream()
-                                         .allMatch(req -> InternalRequestState.WAITING_NOTIFIER_RESPONSE.equals(
-                                             req.getState())),
+                                         .allMatch(req -> InternalRequestState.WAITING_NOTIFIER_RESPONSE.equals(req.getState())),
                               "Dissemination requests are supposed to be in "
                               + "WAITING_NOTIFIER state after scheduling");
         // each jobs (3) call one time notifierClient
@@ -231,7 +233,12 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
                                                .stream()
                                                .map(r -> new Recipient(r, RecipientStatus.SUCCESS, false, false))
                                                .collect(Collectors.toCollection(HashSet::new));
-            mapRequestEvents.put(request, new NotifierEvent(null, null, NotificationState.SUCCESS, recipients));
+            mapRequestEvents.put(request,
+                                 new NotifierEvent(null,
+                                                   null,
+                                                   NotificationState.SUCCESS,
+                                                   recipients,
+                                                   OffsetDateTime.now()));
         }
 
         // WHEN simulate notifier success response received
