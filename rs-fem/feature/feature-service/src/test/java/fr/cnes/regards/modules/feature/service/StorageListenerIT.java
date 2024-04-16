@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileGroupRequestStatus;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -70,7 +70,7 @@ public class StorageListenerIT extends AbstractFeatureMultitenantServiceIT {
 
         FileRequestsGroupEvent event = FileRequestsGroupEvent.build("group_id",
                                                                     FileRequestType.STORAGE,
-                                                                    FlowItemStatus.SUCCESS,
+                                                                    FileGroupRequestStatus.SUCCESS,
                                                                     new ArrayList<>());
         publisher.publish(event);
         Thread.sleep(5_000);
@@ -97,7 +97,7 @@ public class StorageListenerIT extends AbstractFeatureMultitenantServiceIT {
 
         FileRequestsGroupEvent event = FileRequestsGroupEvent.build("group_id",
                                                                     FileRequestType.STORAGE,
-                                                                    FlowItemStatus.SUCCESS,
+                                                                    FileGroupRequestStatus.SUCCESS,
                                                                     new ArrayList<>());
         publisher.publish(event);
         Thread.sleep(2_000);
