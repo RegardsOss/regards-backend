@@ -144,18 +144,14 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
                                                                                     storageLocationService,
                                                                                     new FileDeletionRequestJob());
         manager.deletionSucceed(fdr.toDto());
-        fileRefEventHandler.handleBatch(Lists.newArrayList(FileReferenceEvent.build(fileRefChecksum,
-                                                                                    fileRefStorage,
-                                                                                    FileReferenceEventType.FULLY_DELETED,
-                                                                                    null,
-                                                                                    "Deletion succeed",
-                                                                                    oFileRef.get()
-                                                                                            .getLocation()
-                                                                                            .toDto(),
-                                                                                    oFileRef.get()
-                                                                                            .getMetaInfo()
-                                                                                            .toDto(),
-                                                                                    Sets.newHashSet(deletionReqId))));
+        fileRefEventHandler.handleBatch(Lists.newArrayList(new FileReferenceEvent(fileRefChecksum,
+                                                                                  fileRefStorage,
+                                                                                  FileReferenceEventType.FULLY_DELETED,
+                                                                                  null,
+                                                                                  "Deletion succeed",
+                                                                                  oFileRef.get().getLocation().toDto(),
+                                                                                  oFileRef.get().getMetaInfo().toDto(),
+                                                                                  Sets.newHashSet(deletionReqId))));
         // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);
         storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);

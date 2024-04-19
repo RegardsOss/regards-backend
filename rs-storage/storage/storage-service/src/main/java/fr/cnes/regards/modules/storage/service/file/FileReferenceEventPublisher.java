@@ -67,14 +67,14 @@ public class FileReferenceEventPublisher {
     public void copySuccess(FileReference fileRef, String message, String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent COPIED. {}", message);
         // Inform all owners of the file that it has been copied in an other storage location.
-        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
-                                                   null,
-                                                   FileReferenceEventType.COPIED,
-                                                   fileRef.getLazzyOwners(),
-                                                   message,
-                                                   fileRef.getLocation().toDto(),
-                                                   fileRef.getMetaInfo().toDto(),
-                                                   Sets.newHashSet(groupId)));
+        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
+                                                 null,
+                                                 FileReferenceEventType.COPIED,
+                                                 fileRef.getLazzyOwners(),
+                                                 message,
+                                                 fileRef.getLocation().toDto(),
+                                                 fileRef.getMetaInfo().toDto(),
+                                                 Sets.newHashSet(groupId)));
     }
 
     /**
@@ -87,16 +87,16 @@ public class FileReferenceEventPublisher {
      */
     public void copyError(FileCopyRequest errorRequest, String errorCause) {
         LOGGER.trace("Publishing FileReferenceEvent COPY_ERROR. {}", errorCause);
-        publisher.publish(FileReferenceEvent.build(errorRequest.getMetaInfo().getChecksum(),
-                                                   null,
-                                                   FileReferenceEventType.COPY_ERROR,
-                                                   null,
-                                                   errorCause,
-                                                   new FileLocation(errorRequest.getStorage(),
-                                                                    errorRequest.getStorageSubDirectory(),
-                                                                    false).toDto(),
-                                                   null,
-                                                   Sets.newHashSet(errorRequest.getGroupId())));
+        publisher.publish(new FileReferenceEvent(errorRequest.getMetaInfo().getChecksum(),
+                                                 null,
+                                                 FileReferenceEventType.COPY_ERROR,
+                                                 null,
+                                                 errorCause,
+                                                 new FileLocation(errorRequest.getStorage(),
+                                                                  errorRequest.getStorageSubDirectory(),
+                                                                  false).toDto(),
+                                                 null,
+                                                 Sets.newHashSet(errorRequest.getGroupId())));
     }
 
     /**
@@ -107,14 +107,14 @@ public class FileReferenceEventPublisher {
      */
     public void deletionSuccess(FileReference fileRef, String message, String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent FULLY_DELETED. {}", message);
-        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
-                                                   fileRef.getLocation().getStorage(),
-                                                   FileReferenceEventType.FULLY_DELETED,
-                                                   null,
-                                                   message,
-                                                   fileRef.getLocation().toDto(),
-                                                   fileRef.getMetaInfo().toDto(),
-                                                   Sets.newHashSet(groupId)));
+        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
+                                                 fileRef.getLocation().getStorage(),
+                                                 FileReferenceEventType.FULLY_DELETED,
+                                                 null,
+                                                 message,
+                                                 fileRef.getLocation().toDto(),
+                                                 fileRef.getMetaInfo().toDto(),
+                                                 Sets.newHashSet(groupId)));
     }
 
     /**
@@ -125,14 +125,14 @@ public class FileReferenceEventPublisher {
      */
     public void deletionError(FileReference fileRef, String message, String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent DELETION_ERROR. {}", message);
-        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
-                                                   fileRef.getLocation().getStorage(),
-                                                   FileReferenceEventType.DELETION_ERROR,
-                                                   null,
-                                                   message,
-                                                   fileRef.getLocation().toDto(),
-                                                   fileRef.getMetaInfo().toDto(),
-                                                   Sets.newHashSet(groupId)));
+        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
+                                                 fileRef.getLocation().getStorage(),
+                                                 FileReferenceEventType.DELETION_ERROR,
+                                                 null,
+                                                 message,
+                                                 fileRef.getLocation().toDto(),
+                                                 fileRef.getMetaInfo().toDto(),
+                                                 Sets.newHashSet(groupId)));
     }
 
     /**
@@ -143,14 +143,14 @@ public class FileReferenceEventPublisher {
      */
     public void deletionForOwnerSuccess(FileReference fileRef, String owner, String message, String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent DELETED_FOR_OWNER. {}", message);
-        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
-                                                   fileRef.getLocation().getStorage(),
-                                                   FileReferenceEventType.DELETED_FOR_OWNER,
-                                                   Sets.newHashSet(owner),
-                                                   message,
-                                                   fileRef.getLocation().toDto(),
-                                                   fileRef.getMetaInfo().toDto(),
-                                                   Sets.newHashSet(groupId)));
+        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
+                                                 fileRef.getLocation().getStorage(),
+                                                 FileReferenceEventType.DELETED_FOR_OWNER,
+                                                 Sets.newHashSet(owner),
+                                                 message,
+                                                 fileRef.getLocation().toDto(),
+                                                 fileRef.getMetaInfo().toDto(),
+                                                 Sets.newHashSet(groupId)));
     }
 
     /**
@@ -166,14 +166,14 @@ public class FileReferenceEventPublisher {
                              Collection<String> groupIds,
                              Collection<String> owners) {
         LOGGER.trace("Publishing FileReferenceEvent STORED. {}", message);
-        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(),
-                                                   null,
-                                                   FileReferenceEventType.STORED,
-                                                   owners,
-                                                   message,
-                                                   fileRef.getLocation().toDto(),
-                                                   fileRef.getMetaInfo().toDto(),
-                                                   groupIds));
+        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
+                                                 null,
+                                                 FileReferenceEventType.STORED,
+                                                 owners,
+                                                 message,
+                                                 fileRef.getLocation().toDto(),
+                                                 fileRef.getMetaInfo().toDto(),
+                                                 groupIds));
     }
 
     /**
@@ -204,14 +204,14 @@ public class FileReferenceEventPublisher {
                            String message,
                            Collection<String> groupIds) {
         LOGGER.trace("Publishing FileReferenceEvent STORE_ERROR. {}", message);
-        publisher.publish(FileReferenceEvent.build(checksum,
-                                                   null,
-                                                   FileReferenceEventType.STORE_ERROR,
-                                                   owners,
-                                                   message,
-                                                   new FileLocation(storage, null, false).toDto(),
-                                                   null,
-                                                   groupIds));
+        publisher.publish(new FileReferenceEvent(checksum,
+                                                 null,
+                                                 FileReferenceEventType.STORE_ERROR,
+                                                 owners,
+                                                 message,
+                                                 new FileLocation(storage, null, false).toDto(),
+                                                 null,
+                                                 groupIds));
     }
 
     /**
@@ -242,20 +242,20 @@ public class FileReferenceEventPublisher {
                           Set<String> groupIds,
                           @Nullable OffsetDateTime expirationDate) {
         LOGGER.trace("Publishing FileReferenceEvent AVAILABLE. {}", message);
-        publisher.publish(FileReferenceEvent.build(checksum,
-                                                   originStorage,
-                                                   FileReferenceEventType.AVAILABLE,
-                                                   owners,
-                                                   message,
-                                                   new FileLocation(availableStorage, url.toString(), false).toDto(),
-                                                   null,
-                                                   groupIds));
+        publisher.publish(new FileReferenceEvent(checksum,
+                                                 originStorage,
+                                                 FileReferenceEventType.AVAILABLE,
+                                                 owners,
+                                                 message,
+                                                 new FileLocation(availableStorage, url.toString(), false).toDto(),
+                                                 null,
+                                                 groupIds));
         publisher.broadcast(FileAvailableEvent.EXCHANGE_NAME,
                             Optional.empty(),
                             Optional.of(FileAvailableEvent.ROUTING_KEY_AVAILABILITY_STATUS),
                             Optional.empty(),
                             AbstractPublisher.DEFAULT_PRIORITY,
-                            FileAvailableEvent.build(checksum, true, expirationDate),
+                            new FileAvailableEvent(checksum, true, expirationDate),
                             Maps.newHashMap());
     }
 
@@ -296,14 +296,21 @@ public class FileReferenceEventPublisher {
      */
     public void notAvailable(String checksum, String originStorage, String message, Set<String> groupIds) {
         LOGGER.trace("Publishing FileReferenceEvent AVAILABILITY_ERROR. {}", message);
-        publisher.publish(FileReferenceEvent.build(checksum,
-                                                   originStorage,
-                                                   FileReferenceEventType.AVAILABILITY_ERROR,
-                                                   null,
-                                                   message,
-                                                   null,
-                                                   null,
-                                                   groupIds));
+        publisher.publish(new FileReferenceEvent(checksum,
+                                                 originStorage,
+                                                 FileReferenceEventType.AVAILABILITY_ERROR,
+                                                 null,
+                                                 message,
+                                                 null,
+                                                 null,
+                                                 groupIds));
+        publisher.broadcast(FileAvailableEvent.EXCHANGE_NAME,
+                            Optional.empty(),
+                            Optional.of(FileAvailableEvent.ROUTING_KEY_AVAILABILITY_STATUS),
+                            Optional.empty(),
+                            AbstractPublisher.DEFAULT_PRIORITY,
+                            new FileAvailableEvent(checksum, false, null),
+                            Maps.newHashMap());
     }
 
     /**
