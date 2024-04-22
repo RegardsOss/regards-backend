@@ -349,7 +349,8 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                 entry.getValue().getDisseminationsInfo().forEach(disseminationInfo -> {
                     if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
                         // Monitoring log
-                        FeatureLogger.deletionBlocked(featureDeletionrequest.getRequestOwner(),
+                        FeatureLogger.deletionBlocked(disseminationInfo.getLabel(),
+                                                      featureDeletionrequest.getRequestOwner(),
                                                       featureDeletionrequest.getRequestId(),
                                                       featureDeletionrequest.getUrn());
                         featureDeletionrequest.setStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
@@ -404,7 +405,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                     featureEntity.getDisseminationsInfo().forEach(disseminationInfo -> {
                         if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
                             // Monitoring log
-                            FeatureLogger.deletionBlocked(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
+                            FeatureLogger.deletionBlocked(disseminationInfo.getLabel(),
+                                                          fdr.getRequestOwner(),
+                                                          fdr.getRequestId(),
+                                                          fdr.getUrn());
                             fdr.setStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
 
                             featureEntitiesNotToDelete.add(featureEntity.getId());
