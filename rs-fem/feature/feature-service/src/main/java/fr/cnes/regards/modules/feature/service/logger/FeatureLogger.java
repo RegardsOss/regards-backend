@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
@@ -47,6 +48,10 @@ public class FeatureLogger {
 
     private static final String PX5 = PX4 + PARAM;
 
+    private static final String PX6 = PX5 + PARAM;
+
+    private static final String PX7 = PX6 + PARAM;
+
     private static final String CREATION_DENIED_FORMAT = PREFIX + "Feature CREATION DENIED" + PX4;
 
     private static final String CREATION_GRANTED_FORMAT = PREFIX + "Feature CREATION GRANTED" + PX3;
@@ -60,6 +65,14 @@ public class FeatureLogger {
     private static final String UPDATE_SUCCESS_FORMAT = PREFIX + "Feature UPDATED" + PX4;
 
     private static final String UPDATE_ERROR_FORMAT = PREFIX + "Feature UPDATE ERROR" + PX5;
+
+    public static final String UPDATE_DISSEMINATION_PUT_FORMAT = PREFIX
+                                                                 + "Feature DISSEMINATION INFO PUT update "
+                                                                 + PX5;
+
+    public static final String UPDATE_DISSEMINATION_ACK_FORMAT = PREFIX
+                                                                 + "Feature DISSEMINATION INFO ACK update "
+                                                                 + PX5;
 
     private static final String UPDATE_UNBLOCKED_FORMAT = PREFIX
                                                           + "Feature DELAYED after WAITING BLOCKING DISSEMINATION"
@@ -127,6 +140,32 @@ public class FeatureLogger {
                                    FeatureUniformResourceName urn,
                                    Set<String> errors) {
         LOGGER.error(String.format(UPDATE_ERROR_FORMAT, requestOwner, requestId, providerId, urn, errors));
+    }
+
+    public static void updateDisseminationPut(String providerId,
+                                              FeatureUniformResourceName urn,
+                                              String recipient,
+                                              OffsetDateTime disseminationDate,
+                                              OffsetDateTime disseminationAckDate) {
+        LOGGER.info(String.format(UPDATE_DISSEMINATION_PUT_FORMAT,
+                                  providerId,
+                                  urn,
+                                  recipient,
+                                  disseminationDate,
+                                  disseminationAckDate));
+    }
+
+    public static void updateDisseminationAck(String providerId,
+                                              FeatureUniformResourceName urn,
+                                              String recipient,
+                                              OffsetDateTime disseminationDate,
+                                              OffsetDateTime disseminationAckDate) {
+        LOGGER.info(String.format(UPDATE_DISSEMINATION_ACK_FORMAT,
+                                  providerId,
+                                  urn,
+                                  recipient,
+                                  disseminationDate,
+                                  disseminationAckDate));
     }
 
     public static void updateUnblocked(String requestOwner, String requestId, FeatureUniformResourceName urn) {
