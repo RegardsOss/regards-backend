@@ -66,7 +66,7 @@ public class FeatureRequestAbortService {
         FeatureRequestTypeEnum.NOTIFICATION,
         Map.of(REMOTE_NOTIFICATION_REQUESTED, REMOTE_NOTIFICATION_ERROR),
         FeatureRequestTypeEnum.CREATION,
-        Map.of(REMOTE_STORAGE_REQUESTED, REMOTE_STORAGE_ERROR, REMOTE_CREATION_REQUESTED, REMOTE_CREATION_ERROR));
+        Map.of(REMOTE_STORAGE_REQUESTED, REMOTE_STORAGE_ERROR));
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureRequestAbortService.class);
 

@@ -208,10 +208,10 @@ public class FeatureRequestAbortControllerIT extends AbstractRegardsIT {
                                                                                                 "model"),
                                                                                   FeatureCreationMetadataEntity.build(
                                                                                       SOURCE,
-                                                                                      "testCreation",
+                                                                                      "testStorage",
                                                                                       List.of(),
                                                                                       true),
-                                                                                  FeatureRequestStep.REMOTE_CREATION_REQUESTED,
+                                                                                  FeatureRequestStep.REMOTE_STORAGE_REQUESTED,
                                                                                   PriorityLevel.NORMAL);
                     request.setRegistrationDate(OffsetDateTime.now().minusHours(abortDelayInHours));
                     requests.add(request);

@@ -105,20 +105,12 @@ class FeatureRequestAbortServiceTest {
         // GIVEN
         // build creation requests, this type can be aborted
         FeatureRequestTypeEnum requestType = FeatureRequestTypeEnum.CREATION;
-        List<FeatureRequestDTO> simulatedFeatures = ListUtils.union(buildRequestsToAbort(requestType,
-                                                                                         RequestState.GRANTED,
-                                                                                         FeatureRequestStep.REMOTE_CREATION_REQUESTED,
-                                                                                         OffsetDateTime.now()
-                                                                                                       .minusHours(
-                                                                                                           ABORT_DELAY_IN_HOURS),
-                                                                                         5),
-                                                                    buildRequestsToAbort(requestType,
-                                                                                         RequestState.GRANTED,
-                                                                                         FeatureRequestStep.REMOTE_STORAGE_REQUESTED,
-                                                                                         OffsetDateTime.now()
-                                                                                                       .minusHours(
-                                                                                                           ABORT_DELAY_IN_HOURS),
-                                                                                         2));
+        List<FeatureRequestDTO> simulatedFeatures = buildRequestsToAbort(requestType,
+                                                                         RequestState.GRANTED,
+                                                                         FeatureRequestStep.REMOTE_STORAGE_REQUESTED,
+                                                                         OffsetDateTime.now()
+                                                                                       .minusHours(ABORT_DELAY_IN_HOURS),
+                                                                         2);
         mockFindAllRequestsMethod(simulatedFeatures);
 
         // WHEN
@@ -169,7 +161,7 @@ class FeatureRequestAbortServiceTest {
         FeatureRequestTypeEnum requestType = FeatureRequestTypeEnum.CREATION;
         List<FeatureRequestDTO> validRequestsToAbort = buildRequestsToAbort(requestType,
                                                                             RequestState.GRANTED,
-                                                                            FeatureRequestStep.REMOTE_CREATION_REQUESTED,
+                                                                            FeatureRequestStep.REMOTE_STORAGE_REQUESTED,
                                                                             OffsetDateTime.now()
                                                                                           .minusHours(
                                                                                               ABORT_DELAY_IN_HOURS),
@@ -271,11 +263,11 @@ class FeatureRequestAbortServiceTest {
     @Test
     void givenRequestWithInvalidDelayToAbort_whenHandled_thenIgnored() {
         // GIVEN
-        // build creation requests with type that cannot be aborted
+        // build creation requests with type that can be aborted but not yet
         FeatureRequestTypeEnum requestType = FeatureRequestTypeEnum.CREATION;
         List<FeatureRequestDTO> simulatedFeatures = buildRequestsToAbort(requestType,
                                                                          RequestState.GRANTED,
-                                                                         FeatureRequestStep.REMOTE_CREATION_REQUESTED,
+                                                                         FeatureRequestStep.REMOTE_STORAGE_REQUESTED,
                                                                          OffsetDateTime.now().minusSeconds(1),
                                                                          2);
         mockFindAllRequestsMethod(simulatedFeatures);
