@@ -574,6 +574,11 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                 String errorCause = Optional.ofNullable(errorByGroupId.get(request.getGroupId()))
                                             .orElse("unknown error.");
                 addRemoteStorageError(request, errorCause);
+                LOGGER.error("Storage error received for update request : {} and product {} - {}. Cause : {}",
+                             request.getRequestId(),
+                             request.getFeature().getUrn(),
+                             request.getFeature().getId(),
+                             errorCause);
             }
             doOnError(requests);
             featureUpdateRequestRepository.saveAll(requests);

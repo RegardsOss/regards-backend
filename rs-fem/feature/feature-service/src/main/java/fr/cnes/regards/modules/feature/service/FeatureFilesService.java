@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
@@ -273,6 +274,10 @@ public class FeatureFilesService {
                     // If file is found in original feature, so it is a new location for and existing fil.
                     // Then update file location with new storage/location
                     updateFileLocation(file, newUrl, newStorage);
+                    FeatureLogger.updateNewLocation(originalFeature.getFeature().getId(),
+                                                    originalFeature.getFeature().getUrn(),
+                                                    newStorage,
+                                                    newUrl);
                     fileFound = true;
                 }
             }
@@ -288,6 +293,10 @@ public class FeatureFilesService {
                                .getFiles()
                                .add(FeatureFile.build(newFileAttributes,
                                                       FeatureFileLocation.build(newUrl, newStorage)));
+                FeatureLogger.updateNewLocation(originalFeature.getFeature().getId(),
+                                                originalFeature.getFeature().getUrn(),
+                                                newStorage,
+                                                newUrl);
             }
         }
         return originalFeature;

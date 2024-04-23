@@ -30,7 +30,7 @@ import java.util.Set;
  *
  * @author Marc SORDI
  */
-public class FeatureLogger {
+public final class FeatureLogger {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureLogger.class);
 
@@ -73,6 +73,8 @@ public class FeatureLogger {
     public static final String UPDATE_DISSEMINATION_ACK_FORMAT = PREFIX
                                                                  + "Feature DISSEMINATION INFO ACK update "
                                                                  + PX5;
+
+    private static final String NEW_FILE_LOCATION_SUCCESS_FORMAT = PREFIX + "Feature new file location SUCCESS" + PX4;
 
     private static final String UPDATE_UNBLOCKED_FORMAT = PREFIX
                                                           + "Feature DELAYED after WAITING BLOCKING DISSEMINATION"
@@ -170,6 +172,13 @@ public class FeatureLogger {
                                   disseminationAckDate));
     }
 
+    public static void updateNewLocation(String providerId,
+                                         FeatureUniformResourceName urn,
+                                         String storage,
+                                         String url) {
+        LOGGER.info(String.format(NEW_FILE_LOCATION_SUCCESS_FORMAT, providerId, urn, storage, url));
+    }
+
     public static void updateUnblocked(String requestOwner, String requestId, FeatureUniformResourceName urn) {
         LOGGER.info(String.format(UPDATE_UNBLOCKED_FORMAT, requestOwner, requestId, urn));
     }
@@ -214,4 +223,5 @@ public class FeatureLogger {
     public static void notificationError(String requestOwner, String requestId, FeatureUniformResourceName urn) {
         LOGGER.error(String.format(NOTIFICATION_ERROR_FORMAT, requestOwner, requestId, urn));
     }
+
 }
