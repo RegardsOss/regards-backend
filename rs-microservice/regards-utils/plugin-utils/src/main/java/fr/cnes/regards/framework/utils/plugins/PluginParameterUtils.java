@@ -128,9 +128,12 @@ public final class PluginParameterUtils {
                                                               Class<?> pluginClass,
                                                               List<String> alreadyManagedTypeNames) {
         PluginParamDescriptor result;
+        PluginParamType paramType;
+        PluginParamType parameterizedType = null;
 
         // Retrieve type of field
-        PluginParamType paramType = getFieldParameterType(field);
+        paramType = getFieldParameterType(field);
+
         String pluginType = null;
 
         if (paramType == PluginParamType.PLUGIN) {
@@ -152,6 +155,16 @@ public final class PluginParameterUtils {
                                                   false,
                                                   pluginType);
         } else {
+            //If plugin parameter type is filled, we have to update the type or parameterized type if we have map or
+            // collection
+            if (pluginParameter.type() != PluginOverridenParamType.TO_BE_COMPUTED) {
+                if (PluginParamType.COLLECTION.equals(paramType) || PluginParamType.MAP.equals(paramType)) {
+                    parameterizedType = PluginParamType.valueOf(pluginParameter.type().toString());
+                } else {
+                    paramType = PluginParamType.valueOf(pluginParameter.type().toString());
+                }
+            }
+
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
 
@@ -203,6 +216,30 @@ public final class PluginParameterUtils {
 
         // Do in depth discovery for COLLECTION and register parameterized sub type
         else if (PluginParamType.COLLECTION.equals(paramType)) {
+            handleCollectionType(alreadyManagedTypeNames, field, result, parameterizedType);
+        }
+        // Do in depth discovery for MAP and register parameterized sub types
+        else if (PluginParamType.MAP.equals(paramType)) {
+            // Set key label
+            if (pluginParameter != null) {
+                result.setKeyLabel(pluginParameter.keylabel());
+            }
+            handleMapType(alreadyManagedTypeNames, field, result, parameterizedType);
+        }
+        return result;
+    }
+
+    /**
+     * Handles the sub param types for COLLECTION types
+     */
+    private static void handleCollectionType(List<String> alreadyManagedTypeNames,
+                                             Field field,
+                                             PluginParamDescriptor result,
+                                             PluginParamType subParamType) {
+        if (subParamType != null) {
+            //We override the parameterized type with the one passed in the 'type' plugin parameter if present
+            result.setParameterizedSubTypes(subParamType);
+        } else {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
             // Get single parameter type
             Class<?> argType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
@@ -211,36 +248,34 @@ public final class PluginParameterUtils {
                 result.setParameterizedSubTypes(PluginParamType.STRING);
             } else {
                 // Propagate discovery
-                PluginParamType subParamType = tryPropagatingDiscovery(field.getType(),
-                                                                       argType,
-                                                                       alreadyManagedTypeNames,
-                                                                       result);
+                subParamType = tryPropagatingDiscovery(field.getType(), argType, alreadyManagedTypeNames, result);
                 result.setParameterizedSubTypes(subParamType);
             }
         }
+    }
 
-        // Do in depth discovery for MAP and register parameterized sub types
-        else if (PluginParamType.MAP.equals(paramType)) {
-            ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
-            // Set key label
-            if (pluginParameter != null) {
-                result.setKeyLabel(pluginParameter.keylabel());
-            }
-            // Get parameter types
-            Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-            Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];
-            // Propagate discovery
-            PluginParamType subParamType0 = tryPropagatingDiscovery(field.getType(),
-                                                                    keyType,
-                                                                    alreadyManagedTypeNames,
-                                                                    result);
-            PluginParamType subParamType1 = tryPropagatingDiscovery(field.getType(),
-                                                                    valueType,
-                                                                    alreadyManagedTypeNames,
-                                                                    result);
-            result.setParameterizedSubTypes(subParamType0, subParamType1);
-        }
-        return result;
+    /**
+     * Handles the sub param types for MAP types
+     */
+    private static void handleMapType(List<String> alreadyManagedTypeNames,
+                                      Field field,
+                                      PluginParamDescriptor result,
+                                      PluginParamType subParamType) {
+        ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+        // Get parameter types
+        Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+        Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];
+        // Propagate discovery
+        // We can override map values type with the plugin parameter
+        // Map key is always typed with the real object type
+        PluginParamType subParamTypeKey = tryPropagatingDiscovery(field.getType(),
+                                                                  keyType,
+                                                                  alreadyManagedTypeNames,
+                                                                  result);
+        PluginParamType subParamTypeValue = subParamType != null ?
+            subParamType :
+            tryPropagatingDiscovery(field.getType(), valueType, alreadyManagedTypeNames, result);
+        result.setParameterizedSubTypes(subParamTypeKey, subParamTypeValue);
     }
 
     private static boolean isOptionalField(Field field) {
@@ -495,6 +530,7 @@ public final class PluginParameterUtils {
                 param = IPluginParam.build(paramName, (Map<String, JsonElement>) gson.fromJson(value, typeMap));
             }
             case PLUGIN -> param = IPluginParam.plugin(paramName, value);
+            case REGARDS_ENTITY_MODEL -> param = IPluginParam.model(paramName, value);
             default -> throw new PluginUtilsRuntimeException(String.format(
                 "Type parameter <%s> cannot be handled. Complex types are not supported yet.",
                 paramType));

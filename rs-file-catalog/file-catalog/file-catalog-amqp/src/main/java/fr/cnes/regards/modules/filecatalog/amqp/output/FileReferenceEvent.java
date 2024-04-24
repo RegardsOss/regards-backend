@@ -54,25 +54,8 @@ public class FileReferenceEvent extends FileReferenceDto implements ISubscribabl
         super(checksum, originStorage, metaInfo, location, owners, groupIds);
         this.type = type;
         this.message = message;
-
     }
-
-    /**
-     * Build a file reference event with a file location.
-     *
-     * @return {@link FileReferenceEvent}
-     */
-    public static FileReferenceEvent build(String checksum,
-                                           String originStorage,
-                                           FileReferenceEventType type,
-                                           Collection<String> owners,
-                                           String message,
-                                           FileLocationDto location,
-                                           FileReferenceMetaInfoDto metaInfo,
-                                           Collection<String> groupIds) {
-        return new FileReferenceEvent(checksum, originStorage, type, owners, message, location, metaInfo, groupIds);
-    }
-
+    
     public FileReferenceEventType getType() {
         return type;
     }

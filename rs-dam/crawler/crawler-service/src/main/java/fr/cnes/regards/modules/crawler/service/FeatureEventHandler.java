@@ -20,18 +20,13 @@ package fr.cnes.regards.modules.crawler.service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
-import fr.cnes.regards.modules.dam.dto.FeatureEventType;
 import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Handle {@link FeatureEvent}s to delete features from index.
@@ -42,14 +37,14 @@ import java.util.stream.Collectors;
 @Component
 public class FeatureEventHandler implements IBatchHandler<FeatureEvent> {
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final ISubscriber subscriber;
 
-    @Autowired
-    private IEntityIndexerService entityIndexerService;
+    private final EntityDeletionService entityDeletionService;
 
-    @Autowired
-    private ISubscriber subscriber;
+    public FeatureEventHandler(ISubscriber subscriber, EntityDeletionService entityDeletionService) {
+        this.subscriber = subscriber;
+        this.entityDeletionService = entityDeletionService;
+    }
 
     @EventListener
     public void handleApplicationReady(ModelJsonReadyEvent event) {
@@ -63,12 +58,10 @@ public class FeatureEventHandler implements IBatchHandler<FeatureEvent> {
     }
 
     @Override
-    public void handleBatch(List<FeatureEvent> messages) {
-        Set<String> ipIds = messages.stream()
-                                    .filter(f -> FeatureEventType.DELETE.equals(f.getType()))
-                                    .map(f -> f.getFeatureId())
-                                    .collect(Collectors.toUnmodifiableSet());
-        entityIndexerService.deleteDataObjectsAndUpdate(runtimeTenantResolver.getTenant(), ipIds);
+    public void handleBatch(List<FeatureEvent> featureEvents) {
+        LOGGER.debug("Received {} featureEvents", featureEvents.size());
+        entityDeletionService.createRequests(featureEvents.stream().map(FeatureEvent::getFeatureId).toList());
+        LOGGER.debug("{} featureEvents handled", featureEvents.size());
     }
 
     @Override

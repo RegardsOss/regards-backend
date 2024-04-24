@@ -40,13 +40,9 @@ public class FileAvailableEvent extends FileAvailabilityStatusDto implements IEv
         super(checksum, available, expirationDate);
     }
 
-    public static FileAvailableEvent build(String checksum, boolean available, OffsetDateTime expirationDate) {
-        return new FileAvailableEvent(checksum, available, expirationDate);
-    }
-
     @Override
     public String toString() {
-        return "FileAvailableEvent{"
+        return "FileAvailableEvent ["
                + "checksum='"
                + checksum
                + '\''
@@ -54,7 +50,7 @@ public class FileAvailableEvent extends FileAvailabilityStatusDto implements IEv
                + available
                + ", expirationDate="
                + expirationDate
-               + '}';
+               + ']';
     }
 
     @Override

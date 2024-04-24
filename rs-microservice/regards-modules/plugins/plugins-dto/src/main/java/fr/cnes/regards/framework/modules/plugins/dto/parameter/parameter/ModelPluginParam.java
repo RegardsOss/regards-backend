@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,15 +19,28 @@
 package fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter;
 
 /**
- * Supported plugin parameter types
+ * Model plugin parameter
+ * REGARDS_ENTITY_MODEL is not a java native type.
+ * This type is used to indicates that the parameter must match a REGARDS Model name.
+ * Models are entity description defined in data-management microservice.
  *
- * @author Marc SORDI
+ * @author mnguyen0
  */
-public enum PluginParamType {
+public class ModelPluginParam extends AbstractPluginParam<String> {
 
-    STRING, BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN, MAP, COLLECTION, POJO, PLUGIN,
-    /**
-     * Following type are not standard types, they exist only for REGARDS context
-     */
-    REGARDS_ENTITY_MODEL
+    public ModelPluginParam() {
+        super(PluginParamType.REGARDS_ENTITY_MODEL);
+    }
+
+    @Override
+    public boolean supportsDefaultValue() {
+        return true;
+    }
+
+    @Override
+    public void applyDefaultValue(String value) {
+        if (!hasValue()) {
+            this.value = value;
+        }
+    }
 }

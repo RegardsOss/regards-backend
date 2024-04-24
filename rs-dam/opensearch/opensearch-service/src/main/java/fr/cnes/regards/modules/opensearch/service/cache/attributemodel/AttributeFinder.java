@@ -93,7 +93,7 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
             String errorMessage = String.format("Unknown parameter %s for tenant %s",
                                                 name,
                                                 runtimeTenantResolver.getTenant());
-            LOGGER.error(errorMessage);
+            LOGGER.warn(errorMessage);
             throw new OpenSearchUnknownParameter(errorMessage);
         }
 

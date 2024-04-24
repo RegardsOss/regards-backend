@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.IEvent;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
@@ -30,6 +31,7 @@ import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileAvailableEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -94,6 +96,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
         // Given
         FileReference fileRef = this.generateRandomStoredOnlineFileReference();
         Mockito.clearInvocations(fileEventPublisher);
+        Mockito.clearInvocations(publisher);
 
         // When
         fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
@@ -113,6 +116,63 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                           Mockito.anyString(),
                           Mockito.any());
 
+        ArgumentCaptor<ISubscribable> subscribableCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(subscribableCaptor.capture());
+        Assert.assertNotNull(subscribableCaptor.getValue());
+        if (subscribableCaptor.getValue() instanceof FileReferenceEvent fileReferenceEvent) {
+            Assert.assertTrue(FileReferenceEventType.AVAILABLE == fileReferenceEvent.getType());
+        }
+
+        ArgumentCaptor<IEvent> eventCaptor = ArgumentCaptor.forClass(IEvent.class);
+        Mockito.verify(publisher, Mockito.times(1))
+               .broadcast(Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.anyInt(),
+                          eventCaptor.capture(),
+                          Mockito.any());
+        Assert.assertNotNull(eventCaptor.getValue());
+        if (eventCaptor.getValue() instanceof FileAvailableEvent fileAvailableEvent) {
+            Assert.assertTrue(fileAvailableEvent.isAvailable());
+        }
+    }
+
+    @Test
+    public void makeAvailable_with_fileReference_notAvailable() {
+        // Given
+        // A file reference not stored in REGARDS, so not available for REGARDS
+        String fileReferenceChecksum = "unknown_checksum";
+        Mockito.clearInvocations(fileEventPublisher);
+        Mockito.clearInvocations(publisher);
+
+        // When
+        fileCacheRequestService.makeAvailable(Sets.newHashSet(fileReferenceChecksum), 24, UUID.randomUUID().toString());
+
+        // Then
+        Mockito.verify(fileEventPublisher, Mockito.times(1))
+               .notAvailable(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
+
+        ArgumentCaptor<ISubscribable> subscribableCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(subscribableCaptor.capture());
+        Assert.assertNotNull(subscribableCaptor.getValue());
+        if (subscribableCaptor.getValue() instanceof FileReferenceEvent fileReferenceEvent) {
+            Assert.assertTrue(FileReferenceEventType.AVAILABILITY_ERROR == fileReferenceEvent.getType());
+        }
+
+        ArgumentCaptor<IEvent> eventCaptor = ArgumentCaptor.forClass(IEvent.class);
+        Mockito.verify(publisher, Mockito.times(1))
+               .broadcast(Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.anyInt(),
+                          eventCaptor.capture(),
+                          Mockito.any());
+        Assert.assertNotNull(eventCaptor.getValue());
+        if (eventCaptor.getValue() instanceof FileAvailableEvent fileAvailableEvent) {
+            Assert.assertFalse(fileAvailableEvent.isAvailable());
+        }
     }
 
     /**
@@ -202,39 +262,6 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                             fileCacheRequestRepository.count());
 
         Assert.assertEquals("There should be 10 files in cache", 10, cacheFileRepository.count());
-    }
-
-    /**
-     * Create the list of cache files in database :
-     * <ul>
-     *     <li>7 cache files with expiration date=now (+) one day</li>
-     *     <li>1 cache file with expiration date=now (-) one day(expired file)</li>
-     * </ul>
-     */
-    private void createCacheFiles() throws MalformedURLException {
-        List<CacheFile> cacheFiles = new ArrayList<>();
-
-        String cacheRequestsGroupId = UUID.randomUUID().toString();
-        for (int index = 0; index < 7; index++) {
-            cacheFiles.add(CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
-                                                            1024L,
-                                                            "file",
-                                                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                                                            new URL("file", null, "/plop/file"),
-                                                            OffsetDateTime.now().plusDays(1),
-                                                            Set.of(cacheRequestsGroupId),
-                                                            DataType.RAWDATA.name()));
-        }
-        cacheFiles.add(CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
-                                                        1024L,
-                                                        "file",
-                                                        MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                                                        new URL("file", null, "/plop/file"),
-                                                        OffsetDateTime.now().minusDays(1),
-                                                        Set.of(cacheRequestsGroupId),
-                                                        DataType.RAWDATA.name()));
-
-        cacheFileRepository.saveAll(cacheFiles);
     }
 
     @Test
@@ -796,6 +823,39 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
     // ---------------------
     // -- UTILITY METHODS --
     // ---------------------
+
+    /**
+     * Create the list of cache files in database :
+     * <ul>
+     *     <li>7 cache files with expiration date=now (+) one day</li>
+     *     <li>1 cache file with expiration date=now (-) one day(expired file)</li>
+     * </ul>
+     */
+    private void createCacheFiles() throws MalformedURLException {
+        List<CacheFile> cacheFiles = new ArrayList<>();
+
+        String cacheRequestsGroupId = UUID.randomUUID().toString();
+        for (int index = 0; index < 7; index++) {
+            cacheFiles.add(CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
+                                                            1024L,
+                                                            "file",
+                                                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                                                            new URL("file", null, "/plop/file"),
+                                                            OffsetDateTime.now().plusDays(1),
+                                                            Set.of(cacheRequestsGroupId),
+                                                            DataType.RAWDATA.name()));
+        }
+        cacheFiles.add(CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
+                                                        1024L,
+                                                        "file",
+                                                        MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                                                        new URL("file", null, "/plop/file"),
+                                                        OffsetDateTime.now().minusDays(1),
+                                                        Set.of(cacheRequestsGroupId),
+                                                        DataType.RAWDATA.name()));
+
+        cacheFileRepository.saveAll(cacheFiles);
+    }
 
     /**
      * Create a file cache request with availability of 24 hours.

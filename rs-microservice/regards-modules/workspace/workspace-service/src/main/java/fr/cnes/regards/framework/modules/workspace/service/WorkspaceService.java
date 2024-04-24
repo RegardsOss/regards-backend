@@ -94,14 +94,14 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
      * The workspace occupation threshold at which point notification should be sent
      */
     @Value("${regards.workspace.occupation.threshold:80}")
-    private Integer workspaceOccupationThreshold;
+    private Integer workspaceOccupationThresholdInPercent;
 
     /**
      * The workspace critical occupation threshold at which point notification should be sent and projet set to
      * maintenance
      */
     @Value("${regards.workspace.critical.occupation.threshold:90}")
-    private Integer workspaceCriticalOccupationThreshold;
+    private Integer workspaceCriticalOccupationThresholdInPercent;
 
     /**
      * The name of the subdirectory where to store microservice workspace.
@@ -113,11 +113,12 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     public void setIntoWorkspace(InputStream is, String fileName) throws IOException {
         // first lets check if the wroskapce occupation is not critical
         WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
-        if (workspaceMonitoringInfo.getOccupationRatio() > workspaceCriticalOccupationThreshold) {
+        if (workspaceMonitoringInfo.getOccupationRatioInDecimal() * 100
+            > workspaceCriticalOccupationThresholdInPercent) {
             String message = String.format(CRITICAL_MESSAGE_FORMAT,
                                            workspaceMonitoringInfo.getPath(),
-                                           workspaceMonitoringInfo.getOccupationRatio() * 100,
-                                           workspaceCriticalOccupationThreshold,
+                                           workspaceMonitoringInfo.getOccupationRatioInDecimal() * 100,
+                                           workspaceCriticalOccupationThresholdInPercent,
                                            runtimeTenantResolver.getTenant());
             LOG.warn(message);
             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
@@ -205,24 +206,25 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     public void monitor(String tenant) {
         try {
             WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
-            if (workspaceMonitoringInfo.getOccupationRatio() * 100 > workspaceCriticalOccupationThreshold) {
+            if (workspaceMonitoringInfo.getOccupationRatioInDecimal() * 100
+                > workspaceCriticalOccupationThresholdInPercent) {
                 String message = String.format(CRITICAL_MESSAGE_FORMAT,
                                                workspaceMonitoringInfo.getPath(),
-                                               workspaceMonitoringInfo.getOccupationRatio() * 100,
-                                               workspaceCriticalOccupationThreshold,
+                                               workspaceMonitoringInfo.getOccupationRatioInDecimal() * 100,
+                                               workspaceCriticalOccupationThresholdInPercent,
                                                tenant);
                 LOG.warn(message);
                 MaintenanceManager.setMaintenance(tenant);
                 notifier.sendErrorNotification(message, "Workspace occupation is critical", DefaultRole.PROJECT_ADMIN);
                 return;
             }
-            if (workspaceMonitoringInfo.getOccupationRatio() * 100 > workspaceOccupationThreshold) {
+            if (workspaceMonitoringInfo.getOccupationRatioInDecimal() * 100 > workspaceOccupationThresholdInPercent) {
                 String message = String.format(
                     "Workspace \"%s\" for project \"%s\" starts to be busy. Occupation is \"%.2f%%\" which is greater than \"%d%%\" (soft threshold).",
                     workspaceMonitoringInfo.getPath(),
                     tenant,
-                    workspaceMonitoringInfo.getOccupationRatio() * 100,
-                    workspaceOccupationThreshold);
+                    workspaceMonitoringInfo.getOccupationRatioInDecimal() * 100,
+                    workspaceOccupationThresholdInPercent);
                 LOG.warn(message);
                 notifier.sendWarningNotification(message, "Workspace too busy", DefaultRole.PROJECT_ADMIN);
                 return;

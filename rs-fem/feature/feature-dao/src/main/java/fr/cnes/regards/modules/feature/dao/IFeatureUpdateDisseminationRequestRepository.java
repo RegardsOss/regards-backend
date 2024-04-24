@@ -57,8 +57,7 @@ public interface IFeatureUpdateDisseminationRequestRepository
             (SELECT DISTINCT ur.urn
              FROM FeatureUpdateRequest ur
              WHERE NOT ur.state != 'ERROR')
-         AND fud.creationDate <= :now
-         ORDER BY fud.creationDate""")
+         AND fud.creationDate <= :now""")
     Page<FeatureUpdateDisseminationRequest> getFeatureUpdateDisseminationRequestsProcessable(
         @Param("now") OffsetDateTime now, @Param("type") FeatureUpdateDisseminationInfoType type, Pageable pageable);
 }

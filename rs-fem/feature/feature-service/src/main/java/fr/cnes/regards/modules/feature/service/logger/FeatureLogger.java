@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
@@ -29,7 +30,7 @@ import java.util.Set;
  *
  * @author Marc SORDI
  */
-public class FeatureLogger {
+public final class FeatureLogger {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureLogger.class);
 
@@ -47,6 +48,10 @@ public class FeatureLogger {
 
     private static final String PX5 = PX4 + PARAM;
 
+    private static final String PX6 = PX5 + PARAM;
+
+    private static final String PX7 = PX6 + PARAM;
+
     private static final String CREATION_DENIED_FORMAT = PREFIX + "Feature CREATION DENIED" + PX4;
 
     private static final String CREATION_GRANTED_FORMAT = PREFIX + "Feature CREATION GRANTED" + PX3;
@@ -61,6 +66,16 @@ public class FeatureLogger {
 
     private static final String UPDATE_ERROR_FORMAT = PREFIX + "Feature UPDATE ERROR" + PX5;
 
+    public static final String UPDATE_DISSEMINATION_PUT_FORMAT = PREFIX
+                                                                 + "Feature DISSEMINATION INFO PUT update "
+                                                                 + PX5;
+
+    public static final String UPDATE_DISSEMINATION_ACK_FORMAT = PREFIX
+                                                                 + "Feature DISSEMINATION INFO ACK update "
+                                                                 + PX5;
+
+    private static final String NEW_FILE_LOCATION_SUCCESS_FORMAT = PREFIX + "Feature new file location SUCCESS" + PX4;
+
     private static final String UPDATE_UNBLOCKED_FORMAT = PREFIX
                                                           + "Feature DELAYED after WAITING BLOCKING DISSEMINATION"
                                                           + PX3;
@@ -71,7 +86,9 @@ public class FeatureLogger {
 
     private static final String DELETION_SUCCESS_FORMAT = PREFIX + "Feature DELETED" + PX3;
 
-    private static final String DELETION_BLOCKED_FORMAT = PREFIX + "Feature WAITING BLOCKING DISSEMINATION" + PX3;
+    private static final String DELETION_BLOCKED_FORMAT = PREFIX
+                                                          + "Feature WAITING BLOCKING DISSEMINATION acknowledge from "
+                                                          + PX4;
 
     private static final String NOTIFICATION_DENIED_FORMAT = PREFIX + "Feature NOTIFICATION DENIED" + PX4;
 
@@ -129,6 +146,39 @@ public class FeatureLogger {
         LOGGER.error(String.format(UPDATE_ERROR_FORMAT, requestOwner, requestId, providerId, urn, errors));
     }
 
+    public static void updateDisseminationPut(String providerId,
+                                              FeatureUniformResourceName urn,
+                                              String recipient,
+                                              OffsetDateTime disseminationDate,
+                                              OffsetDateTime disseminationAckDate) {
+        LOGGER.info(String.format(UPDATE_DISSEMINATION_PUT_FORMAT,
+                                  providerId,
+                                  urn,
+                                  recipient,
+                                  disseminationDate,
+                                  disseminationAckDate));
+    }
+
+    public static void updateDisseminationAck(String providerId,
+                                              FeatureUniformResourceName urn,
+                                              String recipient,
+                                              OffsetDateTime disseminationDate,
+                                              OffsetDateTime disseminationAckDate) {
+        LOGGER.info(String.format(UPDATE_DISSEMINATION_ACK_FORMAT,
+                                  providerId,
+                                  urn,
+                                  recipient,
+                                  disseminationDate,
+                                  disseminationAckDate));
+    }
+
+    public static void updateNewLocation(String providerId,
+                                         FeatureUniformResourceName urn,
+                                         String storage,
+                                         String url) {
+        LOGGER.info(String.format(NEW_FILE_LOCATION_SUCCESS_FORMAT, providerId, urn, storage, url));
+    }
+
     public static void updateUnblocked(String requestOwner, String requestId, FeatureUniformResourceName urn) {
         LOGGER.info(String.format(UPDATE_UNBLOCKED_FORMAT, requestOwner, requestId, urn));
     }
@@ -148,8 +198,11 @@ public class FeatureLogger {
         LOGGER.info(String.format(DELETION_SUCCESS_FORMAT, requestOwner, requestId, urn));
     }
 
-    public static void deletionBlocked(String requestOwner, String requestId, FeatureUniformResourceName urn) {
-        LOGGER.info(String.format(DELETION_BLOCKED_FORMAT, requestOwner, requestId, urn));
+    public static void deletionBlocked(String disseminationLabel,
+                                       String requestOwner,
+                                       String requestId,
+                                       FeatureUniformResourceName urn) {
+        LOGGER.info(String.format(DELETION_BLOCKED_FORMAT, disseminationLabel, requestOwner, requestId, urn));
     }
 
     public static void notificationDenied(String requestOwner,
@@ -170,4 +223,5 @@ public class FeatureLogger {
     public static void notificationError(String requestOwner, String requestId, FeatureUniformResourceName urn) {
         LOGGER.error(String.format(NOTIFICATION_ERROR_FORMAT, requestOwner, requestId, urn));
     }
+
 }

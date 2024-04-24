@@ -243,11 +243,11 @@ public abstract class AbstractRequest {
         dto.setStep(request.getStep());
         dto.setProcessing(request.getStep().isProcessing());
         dto.setErrors(request.getErrors());
-        if (request instanceof FeatureCreationRequest fcr) {
-            dto.setProviderId(fcr.getProviderId());
+        if (request instanceof FeatureCreationRequest creationRequest) {
+            dto.setProviderId(creationRequest.getProviderId());
             dto.setType(FeatureRequestTypeEnum.CREATION.toString());
-            dto.setSession(fcr.getMetadata().getSession());
-            dto.setSource(fcr.getMetadata().getSessionOwner());
+            dto.setSession(creationRequest.getMetadata().getSession());
+            dto.setSource(creationRequest.getMetadata().getSessionOwner());
         }
         if (request instanceof FeatureUpdateRequest updateRequest) {
             dto.setProviderId(updateRequest.getProviderId());
@@ -258,11 +258,15 @@ public abstract class AbstractRequest {
         if (request instanceof FeatureSaveMetadataRequest) {
             dto.setType(FeatureRequestTypeEnum.SAVE_METADATA.toString());
         }
-        if (request instanceof FeatureDeletionRequest) {
+        if (request instanceof FeatureDeletionRequest deletionRequest) {
             dto.setType(FeatureRequestTypeEnum.DELETION.toString());
+            dto.setSource(deletionRequest.getSourceToNotify());
+            dto.setSession(deletionRequest.getSessionToNotify());
         }
-        if (request instanceof FeatureNotificationRequest) {
+        if (request instanceof FeatureNotificationRequest notificationRequest) {
             dto.setType(FeatureRequestTypeEnum.NOTIFICATION.toString());
+            dto.setSource(notificationRequest.getSourceToNotify());
+            dto.setSession(notificationRequest.getSessionToNotify());
         }
         if (request instanceof FeatureCopyRequest) {
             dto.setType(FeatureRequestTypeEnum.COPY.toString());

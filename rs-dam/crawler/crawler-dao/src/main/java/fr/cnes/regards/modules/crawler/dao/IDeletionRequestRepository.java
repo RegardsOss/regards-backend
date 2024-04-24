@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,18 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter;
+package fr.cnes.regards.modules.crawler.dao;
+
+import fr.cnes.regards.modules.crawler.domain.EntityDeletionRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Supported plugin parameter types
- *
- * @author Marc SORDI
- */
-public enum PluginParamType {
+ * Repository for {@link EntityDeletionRequest}s
+ * @author Thibaud Michaudel
+ **/
+public interface IDeletionRequestRepository extends JpaRepository<EntityDeletionRequest, String> {
 
-    STRING, BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN, MAP, COLLECTION, POJO, PLUGIN,
-    /**
-     * Following type are not standard types, they exist only for REGARDS context
-     */
-    REGARDS_ENTITY_MODEL
 }

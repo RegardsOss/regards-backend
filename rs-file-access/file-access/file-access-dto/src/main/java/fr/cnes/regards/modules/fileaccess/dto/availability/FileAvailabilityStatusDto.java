@@ -88,7 +88,7 @@ public class FileAvailabilityStatusDto {
 
     @Override
     public String toString() {
-        return "FileAvailabilityStatusDto{"
+        return "FileAvailabilityStatusDto ["
                + "checksum='"
                + checksum
                + '\''
@@ -96,6 +96,6 @@ public class FileAvailabilityStatusDto {
                + available
                + ", expirationDate="
                + expirationDate
-               + '}';
+               + ']';
     }
 }

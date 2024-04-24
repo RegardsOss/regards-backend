@@ -42,8 +42,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,7 +60,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
      * An atomic boolean used to determine whether manage() method is currently executing (and avoid launching it
      * in parallel)
      */
-    private static final AtomicBoolean managing = new AtomicBoolean(false);
+    public static final AtomicBoolean managing = new AtomicBoolean(false);
 
     /**
      * An atomic boolean permitting to take into account a new data source creation or update while managing current ones
@@ -126,12 +124,12 @@ public class IngesterService implements IHandler<PluginConfEvent> {
                fixedDelayString = "${regards.ingester.rate.ms:60000}")
     public void manage() {
         LOGGER.info("IngesterService.manage() called...");
+        // if this method is called while currently been executed, doItAgain is set to true and nothing else is done
+        if (managing.getAndSet(true)) {
+            doItAgain.set(true);
+            return;
+        }
         try {
-            // if this method is called while currently been executed, doItAgain is set to true and nothing else is done
-            if (managing.getAndSet(true)) {
-                doItAgain.set(true);
-                return;
-            }
             do {
                 // First, update all DatasourceIngestions of all tenants (to reflect all datasource plugin configurations
                 // states and to update nextPlannedIngestDate)
@@ -165,7 +163,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
                 // set doItAgain to false in all cases and redo if asked to (this means a datasource has been created
                 // or updated while manage() method was currently executing
             } while (doItAgain.getAndSet(false));
-        } finally { // In all cases, set managing to false
+        } finally { // In all cases, set managing to
             managing.set(false);
         }
         LOGGER.info("...IngesterService.manage() ended.");
@@ -205,6 +203,25 @@ public class IngesterService implements IHandler<PluginConfEvent> {
      */
     public void setConsumeOnlyMode(boolean b) {
         consumeOnlyMode = b;
+    }
+
+    /**
+     * Ensure that ingestion is not running and prevent it from being run until {@link #releaseIngestionLock()} is called
+     *
+     * @return true if ingestion is not running and is now locked, false otherwise
+     */
+    public boolean lockIngestion() {
+        return !managing.getAndSet(true);
+    }
+
+    /**
+     * Release ingestion lock so it can be run again
+     */
+    public void releaseIngestionLock() {
+        if (!managing.getAndSet(false)) {
+            LOGGER.error("Error while trying to release ingestion lock in IngesterService : ingestion is not currently"
+                         + " locked");
+        }
     }
 
 }
