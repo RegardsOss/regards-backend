@@ -62,9 +62,11 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
 
     @Query("""
         SELECT request FROM FeatureDeletionRequest request
-        WHERE request.step = :step
-        AND request.requestDate <= :now
-        AND NOT EXISTS (SELECT fcr.urn FROM FeatureCreationRequest fcr WHERE fcr.urn = request.urn)
+        WHERE NOT EXISTS (
+            SELECT fcr.urn FROM FeatureCreationRequest fcr
+            WHERE fcr.urn = request.urn
+        )
+        AND request.step = :step
         AND request.registrationDate <= :delay
         AND request.requestDate <= :now
         ORDER BY request.priority desc, request.requestDate
