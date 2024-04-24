@@ -68,8 +68,9 @@ public class ReferenceFlowItemHandler
         LOGGER.info("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", messages.size());
         long start = System.currentTimeMillis();
         fileRefReqService.reference(messages);
-        LOGGER.info("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms",
+        LOGGER.info("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem containing {} files handled in {} ms",
                     messages.size(),
+                    messages.stream().map(m -> m.getFiles().size()).reduce(0, Integer::sum),
                     System.currentTimeMillis() - start);
     }
 
