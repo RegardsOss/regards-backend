@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -399,6 +400,10 @@ public class FeatureFilesService {
                     // If file is found in original feature, so it is a new location for and existing fil.
                     // Then update file location with new storage/location
                     updateFileLocation(file, newUrl, newStorage);
+                    FeatureLogger.updateNewLocation(originalFeature.getFeature().getId(),
+                                                    originalFeature.getFeature().getUrn(),
+                                                    newStorage,
+                                                    newUrl);
                     fileFound = true;
                 }
             }
@@ -414,6 +419,10 @@ public class FeatureFilesService {
                                .getFiles()
                                .add(FeatureFile.build(newFileAttributes,
                                                       FeatureFileLocation.build(newUrl, newStorage)));
+                FeatureLogger.updateNewLocation(originalFeature.getFeature().getId(),
+                                                originalFeature.getFeature().getUrn(),
+                                                newStorage,
+                                                newUrl);
             }
         }
         return originalFeature;

@@ -51,7 +51,7 @@ public class FeatureUpdateDisseminationScheduler extends AbstractTaskScheduler {
 
     private static final String DEFAULT_INITIAL_DELAY = "30000";
 
-    private static final String DEFAULT_SCHEDULING_DELAY = "3000";
+    private static final String DEFAULT_SCHEDULING_DELAY = "2000";
 
     private static final String LOG_FORMAT = "[{}] {} {} scheduled in {} ms";
 
@@ -59,7 +59,7 @@ public class FeatureUpdateDisseminationScheduler extends AbstractTaskScheduler {
 
     private static final String UPDATE_REQUESTS = "FEATURE UPDATE DISSEMINATION REQUESTS";
 
-    private static final long MAX_TASK_DELAY = 60;
+    private static final long MAX_TASK_DELAY = 180;
 
     @Autowired
     private ITenantResolver tenantResolver;

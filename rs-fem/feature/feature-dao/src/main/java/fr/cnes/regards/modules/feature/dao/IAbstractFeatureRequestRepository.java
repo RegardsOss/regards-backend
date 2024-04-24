@@ -77,9 +77,7 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
     @Query("delete from AbstractFeatureRequest req where urn in :urns")
     void deleteByUrnIn(@Param("urns") Set<FeatureUniformResourceName> urns);
 
-    Long countByState(RequestState state);
-
     Page<T> findByStep(FeatureRequestStep remoteStorageRequested, Pageable pageToRequest);
 
-    List<T> findAllByUrnAndStep(FeatureUniformResourceName urn, FeatureRequestStep step);
+    List<T> findAllByUrnInAndStep(List<FeatureUniformResourceName> urn, FeatureRequestStep step);
 }

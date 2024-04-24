@@ -81,7 +81,7 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
          request.metadata as metadata
         FROM FeatureCreationRequest request
         WHERE NOT EXISTS (
-            SELECT scheduledRequest.providerId 
+            SELECT scheduledRequest.providerId
             FROM FeatureCreationRequest scheduledRequest
             WHERE scheduledRequest.step = 'LOCAL_SCHEDULED'
             AND scheduledRequest.providerId = request.providerId

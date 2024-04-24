@@ -38,11 +38,13 @@ import fr.cnes.regards.modules.feature.domain.request.dissemination.SessionFeatu
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -56,6 +58,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -75,8 +78,6 @@ public class FeatureUpdateDisseminationService {
      */
     private static final String DISSEMINATION_SESSION_STEP = "fem_dissemination";
 
-    private static final int PAGE_SIZE = 400;
-
     private final IFeatureEntityWithDisseminationRepository featureWithDisseminationRepository;
 
     private final IFeatureUpdateDisseminationRequestRepository featureUpdateDisseminationRequestRepository;
@@ -89,18 +90,42 @@ public class FeatureUpdateDisseminationService {
 
     private final ISessionAgentClient sessionNotificationClient;
 
+    /**
+     * Pagination size for handling ACK dissemination info requests
+     */
+    private final int ackRequestPageSize;
+
+    /**
+     * Pagination size for handling PUT dissemination info requests
+     */
+    private final int putRequestPageSize;
+
+    /**
+     * Maximum number of requests to handle in one schedule task.
+     */
+    private final int maximumNumberOfRequestsToHandle;
+
     public FeatureUpdateDisseminationService(IFeatureEntityWithDisseminationRepository featureWithDisseminationRepository,
                                              IFeatureUpdateDisseminationRequestRepository featureUpdateDisseminationRequestRepository,
                                              IFeatureEntityRepository featureEntityRepository,
                                              FeatureUpdateDisseminationService featureUpdateDisseminationService,
                                              ISessionAgentClient sessionNotificationClient,
-                                             IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepository) {
+                                             IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepository,
+                                             @Value("${regards.feature.update.dissemination.put.page.size:500}")
+                                             int putRequestPageSize,
+                                             @Value("${regards.feature.update.dissemination.ack.page.size:100}")
+                                             int ackRequestPageSize,
+                                             @Value("${regards.feature.update.dissemination.max.requests"
+                                                    + ".schedule:5000}") int maximumNumberOfRequestsToHandle) {
         this.featureWithDisseminationRepository = featureWithDisseminationRepository;
         this.featureUpdateDisseminationRequestRepository = featureUpdateDisseminationRequestRepository;
         this.featureEntityRepository = featureEntityRepository;
         this.self = featureUpdateDisseminationService;
         this.sessionNotificationClient = sessionNotificationClient;
         this.abstractFeatureRequestRepository = abstractFeatureRequestRepository;
+        this.putRequestPageSize = putRequestPageSize;
+        this.ackRequestPageSize = ackRequestPageSize;
+        this.maximumNumberOfRequestsToHandle = maximumNumberOfRequestsToHandle;
     }
 
     /**
@@ -112,19 +137,42 @@ public class FeatureUpdateDisseminationService {
      */
     public int handleRequests() {
         OffsetDateTime startDate = OffsetDateTime.now();
-        int nbHandledRequests = handleRequestsByType(FeatureUpdateDisseminationInfoType.PUT, startDate);
-        nbHandledRequests += handleRequestsByType(FeatureUpdateDisseminationInfoType.ACK, startDate);
+        int nbHandledRequests = 0;
+        // Pagination size is different for put and ack handling.
+        // Put ack needs less database requests so we can handle more requests per page.
+        // Add a limit page number to handle to avoid scheduled task to last too long and another thread is run by
+        // another instance of the service. (cf lock time of the process in scheduler)
+        // IMPORTANT : No limitation on the number of requests to handle is set. We need to handle all PUT requests
+        // before handling ACK requests.
+        nbHandledRequests = handleRequestsByType(FeatureUpdateDisseminationInfoType.PUT,
+                                                 startDate,
+                                                 putRequestPageSize,
+                                                 null);
+        // Ensure all PUT requests have been handled before handle ACK.
+        nbHandledRequests += handleRequestsByType(FeatureUpdateDisseminationInfoType.ACK,
+                                                  startDate,
+                                                  ackRequestPageSize,
+                                                  Math.floorDiv(maximumNumberOfRequestsToHandle, ackRequestPageSize));
         return nbHandledRequests;
     }
 
     /**
-     * Handle dissemination requests by type ACK or PUT
+     * Handle dissemination requests by type ACK or PUT.
+     * As the number of requests can be huge, this method limits the number of requests to handle by setting two
+     * parameters, pageSize and pageLimit.
+     *
+     * @param pageSize  number of requests per page to handle
+     * @param pageLimit maximum number of page to handle. If null no limitation, all requests are handled
      */
-    public int handleRequestsByType(FeatureUpdateDisseminationInfoType type, OffsetDateTime startDate) {
-        Pageable page = PageRequest.of(0, PAGE_SIZE);
+    private int handleRequestsByType(FeatureUpdateDisseminationInfoType type,
+                                     OffsetDateTime startDate,
+                                     int pageSize,
+                                     @Nullable Integer pageLimit) {
+        Pageable page = PageRequest.of(0, pageSize);
         Page<FeatureUpdateDisseminationRequest> results;
         int totalHandled = 0;
         do {
+            long start = System.currentTimeMillis();
             // Search requests to process
             results = featureUpdateDisseminationRequestRepository.getFeatureUpdateDisseminationRequestsProcessable(
                 startDate,
@@ -135,12 +183,13 @@ public class FeatureUpdateDisseminationService {
             }
             totalHandled += results.getNumberOfElements();
             if (results.getNumberOfElements() > 0) {
-                LOGGER.info("Handled {} update dissemination request of type {} (remaining {}).",
+                LOGGER.info("Handled {} update dissemination request of type {} (remaining {}) in {}ms.",
                             results.getNumberOfElements(),
                             type,
-                            results.getTotalElements() - results.getNumberOfElements());
+                            results.getTotalElements() - results.getNumberOfElements(),
+                            System.currentTimeMillis() - start);
             }
-        } while (results.hasNext());
+        } while (results.hasNext() && (pageLimit != null && page.getPageNumber() < pageLimit));
         return totalHandled;
     }
 
@@ -151,6 +200,11 @@ public class FeatureUpdateDisseminationService {
 
         // Retrieve features related to these events
         List<FeatureEntity> featureEntities = getFeatureEntities(results);
+        // Retrieve all blocked requests associated to the update features in one request to avoid one request per
+        // request
+        List<AbstractFeatureRequest> blockedRequests = abstractFeatureRequestRepository.findAllByUrnInAndStep(
+            featureEntities.stream().map(FeatureEntity::getUrn).collect(Collectors.toList()),
+            FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
         // Update features recipients
         for (FeatureEntity featureEntity : featureEntities) {
             // Retrieve the request associated to the featureEntity
@@ -158,10 +212,10 @@ public class FeatureUpdateDisseminationService {
             for (FeatureUpdateDisseminationRequest request : requests) {
                 switch (request.getUpdateType()) {
                     case ACK:
-                        updateFeatureRecipientsWithAckRequest(featureEntity, request, sessionInfos);
+                        updateFeatureRecipientsWithAckRequest(featureEntity, request, blockedRequests, sessionInfos);
                         break;
                     case PUT:
-                        updateFeatureRecipientsWithPutRequest(featureEntity, request, sessionInfos);
+                        updateFeatureRecipientsWithPutRequest(featureEntity, request, blockedRequests, sessionInfos);
                         break;
                     default:
                         throw new IllegalArgumentException("Unsupported request type " + request.getUpdateType());
@@ -193,6 +247,7 @@ public class FeatureUpdateDisseminationService {
      */
     private void updateFeatureRecipientsWithPutRequest(FeatureEntity featureEntity,
                                                        FeatureUpdateDisseminationRequest request,
+                                                       List<AbstractFeatureRequest> blockedRequests,
                                                        SessionFeatureDisseminationInfos sessionInfos) {
         // Check if a featureRecipient exists with same recipient label
         Optional<FeatureDisseminationInfo> featureRecipientToUpdate = featureEntity.getDisseminationsInfo()
@@ -201,16 +256,22 @@ public class FeatureUpdateDisseminationService {
                                                                                                                                .equals(
                                                                                                                                    request.getRecipientLabel()))
                                                                                    .findFirst();
+        FeatureDisseminationInfo featureDisseminationInfo;
         if (featureRecipientToUpdate.isPresent()) {
             // Reset an existing feature recipient as this recipient has been re-notified
-            featureRecipientToUpdate.get().updateRequestDate(request.getCreationDate(), request.getAckRequired());
-
-            handleBlockingDissemination(featureRecipientToUpdate.get(), featureEntity);
+            featureDisseminationInfo = featureRecipientToUpdate.get();
+            featureDisseminationInfo.updateRequestDate(request.getCreationDate(), request.getAckRequired());
+            handleBlockingDissemination(featureRecipientToUpdate.get(), blockedRequests);
         } else {
             // Add new recipient
-            FeatureDisseminationInfo featureDisseminationInfo = new FeatureDisseminationInfo(request);
+            featureDisseminationInfo = new FeatureDisseminationInfo(request);
             featureEntity.getDisseminationsInfo().add(featureDisseminationInfo);
         }
+        FeatureLogger.updateDisseminationPut(featureEntity.getProviderId(),
+                                             featureEntity.getUrn(),
+                                             featureDisseminationInfo.getLabel(),
+                                             featureDisseminationInfo.getRequestDate(),
+                                             featureDisseminationInfo.getAckDate());
         sessionInfos.addRequest(featureEntity, request);
     }
 
@@ -221,6 +282,7 @@ public class FeatureUpdateDisseminationService {
      */
     private void updateFeatureRecipientsWithAckRequest(FeatureEntity featureEntity,
                                                        FeatureUpdateDisseminationRequest request,
+                                                       List<AbstractFeatureRequest> blockedRequests,
                                                        SessionFeatureDisseminationInfos sessionInfos) {
         // Check if a featureRecipient exists with same recipient label
         Optional<FeatureDisseminationInfo> featureRecipientToUpdate = featureEntity.getDisseminationsInfo()
@@ -229,15 +291,23 @@ public class FeatureUpdateDisseminationService {
                                                                                                                                .equals(
                                                                                                                                    request.getRecipientLabel()))
                                                                                    .findFirst();
+        FeatureDisseminationInfo featureDisseminationInfo;
         if (featureRecipientToUpdate.isPresent()) {
             // Update existing feature recipient ack date
-            featureRecipientToUpdate.get().updateAckDate(request.getCreationDate());
-            handleBlockingDissemination(featureRecipientToUpdate.get(), featureEntity);
+            featureDisseminationInfo = featureRecipientToUpdate.get();
+            featureDisseminationInfo.updateAckDate(request.getCreationDate());
+
+            handleBlockingDissemination(featureDisseminationInfo, blockedRequests);
         } else {
             // This case can happen with async issue when ack is received before put request
-            FeatureDisseminationInfo featureDisseminationInfo = new FeatureDisseminationInfo(request);
+            featureDisseminationInfo = new FeatureDisseminationInfo(request);
             featureEntity.getDisseminationsInfo().add(featureDisseminationInfo);
         }
+        FeatureLogger.updateDisseminationAck(featureEntity.getProviderId(),
+                                             featureEntity.getUrn(),
+                                             featureDisseminationInfo.getLabel(),
+                                             featureDisseminationInfo.getRequestDate(),
+                                             featureDisseminationInfo.getAckDate());
         sessionInfos.addRequest(featureEntity, request);
     }
 
@@ -246,13 +316,10 @@ public class FeatureUpdateDisseminationService {
      * unblocked step ({@link FeatureRequestStep#LOCAL_DELAYED})
      */
     private void handleBlockingDissemination(FeatureDisseminationInfo featureDisseminationInfo,
-                                             FeatureEntity featureEntity) {
-        List<AbstractFeatureRequest> featureRequests = abstractFeatureRequestRepository.findAllByUrnAndStep(
-            featureEntity.getUrn(),
-            FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
+                                             List<AbstractFeatureRequest> blockedRequests) {
         if (featureDisseminationInfo.isBlocking()) {
             abstractFeatureRequestRepository.updateStep(FeatureRequestStep.LOCAL_DELAYED,
-                                                        featureRequests.stream()
+                                                        blockedRequests.stream()
                                                                        .map(AbstractFeatureRequest::getId)
                                                                        .collect(Collectors.toSet()));
         }
