@@ -240,23 +240,74 @@ class FeatureRequestAbortServiceTest {
     }
 
     @Test
-    void givenUnknownRequestTypeToAbort_whenHandled_thenIgnored() {
+    void givenUpdateRequestTypeWithUnknownStepToAbort_whenHandled_thenIgnored() {
         // GIVEN
         // build requests with type that cannot be aborted
         FeatureRequestTypeEnum requestType = FeatureRequestTypeEnum.UPDATE;
-        buildRequestsToAbort(requestType,
-                             RequestState.GRANTED,
-                             FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
-                             OffsetDateTime.now().minusHours(ABORT_DELAY_IN_HOURS),
-                             3);
+        List<FeatureRequestDTO> simulatedFeatures = buildRequestsToAbort(requestType,
+                                                                         RequestState.GRANTED,
+                                                                         FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+                                                                         OffsetDateTime.now()
+                                                                                       .minusHours(ABORT_DELAY_IN_HOURS),
+                                                                         3);
+        mockFindAllRequestsMethod(simulatedFeatures);
+
         // WHEN
         RequestHandledResponse result = featureRequestAbortService.abortRequests(new SearchFeatureRequestParameters(),
                                                                                  requestType);
 
         // THEN
         // requests should be ignored
-        Assertions.assertThat(result.getTotalRequested()).isZero();
+        Assertions.assertThat(result.getTotalRequested()).isEqualTo(3);
         Assertions.assertThat(result.getTotalHandled()).isZero();
+        Assertions.assertThat(result.getMessage()).contains("number of requests to abort is different");
+    }
+
+    @Test
+    void givenUpdateRequestTypeWithStepToAbort_whenHandled_thenIgnored() {
+        // GIVEN
+        // build requests with type that cannot be aborted
+        FeatureRequestTypeEnum requestType = FeatureRequestTypeEnum.UPDATE;
+        List<FeatureRequestDTO> simulatedFeatures = buildRequestsToAbort(requestType,
+                                                                         RequestState.GRANTED,
+                                                                         FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
+                                                                         OffsetDateTime.now()
+                                                                                       .minusHours(ABORT_DELAY_IN_HOURS),
+                                                                         3);
+        mockFindAllRequestsMethod(simulatedFeatures);
+
+        // WHEN
+        RequestHandledResponse result = featureRequestAbortService.abortRequests(new SearchFeatureRequestParameters(),
+                                                                                 requestType);
+
+        // THEN
+        // requests should be ignored
+        Assertions.assertThat(result.getTotalRequested()).isEqualTo(3);
+        Assertions.assertThat(result.getTotalHandled()).isEqualTo(3);
+        Assertions.assertThat(result.getMessage()).isNull();
+    }
+
+    @Test
+    void givenDeletionRequestTypeWithStepToAbort_whenHandled_thenIgnored() {
+        // GIVEN
+        // build requests with type that cannot be aborted
+        FeatureRequestTypeEnum requestType = FeatureRequestTypeEnum.DELETION;
+        List<FeatureRequestDTO> simulatedFeatures = buildRequestsToAbort(requestType,
+                                                                         RequestState.GRANTED,
+                                                                         FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED,
+                                                                         OffsetDateTime.now()
+                                                                                       .minusHours(ABORT_DELAY_IN_HOURS),
+                                                                         3);
+        mockFindAllRequestsMethod(simulatedFeatures);
+
+        // WHEN
+        RequestHandledResponse result = featureRequestAbortService.abortRequests(new SearchFeatureRequestParameters(),
+                                                                                 requestType);
+
+        // THEN
+        // requests should be ignored
+        Assertions.assertThat(result.getTotalRequested()).isEqualTo(3);
+        Assertions.assertThat(result.getTotalHandled()).isEqualTo(3);
         Assertions.assertThat(result.getMessage()).isNull();
     }
 
