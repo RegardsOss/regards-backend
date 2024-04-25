@@ -19,16 +19,16 @@
 
 package fr.cnes.regards.framework.utils.plugins;
 
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Exception for plugin utils package. It usually means that the plugin couldn't be instanciated.
+ * Exception for plugin utils package. It usually means that the plugin couldn't be instantiated.
  *
  * @author Christophe Mertz
  */
-@SuppressWarnings("serial")
-public class PluginUtilsRuntimeException extends RuntimeException {
+public class PluginUtilsRuntimeException extends RsRuntimeException {
 
     /**
      * Class Logger
