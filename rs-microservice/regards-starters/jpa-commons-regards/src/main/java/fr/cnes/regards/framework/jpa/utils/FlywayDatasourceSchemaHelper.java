@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.Location;
 import org.flywaydb.core.api.MigrationVersion;
+import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.flywaydb.core.api.migration.JavaMigration;
 import org.flywaydb.core.api.resource.LoadableResource;
 import org.flywaydb.core.api.resource.Resource;
@@ -167,18 +168,13 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         Preconditions.checkNotNull(moduleName);
 
         LOGGER.info("Migrating datasource with schema {} for module {}", schema, moduleName);
+        Flyway flywayAutoConf = applicationContext.getBean(Flyway.class);
 
-        Flyway flyway = Flyway.configure()
-                              // Associate datasource
-                              .dataSource(dataSource)
-                              // Set module location
-                              .locations(SCRIPT_LOCATION_PATH + File.separator + moduleName)
-                              // Specify working schema
-                              .schemas(schema).defaultSchema(schema)
-                              // Create one migration table by module
-                              .table(moduleName + TABLE_SUFFIX).baselineOnMigrate(true)
-                              // When creating module metadata table, set beginning version to 0 in order to properly apply all init scripts
-                              .baselineVersion(MigrationVersion.fromVersion("0")).load();
+        Flyway flyway = getFlywayConfiguration(flywayAutoConf, dataSource, schema)
+            // Set module location
+            .locations(SCRIPT_LOCATION_PATH + File.separator + moduleName)
+            // Create one migration table by module
+            .table(moduleName + TABLE_SUFFIX).load();
         flyway.migrate();
     }
 
@@ -215,7 +211,7 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
             Properties moduleProperties = getModuleProperties(dbModule.getName());
             String dependencyProperty = moduleProperties.getProperty("module.dependencies");
 
-            if (!StringUtils.isEmpty(dependencyProperty)) {
+            if (StringUtils.hasText(dependencyProperty)) {
 
                 for (String depModule : dependencyProperty.split(",")) {
 
@@ -280,17 +276,12 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         LOGGER.info("Running Java migrations for datasource {} with schema {}", dataSource, schema);
 
         Collection<JavaMigration> migrations = applicationContext.getBeansOfType(JavaMigration.class).values();
-        Flyway flyway = Flyway.configure()
-                              // Associate datasource
-                              .dataSource(dataSource)
-                              // Specify working schema
-                              .schemas(schema).defaultSchema(schema)
-                              // Create one migration table by module
-                              .table(MIGRATION_TABLE_NAME + TABLE_SUFFIX).baselineOnMigrate(true)
-                              // When creating module metadata table, set beginning version to 0 in order to properly apply all init scripts
-                              .baselineVersion(MigrationVersion.fromVersion("0"))
-                              // Include all Spring managed Java migrations
-                              .javaMigrations(migrations.toArray(new JavaMigration[0])).load();
+        Flyway flywayAutoConf = applicationContext.getBean(Flyway.class);
+        Flyway flyway = getFlywayConfiguration(flywayAutoConf, dataSource, schema)
+            // Create one migration table by module
+            .table(MIGRATION_TABLE_NAME + TABLE_SUFFIX)
+            // Include all Spring managed Java migrations
+            .javaMigrations(migrations.toArray(new JavaMigration[0])).load();
 
         LOGGER.info("Migration beans : {}",
                     migrations.stream()
@@ -298,6 +289,21 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                               .collect(Collectors.toList()));
 
         flyway.migrate();
+    }
+
+    private static FluentConfiguration getFlywayConfiguration(Flyway flywayAutoConf,
+                                                              DataSource dataSource,
+                                                              String schema) {
+        return Flyway.configure()
+                     // Import configuration from our auto configure bean
+                     .configuration(flywayAutoConf.getConfiguration())
+                     // Associate datasource
+                     .dataSource(dataSource)
+                     // Specify working schema
+                     .schemas(schema).defaultSchema(schema)
+                     .baselineOnMigrate(true)
+                     // When creating module metadata table, set beginning version to 0 in order to properly apply all init scripts
+                     .baselineVersion(MigrationVersion.fromVersion("0"));
     }
 
 }

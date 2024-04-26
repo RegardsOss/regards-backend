@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
+import fr.cnes.regards.framework.jpa.autoconfigure.RegardsFlywayAutoConfiguration;
 import fr.cnes.regards.framework.jpa.utils.*;
 import fr.cnes.regards.framework.modules.person.Person;
 import org.junit.After;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -50,6 +52,7 @@ import java.util.*;
 @RunWith(SpringRunner.class)
 @TestPropertySource("/multipleSchema.properties")
 @ActiveProfiles("test")
+@ContextConfiguration(classes = { RegardsFlywayAutoConfiguration.class })
 public class MultipleSchemaUpdateIT {
 
     /**
