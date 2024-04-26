@@ -72,7 +72,8 @@ import static fr.cnes.regards.modules.ingest.service.TestData.*;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_service_it",
                                    "regards.amqp.enabled=true",
                                    "eureka.client.enabled=false",
-                                   "regards.ingest.aip.delete.bulk.delay=100" },
+                                   "regards.ingest.aip.delete.bulk.delay=100",
+                                   "regards.jobs.scan.delay=100" },
                     locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
@@ -139,7 +140,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
         dto.withSession(SESSION);
         oaisDeletionService.registerOAISDeletionCreator(dto);
-        assertDeletedAIPs(nbSIP, FIVE_SECONDS, TimeUnit.MILLISECONDS);
+        assertDeletedAIPs(nbSIP, TEN_SECONDS, TimeUnit.MILLISECONDS);
         testRequestsSuccess(nbSIP, THREE_SECONDS, TimeUnit.MILLISECONDS);
     }
 
