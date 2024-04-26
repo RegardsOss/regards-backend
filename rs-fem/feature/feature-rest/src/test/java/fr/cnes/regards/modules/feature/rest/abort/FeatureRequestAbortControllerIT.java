@@ -127,7 +127,7 @@ public class FeatureRequestAbortControllerIT extends AbstractRegardsIT {
         // abort action is requested
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
                                                                         .expectValue("$.totalHandled", 0)
-                                                                        .expectValue("$.totalRequested", 0);
+                                                                        .expectValue("$.totalRequested", 1);
         SearchFeatureRequestParameters selection = new SearchFeatureRequestParameters().withIdsIncluded(Set.of(
             featureSaved.getId()));
 
