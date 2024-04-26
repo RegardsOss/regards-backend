@@ -73,6 +73,7 @@ import static fr.cnes.regards.modules.ingest.service.TestData.*;
                                    "regards.amqp.enabled=true",
                                    "eureka.client.enabled=false",
                                    "regards.ingest.aip.delete.bulk.delay=100",
+                                   "regards.microservices.agent.snapshot.enabled=false",
                                    "regards.jobs.scan.delay=100" },
                     locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })

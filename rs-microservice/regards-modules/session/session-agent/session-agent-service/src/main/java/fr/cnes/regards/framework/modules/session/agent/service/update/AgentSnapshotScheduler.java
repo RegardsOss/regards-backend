@@ -28,8 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
@@ -38,6 +41,9 @@ import java.time.Instant;
  *
  * @author Iliana Ghazali
  */
+@Profile({ "!noscheduler" })
+@Component
+@ConditionalOnProperty(value = "regards.microservices.agent.snapshot.enabled", matchIfMissing = true)
 @EnableScheduling
 public class AgentSnapshotScheduler extends AbstractTaskScheduler {
 

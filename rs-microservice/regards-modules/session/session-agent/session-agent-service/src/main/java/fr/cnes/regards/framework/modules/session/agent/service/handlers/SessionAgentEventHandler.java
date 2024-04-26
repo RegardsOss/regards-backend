@@ -26,6 +26,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.validation.Errors;
@@ -57,9 +58,17 @@ public class SessionAgentEventHandler
     @Autowired
     private ILockingTaskExecutors lockingTaskExecutors;
 
+    @Autowired
+    @Value("${regards.microservices.agent.snapshot.enabled:true}")
+    private boolean enabled = true;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(StepPropertyUpdateRequestEvent.class, this);
+        if (enabled) {
+            subscriber.subscribeTo(StepPropertyUpdateRequestEvent.class, this);
+        } else {
+            LOGGER.warn("Session events handler disabled");
+        }
     }
 
     @Override
