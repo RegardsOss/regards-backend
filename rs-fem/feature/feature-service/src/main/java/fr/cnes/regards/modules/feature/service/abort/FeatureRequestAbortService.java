@@ -66,7 +66,22 @@ public class FeatureRequestAbortService {
         FeatureRequestTypeEnum.NOTIFICATION,
         Map.of(REMOTE_NOTIFICATION_REQUESTED, REMOTE_NOTIFICATION_ERROR),
         FeatureRequestTypeEnum.CREATION,
-        Map.of(REMOTE_STORAGE_REQUESTED, REMOTE_STORAGE_ERROR));
+        Map.of(REMOTE_STORAGE_REQUESTED,
+               REMOTE_STORAGE_ERROR,
+               REMOTE_NOTIFICATION_REQUESTED,
+               REMOTE_NOTIFICATION_ERROR),
+        FeatureRequestTypeEnum.UPDATE,
+        Map.of(REMOTE_STORAGE_REQUESTED,
+               REMOTE_STORAGE_ERROR,
+               REMOTE_NOTIFICATION_REQUESTED,
+               REMOTE_NOTIFICATION_ERROR,
+               REMOTE_STORAGE_DELETION_REQUESTED,
+               REMOTE_STORAGE_ERROR),
+        FeatureRequestTypeEnum.DELETION,
+        Map.of(REMOTE_NOTIFICATION_REQUESTED,
+               REMOTE_NOTIFICATION_ERROR,
+               REMOTE_STORAGE_DELETION_REQUESTED,
+               REMOTE_STORAGE_ERROR));
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureRequestAbortService.class);
 
@@ -238,6 +253,26 @@ public class FeatureRequestAbortService {
                     featureSessionNotifier.incrementCount(source,
                                                           session,
                                                           FeatureSessionProperty.IN_ERROR_REFERENCING_REQUESTS,
+                                                          numberOfFeaturesAborted);
+                }
+                case UPDATE -> {
+                    featureSessionNotifier.decrementCount(source,
+                                                          session,
+                                                          FeatureSessionProperty.RUNNING_UPDATE_REQUESTS,
+                                                          numberOfFeaturesAborted);
+                    featureSessionNotifier.incrementCount(source,
+                                                          session,
+                                                          FeatureSessionProperty.IN_ERROR_UPDATE_REQUESTS,
+                                                          numberOfFeaturesAborted);
+                }
+                case DELETION -> {
+                    featureSessionNotifier.decrementCount(source,
+                                                          session,
+                                                          FeatureSessionProperty.RUNNING_DELETE_REQUESTS,
+                                                          numberOfFeaturesAborted);
+                    featureSessionNotifier.incrementCount(source,
+                                                          session,
+                                                          FeatureSessionProperty.IN_ERROR_DELETE_REQUESTS,
                                                           numberOfFeaturesAborted);
                 }
                 default -> { // do nothing other cases are not yet possible

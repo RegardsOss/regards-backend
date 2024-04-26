@@ -251,9 +251,12 @@ public class NotificationMatchingService {
         if (!cannotBeInstantiatedRules.isEmpty()) {
             String message = cannotBeInstantiatedRules.stream()
                                                       .map(couldNotBeInstantiated -> String.format(
-                                                          "%s plugin with id %s could not be instantiated so notifier cannot fully handle any requests for now.",
-                                                          couldNotBeInstantiated.getPluginClassName(),
-                                                          couldNotBeInstantiated.getBusinessId()))
+                                                          "%s plugin [businessId=%s label=%s] could not be "
+                                                          + "instantiated so notifier "
+                                                          + "cannot fully handle any requests for now.",
+                                                          couldNotBeInstantiated.getPluginId(),
+                                                          couldNotBeInstantiated.getBusinessId(),
+                                                          couldNotBeInstantiated.getLabel()))
                                                       .collect(Collectors.joining("<br>", "<p>", "</p>"));
             notificationClient.notify(message,
                                       String.format("Some %s plugins could not be instantiated",

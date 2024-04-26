@@ -211,7 +211,8 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
         // This is a temporary option that will be removed later
         String currentUserRole = authResolver.getRole();
         boolean authorizedUser = currentUserRole.equals(DefaultRole.ADMIN.name())
-                                 || currentUserRole.equals(DefaultRole.PROJECT_ADMIN.name());
+                                 || currentUserRole.equals(DefaultRole.PROJECT_ADMIN.name())
+                                 || currentUserRole.equals(DefaultRole.INSTANCE_ADMIN.name());
         if (authorizedUser
             && featureRequest.getRegistrationDate().plusHours(abortDelayInHours).isBefore(start)
             && featureRequest.getState() == RequestState.GRANTED
