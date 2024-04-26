@@ -39,21 +39,17 @@ import java.util.UUID;
  *
  * @author Iliana Ghazali
  **/
-
 @Service
 public class DeliveryS3ManagerService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeliveryS3ManagerService.class);
-
     public static final int MULTIPART_THRESHOLD_BYTES = 5_242_880;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeliveryS3ManagerService.class);
 
     private final DeliverySettingService settingService;
 
-    private final S3HighLevelReactiveClient s3Client;
-
     public DeliveryS3ManagerService(DeliverySettingService settingService) {
         this.settingService = settingService;
-        this.s3Client = initS3Client();
     }
 
     private S3HighLevelReactiveClient initS3Client() {
@@ -112,13 +108,15 @@ public class DeliveryS3ManagerService {
                                                                       storageEntry,
                                                                       fileChecksum);
         // Upload file
-        return s3Client.write(writeCmd)
-                       .doOnSuccess(result -> LOGGER.info(
-                           "Executed write command file to remote S3 delivery location with result " + "type '{}'.",
-                           result.getClass().getSimpleName()))
-                       .doOnError(t -> LOGGER.error("Unexpected error, failed to write file on S3 remote location "
-                                                    + "'{}'.", storageEntry.getFullPath(), t))
-                       .block();
+        try (S3HighLevelReactiveClient s3Client = initS3Client()) {
+            return s3Client.write(writeCmd)
+                           .doOnSuccess(result -> LOGGER.info(
+                               "Executed write command file to remote S3 delivery location with result " + "type '{}'.",
+                               result.getClass().getSimpleName()))
+                           .doOnError(t -> LOGGER.error("Unexpected error, failed to write file on S3 remote location "
+                                                        + "'{}'.", storageEntry.getFullPath(), t))
+                           .block();
+        }
     }
 
 }
