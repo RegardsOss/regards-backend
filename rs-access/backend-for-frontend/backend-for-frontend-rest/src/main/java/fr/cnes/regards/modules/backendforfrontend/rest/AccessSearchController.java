@@ -41,6 +41,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -110,9 +112,6 @@ public class AccessSearchController {
     public ResponseEntity<JsonObject> searchAll(
         @RequestParam(required = false) final MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
-        // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
-        // and which is not encoded by feign which is respecting RFC1738 on URI
-        encodePlus(allParams);
         JsonObject entities = searchClient.searchAll(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
@@ -133,9 +132,6 @@ public class AccessSearchController {
                         + "Services.", role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchCollections(@RequestParam final MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
-        // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
-        // and which is not encoded by feign which is respecting RFC1738 on URI
-        encodePlus(allParams);
         JsonObject entities = searchClient.searchCollections(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
@@ -155,9 +151,6 @@ public class AccessSearchController {
                         + "Services.", role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDatasets(@RequestParam final MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
-        // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
-        // and which is not encoded by feign which is respecting RFC1738 on URI
-        encodePlus(allParams);
         JsonObject entities = searchClient.searchDatasets(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
@@ -176,16 +169,9 @@ public class AccessSearchController {
                                   + "applicable UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
-        // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
-        // and which is not encoded by feign which is respecting RFC1738 on URI
-        encodePlus(allParams);
         JsonObject entities = searchClient.searchDataObjects(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
-    }
-
-    private void encodePlus(MultiValueMap<String, String> allParams) {
-        allParams.forEach((param, values) -> values.replaceAll(value -> value.replaceAll("\\+", "%2B")));
     }
 
     /**
@@ -205,9 +191,6 @@ public class AccessSearchController {
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(
         @RequestParam final MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
-        // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
-        // and which is not encoded by feign which is respecting RFC1738 on URI
-        encodePlus(allParams);
         JsonObject entities = searchClient.searchDataobjectsReturnDatasets(allParams).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
