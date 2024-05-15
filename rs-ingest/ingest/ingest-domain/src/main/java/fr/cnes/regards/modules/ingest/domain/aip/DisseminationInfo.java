@@ -53,10 +53,6 @@ public class DisseminationInfo {
         return ackDate != null;
     }
 
-    public boolean hasInitialDate() {
-        return date != null;
-    }
-
     public void setLabel(String label) {
         this.label = label;
     }
