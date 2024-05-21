@@ -404,8 +404,17 @@ public final class DownloadUtils {
                                                                       UUID commandId,
                                                                       InputStream inputStream) throws IOException {
         Path tmpPath = tmpWorkspacePath.resolve(commandId.toString());
-        FileUtils.copyInputStreamToFile(inputStream, tmpPath.toFile());
-        return new AutoDeletingInputStream(tmpPath.toFile());
+        try {
+            FileUtils.copyInputStreamToFile(inputStream, tmpPath.toFile());
+            return new AutoDeletingInputStream(tmpPath.toFile());
+        } catch (Exception e) { 
+            try {
+                Files.deleteIfExists(tmpPath);
+            } catch (Exception ioException) {
+                LOGGER.error("Error while deleting the file {}, the file will not be deleted", tmpWorkspacePath, ioException);
+            }
+            throw e;
+        }
     }
 
     /**
