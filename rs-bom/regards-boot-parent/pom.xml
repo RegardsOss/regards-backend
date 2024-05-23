@@ -52,63 +52,34 @@
         <version>${revision}</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-
     <properties>
-        <!-- Default entrypoint for microservices, it should be overridden if needed -->
-        <docker.entryPoint>["./start.sh","${project.build.finalName}.${project.packaging}"]
-        </docker.entryPoint>
+        <!-- Create an image tag version with the revision by default -->
+        <imageTag>${revision}</imageTag>
     </properties>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>com.spotify</groupId>
-                    <artifactId>docker-maven-plugin</artifactId>
-                    <version>1.2.2</version>
-                    <configuration>
-                        <retryPushCount>0</retryPushCount>
-                        <skipDockerBuild>false</skipDockerBuild>
-                        <forceTags>true</forceTags>
-                        <imageName>${docker.registry.host}/${fr.cnes.regards.docker.image.name}</imageName>
-                        <baseImage>${docker.registry.host}/${docker.registry.baseImage}:${docker.registry.tagImage}</baseImage>
-                        <serverId>REGARDS-DockerHub</serverId>
-                        <registryUrl>${docker.registry.host}</registryUrl>
-                        <imageTags>
-                            <imageTag>${revision}</imageTag>
-                        </imageTags>
-                        <entryPoint>${docker.entryPoint}</entryPoint>
-                        <!-- copy the service's jar file from target into the root directory
-                            of the image -->
-                        <resources>
-                            <resource>
-                                <targetPath>/</targetPath>
-                                <directory>${project.build.directory}</directory>
-                                <include>${project.build.finalName}.${project.packaging}</include>
-                            </resource>
-                        </resources>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                    <from>
+                        <image>${docker.registry.host}/${docker.registry.baseImage}:${docker.registry.tagImage}</image>
+                    </from>
+                    <to>
+                        <image>${docker.registry.host}/${fr.cnes.regards.docker.image.name}:${imageTag}</image>
+                    </to>
+                    <container>
+                        <!-- override Jig automatic entrypoint -->
+                        <entrypoint>INHERIT</entrypoint>
+                    </container>
+                </configuration>
             </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>fr.cnes.regards</groupId>
-            <artifactId>regards-suppress-cve</artifactId>
-            <version>${revision}</version>
-        </dependency>
-    </dependencies>
-
 </project>

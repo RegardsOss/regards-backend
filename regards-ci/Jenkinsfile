@@ -37,8 +37,8 @@ pipeline {
     environment {
         PROJECT_NAME = "${JOB_NAME}-${BUILD_NUMBER}"
         REGARDS_HOME = "${WORKSPACE}"
-        MVN_IMAGE = "172.26.46.158/regards-maven-jdk"
-        JAVA_IMAGE = "172.26.46.158/regards-java-alpine:17"
+        MVN_IMAGE = "172.26.46.158/regards-maven-jdk:v2"
+        JAVA_IMAGE = "172.26.46.158/regards-java-alpine:17v3"
         BRANCH_NAME_VERSION = "${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}-SNAPSHOT"
     }
     parameters {

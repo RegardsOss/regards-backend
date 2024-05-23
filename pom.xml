@@ -105,8 +105,7 @@
         <org.jacoco.jacoco-maven-plugin.version>0.8.8</org.jacoco.jacoco-maven-plugin.version>
         <org.apache.maven.plugin.maven-shade-plugin.version>3.3.0</org.apache.maven.plugin.maven-shade-plugin.version>
         <org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version>6.0.0.Final</org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version>
-        <com.spotify.docker-maven-plugin.version>1.2.2</com.spotify.docker-maven-plugin.version>
-        <com.spotify.dockerfile-maven-plugin.version>1.4.13</com.spotify.dockerfile-maven-plugin.version>
+        <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
         <org.springframework.boot.spring-boot-maven-plugin.version>2.6.4</org.springframework.boot.spring-boot-maven-plugin.version>
         <org.springframework.integration.spring-integration-jdbc.version>5.5.9</org.springframework.integration.spring-integration-jdbc.version>
         <org.asciidoctor.asciidoctor-maven-plugin.version>2.2.2</org.asciidoctor.asciidoctor-maven-plugin.version>
@@ -185,7 +184,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <docker.registry.host>172.26.46.158</docker.registry.host>
         <docker.registry.baseImage>regards-java-alpine</docker.registry.baseImage>
-        <docker.registry.tagImage>17v2</docker.registry.tagImage>
+        <docker.registry.tagImage>17v3</docker.registry.tagImage>
         <sonar.language>java</sonar.language>
 
         <!-- Test properties -->
@@ -195,7 +194,6 @@
         <jvm.opens.packages>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED</jvm.opens.packages>
 
         <!-- Test dependency versions -->
-        <org.owasp.dependency-check-maven.version>8.1.0</org.owasp.dependency-check-maven.version>
         <org.assertj.version>3.22.0</org.assertj.version>
         <org.testcontainers.version>1.16.3</org.testcontainers.version>
         <org.jeasy.easy-random-core.version>4.2.0</org.jeasy.easy-random-core.version>
@@ -2197,11 +2195,6 @@
                 <version>${com.zaxxer.nuprocess.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>${org.owasp.dependency-check-maven.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>io.github.xshadov</groupId>
                 <artifactId>easy-random-vavr-extension</artifactId>
                 <version>${easy-random-vavr-extension.version}</version>
@@ -2567,72 +2560,6 @@
             </build>
         </profile>
         <profile>
-            <id>dependency-check</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.owasp</groupId>
-                        <artifactId>dependency-check-maven</artifactId>
-                        <version>${org.owasp.dependency-check-maven.version}</version>
-                        <configuration>
-                            <skip>false</skip>
-                            <formats>
-                                <format>HTML</format>
-                                <format>XML</format>
-                            </formats>
-                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                            <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
-                            <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
-                            <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
-                            <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
-                            <cocoapodsAnalyzerEnabled>false</cocoapodsAnalyzerEnabled>
-                            <bundleAuditAnalyzerEnabled>false</bundleAuditAnalyzerEnabled>
-                            <swiftPackageManagerAnalyzerEnabled>false</swiftPackageManagerAnalyzerEnabled>
-                            <swiftPackageResolvedAnalyzerEnabled>false</swiftPackageResolvedAnalyzerEnabled>
-                            <msbuildAnalyzerEnabled>false</msbuildAnalyzerEnabled>
-                            <skipDependencyManagement>false</skipDependencyManagement>
-                            <golangDepEnabled>false</golangDepEnabled>
-                            <golangModEnabled>false</golangModEnabled>
-                            <pnpmAuditAnalyzerEnabled>false</pnpmAuditAnalyzerEnabled>
-                            <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
-                            <opensslAnalyzerEnabled>false</opensslAnalyzerEnabled>
-                            <archiveAnalyzerEnabled>false</archiveAnalyzerEnabled>
-                            <dartAnalyzerEnabled>false</dartAnalyzerEnabled>
-                            <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
-                            <rubygemsAnalyzerEnabled>false</rubygemsAnalyzerEnabled>
-
-                            <skipProvidedScope>true</skipProvidedScope>
-                            <skipRuntimeScope>true</skipRuntimeScope>
-                            <skipSystemScope>true</skipSystemScope>
-                            <skipArtifactType>^(pom|test-jar)$</skipArtifactType>
-                            <!-- Add here the list of POM projects -->
-                            <!-- Otherwise dependency-check-maven stops with ArtifactNotFoundException: Could not find artifact -->
-                            <!-- @see https://github.com/jeremylong/DependencyCheck/issues/4134 -->
-                            <failOnError>false</failOnError>
-                            <suppressionFiles>
-                                <!-- This file is located into regards-suppress-cve dependency -->
-                                <suppressionFile>suppressCVE.xml</suppressionFile>
-                            </suppressionFiles>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>fr.cnes.regards</groupId>
-                                <artifactId>regards-suppress-cve</artifactId>
-                                <version>${revision}</version>
-                            </dependency>
-                        </dependencies>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <!-- profile to desactivate resource filtering -->
             <id>install</id>
         </profile>
@@ -2648,17 +2575,9 @@
                 </plugin>
                 <!-- docker image generator -->
                 <plugin>
-                    <groupId>com.spotify</groupId>
-                    <artifactId>docker-maven-plugin</artifactId>
-                    <version>${com.spotify.docker-maven-plugin.version}</version>
-                    <configuration>
-                        <skipDockerBuild>true</skipDockerBuild>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>com.spotify</groupId>
-                    <artifactId>dockerfile-maven-plugin</artifactId>
-                    <version>${com.spotify.dockerfile-maven-plugin.version}</version>
+                    <groupId>com.google.cloud.tools</groupId>
+                    <artifactId>jib-maven-plugin</artifactId>
+                    <version>${jib-maven-plugin.version}</version>
                     <configuration>
                         <skip>true</skip>
                     </configuration>

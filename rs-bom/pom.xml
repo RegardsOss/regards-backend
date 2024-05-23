@@ -58,22 +58,14 @@
         <module>regards-frontend-parent</module>
         <module>regards-aggregator-parent</module>
         <module>regards-code-coverage-aggregator-parent</module>
-        <module>regards-suppress-cve</module>
     </modules>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.11</version>
-                <configuration>
-                    <skipDockerBuild>true</skipDockerBuild>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.2</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
