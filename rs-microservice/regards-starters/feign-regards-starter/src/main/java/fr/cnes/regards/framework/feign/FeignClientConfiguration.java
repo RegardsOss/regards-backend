@@ -120,7 +120,9 @@ public class FeignClientConfiguration {
     @Bean
     public Feign.Builder builder(@Value("${regards.enable.feign.bulkhead:true}") boolean bulkhead,
                                  @Value("${regards.enable.feign.rateLimiter:true}") boolean rateLimiter,
-                                 @Value("${regards.enable.feign.readTimeout:60000}") int readTimeout) {
+                                 @Value("${regards.enable.feign.readTimeout:60000}") int readTimeout,
+                                 @Value("${regards.enable.feign.bulkhead.maxWaitDurationInSeconds:3600}")
+                                 long maxWaitDurationInSeconds) {
 
         LOGGER.info("Initialization of feign configuration with bulkhead={}, rateLimiter={}", bulkhead, rateLimiter);
         FeignDecorators.Builder feignDecoratorBuilder = FeignDecorators.builder();
@@ -137,7 +139,11 @@ public class FeignClientConfiguration {
 
         if (bulkhead) {
             // configure feign with semaphore-based bulkhead
-            feignDecoratorBuilder.withBulkhead(Bulkhead.of("customBulkhead", BulkheadConfig.custom().build()));
+            feignDecoratorBuilder.withBulkhead(Bulkhead.of("customBulkhead",
+                                                           BulkheadConfig.custom()
+                                                                         .maxWaitDuration(Duration.ofSeconds(
+                                                                             maxWaitDurationInSeconds))
+                                                                         .build()));
         }
 
         // return custom feign builder and allow 404 responses to be processed without errors
