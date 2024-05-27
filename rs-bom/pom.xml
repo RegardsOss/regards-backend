@@ -80,4 +80,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <uniqueVersion>true</uniqueVersion>
+            <id>maven-snapshot-regards</id>
+            <name>Nexus Maven Repository for regards artifacts</name>
+            <url>https://172.26.46.158:8443/repository/maven-snapshot-regards/</url>
+        </snapshotRepository>
+        <repository>
+            <uniqueVersion>true</uniqueVersion>
+            <id>nexus-maven-regards</id>
+            <name>Nexus Maven Repository for regards artifacts</name>
+            <url>https://172.26.46.158:8443/repository/nexus-maven-regards/</url>
+        </repository>
+    </distributionManagement>
 </project>

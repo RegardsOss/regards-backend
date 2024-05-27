@@ -31,11 +31,6 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
-
     <description>Aggregates all microservices and the frontend</description>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
@@ -57,32 +52,5 @@
             <organizationUrl>http://www.c-s.fr</organizationUrl>
         </developer>
     </developers>
-    <!--    <distributionManagement>-->
-    <!--        <snapshotRepository>-->
-    <!--            <uniqueVersion>true</uniqueVersion>-->
-    <!--            <id>maven-snapshot-regards</id>-->
-    <!--            <name>Nexus Maven Repository for regards artifacts</name>-->
-    <!--            <url>https://172.26.46.158:8443/repository/maven-snapshot-regards/</url>-->
-    <!--        </snapshotRepository>-->
-    <!--        <repository>-->
-    <!--            <uniqueVersion>true</uniqueVersion>-->
-    <!--            <id>nexus-maven-regards</id>-->
-    <!--            <name>Nexus Maven Repository for regards artifacts</name>-->
-    <!--            <url>https://172.26.46.158:8443/repository/nexus-maven-regards/</url>-->
-    <!--        </repository>-->
-    <!--    </distributionManagement>-->
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.11</version>
-                <configuration>
-                    <skipDockerBuild>true</skipDockerBuild>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
