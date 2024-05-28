@@ -1,0 +1,103 @@
+= Changelog
+:issues-nurkiewicz-uri: https://github.com/nurkiewicz/spring-data-jdbc-repository/issues
+:issues-uri: https://github.com/jirutka/spring-data-jdbc-repository/issues
+
+
+== 0.6.0 (unreleased)
+
+Enhancements::
+  * Remove requirement for entities to implement `Persistable` interface. Entities may implement `Persistable`, or use annotation `@Id` from Spring Data Commons.
+  * Add `SqlGeneratorFactory` that automatically selects compatible `SqlGenerator` according to used database.
+  * Add protected getter for `jdbcOperations` ({issues-uri}/2[#2]).
+  * Optimize `delete(Iterable)` – delete entities in a single query.
+  * Make `update(S)` more robust – throw exception when ID is not null or wrong number of rows is (not) updated.
+
+Bug fixes::
+  * Fix duplication in test dependencies – exclude `groovy-all` from `spock-spring`.
+
+Changes::
+  * Rename base package from `com.nurkiewicz.jdbcrepository` to `cz.jirutka.spring.data.jdbc`.
+  * `JdbcRepository`:
+    ** remove method `pk(Object...)`,
+    ** rename `JdbcRepository` to `BaseJdbcRepository` and create interface `JdbcRepository`,
+    ** remove argument `sqlGenerator` from constructors and remove constructors without `rowUnmapper`,
+    ** rename `getTable()` to `getTableDesc()`,
+    ** rename `create(..)` to `insert(..)`, `preCreate(..)` to `preInsert(..)` and `postCreate` to `postInsert(..)`,
+    ** remove overloaded method `postUpdate(S, int)` (it’s not needed anymore, see above),
+    ** inject dependencies using `@Autowired` instead of manual lookup in `BeanFactory`,
+    ** add required dependency on `DataSource` and make dependency on `JdbcOperations` optional,
+    ** disallow properties change after initialization (invoking `afterPropertiesSet()`).
+  * `TableDescription`:
+    ** rename `getName()` to `getTableName()` and `getIdColumns()` to `getPkColumns()`,
+    ** add property `selectClause`,
+    ** add setters for all properties.
+  * `SqlGenerator` and subclasses:
+    ** remove field `allColumnsClause` and one-argument constructor (this is replaced by property `selectClause` in `TableDescription`),
+    ** rename `SqlGenerator` to `DefaultSqlGenerator`, create interface `SqlGenerator` and reorganize subclasses.
+  * Rename `MissingRowUnmapper` to `UnsupportedRowUnmapper`.
+
+Infrastructure::
+  * Update dependencies.
+  * Refactor and extend tests for `SqlGenerator`.
+  * Add tests for methods `insert(..)` and `update(..)`.
+
+
+== 0.5.0 (2016-02-15)
+
+⭐️ Project forked and published under new coordinates: cz.jirutka.spring:spring-data-jdbc-repository.
+
+Enhancements::
+  * Rewrite all tests to Spock/Groovy.
+  * Add overloaded hook method `JdbcRepository#postUpdate(Persistable, int)` with number of affected rows.
+  * Improve `exists(ID)` performance; use `select 1` instead of `select count(*)`.
+  * Change visibility of methods `JdbcRepository#update(Persistable)` and `JdbcRepository#create(Persistable)` to public.
+
+Bug fixes::
+  * Treat column names as case-insensitive ({issues-nurkiewicz-uri}/16[nurkiewicz#16]).
+  * Fix autowiring of SqlGenerator bean ({issues-nurkiewicz-uri}/25[nurkiewicz#25]).
+
+Deprecations/changes::
+  * Drop support for Java 6, minimal required version is now 7.
+  * Deprecate method `JdbcRepository.pk(Object...)`
+
+Infrastructure::
+  * Reformat and slightly refactor sources.
+  * Test on CI with both OpenJDK 7 and OracleJDK 8.
+  * Run integration tests for Oracle on Travis using Oracle XE installed with https://github.com/cbandy/travis-oracle[cbandy/travis-oracle].
+  * Run integration tests for MS SQL on AppVeyor using SQL Server 2012SP1 and 2014.
+  * Add integration tests for MariaDB and run them on Travis.
+  * Separate CI build jobs for embedded databases, PostgreSQL, MariaDB, MySQL, Oracle, and MSSQL.
+  * Replace BoneCP with HikariCP in tests.
+  * Inherit versions from Spring’s platform-bom.
+
+
+== 0.4.1 (2014-10-23)
+
+* Fixed standalone configuration and CDI Implementation ({issues-nurkiewicz-uri}/10[nurkiewicz#10])
+
+== 0.4 (2014-06-16)
+
+* Repackaged: `com.blogspot.nurkiewicz` -> `com.nurkiewicz`
+
+== 0.3.2 (2014-06-16)
+
+* First version available in Maven central repository
+* Upgraded Spring Data Commons 1.6.1 -> 1.8.0
+
+== 0.3.1 (2013-03-16)
+
+* Upgraded Spring dependencies: 3.2.1 -> 3.2.4 and 1.5.0 -> 1.6.1
+* Allow manually injecting JdbcOperations, SqlGenerator and DataSource ({issues-nurkiewicz-uri}/5[nurkiewicz#5])
+
+== 0.3 (2013-03-06)
+
+* Oracle 10g / 11g support ({issues-nurkiewicz-uri}/3[nurkiewicz#3])
+* Upgrading Spring dependency to 3.2.1.RELEASE and http://www.springsource.org/spring-data/commons[Spring Data Commons] to 1.5.0.RELEASE ({issues-nurkiewicz-uri}/4[nurkiewicz#4]).
+
+== 0.2 (2013-01-23)
+
+* MS SQL Server 2008/2012 support ({issues-nurkiewicz-uri}/2[nurkiewicz#2])
+
+== 0.1 (2013-01-20)
+
+* Initial revision (http://nurkiewicz.blogspot.no/2013/01/spring-data-jdbc-generic-dao.html[announcement])

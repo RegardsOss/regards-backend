@@ -1,0 +1,552 @@
+= Spring Data JDBC generic DAO implementation
+:source-language: java
+// Project meta
+:name: spring-data-jdbc-repository
+:version: 0.5.0
+:group-id: cz.jirutka.spring
+:artifact-id: {name}
+:gh-name: jirutka/{name}
+:gh-branch: master
+:appveyor-id: n3x2wog0vys5bgl0
+:codacy-id: f44c7cac230b469793750a6899e286d6
+// URIs
+:src-base: link:src/main/java/cz/jirutka/spring/data/jdbc
+:src-test-base: link:src/test/groovy/cz/jirutka/spring/data/jdbc
+:src-fixtures-base: link:src/test/java/cz/jirutka/spring/data/jdbc/fixtures
+:spring-jdoc-uri: https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework
+:spring-data-jdoc-uri: https://docs.spring.io/spring-data/data-commons/docs/current/api/org/springframework/data
+:javase-jdoc-uri: https://docs.oracle.com/javase/7/docs/api/java
+
+ifdef::env-github[]
+image:https://travis-ci.org/{gh-name}.svg?branch={gh-branch}["Build Status", link="https://travis-ci.org/{gh-name}"]
+image:https://ci.appveyor.com/api/projects/status/{appveyor-id}/branch/{gh-branch}?svg=true["Build status (Windows)", link="https://ci.appveyor.com/project/{gh-name}/branch/{gh-branch}"]
+image:https://api.codacy.com/project/badge/grade/{codacy-id}["Codacy code quality", link="https://www.codacy.com/app/{gh-name}"]
+image:https://maven-badges.herokuapp.com/maven-central/{group-id}/{artifact-id}/badge.svg[Maven Central, link="https://maven-badges.herokuapp.com/maven-central/{group-id}/{artifact-id}"]
+endif::env-github[]
+
+
+The purpose of this project is to provide generic, lightweight and easy to use DAO implementation for relational databases based on {spring-jdoc-uri}/jdbc/core/JdbcTemplate.html[JdbcTemplate] from https://projects.spring.io/spring-framework[Spring framework], compatible with Spring Data umbrella of projects.
+It’s intended for small applications where JPA or even MyBatis is an overkill.
+
+This project is a fork of https://github.com/nurkiewicz/spring-data-jdbc-repository[nurkiewicz/spring-data-jdbc-repository].
+See link:CHANGELOG.adoc[CHANGELOG] for a list of changes.
+
+
+== Design objectives
+
+* Lightweight, fast and simple; only a handful of classes, *no XML, annotations or reflection.*
+* *Not a full-blown ORM*, just a simple Data Mapper.
+* No relationship handling, lazy loading, dirty checking, multi-level caching… just a https://en.wikipedia.org/wiki/Don't_repeat_yourself[DRY] https://en.wikipedia.org/wiki/Create,_read,_update_and_delete[CRUD].
+* Standard repository interface from https://projects.spring.io/spring-data[Spring Data]; allow easier migration to other Spring Data implementations (e.g. JPA, Couchbase…).footnote:[Since your code will rely only on interfaces from Spring Data Commons umbrella project you are free to switch from `JdbcRepository` implementation (from this project) to `JpaRepository`, `GemfireRepository`, `GraphRepository`… see https://projects.spring.io/spring-data[Spring Data webpage]. They all implement the same common API. Of course don’t expect that switching from JDBC to e.g. JPA will be as simple as switching imported JAR dependencies – but at least you minimize the impact by using same DAO API.]
+* Minimalistic support for database dialect differences (e.g. transparent paging of results).
+
+
+== Features
+
+Each DAO provides built-in support for:
+
+* all methods defined in {spring-data-jdoc-uri}/repository/PagingAndSortingRepository.html[`PagingAndSortingRepository`] and {spring-data-jdoc-uri}/repository/CrudRepository.html[`CrudRepository`] (see <<Repository API, below>>),
+* mapping to/from domain objects through {spring-jdoc-uri}/jdbc/core/RowMapper.html[`RowMapper`] abstraction,
+* generated and user-defined primary keys,
+* compound (multi-column) primary keys,
+* paging (requesting subset of results) and sorting over several columns (see <<Paging, below>>),
+* optional support for _many-to-one_ relationships,
+* immutable domain objects,
+* all major SQL databases (see list of <<Supported databases, supported databases>>).
+
+
+=== Repository API
+
+API is compatible with Spring Data {spring-data-jdoc-uri}/repository/PagingAndSortingRepository.html[`PagingAndSortingRepository`] abstraction, i.e. all these methods are implemented for you:
+
+`long count()`::
+  Returns the number of entities available.
+`void delete(ID id)`::
+  Deletes the entity with the given id.
+`void delete(Iterable<? extends T> entities)`::
+  Deletes the given entities.
+`void delete(T entity)`::
+  Deletes the given entity.
+`void deleteAll()`::
+  Deletes all entities managed by the repository.
+`boolean exists(ID id)`::
+  Returns whether an entity with the given id exists.
+`Iterable<T> findAll()`::
+  Returns all instances of the type.
+`Iterable<T> findAll(Iterable<ID> ids)`::
+  Returns all instances of the type with the given IDs.
+`Page<T> findAll(Pageable pageable)`::
+  Returns a Page of entities meeting the paging restriction provided in the Pageable object.
+`Iterable<T> findAll(Sort sort)`::
+  Returns all entities sorted by the given options.
+`T findOne(ID id)`::
+  Retrieves an entity by its id.
+`<S extends T> Iterable<S> save(Iterable<S> entities)`::
+  Saves all given entities.
+`<S extends T> S save(S entity)`::
+  Saves the given entity.
+
+
+=== Paging
+
+`Pageable` and `Sort` parameters are also fully supported, which means you get *paging and sorting by arbitrary properties for free*.
+For example, say you have `UserRepository` extending `PagingAndSortingRepository<User, String>` interface (implemented for you by the library) and you request 5th page of `USERS` table, 10 per page, after applying some sorting:
+
+[source]
+----
+Page<User> page = userRepository.findAll(
+    new PageRequest(5, 10, new Sort(
+        new Order(DESC, "reputation"),
+        new Order(ASC, "user_name")
+    ))
+);
+----
+
+Spring Data JDBC repository will translate this call into (PostgreSQL syntax):
+
+[source, sql]
+----
+SELECT *
+FROM users
+ORDER BY reputation DESC, user_name ASC
+LIMIT 50 OFFSET 10
+----
+
+…or even (Derby/Oracle syntax):
+
+[source, sql]
+----
+SELECT * FROM (
+    SELECT ROW_NUMBER() OVER () AS ROW_NUM, t.*
+    FROM (
+        SELECT *
+        FROM users
+        ORDER BY reputation DESC, user_name ASC
+    ) AS t
+) AS a
+WHERE ROW_NUM BETWEEN 51 AND 60
+----
+
+No matter which database you use, you’ll get `Page<User>` object in return (you still have to provide `RowMapper<User>` yourself to translate from {javase-jdoc-uri}/sql/ResultSet.html[`ResultSet`] to a domain object).
+If you don’t know Spring Data project yet, {spring-data-jdoc-uri}/domain/Page.html[`Page<T>`] is a wonderful abstraction, not only encapsulating `List<T>`, but also providing metadata such as total number of records, on which page we currently are etc.
+
+
+=== Supported databases
+
+* http://www.postgresql.org[PostgreSQL]
+* https://db.apache.org/derby[Apache Derby]
+* http://www.h2database.com[H2]
+* http://hsqldb.org[HSQLDB]
+* https://mariadb.org[MariaDB]
+* https://www.microsoft.com/en-us/server-cloud/products/sql-server[MS SQL Server] 2008+
+* https://www.mysql.com[MySQL]
+* https://www.oracle.com/database[Oracle Database] 11g+ (9i+ should work too)
+* …and most likely many others
+
+All of these databases are continuously tested on AppVeyor (MS SQL) and Travis CI (all others).
+The test suite consists of over 60 distinct tests.
+
+
+== Getting started
+
+For more examples and working code don’t forget to examine {src-test-base}[project tests].
+
+In order to start your project must have `DataSource` bean present and transaction management enabled.
+Here is a minimal configuration for PostgreSQL with https://github.com/brettwooldridge/HikariCP[HikariCP] connection pool:
+
+[source]
+----
+@EnableTransactionManagement
+@Configuration
+public class MinimalConfig {
+
+    @Bean
+    public PlatformTransactionManager transactionManager() {
+        return new DataSourceTransactionManager(dataSource());
+    }
+
+    @Bean(destroyMethod = "shutdown")
+    public DataSource dataSource() {
+        Properties props = new Properties();
+        props.setProperty("dataSourceClassName", "org.postgresql.ds.PGSimpleDataSource");
+        props.setProperty("dataSource.user", "test");
+        props.setProperty("dataSource.password", "test");
+        props.setProperty("dataSource.databaseName", "mydb");
+
+        return new HikariDataSource(new HikariConfig(props));
+    }
+}
+----
+
+=== Entity with auto-generated key
+
+Say you have a following database table with auto-generated key (PostgreSQL syntax):
+
+[source, sql]
+----
+CREATE TABLE comments (
+    id            serial PRIMARY KEY,
+    user_name     text,
+    contents      text,
+    created_time  timestamp NOT NULL
+);
+----
+
+First you need to create domain object `User` mapping to that table (just like in any other ORM or Data Mapper):
+
+[source]
+----
+public class Comment implements Persistable<Integer> {
+
+    private Integer id;
+    private String userName;
+    private String contents;
+    private Date createdTime;
+
+    @Override
+    public Integer getId() {
+        return id;
+    }
+
+    @Override
+    public boolean isNew() {
+        return id == null;
+    }
+
+    // constructors / getters / setters / ...
+}
+----
+
+Apart from standard Java boilerplate you should notice implementing {spring-data-jdoc-uri}/domain/Persistable.html[`Persistable<Integer>`] where `Integer` is the type of primary key.
+`Persistable<T>` is an interface coming from Spring Data project and it’s the only requirement we place on your domain object.
+
+Finally we are ready to create our {src-fixtures-base}/CommentRepository.java[`CommentRepository`] DAO:
+
+[source]
+----
+@Repository
+public class CommentRepository extends JdbcRepository<Comment, Integer> {
+
+    public static final RowMapper<Comment> ROW_MAPPER = // see below
+
+    public static final RowUnmapper<Comment> ROW_UNMAPPER = // see below
+
+    public CommentRepository() {
+        super(ROW_MAPPER, ROW_UNMAPPER, "comments");
+    }
+
+    @Override
+    protected <S extends Comment> S postCreate(S entity, Number generatedId) {
+        entity.setId(generatedId.intValue());
+        return entity;
+    }
+}
+----
+
+First of all we use {spring-jdoc-uri}/stereotype/Repository.html[`@Repository`] annotation to mark DAO bean.
+It enables persistence exception translation.
+Also such annotated beans are discovered by classpath scanning.
+
+As you can see we extend `JdbcRepository<Comment, Integer>` which is the central class of this library, providing implementations of all `PagingAndSortingRepository` methods.
+Its constructor has three required dependencies: `RowMapper`, {src-base}/RowUnmapper.java[`RowUnmapper`] and table name.
+You may also provide ID column name, otherwise default `id` is used.
+
+If you ever used `JdbcTemplate` from Spring, you should be familiar with {spring-jdoc-uri}/jdbc/core/RowMapper.html[`RowMapper`] interface.
+We need to somehow extract columns from `ResultSet` into an object.
+After all we don’t want to work with raw JDBC results.
+It’s quite straightforward:
+
+[source]
+----
+public static final RowMapper<Comment> ROW_MAPPER = new RowMapper<Comment>() {
+
+    public Comment mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return new Comment(
+            rs.getInt("id"),
+            rs.getString("user_name"),
+            rs.getString("contents"),
+            rs.getTimestamp("created_time")
+        );
+    }
+};
+----
+
+`RowUnmapper` comes from this library and it’s essentially the opposite of `RowMapper`: takes an object and turns it into a `Map`.
+This map is later used by the library to construct SQL `CREATE`/`UPDATE` queries:
+
+[source]
+----
+private static final RowUnmapper<Comment> ROW_UNMAPPER = new RowUnmapper<Comment>() {
+
+    public Map<String, Object> mapColumns(Comment comment) {
+        Map<String, Object> row = new LinkedHashMap<String, Object>();
+        row.put("id", comment.getId());
+        row.put("user_name", comment.getUserName());
+        row.put("contents", comment.getContents());
+        row.put("created_time", new Timestamp(comment.getCreatedTime().getTime()));
+        return row;
+    }
+};
+----
+
+If you never update your database table (just reading some reference data inserted elsewhere) you may skip `RowUnmapper` parameter or use {src-base}/MissingRowUnmapper.java[`MissingRowUnmapper`].
+
+Last piece of the puzzle is the `postCreate()` callback method which is called after an object was inserted.
+You can use it to retrieve generated primary key and update your domain object (or return new one if your domain objects are immutable).
+If you don’t need it, just don’t override `postCreate()`.
+
+Check out {src-test-base}/JdbcRepositoryGeneratedKeyIT.java[`JdbcRepositoryGeneratedKeyIT`] for a working code based on this example.
+
+****
+By now you might have a feeling that, compared to JPA or Hibernate, there is quite a lot of manual work.
+However various JPA implementations and other ORM frameworks are notoriously known for introducing significant overhead and manifesting some learning curve.
+This tiny library intentionally leaves some responsibilities to the user in order to avoid complex mappings, reflection, annotations… all the implicitness that is not always desired.
+
+This project is not intending to replace mature and stable ORM frameworks.
+Instead it tries to fill in a niche between raw JDBC and ORM where simplicity and low overhead are key features.
+****
+
+
+=== Entity with manually assigned key
+
+In this example we’ll see how entities with user-defined primary keys are handled.
+Let’s start from database model:
+
+[source, sql]
+----
+CREATE TABLE users (
+    user_name      text PRIMARY KEY,
+    date_of_birth  timestamp NOT NULL,
+    enabled        boolean NOT NULL
+);
+----
+
+…and `User` domain model:
+
+[source]
+----
+public class User implements Persistable<String> {
+
+    private transient boolean persisted;
+
+    private String userName;
+    private Date dateOfBirth;
+    private boolean enabled;
+
+    @Override
+    public String getId() {
+        return userName;
+    }
+
+    @Override
+    public boolean isNew() {
+        return !persisted;
+    }
+
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
+    }
+
+    // constructors / getters / setters / ...
+}
+----
+
+Notice that special `persisted` transient flag was added.
+Contract of {spring-data-jdoc-uri}/repository/CrudRepository.html#save(S)[`CrudRepository.save()`] from Spring Data project requires that an entity knows whether it was already saved or not (`isNew()`) method – there are no separate `create()` and `update()` methods.
+Implementing `isNew()` is simple for auto-generated keys (see `Comment` above) but in this case we need an extra transient field.
+If you hate this workaround and you only insert data and never update, you’ll get away with return `true` all the time from `isNew()`.
+
+And finally our DAO, {src-fixtures-base}/UserRepository.java[`UserRepository`] bean:
+
+[source]
+----
+@Repository
+public class UserRepository extends JdbcRepository<User, String> {
+
+    public static final RowMapper<User> ROW_MAPPER = //...
+
+    public static final RowUnmapper<User> ROW_UNMAPPER = //...
+
+    public UserRepository() {
+        super(ROW_MAPPER, ROW_UNMAPPER, "USERS", "user_name");
+    }
+
+    @Override
+    protected <S extends User> S postUpdate(S entity) {
+        entity.setPersisted(true);
+        return entity;
+    }
+
+    @Override
+    protected <S extends User> S postCreate(S entity, Number generatedId) {
+        entity.setPersisted(true);
+        return entity;
+    }
+}
+----
+
+The `users` and `user_name` parameters designate table name and primary key column name.
+I’ll leave the details of mapper and unmapper (see {src-fixtures-base}/UserRepository.java[source code]).
+But please notice `postUpdate()` and `postCreate()` methods.
+They ensure that once object was persisted, `persisted` flag is set so that subsequent calls to `save()` will update existing entity rather than trying to reinsert it.
+
+Check out {src-test-base}/JdbcRepositoryManualKeyIT.java[`JdbcRepositoryManualKeyIT`] for a working code based on this example.
+
+
+=== Compound primary key
+
+We also support compound primary keys (primary keys consisting of several columns).
+Take this table as an example:
+
+[source, sql]
+----
+CREATE TABLE boarding_pass (
+    flight_no   varchar(8) NOT NULL,
+    seq_no      integer NOT NULL,
+    passenger   text,
+    seat        char(3),
+    PRIMARY KEY (flight_no, seq_no)
+);
+----
+
+I would like you to notice the type of primary key in `Persistable<T>`:
+
+[source]
+----
+public class BoardingPass implements Persistable<Object[]> {
+
+    private transient boolean persisted;
+
+    private String flightNo;
+    private int seqNo;
+    private String passenger;
+    private String seat;
+
+    @Override
+    public Object[] getId() {
+        return pk(flightNo, seqNo);
+    }
+
+    @Override
+    public boolean isNew() {
+        return !persisted;
+    }
+
+    // constructors / getters / setters / ...
+}
+----
+
+Unfortunately library does not support small, immutable value classes encapsulating all ID values in one object (like JPA does with http://docs.oracle.com/javaee/6/api/javax/persistence/IdClass.html[`@IdClass`]), so you have to live with `Object[]` array.
+Defining DAO class is similar to what we’ve already seen:
+
+[source]
+----
+public class BoardingPassRepository extends JdbcRepository<BoardingPass, Object[]> {
+
+    public static final RowMapper<BoardingPass> ROW_MAPPER = //...
+
+    public static final RowUnmapper<BoardingPass> UNMAPPER = //...
+
+    public BoardingPassRepository() {
+        super(MAPPER, UNMAPPER,
+            new TableDescription("BOARDING_PASS", null, "flight_no", "seq_no"));
+    }
+}
+----
+
+Two things to notice: we extend `JdbcRepository<BoardingPass, Object[]>` and we provide two ID column names just as expected: `flight_no, seq_no`.
+We query such DAO by providing both `flight_no` and `seq_no` (necessarily in that order) values wrapped by `Object[]`:
+
+[source]
+BoardingPass pass = boardingPassRepository.findOne(new Object[]{"FOO-1022", 42});
+
+No doubts, this is cumbersome in practice, so you may create a tiny utility method for it:
+
+[source]
+----
+public static Object[] pk(Object... idValues) {
+    return idValues;
+}
+----
+
+…and then use it as:
+
+[source]
+BoardingPass foundFlight = boardingPassRepository.findOne(pk("FOO-1022", 42));
+
+…or just use some more expressive JVM-based language as Groovy. ;)
+
+Check out link:src/test/java/cz/jirutka/spring/data/jdbc/JdbcRepositoryCompoundPkIT.java[`JdbcRepositoryCompoundPkIT`] for a working code based on this example.
+
+
+=== Transactions
+
+This library is completely orthogonal to transaction management.
+Every method of each repository requires running transaction and it’s up to you to set it up.
+Typically you would place `@Transactional` on service layer (calling DAO beans).
+Please not that it’s generally not recommend to https://stackoverflow.com/questions/8993318[place @Transactional over every DAO bean].
+
+
+=== Caching
+
+This library does not provide any caching abstraction or support.
+However, adding `@Cacheable` layer on top of your DAOs or services using https://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html[caching abstraction in Spring] is quite straightforward.
+See also: http://nurkiewicz.blogspot.no/2013/01/cacheable-overhead-in-spring.html[_@Cacheable overhead in Spring_].
+
+
+== How to get it?
+
+Released versions are available in The Central Repository.
+Just add this artifact to your project:
+
+._Maven_
+[source, xml, subs="verbatim, attributes"]
+----
+<dependency>
+    <groupId>{group-id}</groupId>
+    <artifactId>{artifact-id}</artifactId>
+    <version>{version}</version>
+</dependency>
+----
+
+._Gradle_
+[source, groovy, subs="verbatim, attributes"]
+compile '{group-id}:{artifact-id}:{version}'
+
+However if you want to use the last snapshot version, you have to add the JFrog OSS repository:
+
+._Maven_
+[source, xml]
+----
+<repository>
+    <id>jfrog-oss-snapshot-local</id>
+    <name>JFrog OSS repository for snapshots</name>
+    <url>https://oss.jfrog.org/oss-snapshot-local</url>
+    <snapshots>
+        <enabled>true</enabled>
+    </snapshots>
+</repository>
+----
+
+._Gradle_
+[source, groovy]
+----
+repositories {
+  maven {
+    url 'https://oss.jfrog.org/oss-snapshot-local'
+  }
+}
+----
+
+
+== Contributions
+
+…are always welcome.
+Don’t hesitate to submit a https://github.com/{gh-name}/issues[bug report] or a https://github.com/{gh-name}/pulls[pull requests].
+
+When filling a bug report or submitting a new feature, please try including supporting test cases.
+
+
+== License
+
+This project is licensed under http://www.apache.org/licenses/LICENSE-2.0.html[Apache License 2.0].
