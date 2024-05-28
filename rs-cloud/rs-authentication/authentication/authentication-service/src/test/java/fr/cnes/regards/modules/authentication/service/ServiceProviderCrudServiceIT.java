@@ -35,7 +35,10 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @TestPropertySource(properties = {
-    "spring.jpa.properties.hibernate.default_schema=authentication_service_provider_tests", })
+    "spring.jpa.properties.hibernate.default_schema=authentication_service_provider_tests",
+    "regards.accounts.root.user.login=regards.root@c-s.fr",
+    "regards.authentication.client.user=regards",
+    "regards.authentication.client.secret=secret"})
 public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")

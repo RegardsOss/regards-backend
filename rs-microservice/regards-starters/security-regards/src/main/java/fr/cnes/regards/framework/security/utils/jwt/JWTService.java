@@ -394,7 +394,7 @@ public class JWTService implements InitializingBean {
      * @param token token to decode
      * @return parsed {@link Claims}
      */
-    Claims parseClaims(String token) throws InvalidJwtException {
+    final protected Claims parseClaims(String token) throws InvalidJwtException {
         return Jwts.parserBuilder()
                    .setSigningKeyResolver(getSigningKeyResolver())
                    .build()

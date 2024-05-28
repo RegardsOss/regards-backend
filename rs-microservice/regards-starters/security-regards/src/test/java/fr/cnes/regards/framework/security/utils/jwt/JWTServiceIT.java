@@ -135,7 +135,7 @@ public class JWTServiceIT {
 
     @Test
     public void generateUserSpecificToken() throws InterruptedException, InvalidJwtException {
-        @SuppressWarnings("serial") Map<String, Object> addParams = new HashMap<String, Object>() {
+        Map<String, Object> addParams = new HashMap<String, Object>() {
 
             {
                 put("toto", "titi");

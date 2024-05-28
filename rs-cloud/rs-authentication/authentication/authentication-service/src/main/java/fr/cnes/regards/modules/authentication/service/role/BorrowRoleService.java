@@ -21,29 +21,27 @@ package fr.cnes.regards.modules.authentication.service.role;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Service permitting to authenticated user to borrow another role
  * @author Sylvain Vissiere-Guerinet
  */
 @Service
-public class BorrowRoleService implements IBorrowRoleService {
+public class BorrowRoleService {
 
     /**
      * {@link IRolesClient} instance
@@ -58,15 +56,16 @@ public class BorrowRoleService implements IBorrowRoleService {
     /**
      * Constructor setting the parameters as attributes
      */
-    public BorrowRoleService(IRolesClient pRolesClient, JWTService pJwtService) {
+    public BorrowRoleService(IRolesClient rolesClient, JWTService jwtService) {
         super();
-        rolesClient = pRolesClient;
-        jwtService = pJwtService;
+        this.rolesClient = rolesClient;
+        this.jwtService = jwtService;
     }
 
-    @Override
-    public DefaultOAuth2AccessToken switchTo(String targetRoleName)
-        throws JwtException, EntityOperationForbiddenException {
+    /**
+     * generate a new JWT for the given role if the current user can switch to this role
+     */
+    public Authentication switchTo(String targetRoleName) throws JwtException, EntityOperationForbiddenException {
         Set<String> borrowableRoleNames = getBorrowableRoleNames();
 
         JWTAuthentication currentToken = jwtService.getCurrentToken();
@@ -79,24 +78,34 @@ public class BorrowRoleService implements IBorrowRoleService {
         String name = currentToken.getName();
         String tenant = currentToken.getTenant();
         String email = currentToken.getUser().getEmail();
-        DefaultOAuth2AccessToken newToken = new DefaultOAuth2AccessToken(jwtService.generateToken(tenant,
-                                                                                                  name,
-                                                                                                  email,
-                                                                                                  targetRoleName));
-        newToken.setAdditionalInformation(jwtService.generateClaims(tenant, targetRoleName, name, email));
-        newToken.setExpiration(Date.from(jwtService.getExpirationDate(OffsetDateTime.now()).toInstant()));
+
+        // expiration date must be used to generate token and must be into authentication object
+        OffsetDateTime expirationDate = jwtService.getExpirationDate(OffsetDateTime.now());
+        // Claims are only used to generate token
+        String token = jwtService.generateToken(tenant,
+                                                name,
+                                                email,
+                                                targetRoleName,
+                                                expirationDate,
+                                                jwtService.generateClaims(tenant, targetRoleName, name, email));
+
+        //        DefaultOAuth2AccessToken newToken = new DefaultOAuth2AccessToken(jwtService.generateToken(tenant,
+        //                                                                                                  name,
+        //                                                                                                  email,
+        //                                                                                                  targetRoleName));
+        //        newToken.setAdditionalInformation(jwtService.generateClaims(tenant, targetRoleName, name, email));
+        //        newToken.setExpiration(Date.from(jwtService.getExpirationDate(OffsetDateTime.now()).toInstant()));
         //FIXME: refreshToken(jti) is not set here to avoid not analysed behaviour,
         //FIXME: should be fixed by making JWTService the only token source of the application.
         //FIXME: That means overriding DefaultTokenServices.
-        return newToken;
+        return new Authentication(tenant, email, targetRoleName, null, token, expirationDate);
 
     }
 
     private Set<String> getBorrowableRoleNames() {
         //DO NOT USE FEIGN SECURITY MANAGER HERE: we need to know the user who send the request
         ResponseEntity<List<EntityModel<Role>>> response = rolesClient.getBorrowableRoles();
-        final HttpStatus responseStatus = response.getStatusCode();
-        if (!HttpUtils.isSuccess(responseStatus)) {
+        if (!response.getStatusCode().is2xxSuccessful()) {
             // if it gets here it's mainly because of 404 so it means entity not found
             return Sets.newHashSet();
         }

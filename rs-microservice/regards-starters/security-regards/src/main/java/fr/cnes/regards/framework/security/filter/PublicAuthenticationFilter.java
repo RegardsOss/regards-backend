@@ -22,15 +22,15 @@ import com.google.common.base.Strings;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Set;
 
@@ -64,13 +64,14 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain pFilterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
         throws ServletException, IOException {
 
         // Retrieve authentication header
         String authHeader = request.getHeader(HttpConstants.AUTHORIZATION);
-        // If no authentication header and no OPTIONS request
-        if ((authHeader == null) && !CorsFilter.OPTIONS_REQUEST_TYPE.equals(request.getMethod())) {
+        // If not "Bearer" Authorization and no OPTIONS request => generate PUBLIC token
+        if (((authHeader == null) || !authHeader.startsWith(HttpConstants.BEARER))
+            && !CorsFilter.OPTIONS_REQUEST_TYPE.equals(request.getMethod())) {
             // Try to retrieve target tenant from request
             String tenant = request.getHeader(HttpConstants.SCOPE);
             if (Strings.isNullOrEmpty(tenant) && request.getParameter(HttpConstants.SCOPE) != null) {
@@ -79,10 +80,10 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
             // Add authorization header
             CustomHttpServletRequest customRequest = new CustomHttpServletRequest(request);
             addPublicAuthorizationHeader(tenant, customRequest);
-            pFilterChain.doFilter(customRequest, response);
+            filterChain.doFilter(customRequest, response);
         } else {
             // Nothing to do
-            pFilterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);
         }
     }
 

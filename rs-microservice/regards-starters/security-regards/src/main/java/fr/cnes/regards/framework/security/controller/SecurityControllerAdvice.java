@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+
+
 /**
  * Controller advice
  *
@@ -40,12 +42,12 @@ public class SecurityControllerAdvice {
     /**
      * Spring framework Access denied exception. Throw by security methodAccessVoter
      *
-     * @param pException {@link AccessDeniedException}
+     * @param exception {@link AccessDeniedException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ServerErrorResponse> accessDeniedException(final AccessDeniedException pException) {
+    public ResponseEntity<ServerErrorResponse> accessDeniedException(final AccessDeniedException exception) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                             .body(new ServerErrorResponse(pException.getMessage(), pException));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 }

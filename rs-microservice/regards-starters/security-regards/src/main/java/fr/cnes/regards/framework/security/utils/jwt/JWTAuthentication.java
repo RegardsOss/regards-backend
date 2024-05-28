@@ -31,12 +31,6 @@ import java.util.*;
  * @author msordi
  */
 public class JWTAuthentication implements Authentication {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-
     /**
      * JWT from request header
      */
@@ -60,15 +54,15 @@ public class JWTAuthentication implements Authentication {
     /**
      * Additional parameters (user specific)
      */
-    private Map<String, Object> additionalParams;
+    private Map<String, Object> additionalParams = new HashMap<>();
 
     /**
      * Constructor
      *
-     * @param pJWT the JSON Web Token
+     * @param jwt the JSON Web Token
      */
-    public JWTAuthentication(String pJWT) {
-        jwt = pJWT;
+    public JWTAuthentication(String jwt) {
+        this.jwt = jwt;
     }
 
     @Override
@@ -105,8 +99,8 @@ public class JWTAuthentication implements Authentication {
     }
 
     @Override
-    public void setAuthenticated(boolean pIsAuthenticated) throws IllegalArgumentException {
-        isAuthenticated = pIsAuthenticated;
+    public void setAuthenticated(boolean authenticated) throws IllegalArgumentException {
+        isAuthenticated = authenticated;
     }
 
     /**
@@ -121,13 +115,13 @@ public class JWTAuthentication implements Authentication {
     /**
      * Abstraction on how to set the tenant
      *
-     * @param pTenant the new tenant
+     * @param tenant the new tenant
      */
-    public void setTenant(String pTenant) {
+    public void setTenant(String tenant) {
         if (user != null) {
-            user.setTenant(pTenant);
+            user.setTenant(tenant);
         }
-        tenant = pTenant;
+        this.tenant = tenant;
     }
 
     /**
@@ -140,13 +134,13 @@ public class JWTAuthentication implements Authentication {
     /**
      * Set user role
      *
-     * @param pRoleName the role name
+     * @param roleName the role name
      */
-    public void setRole(String pRoleName) {
+    public void setRole(String roleName) {
         if (user == null) {
             throw new IllegalStateException("role cannot be set while user has not been set!");
         }
-        user.setRole(pRoleName);
+        user.setRole(roleName);
     }
 
     /**
@@ -157,10 +151,10 @@ public class JWTAuthentication implements Authentication {
     }
 
     /**
-     * @param pUser the user to set
+     * @param user the user to set
      */
-    public void setUser(UserDetails pUser) {
-        user = pUser;
+    public void setUser(UserDetails user) {
+        this.user = user;
     }
 
     public Map<String, Object> getAdditionalParams() {

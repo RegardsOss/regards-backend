@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.authentication.service;
 
+import fr.cnes.regards.framework.security.autoconfigure.JWTAuthenticationManager;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
@@ -59,5 +61,10 @@ public class FeignMockConfiguration {
     @Bean
     public IRolesClient rolesClient() {
         return Mockito.mock(IRolesClient.class);
+    }
+
+    @Bean
+    public JWTAuthenticationManager jwtAuthenticationManager() {
+        return new JWTAuthenticationManager(new JWTService());
     }
 }

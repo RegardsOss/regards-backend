@@ -55,7 +55,8 @@ public class MethodSecurityAutoConfigurationTest {
     public void testMethodConfiguration() {
         this.context = new AnnotationConfigWebApplicationContext();
         this.context.setServletContext(new MockServletContext());
-        this.context.register(SecurityVoterAutoConfiguration.class,
+        this.context.register(TestConfiguration.class,
+                              SecurityVoterAutoConfiguration.class,
                               MultitenantAutoConfiguration.class,
                               MethodSecurityAutoConfiguration.class,
                               MethodAuthorizationServiceAutoConfiguration.class,

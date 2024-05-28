@@ -24,6 +24,12 @@
     <groupId>fr.cnes.regards.cloud</groupId>
     <artifactId>rs-authentication</artifactId>
     <packaging>pom</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+    </dependencies>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
@@ -33,7 +39,6 @@
     </parent>
 
     <modules>
-        <module>authentication-starter</module>
         <module>bootstrap-authentication</module>
         <module>authentication</module>
     </modules>

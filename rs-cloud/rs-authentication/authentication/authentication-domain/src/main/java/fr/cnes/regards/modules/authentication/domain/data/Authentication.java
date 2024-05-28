@@ -38,6 +38,9 @@ public class Authentication {
 
     private String role;
 
+    /**
+     * subject
+     */
     private String sub;
 
     @SerializedName("service_provider_name")
@@ -45,7 +48,7 @@ public class Authentication {
 
     @SerializedName("access_token")
     private String accessToken;
-    
+
     @SerializedName("expires_in")
     private Long expiresIn;
 
@@ -103,6 +106,14 @@ public class Authentication {
         return JTI;
     }
 
+    public String getTenant() {
+        return scope;
+    }
+
+    public String getEmail() {
+        return sub;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -114,8 +125,7 @@ public class Authentication {
         Authentication that = (Authentication) o;
         return Objects.equals(project, that.project)
                && Objects.equals(scope, that.scope)
-               && Objects.equals(role,
-                                 that.role)
+               && Objects.equals(role, that.role)
                && Objects.equals(sub, that.sub)
                && Objects.equals(serviceProviderName, that.serviceProviderName)
                && Objects.equals(accessToken, that.accessToken)

@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.authentication.dao.entity;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.util.Objects;
 
 @Entity

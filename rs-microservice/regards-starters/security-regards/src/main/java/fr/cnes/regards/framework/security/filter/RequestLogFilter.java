@@ -18,21 +18,22 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
-import com.google.common.net.HttpHeaders;
+import java.io.IOException;
+import java.util.Enumeration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Enumeration;
+import com.google.common.net.HttpHeaders;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * This class aims to log the HTTP request received by a microservice.</br>
- * The informations logged are :</br>
+ * The information logged is :</br>
  * <li>the request URI,
  * <li>the HTTP method,
  * <li>the IP of the caller or the X-Forwarded-For field extracts from the request header.
@@ -48,30 +49,30 @@ public class RequestLogFilter extends OncePerRequestFilter {
     private static final Logger LOG = LoggerFactory.getLogger(RequestLogFilter.class);
 
     @Override
-    protected void doFilterInternal(final HttpServletRequest pRequest,
-                                    final HttpServletResponse pResponse,
-                                    final FilterChain pFilterChain) throws ServletException, IOException {
+    protected void doFilterInternal(final HttpServletRequest request,
+                                    final HttpServletResponse response,
+                                    final FilterChain filterChain) throws ServletException, IOException {
 
         if (LOG.isDebugEnabled()) {
-            Enumeration<String> headerNames = pRequest.getHeaderNames();
+            Enumeration<String> headerNames = request.getHeaderNames();
             while (headerNames.hasMoreElements()) {
                 String key = headerNames.nextElement();
-                String value = pRequest.getHeader(key);
+                String value = request.getHeader(key);
                 LOG.debug("header : {} = {}", key, value);
             }
         }
 
-        String xForwardedFor = pRequest.getHeader(HttpHeaders.X_FORWARDED_FOR);
+        String xForwardedFor = request.getHeader(HttpHeaders.X_FORWARDED_FOR);
         if (xForwardedFor != null) {
-            LOG.info("Request received : {}@{} from {}", pRequest.getRequestURI(), pRequest.getMethod(), xForwardedFor);
+            LOG.info("Request received : {}@{} from {}", request.getRequestURI(), request.getMethod(), xForwardedFor);
         } else {
             LOG.info("Request received : {}@{} from {}",
-                     pRequest.getRequestURI(),
-                     pRequest.getMethod(),
-                     pRequest.getRemoteAddr());
+                     request.getRequestURI(),
+                     request.getMethod(),
+                     request.getRemoteAddr());
         }
 
-        pFilterChain.doFilter(pRequest, pResponse);
+        filterChain.doFilter(request, response);
     }
 
 }

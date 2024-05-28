@@ -62,8 +62,15 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
     @Autowired
     private IAccountsClient accountsClient;
 
+    public RegardsInternalAuthenticationPlugin() {
+    }
+
+    public RegardsInternalAuthenticationPlugin(IAccountsClient accountsClient) {
+        this.accountsClient = accountsClient;
+    }
+
     @Override
-    public AuthenticationPluginResponse authenticate(final String pEmail, final String pPassword, final String pScope) {
+    public AuthenticationPluginResponse authenticate(String email, String password, String scope) {
 
         Boolean accessGranted = false;
         String errorMessage = null;
@@ -72,22 +79,20 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
         // Validate password as system
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccounByEmail(pEmail);
+            ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccountByEmail(email);
             Account account = ResponseEntityUtils.extractContentOrNull(response);
             if (account != null && !account.isExternal()) {
-                validateResponse = accountsClient.validatePassword(pEmail, pPassword);
+                validateResponse = accountsClient.validatePassword(email, password);
             } else {
                 String message = String.format(
                     "Account %s is not allowed to authenticate (External account authentication)",
-                    pEmail);
+                    email);
                 LOG.error(message);
-                return new AuthenticationPluginResponse(false, pEmail, message);
+                return new AuthenticationPluginResponse(false, email, message);
             }
-        } catch (HttpServerErrorException |
-
-                 HttpClientErrorException e) {
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
             LOG.error(e.getMessage(), e);
-            return new AuthenticationPluginResponse(false, pEmail, "Invalid password");
+            return new AuthenticationPluginResponse(false, email, "Invalid password");
         } finally {
             FeignSecurityManager.reset();
         }
@@ -100,14 +105,14 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
                 // As we are afraid from hackers,
                 // we do not want the end user to know that the account exists so we are lying.
                 errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
-                                             pEmail);
+                                             email);
             }
         } else {
             errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
-                                         pEmail);
+                                         email);
         }
 
-        return new AuthenticationPluginResponse(accessGranted, pEmail, errorMessage);
+        return new AuthenticationPluginResponse(accessGranted, email, errorMessage);
 
     }
 

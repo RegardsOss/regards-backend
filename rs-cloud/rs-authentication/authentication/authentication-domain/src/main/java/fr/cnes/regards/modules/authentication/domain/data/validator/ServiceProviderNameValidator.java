@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.authentication.domain.data.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 

@@ -250,7 +250,7 @@ public class LdapAuthenticationPluginTest {
                                                  Mockito.anyString(),
                                                  Mockito.any(SearchScope.class),
                                                  Mockito.anyString())).thenReturn(entry);
-        } catch (LdapException | IOException e) {
+        } catch (LdapException e) {
             Assert.fail(e.getMessage());
         }
 

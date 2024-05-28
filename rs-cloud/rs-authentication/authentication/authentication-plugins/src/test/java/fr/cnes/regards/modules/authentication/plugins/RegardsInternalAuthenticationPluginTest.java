@@ -99,7 +99,7 @@ public class RegardsInternalAuthenticationPluginTest {
             account.setOrigin(Account.REGARDS_ORIGIN);
             final ResponseEntity<EntityModel<Account>> accountResponse = new ResponseEntity<>(EntityModel.of(account),
                                                                                               HttpStatus.OK);
-            Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
+            Mockito.when(client.retrieveAccountByEmail(email)).thenReturn(accountResponse);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
             privateField.setAccessible(true);
@@ -131,7 +131,7 @@ public class RegardsInternalAuthenticationPluginTest {
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
             final ResponseEntity<EntityModel<Account>> accountResponse = new ResponseEntity<>(EntityModel.of(extAccount),
                                                                                               HttpStatus.OK);
-            Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
+            Mockito.when(client.retrieveAccountByEmail(email)).thenReturn(accountResponse);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
             privateField.setAccessible(true);

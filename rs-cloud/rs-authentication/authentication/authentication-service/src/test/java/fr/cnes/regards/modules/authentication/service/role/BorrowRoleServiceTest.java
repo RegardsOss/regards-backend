@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,6 @@ import org.mockito.Mockito;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ import java.util.List;
  */
 public class BorrowRoleServiceTest {
 
-    private IBorrowRoleService borrowRoleService;
+    private BorrowRoleService borrowRoleService;
 
     private JWTService JwtService;
 
@@ -87,9 +87,9 @@ public class BorrowRoleServiceTest {
         // mock JWTAuthentication
         JwtService.injectToken("test", "ADMIN", "test@test.test", "test@test.test");
 
-        DefaultOAuth2AccessToken newToken = borrowRoleService.switchTo(DefaultRole.PUBLIC.toString());
+        Authentication newToken = borrowRoleService.switchTo(DefaultRole.PUBLIC.toString());
 
-        JWTAuthentication newAuthentication = new JWTAuthentication(newToken.getValue());
+        JWTAuthentication newAuthentication = new JWTAuthentication(newToken.getAccessToken());
         newAuthentication = JwtService.parseToken(newAuthentication);
         Assert.assertNotNull(newToken);
         Assert.assertEquals("test@test.test", newAuthentication.getName());

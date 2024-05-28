@@ -22,11 +22,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
-import fr.cnes.regards.modules.authentication.service.role.IBorrowRoleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import fr.cnes.regards.modules.authentication.domain.data.Authentication;
+import fr.cnes.regards.modules.authentication.service.role.BorrowRoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -48,11 +47,11 @@ public class BorrowRoleController {
      */
     public static final String PATH_BORROW_ROLE_TARGET = "/{target_name}";
 
-    /**
-     * {@link IBorrowRoleService} instance
-     */
-    @Autowired
-    private IBorrowRoleService borrowRoleService;
+    private final BorrowRoleService borrowRoleService;
+
+    public BorrowRoleController(BorrowRoleService borrowRoleService) {
+        this.borrowRoleService = borrowRoleService;
+    }
 
     /**
      * Allows to switch role
@@ -62,7 +61,7 @@ public class BorrowRoleController {
     @ResponseBody
     @ResourceAccess(role = DefaultRole.PUBLIC, description = "endpoint allowing to switch role")
     @RequestMapping(method = RequestMethod.GET, path = PATH_BORROW_ROLE_TARGET)
-    public ResponseEntity<DefaultOAuth2AccessToken> switchRole(@PathVariable("target_name") String targetRoleName)
+    public ResponseEntity<Authentication> switchRole(@PathVariable("target_name") String targetRoleName)
         throws EntityOperationForbiddenException, JwtException {
         return new ResponseEntity<>(borrowRoleService.switchTo(targetRoleName), HttpStatus.OK);
 

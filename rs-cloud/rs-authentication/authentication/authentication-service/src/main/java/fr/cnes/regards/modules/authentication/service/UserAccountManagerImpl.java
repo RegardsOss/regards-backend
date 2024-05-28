@@ -91,10 +91,10 @@ public class UserAccountManagerImpl implements IUserAccountManager {
 
     @VisibleForTesting
     protected Try<Unit> createAccount(ServiceProviderAuthenticationInfo.UserInfo userInfo, String serviceProviderName) {
-        return Try.of(() -> accountsClient.retrieveAccounByEmail(userInfo.getEmail()))
+        return Try.of(() -> accountsClient.retrieveAccountByEmail(userInfo.getEmail()))
                   .map(ResponseEntity::getStatusCode)
                   .map(status -> {
-                      switch (status) {
+                      switch ((HttpStatus) status) {
                           case OK:
                               return HttpStatus.CREATED;
                           case NOT_FOUND:
@@ -126,7 +126,7 @@ public class UserAccountManagerImpl implements IUserAccountManager {
     protected Try<ProjectUser> createProjectUser(ServiceProviderAuthenticationInfo.UserInfo userInfo,
                                                  String serviceProviderName) {
         return Try.of(() -> usersClient.retrieveProjectUserByEmail(userInfo.getEmail())).flatMap(response -> {
-            HttpStatus status = response.getStatusCode();
+            HttpStatus status = (HttpStatus) response.getStatusCode();
             switch (status) {
                 case OK:
                     ProjectUser user = ResponseEntityUtils.extractContentOrNull(response);

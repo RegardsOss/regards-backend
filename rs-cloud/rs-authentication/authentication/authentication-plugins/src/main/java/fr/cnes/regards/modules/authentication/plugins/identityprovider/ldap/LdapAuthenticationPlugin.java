@@ -25,8 +25,6 @@ import org.apache.directory.ldap.client.api.LdapNetworkConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 /**
  * Class LdapAuthenticationPlugin
  * <p>
@@ -163,7 +161,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
                          e.getResultCode(),
                          e.getMessage());
             errorMessage = e.getMessage();
-        } catch (final LdapException | IOException e) {
+        } catch (final LdapException e) {
             LOGGER.error("LDAP error : " + e.getMessage(), e);
             errorMessage = e.getMessage();
         } finally {
@@ -224,7 +222,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
                     userMail = attribute.getString();
                 }
             }
-        } catch (final LdapException | CursorException | IOException e) {
+        } catch (final LdapException | CursorException e) {
             LOGGER.error(e.getMessage(), e);
         }
 
