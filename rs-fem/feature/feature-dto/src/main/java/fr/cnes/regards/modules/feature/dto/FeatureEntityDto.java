@@ -19,10 +19,9 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import org.hibernate.annotations.Type;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -56,7 +55,6 @@ public class FeatureEntityDto {
     @NotNull
     private OffsetDateTime lastUpdate;
 
-    @Type(type = "jsonb")
     @Valid
     private Feature feature;
 

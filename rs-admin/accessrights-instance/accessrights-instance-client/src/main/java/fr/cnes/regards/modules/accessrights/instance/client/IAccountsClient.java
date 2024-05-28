@@ -25,14 +25,12 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountSearchParamet
 import fr.cnes.regards.modules.accessrights.instance.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
+import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.persistence.EntityNotFoundException;
-import javax.validation.Valid;
 
 /**
  * Feign client for rs-admin Accounts controller.
@@ -93,7 +91,7 @@ public interface IAccountsClient {
     @GetMapping(value = ROOT_PATH + "/account/{account_email}",
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<EntityModel<Account>> retrieveAccounByEmail(@PathVariable("account_email") String email);
+    ResponseEntity<EntityModel<Account>> retrieveAccountByEmail(@PathVariable("account_email") String email);
 
     /**
      * Update an {@link Account} with passed values.

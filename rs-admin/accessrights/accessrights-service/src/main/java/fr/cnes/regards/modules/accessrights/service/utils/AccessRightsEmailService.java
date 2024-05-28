@@ -70,7 +70,7 @@ public class AccessRightsEmailService {
         String name = null;
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient.retrieveAccounByEmail(email);
+            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient.retrieveAccountByEmail(email);
             if (accountResponse.getStatusCode().is2xxSuccessful()) {
                 EntityModel<Account> body = accountResponse.getBody();
                 if (body != null) {

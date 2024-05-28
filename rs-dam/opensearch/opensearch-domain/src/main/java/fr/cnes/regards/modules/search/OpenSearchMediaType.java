@@ -29,8 +29,8 @@ public class OpenSearchMediaType {
 
     /**
      * Public constant media type for {@code application/geo+json}.
-     *
-     * @see #APPLICATION_JSON_UTF8
+     * <p>
+     * Look at MediaType#APPLICATION_JSON_UTF8
      */
     public static final MediaType APPLICATION_OPENSEARCH_DESC;
 

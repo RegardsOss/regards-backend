@@ -4,11 +4,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.framework.urn.EntityType;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Set;
 

@@ -28,7 +28,7 @@ import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.InputStream;
 import java.util.Optional;
 

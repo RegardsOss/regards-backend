@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@SuppressWarnings("serial")
+
 public class NotificationToSendEvent extends ApplicationEvent {
 
     /**

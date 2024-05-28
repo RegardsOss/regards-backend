@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestFilters;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.List;
 
 /**

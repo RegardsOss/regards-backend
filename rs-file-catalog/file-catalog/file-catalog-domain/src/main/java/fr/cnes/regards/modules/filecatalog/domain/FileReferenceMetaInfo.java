@@ -23,9 +23,9 @@ import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import org.springframework.util.MimeType;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Embeddable;
 
 /**
  * Database definition of meta information on a file.

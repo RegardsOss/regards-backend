@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.framework.s3.domain;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.annotation.Nullable;
 
 /**
  * Settings class for a S3 server.

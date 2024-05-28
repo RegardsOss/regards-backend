@@ -22,13 +22,14 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
 import java.util.Collection;
 import java.util.Set;
 
@@ -76,7 +77,7 @@ public class RequestResultInfo {
     private String requestStorePath;
 
     @Column(columnDefinition = "jsonb", name = "request_owners")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private final Set<String> requestOwners = Sets.newHashSet();
 
     @Column

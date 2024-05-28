@@ -21,14 +21,14 @@ package fr.cnes.regards.modules.search.domain.plugin;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;

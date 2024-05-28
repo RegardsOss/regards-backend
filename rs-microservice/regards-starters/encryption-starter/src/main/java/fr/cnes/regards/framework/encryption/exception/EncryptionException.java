@@ -7,7 +7,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@SuppressWarnings("serial")
+
 public class EncryptionException extends ModuleException {
 
     public EncryptionException(String message, Throwable cause) {

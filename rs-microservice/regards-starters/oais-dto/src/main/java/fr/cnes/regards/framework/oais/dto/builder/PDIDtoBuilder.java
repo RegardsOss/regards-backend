@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.oais.dto.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.dto.PreservationDescriptionInformationDto;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 

@@ -19,9 +19,8 @@
 package fr.cnes.regards.modules.access.services.domain.validation;
 
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * Validator enforcing {@link UIPluginDefinition} constraints

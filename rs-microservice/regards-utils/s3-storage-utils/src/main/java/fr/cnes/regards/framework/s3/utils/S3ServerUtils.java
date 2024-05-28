@@ -22,11 +22,11 @@ import fr.cnes.regards.framework.s3.domain.S3Server;
 import fr.cnes.regards.framework.s3.domain.StorageConfigBuilder;
 import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.PatternSyntaxS3Exception;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.utils.StringUtils;
 
-import javax.annotation.Nullable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;

@@ -86,15 +86,15 @@ public class EntitiesService implements IEntitiesService {
     }
 
     @Override
-    public List<AbstractEntity<?>> loadAllWithRelations(UniformResourceName... pIpIds) {
-        List<AbstractEntity<?>> entities = new ArrayList<>(pIpIds.length);
-        Set<UniformResourceName> dsUrns = Arrays.stream(pIpIds)
+    public List<AbstractEntity<?>> loadAllWithRelations(UniformResourceName... ipIds) {
+        List<AbstractEntity<?>> entities = new ArrayList<>(ipIds.length);
+        Set<UniformResourceName> dsUrns = Arrays.stream(ipIds)
                                                 .filter(ipId -> ipId.getEntityType() == EntityType.DATASET)
                                                 .collect(Collectors.toSet());
         if (!dsUrns.isEmpty()) {
             entities.addAll(datasetRepository.findByIpIdIn(dsUrns));
         }
-        Set<UniformResourceName> otherUrns = Arrays.stream(pIpIds)
+        Set<UniformResourceName> otherUrns = Arrays.stream(ipIds)
                                                    .filter(ipId -> ipId.getEntityType() != EntityType.DATASET)
                                                    .collect(Collectors.toSet());
         if (!otherUrns.isEmpty()) {
@@ -105,10 +105,10 @@ public class EntitiesService implements IEntitiesService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends IComputedAttribute<Dataset, ?>> Set<T> getComputationPlugins(Dataset pDataset) {
+    public <T extends IComputedAttribute<Dataset, ?>> Set<T> getComputationPlugins(Dataset dataset) {
 
-        Set<ModelAttrAssoc> computedAttributes = modelAttributeService.getComputedAttributes(pDataset.getModel()
-                                                                                                     .getId());
+        Set<ModelAttrAssoc> computedAttributes = modelAttributeService.getComputedAttributes(dataset.getModel()
+                                                                                                    .getId());
         Set<T> computationPlugins = new HashSet<>();
         try {
             for (ModelAttrAssoc attr : computedAttributes) {

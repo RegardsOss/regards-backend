@@ -26,14 +26,12 @@ import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.DisseminationStatus;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -51,7 +49,7 @@ import java.util.Set;
  * @author Sébastien Binda
  */
 @MappedSuperclass
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 public abstract class AbstractAIPEntity extends AbstractOAISEntity {
 
     @Id
@@ -73,14 +71,15 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
 
     @NotNull(message = "RAW JSON AIP is required")
     @Column(columnDefinition = "jsonb", name = "rawaip", nullable = false)
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private AIPDto aip;
 
     /**
      * Storage lists used by this AIP to store its files
      */
     @Column(columnDefinition = "jsonb", name = "storages", nullable = false)
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> storages = new HashSet<>();
 
     /**
@@ -94,7 +93,7 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
     private boolean last = false;
 
     @Column(name = "dissemination_infos", columnDefinition = "jsonb")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                     value = "fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo") })
     private List<DisseminationInfo> disseminationInfos;

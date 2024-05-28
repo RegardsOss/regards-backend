@@ -644,7 +644,6 @@ public class OrderProcessingService implements IOrderProcessingService {
         return Option.of(featureGroup.key()).getOrElse(false);
     }
 
-    @SuppressWarnings("serial")
     public static class UnparsableProcessInfoException extends RuntimeException {
 
         public UnparsableProcessInfoException(String message) {

@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.feign.autoconfigure;
 
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 /**
@@ -30,9 +30,8 @@ import org.springframework.context.annotation.Profile;
  * @author Marc Sordi
  */
 @Profile({ "production", "feign" })
-@Configuration
+@AutoConfiguration(after = GsonAutoConfiguration.class)
 @EnableFeignClients("fr.cnes.regards")
-@AutoConfigureAfter(name = "fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration")
 public class FeignAutoConfiguration {
 
 }

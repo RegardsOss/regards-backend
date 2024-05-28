@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.access.services.service.link;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 

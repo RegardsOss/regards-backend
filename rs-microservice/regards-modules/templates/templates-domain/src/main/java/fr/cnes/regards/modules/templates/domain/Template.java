@@ -19,10 +19,8 @@
 package fr.cnes.regards.modules.templates.domain;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Domain class representing a template.<br>
@@ -55,8 +53,7 @@ public class Template implements IIdentifiable<Long> {
      * The template as a string for db persistence
      */
     @NotBlank
-    @Column(name = "content")
-    @Type(type = "text")
+    @Column(name = "content", columnDefinition = "text")
     private String content;
 
     /**

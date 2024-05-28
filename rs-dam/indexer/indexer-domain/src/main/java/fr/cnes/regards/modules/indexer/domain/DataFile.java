@@ -20,10 +20,10 @@ package fr.cnes.regards.modules.indexer.domain;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.urn.DataType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.MimeType;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.Set;
 

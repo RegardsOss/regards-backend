@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.ltamanager.domain.settings;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.util.Objects;
 
 /**

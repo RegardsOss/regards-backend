@@ -23,11 +23,11 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 import org.hibernate.cfg.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
@@ -41,7 +41,7 @@ import java.io.IOException;
  *
  * @author CS
  */
-@Configuration
+@AutoConfiguration
 @EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)
 public class InstanceDataSourceConfiguration {

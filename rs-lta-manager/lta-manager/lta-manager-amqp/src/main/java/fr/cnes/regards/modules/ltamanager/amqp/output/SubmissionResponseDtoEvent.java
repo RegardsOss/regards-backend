@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 

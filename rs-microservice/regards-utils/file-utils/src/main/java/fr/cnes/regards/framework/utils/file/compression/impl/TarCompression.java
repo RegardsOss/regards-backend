@@ -113,11 +113,9 @@ public class TarCompression extends AbstractRunnableCompression {
                 os.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 
                 for (final File fileNow : pFileList) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(String.format("Adding %s file to %s file.",
-                                                   fileNow.getName(),
-                                                   CompressionTypeEnum.TAR.toString()));
-                    }
+                    LOGGER.debug(String.format("Adding %s file to %s file.",
+                                               fileNow.getName(),
+                                               CompressionTypeEnum.TAR));
 
                     TarArchiveEntry entry;
                     if (pFlatArchive) {
@@ -146,9 +144,7 @@ public class TarCompression extends AbstractRunnableCompression {
 
                 }
 
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
-                }
+                LOGGER.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
             }
         } catch (final IOException | ArchiveException ioE) {
             compressedFile.delete();
@@ -255,11 +251,9 @@ public class TarCompression extends AbstractRunnableCompression {
                 }
             }
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("The file %s is uncompressed to %s",
-                                           pCompressedFile.getName(),
-                                           pOutputDir.getName()));
-            }
+            LOGGER.debug(String.format("The file %s is uncompressed to %s",
+                                       pCompressedFile.getName(),
+                                       pOutputDir.getName()));
         } catch (final IOException ioE) {
             throw new CompressionException(String.format("IO error during %s uncompression", CompressionTypeEnum.TAR),
                                            ioE);

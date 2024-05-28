@@ -24,19 +24,17 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * @author kevin
  * @author Marc SORDI
  */
 @Slf4j
-@Configuration
+@AutoConfiguration(before = CompositeMeterRegistryAutoConfiguration.class)
 @EnableConfigurationProperties(LoggingRegistryConfiguration.class)
-@AutoConfigureBefore(CompositeMeterRegistryAutoConfiguration.class)
 public class MetricAutoConfiguration {
 
     @Bean

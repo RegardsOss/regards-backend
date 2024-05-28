@@ -23,17 +23,17 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.DefaultTenantResolver;
 import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Manage tenant resolver bean
  *
  * @author msordi
  */
-@Configuration
+@AutoConfiguration
 @EnableConfigurationProperties(MultitenantBootstrapProperties.class)
 public class MultitenantAutoConfiguration {
 

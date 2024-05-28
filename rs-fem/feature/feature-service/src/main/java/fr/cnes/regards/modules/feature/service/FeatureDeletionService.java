@@ -53,6 +53,7 @@ import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,8 +64,8 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import javax.annotation.Nullable;
-import javax.validation.Valid;
+import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;

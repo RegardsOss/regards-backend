@@ -18,21 +18,30 @@
  */
 package fr.cnes.regards.modules.order.domain.basket;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.order.dto.dto.BasketDatasetSelectionDto;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
-import org.hibernate.annotations.SortNatural;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
-
-import javax.annotation.Nullable;
-import javax.persistence.*;
+import org.hibernate.annotations.SortNatural;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
+import fr.cnes.regards.modules.order.dto.dto.BasketDatasetSelectionDto;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SortNatural;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
+
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import jakarta.persistence.*;
 
 /**
  * A grouped items by dataset selection from a basket
@@ -64,16 +73,16 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     @Column(name = "files_size")
     private long filesSize = 0;
 
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "file_types_sizes")
     private StringToLongMap fileTypesSizes;
 
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "file_types_count")
     private StringToLongMap fileTypesCount;
 
     @Nullable
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "file_selection_description")
     private FileSelectionDescription fileSelectionDescription;
 
@@ -85,7 +94,7 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     private final SortedSet<BasketDatedItemsSelection> itemsSelections = new TreeSet<>();
 
     @Column(name = "process_dataset_desc")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private ProcessDatasetDescription processDatasetDescription;
 
     @Override

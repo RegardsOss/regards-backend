@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Models a notification.<br>

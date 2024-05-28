@@ -20,7 +20,8 @@ package fr.cnes.regards.modules.delivery.domain.input;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.Objects;
 
 /**

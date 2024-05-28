@@ -19,12 +19,12 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TemporalType;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TemporalType;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;

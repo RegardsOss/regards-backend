@@ -198,7 +198,6 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
                                                                                        + " not found"));
     }
 
-    @SuppressWarnings("serial")
     public static class DeleteAttemptOnUsedProcessException extends Exception {
 
         private final UUID processBusinessID;

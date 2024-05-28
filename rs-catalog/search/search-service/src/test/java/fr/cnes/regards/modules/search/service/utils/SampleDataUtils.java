@@ -312,7 +312,7 @@ public class SampleDataUtils {
      * A dummy page of dataset
      */
     public static final FacetPage<Dataset> FACET_PAGE_DATASET = new FacetPage<>(Lists.newArrayList(DATASET),
-            Sets.newHashSet());
+                                                                                Sets.newHashSet());
 
     /**
      * A dummy page of dataobjects

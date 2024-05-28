@@ -103,7 +103,7 @@ public class SubmissionCreateControllerIT extends AbstractRegardsIT {
     @SpyBean
     private SubmissionCreateService createService;
 
-    @SpyBean
+    @Autowired
     private IPublisher publisher;
 
     @Autowired

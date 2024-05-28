@@ -29,8 +29,8 @@ import fr.cnes.regards.modules.model.service.validation.validator.common.restric
  */
 public class JsonSchemaPropertyValidator extends AbstractJsonSchemaValidator {
 
-    public JsonSchemaPropertyValidator(JsonSchemaRestriction pRestriction, String pAttributeKey) {
-        super(pRestriction, pAttributeKey);
+    public JsonSchemaPropertyValidator(JsonSchemaRestriction restriction, String attributeKey) {
+        super(restriction, attributeKey);
     }
 
     @Override

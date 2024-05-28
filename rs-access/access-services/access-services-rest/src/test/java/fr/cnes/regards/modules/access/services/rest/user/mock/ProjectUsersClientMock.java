@@ -8,6 +8,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchPar
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.AbstractPageRequest;
@@ -22,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -98,17 +98,17 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     }
 
     @Override
-    public ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid AccessRequestDto pDto) {
+    public ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid AccessRequestDto accessRequestDto) {
         return singleProjectUserResponse(makeFoobarProjectUser());
     }
 
     @Override
-    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(Long pUserId) {
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(Long userId) {
         return singleProjectUserResponse(makeFoobarProjectUser());
     }
 
     @Override
-    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(String pUserEmail) {
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(String userEmail) {
         return singleProjectUserResponse(makeFoobarProjectUser());
     }
 
@@ -118,12 +118,12 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     }
 
     @Override
-    public ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(Long pUserId, ProjectUser pUpdatedProjectUser) {
-        return singleProjectUserResponse(pUpdatedProjectUser);
+    public ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(Long userId, ProjectUser updatedProjectUser) {
+        return singleProjectUserResponse(updatedProjectUser);
     }
 
     @Override
-    public ResponseEntity<Void> removeProjectUser(Long pUserId) {
+    public ResponseEntity<Void> removeProjectUser(Long userId) {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -138,7 +138,7 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId,
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long roleId,
                                                                                             Pageable pageable) {
         return singleProjectUserPagedResponse();
     }

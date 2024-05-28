@@ -19,9 +19,11 @@
 package fr.cnes.regards.modules.notifier.domain;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRuleMatcher;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;

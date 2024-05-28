@@ -29,9 +29,8 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.CollectionFeature;
 import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.model.service.IModelService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
 
 /**
  * Specific EntityService for collections

@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class MultitenantRabbitTransactionManager extends RabbitTransactionManager {
 
     private final VirtualHostMode mode;

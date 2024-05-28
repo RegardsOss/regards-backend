@@ -22,11 +22,10 @@ import com.networknt.schema.JsonSchemaException;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 /**
  * Check if given json schema is valid

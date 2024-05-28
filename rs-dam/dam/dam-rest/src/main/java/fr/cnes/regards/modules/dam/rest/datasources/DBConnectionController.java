@@ -32,12 +32,12 @@ import fr.cnes.regards.modules.dam.domain.datasources.Column;
 import fr.cnes.regards.modules.dam.domain.datasources.Table;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDBConnectionPlugin;
 import fr.cnes.regards.modules.dam.service.datasources.IDBConnectionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 

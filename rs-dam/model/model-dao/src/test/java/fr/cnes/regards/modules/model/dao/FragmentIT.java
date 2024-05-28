@@ -25,10 +25,9 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import jakarta.persistence.PersistenceException;
 import org.junit.Assert;
 import org.junit.Test;
-
-import javax.persistence.PersistenceException;
 
 /**
  * Fragment test

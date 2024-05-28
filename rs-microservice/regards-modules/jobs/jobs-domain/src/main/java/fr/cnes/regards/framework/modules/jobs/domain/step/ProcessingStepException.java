@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * @author Sébastien Binda
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class ProcessingStepException extends ModuleException {
 
     private final ErrorType errorType;

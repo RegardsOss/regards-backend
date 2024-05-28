@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.ingest;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import org.hibernate.annotations.Parameter;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 import org.springframework.lang.Nullable;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -46,7 +45,7 @@ import java.util.UUID;
 public class IngestRequest extends AbstractRequest {
 
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(JsonBinaryType.class)
     private IngestPayload config;
 
     /**

@@ -25,12 +25,11 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * SampleServicePlugin

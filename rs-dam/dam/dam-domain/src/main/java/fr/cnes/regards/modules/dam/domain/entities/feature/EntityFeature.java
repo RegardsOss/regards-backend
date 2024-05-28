@@ -32,14 +32,14 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Transient;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import javax.persistence.Transient;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.*;
 
 /**

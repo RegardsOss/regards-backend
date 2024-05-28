@@ -52,6 +52,7 @@ import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -61,7 +62,6 @@ import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.web.util.UriUtils;
 
-import javax.persistence.EntityManager;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;

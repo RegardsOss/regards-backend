@@ -44,6 +44,8 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionTy
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.rest.AttributeModelController;
 import fr.cnes.regards.modules.model.rest.ModelAttrAssocController;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.assertj.core.util.Strings;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -63,8 +65,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -632,51 +632,51 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
 
         requestBuilderCustomizer.addParameter(AttributeModelController.PARAM_FRAGMENT_NAME, fragmentName);
 
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(RequestDocumentation.parameterWithName(
-                                                                                                         AttributeModelController.PARAM_FRAGMENT_NAME)
-                                                                                                     .description(
-                                                                                                         "fragment name")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       JSON_STRING_TYPE))
-                                                                                                     .optional(),
-                                                                                 RequestDocumentation.parameterWithName(
-                                                                                                         "modelIds")
-                                                                                                     .description(
-                                                                                                         "model id")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       JSON_ARRAY_TYPE),
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                                                                                   .value(
-                                                                                                                       "Values must be whole numbers"))
-                                                                                                     .optional(),
-                                                                                 RequestDocumentation.parameterWithName(
-                                                                                                         AttributeModelController.PARAM_TYPE)
-                                                                                                     .description(
-                                                                                                         "attribute type")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       JSON_STRING_TYPE),
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                                                                                   .value(
-                                                                                                                       "Available values: "
-                                                                                                                       + Arrays.stream(
-                                                                                                                                   PropertyType.values())
-                                                                                                                               .map(
-                                                                                                                                   type -> type.name())
-                                                                                                                               .collect(
-                                                                                                                                   Collectors.joining(
-                                                                                                                                       ", "))))
-                                                                                                     .optional()));
+        requestBuilderCustomizer.document(RequestDocumentation.queryParameters(RequestDocumentation.parameterWithName(
+                                                                                                       AttributeModelController.PARAM_FRAGMENT_NAME)
+                                                                                                   .description(
+                                                                                                       "fragment name")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     JSON_STRING_TYPE))
+                                                                                                   .optional(),
+                                                                               RequestDocumentation.parameterWithName(
+                                                                                                       "modelIds")
+                                                                                                   .description(
+                                                                                                       "model id")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     JSON_ARRAY_TYPE),
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                                                 .value(
+                                                                                                                     "Values must be whole numbers"))
+                                                                                                   .optional(),
+                                                                               RequestDocumentation.parameterWithName(
+                                                                                                       AttributeModelController.PARAM_TYPE)
+                                                                                                   .description(
+                                                                                                       "attribute type")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     JSON_STRING_TYPE),
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                                                 .value(
+                                                                                                                     "Available values: "
+                                                                                                                     + Arrays.stream(
+                                                                                                                                 PropertyType.values())
+                                                                                                                             .map(
+                                                                                                                                 type -> type.name())
+                                                                                                                             .collect(
+                                                                                                                                 Collectors.joining(
+                                                                                                                                     ", "))))
+                                                                                                   .optional()));
 
         performDefaultGet(AttributeModelController.TYPE_MAPPING,
                           requestBuilderCustomizer,
@@ -840,26 +840,26 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
 
         requestBuilderCustomizer.addParameter("type", PropertyType.STRING.toString());
 
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(RequestDocumentation.parameterWithName(
-                                                                                                         "type")
-                                                                                                     .description(
-                                                                                                         "Attribute type")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       JSON_STRING_TYPE),
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                                                                                   .value(
-                                                                                                                       "Available values: "
-                                                                                                                       + Arrays.stream(
-                                                                                                                                   PropertyType.values())
-                                                                                                                               .map(
-                                                                                                                                   type -> type.name())
-                                                                                                                               .collect(
-                                                                                                                                   Collectors.joining(
-                                                                                                                                       ", "))))));
+        requestBuilderCustomizer.document(RequestDocumentation.queryParameters(RequestDocumentation.parameterWithName(
+                                                                                                       "type")
+                                                                                                   .description(
+                                                                                                       "Attribute type")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     JSON_STRING_TYPE),
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                                                 .value(
+                                                                                                                     "Available values: "
+                                                                                                                     + Arrays.stream(
+                                                                                                                                 PropertyType.values())
+                                                                                                                             .map(
+                                                                                                                                 Enum::name)
+                                                                                                                             .collect(
+                                                                                                                                 Collectors.joining(
+                                                                                                                                     ", "))))));
 
         performDefaultGet(AttributeModelController.TYPE_MAPPING + RESTRICTION_MAPPING,
                           requestBuilderCustomizer,

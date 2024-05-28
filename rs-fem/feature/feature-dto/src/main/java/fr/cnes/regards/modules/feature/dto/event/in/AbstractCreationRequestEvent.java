@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.feature.dto.event.in;
 
 import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**

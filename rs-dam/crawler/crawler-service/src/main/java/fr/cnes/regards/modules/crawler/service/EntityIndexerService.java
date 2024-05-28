@@ -67,6 +67,8 @@ import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
@@ -91,8 +93,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.ObjectError;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.OffsetDateTime;

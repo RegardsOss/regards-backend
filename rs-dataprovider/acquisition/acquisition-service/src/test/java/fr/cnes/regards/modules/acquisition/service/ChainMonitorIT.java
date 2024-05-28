@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChainType;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import fr.cnes.regards.modules.acquisition.service.plugins.*;
+import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.stat.Statistics;
 import org.junit.Ignore;
@@ -42,7 +43,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.persistence.EntityManager;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;

@@ -21,24 +21,21 @@ package fr.cnes.regards.modules.ingest.domain.request.update;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
 import java.util.List;
 
 /**
  * @author Michael Nguyen
  */
 @Entity(name = "UpdateDisseminationAIPTask")
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPUpdateDisseminationTask extends AbstractAIPUpdateTask {
 
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                     value = "fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo") })
     private List<DisseminationInfo> disseminationInfoUpdates;

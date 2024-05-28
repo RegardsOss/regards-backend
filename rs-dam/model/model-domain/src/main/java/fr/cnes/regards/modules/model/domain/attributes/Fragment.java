@@ -22,12 +22,10 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.modules.model.domain.IXmlisable;
 import fr.cnes.regards.modules.model.domain.Model;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 /**
  * Fragment : gathers a set of attributes and acts as a name space.
@@ -74,8 +72,7 @@ public class Fragment implements IIdentifiable<Long>, IXmlisable<fr.cnes.regards
     /**
      * Optional fragment description
      */
-    @Column
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String description;
 
     /**
@@ -87,8 +84,8 @@ public class Fragment implements IIdentifiable<Long>, IXmlisable<fr.cnes.regards
 
     /**
      * Indicates if this fragment is a real fragment from the model or if it is a generated fragement for JsonObject attributes.
-     *
-     * @see AbstractAttributeHelper class. Generates attributes from a JsonObject attribute type thanks to JsonSchema associated in restriction.
+     * <p>
+     * Look at fr.cnes.regards.modules.model.gson.AbstractAttributeHelper class. Generates attributes from a JsonObject attribute type thanks to JsonSchema associated in restriction.
      */
     @Transient
     private boolean virtual = false;

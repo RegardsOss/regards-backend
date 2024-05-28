@@ -20,9 +20,8 @@ package fr.cnes.regards.modules.model.domain.validator;
 
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * @author Sébastien Binda

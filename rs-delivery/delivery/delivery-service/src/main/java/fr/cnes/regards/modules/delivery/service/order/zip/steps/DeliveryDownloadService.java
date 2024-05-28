@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileAvailableClient;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileClient;
+import jakarta.validation.constraints.NotNull;
 import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -45,7 +46,6 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

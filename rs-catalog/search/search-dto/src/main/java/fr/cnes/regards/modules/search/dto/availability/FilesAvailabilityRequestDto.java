@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.search.dto.availability;
 
 import com.google.gson.annotations.SerializedName;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.Objects;
 import java.util.Set;
 

@@ -23,7 +23,7 @@ package fr.cnes.regards.framework.jpa.multitenant.exception;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class InvalidDataSourceTenant extends RuntimeException {
 
     public InvalidDataSourceTenant(String message) {

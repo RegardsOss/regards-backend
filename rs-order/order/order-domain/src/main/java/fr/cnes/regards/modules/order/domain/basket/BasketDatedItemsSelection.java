@@ -27,12 +27,23 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embeddable;
-import javax.validation.Valid;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Embeddable;
+import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.Optional;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
+
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Embeddable;
+import jakarta.validation.Valid;
 
 /**
  * Dated items selection
@@ -41,7 +52,6 @@ import java.util.Optional;
  * @author Sébastien Binda
  */
 @Embeddable
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSelection> {
 
     @Column(nullable = false)
@@ -52,7 +62,7 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
      * Selection request
      */
     @Valid
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "selection_request")
     private BasketSelectionRequest selectionRequest;
 
@@ -65,11 +75,11 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
     @Column(name = "files_size")
     private final long filesSize = 0;
 
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "file_types_sizes")
     private StringToLongMap fileTypesSizes;
 
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "file_types_count")
     private StringToLongMap fileTypesCount;
 

@@ -19,7 +19,7 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Class User
@@ -68,7 +68,7 @@ public class User {
      * User's company
      */
     @ManyToOne
-    @JoinColumn(name = "company_id", foreignKey = @javax.persistence.ForeignKey(name = "fk_user_company"))
+    @JoinColumn(name = "company_id", foreignKey = @ForeignKey(name = "fk_user_company"))
     private Company company;
 
     /**

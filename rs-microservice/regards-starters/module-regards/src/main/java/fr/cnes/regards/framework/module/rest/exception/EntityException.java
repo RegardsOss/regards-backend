@@ -23,7 +23,7 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class EntityException extends ModuleException {
 
     public EntityException(final String message) {

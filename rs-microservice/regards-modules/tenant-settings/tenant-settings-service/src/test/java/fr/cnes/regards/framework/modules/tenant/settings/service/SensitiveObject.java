@@ -60,6 +60,7 @@ public class SensitiveObject {
 }
 
 class SensitiveComponent {
+
     int serialNumber;
 
     @StringSensitive

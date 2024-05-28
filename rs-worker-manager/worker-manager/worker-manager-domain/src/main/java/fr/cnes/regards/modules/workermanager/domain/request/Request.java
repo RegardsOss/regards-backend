@@ -24,11 +24,14 @@ import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+
+import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+import org.hibernate.type.descriptor.jdbc.VarbinaryJdbcType;
+//import org.hibernate.annotations.TypeDef;
 import org.springframework.amqp.core.Message;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Map;
@@ -45,7 +48,6 @@ import java.util.Objects;
                    @Index(name = "idx_worker_request_content_type", columnList = "content_type") },
        uniqueConstraints = { @UniqueConstraint(name = "uk_t_workermanager_request_requestid",
                                                columnNames = { "request_id" }) })
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Request {
 
     @Id
@@ -77,7 +79,7 @@ public class Request {
     private String dispatchedWorkerType;
 
     @Column(name = "headers", columnDefinition = "jsonb")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @org.hibernate.annotations.Parameter(name = JsonTypeDescriptor.KEY_ARG_TYPE,
                                                               value = "java.lang.String"),
                          @org.hibernate.annotations.Parameter(name = JsonTypeDescriptor.ARG_TYPE,
@@ -91,17 +93,16 @@ public class Request {
      * In single worker context, this property is set but can be ignored.
      */
     @Column(name = "original_content", nullable = false)
-    @Type(type = "org.hibernate.type.BinaryType")
+    @JdbcType(VarbinaryJdbcType.class)
     @Lob
     private byte[] originalContent;
 
     @Column(name = "content", nullable = false)
-    @Type(type = "org.hibernate.type.BinaryType")
+    @JdbcType(VarbinaryJdbcType.class)
     @Lob
     private byte[] content;
 
-    @Column(name = "error")
-    @Type(type = "text")
+    @Column(name = "error", columnDefinition = "text")
     private String error;
 
     @Column(name = "step_number")

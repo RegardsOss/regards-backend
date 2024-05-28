@@ -19,9 +19,9 @@
 package fr.cnes.regards.framework.jpa.restriction;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Collection;
 
 /**
@@ -36,7 +36,7 @@ public class ValuesRestriction<T> {
     @Size(max = 1000, message = "List of values have a maximal size of 1000")
     @Schema(description = "List of accepted or refused values (according to the mode)")
     private Collection<T> values;
-    
+
     @NotNull
     @Schema(description = "Restriction mode to use")
     private ValuesRestrictionMode mode;
@@ -110,5 +110,19 @@ public class ValuesRestriction<T> {
 
     public void setMode(ValuesRestrictionMode mode) {
         this.mode = mode;
+    }
+
+    @Override
+    public String toString() {
+        return "ValuesRestriction{"
+               + "ignoreCase="
+               + ignoreCase
+               + ", values="
+               + values
+               + ", mode="
+               + mode
+               + ", matchMode="
+               + matchMode
+               + '}';
     }
 }

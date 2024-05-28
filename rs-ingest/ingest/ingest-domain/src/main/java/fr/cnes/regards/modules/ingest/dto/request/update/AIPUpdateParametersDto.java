@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.ingest.dto.request.update;
 
 import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import jakarta.validation.Valid;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 

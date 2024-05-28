@@ -23,19 +23,17 @@ import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 import org.springframework.util.Assert;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +46,7 @@ import java.util.Set;
  * @author Marc Sordi
  * @author Léo Mieulet
  */
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @Embeddable
 public class IngestMetadata {
 
@@ -73,7 +71,7 @@ public class IngestMetadata {
     @Valid
     @NotNull(message = IngestValidationMessages.MISSING_STORAGE_METADATA)
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                     value = "fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata") })
     private List<StorageMetadata> storages;
@@ -90,7 +88,8 @@ public class IngestMetadata {
     private String model;
 
     @Column(columnDefinition = "jsonb", nullable = false)
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> categories;
 
     public VersioningMode getVersioningMode() {

@@ -32,19 +32,17 @@ import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import io.vavr.control.Option;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Set;
@@ -56,7 +54,7 @@ import java.util.UUID;
  * @author cmertz
  * @author oroussel
  */
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @Entity
 @Table(name = "t_plugin_configuration",
        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
@@ -140,7 +138,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @Valid
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                     value = "fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam") })
     private Set<IPluginParam> parameters = Sets.newHashSet();

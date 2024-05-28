@@ -29,7 +29,9 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.annotation.ImportCandidates;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -164,7 +166,6 @@ public class GeometryIT {
 
     @Test
     public void multilinestring() {
-
         // Write
         Feature feature = new Feature();
         feature.setGeometry(GeometryFactory.createMultiLineString());

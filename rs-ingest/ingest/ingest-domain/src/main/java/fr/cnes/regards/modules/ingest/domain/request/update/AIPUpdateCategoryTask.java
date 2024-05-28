@@ -18,26 +18,28 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import java.util.List;
+
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.type.SqlTypes;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import java.util.List;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 
 /**
  * @author Léo Mieulet
  */
 @Entity(name = "UpdateCategoryAIPTask")
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 public class AIPUpdateCategoryTask extends AbstractAIPUpdateTask {
 
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private List<String> categories;
 
     public List<String> getCategories() {

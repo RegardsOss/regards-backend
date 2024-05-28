@@ -18,11 +18,8 @@
  */
 package fr.cnes.regards.modules.access.services.domain.ui;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.util.List;
 
 /**
@@ -30,7 +27,7 @@ import java.util.List;
  *
  * @author Sébastien Binda
  */
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @Entity
 @Table(name = "t_link_uiservice_dataset",
        uniqueConstraints = @UniqueConstraint(name = "uk_link_uiservice_dataset_dataset_id", columnNames = "dataset_id"))

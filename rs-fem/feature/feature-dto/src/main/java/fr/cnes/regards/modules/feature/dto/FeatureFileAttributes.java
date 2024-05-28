@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.feature.dto;
 
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.MimeType;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 /**
  * File attributes

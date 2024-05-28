@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.catalog.services.helper;
 import com.google.common.io.Files;
 import com.google.common.net.HttpHeaders;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -11,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 
 public class CatalogServiceResponseFactoryTest {

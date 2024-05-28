@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.delivery.dto.output.DeliveryResponseDto;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.core.MessageProperties;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * An amqp message for the delivery response event {@link DeliveryResponseDto} after a delivery request event

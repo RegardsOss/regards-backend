@@ -19,9 +19,8 @@
 package fr.cnes.regards.framework.modules.session.manager.domain;
 
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Corresponding steps of a source. Each source has X step among {@link StepTypeEnum} types.

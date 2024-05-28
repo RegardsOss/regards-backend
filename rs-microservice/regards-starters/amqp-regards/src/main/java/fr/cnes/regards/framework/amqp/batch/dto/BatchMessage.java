@@ -21,7 +21,7 @@ package fr.cnes.regards.framework.amqp.batch.dto;
 import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import org.springframework.amqp.core.Message;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Objects;
 
 /**

@@ -23,10 +23,10 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**

@@ -18,22 +18,22 @@
  */
 package fr.cnes.regards.modules.workermanager.domain.config;
 
+import java.util.List;
+import java.util.Objects;
+
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.workermanager.dto.WorkflowConfigDto;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
-import java.util.List;
-import java.util.Objects;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
 /**
  * Define a workflow of workers
@@ -42,7 +42,6 @@ import java.util.Objects;
  **/
 @Entity
 @Table(name = "t_workflow_config")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class WorkflowConfig {
 
     @Id
@@ -54,9 +53,9 @@ public class WorkflowConfig {
      * List of workers workflow
      */
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb",
-          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-                                    value = "fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep") })
+    @Type(value = JsonBinaryType.class,
+            parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+                    value = "fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep") })
     @NotEmpty
     @Valid
     private List<WorkflowStep> steps;

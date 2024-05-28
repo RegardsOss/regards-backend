@@ -20,12 +20,11 @@ package fr.cnes.regards.framework.modules.session.agent.domain.update;
 
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Store information related to {@link StepPropertyUpdateRequest}

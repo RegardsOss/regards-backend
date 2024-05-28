@@ -54,7 +54,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;

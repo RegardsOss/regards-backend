@@ -19,10 +19,9 @@
 package fr.cnes.regards.modules.model.domain.attributes;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * Custom attribute property

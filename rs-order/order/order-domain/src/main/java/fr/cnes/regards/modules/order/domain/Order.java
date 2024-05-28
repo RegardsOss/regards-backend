@@ -25,7 +25,8 @@ import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import org.hibernate.annotations.SortNatural;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.SortedSet;

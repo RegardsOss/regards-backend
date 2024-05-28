@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.util.Assert;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.util.Arrays;
 import java.util.List;
 

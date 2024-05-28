@@ -24,7 +24,7 @@ package fr.cnes.regards.framework.module.rest.exception;
  * @author Xavier-Alexandre Brochard
  * @since 1.1-SNAPSHOT
  */
-@SuppressWarnings("serial")
+
 public class EntityTransitionForbiddenException extends EntityOperationForbiddenException {
 
     public <T> EntityTransitionForbiddenException(final String entityIdentifier,

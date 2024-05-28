@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.ingest.domain.request.ingest;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 

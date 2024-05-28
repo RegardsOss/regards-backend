@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.jpa.test.valid.tenants;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 /**
  * Class TenantEntity

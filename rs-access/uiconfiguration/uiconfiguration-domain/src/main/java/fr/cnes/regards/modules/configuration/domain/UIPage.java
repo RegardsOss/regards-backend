@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
-import org.hibernate.annotations.Type;
-
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  * UI Page entity.
@@ -43,7 +41,7 @@ public class UIPage {
     @Column(length = 512)
     private String customIconURL;
 
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String title;
 
     public UIPage() {

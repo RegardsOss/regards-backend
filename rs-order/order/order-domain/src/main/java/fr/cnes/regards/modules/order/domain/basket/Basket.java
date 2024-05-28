@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.order.domain.basket;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.modules.order.dto.dto.BasketDatasetSelectionDto;
+import jakarta.persistence.*;
 import fr.cnes.regards.modules.order.dto.dto.BasketDto;
+import fr.cnes.regards.modules.order.dto.dto.BasketDatasetSelectionDto;
 import org.hibernate.annotations.SortNatural;
 
-import javax.persistence.*;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;

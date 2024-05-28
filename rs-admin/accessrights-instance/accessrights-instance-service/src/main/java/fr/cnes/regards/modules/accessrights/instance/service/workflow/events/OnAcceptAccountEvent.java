@@ -25,7 +25,7 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author Xavier-Alexandre Brochard
  */
-@SuppressWarnings("serial")
+
 public class OnAcceptAccountEvent extends ApplicationEvent {
 
     /**

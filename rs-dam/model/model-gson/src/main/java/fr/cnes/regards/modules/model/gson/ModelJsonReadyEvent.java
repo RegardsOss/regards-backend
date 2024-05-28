@@ -25,7 +25,7 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author Sébastien Binda
  */
-@SuppressWarnings("serial")
+
 public class ModelJsonReadyEvent extends ApplicationEvent {
 
     public ModelJsonReadyEvent(Object source) {

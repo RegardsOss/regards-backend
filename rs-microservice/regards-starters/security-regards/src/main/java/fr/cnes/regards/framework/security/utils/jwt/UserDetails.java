@@ -31,11 +31,6 @@ import java.util.Set;
 public class UserDetails implements Serializable {
 
     /**
-     * serialVersionUID field.
-     */
-    private static final long serialVersionUID = 4616778806989554358L;
-
-    /**
      * Tenant the user is requesting
      */
     private String tenant;

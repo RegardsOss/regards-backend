@@ -61,23 +61,23 @@ public final class RestrictionValidatorFactory {
         throw new UnsupportedOperationException(errorMessage);
     }
 
-    private static Validator getValidator(EnumerationRestriction pRestriction, String pAttributeKey) {
-        return new EnumerationPropertyValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(EnumerationRestriction restriction, String pAttributeKey) {
+        return new EnumerationPropertyValidator(restriction, pAttributeKey);
     }
 
-    private static Validator getValidator(DoubleRangeRestriction pRestriction, String pAttributeKey) {
-        return new DoubleRangePropertyValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(DoubleRangeRestriction restriction, String pAttributeKey) {
+        return new DoubleRangePropertyValidator(restriction, pAttributeKey);
     }
 
-    private static Validator getValidator(IntegerRangeRestriction pRestriction, String pAttributeKey) {
-        return new IntegerRangePropertyValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(IntegerRangeRestriction restriction, String pAttributeKey) {
+        return new IntegerRangePropertyValidator(restriction, pAttributeKey);
     }
 
-    private static Validator getValidator(PatternRestriction pRestriction, String pAttributeKey) {
-        return new PatternPropertyValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(PatternRestriction restriction, String pAttributeKey) {
+        return new PatternPropertyValidator(restriction, pAttributeKey);
     }
 
-    private static Validator getValidator(JsonSchemaRestriction pRestriction, String pAttributeKey) {
-        return new JsonSchemaPropertyValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(JsonSchemaRestriction restriction, String pAttributeKey) {
+        return new JsonSchemaPropertyValidator(restriction, pAttributeKey);
     }
 }

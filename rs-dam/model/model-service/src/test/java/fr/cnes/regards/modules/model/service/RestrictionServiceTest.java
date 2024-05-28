@@ -45,13 +45,13 @@ public class RestrictionServiceTest {
         restrictionService.afterPropertiesSet();
     }
 
-    private void testRestriction(PropertyType pPropertyType,
-                                 int pMatchedRestrictions,
-                                 RestrictionType... pAcceptableRestrictions) {
-        final List<String> restrictions = restrictionService.getRestrictions(pPropertyType);
-        Assert.assertEquals(pMatchedRestrictions, restrictions.size());
-        if (pAcceptableRestrictions != null) {
-            for (RestrictionType acceptable : pAcceptableRestrictions) {
+    private void testRestriction(PropertyType propertyType,
+                                 int matchedRestrictions,
+                                 RestrictionType... acceptableRestrictions) {
+        final List<String> restrictions = restrictionService.getRestrictions(propertyType);
+        Assert.assertEquals(matchedRestrictions, restrictions.size());
+        if (acceptableRestrictions != null) {
+            for (RestrictionType acceptable : acceptableRestrictions) {
                 Assert.assertTrue(restrictions.contains(acceptable.toString()));
             }
         }

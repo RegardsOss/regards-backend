@@ -49,6 +49,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.concurrent.Callable;

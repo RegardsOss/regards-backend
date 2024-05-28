@@ -62,3 +62,5 @@ Thumbs.db
 **/.hash
 **/.deps.hash
 **/.flattened-pom.xml
+
+rs-vendors/spring-data-jdbc-repository/.idea/

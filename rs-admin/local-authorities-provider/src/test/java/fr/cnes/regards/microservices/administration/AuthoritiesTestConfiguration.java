@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import jakarta.mail.internet.MimeMessage;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -35,8 +36,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.mail.javamail.JavaMailSender;
-
-import javax.mail.internet.MimeMessage;
 
 /**
  * Class JpaTenantConnectionConfiguration

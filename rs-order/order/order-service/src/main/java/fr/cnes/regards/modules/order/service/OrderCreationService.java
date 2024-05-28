@@ -535,7 +535,7 @@ public class OrderCreationService implements IOrderCreationService {
     /**
      * Event type (used by tests) to be notified when the order creation process is finished.
      */
-    @SuppressWarnings("serial")
+
     public static class OrderCreationCompletedEvent extends ApplicationEvent {
 
         private final Order order;

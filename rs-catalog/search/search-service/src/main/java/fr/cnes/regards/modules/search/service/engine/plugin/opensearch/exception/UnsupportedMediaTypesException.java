@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @author Sébastien Binda
  */
-@SuppressWarnings("serial")
+
 public class UnsupportedMediaTypesException extends ModuleException {
 
     private final List<MediaType> mediaTypes;

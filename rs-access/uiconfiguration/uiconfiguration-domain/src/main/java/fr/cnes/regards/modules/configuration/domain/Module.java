@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Class Module
@@ -74,8 +72,7 @@ public class Module {
     /**
      * Module configuration (JSON Object)
      */
-    @Column(nullable = false)
-    @Type(type = "text")
+    @Column(nullable = false, columnDefinition = "text")
     private String conf;
 
     /**

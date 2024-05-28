@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.filecatalog.amqp.output;
 import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 
 /**

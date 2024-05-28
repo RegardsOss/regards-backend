@@ -5,6 +5,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import jakarta.validation.Valid;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -12,7 +13,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -39,17 +39,17 @@ public class ProjectUsersClientMock implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid AccessRequestDto pDto) {
+    public ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid AccessRequestDto accessRequestDto) {
         return null;
     }
 
     @Override
-    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(Long pUserId) {
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(Long userId) {
         return null;
     }
 
     @Override
-    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(String pUserEmail) {
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(String userEmail) {
         return null;
     }
 
@@ -59,12 +59,12 @@ public class ProjectUsersClientMock implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(Long pUserId, ProjectUser pUpdatedProjectUser) {
+    public ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(Long userId, ProjectUser updatedProjectUser) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Void> removeProjectUser(Long pUserId) {
+    public ResponseEntity<Void> removeProjectUser(Long userId) {
         return null;
     }
 
@@ -79,7 +79,7 @@ public class ProjectUsersClientMock implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId,
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long roleId,
                                                                                             Pageable pageable) {
         return null;
     }

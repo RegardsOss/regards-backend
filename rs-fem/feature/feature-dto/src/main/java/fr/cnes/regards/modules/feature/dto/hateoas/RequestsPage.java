@@ -29,7 +29,7 @@ import java.util.List;
  * @param <T> the type of which the page consists.
  * @author Sébastien Binda
  */
-@SuppressWarnings("serial")
+
 public class RequestsPage<T> extends PageImpl<T> {
 
     private final RequestsInfo info;

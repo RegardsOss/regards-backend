@@ -22,13 +22,12 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -41,7 +40,6 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "t_session_manager")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Session {
 
     /**
@@ -87,7 +85,7 @@ public class Session {
     @Valid
     @NotNull
     @Column(name = "steps", columnDefinition = "jsonb")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                     value = "fr.cnes.regards.framework.modules.session.commons.domain.SessionStep") })
     private Set<SessionStep> steps = new HashSet<>();

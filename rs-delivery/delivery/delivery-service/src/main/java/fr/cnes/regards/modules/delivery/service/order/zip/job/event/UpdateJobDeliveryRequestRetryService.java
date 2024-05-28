@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.service.order.zip.job.OrderDeliveryZipJobProgressManager;
 import fr.cnes.regards.modules.delivery.service.submission.DeliveryRequestService;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -30,7 +31,6 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.UUID;
 
 /**

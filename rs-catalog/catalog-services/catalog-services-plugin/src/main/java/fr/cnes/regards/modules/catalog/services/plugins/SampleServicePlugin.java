@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFact
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.catalog.services.helper.ServiceHelper;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 

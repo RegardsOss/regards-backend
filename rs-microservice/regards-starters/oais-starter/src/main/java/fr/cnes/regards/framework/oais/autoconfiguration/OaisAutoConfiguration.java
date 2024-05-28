@@ -1,8 +1,7 @@
 package fr.cnes.regards.framework.oais.autoconfiguration;
 
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 
 /**
  * AutoConfiguration to give access to any Bean created into this starter. For now, it is only set for spring
@@ -10,8 +9,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@Configuration
-@AutoConfigureBefore(GsonAutoConfiguration.class)
+@AutoConfiguration(before = GsonAutoConfiguration.class)
 public class OaisAutoConfiguration {
 
 }

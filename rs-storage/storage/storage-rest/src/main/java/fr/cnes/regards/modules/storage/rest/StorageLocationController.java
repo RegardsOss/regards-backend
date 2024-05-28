@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
@@ -44,7 +45,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;

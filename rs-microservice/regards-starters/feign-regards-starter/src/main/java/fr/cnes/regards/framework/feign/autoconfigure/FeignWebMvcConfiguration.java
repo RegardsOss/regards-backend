@@ -19,8 +19,8 @@
 package fr.cnes.regards.framework.feign.autoconfigure;
 
 import fr.cnes.regards.framework.feign.security.FeignHandlerInterceptor;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -33,7 +33,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  *
  * @author CS
  */
-@Configuration
+@AutoConfiguration
 @ConditionalOnWebApplication
 public class FeignWebMvcConfiguration extends WebMvcConfigurationSupport {
 

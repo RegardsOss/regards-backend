@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Entity to describe a search history
@@ -52,8 +50,7 @@ public class SearchHistory {
      * JSON object. Holds multiple search criterion.
      */
     @NotNull
-    @Column(name = "configuration", nullable = false)
-    @Type(type = "text")
+    @Column(name = "configuration", nullable = false, columnDefinition = "text")
     private String configuration;
 
     /**

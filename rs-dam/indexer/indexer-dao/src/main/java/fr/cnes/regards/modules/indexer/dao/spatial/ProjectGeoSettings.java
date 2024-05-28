@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.indexer.dao.spatial;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
@@ -37,6 +36,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
+
+import static fr.cnes.regards.framework.feign.security.FeignSecurityManager.asSystem;
+import static fr.cnes.regards.framework.feign.security.FeignSecurityManager.reset;
 
 /**
  * Projects settings concerning geospatial behavior.<br/>
@@ -73,7 +75,7 @@ public class ProjectGeoSettings {
                                                                                            public Pair<Boolean, Crs> load(
                                                                                                String key) {
                                                                                                try {
-                                                                                                   FeignSecurityManager.asSystem();
+                                                                                                   asSystem();
 
                                                                                                    ResponseEntity<EntityModel<Project>> response = projectsClient.retrieveProject(
                                                                                                        tenantResolver.getTenant());
@@ -100,11 +102,10 @@ public class ProjectGeoSettings {
                                                                                                                    "Error while asking project client: Error %d - %s",
                                                                                                                    response.getStatusCode()
                                                                                                                            .value(),
-                                                                                                                   response.getStatusCode()
-                                                                                                                           .getReasonPhrase())));
+                                                                                                                   ((HttpStatus) response.getStatusCode()).getReasonPhrase())));
                                                                                                    }
                                                                                                } finally {
-                                                                                                   FeignSecurityManager.reset();
+                                                                                                   reset();
                                                                                                }
                                                                                            }
                                                                                        });

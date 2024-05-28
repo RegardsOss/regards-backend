@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class UnexpectedDynamicParameterException extends ModuleException {
 
     public UnexpectedDynamicParameterException(String errorMessage) {

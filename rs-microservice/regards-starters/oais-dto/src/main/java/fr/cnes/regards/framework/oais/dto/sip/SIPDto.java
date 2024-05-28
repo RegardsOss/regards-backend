@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;

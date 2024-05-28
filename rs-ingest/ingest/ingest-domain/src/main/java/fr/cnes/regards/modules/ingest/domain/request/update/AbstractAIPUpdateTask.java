@@ -20,8 +20,9 @@ package fr.cnes.regards.modules.ingest.domain.request.update;
 
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 

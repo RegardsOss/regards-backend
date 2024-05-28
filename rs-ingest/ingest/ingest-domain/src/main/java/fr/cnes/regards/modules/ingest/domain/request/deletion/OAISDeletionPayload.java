@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Payload for {@link OAISDeletionRequest}

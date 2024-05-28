@@ -30,11 +30,10 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 /**
  * Endpoints to handle Users registration for a project.

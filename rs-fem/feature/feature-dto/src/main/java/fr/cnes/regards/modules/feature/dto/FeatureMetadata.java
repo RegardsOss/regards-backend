@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.Assert;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

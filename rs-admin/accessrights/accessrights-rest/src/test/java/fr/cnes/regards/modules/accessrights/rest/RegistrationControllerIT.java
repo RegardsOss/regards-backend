@@ -181,7 +181,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
                                       newAccessRequest.getLastName(),
                                       newAccessRequest.getPassword());
 
-        Mockito.when(accountsClient.retrieveAccounByEmail(newAccessRequest.getEmail()))
+        Mockito.when(accountsClient.retrieveAccountByEmail(newAccessRequest.getEmail()))
                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
                            new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
@@ -254,7 +254,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         //lets mock the feign clients
         Account account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
 
-        Mockito.when(accountsClient.retrieveAccounByEmail(account.getEmail()))
+        Mockito.when(accountsClient.retrieveAccountByEmail(account.getEmail()))
                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         performDefaultPut(apiAccessDeny, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
@@ -317,7 +317,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
                                       "projectUser.getLastName()",
                                       "projectUser.getPassword()");
 
-        Mockito.when(accountsClient.retrieveAccounByEmail(projectUser.getEmail()))
+        Mockito.when(accountsClient.retrieveAccountByEmail(projectUser.getEmail()))
                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         // Endpoint

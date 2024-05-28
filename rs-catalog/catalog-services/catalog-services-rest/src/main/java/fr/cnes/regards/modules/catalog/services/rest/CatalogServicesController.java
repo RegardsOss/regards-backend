@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.service.IServiceManager;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**

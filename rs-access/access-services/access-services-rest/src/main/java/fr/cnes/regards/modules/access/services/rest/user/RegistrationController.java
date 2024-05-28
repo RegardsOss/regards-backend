@@ -22,12 +22,11 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 /**
  * Endpoints to handle Users registration for a project.

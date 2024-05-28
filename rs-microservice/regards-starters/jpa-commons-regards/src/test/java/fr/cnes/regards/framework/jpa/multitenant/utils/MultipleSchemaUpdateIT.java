@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.jpa.multitenant.utils;
 import fr.cnes.regards.framework.jpa.autoconfigure.RegardsFlywayAutoConfiguration;
 import fr.cnes.regards.framework.jpa.utils.*;
 import fr.cnes.regards.framework.modules.person.Person;
+import jakarta.persistence.Entity;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,7 +38,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.persistence.Entity;
 import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.io.IOException;

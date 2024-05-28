@@ -3,9 +3,8 @@ package fr.cnes.regards.modules.crawler.domain;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -83,8 +82,7 @@ public class DatasourceIngestion {
     /**
      * When status is ERROR, the exception stack trace
      */
-    @Column
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String stackTrace;
 
     public DatasourceIngestion() {

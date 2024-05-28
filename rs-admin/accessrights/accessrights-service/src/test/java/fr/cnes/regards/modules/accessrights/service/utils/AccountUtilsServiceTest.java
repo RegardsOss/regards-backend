@@ -95,7 +95,7 @@ class AccountUtilsServiceTest {
     @Test
     void retrieveAccount() throws EntityInvalidException {
         // Given
-        Mockito.when(accountsClient.retrieveAccounByEmail(EMAIL))
+        Mockito.when(accountsClient.retrieveAccountByEmail(EMAIL))
                .thenReturn(ResponseEntity.ok(EntityModel.of(expectedAccount)));
         // When
         Account retrievedAccount = accountUtilsService.retrieveAccount(EMAIL);
@@ -106,7 +106,7 @@ class AccountUtilsServiceTest {
     @Test
     void retrieveAccountWhenNotFound() throws EntityInvalidException {
         // Given
-        Mockito.when(accountsClient.retrieveAccounByEmail(EMAIL)).thenReturn(ResponseEntity.notFound().build());
+        Mockito.when(accountsClient.retrieveAccountByEmail(EMAIL)).thenReturn(ResponseEntity.notFound().build());
         // When
         Account retrievedAccount = accountUtilsService.retrieveAccount(EMAIL);
         // Then

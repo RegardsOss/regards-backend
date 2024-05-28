@@ -19,8 +19,7 @@
 package fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.pojo;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Class Project

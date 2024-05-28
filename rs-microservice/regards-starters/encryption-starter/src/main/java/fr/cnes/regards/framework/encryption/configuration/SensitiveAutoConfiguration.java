@@ -22,15 +22,15 @@ import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.sensitive.ISensitiveAnnotationEncryptionService;
 import fr.cnes.regards.framework.encryption.sensitive.StringSensitiveAnnotationEncryptionService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Configure service to handle sensitive annotations
  *
  * @author Iliana Ghazali
  **/
-@Configuration
+@AutoConfiguration
 public class SensitiveAutoConfiguration {
 
     @Bean

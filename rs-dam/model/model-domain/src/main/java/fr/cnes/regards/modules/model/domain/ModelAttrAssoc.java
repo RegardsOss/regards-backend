@@ -30,9 +30,8 @@ import fr.cnes.regards.modules.model.domain.schema.Computation;
 import fr.cnes.regards.modules.model.domain.schema.NoParamPluginType;
 import fr.cnes.regards.modules.model.domain.schema.ParamPluginType;
 import fr.cnes.regards.modules.model.domain.validator.ComputedAttribute;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Model - attribute association.</br>

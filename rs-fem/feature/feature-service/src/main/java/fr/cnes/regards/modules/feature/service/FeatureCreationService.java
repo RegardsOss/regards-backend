@@ -57,6 +57,8 @@ import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +71,6 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;

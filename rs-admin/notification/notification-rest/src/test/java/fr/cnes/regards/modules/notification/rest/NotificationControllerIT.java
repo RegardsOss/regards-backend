@@ -1,5 +1,24 @@
 package fr.cnes.regards.modules.notification.rest;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -21,23 +40,6 @@ import fr.cnes.regards.modules.notification.service.SendingScheduler;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
-import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import java.util.Arrays;
-import java.util.HashSet;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

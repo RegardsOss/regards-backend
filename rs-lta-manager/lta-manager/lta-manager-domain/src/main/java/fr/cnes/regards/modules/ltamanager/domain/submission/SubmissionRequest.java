@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.ltamanager.domain.submission;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ltamanager.domain.settings.DatatypeParameter;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import org.hibernate.annotations.TypeDef;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import jakarta.annotation.Nullable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -43,7 +41,6 @@ import java.util.Objects;
  **/
 @Entity
 @Table(name = "t_submission_requests")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class SubmissionRequest {
 
     public static final String SUBMISSION_STATUS_FIELD_NAME = "submissionStatus";

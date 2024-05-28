@@ -21,7 +21,7 @@ package fr.cnes.regards.framework.oais.dto;
 
 import org.springframework.util.MimeType;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class SyntaxDto {
 

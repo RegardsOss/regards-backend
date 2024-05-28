@@ -18,21 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
+
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
-import javax.persistence.*;
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import jakarta.persistence.*;
 
 /**
  * Request to handle deletion of an OAIS product (sip/aips)
@@ -41,14 +40,14 @@ import java.util.UUID;
  * @author Sébastien Binda
  */
 @Entity(name = RequestTypeConstant.OAIS_DELETION_VALUE)
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 public class OAISDeletionRequest extends AbstractRequest {
 
     /**
      * request configuration
      */
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(JsonBinaryType.class)
     private OAISDeletionPayload config;
 
     /**

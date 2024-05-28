@@ -23,7 +23,7 @@ package fr.cnes.regards.framework.microservice.maintenance;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class MaintenanceException extends RuntimeException {
 
     public MaintenanceException(final String pMessage, final Throwable pCause) {

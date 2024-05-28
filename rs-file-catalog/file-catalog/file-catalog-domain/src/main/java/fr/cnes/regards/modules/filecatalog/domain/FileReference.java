@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;

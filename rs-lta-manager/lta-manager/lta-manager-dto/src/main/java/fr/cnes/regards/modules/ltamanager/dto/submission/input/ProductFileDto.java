@@ -20,12 +20,12 @@ package fr.cnes.regards.modules.ltamanager.dto.submission.input;
 
 import fr.cnes.regards.modules.ltamanager.dto.submission.LtaDataType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.URL;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.beans.ConstructorProperties;
 import java.util.Objects;
 

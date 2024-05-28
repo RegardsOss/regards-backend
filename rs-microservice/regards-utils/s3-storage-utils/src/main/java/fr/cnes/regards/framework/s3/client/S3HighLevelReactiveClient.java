@@ -51,7 +51,7 @@ import reactor.util.function.Tuple2;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.RestoreObjectResponse;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;

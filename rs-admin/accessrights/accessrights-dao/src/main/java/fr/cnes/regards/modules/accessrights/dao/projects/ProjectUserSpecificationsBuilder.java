@@ -21,11 +21,10 @@ package fr.cnes.regards.modules.accessrights.dao.projects;
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
-
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
 
 /**
  * @author Stephane Cortine

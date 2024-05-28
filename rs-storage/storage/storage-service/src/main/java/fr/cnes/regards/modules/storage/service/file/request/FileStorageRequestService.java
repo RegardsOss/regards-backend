@@ -82,7 +82,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeTypeUtils;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;

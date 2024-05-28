@@ -20,8 +20,7 @@ package fr.cnes.regards.modules.dam.domain.entities;
 
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "t_entity_request",

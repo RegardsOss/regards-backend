@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class InvalidFileLocation extends ModuleException {
 
     private static final String MESSAGE_FORMAT = "File %s is not stored locally. Please use correct URI!";

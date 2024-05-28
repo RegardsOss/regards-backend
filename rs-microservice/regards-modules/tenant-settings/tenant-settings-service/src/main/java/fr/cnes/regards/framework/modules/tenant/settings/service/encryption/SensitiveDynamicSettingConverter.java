@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.modules.tenant.settings.service.encryption;
 
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * Convert {@link DynamicTenantSetting}s by encrypting, decrypting or masking sensitive values.

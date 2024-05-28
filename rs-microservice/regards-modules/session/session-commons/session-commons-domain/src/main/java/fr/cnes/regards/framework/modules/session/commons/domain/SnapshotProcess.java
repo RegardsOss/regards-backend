@@ -19,9 +19,9 @@
 package fr.cnes.regards.framework.modules.session.commons.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;

@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.s3.domain;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.ZonedDateTime;
 
 /**

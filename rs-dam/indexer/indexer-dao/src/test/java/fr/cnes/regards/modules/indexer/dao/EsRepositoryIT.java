@@ -175,13 +175,13 @@ public class EsRepositoryIT {
         private <KK, V> Type multimapTypeToMapType(Type type) {
             final Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
             assert typeArguments.length == 2;
-            @SuppressWarnings({ "unchecked", "serial" })
+            @SuppressWarnings("unchecked")
             final com.google.common.reflect.TypeToken<Map<KK, Collection<V>>> mapTypeToken = new com.google.common.reflect.TypeToken<Map<KK, Collection<V>>>() {
 
-            }.where(new TypeParameter<KK>() {
+            }.where(new TypeParameter<>() {
 
              }, (com.google.common.reflect.TypeToken<KK>) com.google.common.reflect.TypeToken.of(typeArguments[0]))
-             .where(new TypeParameter<V>() {
+             .where(new TypeParameter<>() {
 
              }, (com.google.common.reflect.TypeToken<V>) com.google.common.reflect.TypeToken.of(typeArguments[1]));
             return mapTypeToken.getType();

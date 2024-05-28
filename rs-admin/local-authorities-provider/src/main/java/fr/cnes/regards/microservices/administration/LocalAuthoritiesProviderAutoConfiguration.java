@@ -4,14 +4,14 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@Configuration
+@AutoConfiguration
 public class LocalAuthoritiesProviderAutoConfiguration {
 
     /**

@@ -30,6 +30,13 @@ import fr.cnes.regards.modules.emails.dao.EmailRequestRepository;
 import fr.cnes.regards.modules.emails.domain.EmailRequest;
 import fr.cnes.regards.modules.emails.exception.RsEmailException;
 import fr.cnes.regards.modules.notification.service.IInstanceNotificationService;
+import jakarta.mail.Address;
+import jakarta.mail.MessagingException;
+import jakarta.mail.SendFailedException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import nl.altindag.log.LogCaptor;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -44,14 +51,6 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.mail.Address;
-import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMessage.RecipientType;
-import javax.mail.internet.MimeMultipart;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -100,7 +99,7 @@ public class EmailRequestServiceIT extends AbstractRegardsIT {
      * properly sent and correspond to the expected.
      * </p>
      * <b>WARNING:</b><br>
-     * The Green Mail server allows to retrieve mail as {@link MimeMessage}, and not {@link SimpleMailMessage}!
+     * The Green Mail server allows to retrieve mail as {@link jakarta.mail.internet.MimeMessage}, and not {@link SimpleMailMessage}!
      * </p>
      * About the library:<br>
      * GreenMail is an open source, intuitive and easy-to-use test suite of email servers for both receiving and
@@ -147,7 +146,7 @@ public class EmailRequestServiceIT extends AbstractRegardsIT {
     /**
      * Check that the system allows to send an email to a list of recipients.
      *
-     * @throws MessagingException Exception thrown by getters of {@link MimeMessage}
+     * @throws jakarta.mail.MessagingException Exception thrown by getters of {@link jakarta.mail.internet.MimeMessage}
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
@@ -286,7 +285,7 @@ public class EmailRequestServiceIT extends AbstractRegardsIT {
         // Check mail recipients
         List<String> expectedRecipients = Arrays.asList(expected.getTo());
 
-        List<Address> resultAddresses = Arrays.asList(result.getRecipients(RecipientType.TO));
+        List<Address> resultAddresses = Arrays.asList(result.getRecipients(MimeMessage.RecipientType.TO));
         List<String> resultRecipients = resultAddresses.stream().map(Address::toString).collect(Collectors.toList());
 
         assertNotNull(expectedRecipients);

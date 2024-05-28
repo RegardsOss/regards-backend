@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@SuppressWarnings("serial")
+
 public class NewFragmentAttributeEvent extends ApplicationEvent {
 
     /**

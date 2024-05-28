@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class AccessRightFilterException extends ModuleException {
 
     public AccessRightFilterException(String pErrorMessage) {

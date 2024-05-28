@@ -53,124 +53,174 @@
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-deploy.skip>true</maven-deploy.skip>
-        <regards.version>1.16.0-SNAPSHOT</regards.version>
+<!--        <regards.version>1.16.0-SNAPSHOT</regards.version>-->
+        <regards.version>featureupgrade-all-java-deps-SNAPSHOT</regards.version>
         <revision>${regards.version}</revision>
 
+        <!-- COTS dependencies needed by vulnerabilities (should be removed when dependency is resolved with safe
+        version) -->
+        <xstream.version>1.4.20</xstream.version>
+        <!-- used by eureka-core -->
+        <woodstox-core.version>6.6.0</woodstox-core.version>
+        <!-- used by cdm-core -->
+        <protobuf-java.version>3.25.2</protobuf-java.version>
+
         <!-- COTS -->
-        <!-- xml -->
-        <org.dom4j.version>2.1.3</org.dom4j.version>
+        <!-- XML, el, jakarta, ... -->
+        <jakarta-el.version>5.0.0-M1</jakarta-el.version>
+        <jakarta.activation-api.version>2.1.2</jakarta.activation-api.version>
+        <jakarta.validation-api.version>3.1.0-M1</jakarta.validation-api.version>
+        <jakarta.servlet-api.version>6.1.0-M1</jakarta.servlet-api.version>
+        <jakarta.xml.bind-api.version>4.0.1</jakarta.xml.bind-api.version>
+        <dom4j.version>2.1.4</dom4j.version>
+        <snakeyaml.version>2.2</snakeyaml.version>
 
         <!-- spring -->
-        <spring-cloud-dependencies.version>2021.0.1</spring-cloud-dependencies.version>
-        <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
-        <org.springdoc.springdoc-openapi-hateoas.version>1.6.8</org.springdoc.springdoc-openapi-hateoas.version>
-        <com.icegreen.greenmail-spring.version>1.6.6</com.icegreen.greenmail-spring.version>
-        <!-- Take a version that retrieve a version of Hibernate that correctly
-        manage uk naming while inheriting classes with JOINED strategy -->
-        <spring.boot.version>2.6.4</spring.boot.version>
+        <spring-cloud-dependencies.version>2023.0.1</spring-cloud-dependencies.version>
+        <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
+        <com.icegreen.greenmail-spring.version>2.0.1</com.icegreen.greenmail-spring.version>
+        <spring.boot.version>3.2.5</spring.boot.version>
         <!-- spring relies on junit5 for testing. add junit vintage to ensure retro-compatibility for older versions of junit -->
+        <!-- FIXME : phrase ci-dessus à vérifier, version 5.10.1 dispo -->
         <junit-vintage-engine.version>5.8.2</junit-vintage-engine.version>
-        <!-- Spring OAuth is no more into spring-boot, only client -->
-        <spring-security-oauth2-autoconfigure>2.6.4</spring-security-oauth2-autoconfigure>
-        <org.springframework.security.oauth.version>2.5.1.RELEASE</org.springframework.security.oauth.version>
         <org.springframework.security.jwt.version>1.1.1.RELEASE</org.springframework.security.jwt.version>
-        <org.springframework.hateoas.version>1.3.7</org.springframework.hateoas.version>
+        <!-- overriding spring-security-jwt bcpkix version with this one -->
+        <bcpkix.version>1.78.1</bcpkix.version>
+        <!-- Cryptographic packages updates needed by security behaviours -->
+        <!-- spring-cloud-starter 4.1.2 -> spring-security-rsa 1.1.2 -> bcprov-jdk18on 1.77 which contains a vulnerability corrected in 1.78 -->
+        <!-- spring-security-rsa 1.1.3 -> bcprov-jdk18on 1.78 -->
+        <spring-security-rsa.version>1.1.3</spring-security-rsa.version>
+        <!-- By the way bcprov-jdk18on 1.78.1 is available so... -->
+        <bcprov-jdk18on.version>${bcpkix.version}</bcprov-jdk18on.version>
+
+        <org.springframework.hateoas.version>2.2.0</org.springframework.hateoas.version>
+
+        <!-- Hibernate -->
+        <!-- FIXME : 6.4.0.Final available but array_append function call doesn't work in SpecificationUtils, a priori
+             FIXME due to PostgreSQL dialect not compatible with PostegreSQL 12-, to be checked whten Regards will
+             FIXME use PostgreSQL 12+ (i.e. 17) -->
+        <hibernate.version>6.3.2.Final</hibernate.version>
+        <hypersistence.version>3.6.1</hypersistence.version>
+        <!-- Hibernate 6.3.2.Final has a dependency to antlr4-runtime 4.10.1 but spring-data-jpa has one to 4.13.1,
+        a message is then logged at startup. By the way, both checked version with same class "HqlLexer" that checks
+         antlr runtime version against compile one so in all cases, one will necessitary complain.
+          All problems should be solved when Postgres 12+ will be used -> Hibernate 6.4+ -> antlr4-runtime 13+ -->
+        <antlr4-runtime.version>4.13.1</antlr4-runtime.version>
 
         <!-- Swagger -->
-        <org.springdoc.springdoc-openapi-ui.version>1.6.8</org.springdoc.springdoc-openapi-ui.version>
-        <io.swagger.core.v3.swagger-core.version>2.2.0</io.swagger.core.v3.swagger-core.version>
+        <swagger.version>2.2.21</swagger.version>
 
-        <!-- hsqldb is into spring-boot dependencies with version 2.4.1, but some dao use it without spring-boot -->
-        <hsqldb.hsqldb.version>2.4.1</hsqldb.hsqldb.version>
+        <!-- H2 version from spring-boot-dependencies (2.1.214) has vulnerabilities. Best using H2 than HSQLDB because
+        of case-insensitive bullshits -->
+        <h2.version>2.2.224</h2.version>
 
         <!-- elastic search -->
-        <org.elasticsearch.version>7.17.1</org.elasticsearch.version>
+        <!-- FIXME : 8.11.4 available -->
+        <org.elasticsearch.version>7.17.14</org.elasticsearch.version>
+        <!-- Better use same Lucene version as the one used by Elasticsearch (7.17.14 -> 8.11.1) (8.11.4 -> 9.9.1) -->
+        <lucene.version>8.11.1</lucene.version>
+
+        <!-- HTTP client : use  version 4 as long as feign-httpclient continue to use this version
+        Note : version 5 is org.apache.httpcomponents.client5:httpclient5
+        -->
+        <httpclient.version>4.5.14</httpclient.version>
 
         <!-- Maven -->
-        <org.apache.maven.maven-plugin-api.version>3.8.6</org.apache.maven.maven-plugin-api.version>
-        <org.apache.maven.plugin-tools.maven-plugin-annotations.version>3.6.4</org.apache.maven.plugin-tools.maven-plugin-annotations.version>
-        <org.apache.maven.plugins.maven-enforcer-plugin.version>3.1.0</org.apache.maven.plugins.maven-enforcer-plugin.version>
-        <org.apache.maven.plugins.maven-surefire-plugin.version>2.22.2</org.apache.maven.plugins.maven-surefire-plugin.version>
-        <org.apache.maven.plugins.maven-failsafe-plugin.version>2.22.2</org.apache.maven.plugins.maven-failsafe-plugin.version>
-        <org.apache.maven.plugins.maven-jar-plugin.version>3.2.2</org.apache.maven.plugins.maven-jar-plugin.version>
-        <org.apache.maven.plugins.maven-deploy-plugin.version>3.0.0</org.apache.maven.plugins.maven-deploy-plugin.version>
-        <org.apache.maven.plugins.maven-compiler-plugin.version>3.10.1</org.apache.maven.plugins.maven-compiler-plugin.version>
-        <org.apache.maven.plugins.maven-source-plugin.version>3.2.1</org.apache.maven.plugins.maven-source-plugin.version>
-        <org.apache.maven.plugins.maven-resources-plugin.version>3.3.0</org.apache.maven.plugins.maven-resources-plugin.version>
-        <org.apache.maven.plugins.maven-war-plugin.version>3.3.2</org.apache.maven.plugins.maven-war-plugin.version>
-        <org.apache.maven.plugins.maven-plugin-plugin.version>3.6.4</org.apache.maven.plugins.maven-plugin-plugin.version>
-        <org.apache.maven.plugins.maven-assembly-plugin.version>3.4.2</org.apache.maven.plugins.maven-assembly-plugin.version>
-        <org.codehaus.mojo.flatten-maven-plugin.version>1.3.0</org.codehaus.mojo.flatten-maven-plugin.version>
-        <org.codehaus.mojo.versions-maven-plugin.version>2.12.0</org.codehaus.mojo.versions-maven-plugin.version>
-        <org.jacoco.jacoco-maven-plugin.version>0.8.8</org.jacoco.jacoco-maven-plugin.version>
-        <org.apache.maven.plugin.maven-shade-plugin.version>3.3.0</org.apache.maven.plugin.maven-shade-plugin.version>
-        <org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version>6.0.0.Final</org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version>
+        <maven-plugin-api.version>3.9.6</maven-plugin-api.version>
+        <maven-plugin-annotations.version>3.11.0</maven-plugin-annotations.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
+        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
+        <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <maven-war-plugin.version>3.4.0</maven-war-plugin.version>
+        <maven-plugin-plugin.version>3.11.0</maven-plugin-plugin.version>
+        <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
+        <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
+        <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
+        <maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
+        <hibernate-enhance-maven-plugin.version>${hibernate.version}</hibernate-enhance-maven-plugin.version>
+        <docker-maven-plugin.version>1.2.2</docker-maven-plugin.version>
+        <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
+        <spring-boot-maven-plugin.version>${spring.boot.version}</spring-boot-maven-plugin.version>
+        <!-- 6.2.1 available but database lock tests fail with this version -->
+        <spring-integration-jdbc.version>5.5.20</spring-integration-jdbc.version>
+        <asciidoctor-maven-plugin.version>2.2.4</asciidoctor-maven-plugin.version>
         <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
-        <org.springframework.boot.spring-boot-maven-plugin.version>2.6.4</org.springframework.boot.spring-boot-maven-plugin.version>
-        <org.springframework.integration.spring-integration-jdbc.version>5.5.9</org.springframework.integration.spring-integration-jdbc.version>
-        <org.asciidoctor.asciidoctor-maven-plugin.version>2.2.2</org.asciidoctor.asciidoctor-maven-plugin.version>
 
         <!-- Specify version to avoid incompatibility between elasticsearch and spring ones -->
         <!-- log -->
         <logback-ext-spring.version>0.1.5</logback-ext-spring.version>
-        <org.sl4j.version>1.7.36</org.sl4j.version>
-        <org.ch.qos.logback.version>1.2.10</org.ch.qos.logback.version>
+        <jcl-over-slf4j.version>2.0.13</jcl-over-slf4j.version>
+        <logback.version>1.5.6</logback.version>
         <!-- server -->
-        <io.netty.version>4.1.73.Final</io.netty.version>
-        <com.mchange.c3p0.version>0.9.5.2</com.mchange.c3p0.version>
-        <org.mockftpserver.version>2.7.1</org.mockftpserver.version>
-        <schedlock.version>4.8.0</schedlock.version>
-        <net.sf.expectit.expectit-core.version>0.9.0</net.sf.expectit.expectit-core.version>
-        <wiremock.version>2.27.2</wiremock.version>
-        <com.jcraft.jsch.version>0.1.55</com.jcraft.jsch.version>
+        <netty.version>4.1.108.Final</netty.version>
+        <MockFtpServer.version>3.1.0</MockFtpServer.version>
+        <schedlock.version>5.10.2</schedlock.version>
+        <expectit-core.version>0.9.0</expectit-core.version>
+        <wiremock.version>3.3.1</wiremock.version>
+        <jsch.version>0.1.55</jsch.version>
         <!-- geo -->
-        <org.locationtech.jts.version>1.18.2</org.locationtech.jts.version>
-        <org.locationtech.spatial4j.version>0.8</org.locationtech.spatial4j.version>
-        <org.geotools.version>19.1</org.geotools.version>
-        <org.hipparchus.version>1.3</org.hipparchus.version>
-        <nl.pdok.gml3-jts.version>17.0.0</nl.pdok.gml3-jts.version>
-        <org.geolatte.geolatte.geojson.version>1.8.2</org.geolatte.geolatte.geojson.version>
+        <jts.version>1.19.0</jts.version>
+        <spatial4j.version>0.8</spatial4j.version>
+        <geotools.version>29.1</geotools.version>
+        <hipparchus-geometry.version>3.0</hipparchus-geometry.version>
+        <gml3-jts.version>17.0.0</gml3-jts.version>
+        <geolatte-geojson.version>1.9.1</geolatte-geojson.version>
         <!-- json -->
-        <com.jsoniter.version>0.9.23</com.jsoniter.version>
-        <logstash.logback.version>7.0.1</logstash.logback.version>
-        <com.networknt.json.schema.validation>1.0.49</com.networknt.json.schema.validation>
+        <jsoniter.version>0.9.23</jsoniter.version>
+        <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
+        <!-- TODO : Beware, 1.4.0 creates a strange default validator which makes validate() failed -->
+        <!-- TODO (cf. RestrictionServiceTest.test_invalid_json_schema_restriction) -->
+        <json-schema-validator.version>1.3.1</json-schema-validator.version>
+        <json-path.version>2.9.0</json-path.version>
         <!-- google -->
-        <com.google.guava.version>31.1-jre</com.google.guava.version>
-        <com.google.code.gson.version>2.10.1</com.google.code.gson.version>
-        <com.google.auto-service.version>1.0-rc7</com.google.auto-service.version>
+        <guava.version>33.0.0-jre</guava.version>
+        <gson.version>2.10.1</gson.version>
 
         <!-- apache -->
-        <org.apache.commons.compress.version>1.20</org.apache.commons.compress.version>
-        <org.apache.commons.lang3.version>3.12.0</org.apache.commons.lang3.version>
-        <org.apache.commons.io.version>2.11.0</org.apache.commons.io.version>
-        <org.apache.commons.digester.version>3.2</org.apache.commons.digester.version>
-        <org.apache.commons.bean-utils.version>1.9.4</org.apache.commons.bean-utils.version>
-        <org.apache.poi.poi-ooxml.version>3.15</org.apache.poi.poi-ooxml.version>
-        <org.apache.commons.csv>1.10.0</org.apache.commons.csv>
+        <commons-compress.version>1.26.1</commons-compress.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <commons-io.version>2.15.1</commons-io.version>
+        <commons-digester3.version>3.2</commons-digester3.version>
+        <commons-beanutils.version>1.9.4</commons-beanutils.version>
+        <poi-ooxml.version>5.2.5</poi-ooxml.version>
+        <commons-csv.version>1.10.0</commons-csv.version>
+        <commons.net.version>3.10.0</commons.net.version>
+        <commons-text.version>1.11.0</commons-text.version>
+        <!-- former ldap-api -->
+        <api-all.version>2.1.5</api-all.version>
 
         <!-- utils -->
-        <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
-        <lombok.version>1.18.22</lombok.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <lombok.version>1.18.32</lombok.version>
         <awaitility.version>4.2.0</awaitility.version>
-        <io.jsonwebtoken.jjwt.version>0.11.2</io.jsonwebtoken.jjwt.version>
-        <org.reflections.reflections.version>0.9.10</org.reflections.reflections.version>
-        <org.freemarker.freemarker.version>2.3.25-incubating</org.freemarker.freemarker.version>
-        <resilience4j.version>1.7.1</resilience4j.version>
-        <caffeine.version>2.8.5</caffeine.version>
-        <vavr.version>0.10.2</vavr.version>
+        <!-- Don't upgrade to 0.12 -->
+        <jjwt.version>0.11.5</jjwt.version>
+        <reflections.version>0.10.2</reflections.version>
+        <freemarker.version>2.3.32</freemarker.version>
+        <caffeine.version>3.1.8</caffeine.version>
+        <vavr.version>0.10.4</vavr.version>
+        <vavr-jackson.version>0.10.3</vavr-jackson.version>
         <vavr-gson.version>0.10.2</vavr-gson.version>
-        <lucene.queryparser.version>8.8.2</lucene.queryparser.version>
-        <edu.ucar.netcdf.version>4.2.20</edu.ucar.netcdf.version>
-        <commons.net.version>3.3</commons.net.version>
-        <cz.jirutka.spring.spring-data-jdbc-repository.version>0.5.0</cz.jirutka.spring.spring-data-jdbc-repository.version>
-        <com.hubspot.jinjava.version>2.6.0</com.hubspot.jinjava.version>
+        <r2dbc-migrate-spring-boot-starter.version>3.0.6</r2dbc-migrate-spring-boot-starter.version>
+        <!-- Do not upgrade this version else r2dbc-migrate fails -->
+        <r2dbc-postgresql.version>1.0.2.RELEASE</r2dbc-postgresql.version>
+        <netcdf-java.version>5.3.3</netcdf-java.version>
+        <!-- Forked project to be compatible with last Spring version (inside module rs-vendors) -->
+        <spring-data-jdbc-repository.version>0.6.0-cs</spring-data-jdbc-repository.version>
+        <jinjava.version>2.7.1</jinjava.version>
+        <jgit.version>6.7.0.202309050840-r</jgit.version>
         <!-- Jackson -->
-        <com.fasterxml.jackson.datatype.jackson-datatype-jsr310.version>2.12.5</com.fasterxml.jackson.datatype.jackson-datatype-jsr310.version>
-
-        <!-- TODO : Migrate to org.apache.commons:commons-lang3 -->
-        <commons-lang.commons-lang.version>2.6</commons-lang.commons-lang.version>
+        <jackson.version>2.17.1</jackson.version>
+        <jettison.version>1.5.4</jettison.version>
+        <jackson-datatype-jsr310.version>2.17.1</jackson-datatype-jsr310.version>
 
         <!-- amazon -->
+        <!-- FIXME : à passer en 2.21.10, attention, ça peut être violent -->
         <software.amazon.awssdk.s3.version>2.17.267</software.amazon.awssdk.s3.version>
 
         <!-- Default compilation parameters -->
@@ -196,12 +246,12 @@
         <!-- Test dependency versions -->
         <org.assertj.version>3.22.0</org.assertj.version>
         <org.testcontainers.version>1.16.3</org.testcontainers.version>
-        <org.jeasy.easy-random-core.version>4.2.0</org.jeasy.easy-random-core.version>
-        <com.thedeanda.lorem.version>2.1</com.thedeanda.lorem.version>
+        <org.jeasy.easy-random-core.version>5.0.0</org.jeasy.easy-random-core.version>
+        <com.thedeanda.lorem.version>2.2</com.thedeanda.lorem.version>
         <de.sven-jacobs.loremipsum.version>1.0</de.sven-jacobs.loremipsum.version>
-        <assertj-vavr.version>0.2.0</assertj-vavr.version>
-        <com.zaxxer.nuprocess.version>2.0.0</com.zaxxer.nuprocess.version>
-        <noggit.version>0.5</noggit.version>
+        <assertj-vavr.version>0.4.3</assertj-vavr.version>
+        <nuprocess.version>2.0.6</nuprocess.version>
+        <noggit.version>0.8</noggit.version>
         <easy-random-vavr-extension.version>1.0.0</easy-random-vavr-extension.version>
         <xerces.version>2.9.1</xerces.version>
         <org.jdom.version>1.1.3</org.jdom.version>
@@ -229,19 +279,31 @@
         <module>rs-file-catalog</module>
         <module>rs-file-access</module>
         <module>rs-file-packager</module>
+        <module>rs-vendors</module>
     </modules>
 
     <dependencies>
+        <!-- xstream -->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>${xstream.version}</version>
+        </dependency>
         <!-- logging -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${org.ch.qos.logback.version}</version>
+            <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>${org.sl4j.version}</version>
+            <version>${jcl-over-slf4j.version}</version>
         </dependency>
         <!-- lombok -->
         <dependency>
@@ -282,7 +344,7 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>authentication-starter</artifactId>
+                <artifactId>authentication-oauth2</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -1557,7 +1619,7 @@
                 <version>${revision}</version>
                 <classifier>shaded</classifier>
             </dependency>
-            <!-- Ingest post processing plugin -->
+            <!-- Ingest post-processing plugin -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.ingest.plugins</groupId>
                 <artifactId>ssalto-sipad-postprocessing-plugin</artifactId>
@@ -1888,30 +1950,70 @@
             <dependency>
                 <groupId>org.reflections</groupId>
                 <artifactId>reflections</artifactId>
-                <version>${org.reflections.reflections.version}</version>
+                <version>${reflections.version}</version>
             </dependency>
             <!-- xml -->
             <dependency>
                 <groupId>org.dom4j</groupId>
                 <artifactId>dom4j</artifactId>
-                <version>${org.dom4j.version}</version>
+                <version>${dom4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jakarta.xml.bind-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.woodstox</groupId>
+                <artifactId>woodstox-core</artifactId>
+                <version>${woodstox-core.version}</version>
+            </dependency>
+            <!-- el -->
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.el</artifactId>
+                <version>${jakarta-el.version}</version>
+            </dependency>
+            <!-- Jakarta servlet -->
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet-api.version}</version>
+            </dependency>
+            <!-- Validation -->
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta.validation-api.version}</version>
+            </dependency>
+            <!-- Activation -->
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>${jakarta.activation-api.version}</version>
+            </dependency>
+            <!-- YAML -->
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
             </dependency>
             <!-- JWT -->
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-api</artifactId>
-                <version>${io.jsonwebtoken.jjwt.version}</version>
+                <version>${jjwt.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-impl</artifactId>
-                <version>${io.jsonwebtoken.jjwt.version}</version>
+                <version>${jjwt.version}</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt-jackson</artifactId>
-                <version>${io.jsonwebtoken.jjwt.version}</version>
+                <version>${jjwt.version}</version>
                 <scope>runtime</scope>
             </dependency>
             <!-- Uncomment this next dependency if you want to use RSASSA-PSS (PS256, PS384, PS512) algorithms:
@@ -1925,34 +2027,51 @@
             <!-- Swagger -->
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-ui</artifactId>
-                <version>${org.springdoc.springdoc-openapi-ui.version}</version>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc-openapi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-hateoas</artifactId>
-                <version>${org.springdoc.springdoc-openapi-hateoas.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-webmvc-core</artifactId>
+                <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
                 <version>${springdoc-openapi.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-annotations</artifactId>
-                <version>${io.swagger.core.v3.swagger-core.version}</version>
+                <version>${swagger.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-models</artifactId>
-                <version>${io.swagger.core.v3.swagger-core.version}</version>
+                <version>${swagger.version}</version>
+            </dependency>
+            <!-- DATABASES -->
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.hsqldb</groupId>
-                <artifactId>hsqldb</artifactId>
-                <version>${hsqldb.hsqldb.version}</version>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-runtime</artifactId>
+                <version>${antlr4-runtime.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-spatial</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.hypersistence</groupId>
+                <artifactId>hypersistence-utils-hibernate-62</artifactId>
+                <version>${hypersistence.version}</version>
+            </dependency>
+            <!-- SPRING -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -1967,15 +2086,20 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- bcpkix-jdk18on dependency must be used with spring-security-jwt excluding embedded one (bcpkix-jdk15on) which have some security
+            vulnerabilities so, please add this into spring-security-jwt dependency block
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcpkix-jdk15on</artifactId>
+                </exclusion>
+            </exclusions>
+            -->
             <dependency>
-                <groupId>org.springframework.security.oauth</groupId>
-                <artifactId>spring-security-oauth2</artifactId>
-                <version>${org.springframework.security.oauth.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.security.oauth.boot</groupId>
-                <artifactId>spring-security-oauth2-autoconfigure</artifactId>
-                <version>${spring-security-oauth2-autoconfigure}</version>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>${bcpkix.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
@@ -1983,7 +2107,6 @@
                 <version>${org.springframework.security.jwt.version}</version>
             </dependency>
             <dependency>
-                <!-- https://github.com/spring-projects/spring-hateoas/issues/1722-->
                 <groupId>org.springframework.hateoas</groupId>
                 <artifactId>spring-hateoas</artifactId>
                 <version>${org.springframework.hateoas.version}</version>
@@ -1991,17 +2114,17 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${org.springframework.boot.spring-boot-maven-plugin.version}</version>
+                <version>${spring-boot-maven-plugin.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.integration</groupId>
                 <artifactId>spring-integration-jdbc</artifactId>
-                <version>${org.springframework.integration.spring-integration-jdbc.version}</version>
+                <version>${spring-integration-jdbc.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
-                <version>${org.apache.poi.poi-ooxml.version}</version>
+                <version>${poi-ooxml.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.icegreen</groupId>
@@ -2011,37 +2134,43 @@
             <dependency>
                 <groupId>org.freemarker</groupId>
                 <artifactId>freemarker</artifactId>
-                <version>${org.freemarker.freemarker.version}</version>
+                <version>${freemarker.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>${caffeine.version}</version>
+            </dependency>
+
             <!-- GSON -->
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
-                <version>${com.google.code.gson.version}</version>
+                <version>${gson.version}</version>
             </dependency>
             <!-- Jsoniter -->
             <dependency>
                 <groupId>com.jsoniter</groupId>
                 <artifactId>jsoniter</artifactId>
-                <version>${com.jsoniter.version}</version>
+                <version>${jsoniter.version}</version>
             </dependency>
             <!-- JSON encoder for logback -->
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
-                <version>${logstash.logback.version}</version>
+                <version>${logstash-logback-encoder.version}</version>
             </dependency>
             <!-- Maven plugins -->
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-plugin-api</artifactId>
-                <version>${org.apache.maven.maven-plugin-api.version}</version>
+                <version>${maven-plugin-api.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.plugin-tools</groupId>
                 <artifactId>maven-plugin-annotations</artifactId>
-                <version>${org.apache.maven.plugin-tools.maven-plugin-annotations.version}</version>
+                <version>${maven-plugin-annotations.version}</version>
             </dependency>
             <!-- Elasticsearch -->
             <dependency>
@@ -2062,120 +2191,121 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-buffer</artifactId>
-                <version>${io.netty.version}</version>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-codec</artifactId>
-                <version>${io.netty.version}</version>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-codec-http</artifactId>
-                <version>${io.netty.version}</version>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-common</artifactId>
-                <version>${io.netty.version}</version>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-handler</artifactId>
-                <version>${io.netty.version}</version>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-resolver</artifactId>
-                <version>${io.netty.version}</version>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-transport</artifactId>
-                <version>${io.netty.version}</version>
+                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-transport-native-epoll</artifactId>
-                <version>${io.netty.version}</version>
+                <version>${netty.version}</version>
             </dependency>
-
 
             <dependency>
                 <groupId>org.locationtech.jts</groupId>
                 <artifactId>jts-core</artifactId>
-                <version>${org.locationtech.jts.version}</version>
+                <version>${jts.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.locationtech.spatial4j</groupId>
                 <artifactId>spatial4j</artifactId>
-                <version>${org.locationtech.spatial4j.version}</version>
+                <version>${spatial4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>nl.pdok</groupId>
                 <artifactId>gml3-jts</artifactId>
-                <version>${nl.pdok.gml3-jts.version}</version>
+                <version>${gml3-jts.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-text</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>${com.google.guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.mchange</groupId>
-                <artifactId>c3p0</artifactId>
-                <version>${com.mchange.c3p0.version}</version>
+                <version>${guava.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
-                <version>${org.apache.commons.compress.version}</version>
+                <version>${commons-compress.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>${org.apache.commons.lang3.version}</version>
+                <version>${commons-lang3.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
-                <version>${org.apache.commons.csv}</version>
+                <version>${commons-csv.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>${org.apache.commons.io.version}</version>
+                <version>${commons-io.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-digester3</artifactId>
-                <version>${org.apache.commons.digester.version}</version>
+                <version>${commons-digester3.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
-                <version>${org.apache.commons.bean-utils.version}</version>
+                <version>${commons-beanutils.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
-                <version>${commons-lang.commons-lang.version}</version>
+                <groupId>org.apache.directory.api</groupId>
+                <artifactId>api-all</artifactId>
+                <version>${api-all.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.jcraft</groupId>
                 <artifactId>jsch</artifactId>
-                <version>${com.jcraft.jsch.version}</version>
+                <version>${jsch.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.expectit</groupId>
                 <artifactId>expectit-core</artifactId>
-                <version>${net.sf.expectit.expectit-core.version}</version>
+                <version>${expectit-core.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hipparchus</groupId>
                 <artifactId>hipparchus-geometry</artifactId>
-                <version>${org.hipparchus.version}</version>
+                <version>${hipparchus-geometry.version}</version>
             </dependency>
             <!-- Vavr-->
             <dependency>
@@ -2185,8 +2315,23 @@
             </dependency>
             <dependency>
                 <groupId>io.vavr</groupId>
+                <artifactId>vavr-jackson</artifactId>
+                <version>${vavr-jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.vavr</groupId>
                 <artifactId>vavr-gson</artifactId>
                 <version>${vavr-gson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>r2dbc-postgresql</artifactId>
+                <version>${r2dbc-postgresql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>name.nkonev.r2dbc-migrate</groupId>
+                <artifactId>r2dbc-migrate-spring-boot-starter</artifactId>
+                <version>${r2dbc-migrate-spring-boot-starter.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
@@ -2197,7 +2342,7 @@
             <dependency>
                 <groupId>com.zaxxer</groupId>
                 <artifactId>nuprocess</artifactId>
-                <version>${com.zaxxer.nuprocess.version}</version>
+                <version>${nuprocess.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.xshadov</groupId>
@@ -2212,51 +2357,120 @@
             <dependency>
                 <groupId>org.geotools</groupId>
                 <artifactId>gt-referencing</artifactId>
-                <version>${org.geotools.version}</version>
+                <version>${geotools.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.geotools</groupId>
                 <artifactId>gt-metadata</artifactId>
-                <version>${org.geotools.version}</version>
+                <version>${geotools.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.geolatte</groupId>
                 <artifactId>geolatte-geojson</artifactId>
-                <version>${org.geolatte.geolatte.geojson.version}</version>
+                <version>${geolatte-geojson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
-                <version>${com.networknt.json.schema.validation}</version>
+                <version>${json-schema-validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jayway.jsonpath</groupId>
+                <artifactId>json-path</artifactId>
+                <version>${json-path.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-net</groupId>
                 <artifactId>commons-net</artifactId>
                 <version>${commons.net.version}</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/cz.jirutka.spring/spring-data-jdbc-repository -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons-text.version}</version>
+            </dependency>
             <dependency>
                 <groupId>cz.jirutka.spring</groupId>
                 <artifactId>spring-data-jdbc-repository</artifactId>
-                <version>${cz.jirutka.spring.spring-data-jdbc-repository.version}</version>
+                <version>${spring-data-jdbc-repository.version}</version>
             </dependency>
             <!-- Jackson -->
             <dependency>
+                <groupId>org.codehaus.jettison</groupId>
+                <artifactId>jettison</artifactId>
+                <version>${jettison.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jdk8</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${com.fasterxml.jackson.datatype.jackson-datatype-jsr310.version}</version>
+                <version>${jackson-datatype-jsr310.version}</version>
             </dependency>
-            <!-- Netcdf -->
+            <!-- Crypto -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bcprov-jdk18on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-rsa</artifactId>
+                <version>${spring-security-rsa.version}</version>
+            </dependency>
+            <dependency>
+                <!-- needed by Flyway -->
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-toml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <!-- NetCdf-Java/Common Data Model (CDM) library -->
             <dependency>
                 <groupId>edu.ucar</groupId>
-                <artifactId>netcdf</artifactId>
-                <version>${edu.ucar.netcdf.version}</version>
+                <artifactId>netcdf-java</artifactId>
+                <version>${netcdf-java.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf-java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.ucar</groupId>
+                <artifactId>cdm-core</artifactId>
+                <version>${netcdf-java.version}</version>
+            </dependency>
+            <!-- jGit -->
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>${jgit.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.hubspot.jinjava</groupId>
                 <artifactId>jinjava</artifactId>
-                <version>${com.hubspot.jinjava.version}</version>
+                <version>${jinjava.version}</version>
             </dependency>
+
             <!-- Xerces (for tests) -->
             <dependency>
                 <groupId>xerces</groupId>
@@ -2275,7 +2489,7 @@
             <dependency>
                 <groupId>org.mockftpserver</groupId>
                 <artifactId>MockFtpServer</artifactId>
-                <version>${org.mockftpserver.version}</version>
+                <version>${MockFtpServer.version}</version>
                 <scope>test</scope>
             </dependency>
             <!-- Services -->
@@ -2383,9 +2597,21 @@
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-queryparser</artifactId>
-                <version>${lucene.queryparser.version}</version>
+                <version>${lucene.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <!-- HTTP client -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
             </dependency>
 
+            <!-- S3 -->
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>s3</artifactId>
@@ -2396,7 +2622,7 @@
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
-                <version>${org.mapstruct.version}</version>
+                <version>${mapstruct.version}</version>
             </dependency>
             <!-- Schedlock -->
             <dependency>
@@ -2411,8 +2637,8 @@
             </dependency>
             <!-- Wiremock -->
             <dependency>
-                <groupId>com.github.tomakehurst</groupId>
-                <artifactId>wiremock-jre8</artifactId>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock-standalone</artifactId>
                 <version>${wiremock.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -2438,6 +2664,16 @@
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
+                <version>${org.testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>rabbitmq</artifactId>
+                <version>${org.testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>postgresql</artifactId>
                 <version>${org.testcontainers.version}</version>
             </dependency>
             <dependency>
@@ -2576,7 +2812,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${org.jacoco.jacoco-maven-plugin.version}</version>
+                    <version>${jacoco-maven-plugin.version}</version>
                 </plugin>
                 <!-- docker image generator -->
                 <plugin>
@@ -2591,7 +2827,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>flatten-maven-plugin</artifactId>
-                    <version>${org.codehaus.mojo.flatten-maven-plugin.version}</version>
+                    <version>${flatten-maven-plugin.version}</version>
                     <configuration>
                         <updatePomFile>true</updatePomFile>
                         <flattenMode>bom</flattenMode>
@@ -2623,7 +2859,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
-                    <version>${org.codehaus.mojo.versions-maven-plugin.version}</version>
+                    <version>${versions-maven-plugin.version}</version>
                     <configuration>
                         <rulesUri>file://${basedir}/maven-version-rules.xml</rulesUri>
                     </configuration>
@@ -2639,7 +2875,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-resources-plugin.version}</version>
+                    <version>${maven-resources-plugin.version}</version>
                     <configuration>
                         <delimiters>
                             <delimiter>${resource.delimiter}</delimiter>
@@ -2649,7 +2885,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-deploy-plugin.version}</version>
+                    <version>${maven-deploy-plugin.version}</version>
                     <configuration>
                         <skip>${maven-deploy.skip}</skip>
                     </configuration>
@@ -2657,7 +2893,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-war-plugin.version}</version>
+                    <version>${maven-war-plugin.version}</version>
                     <configuration>
                         <failOnMissingWebXml>false</failOnMissingWebXml>
                         <archive>
@@ -2672,7 +2908,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${org.springframework.boot.spring-boot-maven-plugin.version}</version>
+                    <version>${spring-boot-maven-plugin.version}</version>
                     <executions>
                         <execution>
                             <goals>
@@ -2689,7 +2925,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-jar-plugin.version}</version>
+                    <version>${maven-jar-plugin.version}</version>
                     <configuration>
                         <archive>
                             <manifest>
@@ -2702,7 +2938,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-plugin-plugin.version}</version>
+                    <version>${maven-plugin-plugin.version}</version>
                     <executions>
                         <execution>
                             <id>default-descriptor</id>
@@ -2713,10 +2949,11 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
+                    <version>${maven-compiler-plugin.version}</version>
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
+                        <parameters>true</parameters>
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>org.projectlombok</groupId>
@@ -2726,7 +2963,7 @@
                             <path>
                                 <groupId>org.mapstruct</groupId>
                                 <artifactId>mapstruct-processor</artifactId>
-                                <version>${org.mapstruct.version}</version>
+                                <version>${mapstruct.version}</version>
                             </path>
                             <!-- other annotation processors -->
                         </annotationProcessorPaths>
@@ -2738,7 +2975,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-source-plugin.version}</version>
+                    <version>${maven-source-plugin.version}</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -2752,12 +2989,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-assembly-plugin.version}</version>
+                    <version>${maven-assembly-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>${org.apache.maven.plugin.maven-shade-plugin.version}</version>
+                    <version>${maven-shade-plugin.version}</version>
                     <executions>
                         <execution>
                             <phase>package</phase>
@@ -2784,7 +3021,7 @@
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>${org.asciidoctor.asciidoctor-maven-plugin.version}</version>
+                    <version>${asciidoctor-maven-plugin.version}</version>
                     <executions>
                         <execution>
                             <id>generate-docs</id>
@@ -2811,7 +3048,7 @@
                 <plugin>
                     <groupId>org.hibernate.orm.tooling</groupId>
                     <artifactId>hibernate-enhance-maven-plugin</artifactId>
-                    <version>${org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version}</version>
+                    <version>${hibernate-enhance-maven-plugin.version}</version>
                     <executions>
                         <execution>
                             <configuration>
@@ -2831,27 +3068,27 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>${org.apache.maven.plugins.maven-deploy-plugin.version}</version>
+                <version>${maven-deploy-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>${org.codehaus.mojo.flatten-maven-plugin.version}</version>
+                <version>${flatten-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>${org.codehaus.mojo.versions-maven-plugin.version}</version>
+                <version>${versions-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>${org.apache.maven.plugins.maven-jar-plugin.version}</version>
+                <version>${maven-jar-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
+                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <!-- Sets the VM argument line used when unit tests are run. -->
                     <argLine>@{surefireArgLine} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
@@ -2874,7 +3111,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${org.apache.maven.plugins.maven-failsafe-plugin.version}</version>
+                <version>${maven-failsafe-plugin.version}</version>
                 <configuration>
                     <skipTests>${skipTests}</skipTests>
                     <!-- Sets the VM argument line used when integration tests are run. -->
@@ -2952,12 +3189,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
+                <version>${maven-compiler-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>${org.apache.maven.plugins.maven-source-plugin.version}</version>
+                <version>${maven-source-plugin.version}</version>
             </plugin>
         </plugins>
     </build>

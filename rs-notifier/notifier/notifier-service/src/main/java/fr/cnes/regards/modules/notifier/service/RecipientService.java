@@ -29,14 +29,14 @@ import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 import fr.cnes.regards.modules.notifier.dto.internal.NotifierClearCacheEvent;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nullable;
-import javax.validation.Valid;
+import jakarta.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;

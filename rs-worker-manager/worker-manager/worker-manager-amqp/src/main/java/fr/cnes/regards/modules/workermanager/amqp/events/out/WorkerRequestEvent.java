@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import org.springframework.amqp.core.MessageProperties;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Empty POJO to handle worker requests sent by manager with undefined body.

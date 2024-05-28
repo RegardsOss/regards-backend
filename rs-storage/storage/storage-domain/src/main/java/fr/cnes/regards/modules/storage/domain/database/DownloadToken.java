@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.time.OffsetDateTime;
 
 /**

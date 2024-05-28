@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 /**
  * @author oroussel
  */
-@SuppressWarnings("serial")
+
 public class CannotRemoveOrderException extends ModuleException {
 
     public CannotRemoveOrderException(String cause) {

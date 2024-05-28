@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import fr.cnes.regards.framework.urn.DataType;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import javax.validation.constraints.NotBlank;
 import java.util.Set;
 
 /**

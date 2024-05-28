@@ -19,16 +19,16 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.urn.DataType;
-import net.minidev.json.annotate.JsonIgnore;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;

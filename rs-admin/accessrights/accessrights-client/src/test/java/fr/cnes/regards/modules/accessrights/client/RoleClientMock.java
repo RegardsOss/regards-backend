@@ -25,7 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Set;
 

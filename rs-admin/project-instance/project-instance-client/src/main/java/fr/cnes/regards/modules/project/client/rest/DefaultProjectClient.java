@@ -26,7 +26,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 /**
  * Default project client

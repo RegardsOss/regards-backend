@@ -6,11 +6,11 @@ import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRoleResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.client.cache.CacheableRolesClient;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Profile;
  * @author Sylvain VISSIERE-GUERINET
  */
 
-@Configuration
+@AutoConfiguration
 @Profile("production")
 @EnableCaching
 public class RemoteAuthoritiesProviderAutoConfiguration {

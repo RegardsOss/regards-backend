@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.search.rest;
 
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import jakarta.xml.bind.annotation.XmlSchema;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.xml.bind.annotation.XmlSchema;
 import java.util.List;
 
 /**

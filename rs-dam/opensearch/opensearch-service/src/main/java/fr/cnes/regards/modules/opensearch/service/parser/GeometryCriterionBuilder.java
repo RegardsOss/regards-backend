@@ -78,7 +78,7 @@ public final class GeometryCriterionBuilder {
      * @return {@link ICriterion}
      */
     public static ICriterion build(String lonParam, String latParam, String radiusParam)
-            throws InvalidGeometryException {
+        throws InvalidGeometryException {
         // Check required query parameter
         if (latParam == null && lonParam == null && radiusParam == null) {
             return null;
@@ -96,7 +96,7 @@ public final class GeometryCriterionBuilder {
             throw new InvalidGeometryException("Missing radius parameter to create circle geometry");
         }
 
-        double[] center = {Double.parseDouble(lonParam), Double.parseDouble(latParam)};
+        double[] center = { Double.parseDouble(lonParam), Double.parseDouble(latParam) };
         return ICriterion.intersectsCircle(center, radiusParam);
     }
 

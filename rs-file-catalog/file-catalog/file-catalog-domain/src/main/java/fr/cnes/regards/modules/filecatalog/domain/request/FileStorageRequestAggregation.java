@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.filecatalog.domain.FileLocation;
 import fr.cnes.regards.modules.filecatalog.domain.FileReferenceMetaInfo;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.*;
 

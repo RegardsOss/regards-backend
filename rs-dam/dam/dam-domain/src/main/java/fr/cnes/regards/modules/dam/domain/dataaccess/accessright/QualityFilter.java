@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.dam.domain.dataaccess.accessright;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 /**
  * POJO for quality filter

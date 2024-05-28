@@ -31,7 +31,7 @@ import java.util.Set;
  * @param <T> the type of which the page consists.
  * @author oroussel
  */
-@SuppressWarnings("serial")
+
 public class FacetPage<T> extends PageImpl<T> {
 
     private final Set<IFacet<?>> facets;

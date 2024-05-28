@@ -23,9 +23,9 @@ import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
 import java.lang.annotation.*;
 
 /**

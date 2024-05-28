@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.emails.service;
 import fr.cnes.regards.modules.emails.dao.EmailRequestRepository;
 import fr.cnes.regards.modules.emails.domain.EmailRequest;
 import fr.cnes.regards.modules.notification.service.IInstanceNotificationService;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 import nl.altindag.log.LogCaptor;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -35,8 +37,6 @@ import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
 import java.time.OffsetDateTime;
 import java.util.List;
 

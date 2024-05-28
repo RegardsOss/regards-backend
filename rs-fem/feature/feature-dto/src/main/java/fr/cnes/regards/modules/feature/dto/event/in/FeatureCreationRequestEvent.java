@@ -25,8 +25,8 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.validation.ValidFeatureEvent;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**

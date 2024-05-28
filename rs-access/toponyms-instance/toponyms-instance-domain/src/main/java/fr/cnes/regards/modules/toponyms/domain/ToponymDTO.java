@@ -19,9 +19,8 @@
 package fr.cnes.regards.modules.toponyms.domain;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import jakarta.persistence.Embedded;
 import org.geolatte.geom.Geometry;
-
-import javax.persistence.Embedded;
 
 /**
  * DTO to transfer {@link Toponym} objects with {@link IGeometry} in place of {@link Geometry}

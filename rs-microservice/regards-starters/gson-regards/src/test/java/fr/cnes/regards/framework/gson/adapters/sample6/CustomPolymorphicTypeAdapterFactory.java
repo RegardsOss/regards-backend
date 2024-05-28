@@ -158,13 +158,9 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
 
             if (LOGGER.isDebugEnabled()) {
                 if (splitNsName.length > 1) {
-                    LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"",
-                                               logOriginal,
-                                               jsonElement.toString()));
+                    LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"", logOriginal, jsonElement));
                 } else {
-                    LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"",
-                                               logOriginal,
-                                               jsonElement.toString()));
+                    LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"", logOriginal, jsonElement));
                 }
             }
         } else {

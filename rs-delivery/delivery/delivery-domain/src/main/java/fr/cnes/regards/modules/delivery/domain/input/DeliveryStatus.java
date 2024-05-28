@@ -23,9 +23,11 @@ import fr.cnes.regards.modules.delivery.dto.output.DeliveryErrorType;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.OffsetDateTime;
 import java.util.Objects;
 

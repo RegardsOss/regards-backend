@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.order.domain.exception;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
-@SuppressWarnings("serial")
 public class CannotRetryOrderException extends ModuleException {
 
     public CannotRetryOrderException(String cause) {

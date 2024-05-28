@@ -38,7 +38,6 @@ public class ServiceImpl2 implements Service {
         }
     }
 
-    @SuppressWarnings("serial")
     private class FooEx extends Exception {
 
         private FooEx(String message) {

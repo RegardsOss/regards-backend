@@ -23,7 +23,7 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class TooManyResultsException extends ModuleException {
 
     public TooManyResultsException(String message) {

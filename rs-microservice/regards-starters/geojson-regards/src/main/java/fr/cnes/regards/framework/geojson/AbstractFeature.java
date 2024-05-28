@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.geojson;
 
 import fr.cnes.regards.framework.geojson.geometry.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 /**
  * RFC 7946 -August 2016<br/>

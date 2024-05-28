@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;

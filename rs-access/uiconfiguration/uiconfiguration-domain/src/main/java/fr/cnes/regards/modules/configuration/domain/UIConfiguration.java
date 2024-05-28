@@ -1,9 +1,7 @@
 package fr.cnes.regards.modules.configuration.domain;
 
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Class Configuration
@@ -30,8 +28,7 @@ public class UIConfiguration {
      * JSON representation of a configuration
      */
     @NotNull
-    @Column(nullable = false)
-    @Type(type = "text")
+    @Column(nullable = false, columnDefinition = "text")
     private String configuration;
 
     @NotNull

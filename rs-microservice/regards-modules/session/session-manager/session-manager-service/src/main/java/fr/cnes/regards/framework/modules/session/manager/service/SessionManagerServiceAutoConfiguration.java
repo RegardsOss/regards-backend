@@ -39,8 +39,12 @@ import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerS
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotScheduler;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 
 /**
  * Autoconfiguration for session management service
@@ -48,7 +52,7 @@ import org.springframework.context.annotation.*;
  * @author Iliana Ghazali
  **/
 
-@Configuration
+@AutoConfiguration
 @AutoConfigureBefore({ SessionCommonsServiceAutoConfiguration.class })
 public class SessionManagerServiceAutoConfiguration {
 

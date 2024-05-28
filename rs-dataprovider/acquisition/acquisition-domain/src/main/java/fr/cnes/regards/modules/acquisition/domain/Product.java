@@ -28,13 +28,11 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.converters.SipStateConverter;
 import fr.cnes.regards.modules.ingest.dto.ISipState;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;
@@ -53,7 +51,7 @@ import java.util.stream.Collectors;
                    @Index(name = "idx_acq_product_state", columnList = "product_state") },
        uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
                              @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @NamedEntityGraph(name = "graph.product.complete",
                   attributeNodes = { @NamedAttributeNode(value = "fileList"),
                                      @NamedAttributeNode(value = "lastSIPGenerationJobInfo",
@@ -103,7 +101,7 @@ public class Product {
     /**
      * This field is only used when sip state is set to an error state
      */
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String error;
 
     @Column(name = "last_update", nullable = false)
@@ -133,7 +131,7 @@ public class Product {
     private AcquisitionProcessingChain processingChain;
 
     @Column(columnDefinition = "jsonb", name = "json_sip")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private SIPDto sip;
 
     /**

@@ -25,11 +25,11 @@ import fr.cnes.regards.modules.storage.dao.entity.download.UserDownloadRateEntit
 import fr.cnes.regards.modules.storage.dao.entity.mapping.DomainEntityMapper;
 import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;

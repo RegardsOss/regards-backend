@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @author CS
  * @author Sylvain Vissiere-Guerinet
  */
-@SuppressWarnings("serial")
+
 public class EntityInvalidException extends EntityException {
 
     /**

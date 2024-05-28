@@ -2,10 +2,10 @@ package fr.cnes.regards.modules.crawler.dao;
 
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 
-import javax.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 

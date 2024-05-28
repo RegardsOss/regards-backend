@@ -39,7 +39,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 /**
  * Rest controller to abort running requests. This endpoint is not part of the nominal workflow, it is a temporary

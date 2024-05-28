@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
  *
  * @author gandrieu
  */
-@SuppressWarnings("serial")
+
 public class RightsPluginConfigurationNotFoundException extends Exception {
 
     private final PluginConfiguration pc;

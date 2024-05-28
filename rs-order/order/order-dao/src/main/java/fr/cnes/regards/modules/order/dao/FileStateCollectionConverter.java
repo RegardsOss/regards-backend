@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.order.dao;
 
 import fr.cnes.regards.modules.order.domain.FileState;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
 import java.util.Collection;
 import java.util.stream.Collectors;
 

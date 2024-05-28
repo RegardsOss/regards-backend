@@ -5,7 +5,7 @@ package fr.cnes.regards.framework.module.rest.exception;
  *
  * @author oroussel
  */
-@SuppressWarnings("serial")
+
 public class InactiveDatasourceException extends ModuleException {
 
     public InactiveDatasourceException() {

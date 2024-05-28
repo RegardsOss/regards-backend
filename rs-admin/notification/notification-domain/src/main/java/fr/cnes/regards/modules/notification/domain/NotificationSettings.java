@@ -20,10 +20,10 @@ package fr.cnes.regards.modules.notification.domain;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
-import javax.persistence.*;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Wraps the different project projectUserEmail's settings available for notifications configuration.

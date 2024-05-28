@@ -20,11 +20,10 @@ package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Manage pattern restriction for attribute of type :

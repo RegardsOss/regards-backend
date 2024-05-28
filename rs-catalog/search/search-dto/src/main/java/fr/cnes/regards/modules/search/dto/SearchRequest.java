@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.search.dto;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import org.springframework.util.MultiValueMap;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;

@@ -20,9 +20,8 @@ package fr.cnes.regards.modules.notifier.domain;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Entity to represent an error on a {@link Recipient} for in a {@link JobInfo}

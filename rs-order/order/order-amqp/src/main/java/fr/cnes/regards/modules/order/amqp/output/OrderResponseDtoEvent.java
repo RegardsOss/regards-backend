@@ -35,7 +35,7 @@ import org.springframework.validation.Errors;
 import java.util.Optional;
 
 /**
- * AMQP message of order ou sub-order response for the AMQP message of order request (See
+ * AMQP message of order or sub-order response for the AMQP message of order request (See
  * {@link fr.cnes.regards.modules.order.dto.output.OrderResponseDto})
  *
  * @author Iliana Ghazali

@@ -22,9 +22,8 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Access right of a group

@@ -20,8 +20,8 @@ package fr.cnes.regards.framework.oais.dto.validator;
 
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * Check that reference (i.e. ref attribute not null) or value (i.e. properties attribute not null) is set.

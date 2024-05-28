@@ -1,0 +1,4 @@
+fr.cnes.regards.framework.jpa.autoconfigure.RegardsFlywayAutoConfiguration
+fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration
+fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration
+fr.cnes.regards.framework.jpa.multitenant.autoconfigure.rest.JpaMultitenantController

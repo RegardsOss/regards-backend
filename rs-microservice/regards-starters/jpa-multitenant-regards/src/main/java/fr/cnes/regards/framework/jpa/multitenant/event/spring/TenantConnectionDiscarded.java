@@ -25,7 +25,7 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class TenantConnectionDiscarded extends ApplicationEvent {
 
     private String tenant;

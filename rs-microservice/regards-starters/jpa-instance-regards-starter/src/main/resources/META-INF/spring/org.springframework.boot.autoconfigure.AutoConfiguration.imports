@@ -1,0 +1,4 @@
+fr.cnes.regards.framework.jpa.autoconfigure.RegardsFlywayAutoConfiguration
+fr.cnes.regards.framework.jpa.instance.autoconfigure.InstanceDataSourceConfiguration
+fr.cnes.regards.framework.jpa.instance.autoconfigure.InstanceJpaAutoConfiguration
+fr.cnes.regards.framework.jpa.instance.autoconfigure.JpaAutoConfiguration

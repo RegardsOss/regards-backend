@@ -28,8 +28,9 @@ import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
 import org.hibernate.annotations.Type;
 import org.springframework.util.MimeType;
 
-import javax.persistence.*;
-import javax.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
+
 import java.util.Objects;
 
 /**
@@ -253,8 +254,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         return filesTaskId;
     }
 
-    @Column(name = "download_error_reason")
-    @Type(type = "text")
+    @Column(name = "download_error_reason", columnDefinition = "text")
     public String getDownloadError() {
         return downloadError;
     }

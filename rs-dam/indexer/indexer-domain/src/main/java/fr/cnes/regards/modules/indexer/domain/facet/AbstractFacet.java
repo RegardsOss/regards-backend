@@ -24,7 +24,7 @@ package fr.cnes.regards.modules.indexer.domain.facet;
  * @param <T> facet type
  * @author oroussel
  */
-@SuppressWarnings("serial")
+
 public abstract class AbstractFacet<T> implements IFacet<T> {
 
     /**

@@ -19,8 +19,7 @@
 package fr.cnes.regards.framework.geojson.geometry;
 
 import fr.cnes.regards.framework.geojson.AbstractGeoJsonObject;
-
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 /**
  * RFC 7946 -August 2016<br/>

@@ -20,8 +20,8 @@ package fr.cnes.regards.framework.jpa.converters;
 
 import com.google.common.base.Joiner;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 /**
  * Simple String Array converter.

@@ -24,11 +24,9 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Set;
@@ -42,7 +40,6 @@ import java.util.UUID;
  * @author Thomas GUILLOU
  **/
 @Entity(name = RequestTypeConstant.AIP_DISSEMINATION_VALUE)
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AipDisseminationRequest extends AbstractRequest {
 
     /**
@@ -56,7 +53,7 @@ public class AipDisseminationRequest extends AbstractRequest {
      * List of dissemination destination
      */
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @org.hibernate.annotations.Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                                               value = "java.lang.String") })
     private AipDisseminationRequestPayload payload;

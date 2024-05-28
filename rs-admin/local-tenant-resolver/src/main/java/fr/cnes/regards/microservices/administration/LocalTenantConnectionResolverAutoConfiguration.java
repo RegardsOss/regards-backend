@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResol
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 import fr.cnes.regards.modules.project.service.IProjectService;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Primary;
  *
  * @author Sébastien Binda
  */
-@Configuration
+@AutoConfiguration
 public class LocalTenantConnectionResolverAutoConfiguration {
 
     /**

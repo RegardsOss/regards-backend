@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.acquisition.dao;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Predicate;
 import java.util.Set;
 
 /**

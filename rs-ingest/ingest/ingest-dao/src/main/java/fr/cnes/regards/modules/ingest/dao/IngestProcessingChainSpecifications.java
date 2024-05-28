@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.ingest.dao;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Predicate;
 import java.util.Set;
 
 /**

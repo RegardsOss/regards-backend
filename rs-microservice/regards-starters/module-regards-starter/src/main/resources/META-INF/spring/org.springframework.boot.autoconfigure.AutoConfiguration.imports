@@ -1,0 +1,3 @@
+fr.cnes.regards.framework.module.rest.GlobalControllerAdvice
+fr.cnes.regards.framework.module.autoconfigure.JacksonXmlAutoConfiguration
+fr.cnes.regards.framework.module.rest.converter.StringToOffsetDateTime

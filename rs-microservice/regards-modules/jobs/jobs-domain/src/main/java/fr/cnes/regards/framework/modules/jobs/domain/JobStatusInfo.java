@@ -19,9 +19,8 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -89,8 +88,7 @@ public class JobStatusInfo implements Observer {
     /**
      * In case of error, contains the stack trace
      */
-    @Column(name = "stacktrace")
-    @Type(type = "text")
+    @Column(name = "stacktrace", columnDefinition = "text")
     private String stackTrace;
 
     @Transient

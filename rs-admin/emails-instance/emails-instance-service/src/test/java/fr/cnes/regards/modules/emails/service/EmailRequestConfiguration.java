@@ -21,12 +21,12 @@ package fr.cnes.regards.modules.emails.service;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.dao.INotificationLightRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
+import jakarta.mail.internet.MimeMessage;
+
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
-
-import javax.mail.internet.MimeMessage;
 
 /**
  * Mock {@link JavaMailSender}

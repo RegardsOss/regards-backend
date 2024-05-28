@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import jakarta.validation.Valid;
 
 /**
  * Class ProjectsClient
@@ -44,8 +44,6 @@ public interface IProjectConnectionClient {
      * Retrieve all project connections
      *
      * @param projectName project name (i.e. tenant)
-     * @param pPageable   pageable
-     * @param pAssembler  assembler
      * @return all project connections
      */
     @GetMapping(path = ROOT_PATH,
@@ -73,7 +71,7 @@ public interface IProjectConnectionClient {
      *
      * @param projectName        project name
      * @param pProjectConnection connection to create
-     * @return the create project connection
+     * @return the created project connection
      */
     @PostMapping(path = ROOT_PATH,
                  consumes = MediaType.APPLICATION_JSON_VALUE,

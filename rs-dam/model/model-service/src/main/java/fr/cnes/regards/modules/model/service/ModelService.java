@@ -50,7 +50,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;

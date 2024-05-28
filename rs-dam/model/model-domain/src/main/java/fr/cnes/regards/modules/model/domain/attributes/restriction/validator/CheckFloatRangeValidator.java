@@ -19,9 +19,8 @@
 package fr.cnes.regards.modules.model.domain.attributes.restriction.validator;
 
 import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * Validate range

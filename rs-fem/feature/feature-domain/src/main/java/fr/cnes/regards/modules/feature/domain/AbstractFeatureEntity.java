@@ -23,17 +23,15 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 @MappedSuperclass
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class AbstractFeatureEntity {
 
     @Id
@@ -56,7 +54,7 @@ public class AbstractFeatureEntity {
     private String session;
 
     @Column(columnDefinition = "jsonb", name = "feature")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Valid
     private Feature feature;
 

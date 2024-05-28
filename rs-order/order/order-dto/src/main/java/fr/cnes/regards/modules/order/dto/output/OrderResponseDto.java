@@ -20,11 +20,11 @@ package fr.cnes.regards.modules.order.dto.output;
 
 import fr.cnes.regards.modules.order.dto.OrderErrorType;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**

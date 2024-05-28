@@ -68,7 +68,7 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         module.setPage(page);
         module.setDescription("Description");
         module.setType("Module");
-        
+
         return module;
     }
 

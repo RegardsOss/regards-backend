@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.dam.domain.entities;
 
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**

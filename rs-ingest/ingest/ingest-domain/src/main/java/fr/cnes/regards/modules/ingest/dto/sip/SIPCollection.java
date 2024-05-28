@@ -22,9 +22,8 @@ import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
 import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * SIP collection representation based on GeoJson standard structure.

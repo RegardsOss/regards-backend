@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction.validator;
 
-import javax.validation.Constraint;
+import jakarta.validation.Constraint;
+
 import java.lang.annotation.*;
 
 /**

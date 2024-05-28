@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.util.Assert;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.util.Optional;
 
 public class AIPDto extends AbstractInformationPackage<OaisUniformResourceName> {

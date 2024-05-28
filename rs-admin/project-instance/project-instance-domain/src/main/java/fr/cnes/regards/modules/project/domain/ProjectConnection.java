@@ -23,9 +23,10 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.executable.ValidateOnExecution;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.executable.ValidateOnExecution;
+
 import java.util.Optional;
 
 /**
@@ -60,7 +61,7 @@ public class ProjectConnection implements IIdentifiable<Long> {
      * Associated Project
      */
     @ManyToOne
-    @JoinColumn(name = "project_id", foreignKey = @javax.persistence.ForeignKey(name = "fk_project_connection"))
+    @JoinColumn(name = "project_id", foreignKey = @ForeignKey(name = "fk_project_connection"))
     @NotNull
     private Project project;
 

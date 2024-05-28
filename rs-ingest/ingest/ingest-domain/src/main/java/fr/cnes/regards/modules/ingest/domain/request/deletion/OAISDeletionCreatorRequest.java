@@ -18,19 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.deletion;
 
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
+
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 
 /**
  * Macro request that keeps info about a "massive" suppression of OAIS entities
@@ -39,14 +40,14 @@ import java.util.UUID;
  * @author Sébastien Binda
  */
 @Entity(name = RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE)
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 public class OAISDeletionCreatorRequest extends AbstractRequest {
 
     /**
      * request configuration
      */
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private OAISDeletionCreatorPayload config;
 
     public static OAISDeletionCreatorRequest build(OAISDeletionCreatorPayload deletionPayload) {

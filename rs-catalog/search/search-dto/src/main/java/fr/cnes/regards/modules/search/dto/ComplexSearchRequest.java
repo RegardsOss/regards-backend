@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.search.dto;
 
 import fr.cnes.regards.framework.urn.DataType;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import org.apache.commons.compress.utils.Lists;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
 import java.util.List;
 
 /**

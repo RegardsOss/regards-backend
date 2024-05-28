@@ -52,6 +52,7 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.dto.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.dto.SearchRequest;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -66,7 +67,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;

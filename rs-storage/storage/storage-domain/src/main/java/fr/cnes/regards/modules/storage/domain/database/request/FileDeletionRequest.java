@@ -23,9 +23,9 @@ import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import jakarta.persistence.*;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 
 /**

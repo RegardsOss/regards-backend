@@ -18,14 +18,14 @@
 package fr.cnes.regards.modules.processing.entity;
 
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.annotation.*;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.UUID;

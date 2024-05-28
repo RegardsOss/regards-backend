@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.accountunlock;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Dto class

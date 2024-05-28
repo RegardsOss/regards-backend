@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Class Layout
@@ -52,8 +50,7 @@ public class UILayout {
      * JSON representation of layout configuration
      */
     @NotNull
-    @Column(nullable = false)
-    @Type(type = "text")
+    @Column(nullable = false, columnDefinition = "text")
     protected String layout;
 
     public Long getId() {

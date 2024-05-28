@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 /**
  * Unit test for {@link Account}

@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
+import jakarta.xml.bind.DatatypeConverter;
 import org.apache.commons.io.FileUtils;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
@@ -39,7 +40,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.MimeType;
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.Proxy;

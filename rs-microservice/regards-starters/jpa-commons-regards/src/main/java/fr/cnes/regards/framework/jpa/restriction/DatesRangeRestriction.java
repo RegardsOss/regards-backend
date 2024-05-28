@@ -72,4 +72,9 @@ public class DatesRangeRestriction {
     public void setBefore(OffsetDateTime before) {
         this.before = before;
     }
+
+    @Override
+    public String toString() {
+        return "DatesRangeRestriction{" + "after=" + after + ", before=" + before + '}';
+    }
 }

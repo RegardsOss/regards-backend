@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Class Company

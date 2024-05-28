@@ -22,8 +22,8 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;

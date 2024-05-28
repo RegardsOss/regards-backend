@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.configuration.dao;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.configuration.domain.Module;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Predicate;
 import java.util.Set;
 
 /**

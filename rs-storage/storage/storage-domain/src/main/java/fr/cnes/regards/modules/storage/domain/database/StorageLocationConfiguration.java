@@ -24,11 +24,12 @@ import fr.cnes.regards.modules.fileaccess.dto.StorageLocationConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.INearlineStorageLocation;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IOnlineStorageLocation;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
-import javax.annotation.Nullable;
-import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+
 import java.util.Objects;
 
 /**

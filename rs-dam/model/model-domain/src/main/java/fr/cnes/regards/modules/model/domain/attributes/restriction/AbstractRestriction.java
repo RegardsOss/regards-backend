@@ -22,9 +22,8 @@ import com.google.gson.annotations.JsonAdapter;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.modules.model.domain.adapter.RestrictionJsonAdapterFactory;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author msordi

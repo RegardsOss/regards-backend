@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.dam.domain.datasources.plugins;
  *
  * @author oroussel
  */
-@SuppressWarnings("serial")
+
 public class DataSourceException extends Exception {
 
     public DataSourceException() {

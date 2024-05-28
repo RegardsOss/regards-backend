@@ -20,8 +20,10 @@ package fr.cnes.regards.modules.delivery.dto.output;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotBlank;
+import jakarta.annotation.Nullable;
+
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.Objects;
 import java.util.Optional;
 

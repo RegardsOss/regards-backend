@@ -24,9 +24,9 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
+import jakarta.persistence.*;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Set;
 

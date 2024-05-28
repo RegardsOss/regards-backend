@@ -39,13 +39,13 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;

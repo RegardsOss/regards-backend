@@ -22,7 +22,7 @@ package fr.cnes.regards.modules.dam.domain.datasources;
  * The mode of CrawlingCursor. A cursor is used to iterate over products to ingest.
  * This cursor is optimized when used with a last_update property, or with an id property
  * See PM86 for more information about the optimisation
- * 
+ *
  * @author Thomas GUILLOU
  **/
 public enum CrawlingCursorMode {

@@ -18,14 +18,11 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.PluginServices;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 /**
@@ -33,7 +30,7 @@ import java.util.Set;
  *
  * @author Sylvain Vissiere-Guerinet
  */
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @Entity
 @Table(name = "t_link_service_dataset",
        uniqueConstraints = @UniqueConstraint(columnNames = { "dataset_id" },

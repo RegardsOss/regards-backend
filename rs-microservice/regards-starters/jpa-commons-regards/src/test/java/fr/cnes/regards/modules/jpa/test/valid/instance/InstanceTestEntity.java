@@ -19,8 +19,7 @@
 package fr.cnes.regards.modules.jpa.test.valid.instance;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 /**
  * Class InstanceTestEntity

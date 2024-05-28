@@ -28,7 +28,7 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author Guillaume  Andrieu
  */
-@SuppressWarnings("serial")
+
 public class ExecResultHandlerResultEvent extends ApplicationEvent {
 
     private final PExecutionResultEvent resultEvent;

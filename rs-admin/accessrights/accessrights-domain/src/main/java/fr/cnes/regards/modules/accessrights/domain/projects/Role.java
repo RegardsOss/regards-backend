@@ -23,9 +23,10 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

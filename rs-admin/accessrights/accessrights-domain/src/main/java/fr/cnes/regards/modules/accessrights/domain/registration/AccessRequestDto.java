@@ -3,9 +3,10 @@ package fr.cnes.regards.modules.accessrights.domain.registration;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.List;
 import java.util.Set;
 

@@ -24,10 +24,10 @@ import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
+import jakarta.transaction.NotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.transaction.NotSupportedException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;

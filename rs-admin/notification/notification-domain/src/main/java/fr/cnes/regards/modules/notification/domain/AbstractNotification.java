@@ -22,12 +22,12 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.notification.NotificationLevel;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -67,7 +67,7 @@ public abstract class AbstractNotification implements IIdentifiable<Long> {
     @ElementCollection
     @CollectionTable(name = "ta_notification_role_name",
                      joinColumns = @JoinColumn(name = "notification_id"),
-                     foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role_name_notification_id"))
+                     foreignKey = @jakarta.persistence.ForeignKey(name = "fk_notification_role_name_notification_id"))
     @Column(name = "role_name", length = 200)
     private Set<String> roleRecipients;
 
@@ -78,7 +78,7 @@ public abstract class AbstractNotification implements IIdentifiable<Long> {
     @ElementCollection
     @CollectionTable(name = "ta_notification_projectuser_email",
                      joinColumns = @JoinColumn(name = "notification_id"),
-                     foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
+                     foreignKey = @jakarta.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
     @Column(name = "projectuser_email", length = 200)
     private Set<String> projectUserRecipients;
 

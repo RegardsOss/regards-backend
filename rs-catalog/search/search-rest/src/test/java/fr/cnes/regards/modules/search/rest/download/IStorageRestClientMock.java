@@ -16,6 +16,7 @@ import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import jakarta.validation.Valid;
 import org.mockito.ArgumentMatchers;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -26,8 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 
-import javax.annotation.Nullable;
-import javax.validation.Valid;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 

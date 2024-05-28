@@ -20,10 +20,10 @@ package fr.cnes.regards.modules.ingest.dto.aip;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.urn.DataType;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import javax.validation.constraints.NotBlank;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;

@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.order.dto.input;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * A request dto contains information to cancel an order.

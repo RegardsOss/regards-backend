@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.fileaccess.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.Assert;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 /**
  * Information about a file for a reference request.<br/>

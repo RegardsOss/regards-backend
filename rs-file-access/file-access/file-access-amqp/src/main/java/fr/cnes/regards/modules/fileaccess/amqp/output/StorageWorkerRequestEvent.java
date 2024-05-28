@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfiguration
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.StorageWorkerRequestDto;
 import org.springframework.amqp.core.MessageProperties;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**

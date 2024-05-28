@@ -24,9 +24,9 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**

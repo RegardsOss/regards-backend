@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.delivery.dto.output;
 
 import fr.cnes.regards.modules.order.dto.OrderErrorType;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * Type of delivery errors

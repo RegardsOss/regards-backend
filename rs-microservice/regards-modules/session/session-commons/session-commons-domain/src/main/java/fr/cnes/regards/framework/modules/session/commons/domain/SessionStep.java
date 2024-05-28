@@ -20,11 +20,10 @@ package fr.cnes.regards.framework.modules.session.commons.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
@@ -37,7 +36,6 @@ import java.util.Objects;
  * @author Iliana Ghazali
  **/
 @Entity
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Table(name = "t_session_step")
 @IdClass(SessionStepId.class)
 public class SessionStep {
@@ -99,7 +97,7 @@ public class SessionStep {
      * Set of property/value retrieved from StepPropertyUpdateEventRequests
      */
     @Column(name = "properties", columnDefinition = "jsonb")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @NotNull
     private SessionStepProperties properties = new SessionStepProperties();
 

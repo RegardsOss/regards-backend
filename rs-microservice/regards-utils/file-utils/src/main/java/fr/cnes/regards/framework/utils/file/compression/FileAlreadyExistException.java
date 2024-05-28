@@ -24,7 +24,7 @@ import java.io.File;
  * Cette exception est levee lorsqu'un fichier cree lors de la compression ou de la decompression existe deja et qu'il
  * risquerai d'etre ecrase
  */
-@SuppressWarnings("serial")
+
 public class FileAlreadyExistException extends CompressionException {
 
     /**

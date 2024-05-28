@@ -4,9 +4,8 @@
 package fr.cnes.regards.modules.feature.dto.validation;
 
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * Validate file feature consistency.

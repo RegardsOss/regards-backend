@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IUserResourceClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -31,7 +32,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;

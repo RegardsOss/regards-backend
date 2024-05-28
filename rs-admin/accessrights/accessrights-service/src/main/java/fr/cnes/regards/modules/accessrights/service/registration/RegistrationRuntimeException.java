@@ -23,7 +23,7 @@ package fr.cnes.regards.modules.accessrights.service.registration;
  *
  * @author Xavier-Alexandre Brochard
  */
-@SuppressWarnings("serial")
+
 public class RegistrationRuntimeException extends RuntimeException {
 
     /**

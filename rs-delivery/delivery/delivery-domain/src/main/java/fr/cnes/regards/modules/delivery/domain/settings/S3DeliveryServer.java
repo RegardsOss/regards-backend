@@ -20,8 +20,9 @@ package fr.cnes.regards.modules.delivery.domain.settings;
 
 import fr.cnes.regards.framework.encryption.sensitive.StringSensitive;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
 import java.util.Objects;
 
 /**

@@ -26,13 +26,13 @@ import fr.cnes.regards.modules.search.domain.download.MissingLicenseDownload;
 import fr.cnes.regards.modules.search.domain.download.ValidDownload;
 import fr.cnes.regards.modules.search.rest.download.StorageDownloadStatus;
 import fr.cnes.regards.modules.search.rest.license.LicenseVerificationStatus;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.Test;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.*;

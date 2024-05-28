@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.search.rest;
 
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
+import jakarta.xml.bind.annotation.XmlSchema;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
-
-import javax.xml.bind.annotation.XmlSchema;
 
 /**
  * As JaxB annotation module for Jackson converter does not handle XmlSchema annotation We force use of JaxBconverter

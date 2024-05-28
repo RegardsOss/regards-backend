@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import com.google.common.collect.Sets;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 

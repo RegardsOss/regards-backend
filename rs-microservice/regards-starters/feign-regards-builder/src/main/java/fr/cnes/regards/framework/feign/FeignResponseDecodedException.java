@@ -11,7 +11,7 @@ import java.nio.charset.Charset;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@SuppressWarnings("serial")
+
 public class FeignResponseDecodedException extends HttpStatusCodeException {
 
     private final Object body;

@@ -20,12 +20,11 @@ package fr.cnes.regards.modules.ltamanager.domain.submission;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -47,9 +46,9 @@ public class SubmissionStatus {
     public static final String STATUS_FIELD_NAME = "status";
 
     public static final List<String> STATUS_FIELD_NAMES = List.of(STATUS_FIELD_NAME,
-                                                            EXPIRY_DATE_FIELD_NAME,
-                                                            STATUS_DATE_FIELD_NAME,
-                                                            CREATION_DATE_FIELD_NAME);
+                                                                  EXPIRY_DATE_FIELD_NAME,
+                                                                  STATUS_DATE_FIELD_NAME,
+                                                                  CREATION_DATE_FIELD_NAME);
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
@@ -71,8 +70,7 @@ public class SubmissionStatus {
     @NotNull(message = "status is required")
     private SubmissionRequestState status;
 
-    @Column
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     @Nullable
     private String message;
 

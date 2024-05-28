@@ -24,7 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Date;
 
 /**

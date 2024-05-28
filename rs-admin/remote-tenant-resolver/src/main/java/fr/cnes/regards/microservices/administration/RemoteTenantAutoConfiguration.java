@@ -27,12 +27,12 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.project.client.rest.ITenantClient;
 import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 /**
@@ -42,7 +42,7 @@ import org.springframework.context.annotation.Profile;
  *
  * @author Sébastien Binda
  */
-@Configuration
+@AutoConfiguration
 @Profile("production")
 @EnableCaching
 @AutoConfigureBefore({ DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class })

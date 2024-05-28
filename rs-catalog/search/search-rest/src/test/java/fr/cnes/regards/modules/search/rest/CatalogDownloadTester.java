@@ -38,10 +38,11 @@ import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterExcep
 import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import jakarta.servlet.http.HttpServletResponse;
+import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static org.mockito.Mockito.mock;

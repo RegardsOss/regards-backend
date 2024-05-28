@@ -4,8 +4,9 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;

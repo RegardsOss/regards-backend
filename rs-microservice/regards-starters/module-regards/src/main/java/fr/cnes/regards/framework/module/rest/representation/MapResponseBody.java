@@ -25,7 +25,7 @@ import java.util.HashMap;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class MapResponseBody extends HashMap<String, Object> {
 
 }

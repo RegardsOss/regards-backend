@@ -237,7 +237,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                      .value("String")));
 
         // Add request parameters documentation
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramDescrList));
+        requestBuilderCustomizer.document(RequestDocumentation.queryParameters(paramDescrList));
     }
 
     @Test
@@ -305,7 +305,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                             .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
                                                                                   .value("String"));
         // Add request parameters documentation
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramFile));
+        requestBuilderCustomizer.document(RequestDocumentation.queryParameters(paramFile));
     }
 
     @Test

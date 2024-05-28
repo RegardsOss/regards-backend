@@ -21,9 +21,8 @@ package fr.cnes.regards.modules.search.domain.plugin;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Configuration POJO for {@link ISearchEngine} plugins.

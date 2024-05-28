@@ -21,15 +21,13 @@ package fr.cnes.regards.modules.feature.domain.request;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.Valid;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.MappedSuperclass;
-import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -37,14 +35,14 @@ import java.util.List;
  *
  * @author Sébastien Binda
  */
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @Embeddable
 @MappedSuperclass
 public class FeatureStorageMedataEntity {
 
     @Valid
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                     value = "fr.cnes.regards.modules.feature.dto.StorageMetadata") })
     private List<StorageMetadata> storages;

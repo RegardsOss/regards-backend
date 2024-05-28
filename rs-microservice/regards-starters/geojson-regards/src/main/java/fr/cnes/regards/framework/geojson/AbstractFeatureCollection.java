@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

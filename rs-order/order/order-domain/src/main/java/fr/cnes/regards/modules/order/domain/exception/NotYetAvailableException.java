@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 /**
  * @author oroussel
  */
-@SuppressWarnings("serial")
+
 public class NotYetAvailableException extends ModuleException {
 
     public NotYetAvailableException() {

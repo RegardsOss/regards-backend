@@ -52,7 +52,7 @@ import org.springframework.util.MimeType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

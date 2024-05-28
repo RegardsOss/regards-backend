@@ -79,7 +79,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     @Override
     public void deleteAccount(final Account account) throws EntityOperationForbiddenException {
         checkDeleteAccountPossible(account);
-        
+
         LOGGER.info("Deleting password reset tokens associated to account {} from instance.", account.getEmail());
         passwordResetTokenService.deletePasswordResetTokenForAccount(account);
         LOGGER.info("Deleting unlock tokens associated to account {} from instance.", account.getEmail());

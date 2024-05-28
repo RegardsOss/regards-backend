@@ -2,12 +2,11 @@ package fr.cnes.regards.modules.access.services.client;
 
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import jakarta.validation.Valid;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import javax.validation.Valid;
 
 /**
  * Make Spring DI happy.

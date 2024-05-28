@@ -19,13 +19,12 @@
 package fr.cnes.regards.framework.gson.autoconfigure;
 
 import com.google.gson.Gson;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author sbinda

@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.order.dto.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 import org.springframework.util.MimeType;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
 
 /**

@@ -102,7 +102,6 @@ public class ExecutionContext {
                                                                                             + "' not found")));
     }
 
-    @SuppressWarnings("serial")
     public static class MissingExecutionContextParameterException extends ProcessingException {
 
         public MissingExecutionContextParameterException(String desc) {

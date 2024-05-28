@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.lock;
 
+import jakarta.validation.constraints.NotNull;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
 
 import javax.sql.DataSource;
-import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
 /**

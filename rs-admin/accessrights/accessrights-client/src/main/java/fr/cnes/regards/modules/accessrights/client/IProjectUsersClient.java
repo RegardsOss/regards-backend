@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -32,7 +33,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 import static fr.cnes.regards.modules.accessrights.client.IProjectUsersClient.TARGET_NAME;
@@ -85,29 +85,29 @@ public interface IProjectUsersClient {
     @PostMapping(value = ROOT_PATH,
                  produces = MediaType.APPLICATION_JSON_VALUE,
                  consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody final AccessRequestDto pDto);
+    ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody AccessRequestDto accessRequestDto);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      *
-     * @param pUserId The {@link ProjectUser}'s <code>id</code>
+     * @param userId The {@link ProjectUser}'s <code>id</code>
      * @return {@link ProjectUser}
      */
     @GetMapping(value = ROOT_PATH + "/{user_id}",
                 produces = MediaType.APPLICATION_JSON_VALUE,
                 consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long pUserId);
+    ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long userId);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>email</code>.
      *
-     * @param pUserEmail The {@link ProjectUser}'s <code>email</code>
+     * @param userEmail The {@link ProjectUser}'s <code>email</code>
      * @return {@link ProjectUser}
      */
     @GetMapping(value = ROOT_PATH + "/email/{user_email}",
                 produces = MediaType.APPLICATION_JSON_VALUE,
                 consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(@PathVariable("user_email") String pUserEmail);
+    ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(@PathVariable("user_email") String userEmail);
 
     @GetMapping(value = ROOT_PATH + "/email/{user_email}/admin",
                 produces = MediaType.APPLICATION_JSON_VALUE,
@@ -115,28 +115,28 @@ public interface IProjectUsersClient {
     ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") String userEmail);
 
     /**
-     * Update the {@link ProjectUser} of id <code>pUserId</code>.
+     * Update the {@link ProjectUser} of id <code>userId</code>.
      *
-     * @param pUserId             The {@link ProjectUser} <code>id</code>
-     * @param pUpdatedProjectUser The new {@link ProjectUser}
+     * @param userId             The {@link ProjectUser} <code>id</code>
+     * @param updatedProjectUser The new {@link ProjectUser}
      * @return {@link ProjectUser}
      */
     @PutMapping(value = ROOT_PATH + "/{user_id}",
                 produces = MediaType.APPLICATION_JSON_VALUE,
                 consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long pUserId,
-                                                               @RequestBody ProjectUser pUpdatedProjectUser);
+    ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long userId,
+                                                               @RequestBody ProjectUser updatedProjectUser);
 
     /**
      * Delete the {@link ProjectUser} of passed <code>id</code>.
      *
-     * @param pUserId The {@link ProjectUser}'s <code>id</code>
+     * @param userId The {@link ProjectUser}'s <code>id</code>
      * @return void
      */
     @DeleteMapping(value = ROOT_PATH + "/{user_id}",
                    produces = MediaType.APPLICATION_JSON_VALUE,
                    consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long pUserId);
+    ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long userId);
 
     /**
      * Retrieve the {@link ProjectUser} of current authenticated user
@@ -162,26 +162,26 @@ public interface IProjectUsersClient {
     /**
      * retrieveRoleProjectUserList
      *
-     * @param pRoleId role identifier to retrieve users.
+     * @param roleId role identifier to retrieve users.
      * @return {@link PagedModel} of {@link ProjectUser}
      */
     @GetMapping(value = ROOT_PATH + "/roles/{role_id}",
                 produces = MediaType.APPLICATION_JSON_VALUE,
                 consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(
-        @PathVariable("role_id") final Long pRoleId, @SpringQueryMap Pageable pageable);
+        @PathVariable("role_id") Long roleId, @SpringQueryMap Pageable pageable);
 
     /**
      * Retrieve pages of project user which role, represented by its name, is the one provided
      *
-     * @param pRole role name
+     * @param role role name
      * @return page of project user which role, represented by its name, is the one provided
      */
     @GetMapping(value = ROOT_PATH + "/roles",
                 produces = MediaType.APPLICATION_JSON_VALUE,
                 consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(
-        @RequestParam("role_name") String pRole, @SpringQueryMap Pageable pageable);
+        @RequestParam("role_name") String role, @SpringQueryMap Pageable pageable);
 
     @PostMapping(value = ROOT_PATH + "/email/{email}/groups",
                  produces = MediaType.APPLICATION_JSON_VALUE,

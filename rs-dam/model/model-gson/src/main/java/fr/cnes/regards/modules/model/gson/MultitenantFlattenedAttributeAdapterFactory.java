@@ -433,19 +433,18 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
     /**
      * Remove namespace from {@link JsonElement}
      *
-     * @param pJsonElement target {@link JsonElement}
+     * @param jsonElement target {@link JsonElement}
      */
-    protected void removeParentNamespace(final JsonElement pJsonElement) {
-
-        if (pJsonElement.isJsonObject()) {
+    protected void removeParentNamespace(final JsonElement jsonElement) {
+        if (jsonElement.isJsonObject()) {
 
             // Backup for logging
-            final String logOriginal = pJsonElement.toString();
+            final String logOriginal = jsonElement.toString();
 
-            final JsonObject o = pJsonElement.getAsJsonObject();
+            final JsonObject o = jsonElement.getAsJsonObject();
             final JsonElement nsElement = o.get(DISCRIMINATOR_FIELD_NAME);
             if (nsElement == null) {
-                throw missingFieldException(pJsonElement, DISCRIMINATOR_FIELD_NAME);
+                throw missingFieldException(jsonElement, DISCRIMINATOR_FIELD_NAME);
             }
 
             // Compute and inject name without its namespace
@@ -453,19 +452,17 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
             final String[] splitNsName = nsName.split(REGEXP_ESCAPE + NS_SEPARATOR);
             o.add(DISCRIMINATOR_FIELD_NAME, new JsonPrimitive(splitNsName[splitNsName.length - 1]));
 
-            if (LOGGER.isDebugEnabled()) {
-                if (splitNsName.length > 1) {
-                    LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"",
-                                               logOriginal,
-                                               pJsonElement.toString()));
-                } else {
-                    LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"",
-                                               logOriginal,
-                                               pJsonElement.toString()));
-                }
+            if (splitNsName.length > 1) {
+                LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"",
+                                           logOriginal,
+                                           jsonElement.toString()));
+            } else {
+                LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"",
+                                           logOriginal,
+                                           jsonElement.toString()));
             }
         } else {
-            throw objectRequiredException(pJsonElement);
+            throw objectRequiredException(jsonElement);
         }
     }
 

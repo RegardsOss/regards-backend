@@ -23,10 +23,9 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.notification.NotificationDTO;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.Assert;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 /**
  * A notification {@link NotificationDTO} event in order to notify rs-admin

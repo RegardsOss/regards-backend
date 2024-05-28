@@ -20,9 +20,8 @@ package fr.cnes.regards.modules.dam.domain.entities;
 
 import fr.cnes.regards.modules.dam.domain.entities.feature.CollectionFeature;
 import fr.cnes.regards.modules.model.domain.Model;
-
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 /**
  * Collection feature decorator

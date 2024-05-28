@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.order.dto.input;
 
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.Objects;
 import java.util.Set;
 

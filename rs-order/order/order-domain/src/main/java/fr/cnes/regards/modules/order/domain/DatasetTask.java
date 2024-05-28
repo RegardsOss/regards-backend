@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.modules.order.domain;
 
+import jakarta.annotation.Nullable;
+import java.util.Comparator;
+import java.util.List;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
+
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
@@ -31,12 +39,8 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.springframework.beans.BeanUtils;
-
-import javax.annotation.Nullable;
-import javax.persistence.*;
-import javax.validation.Valid;
-import java.util.Comparator;
-import java.util.List;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
 
 /**
  * Dataset specific order task. This task is linked to optional processing task and to all sub-orders (files tasks) of
@@ -47,7 +51,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "t_dataset_task")
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @PrimaryKeyJoinColumn(foreignKey = @ForeignKey(name = "fk_task_id"))
 @NamedEntityGraph(name = "graph.datasetTask.complete", attributeNodes = @NamedAttributeNode(value = "reliantTasks"))
 public class DatasetTask extends AbstractReliantTask<FilesTask> implements Comparable<DatasetTask> {
@@ -67,7 +71,7 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
      * Selection request determined from BasketDatasetSelection
      */
     @Valid
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "selection_requests")
     private final List<BasketSelectionRequest> selectionRequests = Lists.newArrayList();
 
@@ -81,11 +85,11 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     private long filesSize = 0;
 
     @Column(name = "process_dataset_desc")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private ProcessDatasetDescription processDatasetDescription;
 
     @Nullable
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "file_selection_description")
     private FileSelectionDescription fileSelectionDescription;
 

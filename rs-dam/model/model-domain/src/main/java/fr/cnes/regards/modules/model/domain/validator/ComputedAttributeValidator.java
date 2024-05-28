@@ -23,11 +23,10 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.model.domain.*;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 /**
  * Enforce the constraints described by {@link ComputedAttribute}

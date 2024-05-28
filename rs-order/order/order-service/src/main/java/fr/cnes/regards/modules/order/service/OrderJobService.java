@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.service.request.CancelOrderJob;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -49,8 +50,6 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
 import java.util.List;
 import java.util.Optional;
 
@@ -107,7 +106,8 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
 
     @Override
     @EventListener
-    @Transactional(TxType.NOT_SUPPORTED) // Doesn't need a transaction (make Controller IT tests failed otherwise)
+    @Transactional(Transactional.TxType.NOT_SUPPORTED)
+    // Doesn't need a transaction (make Controller IT tests failed otherwise)
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
     }

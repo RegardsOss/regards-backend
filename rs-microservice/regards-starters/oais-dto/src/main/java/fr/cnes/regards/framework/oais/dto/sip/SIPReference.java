@@ -21,8 +21,8 @@ package fr.cnes.regards.framework.oais.dto.sip;
 
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.net.URL;
 import java.security.MessageDigest;
 

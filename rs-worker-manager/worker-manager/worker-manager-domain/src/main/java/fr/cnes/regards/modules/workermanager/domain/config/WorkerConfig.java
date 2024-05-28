@@ -22,9 +22,9 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
 
-import javax.annotation.Nullable;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.util.Set;
 
 /**

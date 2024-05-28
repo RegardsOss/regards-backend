@@ -23,6 +23,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -35,10 +39,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Set;
@@ -100,7 +100,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             }
         } else {
-
             // Extract JWT from retrieved header
             if (!jwt.startsWith(HttpConstants.BEARER)) {
                 final String message = String.format("[REGARDS JWT FILTER] Invalid authentication token on %s@%s",

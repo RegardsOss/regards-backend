@@ -30,13 +30,13 @@ import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.domain.schema.Type;
 import fr.cnes.regards.modules.model.domain.validator.JsonString;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,8 +80,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     /**
      * Optional attribute description
      */
-    @Column
-    @org.hibernate.annotations.Type(type = "text")
+    @Column(columnDefinition = "text")
     private String description;
 
     /**
@@ -142,8 +141,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
      * Optional elasticsearch mapping configuration for this attribute
      */
     @JsonString(message = "Elasticsearch mapping must be a valid json format")
-    @Column(name = "es_mapping")
-    @org.hibernate.annotations.Type(type = "text")
+    @Column(name = "es_mapping", columnDefinition = "text")
     private String esMapping;
 
     /**
@@ -202,8 +200,9 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     /**
      * Indicates if this attribute is a real atribute from the model or if it is a generated one from a JsonObject attributes.
-     *
-     * @see AbstractAttributeHelper class. Generates attributes from a JsonObject attribute type thanks to JsonSchema associated in restriction.
+     * <p>
+     * Look at fr.cnes.regards.modules.model.gson.AbstractAttributeHelper class. Generates attributes from a JsonObject attribute type thanks to
+     * JsonSchema associated in restriction.
      */
     @Transient
     private boolean virtual = false;

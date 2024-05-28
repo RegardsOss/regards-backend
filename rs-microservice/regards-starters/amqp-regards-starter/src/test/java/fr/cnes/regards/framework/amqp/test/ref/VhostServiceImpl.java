@@ -38,7 +38,6 @@ public class VhostServiceImpl implements Service {
         }
     }
 
-    @SuppressWarnings("serial")
     private class FooEx extends Exception {
 
         private FooEx(String message) {

@@ -193,13 +193,13 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                                                                                   .value("Optional"));
 
         // Add request parameters documentation
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramState,
-                                                                                 paramSipState,
-                                                                                 paramProductId,
-                                                                                 paramChainId,
-                                                                                 paramFrom,
-                                                                                 paramSession,
-                                                                                 noSession));
+        requestBuilderCustomizer.document(RequestDocumentation.queryParameters(paramState,
+                                                                               paramSipState,
+                                                                               paramProductId,
+                                                                               paramChainId,
+                                                                               paramFrom,
+                                                                               paramSession,
+                                                                               noSession));
     }
 
     private List<FieldDescriptor> documentProduct() {

@@ -24,13 +24,11 @@ import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.dto.SIPState;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.UUID;
@@ -53,7 +51,7 @@ import java.util.UUID;
        uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
                              @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
 // There cannot be any unique constraint on last because there will always be multiple value with false!!!!
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 public class SIPEntity extends AbstractOAISEntity {
 
     /**
@@ -89,7 +87,7 @@ public class SIPEntity extends AbstractOAISEntity {
     private String checksum;
 
     @Column(columnDefinition = "jsonb", name = "rawsip")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private SIPDto sip;
 
     @Column

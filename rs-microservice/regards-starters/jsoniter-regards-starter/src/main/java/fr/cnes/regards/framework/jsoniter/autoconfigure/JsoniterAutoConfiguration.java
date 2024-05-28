@@ -6,13 +6,13 @@ import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
 import fr.cnes.regards.framework.jsoniter.JsoniterDecoderRegisterer;
 import fr.cnes.regards.framework.jsoniter.property.AttributeModelPropertyTypeFinder;
 import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Jsoniter support auto configuration
  */
-@Configuration
+@AutoConfiguration
 public class JsoniterAutoConfiguration {
 
     @Bean

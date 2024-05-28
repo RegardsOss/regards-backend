@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.model.domain.attributes.restriction;
 import fr.cnes.regards.modules.model.domain.schema.Enumeration;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 

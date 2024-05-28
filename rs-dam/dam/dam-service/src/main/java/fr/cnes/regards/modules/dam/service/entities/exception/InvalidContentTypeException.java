@@ -27,7 +27,7 @@ import java.util.Collection;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class InvalidContentTypeException extends ModuleException {
 
     private static final String MESSAGE_FORMAT = "Invalid data file : unexpected content type %s (one of %s required)";

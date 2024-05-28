@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.function.Supplier;
 
 /**

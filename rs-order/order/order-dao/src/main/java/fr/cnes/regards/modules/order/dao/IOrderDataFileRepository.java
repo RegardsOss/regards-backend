@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import jakarta.persistence.Convert;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,8 +29,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
-import javax.persistence.Convert;
+import jakarta.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collection;

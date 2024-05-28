@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.ingest.dto.sip.flow;
 
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.util.UUID;
 
 /**

@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSetti
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.encryption.SensitiveDynamicSettingConverter;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;

@@ -2,7 +2,7 @@ package fr.cnes.regards.framework.oais.dto.urn.validator;
 
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 
-import javax.validation.Constraint;
+import jakarta.validation.Constraint;
 import java.lang.annotation.*;
 
 /**

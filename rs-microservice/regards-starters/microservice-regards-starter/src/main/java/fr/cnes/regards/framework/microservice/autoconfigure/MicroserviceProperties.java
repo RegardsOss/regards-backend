@@ -21,7 +21,7 @@ package fr.cnes.regards.framework.microservice.autoconfigure;
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @author msordi

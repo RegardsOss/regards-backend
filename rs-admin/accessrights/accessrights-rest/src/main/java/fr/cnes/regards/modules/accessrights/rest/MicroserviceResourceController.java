@@ -39,7 +39,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 /**
@@ -113,8 +114,8 @@ public class MicroserviceResourceController implements IResourceController<Resou
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Register all endpoints of a microservice", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> registerMicroserviceEndpoints(@PathVariable("microservicename") String microserviceName,
-                                                              @RequestBody
-                                                              @Valid List<ResourceMapping> toRegisterResources)
+                                                              @RequestBody @Valid
+                                                              List<ResourceMapping> toRegisterResources)
         throws ModuleException {
         resourceService.registerResources(toRegisterResources, microserviceName);
         return new ResponseEntity<>(HttpStatus.OK);

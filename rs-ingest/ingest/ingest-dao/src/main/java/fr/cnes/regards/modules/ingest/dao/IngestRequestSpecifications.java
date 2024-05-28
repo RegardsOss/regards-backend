@@ -22,10 +22,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
 import java.util.List;
 import java.util.Set;
 

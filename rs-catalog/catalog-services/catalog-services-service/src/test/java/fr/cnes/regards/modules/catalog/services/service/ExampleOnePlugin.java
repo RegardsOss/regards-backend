@@ -27,10 +27,9 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.ISingleEntityServ
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
-import javax.servlet.http.HttpServletResponse;
 
 @Plugin(description = "Example many plugin.",
         id = "OneTestPlugin",

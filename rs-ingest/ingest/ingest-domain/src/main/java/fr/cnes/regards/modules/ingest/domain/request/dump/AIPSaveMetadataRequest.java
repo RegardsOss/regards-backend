@@ -21,11 +21,11 @@ package fr.cnes.regards.modules.ingest.domain.request.dump;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 

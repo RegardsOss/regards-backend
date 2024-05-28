@@ -19,10 +19,8 @@
 package fr.cnes.regards.modules.configuration.domain;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Class Theme
@@ -68,8 +66,7 @@ public class Theme {
      * Theme configuration
      */
     @NotNull
-    @Column(nullable = false)
-    @Type(type = "text")
+    @Column(nullable = false, columnDefinition = "text")
     private String configuration;
 
     public Long getId() {

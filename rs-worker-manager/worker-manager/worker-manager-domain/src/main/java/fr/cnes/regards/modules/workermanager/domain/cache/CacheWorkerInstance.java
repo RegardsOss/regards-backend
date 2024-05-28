@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.workermanager.domain.cache;
 
 import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerHeartBeatEvent;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 

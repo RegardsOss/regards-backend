@@ -19,6 +19,8 @@
 package fr.cnes.regards.framework.authentication.autoconfigure;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author msordi
  */
-@Configuration
+@AutoConfiguration
 public class AuthenticationAutoConfiguration {
 
     public static final String DEFAULT_USER = "DEFAULT_USER";

@@ -23,7 +23,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion.exception;
  *
  * @author Sébastien Binda
  */
-@SuppressWarnings("serial")
+
 public class InvalidGeometryException extends Exception {
 
     public InvalidGeometryException() {

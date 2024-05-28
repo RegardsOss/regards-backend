@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSet
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * Encrypt, decrypt or mask string sensitive values contained in {@link DynamicTenantSetting}s.

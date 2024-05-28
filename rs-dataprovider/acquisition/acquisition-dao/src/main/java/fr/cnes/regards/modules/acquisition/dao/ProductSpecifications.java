@@ -24,9 +24,9 @@ import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.ingest.dto.ISipState;
 import fr.cnes.regards.modules.ingest.dto.SIPState;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;

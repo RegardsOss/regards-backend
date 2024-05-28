@@ -21,12 +21,12 @@ package fr.cnes.regards.modules.storage.dao;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;

@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.properties;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * POJO for microservice project configuration

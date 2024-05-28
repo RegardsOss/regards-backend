@@ -4,11 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import jakarta.validation.constraints.NotNull;
 import org.elasticsearch.common.CheckedSupplier;
 import org.elasticsearch.core.CheckedFunction;
 import org.elasticsearch.xcontent.XContentBuilder;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;

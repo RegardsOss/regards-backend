@@ -21,12 +21,10 @@ package fr.cnes.regards.modules.model.domain;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.urn.EntityType;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 /**
  * Define a model
@@ -77,8 +75,7 @@ public class Model implements IIdentifiable<Long>, IXmlisable<fr.cnes.regards.mo
     /**
      * Optional model description
      */
-    @Column
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String description;
 
     /**

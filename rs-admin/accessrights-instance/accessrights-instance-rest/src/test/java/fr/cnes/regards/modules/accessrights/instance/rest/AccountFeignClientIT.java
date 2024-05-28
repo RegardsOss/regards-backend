@@ -172,7 +172,8 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Ignore
     public void retrieveAccountByEmailFromFeignClient() {
         try {
-            final ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccounByEmail("email@unkown.fr");
+            final ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccountByEmail(
+                "email@unkown.fr");
             Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);

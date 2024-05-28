@@ -24,13 +24,11 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.dissemination.AIPDisseminationRequestDto;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
@@ -41,11 +39,11 @@ import java.util.Objects;
  * @author Thomas GUILLOU
  **/
 @Entity(name = RequestTypeConstant.AIP_DISSEMINATION_CREATOR_VALUE)
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AipDisseminationCreatorRequest extends AbstractRequest {
 
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private AIPDisseminationRequestDto request;
 
     public static AipDisseminationCreatorRequest build(AIPDisseminationRequestDto disseminationRequestDto) {

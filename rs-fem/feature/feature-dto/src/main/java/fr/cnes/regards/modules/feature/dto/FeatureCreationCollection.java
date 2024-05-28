@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.util.Collection;
 
 /**

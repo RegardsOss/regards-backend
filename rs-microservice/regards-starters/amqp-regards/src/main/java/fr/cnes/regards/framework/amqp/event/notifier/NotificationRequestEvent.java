@@ -20,8 +20,8 @@ package fr.cnes.regards.framework.amqp.event.notifier;
 
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.amqp.event.*;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**

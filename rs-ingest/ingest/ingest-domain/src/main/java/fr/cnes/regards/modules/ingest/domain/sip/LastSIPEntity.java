@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "t_last_sip")

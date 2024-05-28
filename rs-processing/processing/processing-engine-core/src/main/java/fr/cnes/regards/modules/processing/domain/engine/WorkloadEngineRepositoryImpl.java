@@ -53,7 +53,6 @@ public class WorkloadEngineRepositoryImpl implements IWorkloadEngineRepository {
                                       .fold(() -> Mono.error(new EngineNotFoundException(name)), Mono::just));
     }
 
-    @SuppressWarnings("serial")
     public static class EngineAlreadyExistsException extends Exception {
 
         public EngineAlreadyExistsException(String s) {
@@ -61,7 +60,6 @@ public class WorkloadEngineRepositoryImpl implements IWorkloadEngineRepository {
         }
     }
 
-    @SuppressWarnings("serial")
     public static class EngineNotFoundException extends Exception {
 
         public EngineNotFoundException(String s) {

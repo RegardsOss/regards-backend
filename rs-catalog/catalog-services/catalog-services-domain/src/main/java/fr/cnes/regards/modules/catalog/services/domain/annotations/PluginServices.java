@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.catalog.services.domain.annotations;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.domain.validation.PluginServicesValidator;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
 import java.lang.annotation.*;
 
 /**

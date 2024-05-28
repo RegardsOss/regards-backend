@@ -1,8 +1,8 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 

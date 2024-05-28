@@ -25,7 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import static fr.cnes.regards.modules.accessrights.client.IRegistrationClient.TARGET_NAME;
 

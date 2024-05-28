@@ -22,11 +22,10 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 
@@ -64,7 +63,7 @@ public class AcquisitionFile {
     /**
      * This field is only used when acquisition file status is set to {@link AcquisitionFileState#ERROR} or {@link AcquisitionFileState#INVALID}
      */
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String error;
 
     /**

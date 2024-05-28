@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.feature.dto;
 
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Set;
 

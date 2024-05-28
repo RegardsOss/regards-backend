@@ -1,6 +1,6 @@
 package fr.cnes.regards.modules.dam.domain.entities.metadata;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

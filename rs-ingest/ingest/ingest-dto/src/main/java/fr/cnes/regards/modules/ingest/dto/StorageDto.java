@@ -22,7 +22,7 @@ package fr.cnes.regards.modules.ingest.dto;
 import fr.cnes.regards.framework.urn.DataType;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.util.HashSet;
 import java.util.Set;
 

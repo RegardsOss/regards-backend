@@ -19,20 +19,17 @@
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.*;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.*;
-import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,14 +42,14 @@ import java.util.UUID;
  * @author Léo Mieulet
  */
 @Entity(name = RequestTypeConstant.UPDATE_VALUE)
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 public class AIPUpdateRequest extends AbstractRequest {
 
     /**
      * request configuration
      */
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(JsonBinaryType.class)
     private AIPUpdatePayload config;
 
     //CascadeType.DELETE is not effective with @ManyToOne, so lets set all cascaded operation

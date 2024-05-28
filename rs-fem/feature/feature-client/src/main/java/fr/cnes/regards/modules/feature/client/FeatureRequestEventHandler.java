@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.List;
 
 /**

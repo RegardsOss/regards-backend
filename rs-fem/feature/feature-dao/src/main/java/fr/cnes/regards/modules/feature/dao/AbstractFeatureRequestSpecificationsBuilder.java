@@ -23,12 +23,12 @@ import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 

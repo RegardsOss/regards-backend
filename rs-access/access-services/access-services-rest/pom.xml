@@ -94,11 +94,6 @@
             <groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
             <artifactId>uiconfiguration-service</artifactId>
         </dependency>
-        <!-- Libraries -->
-        <dependency>
-            <groupId>io.vavr</groupId>
-            <artifactId>vavr</artifactId>
-        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

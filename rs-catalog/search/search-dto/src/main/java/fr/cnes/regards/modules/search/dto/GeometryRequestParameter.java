@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.search.dto;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * DTO for Geometry validation endpoint.

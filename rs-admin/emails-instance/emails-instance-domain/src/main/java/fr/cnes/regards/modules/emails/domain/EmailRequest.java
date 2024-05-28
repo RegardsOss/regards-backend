@@ -1,16 +1,18 @@
 package fr.cnes.regards.modules.emails.domain;
 
+import java.time.OffsetDateTime;
+
+import org.hibernate.annotations.Type;
+import org.springframework.util.ObjectUtils;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.converters.StringArrayConverter;
-import org.hibernate.annotations.Type;
-import org.springframework.util.ObjectUtils;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Models a request for a simple mail message, including data such as the from, to, cc, subject, and text fields.
@@ -62,7 +64,7 @@ public class EmailRequest implements IIdentifiable<Long> {
      * "_" prefix is required because "from" is a reserved keyword in SQL
      */
     @Column(name = "from_addr", length = MAX_EMAIL_ADDRESS_SIZE)
-    @javax.validation.constraints.Email
+    @Email
     private String from;
 
     /**
@@ -80,8 +82,7 @@ public class EmailRequest implements IIdentifiable<Long> {
     /**
      * Body of the email
      */
-    @Column(name = "text")
-    @Type(type = "text")
+    @Column(name = "text", columnDefinition = "text")
     private String text;
 
     @NotEmpty

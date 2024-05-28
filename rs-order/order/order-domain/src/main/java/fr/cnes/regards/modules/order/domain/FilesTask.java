@@ -20,7 +20,8 @@ package fr.cnes.regards.modules.order.domain;
 
 import fr.cnes.regards.framework.modules.jobs.domain.LeafTask;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;

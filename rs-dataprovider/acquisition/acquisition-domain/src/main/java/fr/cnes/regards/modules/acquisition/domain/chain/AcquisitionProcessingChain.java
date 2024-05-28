@@ -30,16 +30,15 @@ import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -67,7 +66,6 @@ import java.util.Set;
                                                                                        @NamedAttributeNode(value = "scanPlugin") }),
                                                      @NamedSubgraph(name = "graph.acquisition.chain.jobs",
                                                                     attributeNodes = { @NamedAttributeNode(value = "parameters") }) }) })
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class AcquisitionProcessingChain {
 
     /**
@@ -130,7 +128,7 @@ public class AcquisitionProcessingChain {
     @Valid
     @NotNull(message = "Storage metadata is required")
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                     value = "fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider") })
     private List<StorageMetadataProvider> storages;
@@ -138,7 +136,8 @@ public class AcquisitionProcessingChain {
     @Valid
     @NotNull(message = "Categories are required")
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> categories;
 
     @Column(name = "versioning_mode")

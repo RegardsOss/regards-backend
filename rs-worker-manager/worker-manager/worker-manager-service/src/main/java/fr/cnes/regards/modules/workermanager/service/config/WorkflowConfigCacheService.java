@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.workermanager.dao.IWorkflowRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;

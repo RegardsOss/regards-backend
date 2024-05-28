@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Document locally stored on rs-dam

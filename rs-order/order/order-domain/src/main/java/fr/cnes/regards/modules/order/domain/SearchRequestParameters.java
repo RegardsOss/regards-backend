@@ -24,7 +24,8 @@ import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
+
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;

@@ -2,10 +2,8 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  * Job parameter ie a name/value pair.
@@ -19,7 +17,7 @@ public class JobParameter {
     @Column(length = 100, nullable = false)
     private String name;
 
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String value;
 
     @Column(name = "class_name", length = 255)

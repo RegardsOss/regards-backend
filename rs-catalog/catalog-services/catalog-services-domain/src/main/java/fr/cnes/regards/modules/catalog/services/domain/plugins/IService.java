@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.catalog.services.domain.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Plugin applying processus according to its parameters.

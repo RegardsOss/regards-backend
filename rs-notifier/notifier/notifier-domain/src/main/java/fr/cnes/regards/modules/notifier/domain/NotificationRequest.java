@@ -19,11 +19,12 @@
 package fr.cnes.regards.modules.notifier.domain;
 
 import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -117,11 +118,11 @@ public class NotificationRequest {
     private String requestId;
 
     @Column(columnDefinition = "jsonb", name = "payload", nullable = false)
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private JsonObject payload;
 
     @Column(name = "metadata", nullable = false, columnDefinition = "jsonb")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private JsonObject metadata;
 
     /**

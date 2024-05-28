@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * Validate {@link Polygon} coordinate structure

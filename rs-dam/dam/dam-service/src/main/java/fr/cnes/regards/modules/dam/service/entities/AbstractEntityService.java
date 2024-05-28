@@ -71,6 +71,7 @@ import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.model.service.validation.validator.common.NotAlterableAttributeValidator;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,8 +84,7 @@ import org.springframework.validation.Validator;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriUtils;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;

@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.dto.internal.NotifierClearCacheEvent;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -35,7 +36,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.validation.Valid;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;

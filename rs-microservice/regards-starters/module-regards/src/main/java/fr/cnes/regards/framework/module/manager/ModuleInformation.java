@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.module.manager;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Module information are loaded from <b>module.properties</b> that must exist in same package as

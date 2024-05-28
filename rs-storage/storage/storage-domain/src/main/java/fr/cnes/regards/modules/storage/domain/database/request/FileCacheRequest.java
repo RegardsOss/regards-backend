@@ -24,8 +24,8 @@ import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Objects;

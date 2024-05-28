@@ -23,9 +23,10 @@ import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.util.Assert;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.util.Objects;
 import java.util.Optional;
 

@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.ingest;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Information class for ingest request in error

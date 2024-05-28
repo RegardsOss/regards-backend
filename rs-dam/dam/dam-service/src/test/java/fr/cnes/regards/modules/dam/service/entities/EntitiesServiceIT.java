@@ -29,14 +29,14 @@ import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

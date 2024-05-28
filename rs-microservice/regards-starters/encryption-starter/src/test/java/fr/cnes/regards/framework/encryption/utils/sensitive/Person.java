@@ -99,8 +99,8 @@ final class Coordinates {
             return false;
         }
         var that = (Coordinates) obj;
-        return Objects.equals(this.secretEmailAddress, that.secretEmailAddress)
-               && Objects.equals(this.secretLocation, that.secretLocation);
+        return Objects.equals(this.secretEmailAddress, that.secretEmailAddress) && Objects.equals(this.secretLocation,
+                                                                                                  that.secretLocation);
     }
 
     @Override
@@ -110,7 +110,12 @@ final class Coordinates {
 
     @Override
     public String toString() {
-        return "Coordinates{" + "secretEmailAddress='" + secretEmailAddress + '\'' + ", location=" + secretLocation
+        return "Coordinates{"
+               + "secretEmailAddress='"
+               + secretEmailAddress
+               + '\''
+               + ", location="
+               + secretLocation
                + '}';
     }
 }

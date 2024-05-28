@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.exception.UnsupportedRestrictionException;
 import org.springframework.data.domain.Sort;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
 
@@ -42,7 +41,7 @@ public interface IAttributeModelService {
     List<AttributeModel> getAttributes(PropertyType type, String fragmentName, Set<String> modelNames, Sort sort);
 
     /**
-     * Add an attribute in a {@link Transactional} context
+     * Add an attribute in a {@link jakarta.transaction.Transactional} context
      *
      * @param pAttributeModel {@link AttributeModel} to add
      * @return {@link AttributeModel}
@@ -51,7 +50,7 @@ public interface IAttributeModelService {
     AttributeModel addAttribute(AttributeModel pAttributeModel, boolean duringImport) throws ModuleException;
 
     /**
-     * Add a list of attributes in a {@link Transactional} context
+     * Add a list of attributes in a {@link jakarta.transaction.Transactional} context
      *
      * @param pAttributeModels list of {@link AttributeModel} to add
      * @return list of {@link AttributeModel}
@@ -60,7 +59,7 @@ public interface IAttributeModelService {
     Iterable<AttributeModel> addAllAttributes(Iterable<AttributeModel> pAttributeModels) throws ModuleException;
 
     /**
-     * Manage {@link AttributeModel} creation out of a {@link Transactional} context. This method is used by
+     * Manage {@link AttributeModel} creation out of a {@link jakarta.transaction.Transactional} context. This method is used by
      * {@link IAttributeModelService#addAttribute(AttributeModel, boolean)} and
      * {@link IAttributeModelService#addAllAttributes(Iterable)}.
      *

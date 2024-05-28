@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.validator.RegardsUrn;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Convert;
 
-import javax.persistence.Convert;
 import java.util.UUID;
 import java.util.regex.Pattern;
 

@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Sébastien Binda
  */
-@SuppressWarnings("serial")
+
 public class SIPGenerationException extends ModuleException {
 
     public SIPGenerationException(String message) {

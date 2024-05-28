@@ -24,11 +24,11 @@ import fr.cnes.regards.modules.model.domain.schema.IntegerRange.Max;
 import fr.cnes.regards.modules.model.domain.schema.IntegerRange.Min;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 
 /**

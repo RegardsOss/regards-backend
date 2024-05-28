@@ -32,11 +32,11 @@ import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFact
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.model.domain.Model;
+import jakarta.servlet.http.HttpServletResponse;
 import org.assertj.core.util.Sets;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.LinkedHashSet;
 import java.util.UUID;
 

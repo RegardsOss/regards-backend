@@ -24,11 +24,10 @@ import fr.cnes.regards.modules.model.domain.schema.DoubleRange.Max;
 import fr.cnes.regards.modules.model.domain.schema.DoubleRange.Min;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Manage date format restriction for attribute of type :

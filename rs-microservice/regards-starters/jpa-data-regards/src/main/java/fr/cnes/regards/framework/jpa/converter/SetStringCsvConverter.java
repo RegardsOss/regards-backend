@@ -20,8 +20,9 @@ package fr.cnes.regards.framework.jpa.converter;
 
 import com.google.common.collect.Sets;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+
 import java.util.Collections;
 import java.util.Set;
 import java.util.StringJoiner;

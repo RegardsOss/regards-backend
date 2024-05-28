@@ -26,13 +26,12 @@ import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidationException;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import javax.validation.Validation;
-import javax.validation.ValidationException;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 /**
  * @author Sylvain Vissiere-Guerinet

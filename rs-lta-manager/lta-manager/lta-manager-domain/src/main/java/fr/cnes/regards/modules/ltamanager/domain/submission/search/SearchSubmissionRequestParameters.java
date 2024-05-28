@@ -24,9 +24,9 @@ import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import javax.validation.Valid;
 import java.util.Objects;
 
 /**

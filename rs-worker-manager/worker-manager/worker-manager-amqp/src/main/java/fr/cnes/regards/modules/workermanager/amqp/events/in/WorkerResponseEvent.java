@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.workercommon.dto.WorkerResponse;
 import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import org.springframework.amqp.core.MessageProperties;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Event sent by workers to inform about a request status

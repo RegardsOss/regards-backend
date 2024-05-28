@@ -253,7 +253,10 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             allInputCidsReferenceTheSameFeature(outputFile.getInputCorrelationIds()).peek(featureIpId -> {
                 String orderDataFileUrl = ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, featureIpId);
 
-                List<OrderDataFile> orderDataFilesUrls = orderDataFiles.stream().filter(file -> file.getUrl().startsWith(orderDataFileUrl)).toList();
+                List<OrderDataFile> orderDataFilesUrls = orderDataFiles.stream()
+                                                                       .filter(file -> file.getUrl()
+                                                                                           .startsWith(orderDataFileUrl))
+                                                                       .toList();
                 int orderDataFileCount = orderDataFilesUrls.size();
                 if (orderDataFileCount != 1) {
                     LOGGER.warn(WARNING_MSG, logPrefix(evt), orderDataFileUrl, orderDataFileCount);
@@ -288,15 +291,16 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
      */
     private void handleFeaturesNotProcessed(Seq<POutputFileDTO> outputs,
                                             List<OrderDataFile> orderDataFiles,
-                                            List<OrderDataFile> updatedDataFiles, PExecutionResultEvent evt) {
+                                            List<OrderDataFile> updatedDataFiles,
+                                            PExecutionResultEvent evt) {
         updatedDataFiles.addAll(orderDataFiles.stream()
                                               .filter(dataFile -> !getFeatureIdsFromInputCorrelationIds(outputs).contains(
                                                   dataFile.getIpId().toString()))
                                               .peek(featureNotHandled -> {
                                                   LOGGER.error("{} feature with id \"{}\" not handled in suborder "
                                                                + "because no output was found.",
-                                                              logPrefix(evt),
-                                                              featureNotHandled.getIpId());
+                                                               logPrefix(evt),
+                                                               featureNotHandled.getIpId());
                                                   featureNotHandled.setState(FileState.PROCESSING_ERROR);
                                               })
                                               .toList());

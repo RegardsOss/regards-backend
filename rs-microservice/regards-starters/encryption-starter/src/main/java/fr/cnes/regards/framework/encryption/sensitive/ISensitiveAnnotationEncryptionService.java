@@ -17,7 +17,7 @@ package fr.cnes.regards.framework.encryption.sensitive;/*
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * Interface to encrypt, decrypt or mask recursively annotated sensitive values.

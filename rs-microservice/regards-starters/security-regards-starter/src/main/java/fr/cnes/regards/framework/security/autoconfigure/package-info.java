@@ -17,6 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * Security auto configuration package
+ * Security autoconfiguration package
  */
 package fr.cnes.regards.framework.security.autoconfigure;

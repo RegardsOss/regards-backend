@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import java.util.List;
 
 /**
  * @author Kevin Marchois
  */
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @Embeddable
 public class FeatureCreationMetadataEntity extends FeatureMetadataEntity {
 

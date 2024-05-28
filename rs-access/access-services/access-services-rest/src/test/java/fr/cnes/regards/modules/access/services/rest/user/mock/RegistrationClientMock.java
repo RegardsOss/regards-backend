@@ -3,13 +3,13 @@ package fr.cnes.regards.modules.access.services.rest.user.mock;
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import jakarta.validation.Valid;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Valid;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;

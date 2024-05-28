@@ -19,8 +19,8 @@
  */
 package fr.cnes.regards.modules.ingest.dto;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.Size;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;

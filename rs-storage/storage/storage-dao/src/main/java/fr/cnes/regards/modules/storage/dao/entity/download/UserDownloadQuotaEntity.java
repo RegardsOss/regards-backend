@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.dao.entity.download;
 
-import javax.persistence.*;
-import javax.validation.constraints.Min;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+
 import java.util.Objects;
 
 @Entity

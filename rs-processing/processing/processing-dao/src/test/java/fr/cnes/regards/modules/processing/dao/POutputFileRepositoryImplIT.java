@@ -44,7 +44,9 @@ public class POutputFileRepositoryImplIT extends AbstractRepoIT {
         ExecutionEntity exec = makeExecutionEntity();
 
         List<POutputFile> files = RandomUtils.randomList(POutputFile.class, 10)
-                                             .map(o -> o.withExecId(exec.getId()).withPersisted(false));
+                                             .map(o -> o.withExecId(exec.getId())
+                                                        .withPersisted(false)
+                                                        .withChecksum(new POutputFile.Digest("M", "V")));
 
         List<POutputFile> persistedOutputFiles = domainOutputFilesRepo.save(Flux.fromIterable(files))
                                                                       .collect(List.collector())
@@ -68,15 +70,18 @@ public class POutputFileRepositoryImplIT extends AbstractRepoIT {
         POutputFile notDwnNotDlt = randomInstance(POutputFile.class).withExecId(exec.getId())
                                                                     .withDownloaded(false)
                                                                     .withDeleted(false)
-                                                                    .withPersisted(false);
+                                                                    .withPersisted(false)
+                                                                    .withChecksum(new POutputFile.Digest("M", "V"));
         POutputFile dwnNotDlt = randomInstance(POutputFile.class).withExecId(exec.getId())
                                                                  .withDownloaded(true)
                                                                  .withDeleted(false)
-                                                                 .withPersisted(false);
+                                                                 .withPersisted(false)
+                                                                 .withChecksum(new POutputFile.Digest("M", "V"));
         POutputFile dwnDlt = randomInstance(POutputFile.class).withExecId(exec.getId())
                                                               .withDownloaded(true)
                                                               .withDeleted(true)
-                                                              .withPersisted(false);
+                                                              .withPersisted(false)
+                                                              .withChecksum(new POutputFile.Digest("M", "V"));
 
         domainOutputFilesRepo.save(Flux.just(notDwnNotDlt, dwnNotDlt, dwnDlt)).collect(List.collector()).block();
 

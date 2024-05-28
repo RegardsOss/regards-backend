@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.modules.session.commons.dao;
 
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,7 +27,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import javax.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.*;
 

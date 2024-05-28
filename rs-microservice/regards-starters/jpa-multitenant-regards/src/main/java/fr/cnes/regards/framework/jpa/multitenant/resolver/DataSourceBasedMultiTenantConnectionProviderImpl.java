@@ -33,7 +33,7 @@ import java.util.Map;
  *
  * @author CS
  */
-@SuppressWarnings("serial")
+
 public class DataSourceBasedMultiTenantConnectionProviderImpl
     extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl {
 

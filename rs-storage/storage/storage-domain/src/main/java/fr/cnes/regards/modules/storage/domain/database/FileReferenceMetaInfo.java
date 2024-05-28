@@ -21,11 +21,10 @@ package fr.cnes.regards.modules.storage.domain.database;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Embeddable;
 import org.springframework.util.MimeType;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embeddable;
 
 /**
  * Database definition of meta information on a file.

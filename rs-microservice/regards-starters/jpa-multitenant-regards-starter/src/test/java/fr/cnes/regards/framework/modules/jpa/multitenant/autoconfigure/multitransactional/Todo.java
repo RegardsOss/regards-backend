@@ -19,7 +19,7 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.multitransactional;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Basic pojo to test transaction synchronization

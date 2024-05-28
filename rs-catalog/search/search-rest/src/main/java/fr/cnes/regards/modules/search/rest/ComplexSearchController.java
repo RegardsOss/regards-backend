@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.SearchException;
 import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -49,7 +50,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 

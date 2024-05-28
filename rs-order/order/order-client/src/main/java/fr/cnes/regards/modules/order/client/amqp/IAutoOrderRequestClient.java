@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.order.client.amqp;
 
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.List;
 
 /**

@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Xavier-Alexandre Brochard
  */
-@SuppressWarnings("serial")
+
 public class SearchException extends ModuleException {
 
     public SearchException(String pErrorMessage) {

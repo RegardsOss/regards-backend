@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursorMode;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.List;
 

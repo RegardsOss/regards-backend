@@ -19,17 +19,18 @@
 package fr.cnes.regards.modules.feature.domain.request;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -107,7 +108,8 @@ public abstract class AbstractRequest {
     protected PriorityLevel priority;
 
     @Column(columnDefinition = "jsonb", name = "errors")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     protected Set<String> errors;
 
     @SuppressWarnings("unchecked")

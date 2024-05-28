@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
 

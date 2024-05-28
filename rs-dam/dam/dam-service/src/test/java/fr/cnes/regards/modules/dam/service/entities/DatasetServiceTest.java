@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import jakarta.persistence.EntityManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +56,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import org.hibernate.annotations.Type;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Class ResourcesAccess
@@ -52,8 +51,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     /**
      * Resource description
      */
-    @Column(name = "description")
-    @Type(type = "text")
+    @Column(name = "description", columnDefinition = "text")
     private String description;
 
     /**

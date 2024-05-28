@@ -21,8 +21,8 @@ package fr.cnes.regards.framework.oais.dto.validator;
 import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * @author Kevin Marchois

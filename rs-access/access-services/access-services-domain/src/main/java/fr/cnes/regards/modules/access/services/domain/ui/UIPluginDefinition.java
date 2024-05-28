@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.access.services.domain.ui;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.validation.NotEmptyFieldsIfService;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 

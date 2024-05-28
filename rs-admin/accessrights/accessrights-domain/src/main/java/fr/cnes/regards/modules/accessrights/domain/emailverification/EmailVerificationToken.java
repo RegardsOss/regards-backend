@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.emailverification;
 
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * Verification token for verifying the user's email process.
@@ -72,16 +71,14 @@ public class EmailVerificationToken {
      * The origin url
      */
     @NotBlank
-    @Column(name = "origin_url")
-    @Type(type = "text")
+    @Column(name = "origin_url", columnDefinition = "text")
     private String originUrl;
 
     /**
      * The request link
      */
     @NotBlank
-    @Column(name = "request_link")
-    @Type(type = "text")
+    @Column(name = "request_link", columnDefinition = "text")
     private String requestLink;
 
     /**

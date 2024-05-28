@@ -24,9 +24,6 @@ package fr.cnes.regards.framework.security.utils.jwt.exception;
  * @author msordi
  */
 public class InvalidJwtException extends JwtException {
-
-    private static final long serialVersionUID = 1L;
-
     public InvalidJwtException(Throwable cause) {
         super(cause);
     }

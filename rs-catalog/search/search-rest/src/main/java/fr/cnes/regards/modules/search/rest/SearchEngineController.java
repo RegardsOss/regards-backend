@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

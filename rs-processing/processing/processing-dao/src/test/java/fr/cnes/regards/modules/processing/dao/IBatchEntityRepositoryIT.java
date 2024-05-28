@@ -56,7 +56,6 @@ public class IBatchEntityRepositoryIT extends AbstractRepoIT {
         BatchEntity batchToBeDeleted = randomInstance(BatchEntity.class).withPersisted(false);
 
         entityBatchRepo.saveAll(Array.of(batchRecentExec, batchRunningExec, batchToBeDeleted, batchNoExec)).blockLast();
-
         {
             generateExecution(executions, batchRecentExec, SUCCESS, nowUtc().minusMonths(3)); // Could be deleted
             generateExecution(executions, batchRecentExec, FAILURE, nowUtc().minusMinutes(3)); // Too soon to be deleted
@@ -69,7 +68,6 @@ public class IBatchEntityRepositoryIT extends AbstractRepoIT {
             generateExecution(executions, batchToBeDeleted, SUCCESS, nowUtc().minusMonths(4)); // Could be deleted
             generateExecution(executions, batchToBeDeleted, TIMED_OUT, nowUtc().minusMonths(5)); // Could be deleted
         }
-
         entityExecRepo.saveAll(executions).blockLast();
 
         // WHEN looking for batches ripe for deletion

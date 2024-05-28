@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.scheduler;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.time.OffsetDateTime;
 import java.util.Objects;
 

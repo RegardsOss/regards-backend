@@ -22,9 +22,10 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.Objects;
 
 /**

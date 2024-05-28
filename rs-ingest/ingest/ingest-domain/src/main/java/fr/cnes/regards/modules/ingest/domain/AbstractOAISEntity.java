@@ -18,21 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.urn.EntityType;
+import java.time.OffsetDateTime;
+import java.util.Set;
+
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.MappedSuperclass;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.Set;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.urn.EntityType;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Define common attributes between SIPEntity and AIPEntity
@@ -51,7 +53,8 @@ public abstract class AbstractOAISEntity {
     private String session;
 
     @Column(columnDefinition = "jsonb", nullable = false)
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> categories;
 
     /**
@@ -71,7 +74,8 @@ public abstract class AbstractOAISEntity {
     private Integer version;
 
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> tags;
 
     @NotNull(message = "Creation date is required")

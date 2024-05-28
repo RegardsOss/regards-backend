@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.fileaccess.plugin.dto;
 
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
 
 /**

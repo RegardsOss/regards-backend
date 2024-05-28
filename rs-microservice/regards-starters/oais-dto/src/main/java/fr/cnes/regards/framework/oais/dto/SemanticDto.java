@@ -19,7 +19,7 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class SemanticDto {
 

@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class InvalidFilenameException extends ModuleException {
 
     private static final String MESSAGE_FORMAT = "Invalid data file : filename is required";

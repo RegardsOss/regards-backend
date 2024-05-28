@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.repository.IPBatchRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
-import fr.cnes.regards.modules.processing.testutils.AbstractProcessingIT;
+import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingIT;
 import fr.cnes.regards.modules.processing.utils.random.RandomUtils;
 import org.junit.After;
 import org.slf4j.Logger;

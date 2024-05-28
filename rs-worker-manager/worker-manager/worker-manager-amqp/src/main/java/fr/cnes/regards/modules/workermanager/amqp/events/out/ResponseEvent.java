@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
 import org.springframework.amqp.core.MessageProperties;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
 
 /**

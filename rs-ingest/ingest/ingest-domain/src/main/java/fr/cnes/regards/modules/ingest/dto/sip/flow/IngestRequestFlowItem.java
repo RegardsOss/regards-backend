@@ -25,6 +25,8 @@ import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.IngestRequestFlowItemDto;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.util.Assert;
 

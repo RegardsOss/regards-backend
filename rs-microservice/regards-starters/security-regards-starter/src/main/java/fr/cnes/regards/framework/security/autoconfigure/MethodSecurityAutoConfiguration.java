@@ -24,9 +24,9 @@ import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVo
 import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.vote.AffirmativeBased;
@@ -45,7 +45,7 @@ import java.util.List;
  *
  * @author CS SI
  */
-@Configuration
+@AutoConfiguration
 @ConditionalOnWebApplication
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfiguration {

@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.model.dao;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Predicate;
 import java.util.Set;
 
 /**

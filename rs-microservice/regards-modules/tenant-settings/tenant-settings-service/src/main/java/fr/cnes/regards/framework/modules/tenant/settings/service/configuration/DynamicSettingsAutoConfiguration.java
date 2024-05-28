@@ -27,8 +27,8 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSe
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
 import fr.cnes.regards.framework.modules.tenant.settings.service.encryption.DynamicSettingsEncryptionService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.encryption.SensitiveDynamicSettingConverter;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import java.util.List;
@@ -38,7 +38,7 @@ import java.util.List;
  *
  * @author Iliana Ghazali
  **/
-@Configuration
+@AutoConfiguration
 public class DynamicSettingsAutoConfiguration {
 
     @Bean("dynamicTenantSettingService")

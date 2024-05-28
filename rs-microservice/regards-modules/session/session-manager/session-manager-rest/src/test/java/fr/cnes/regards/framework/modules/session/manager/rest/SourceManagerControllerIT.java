@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 
@@ -53,7 +52,7 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private ISourceManagerRepository sourceRepo;
 
-    @SpyBean
+    @Autowired
     protected IPublisher publisher;
 
     private static final String SOURCE_1 = "SOURCE1";

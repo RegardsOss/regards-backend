@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.aip;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 /**
  * Light version of {@link AIPEntity}. Does not contains SIP information.

@@ -21,12 +21,12 @@ package fr.cnes.regards.framework.urn;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.framework.urn.validator.RegardsUrn;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Convert;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.lang.Nullable;
 
-import javax.persistence.Convert;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.UUID;

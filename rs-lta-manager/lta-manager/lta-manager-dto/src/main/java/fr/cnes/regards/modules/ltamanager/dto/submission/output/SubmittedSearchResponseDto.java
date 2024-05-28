@@ -21,11 +21,11 @@ package fr.cnes.regards.modules.ltamanager.dto.submission.output;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Objects;

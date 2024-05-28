@@ -21,9 +21,8 @@ package fr.cnes.regards.modules.ingest.domain.aip;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "t_aip",

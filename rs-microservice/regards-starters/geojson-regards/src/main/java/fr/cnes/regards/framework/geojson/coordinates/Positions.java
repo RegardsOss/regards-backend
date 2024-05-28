@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class Positions extends ArrayList<Position> {
 
     /**

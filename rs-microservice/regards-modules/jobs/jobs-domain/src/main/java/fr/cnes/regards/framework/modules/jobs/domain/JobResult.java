@@ -19,10 +19,9 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -44,8 +43,7 @@ public class JobResult {
     /**
      * Job path
      */
-    @Column(nullable = false)
-    @Type(type = "text")
+    @Column(columnDefinition = "text", nullable = false)
     private String uri;
 
     /**

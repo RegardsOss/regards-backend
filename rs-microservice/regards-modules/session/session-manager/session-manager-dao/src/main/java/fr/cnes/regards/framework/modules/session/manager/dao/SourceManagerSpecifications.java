@@ -21,10 +21,10 @@ package fr.cnes.regards.framework.modules.session.manager.dao;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.session.manager.domain.ManagerState;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
 import java.util.Set;
 
 /**

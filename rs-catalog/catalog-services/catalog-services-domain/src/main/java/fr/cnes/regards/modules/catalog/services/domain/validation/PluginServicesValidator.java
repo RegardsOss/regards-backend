@@ -21,9 +21,8 @@ package fr.cnes.regards.modules.catalog.services.domain.validation;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.PluginServices;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * Validator enforcing {@link PluginServices} constraints

@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.processing.config;
 
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.springdoc.core.SpringDocUtils;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Configuration;
 

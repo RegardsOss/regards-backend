@@ -21,9 +21,9 @@ package fr.cnes.regards.framework.amqp.event;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.amqp.core.MessageProperties;
 
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 

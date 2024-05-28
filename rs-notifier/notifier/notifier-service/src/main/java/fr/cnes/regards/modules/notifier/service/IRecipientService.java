@@ -22,9 +22,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import fr.cnes.regards.modules.notifier.dto.RecipientDto;
+import jakarta.validation.Valid;
 
-import javax.annotation.Nullable;
-import javax.validation.Valid;
+import jakarta.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 

@@ -27,12 +27,11 @@ import fr.cnes.regards.framework.security.autoconfigure.test.SecureTestRuntimeTe
 import fr.cnes.regards.framework.security.endpoint.*;
 import fr.cnes.regards.framework.security.event.SecurityEventHandler;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 /**
@@ -40,9 +39,8 @@ import org.springframework.context.annotation.Profile;
  *
  * @author msordi
  */
-@Configuration
+@AutoConfiguration(before = { AuthenticationAutoConfiguration.class, MultitenantAutoConfiguration.class })
 @ConditionalOnWebApplication
-@AutoConfigureBefore({ AuthenticationAutoConfiguration.class, MultitenantAutoConfiguration.class })
 public class MethodAuthorizationServiceAutoConfiguration {
 
     /**

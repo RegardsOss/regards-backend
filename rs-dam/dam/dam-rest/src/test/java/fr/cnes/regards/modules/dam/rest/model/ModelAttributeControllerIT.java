@@ -452,27 +452,27 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(shouldBe.size())));
         requestBuilderCustomizer.expect(MockMvcResultMatchers.content().json(gson(shouldBe), false));
 
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(RequestDocumentation.parameterWithName(
-                                                                                                         "type")
-                                                                                                     .description(
-                                                                                                         "Model type for which we want the associations")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       JSON_STRING_TYPE),
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                                                                                   .value(
-                                                                                                                       "Available values: "
-                                                                                                                       + Arrays.stream(
-                                                                                                                                   EntityType.values())
-                                                                                                                               .map(
-                                                                                                                                   type -> type.name())
-                                                                                                                               .collect(
-                                                                                                                                   Collectors.joining(
-                                                                                                                                       ", "))))
-                                                                                                     .optional()));
+        requestBuilderCustomizer.document(RequestDocumentation.queryParameters(RequestDocumentation.parameterWithName(
+                                                                                                       "type")
+                                                                                                   .description(
+                                                                                                       "Model type for which we want the associations")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     JSON_STRING_TYPE),
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                                                 .value(
+                                                                                                                     "Available values: "
+                                                                                                                     + Arrays.stream(
+                                                                                                                                 EntityType.values())
+                                                                                                                             .map(
+                                                                                                                                 type -> type.name())
+                                                                                                                             .collect(
+                                                                                                                                 Collectors.joining(
+                                                                                                                                     ", "))))
+                                                                                                   .optional()));
 
         performDefaultGet(ModelAttrAssocController.BASE_MAPPING + ModelAttrAssocController.ASSOCS_MAPPING,
                           requestBuilderCustomizer,

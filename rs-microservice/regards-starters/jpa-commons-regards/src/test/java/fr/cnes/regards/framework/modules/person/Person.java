@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.person;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * {@link Person} test entity with a generated sequence

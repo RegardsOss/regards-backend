@@ -21,16 +21,16 @@ package fr.cnes.regards.framework.modules.session.commons.service;
 import fr.cnes.regards.framework.modules.session.commons.service.delete.*;
 import fr.cnes.regards.framework.modules.session.commons.service.jobs.SnapshotJobEventHandler;
 import fr.cnes.regards.framework.modules.session.commons.service.jobs.SnapshotJobEventService;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 /**
  * @author Iliana Ghazali
  **/
 
-@Configuration
+@AutoConfiguration
 public class SessionCommonsServiceAutoConfiguration {
 
     /**

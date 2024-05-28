@@ -26,7 +26,7 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author oroussel
  */
-@SuppressWarnings("serial")
+
 public class ComputedAttributeModelEvent extends ApplicationEvent {
 
     public ComputedAttributeModelEvent(ModelAttrAssoc source) {

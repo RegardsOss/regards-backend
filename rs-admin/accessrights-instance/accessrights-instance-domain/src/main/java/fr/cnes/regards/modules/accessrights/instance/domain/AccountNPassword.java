@@ -1,8 +1,8 @@
 package fr.cnes.regards.modules.accessrights.instance.domain;
 
+import jakarta.validation.Valid;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.Valid;
 import java.util.Objects;
 
 /**

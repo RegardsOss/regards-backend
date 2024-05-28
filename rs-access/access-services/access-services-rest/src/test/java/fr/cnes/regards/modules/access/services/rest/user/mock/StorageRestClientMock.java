@@ -9,6 +9,7 @@ import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -16,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
 

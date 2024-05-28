@@ -23,7 +23,7 @@ package fr.cnes.regards.framework.utils;
  *
  * @author oroussel
  */
-@SuppressWarnings("serial")
+
 public class RsRuntimeException extends RuntimeException {
 
     public RsRuntimeException(Throwable cause) {

@@ -17,16 +17,15 @@
  */
 package fr.cnes.regards.modules.processing.entity;
 
-import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
+import io.hypersistence.utils.hibernate.type.array.StringArrayType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-import javax.persistence.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -43,7 +42,6 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TypeDef(name = "string-array", typeClass = StringArrayType.class)
 @Entity
 @Table(name = "t_rights_plugin_configuration")
 @SequenceGenerator(name = "pluginRightsConfSequence", initialValue = 1, sequenceName = "seq_plugin_rights_conf")
@@ -64,7 +62,7 @@ public class RightsPluginConfiguration {
     private String role;
 
     @Column(name = "datasets", columnDefinition = "varchar(128)[]")
-    @Type(type = "string-array")
+    @Type(StringArrayType.class)
     private String[] datasets;
 
     @Column(name = "is_linked_to_all_datasets")

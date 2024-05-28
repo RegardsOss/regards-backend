@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 @PolygonPositionsConstraints
 public class PolygonPositions extends ArrayList<Positions> {
 

@@ -41,7 +41,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 
@@ -137,8 +136,7 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
         projectRepo.deleteAll();
 
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
-        aesEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
-                                                       "1234567812345678"));
+        aesEncryptionService.init(new CipherProperties("src/test/resources/testKey", "1234567812345678"));
 
         project1 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1);
         project1.setLabel("Project1");

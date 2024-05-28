@@ -20,17 +20,14 @@ package fr.cnes.regards.modules.ltamanager.dao.submission;
 
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +38,8 @@ import java.util.Optional;
  * @author Iliana Ghazali
  **/
 @Repository
-public interface ISubmissionRequestRepository extends JpaRepository<SubmissionRequest, Long> {
+public interface ISubmissionRequestRepository extends JpaRepository<SubmissionRequest, Long>,
+    JpaSpecificationExecutor<SubmissionRequest> {
 
     // ------------
     // -- SEARCH --

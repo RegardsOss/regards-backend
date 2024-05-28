@@ -19,12 +19,12 @@
 package fr.cnes.regards.framework.utils.eureka;
 
 import fr.cnes.regards.framework.utils.eureka.model.EurekaGetResponseDto;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
 
 /**

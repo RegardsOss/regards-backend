@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.accessrights.instance.domain.accountunlock;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
 
-import javax.persistence.*;
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 
 /**

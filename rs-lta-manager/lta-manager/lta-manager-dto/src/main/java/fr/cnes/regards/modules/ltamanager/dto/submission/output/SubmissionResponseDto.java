@@ -21,13 +21,13 @@ package fr.cnes.regards.modules.ltamanager.dto.submission.output;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 

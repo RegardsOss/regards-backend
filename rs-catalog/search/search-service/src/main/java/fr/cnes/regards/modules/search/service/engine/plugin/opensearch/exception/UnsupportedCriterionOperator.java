@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Sébastien Binda
  */
-@SuppressWarnings("serial")
+
 public class UnsupportedCriterionOperator extends ModuleException {
 
     public UnsupportedCriterionOperator() {

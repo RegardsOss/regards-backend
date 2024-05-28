@@ -179,9 +179,7 @@ public class LegacySearchEngine implements
         for (EntityModel<EntityFeature> resource : pagedResource.getContent()) {
             EntityFeature entityFeature = resource.getContent();
             if (entityFeature != null) {
-                resource.add(linkBuilder.buildEntityLinks(resourceService,
-                                                          context,
-                                                          entityFeature));
+                resource.add(linkBuilder.buildEntityLinks(resourceService, context, entityFeature));
             } else {
                 throw new ModuleException("An error occurred while add entity links: an entityFeature is null");
             }

@@ -63,7 +63,7 @@
             <artifactId>jpa-commons-regards</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-spatial</artifactId>
         </dependency>
         <dependency>

@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.feature.domain;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 
 /**

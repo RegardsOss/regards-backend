@@ -20,11 +20,10 @@ package fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import io.swagger.v3.oas.annotations.media.Schema;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 /**
  * Entity representing an group of user having rights on some data

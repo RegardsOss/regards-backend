@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.accessrights.domain.projects.validation;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 /**
  * Implement the logic to validate the constraint specified by {@link HasValidParent} annotation.

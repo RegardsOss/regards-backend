@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.framework.modules.session.commons.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  * Current state of the {@link SessionStep}

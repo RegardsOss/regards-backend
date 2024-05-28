@@ -22,13 +22,13 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 /**
@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Profile;
  * @author Sébastien Binda
  */
 @Profile("!test")
-@Configuration
+@AutoConfiguration
 @EnableCaching
 public class ServiceAggregatorCacheAutoConfiguration {
 

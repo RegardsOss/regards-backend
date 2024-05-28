@@ -23,10 +23,10 @@ import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**

@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.filecatalog.domain;
 
 import fr.cnes.regards.modules.fileaccess.dto.FileLocationDto;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  * Definition of a file location

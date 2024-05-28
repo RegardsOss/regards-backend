@@ -30,7 +30,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;

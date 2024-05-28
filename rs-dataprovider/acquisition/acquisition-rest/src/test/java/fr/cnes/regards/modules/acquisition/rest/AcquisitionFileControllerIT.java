@@ -163,11 +163,11 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
                                                                                       "Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
 
         // Add request parameters documentation
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramFilepath,
-                                                                                 paramState,
-                                                                                 paramProductId,
-                                                                                 paramChainId,
-                                                                                 paramFrom));
+        requestBuilderCustomizer.document(RequestDocumentation.queryParameters(paramFilepath,
+                                                                               paramState,
+                                                                               paramProductId,
+                                                                               paramChainId,
+                                                                               paramFrom));
     }
 
     private List<FieldDescriptor> documentAcquisitionFile() {

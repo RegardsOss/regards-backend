@@ -158,7 +158,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         }
 
         waitRequest(this.featureRepo, 1, 30000);
-        // it mustn't be the created one of the fist feature creation
+        // it mustn't be the created one of the first feature creation
         assertNotEquals(featureInDatabase.getId(), this.featureRepo.findAll().get(0).getId());
 
     }

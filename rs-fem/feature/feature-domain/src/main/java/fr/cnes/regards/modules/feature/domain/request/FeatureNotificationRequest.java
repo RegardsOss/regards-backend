@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -40,7 +41,7 @@ public class FeatureNotificationRequest extends AbstractFeatureRequest {
      * Should be null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
      */
     @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private Feature toNotify;
 
     @Column(name = "sessionToNotify", length = 255)

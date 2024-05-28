@@ -34,7 +34,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Predicate;
+
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;

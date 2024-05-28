@@ -29,10 +29,10 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.service.settings.LtaSettingService;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.List;

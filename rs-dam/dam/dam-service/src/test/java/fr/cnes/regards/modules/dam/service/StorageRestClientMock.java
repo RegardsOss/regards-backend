@@ -13,12 +13,12 @@ import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import jakarta.validation.Valid;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;

@@ -18,20 +18,21 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
+
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Basic request properties
@@ -46,7 +47,7 @@ import java.util.Set;
                    @Index(name = "idx_request_remote_step_group_ids", columnList = "remote_step_group_ids") })
 @DiscriminatorColumn(name = "dtype", length = AbstractRequest.MAX_TYPE_LENGTH)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 public abstract class AbstractRequest {
 
     public static final int MAX_TYPE_LENGTH = 32;
@@ -61,7 +62,8 @@ public abstract class AbstractRequest {
     private IngestErrorType errorType;
 
     @Column(columnDefinition = "jsonb", name = "errors")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> errors;
 
     @ManyToOne
@@ -83,7 +85,7 @@ public abstract class AbstractRequest {
      * Remote request group id
      */
     @Column(columnDefinition = "jsonb", name = "remote_step_group_ids")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(JsonBinaryType.class)
     private List<String> remoteStepGroupIds;
 
     /**

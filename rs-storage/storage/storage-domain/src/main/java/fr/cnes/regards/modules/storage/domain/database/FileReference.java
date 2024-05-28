@@ -25,9 +25,9 @@ import fr.cnes.regards.modules.fileaccess.dto.FileLocationDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
+import jakarta.persistence.*;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;

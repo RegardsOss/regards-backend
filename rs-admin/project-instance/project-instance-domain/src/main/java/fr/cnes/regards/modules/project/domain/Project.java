@@ -21,13 +21,11 @@ package fr.cnes.regards.modules.project.domain;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.executable.ValidateOnExecution;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.executable.ValidateOnExecution;
 
 /**
  * Class Project Project Entity
@@ -68,8 +66,7 @@ public class Project implements IIdentifiable<Long> {
      * Project description
      */
     @NotNull
-    @Type(type = "text")
-    @Column
+    @Column(columnDefinition = "text")
     private String description;
 
     /**
@@ -102,8 +99,7 @@ public class Project implements IIdentifiable<Long> {
     /**
      * URL to the project's licence
      */
-    @Column
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String licenceLink;
 
     /**

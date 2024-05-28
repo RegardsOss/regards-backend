@@ -1,0 +1,16 @@
+<jaxb:bindings xmlns:xs="http://www.w3.org/2001/XMLSchema"
+               xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+               version="3.0">
+    <jaxb:bindings schemaLocation="metalink.xsd" version="1.0">
+        <!-- Customise the package name -->
+        <jaxb:schemaBindings>
+            <jaxb:package name="fr.cnes.regards.modules.order.metalink.schema"/>
+        </jaxb:schemaBindings>
+
+        <!-- rename the value element -->
+        <jaxb:bindings
+                node="//xs:complexType[@name='metalinkType']/xs:all/xs:element[@name='version']">
+            <jaxb:property name="version"/>
+        </jaxb:bindings>
+    </jaxb:bindings>
+</jaxb:bindings>

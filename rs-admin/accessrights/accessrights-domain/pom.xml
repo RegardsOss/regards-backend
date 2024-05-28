@@ -62,8 +62,8 @@
             <artifactId>tenant-settings-domain</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
@@ -72,11 +72,6 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>swagger-regards-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.vladmihalcea</groupId>
-            <artifactId>hibernate-types-52</artifactId>
-            <version>2.9.13</version>
         </dependency>
         <!-- Tests dependencies -->
         <dependency>

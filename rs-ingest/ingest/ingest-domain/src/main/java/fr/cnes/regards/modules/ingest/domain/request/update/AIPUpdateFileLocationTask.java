@@ -18,30 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
+import java.util.List;
+
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import java.util.List;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 
 /**
  * @author Léo Mieulet
  */
 @Entity(name = "UpdateFileLocationAIPTask")
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 public class AIPUpdateFileLocationTask extends AbstractAIPUpdateTask {
 
     /**
      * File list that were either added or removed from a storage location
      */
     @Column(columnDefinition = "jsonb", name = "payload")
-    @Type(type = "jsonb",
+    @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
                                     value = "fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto") })
     private List<RequestResultInfoDto> fileLocationUpdates;

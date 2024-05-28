@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.framework.jpa.json.test.domain;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.type.SqlTypes;
 
-import javax.persistence.*;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import jakarta.persistence.*;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @Entity
 @Table(name = "t_test_entity")
 @SequenceGenerator(name = "testEntitySequence", initialValue = 1, sequenceName = "seq_test_entity")
@@ -44,7 +44,7 @@ public class TestEntity {
     /**
      * jsonb field
      */
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb")
     private JsonbEntity jsonbEntity;
 

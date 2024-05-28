@@ -29,7 +29,6 @@ import java.util.function.Predicate;
  * @author gandrieu
  */
 
-@SuppressWarnings("serial")
 public abstract class ProcessingException extends RuntimeException {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingException.class);

@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.GeometryCriterionBuilder;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 

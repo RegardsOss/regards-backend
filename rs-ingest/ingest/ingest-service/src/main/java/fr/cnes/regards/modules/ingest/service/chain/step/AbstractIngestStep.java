@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 

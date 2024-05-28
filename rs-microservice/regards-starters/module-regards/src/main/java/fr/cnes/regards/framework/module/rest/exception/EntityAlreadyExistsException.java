@@ -24,7 +24,7 @@ package fr.cnes.regards.framework.module.rest.exception;
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */
-@SuppressWarnings("serial")
+
 public class EntityAlreadyExistsException extends EntityException {
 
     /**

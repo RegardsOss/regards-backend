@@ -23,11 +23,11 @@ import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.SIPState;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;

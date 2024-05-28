@@ -21,6 +21,9 @@ package fr.cnes.regards.modules.notification.dao;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -29,12 +32,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.math.BigInteger;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Custom Repository to search and delete notification without in memory pagination.
@@ -176,15 +174,11 @@ public class NotificationLightCustomNativeQueryRepository {
         updateQueryParameters(filters, user, role, query);
         query.setMaxResults(pageSize);
         query.setFirstResult(pageSize * page);
-        List<BigInteger> resultIds = query.getResultList();
+        List<Long> resultIds = query.getResultList();
 
         // Once ids are found we use JPA repository to find complete entities with associated table values.
         // Here search is optimized because we search only by ids.
-        List<NotificationLight> results = notificationLightRepository.findAllByIdInOrderByDateDesc(resultIds.stream()
-                                                                                                            .map(
-                                                                                                                BigInteger::longValue)
-                                                                                                            .collect(
-                                                                                                                Collectors.toSet()));
+        List<NotificationLight> results = notificationLightRepository.findAllByIdInOrderByDateDesc(resultIds);
 
         // We need a third request to handle pagination and calculate the total number of results with a count query.
         Query queryCount = entityManager.createNativeQuery(countQueryString);

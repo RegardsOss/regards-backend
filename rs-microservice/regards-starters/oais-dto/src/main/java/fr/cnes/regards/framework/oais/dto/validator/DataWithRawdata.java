@@ -5,8 +5,8 @@ import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

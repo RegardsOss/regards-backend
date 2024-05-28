@@ -97,7 +97,6 @@ public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelpe
                       .forEach(metadata::addAnnotatedClass);
 
         final SchemaUpdate export = new SchemaUpdate();
-
         if (outputFile != null) {
             export.setOutputFile(outputFile);
             export.setDelimiter(";");

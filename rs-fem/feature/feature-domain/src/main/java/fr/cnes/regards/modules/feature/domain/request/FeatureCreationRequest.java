@@ -18,16 +18,17 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -46,7 +47,7 @@ public class FeatureCreationRequest extends AbstractFeatureRequest {
     private FeatureCreationMetadataEntity metadata;
 
     @Column(columnDefinition = "jsonb", name = "feature", nullable = false)
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private Feature feature;
 
     @ManyToOne

@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.beans.PropertyEditorSupport;
 import java.util.Optional;
 

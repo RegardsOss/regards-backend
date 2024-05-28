@@ -20,8 +20,9 @@ package fr.cnes.regards.framework.geojson.validator;
 
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+
 import java.lang.annotation.*;
 
 /**

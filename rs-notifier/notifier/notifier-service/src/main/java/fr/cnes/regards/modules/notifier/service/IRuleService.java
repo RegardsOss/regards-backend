@@ -21,10 +21,10 @@ package fr.cnes.regards.modules.notifier.service;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import javax.validation.Valid;
 import java.util.Optional;
 
 /**

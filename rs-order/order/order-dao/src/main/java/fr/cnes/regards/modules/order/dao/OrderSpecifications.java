@@ -19,10 +19,10 @@ package fr.cnes.regards.modules.order.dao;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.order.domain.Order;
+import jakarta.persistence.criteria.Predicate;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
 import java.util.Set;
 

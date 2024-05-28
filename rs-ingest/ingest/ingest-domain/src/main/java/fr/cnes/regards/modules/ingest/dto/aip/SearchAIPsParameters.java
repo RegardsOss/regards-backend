@@ -26,8 +26,8 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.DisseminationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 
-import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 

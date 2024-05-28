@@ -60,6 +60,7 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileCacheRequestJob;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
+import jakarta.persistence.EntityManager;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,8 +76,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
+import jakarta.annotation.Nullable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;

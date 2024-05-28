@@ -3,11 +3,11 @@ package fr.cnes.regards.modules.storage.domain.database;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.MimeType;
 
-import javax.annotation.Nullable;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Set;

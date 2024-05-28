@@ -17,6 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * Package in which you can find generic {@link javax.persistence.Converter}
+ * Package in which you can find generic {@link jakarta.persistence.Converter}
  */
 package fr.cnes.regards.framework.jpa.converter;

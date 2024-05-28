@@ -26,12 +26,12 @@ import fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryDownload
 import fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryZipCreateService;
 import fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryZipUploadService;
 import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 
 /**

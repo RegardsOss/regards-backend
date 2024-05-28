@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
-import com.google.common.base.Throwables;
-import com.google.common.io.ByteStreams;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.notification.NotificationDTO;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.emails.dao.EmailRequestRepository;
-import fr.cnes.regards.modules.emails.domain.EmailRequest;
-import fr.cnes.regards.modules.emails.exception.RsEmailException;
-import fr.cnes.regards.modules.notification.service.IInstanceNotificationService;
+import jakarta.annotation.Nullable;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.OffsetDateTime;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,18 +43,19 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 
-import javax.annotation.Nullable;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.OffsetDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import com.google.common.base.Throwables;
+import com.google.common.io.ByteStreams;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.notification.NotificationDTO;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.emails.dao.EmailRequestRepository;
+import fr.cnes.regards.modules.emails.domain.EmailRequest;
+import fr.cnes.regards.modules.emails.exception.RsEmailException;
+import fr.cnes.regards.modules.notification.service.IInstanceNotificationService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 /**
  * An implementation of email request service

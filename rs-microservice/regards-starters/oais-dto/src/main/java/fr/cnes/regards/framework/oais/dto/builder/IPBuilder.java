@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;

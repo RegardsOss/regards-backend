@@ -32,6 +32,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import java.util.List;
  */
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
+//@TestPropertySource(properties = { "spring.jpa.show-sql=true" })
 @ContextConfiguration(classes = { ProjectDaoTestConfiguration.class })
 public class ProjectDaoIT {
 

@@ -22,13 +22,12 @@ import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.util.MimeType;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Set;
 
 /**
@@ -75,8 +74,7 @@ public class AcquisitionFileInfo {
     /**
      * A comment
      */
-    @Column(name = "comment")
-    @Type(type = "text")
+    @Column(name = "comment", columnDefinition = "text")
     private String comment;
 
     /**

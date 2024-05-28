@@ -213,19 +213,19 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
     }
 
     @Override
-    public void deletePluginconfiguration(final UIPluginConfiguration pPluginConfiguration) throws EntityException {
-        if ((pPluginConfiguration == null) || (pPluginConfiguration.getId() == null)) {
+    public void deletePluginconfiguration(final UIPluginConfiguration pluginConfiguration) throws EntityException {
+        if ((pluginConfiguration == null) || (pluginConfiguration.getId() == null)) {
             throw new EntityInvalidException("PluginConfiguration Identifier cannot be null");
         }
 
-        if (!repository.existsById(pPluginConfiguration.getId())) {
-            throw new EntityNotFoundException(pPluginConfiguration.getId(), UIPluginConfiguration.class);
+        if (!repository.existsById(pluginConfiguration.getId())) {
+            throw new EntityNotFoundException(pluginConfiguration.getId(), UIPluginConfiguration.class);
         }
 
         // Remove the config from the links
         try (Stream<LinkUIPluginsDatasets> links = linkedUiPluginRespository.findAllByServicesContaining(
-            pPluginConfiguration)) {
-            links.peek(link -> link.getServices().remove(pPluginConfiguration)).forEach(link -> {
+            pluginConfiguration)) {
+            links.peek(link -> link.getServices().remove(pluginConfiguration)).forEach(link -> {
                 if (link.getServices().isEmpty()) {
                     linkedUiPluginRespository.delete(link);
                 } else {
@@ -234,8 +234,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             });
         }
 
-        repository.delete(pPluginConfiguration);
-        publisher.publish(new UIPluginConfigurationEvent(pPluginConfiguration));
+        repository.delete(pluginConfiguration);
+        publisher.publish(new UIPluginConfigurationEvent(pluginConfiguration));
 
     }
 

@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.Model;
 import io.vavr.control.Option;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
 
 /**
  * Dataset feature decorator
@@ -68,15 +68,14 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
      * Request clause to subset data from the DataSource, only used by the catalog(elasticsearch) as all data from
      * DataSource has been given to the catalog
      */
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     @Column(name = "sub_setting_clause", columnDefinition = "jsonb")
     private ICriterion subsettingClause;
 
     /**
      * Representation of the above subsetting clause as an OpenSearch string request
      */
-    @Type(type = "text")
-    @Column(name = "sub_setting_clause_as_string")
+    @Column(name = "sub_setting_clause_as_string", columnDefinition = "text")
     private String openSearchSubsettingClause;
 
     /**

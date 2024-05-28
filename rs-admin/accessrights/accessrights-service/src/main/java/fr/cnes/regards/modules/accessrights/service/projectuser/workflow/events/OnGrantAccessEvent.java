@@ -26,7 +26,7 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author Xavier-Alexandre Brochard
  */
-@SuppressWarnings("serial")
+
 public class OnGrantAccessEvent extends ApplicationEvent {
 
     /**

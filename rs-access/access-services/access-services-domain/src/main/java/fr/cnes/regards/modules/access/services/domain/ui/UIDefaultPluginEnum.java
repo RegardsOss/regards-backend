@@ -64,7 +64,7 @@ public enum UIDefaultPluginEnum {
     DEFAULT_NUMERICAL_RANGE_CRITERION_NAME("numerical-range-criteria",
                                            "/plugins/criterion/numerical-range-criteria/plugin.js",
                                            UIPluginTypesEnum.CRITERIA),
-    
+
     DEFAULT_GEO_ZONE_CRITERION_NAME("geo-zone", "plugins/criterion/geo-zone/plugin.js", UIPluginTypesEnum.CRITERIA);
 
     private String value;

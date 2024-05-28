@@ -40,7 +40,6 @@ import java.util.List;
  */
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
-
 public class ProcessingAccessDecisionConfiguration {
 
     @Autowired

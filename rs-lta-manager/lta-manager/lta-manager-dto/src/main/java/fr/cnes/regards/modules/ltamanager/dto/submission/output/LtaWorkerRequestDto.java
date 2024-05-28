@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.ltamanager.dto.submission.output;
 
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.util.Assert;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.beans.ConstructorProperties;
 import java.nio.file.Path;
 import java.util.Objects;

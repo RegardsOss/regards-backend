@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.dao.entity.download;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 

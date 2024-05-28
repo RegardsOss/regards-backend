@@ -255,7 +255,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
                 String likeExpr = AbstractSpecificationsBuilder.getLikeStringExpression(restriction.getMatchMode(),
                                                                                         value,
                                                                                         restriction.isIgnoreCase());
-                exprBuilder.add(column + operator +  "'" + likeExpr + "'");
+                exprBuilder.add(column + operator + "'" + likeExpr + "'");
             }
         }
         return String.join(" OR ", exprBuilder);

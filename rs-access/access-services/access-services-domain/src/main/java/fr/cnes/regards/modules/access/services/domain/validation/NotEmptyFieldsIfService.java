@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.access.services.domain.validation;
 
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
 import java.lang.annotation.*;
 
 /**

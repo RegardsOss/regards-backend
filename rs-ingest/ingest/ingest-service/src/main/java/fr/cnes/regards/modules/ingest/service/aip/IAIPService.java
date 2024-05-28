@@ -31,7 +31,8 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;

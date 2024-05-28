@@ -22,13 +22,11 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +38,7 @@ import java.util.Set;
  */
 @Entity
 @DiscriminatorValue(FeatureRequestTypeEnum.UPDATE_DISCRIMINENT)
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 public class FeatureUpdateRequest extends AbstractFeatureRequest {
 
     @Column(name = "provider_id", nullable = false)
@@ -48,7 +46,7 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
     private String providerId;
 
     @Column(columnDefinition = "jsonb", name = "feature", nullable = false)
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private Feature feature;
 
     @Embedded
@@ -58,7 +56,7 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
      * Should be null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
      */
     @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private Feature toNotify;
 
     @Column(name = "sessionToNotify", length = 255)

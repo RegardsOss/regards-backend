@@ -140,7 +140,7 @@ public class TemplateServiceIT {
     /**
      * Data
      */
-    @SuppressWarnings("serial")
+
     public static final Map<String, String> DATA = new HashMap<String, String>() {
 
         {

@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 /**
@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Profile;
  * @author Sébastien Binda
  * .
  */
-@Configuration
+@AutoConfiguration
 @Profile("production")
 @AutoConfigureBefore(RemoteTenantAutoConfiguration.class)
 @ConditionalOnProperty(name = "regards.cloud.enabled", matchIfMissing = true)

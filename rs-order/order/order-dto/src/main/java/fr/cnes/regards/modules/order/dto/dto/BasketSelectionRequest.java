@@ -20,7 +20,8 @@ package fr.cnes.regards.modules.order.dto.dto;
 
 import org.springframework.util.MultiValueMap;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
+
 import java.time.OffsetDateTime;
 import java.util.Set;
 

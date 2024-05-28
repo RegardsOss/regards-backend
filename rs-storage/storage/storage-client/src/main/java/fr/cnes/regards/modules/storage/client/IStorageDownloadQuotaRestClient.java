@@ -20,11 +20,11 @@ package fr.cnes.regards.modules.storage.client;
 
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
+import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 public interface IStorageDownloadQuotaRestClient {

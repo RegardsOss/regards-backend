@@ -22,10 +22,9 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Map;
@@ -68,8 +67,7 @@ public class JobInfo {
     /**
      * Job result (nullable)
      */
-    @Column
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String result;
 
     /**

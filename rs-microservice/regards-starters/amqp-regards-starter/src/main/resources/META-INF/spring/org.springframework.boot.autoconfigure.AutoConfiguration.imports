@@ -1,0 +1,2 @@
+fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration
+fr.cnes.regards.framework.amqp.autoconfigure.AmqpHealthIndicatorAutoConfiguration

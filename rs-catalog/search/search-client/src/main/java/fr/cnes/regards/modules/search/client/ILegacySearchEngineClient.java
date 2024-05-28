@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
+import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -33,7 +34,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
 import java.util.List;
 
 /**

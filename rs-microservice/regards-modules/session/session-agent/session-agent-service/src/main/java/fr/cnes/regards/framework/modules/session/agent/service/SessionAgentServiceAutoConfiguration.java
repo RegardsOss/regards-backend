@@ -35,13 +35,17 @@ import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnaps
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 
 /**
  * @author Iliana Ghazali
  **/
 
-@Configuration
+@AutoConfiguration
 public class SessionAgentServiceAutoConfiguration {
 
     /**

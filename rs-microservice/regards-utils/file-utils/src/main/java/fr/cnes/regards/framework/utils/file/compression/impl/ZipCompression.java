@@ -66,20 +66,20 @@ public class ZipCompression extends AbstractRunnableCompression {
     private static final int BUFFER = 1024;
 
     @Override
-    protected CompressManager runCompress(List<File> pFileList,
-                                          File pCompressedFile,
-                                          File pRootDirectory,
-                                          boolean pFlatArchive,
-                                          Charset pCharset,
-                                          CompressManager pCompressManager) throws CompressionException {
+    protected CompressManager runCompress(List<File> fileList,
+                                          File inCompressedFile,
+                                          File rootDirectory,
+                                          boolean flatArchive,
+                                          Charset charset,
+                                          CompressManager compressManager) throws CompressionException {
         // if the file has no zip extension, we add one.
         Pattern pat = Pattern.compile(ZIP_PATTERN);
         File compressedFile = null;
-        if (pat.matcher(pCompressedFile.getName()).matches()) {
-            compressedFile = new File(pCompressedFile.getParentFile(), pCompressedFile.getName());
+        if (pat.matcher(inCompressedFile.getName()).matches()) {
+            compressedFile = new File(inCompressedFile.getParentFile(), inCompressedFile.getName());
         } else {
             // Create a new file with .zip extension
-            compressedFile = new File(pCompressedFile.getParentFile(), pCompressedFile.getName() + ZIP_EXTENSION);
+            compressedFile = new File(inCompressedFile.getParentFile(), inCompressedFile.getName() + ZIP_EXTENSION);
         }
 
         if (compressedFile.exists()) {
@@ -95,7 +95,7 @@ public class ZipCompression extends AbstractRunnableCompression {
         // Eliminate all files having the same name appearing more than once
         // in the list since ZIP does not accept
         List<File> listWithoutDouble = new ArrayList<>();
-        for (File aFile : pFileList) {
+        for (File aFile : fileList) {
             if (!containsFile(listWithoutDouble, aFile)) {
                 listWithoutDouble.add(aFile);
                 totalSize += aFile.length();
@@ -108,8 +108,8 @@ public class ZipCompression extends AbstractRunnableCompression {
             new FileOutputStream(compressedFile),
             new Adler32())))) {
             out.setFallbackToUTF8(true);
-            if (pCharset != null) {
-                out.setEncoding(pCharset.name());
+            if (charset != null) {
+                out.setEncoding(charset.name());
                 out.setFallbackToUTF8(true);
             }
             out.setMethod(ZipOutputStream.DEFLATED);
@@ -117,20 +117,18 @@ public class ZipCompression extends AbstractRunnableCompression {
 
             // List Files in list pFilesList and add them
             for (File fileNow : listWithoutDouble) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(String.format("Adding %s file to %s file.",
-                                               pathToRootDir(fileNow, pRootDirectory),
-                                               compressedFile.getAbsoluteFile()));
-                }
+                LOGGER.debug(String.format("Adding %s file to %s file.",
+                                           pathToRootDir(fileNow, rootDirectory),
+                                           compressedFile.getAbsoluteFile()));
 
                 ZipArchiveEntry entry;
-                if (pFlatArchive) {
+                if (flatArchive) {
                     if (fileNow.isFile()) {
                         entry = new ZipArchiveEntry(fileNow, fileNow.getName());
                         out.putArchiveEntry(entry);
                     }
                 } else {
-                    entry = new ZipArchiveEntry(fileNow, pathToRootDir(fileNow, pRootDirectory));
+                    entry = new ZipArchiveEntry(fileNow, pathToRootDir(fileNow, rootDirectory));
                     out.putArchiveEntry(entry);
                 }
 
@@ -146,7 +144,7 @@ public class ZipCompression extends AbstractRunnableCompression {
                             out.write(data, 0, count);
                             count = origin.read(data);
                             percentage = (100 * compressedSize) / totalSize;
-                            pCompressManager.setPercentage(percentage);
+                            compressManager.setPercentage(percentage);
                         }
                     } catch (IOException e) {
                         LOGGER.error("Error copying file "
@@ -167,13 +165,11 @@ public class ZipCompression extends AbstractRunnableCompression {
                                            ioE);
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
-        }
+        LOGGER.debug(String.format("The file %s is done.", compressedFile.getAbsolutePath()));
 
-        pCompressManager.setCompressedFile(compressedFile);
+        compressManager.setCompressedFile(compressedFile);
 
-        return pCompressManager;
+        return compressManager;
     }
 
     /**

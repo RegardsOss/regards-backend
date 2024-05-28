@@ -47,7 +47,7 @@ public class AccountUtilsService {
         Account account = null;
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient.retrieveAccounByEmail(email);
+            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient.retrieveAccountByEmail(email);
             if (accountResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
                 EntityModel<Account> body = accountResponse.getBody();
                 if (body != null) {

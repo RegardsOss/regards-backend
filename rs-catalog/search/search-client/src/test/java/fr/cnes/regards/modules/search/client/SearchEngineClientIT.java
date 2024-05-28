@@ -41,7 +41,7 @@ public class SearchEngineClientIT extends AbstractSearchClientIT<ISearchEngineCl
                                                                new LinkedMultiValueMap<>(),
                                                                0,
                                                                10000);
-        Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(HttpStatus.OK, result.getStatusCode());
 
         // ResponseEntity<Set<UniformResourceName>> response = client.hasAccess(Collections.emptyList());
         // Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));

@@ -148,7 +148,7 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
                 throw new FlywayException(error);
             }
 
-            Account account = HateoasUtils.unwrap(accountsClient.retrieveAccounByEmail(email).getBody());
+            Account account = HateoasUtils.unwrap(accountsClient.retrieveAccountByEmail(email).getBody());
             updateUser(email, account.getFirstName(), account.getLastName(), connection);
 
         } catch (Exception e) {
