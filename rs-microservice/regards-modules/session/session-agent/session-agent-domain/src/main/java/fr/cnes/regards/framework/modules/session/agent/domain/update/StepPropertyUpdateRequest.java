@@ -194,4 +194,27 @@ public class StepPropertyUpdateRequest {
                + registrationDate
                + '}';
     }
+
+    /**
+     * Classification function as the method of parameter of groupingBy of stream of StepPropertyUpdateRequest.
+     */
+    public String getClassifier() {
+        return this.stepId
+               + "."
+               + this.source
+               + "."
+               + this.session
+               + "+"
+               + this.type
+               + "."
+               + this.stepPropertyUpdateRequestInfo.getProperty()
+               + "."
+               + this.stepPropertyUpdateRequestInfo.getStepType()
+               + "."
+               + this.stepPropertyUpdateRequestInfo.getState().name()
+               + "."
+               + this.stepPropertyUpdateRequestInfo.isInputRelated()
+               + "."
+               + this.stepPropertyUpdateRequestInfo.isOutputRelated();
+    }
 }

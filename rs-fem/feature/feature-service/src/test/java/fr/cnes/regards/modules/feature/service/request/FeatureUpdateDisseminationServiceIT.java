@@ -70,7 +70,8 @@ import static org.junit.Assert.*;
                                    "spring.task.scheduling.pool.size=2",
                                    "regards.feature.metrics.enabled=true",
                                    "regards.feature.max.bulk.size=50",
-                                   "regards.feature.delay.before.processing=1" },
+                                   "regards.feature.delay.before.processing=1",
+                                   "regards.session.step.merge-similar-event=false" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
                                   "classpath:metrics.properties" })

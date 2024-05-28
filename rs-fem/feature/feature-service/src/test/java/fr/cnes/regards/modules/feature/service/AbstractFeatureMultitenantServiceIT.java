@@ -108,7 +108,8 @@ import static org.junit.Assert.assertEquals;
  */
 @ContextConfiguration(classes = { JobTestCleaner.class })
 @TestPropertySource(properties = { "regards.feature.request.scheduling.initial.delay=100",
-                                   "regards.storage.schedule.delay=100" })
+                                   "regards.storage.schedule.delay=100",
+                                   "regards.session.step.merge-similar-event=false" })
 public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultitenantServiceIT {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeatureMultitenantServiceIT.class);
