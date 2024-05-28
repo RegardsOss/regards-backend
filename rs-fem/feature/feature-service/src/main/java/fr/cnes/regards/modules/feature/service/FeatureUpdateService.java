@@ -400,7 +400,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             // Retrieve feature from db
             // Note : entity is attached to transaction manager so all changes will be reflected in the db!
             FeatureEntity featureEntity = featureByUrn.get(patch.getUrn());
-
+            // Check a feature exists related to this request
             if (featureEntity == null) {
                 request.addError(FeatureRequestStep.LOCAL_ERROR,
                                  String.format("No feature referenced in database with following URN = %s ProviderId"
@@ -503,6 +503,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         List<FeatureEntity> requestNeedingDisseminationInfo = requests.stream()
                                                                       .filter(request -> StringUtils.isNotBlank(request.getAcknowledgedRecipient()))
                                                                       .map(request -> featureByUrn.get(request.getUrn()))
+                                                                      .filter(Objects::nonNull)
                                                                       .toList();
 
         Map<Long, FeatureEntity> idToFeature = requestNeedingDisseminationInfo.stream()

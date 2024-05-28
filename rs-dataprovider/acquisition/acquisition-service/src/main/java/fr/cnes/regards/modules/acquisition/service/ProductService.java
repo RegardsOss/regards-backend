@@ -405,8 +405,8 @@ public class ProductService implements IProductService {
                                              String.format(
                                                  "Invalid product files count. %s/%s mandatory files and %s/%s optional files found"
                                                  + "Please check your configuration and reacquire.",
-                                                 nbExpectedMandatory,
                                                  nbActualMandatory,
+                                                 nbExpectedMandatory,
                                                  nbActualOptional,
                                                  nbExpectedOptional));
         } else if (nbExpectedMandatory == nbActualMandatory) {
