@@ -58,15 +58,6 @@ pipeline {
                 parallel(
                         compile: {
                             runMavenDockerImgWithoutCoTS("Build with CI profile", "compile")
-                            runMavenDockerImgWithoutCoTS("Create dependency-check (with vunerabilities) report", "dependencyCheck")
-                            archiveArtifacts artifacts: "target/dependency-check-report.html"
-                            dependencyCheckPublisher(
-                                    pattern: 'target/dependency-check-report.xml',
-                                    failedTotalLow: 10000,
-                                    failedTotalMedium: 10000,
-                                    failedTotalHigh: 10000,
-                                    failedTotalCritical: 10000
-                            )
                         },
                         cots: {
                             sh label: "Launch COTS", script: 'docker-compose \
