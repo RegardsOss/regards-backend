@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.order.dto.input;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;

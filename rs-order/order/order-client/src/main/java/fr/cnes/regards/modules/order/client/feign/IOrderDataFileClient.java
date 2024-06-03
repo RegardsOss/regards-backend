@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.order.client.feign;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
+import fr.cnes.regards.modules.order.dto.OrderControllerEndpointConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

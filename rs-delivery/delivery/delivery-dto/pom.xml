@@ -58,6 +58,10 @@
             <groupId>fr.cnes.regards.modules.order</groupId>
             <artifactId>order-dto</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>gson-regards</artifactId>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

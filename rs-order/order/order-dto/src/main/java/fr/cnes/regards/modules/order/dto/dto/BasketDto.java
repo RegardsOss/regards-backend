@@ -16,13 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.domain.dto;
+package fr.cnes.regards.modules.order.dto.dto;
 
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class BasketDto {
 
@@ -64,17 +60,5 @@ public class BasketDto {
 
     public void setQuota(Long quota) {
         this.quota = quota;
-    }
-
-    public static BasketDto makeBasketDto(Basket basket) {
-        BasketDto dto = new BasketDto();
-        dto.setId(basket.getId());
-        dto.setOwner(basket.getOwner());
-        dto.setDatasetSelections(basket.getDatasetSelections()
-                                       .stream()
-                                       .map(BasketDatasetSelectionDto::makeBasketDatasetSelectionDto)
-                                       .collect(TreeSet::new, Set::add, Set::addAll));
-        dto.setQuota(dto.getDatasetSelections().stream().mapToLong(BasketDatasetSelectionDto::getQuota).sum());
-        return dto;
     }
 }

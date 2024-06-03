@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.utils.OrderCounts;
 import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.util.*;
 
-import static fr.cnes.regards.modules.order.domain.log.LogUtils.ORDER_ID_LOG_KEY;
+import static fr.cnes.regards.modules.order.service.utils.LogUtils.ORDER_ID_LOG_KEY;
 
 @Service
 @RefreshScope

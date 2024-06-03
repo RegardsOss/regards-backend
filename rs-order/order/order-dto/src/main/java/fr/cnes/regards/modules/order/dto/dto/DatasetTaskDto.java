@@ -16,12 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.domain.dto;
-
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
-import org.springframework.beans.BeanUtils;
+package fr.cnes.regards.modules.order.dto.dto;
 
 /**
  * DatasetTask Dto to avoid loading FilesTask and all associated files
@@ -110,14 +105,5 @@ public class DatasetTaskDto {
 
     public void setFileSelectionDescription(FileSelectionDescription fileSelectionDescription) {
         this.fileSelectionDescription = fileSelectionDescription;
-    }
-
-    /**
-     * Create DatasetTaskDto from DatasetTask
-     */
-    public static DatasetTaskDto fromDatasetTask(DatasetTask dsTask) {
-        DatasetTaskDto dto = new DatasetTaskDto();
-        BeanUtils.copyProperties(dsTask, dto);
-        return dto;
     }
 }

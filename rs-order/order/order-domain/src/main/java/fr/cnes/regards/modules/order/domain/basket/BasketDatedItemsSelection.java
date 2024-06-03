@@ -20,6 +20,9 @@ package fr.cnes.regards.modules.order.domain.basket;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.order.dto.dto.BasketDatedItemsSelectionDto;
+import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -157,4 +160,22 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
     public int hashCode() {
         return date != null ? date.hashCode() : 0;
     }
+
+    public BasketDatedItemsSelectionDto toBasketDatedItemsSelectionDto() {
+        BasketDatedItemsSelectionDto dto = new BasketDatedItemsSelectionDto();
+        dto.setDate(this.getDate());
+        dto.setSelectionRequest(this.getSelectionRequest());
+        dto.setObjectsCount(this.getObjectsCount());
+        dto.setFilesCount(DataTypeSelection.ALL.getFileTypes()
+                                               .stream()
+                                               .mapToLong(ft -> this.getFileTypeCount(ft.name()))
+                                               .sum());
+        dto.setFilesSize(DataTypeSelection.ALL.getFileTypes()
+                                              .stream()
+                                              .mapToLong(ft -> this.getFileTypeSize(ft.name()))
+                                              .sum());
+        dto.setQuota(this.getFileTypeCount(DataType.RAWDATA.name() + "_!ref"));
+        return dto;
+    }
+
 }

@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.order.rest;
 
 import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
-import fr.cnes.regards.modules.order.domain.dto.OrderDto;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
+import fr.cnes.regards.modules.order.dto.dto.OrderDto;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.hateoas.EntityModel;

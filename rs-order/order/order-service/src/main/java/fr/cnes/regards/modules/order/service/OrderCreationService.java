@@ -38,9 +38,11 @@ import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
-import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
+import fr.cnes.regards.modules.order.service.utils.FileSelectionDescriptionValidator;
 import fr.cnes.regards.modules.order.service.utils.OrderCounts;
 import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -63,7 +65,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import java.time.OffsetDateTime;
 import java.util.*;
 
-import static fr.cnes.regards.modules.order.domain.log.LogUtils.ORDER_ID_LOG_KEY;
+import static fr.cnes.regards.modules.order.service.utils.LogUtils.ORDER_ID_LOG_KEY;
 
 @Service
 @RefreshScope
@@ -434,8 +436,8 @@ public class OrderCreationService implements IOrderCreationService {
                                                  .values()
                                                  .stream()
                                                  .filter(orderHelperService::isDataFileOrderable)
-                                                 .filter(dataFile -> FileSelectionDescription.validate(dataFile,
-                                                                                                       fileSelectDescr))
+                                                 .filter(dataFile -> FileSelectionDescriptionValidator.validate(dataFile,
+                                                                                                                fileSelectDescr))
                                                  .toList();
         for (DataFile dataFile : dataFileFiltered) {
             // Referenced dataFiles are externally stored.

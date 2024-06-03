@@ -18,28 +18,18 @@
  */
 package fr.cnes.regards.modules.order.dto.input;
 
-import fr.cnes.regards.framework.urn.DataType;
-
 /**
- * This class contains all enum values of {@link fr.cnes.regards.framework.urn.DataType},
- * but without THUMBNAIL_SD, THUMBNAIL_MD, THUMBNAIL_HD.
- * Instead, we use THUMBNAIL.
+ * This class contains all enum values of fr.cnes.regards.framework.urn.DataType,
+ * but without QUICKLOOK_SD, QUICKLOOK_MD, QUICKLOOK_HD.
+ * Instead, we use QUICKLOOK.
  *
  * @author Thomas GUILLOU
+ * see fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionValidator to check equivalence between
+ * DataType and DataTypeLight
  **/
 public enum DataTypeLight {
     /**
      * Available data types
      */
     RAWDATA, QUICKLOOK;
-
-    public boolean isEquivalent(DataType dataType) {
-        if (dataType == null) {
-            return false;
-        }
-        return switch (dataType) {
-            case QUICKLOOK_SD, QUICKLOOK_MD, QUICKLOOK_HD -> this == QUICKLOOK;
-            default -> dataType.toString().equals(this.toString());
-        };
-    }
 }

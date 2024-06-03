@@ -23,12 +23,14 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.dto.dto.DatasetTaskDto;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import org.springframework.beans.BeanUtils;
 
 import javax.annotation.Nullable;
 import javax.persistence.*;
@@ -193,5 +195,15 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
 
     public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
         this.processDatasetDescription = processDatasetDescription;
+    }
+
+    /**
+     * Create DatasetTaskDto from DatasetTask
+     */
+    public DatasetTaskDto toDatasetTaskDto() {
+        DatasetTaskDto dto = new DatasetTaskDto();
+        // FIXME avoid use copyProperties in production code
+        BeanUtils.copyProperties(this, dto);
+        return dto;
     }
 }

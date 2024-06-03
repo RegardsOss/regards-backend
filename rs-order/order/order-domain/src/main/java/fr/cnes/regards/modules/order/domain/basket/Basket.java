@@ -19,9 +19,12 @@
 package fr.cnes.regards.modules.order.domain.basket;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.modules.order.dto.dto.BasketDatasetSelectionDto;
+import fr.cnes.regards.modules.order.dto.dto.BasketDto;
 import org.hibernate.annotations.SortNatural;
 
 import javax.persistence.*;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -89,5 +92,17 @@ public class Basket implements IIdentifiable<Long> {
 
     public void removeDatasetSelection(BasketDatasetSelection datasetSelections) {
         this.datasetSelections.remove(datasetSelections);
+    }
+
+    public BasketDto toBasketDto() {
+        BasketDto dto = new BasketDto();
+        dto.setId(this.getId());
+        dto.setOwner(this.getOwner());
+        dto.setDatasetSelections(this.getDatasetSelections()
+                                     .stream()
+                                     .map(BasketDatasetSelection::toBasketDatasetSelectionDto)
+                                     .collect(TreeSet::new, Set::add, Set::addAll));
+        dto.setQuota(dto.getDatasetSelections().stream().mapToLong(BasketDatasetSelectionDto::getQuota).sum());
+        return dto;
     }
 }

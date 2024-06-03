@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
 import org.hibernate.annotations.Type;
 import org.springframework.util.MimeType;
 
@@ -145,11 +146,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         this(dataFile, ipId, orderId, null, null);
     }
 
-    public OrderDataFile(DataFile dataFile,
-                         UniformResourceName ipId,
-                         Long orderId,
-                         String productId,
-                         Integer version) {
+    public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId, String productId, Integer version) {
         super.setFilename(dataFile.getFilename());
         super.setFilesize(dataFile.getFilesize());
         super.setUri(dataFile.getUri());
@@ -364,5 +361,16 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
                + ", version="
                + version
                + '}';
+    }
+
+    public OrderDataFileDTO toOrderDataFileDto() {
+        return new OrderDataFileDTO(this.getId(),
+                                    this.getProductId(),
+                                    this.getVersion(),
+                                    this.getUri(),
+                                    this.getMimeType(),
+                                    this.getChecksum(),
+                                    this.getFilesize(),
+                                    this.getFilename());
     }
 }

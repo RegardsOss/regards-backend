@@ -16,16 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.domain.dto;
+package fr.cnes.regards.modules.order.dto.dto;
 
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
-
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelectionDto> {
 
@@ -127,31 +120,6 @@ public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelect
 
     public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
         this.processDatasetDescription = processDatasetDescription;
-    }
-
-    public static BasketDatasetSelectionDto makeBasketDatasetSelectionDto(BasketDatasetSelection basketDatasetSelection) {
-        BasketDatasetSelectionDto dto = new BasketDatasetSelectionDto();
-        dto.setId(basketDatasetSelection.getId());
-        dto.setDatasetIpid(basketDatasetSelection.getDatasetIpid());
-        dto.setDatasetLabel(basketDatasetSelection.getDatasetLabel());
-        dto.setObjectsCount(basketDatasetSelection.getObjectsCount());
-        dto.setFilesCount(DataTypeSelection.ALL.getFileTypes()
-                                               .stream()
-                                               .mapToLong(ft -> basketDatasetSelection.getFileTypeCount(ft.name()))
-                                               .sum());
-        dto.setFilesSize(DataTypeSelection.ALL.getFileTypes()
-                                              .stream()
-                                              .mapToLong(ft -> basketDatasetSelection.getFileTypeSize(ft.name()))
-                                              .sum());
-        dto.setItemsSelections(basketDatasetSelection.getItemsSelections()
-                                                     .stream()
-                                                     .map(BasketDatedItemsSelectionDto::makeBasketDatedItemsSelectionDto)
-                                                     .collect(TreeSet::new, Set::add, TreeSet::addAll));
-        dto.setQuota(basketDatasetSelection.getFileTypeCount(DataType.RAWDATA.name() + "_!ref"));
-        dto.setProcessDatasetDescription(basketDatasetSelection.getProcessDatasetDescription());
-        dto.setFileSelectionDescription(FileSelectionDescriptionDTO.makeFileSelectionDescriptionDTO(
-            basketDatasetSelection.getFileSelectionDescription()));
-        return dto;
     }
 
     @Override

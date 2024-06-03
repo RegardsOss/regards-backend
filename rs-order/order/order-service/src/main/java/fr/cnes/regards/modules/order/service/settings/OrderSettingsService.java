@@ -8,8 +8,6 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSetting
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.order.domain.settings.OrderSettings;
-import fr.cnes.regards.modules.order.domain.settings.UserOrderParameters;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;

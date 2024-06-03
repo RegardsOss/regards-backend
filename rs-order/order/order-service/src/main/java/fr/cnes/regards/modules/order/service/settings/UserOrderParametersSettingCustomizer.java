@@ -1,8 +1,6 @@
 package fr.cnes.regards.modules.order.service.settings;
 
 import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSimpleDynamicSettingCustomizer;
-import fr.cnes.regards.modules.order.domain.settings.OrderSettings;
-import fr.cnes.regards.modules.order.domain.settings.UserOrderParameters;
 import org.springframework.stereotype.Component;
 
 @Component

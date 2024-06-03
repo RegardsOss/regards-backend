@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.order.domain;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.order.dto.dto.OrderDto;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import org.hibernate.annotations.SortNatural;
 import org.hibernate.validator.constraints.Length;
 
@@ -28,6 +30,7 @@ import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * An order built from a basket
@@ -64,7 +67,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Column(name = "owner", length = 100, nullable = false)
     private String owner;
 
-    @Column(name = "label", length = LABEL_FIELD_LENGTH)
+    @Column(name = "label", length = LABEL_FIELD_LENGTH, nullable = false)
     private String label;
 
     @Column(name = "creation_date", nullable = false)
@@ -318,5 +321,26 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
                + correlationId
                + '\''
                + '}';
+    }
+
+    /**
+     * Create OrderDto from Order
+     */
+    public OrderDto toOrderDto() {
+        return new OrderDto(this.getId(),
+                            this.getOwner(),
+                            this.getLabel(),
+                            this.getCreationDate(),
+                            this.getExpirationDate(),
+                            this.getPercentCompleted(),
+                            this.getFilesInErrorCount(),
+                            this.getAvailableFilesCount(),
+                            this.getStatus(),
+                            this.getStatusDate(),
+                            this.isWaitingForUser(),
+                            this.getDatasetTasks()
+                                .stream()
+                                .map(DatasetTask::toDatasetTaskDto)
+                                .collect(Collectors.toList()));
     }
 }

@@ -16,12 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.domain.log;
+package fr.cnes.regards.modules.order.service.utils;
 
 /**
  * @author Théo Lasserre
  */
-public class LogUtils {
+public final class LogUtils {
 
     public static final String ORDER_ID_LOG_KEY = "ORDER_ID=";
+
+    private LogUtils() {
+    }
 }

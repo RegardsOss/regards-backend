@@ -23,7 +23,7 @@
 package fr.cnes.regards.modules.order.service.job;
 
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
 
 public class BasketDatasetSelectionDescriptor {
 

@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStep
 import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileAvailableClient;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileClient;
-import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;

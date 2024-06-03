@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.order.domain.settings;
+package fr.cnes.regards.modules.order.service.settings;
 
 import com.google.common.collect.ImmutableList;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
@@ -6,9 +6,6 @@ import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSet
 import java.util.List;
 
 public final class OrderSettings {
-
-    private OrderSettings() {
-    }
 
     public static final String USER_ORDER_PARAMETERS = "user_order_parameters";
 
@@ -43,4 +40,6 @@ public final class OrderSettings {
                                                                                    APP_SUB_ORDER_DURATION_SETTING,
                                                                                    EXPIRATION_MAX_DURATION_IN_HOURS_SETTING);
 
+    private OrderSettings() {
+    }
 }

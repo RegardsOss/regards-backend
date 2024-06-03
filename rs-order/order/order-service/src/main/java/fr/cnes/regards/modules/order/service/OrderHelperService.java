@@ -60,7 +60,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static fr.cnes.regards.modules.order.domain.log.LogUtils.ORDER_ID_LOG_KEY;
+import static fr.cnes.regards.modules.order.service.utils.LogUtils.ORDER_ID_LOG_KEY;
 
 @Service
 @RefreshScope

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.domain;
 import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.Valid;

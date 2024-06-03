@@ -16,13 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.domain.dto;
+package fr.cnes.regards.modules.order.dto.dto;
 
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.lang.Nullable;
 import org.springframework.util.MimeType;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
@@ -30,6 +29,7 @@ import java.util.Objects;
 /**
  * @author Thomas GUILLOU
  **/
+// TODO rename class , use Dto instead of DTO
 public class OrderDataFileDTO {
 
     @Schema(description = "Identifier of the file represented by this dto.")
@@ -128,17 +128,6 @@ public class OrderDataFileDTO {
 
     public Integer getVersion() {
         return version;
-    }
-
-    public static OrderDataFileDTO fromOrderDataFile(OrderDataFile orderDataFile) {
-        return new OrderDataFileDTO(orderDataFile.getId(),
-                                    orderDataFile.getProductId(),
-                                    orderDataFile.getVersion(),
-                                    orderDataFile.getUri(),
-                                    orderDataFile.getMimeType(),
-                                    orderDataFile.getChecksum(),
-                                    orderDataFile.getFilesize(),
-                                    orderDataFile.getFilename());
     }
 
     @Override

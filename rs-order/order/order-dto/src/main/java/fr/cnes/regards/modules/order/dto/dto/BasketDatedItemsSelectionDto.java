@@ -16,12 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.domain.dto;
-
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+package fr.cnes.regards.modules.order.dto.dto;
 
 import java.time.OffsetDateTime;
 
@@ -85,23 +80,6 @@ public class BasketDatedItemsSelectionDto implements Comparable<BasketDatedItems
 
     public void setQuota(long quota) {
         this.quota = quota;
-    }
-
-    public static BasketDatedItemsSelectionDto makeBasketDatedItemsSelectionDto(BasketDatedItemsSelection basketDatedItemsSelection) {
-        BasketDatedItemsSelectionDto dto = new BasketDatedItemsSelectionDto();
-        dto.setDate(basketDatedItemsSelection.getDate());
-        dto.setSelectionRequest(basketDatedItemsSelection.getSelectionRequest());
-        dto.setObjectsCount(basketDatedItemsSelection.getObjectsCount());
-        dto.setFilesCount(DataTypeSelection.ALL.getFileTypes()
-                                               .stream()
-                                               .mapToLong(ft -> basketDatedItemsSelection.getFileTypeCount(ft.name()))
-                                               .sum());
-        dto.setFilesSize(DataTypeSelection.ALL.getFileTypes()
-                                              .stream()
-                                              .mapToLong(ft -> basketDatedItemsSelection.getFileTypeSize(ft.name()))
-                                              .sum());
-        dto.setQuota(basketDatedItemsSelection.getFileTypeCount(DataType.RAWDATA.name() + "_!ref"));
-        return dto;
     }
 
     @Override

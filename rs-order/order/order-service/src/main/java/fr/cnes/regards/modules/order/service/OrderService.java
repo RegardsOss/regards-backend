@@ -34,10 +34,14 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.dao.RequestSpecificationsBuilder;
-import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FilesTask;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.dto.OrderStatusDto;
 import fr.cnes.regards.modules.order.domain.exception.*;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatusDto;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -64,7 +68,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static fr.cnes.regards.modules.order.domain.log.LogUtils.ORDER_ID_LOG_KEY;
+import static fr.cnes.regards.modules.order.service.utils.LogUtils.ORDER_ID_LOG_KEY;
 
 @Service
 @MultitenantTransactional
@@ -328,7 +332,7 @@ public class OrderService implements IOrderService {
 
             order.setStatus(OrderStatus.RUNNING);
             orderRepository.save(order);
-            
+
             // Passes all ABORTED jobInfo to PENDING
             order.getDatasetTasks()
                  .stream()

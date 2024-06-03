@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.order.domain.settings;
+package fr.cnes.regards.modules.order.service.settings;
 
 import java.util.Objects;
 

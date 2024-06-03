@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.order.client.feign;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
-import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.order.dto.OrderControllerEndpointConfiguration;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;

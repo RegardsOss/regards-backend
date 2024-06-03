@@ -26,11 +26,11 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.dto.BasketDto;
-import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
 import fr.cnes.regards.modules.order.domain.exception.*;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.BasketDto;
+import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -108,15 +108,15 @@ public class BasketController implements IResourceController<BasketDto> {
                             @ApiResponse(responseCode = "409",
                                          description = "Number of selected products in the basket exceeds the maximum number allowed",
                                          content = { @Content(mediaType = "application/json") }) })
-    public ResponseEntity<EntityModel<BasketDto>> addSelection(@Valid @RequestBody
-                                                               BasketSelectionRequest basketSelectionRequest)
+    public ResponseEntity<EntityModel<BasketDto>> addSelection(
+        @Valid @RequestBody BasketSelectionRequest basketSelectionRequest)
         throws TooManyItemsSelectedInBasketException, EmptySelectionException, CatalogSearchException {
 
         Basket basket = basketService.findOrCreate(authResolver.getUser());
 
         basket = basketService.addSelection(basket.getId(), basketSelectionRequest);
 
-        return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(basket)));
+        return ResponseEntity.ok(toResource(basket.toBasketDto()));
     }
 
     /**
@@ -144,7 +144,7 @@ public class BasketController implements IResourceController<BasketDto> {
     public ResponseEntity<EntityModel<BasketDto>> addSelectionFromFile(@RequestParam("file") MultipartFile file)
         throws TooManyItemsInFileException, CatalogSearchException, EmptySelectionException,
         TooManyItemsSelectedInBasketException {
-        return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(basketService.addSelectionFromFile(file))));
+        return ResponseEntity.ok(toResource(basketService.addSelectionFromFile(file).toBasketDto()));
     }
 
     /**
@@ -168,7 +168,7 @@ public class BasketController implements IResourceController<BasketDto> {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
         Basket modified = basketService.attachProcessing(basket, dsSelectionId, description);
-        return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(modified)));
+        return ResponseEntity.ok(toResource(modified.toBasketDto()));
     }
 
     /**
@@ -184,7 +184,7 @@ public class BasketController implements IResourceController<BasketDto> {
         @PathVariable("datasetSelectionId") Long dsSelectionId) throws EmptyBasketException {
         Basket basket = basketService.find(authResolver.getUser());
         basket = basketService.removeDatasetSelection(basket, dsSelectionId);
-        BasketDto dto = BasketDto.makeBasketDto(basket);
+        BasketDto dto = basket.toBasketDto();
         return ResponseEntity.ok(toResource(dto));
     }
 
@@ -206,7 +206,7 @@ public class BasketController implements IResourceController<BasketDto> {
                                                                                           Charset.defaultCharset()));
         Basket basket = basketService.find(authResolver.getUser());
         basket = basketService.removeDatedItemsSelection(basket, dsSelectionId, itemsSelectionDate);
-        BasketDto dto = BasketDto.makeBasketDto(basket);
+        BasketDto dto = basket.toBasketDto();
         return ResponseEntity.ok(toResource(dto));
     }
 
@@ -220,7 +220,7 @@ public class BasketController implements IResourceController<BasketDto> {
     public ResponseEntity<EntityModel<BasketDto>> get() {
         try {
             Basket basket = basketService.find(authResolver.getUser());
-            BasketDto dto = BasketDto.makeBasketDto(basket);
+            BasketDto dto = basket.toBasketDto();
             return ResponseEntity.ok(toResource(dto));
         } catch (EmptyBasketException e) {
             // This is a normal case, no log needed
@@ -252,7 +252,7 @@ public class BasketController implements IResourceController<BasketDto> {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
         basket = basketService.attachFileFilters(basket, dsSelectionId, fileSelectionDescriptionDTO);
-        return ResponseEntity.ok(toResource(BasketDto.makeBasketDto(basket)));
+        return ResponseEntity.ok(toResource(basket.toBasketDto()));
     }
 
     @Override

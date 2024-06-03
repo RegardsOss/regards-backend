@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.dto.FileSelectionDescriptionDTO;
 import fr.cnes.regards.modules.order.domain.exception.*;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
 import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 

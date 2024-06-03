@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.domain.input.DeliveryStatus;
 import fr.cnes.regards.modules.delivery.dto.output.DeliveryRequestStatus;
-import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;

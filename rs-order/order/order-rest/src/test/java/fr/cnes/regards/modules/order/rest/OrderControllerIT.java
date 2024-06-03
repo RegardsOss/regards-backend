@@ -24,11 +24,16 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
+import fr.cnes.regards.modules.order.dto.OrderControllerEndpointConfiguration;
+import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.dto.dto.OrderDto;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
 import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
@@ -74,9 +79,8 @@ import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELA
  * @author oroussel
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = {"regards.tenant=order1", "spring.jpa.properties.hibernate.default_schema=order1"})
+@TestPropertySource(properties = { "regards.tenant=order1", "spring.jpa.properties.hibernate.default_schema=order1" })
 public class OrderControllerIT extends AbstractOrderControllerIT {
-
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
     @Test
@@ -97,10 +101,10 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         Order order = createOrderAsPending();
         // Pause Order
         performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                null,
-                customizer().expectStatusOk(),
-                "error",
-                order.getId());
+                          null,
+                          customizer().expectStatusOk(),
+                          "error",
+                          order.getId());
     }
 
     @Test
@@ -109,17 +113,17 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
 
         // Pause Order
         performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                null,
-                customizer().expectStatusOk(),
-                "error",
-                order.getId());
+                          null,
+                          customizer().expectStatusOk(),
+                          "error",
+                          order.getId());
 
         // Re-pause Order => fail
         performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                null,
-                customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                "error",
-                order.getId());
+                          null,
+                          customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                          "error",
+                          order.getId());
     }
 
     @Test
@@ -128,17 +132,17 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
 
         // Pause Order
         performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                null,
-                customizer().expectStatusOk(),
-                "error",
-                order.getId());
+                          null,
+                          customizer().expectStatusOk(),
+                          "error",
+                          order.getId());
 
         // Pause Order
         performDefaultPut(OrderController.RESUME_ORDER_PATH,
-                null,
-                customizer().expectStatusOk(),
-                "error",
-                order.getId());
+                          null,
+                          customizer().expectStatusOk(),
+                          "error",
+                          order.getId());
     }
 
     @Test
@@ -146,10 +150,10 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         Order order = createOrderAsPending();
         // Pause Order
         performDefaultPut(OrderController.RESUME_ORDER_PATH,
-                null,
-                customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                "error",
-                order.getId());
+                          null,
+                          customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                          "error",
+                          order.getId());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
@@ -159,10 +163,10 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
 
         // Pause Order
         performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                null,
-                customizer().expectStatusOk(),
-                "error",
-                order.getId());
+                          null,
+                          customizer().expectStatusOk(),
+                          "error",
+                          order.getId());
 
         Thread.sleep(1000);
 
@@ -175,9 +179,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         Order order = createOrderAsPending();
         // Pause Order
         performDefaultDelete(OrderController.DELETE_ORDER_PATH,
-                customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                "error",
-                order.getId());
+                             customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                             "error",
+                             order.getId());
     }
 
     @Test
@@ -185,9 +189,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         Order order = createOrderAsRunning();
         // Pause Order
         performDefaultDelete(OrderController.REMOVE_ORDER_PATH,
-                customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                "error",
-                order.getId());
+                             customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                             "error",
+                             order.getId());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
@@ -195,21 +199,21 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
     public void testRemove() throws URISyntaxException {
         Order order = createOrderAsPending();
         performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                null,
-                customizer().expectStatusOk(),
-                "error",
-                order.getId());
+                          null,
+                          customizer().expectStatusOk(),
+                          "error",
+                          order.getId());
         performDelete(OrderController.DELETE_ORDER_PATH,
-                projectAdminToken,
-                customizer().expectStatusOk(),
-                "error",
-                order.getId());
+                      projectAdminToken,
+                      customizer().expectStatusOk(),
+                      "error",
+                      order.getId());
         // Remove Order
         performDelete(OrderController.REMOVE_ORDER_PATH,
-                projectAdminToken,
-                customizer().expectStatusOk(),
-                "error",
-                order.getId());
+                      projectAdminToken,
+                      customizer().expectStatusOk(),
+                      "error",
+                      order.getId());
     }
 
     /**
@@ -219,13 +223,13 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderController.OrderRequest.class);
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(constrainedFields.withPath("label",
-                        "command label, 1 to 50 characters, must be unique for current user (generated when not provided)")
-                .optional()
-                .type(JSON_STRING_TYPE));
+                                              "command label, 1 to 50 characters, must be unique for current user (generated when not provided)")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE));
         fields.add(constrainedFields.withPath("onSuccessUrl",
-                        "url used by frontend to display a page if order creation has succeeded")
-                .optional()
-                .type(JSON_STRING_TYPE));
+                                              "url used by frontend to display a page if order creation has succeeded")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE));
         return PayloadDocumentation.relaxedRequestFields(fields);
     }
 
@@ -235,15 +239,15 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         initForNextOrder();
         // Expectations
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
-                .expectValue("content.owner", getDefaultUserEmail())
-                .expectValue("content.label", "myCommand");
+                                                          .expectValue("content.owner", getDefaultUserEmail())
+                                                          .expectValue("content.label", "myCommand");
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Send
         performDefaultPost(OrderController.USER_ROOT_PATH,
-                new OrderController.OrderRequest("myCommand", "http://perdu.com"),
-                customizer,
-                "error");
+                           new OrderController.OrderRequest("myCommand", "http://perdu.com"),
+                           customizer,
+                           "error");
         TimeUnit.SECONDS.sleep(5);
         // After: clear
         clearForPreviousOrder();
@@ -255,17 +259,17 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         initForNextOrder();
         // Expectations
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
-                .expectValue("content.owner", getDefaultUserEmail())
-                .expect(MockMvcResultMatchers.jsonPath("content.label",
-                        MatchesPattern.matchesPattern(
-                                "Order of \\d{4}/\\d{2}/\\d{2} at \\d{2}:\\d{2}:\\d{2}"))); // value should match generated pattern
+                                                          .expectValue("content.owner", getDefaultUserEmail())
+                                                          .expect(MockMvcResultMatchers.jsonPath("content.label",
+                                                                                                 MatchesPattern.matchesPattern(
+                                                                                                     "Order of \\d{4}/\\d{2}/\\d{2} at \\d{2}:\\d{2}:\\d{2}"))); // value should match generated pattern
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Send
         performDefaultPost(OrderController.USER_ROOT_PATH,
-                new OrderController.OrderRequest(null, "http://perdu.com"),
-                customizer,
-                "error");
+                           new OrderController.OrderRequest(null, "http://perdu.com"),
+                           customizer,
+                           "error");
         TimeUnit.SECONDS.sleep(5);
         // After: clear
         clearForPreviousOrder();
@@ -277,25 +281,25 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         initForNextOrder();
         // First request expectations: OK
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
-                .expectValue("content.owner", getDefaultUserEmail())
-                .expectValue("content.label", "myDoubleCommand");
+                                                          .expectValue("content.owner", getDefaultUserEmail())
+                                                          .expectValue("content.label", "myDoubleCommand");
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Send
         performDefaultPost(OrderController.USER_ROOT_PATH,
-                new OrderController.OrderRequest("myDoubleCommand", "http://perdu.com"),
-                customizer,
-                "error");
+                           new OrderController.OrderRequest("myDoubleCommand", "http://perdu.com"),
+                           customizer,
+                           "error");
         // Second request expectations: NOK (label already used by a command for that user)
         RequestBuilderCustomizer customizer2 = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-                .expectValue("messages[0]",
-                        OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
+                                                           .expectValue("messages[0]",
+                                                                        OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
         // Send second request
         initForNextOrder();
         performDefaultPost(OrderController.USER_ROOT_PATH,
-                new OrderController.OrderRequest("myDoubleCommand", "http://perdu2.com"),
-                customizer2,
-                "error");
+                           new OrderController.OrderRequest("myDoubleCommand", "http://perdu2.com"),
+                           customizer2,
+                           "error");
         // After: clear
         clearForPreviousOrder();
     }
@@ -306,16 +310,16 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         initForNextOrder();
         // Expectations
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-                .expectValue("messages[0]",
-                        OrderLabelErrorEnum.TOO_MANY_CHARACTERS_IN_LABEL.toString());
+                                                          .expectValue("messages[0]",
+                                                                       OrderLabelErrorEnum.TOO_MANY_CHARACTERS_IN_LABEL.toString());
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Send
         performDefaultPost(OrderController.USER_ROOT_PATH,
-                new OrderController.OrderRequest("this-label-has-too-many-characters-if-we-append(51)",
-                        "http://perdu.com"),
-                customizer,
-                "error");
+                           new OrderController.OrderRequest("this-label-has-too-many-characters-if-we-append(51)",
+                                                            "http://perdu.com"),
+                           customizer,
+                           "error");
         // After: clear
         clearForPreviousOrder();
     }
@@ -327,9 +331,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         customizer.document(getCreateOrderDocumentation());
         // No basket available
         performDefaultPost(OrderController.USER_ROOT_PATH,
-                new OrderController.OrderRequest("myCommand", "http://perdu.com"),
-                customizer,
-                "error");
+                           new OrderController.OrderRequest("myCommand", "http://perdu.com"),
+                           customizer,
+                           "error");
     }
 
     @Test
@@ -361,9 +365,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         order.getDatasetTasks().first();
 
         ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
-                customizer().expectStatusOk(),
-                "Should return result",
-                order.getId());
+                                                        customizer().expectStatusOk(),
+                                                        "Should return result",
+                                                        order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
         resultFileMl.deleteOnExit();
@@ -387,9 +391,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
 
         // Download metalink file
         ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
-                customizer().expectStatusOk(),
-                "Should return result",
-                order.getId());
+                                                        customizer().expectStatusOk(),
+                                                        "Should return result",
+                                                        order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
         resultFileMl.deleteOnExit();
@@ -407,7 +411,7 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         Unmarshaller u = jaxbContext.createUnmarshaller();
 
         @SuppressWarnings("unchecked") JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u.unmarshal(
-                resultFileMl);
+            resultFileMl);
         MetalinkType metalink = rootElt.getValue();
         FileType fileType = metalink.getFiles().getFile().get(0);
         ResourcesType.Url urlO = fileType.getResources().getUrl().iterator().next();
@@ -424,14 +428,14 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         customizer.addParameter("orderToken", token);
         // request parameters
         customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName(
-                        "orderToken")
-                .optional()
-                .description(
-                        "token generated at order creation and sent by email to user.")
-                .attributes(Attributes.key(
-                                RequestBuilderCustomizer.PARAM_TYPE)
-                        .value(
-                                "String"))));
+                                                                                                  "orderToken")
+                                                                                              .optional()
+                                                                                              .description(
+                                                                                                  "token generated at order creation and sent by email to user.")
+                                                                                              .attributes(Attributes.key(
+                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                    .value(
+                                                                                                                        "String"))));
 
         // Try downloading file as if, with token given into public file url
         performDefaultGet(OrderController.PUBLIC_METALINK_DOWNLOAD_PATH, customizer, "Should return result");
@@ -447,17 +451,17 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
     @Requirement("REGARDS_DSL_STO_ARC_420")
     @Test
     public void testDownloadZipFile()
-            throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
-            ParserConfigurationException {
+        throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
+        ParserConfigurationException {
         Order order = createOrderAsRunning();
 
         //////////////////////////////////
         // Then download order Zip file //
         //////////////////////////////////
         ResultActions resultActions = performDefaultGet(OrderController.ZIP_DOWNLOAD_PATH,
-                customizer().expectStatusOk(),
-                "Should return result",
-                order.getId());
+                                                        customizer().expectStatusOk(),
+                                                        "Should return result",
+                                                        order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
         //resultFile.deleteOnExit();
@@ -475,23 +479,23 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
 
     @Test
     public void testDownloadZipFile_contains_notice_when_inner_downloads_fail()
-            throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
-            ParserConfigurationException {
+        throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
+        ParserConfigurationException {
         Order order = createOrderAsRunning();
 
         //////////////////////////////////
         // Then download order Zip file //
         //////////////////////////////////
         ResultActions resultActions = performDefaultGet(OrderController.ZIP_DOWNLOAD_PATH,
-                customizer().expectStatusOk(),
-                "Should return result",
-                order.getId());
+                                                        customizer().expectStatusOk(),
+                                                        "Should return result",
+                                                        order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
 
         Set<String> failures = new HashSet<>();
         // Object o = resultActions.andReturn().getAsyncResult();
         try (InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
-             ZipInputStream zis = new ZipInputStream(is)) {
+            ZipInputStream zis = new ZipInputStream(is)) {
             ZipEntry entry;
             byte[] buffer = new byte[2048];
 
@@ -510,10 +514,10 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         }
         Assert.assertTrue(failures.size() > 0);
         Assert.assertTrue(failures.stream()
-                .findFirst()
-                .get()
-                .matches(String.format("Failed to download file \\(.*\\): %s.",
-                        StorageClientMock.NO_QUOTA_MSG_STUB)));
+                                  .findFirst()
+                                  .get()
+                                  .matches(String.format("Failed to download file \\(.*\\): %s.",
+                                                         StorageClientMock.NO_QUOTA_MSG_STUB)));
     }
 
     @Test
@@ -528,31 +532,31 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         customizer.addParameter("size", "20");
         // request parameters
         customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName("page")
-                        .optional()
-                        .description(
-                                "page number (from 0)")
-                        .attributes(Attributes.key(
-                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(
-                                        "Integer")),
-                RequestDocumentation.parameterWithName("size")
-                        .optional()
-                        .description("page size")
-                        .attributes(Attributes.key(
-                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(
-                                        "Integer"))));
+                                                                                              .optional()
+                                                                                              .description(
+                                                                                                  "page number (from 0)")
+                                                                                              .attributes(Attributes.key(
+                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                    .value(
+                                                                                                                        "Integer")),
+                                                                          RequestDocumentation.parameterWithName("size")
+                                                                                              .optional()
+                                                                                              .description("page size")
+                                                                                              .attributes(Attributes.key(
+                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                    .value(
+                                                                                                                        "Integer"))));
         customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName("datasetId")
-                        .description(
-                                "dataset task id (from order)")
-                        .attributes(Attributes.key(
-                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                .value("Long")),
-                RequestDocumentation.parameterWithName("orderId")
-                        .description("order id")
-                        .attributes(Attributes.key(
-                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                .value("Long"))));
+                                                                                    .description(
+                                                                                        "dataset task id (from order)")
+                                                                                    .attributes(Attributes.key(
+                                                                                                              RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                          .value("Long")),
+                                                                RequestDocumentation.parameterWithName("orderId")
+                                                                                    .description("order id")
+                                                                                    .attributes(Attributes.key(
+                                                                                                              RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                          .value("Long"))));
 
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDataFile.class);
         List<FieldDescriptor> fields = new ArrayList<>();
@@ -560,10 +564,10 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         customizer.document(PayloadDocumentation.relaxedResponseFields(fields));
 
         performDefaultGet(OrderControllerEndpointConfiguration.ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES,
-                customizer,
-                "error",
-                order.getId(),
-                order.getDatasetTasks().first().getId());
+                          customizer,
+                          "error",
+                          order.getId(),
+                          order.getDatasetTasks().first().getId());
 
     }
 
@@ -577,17 +581,17 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
     @Requirement("REGARDS_DSL_STO_ARC_420")
     @Test
     public void testDownloadFile()
-            throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
-            ParserConfigurationException {
+        throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
+        ParserConfigurationException {
         Order order = createOrderAsRunning();
 
         ////////////////////////////////////////
         // First Download metalink order file //
         ////////////////////////////////////////
         ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
-                customizer().expectStatusOk(),
-                "Should return result",
-                order.getId());
+                                                        customizer().expectStatusOk(),
+                                                        "Should return result",
+                                                        order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
         resultFileMl.deleteOnExit();
@@ -606,9 +610,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         // Then download order Zip file //
         //////////////////////////////////
         resultActions = performDefaultGet("/user/orders/{orderId}/download",
-                customizer().expectStatusOk(),
-                "Should return result",
-                order.getId());
+                                          customizer().expectStatusOk(),
+                                          "Should return result",
+                                          order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
         resultFile.deleteOnExit();
@@ -639,7 +643,7 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         Unmarshaller u = jaxbContext.createUnmarshaller();
 
         @SuppressWarnings("unchecked") JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u.unmarshal(
-                resultFileMl);
+            resultFileMl);
         MetalinkType metalink = rootElt.getValue();
         int fileCount = 0;
         int i = 0;
@@ -666,42 +670,42 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
             RequestBuilderCustomizer customizer = customizer().expectStatusOk().addParameter("orderToken", token);
 
             customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName(
-                            "orderToken")
-                    .optional()
-                    .description(
-                            "token generated at order creation and sent by email to user.")
-                    .attributes(Attributes.key(
-                                    RequestBuilderCustomizer.PARAM_TYPE)
-                            .value(
-                                    "String"))));
+                                                                                                      "orderToken")
+                                                                                                  .optional()
+                                                                                                  .description(
+                                                                                                      "token generated at order creation and sent by email to user.")
+                                                                                                  .attributes(Attributes.key(
+                                                                                                                            RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                        .value(
+                                                                                                                            "String"))));
 
             customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName("aipId")
-                            .description(
-                                    "IP_ID of data object of which file belongs to")
-                            .attributes(Attributes.key(
-                                            RequestBuilderCustomizer.PARAM_TYPE)
-                                    .value(
-                                            "String")),
-                    RequestDocumentation.parameterWithName("dataFileId")
-                            .description("file id ")
-                            .attributes(Attributes.key(
-                                            RequestBuilderCustomizer.PARAM_TYPE)
-                                    .value(
-                                            "Long"))));
+                                                                                        .description(
+                                                                                            "IP_ID of data object of which file belongs to")
+                                                                                        .attributes(Attributes.key(
+                                                                                                                  RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                              .value(
+                                                                                                                  "String")),
+                                                                    RequestDocumentation.parameterWithName("dataFileId")
+                                                                                        .description("file id ")
+                                                                                        .attributes(Attributes.key(
+                                                                                                                  RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                              .value(
+                                                                                                                  "Long"))));
 
             // Try downloading file as if, with token given into public file url
             ResultActions results = performDefaultGet(OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID,
-                    customizer,
-                    "Should return result",
-                    dataFileId);
+                                                      customizer,
+                                                      "Should return result",
+                                                      dataFileId);
 
             File tmpFile = File.createTempFile("ORDER", "tmp", new File("/tmp"));
             tmpFile.deleteOnExit();
             try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
                 resultActions.andReturn().getAsyncResult();
                 InputStream is = new ByteArrayInputStream(resultActions.andReturn()
-                        .getResponse()
-                        .getContentAsByteArray());
+                                                                       .getResponse()
+                                                                       .getContentAsByteArray());
                 ByteStreams.copy(is, fos);
                 is.close();
             }
@@ -721,9 +725,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         // First Download metalink order file //
         ////////////////////////////////////////
         ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
-                customizer().expectStatusOk(),
-                "Should return result",
-                order.getId());
+                                                        customizer().expectStatusOk(),
+                                                        "Should return result",
+                                                        order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
         resultFileMl.deleteOnExit();
@@ -752,7 +756,7 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         Unmarshaller u = jaxbContext.createUnmarshaller();
 
         @SuppressWarnings("unchecked") JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u.unmarshal(
-                resultFileMl);
+            resultFileMl);
         MetalinkType metalink = rootElt.getValue();
         // Some variable to make data file not yet available download as last action (for Doc with a 202 expectation)
         long lastDataFileId = -1L;
@@ -782,9 +786,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.ACCEPTED);
         customizer.addParameter("orderToken", lastDataFileToken);
         performDefaultGet(OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID,
-                customizer,
-                "Should return result",
-                lastDataFileId);
+                          customizer,
+                          "Should return result",
+                          lastDataFileId);
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_420")
@@ -800,9 +804,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         SearchRequestParameters body = new SearchRequestParameters();
 
         performDefaultPost(OrderController.SEARCH_ORDER_PATH,
-                body,
-                requestBuilderCustomizer,
-                "Error retrieving all orders");
+                           body,
+                           requestBuilderCustomizer,
+                           "Error retrieving all orders");
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_420")
@@ -813,63 +817,63 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         // All specific user orders
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.document(RequestDocumentation.requestParameters(RequestDocumentation.parameterWithName(
-                                "user")
-                        .optional()
-                        .description(
-                                "Optional - user email whom orders are requested, if not provided all users orders are retrieved")
-                        .attributes(
-                                Attributes.key(
-                                                RequestBuilderCustomizer.PARAM_TYPE)
-                                        .value(
-                                                "String")),
-                RequestDocumentation.parameterWithName(
-                                "statuses")
-                        .optional()
-                        .description(
-                                "Option - list of status whom orders are requested, if not provided all orders are retrieved")
-                        .attributes(
-                                Attributes.key(
-                                                RequestBuilderCustomizer.PARAM_TYPE)
-                                        .value(
-                                                JSON_ARRAY_TYPE),
-                                Attributes.key(
-                                                RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                        .value(
-                                                "Values must be strings")),
-                RequestDocumentation.parameterWithName(
-                                "creationDate")
-                        .optional()
-                        .description(
-                                "Option - creation date whom orders are requested, if not provided all orders are retrieved")
-                        .attributes(
-                                Attributes.key(
-                                                RequestBuilderCustomizer.PARAM_TYPE)
-                                        .value(
-                                                JSON_OBJECT_TYPE),
-                                Attributes.key(
-                                                RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                        .value(
-                                                "Values must be 2 ISO-8601 Dates")),
-                RequestDocumentation.parameterWithName(
-                                "page")
-                        .optional()
-                        .description(
-                                "page number (from 0)")
-                        .attributes(
-                                Attributes.key(
-                                                RequestBuilderCustomizer.PARAM_TYPE)
-                                        .value(
-                                                "Integer")),
-                RequestDocumentation.parameterWithName(
-                                "size")
-                        .optional()
-                        .description(
-                                "page size")
-                        .attributes(
-                                Attributes.key(
-                                                RequestBuilderCustomizer.PARAM_TYPE)
-                                        .value(
-                                                "Integer"))));
+                                                                                                         "user")
+                                                                                                     .optional()
+                                                                                                     .description(
+                                                                                                         "Optional - user email whom orders are requested, if not provided all users orders are retrieved")
+                                                                                                     .attributes(
+                                                                                                         Attributes.key(
+                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                   .value(
+                                                                                                                       "String")),
+                                                                                 RequestDocumentation.parameterWithName(
+                                                                                                         "statuses")
+                                                                                                     .optional()
+                                                                                                     .description(
+                                                                                                         "Option - list of status whom orders are requested, if not provided all orders are retrieved")
+                                                                                                     .attributes(
+                                                                                                         Attributes.key(
+                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                   .value(
+                                                                                                                       JSON_ARRAY_TYPE),
+                                                                                                         Attributes.key(
+                                                                                                                       RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                                                   .value(
+                                                                                                                       "Values must be strings")),
+                                                                                 RequestDocumentation.parameterWithName(
+                                                                                                         "creationDate")
+                                                                                                     .optional()
+                                                                                                     .description(
+                                                                                                         "Option - creation date whom orders are requested, if not provided all orders are retrieved")
+                                                                                                     .attributes(
+                                                                                                         Attributes.key(
+                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                   .value(
+                                                                                                                       JSON_OBJECT_TYPE),
+                                                                                                         Attributes.key(
+                                                                                                                       RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                                                   .value(
+                                                                                                                       "Values must be 2 ISO-8601 Dates")),
+                                                                                 RequestDocumentation.parameterWithName(
+                                                                                                         "page")
+                                                                                                     .optional()
+                                                                                                     .description(
+                                                                                                         "page number (from 0)")
+                                                                                                     .attributes(
+                                                                                                         Attributes.key(
+                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                   .value(
+                                                                                                                       "Integer")),
+                                                                                 RequestDocumentation.parameterWithName(
+                                                                                                         "size")
+                                                                                                     .optional()
+                                                                                                     .description(
+                                                                                                         "page size")
+                                                                                                     .attributes(
+                                                                                                         Attributes.key(
+                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                   .value(
+                                                                                                                       "Integer"))));
         requestBuilderCustomizer.expectStatusOk();
         requestBuilderCustomizer.expectIsArray(JSON_PATH_CONTENT);
         requestBuilderCustomizer.expectToHaveSize(JSON_PATH_CONTENT, 1);
@@ -877,9 +881,9 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         body.withStatusesIncluded(OrderStatus.PENDING);
         body.withOwner("other.user2@regards.fr");
         performDefaultPost(OrderController.SEARCH_ORDER_PATH,
-                body,
-                requestBuilderCustomizer,
-                "Error retrieving all orders");
+                           body,
+                           requestBuilderCustomizer,
+                           "Error retrieving all orders");
     }
 
     @Test
@@ -893,20 +897,20 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         customizer.addParameter("size", "20");
         // request parameters
         customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName("page")
-                        .optional()
-                        .description(
-                                "page number (from 0)")
-                        .attributes(Attributes.key(
-                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(
-                                        "Integer")),
-                RequestDocumentation.parameterWithName("size")
-                        .optional()
-                        .description("page size")
-                        .attributes(Attributes.key(
-                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(
-                                        "Integer"))));
+                                                                                              .optional()
+                                                                                              .description(
+                                                                                                  "page number (from 0)")
+                                                                                              .attributes(Attributes.key(
+                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                    .value(
+                                                                                                                        "Integer")),
+                                                                          RequestDocumentation.parameterWithName("size")
+                                                                                              .optional()
+                                                                                              .description("page size")
+                                                                                              .attributes(Attributes.key(
+                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                    .value(
+                                                                                                                        "Integer"))));
         // response body
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDto.class);
         List<FieldDescriptor> fields = new ArrayList<>();
@@ -958,24 +962,22 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
 
         String path = OrderController.ADMIN_ROOT_PATH + OrderController.CSV;
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
-                .addHeader(HttpConstants.ACCEPT, "text/csv");
+                                                          .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
+                                                          .addHeader(HttpConstants.ACCEPT, "text/csv");
 
         ResultActions results = performDefaultPost(path, parameters, customizer, "error");
         // Just test headers are present and CSV format is ok
         Assert.assertTrue(results.andReturn()
-                .getResponse()
-                .getContentAsString()
-                .startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
+                                 .getResponse()
+                                 .getContentAsString()
+                                 .startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
         // now let check that optional parameter are correctly parsed
         // First status
         parameters = parameters.withStatusesIncluded(OrderStatus.DONE);
         performDefaultPost(path, parameters, customizer, "error");
         // then from
         parameters = parameters.withCreationDateAfter(OffsetDateTime.now().minusHours(3));
-        performDefaultPost(path, parameters,
-                customizer,
-                "error");
+        performDefaultPost(path, parameters, customizer, "error");
         // then to
         parameters = parameters.withCreationDateBefore(OffsetDateTime.now().plusSeconds(3));
         performDefaultPost(path, parameters, customizer, "error");

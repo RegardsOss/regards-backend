@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

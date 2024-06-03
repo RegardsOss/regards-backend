@@ -31,7 +31,9 @@ import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
-import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.order.dto.OrderControllerEndpointConfiguration;
+import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.slf4j.Logger;
@@ -292,7 +294,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                                                                                                 filesTaskId,
                                                                                                 page);
         return new PageImpl<>(availableByOrderId.stream()
-                                                .map(OrderDataFileDTO::fromOrderDataFile)
+                                                .map(OrderDataFile::toOrderDataFileDto)
                                                 .peek(orderDataFileDTO -> orderDataFileDTO.setDownloadUrl(
                                                     computeDownloadLink(orderDataFileDTO.getId()))) //we need to
                                                 // compute an

@@ -16,15 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.domain.dto;
-
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+package fr.cnes.regards.modules.order.dto.dto;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Order Dto used to avoid loading FilesTask and all files
@@ -180,26 +176,5 @@ public class OrderDto {
 
     public void setDatasetTasks(List<DatasetTaskDto> datasetTasks) {
         this.datasetTasks = datasetTasks;
-    }
-
-    /**
-     * Create OrderDto from Order
-     */
-    public static OrderDto fromOrder(Order order) {
-        return new OrderDto(order.getId(),
-                            order.getOwner(),
-                            order.getLabel(),
-                            order.getCreationDate(),
-                            order.getExpirationDate(),
-                            order.getPercentCompleted(),
-                            order.getFilesInErrorCount(),
-                            order.getAvailableFilesCount(),
-                            order.getStatus(),
-                            order.getStatusDate(),
-                            order.isWaitingForUser(),
-                            order.getDatasetTasks()
-                                 .stream()
-                                 .map(DatasetTaskDto::fromDatasetTask)
-                                 .collect(Collectors.toList()));
     }
 }

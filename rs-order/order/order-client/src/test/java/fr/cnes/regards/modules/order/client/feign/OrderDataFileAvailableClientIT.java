@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.order.client.env.config.OrderClientTestConfigurat
 import fr.cnes.regards.modules.order.client.env.utils.OrderTestUtilsService;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import org.junit.Assert;

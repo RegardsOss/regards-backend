@@ -19,7 +19,7 @@ package fr.cnes.regards.modules.order.dao;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;

@@ -32,11 +32,11 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.dto.dto.OrderDto;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
@@ -195,7 +195,7 @@ public class OrderController implements IResourceController<OrderDto> {
                                                orderRequest.getLabel(),
                                                orderRequest.getOnSuccessUrl(),
                                                orderSettingsService.getUserOrderParameters().getSubOrderDuration());
-        return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
+        return new ResponseEntity<>(toResource(order.toOrderDto()), HttpStatus.CREATED);
     }
 
     @Operation(summary = "Create an order automatically from a OrderRequestDto.")
@@ -238,7 +238,7 @@ public class OrderController implements IResourceController<OrderDto> {
                                                orderRequest.getLabel(),
                                                orderRequest.getOnSuccessUrl(),
                                                orderSettingsService.getAppSubOrderDuration());
-        return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
+        return new ResponseEntity<>(toResource(order.toOrderDto()), HttpStatus.CREATED);
     }
 
     @Operation(summary = "Retrieve specified order",
@@ -260,7 +260,7 @@ public class OrderController implements IResourceController<OrderDto> {
                 LOGGER.error("Ordered file is not accessible to current user ({})", authResolver.getUser());
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
             }
-            return ResponseEntity.ok(toResource(OrderDto.fromOrder(order)));
+            return ResponseEntity.ok(toResource(order.toOrderDto()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -286,7 +286,7 @@ public class OrderController implements IResourceController<OrderDto> {
                                                               @RequestBody OrderRequest orderRequest)
         throws ModuleException {
         Order order = orderService.restart(orderId, orderRequest.getLabel(), orderRequest.getOnSuccessUrl());
-        return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
+        return new ResponseEntity<>(toResource(order.toOrderDto()), HttpStatus.CREATED);
     }
 
     @ResourceAccess(description = "Ask for an order to retry files in error", role = DefaultRole.REGISTERED_USER)
@@ -317,7 +317,7 @@ public class OrderController implements IResourceController<OrderDto> {
         @PageableDefault(sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageRequest,
         @RequestBody SearchRequestParameters filters) {
         return ResponseEntity.ok(toPagedResources(orderService.searchOrders(filters, pageRequest)
-                                                              .map(OrderDto::fromOrder),
+                                                              .map(Order::toOrderDto),
                                                   orderDtoPagedResourcesAssembler));
     }
 
@@ -335,7 +335,7 @@ public class OrderController implements IResourceController<OrderDto> {
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
         return ResponseEntity.ok(toPagedResources(orderService.findAll(user, pageRequest, OrderStatus.DELETED)
-                                                              .map(OrderDto::fromOrder),
+                                                              .map(Order::toOrderDto),
                                                   orderDtoPagedResourcesAssembler));
     }
 

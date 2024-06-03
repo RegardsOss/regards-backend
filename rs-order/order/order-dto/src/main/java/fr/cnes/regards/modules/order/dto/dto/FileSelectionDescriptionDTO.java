@@ -16,9 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.domain.dto;
+package fr.cnes.regards.modules.order.dto.dto;
 
-import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 
 import java.util.Collections;

@@ -33,9 +33,8 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.FileSelectionDescription;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
@@ -47,6 +46,7 @@ import fr.cnes.regards.modules.order.service.job.parameters.*;
 import fr.cnes.regards.modules.order.service.processing.correlation.BatchSuborderCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.processing.correlation.ProcessInputCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
+import fr.cnes.regards.modules.order.service.utils.FileSelectionDescriptionValidator;
 import fr.cnes.regards.modules.order.service.utils.OrderCounts;
 import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
@@ -404,7 +404,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         if (scope == Scope.SUBORDER && cardinality == Cardinality.ONE_PER_EXECUTION) {
             List<DataFile> applicableDataFilesIn = features.flatMap(f -> List.ofAll(f.getFiles().values()))
                                                            .filter(f -> requiredDataTypes.contains(f.getDataType()))
-                                                           .filter(dataFile -> FileSelectionDescription.validate(
+                                                           .filter(dataFile -> FileSelectionDescriptionValidator.validate(
                                                                dataFile,
                                                                dsSel.getFileSelectionDescription()));
 

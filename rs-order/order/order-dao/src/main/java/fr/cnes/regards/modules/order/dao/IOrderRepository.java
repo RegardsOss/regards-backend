@@ -18,8 +18,8 @@
 package fr.cnes.regards.modules.order.dao;
 
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
-import fr.cnes.regards.modules.order.domain.dto.OrderStatusDto;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatusDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
