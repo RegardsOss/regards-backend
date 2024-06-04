@@ -83,6 +83,7 @@
         <module>jsoniter-regards</module>
         <module>jsoniter-regards-starter</module>
         <module>feign-regards</module>
+        <module>feign-regards-builder</module>
         <module>feign-regards-starter</module>
         <module>security-config</module>
         <module>oais-starter</module>

@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import com.google.common.base.Strings;
 import feign.MethodMetadata;
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.lang.annotation.Annotation;
@@ -44,17 +44,17 @@ public class CustomRequestParamParameterProcessor implements AnnotatedParameterP
     }
 
     @Override
-    public boolean processArgument(AnnotatedParameterContext pContext, Annotation pAnnotation, Method pMethod) {
+    public boolean processArgument(AnnotatedParameterContext context, Annotation pAnnotation, Method pMethod) {
         String name = ANNOTATION.cast(pAnnotation).value();
-        if (!Strings.isNullOrEmpty(name)) {
-            pContext.setParameterName(name);
+        if (!ObjectUtils.isEmpty(name)) {
+            context.setParameterName(name);
 
-            MethodMetadata data = pContext.getMethodMetadata();
-            Collection<String> query = pContext.setTemplateParameter(name, data.template().queries().get(name));
+            MethodMetadata data = context.getMethodMetadata();
+            Collection<String> query = context.setTemplateParameter(name, data.template().queries().get(name));
             data.template().query(name, query);
         } else {
-            MethodMetadata data = pContext.getMethodMetadata();
-            data.queryMapIndex(pContext.getParameterIndex());
+            MethodMetadata data = context.getMethodMetadata();
+            data.queryMapIndex(context.getParameterIndex());
         }
         return true;
     }

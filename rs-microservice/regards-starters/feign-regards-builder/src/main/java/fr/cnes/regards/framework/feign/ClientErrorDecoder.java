@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import com.google.common.io.ByteStreams;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import org.slf4j.Logger;
@@ -62,7 +61,7 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
         byte[] responseBody = null;
         if (response.body() != null) {
             try {
-                responseBody = ByteStreams.toByteArray(response.body().asInputStream());
+                responseBody = response.body().asInputStream().readAllBytes();
             } catch (IOException e) {
                 LOGGER.debug("Failed to process response body.", e);
                 return super.decode(methodKey, response);

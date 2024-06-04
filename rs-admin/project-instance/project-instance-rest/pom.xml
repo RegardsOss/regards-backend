@@ -89,6 +89,11 @@
             <artifactId>project-instance-client</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards-builder</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
