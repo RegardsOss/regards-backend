@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.feign;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.metric.autoconfigure.MetricAutoConfiguration;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.assertj.core.util.Lists;
@@ -55,7 +56,9 @@ import java.util.Map;
  */
 @RunWith(SpringRunner.class)
 @ActiveProfiles("feign")
-@EnableAutoConfiguration(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
+@EnableAutoConfiguration(exclude = { SecurityAutoConfiguration.class,
+                                     ManagementWebSecurityAutoConfiguration.class,
+                                     MetricAutoConfiguration.class })
 @SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT)
 public class FeignClientTests {
 
